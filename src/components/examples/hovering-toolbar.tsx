@@ -99,8 +99,8 @@ const HoveringToolbar = () => {
     }
 
     const domSelection = window.getSelection()
-    const domRange = domSelection?.getRangeAt(0)
-    const rect = domRange?.getBoundingClientRect()
+    const domRange = domSelection && domSelection.getRangeAt(0)
+    const rect = domRange && domRange.getBoundingClientRect()
 
     el.style.opacity = 1
     if (rect) {

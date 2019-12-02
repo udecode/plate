@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { withReact } from 'slate-react'
 import { Editable, Slate } from 'slate-react-next'
-import { Editor, Range, Point, createEditor, NodeEntry } from 'slate'
+import { Editor, Range, Point, createEditor } from 'slate'
 import { withHistory } from 'slate-history'
 import { CustomElementProps } from 'slate-react/lib/components/custom'
 

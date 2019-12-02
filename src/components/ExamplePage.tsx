@@ -4,40 +4,40 @@ import ErrorBoundary from 'react-error-boundary'
 
 import { Icon } from './components'
 
-// import CheckLists from '../../examples/check-lists'
-// import Embeds from '../../examples/embeds'
-// import ForcedLayout from '../../examples/forced-layout'
-// import HoveringToolbar from '../../examples/hovering-toolbar'
-// import HugeDocument from '../../examples/huge-document'
-// import Images from '../../examples/images'
-// import Links from '../../examples/links'
-// import MarkdownPreview from '../../examples/markdown-preview'
-// import MarkdownShortcuts from '../../examples/markdown-shortcuts'
-// import Mentions from '../../examples/mentions'
-// import PasteHtml from '../../examples/paste-html'
-// import PlainText from '../../examples/plain-text'
-// import ReadOnly from '../../examples/read-only'
-// import SearchHighlighting from '../../examples/search-highlighting'
-// import Tables from '../../examples/tables'
+import CheckLists from './examples/check-lists'
+import Embeds from './examples/embeds'
+import ForcedLayout from './examples/forced-layout'
+import HoveringToolbar from './examples/hovering-toolbar'
+import HugeDocument from './examples/huge-document'
+import Images from './examples/images'
+import Links from './examples/links'
+import MarkdownPreview from './examples/markdown-preview'
+import MarkdownShortcuts from './examples/markdown-shortcuts'
+import Mentions from './examples/mentions'
+import PasteHtml from './examples/paste-html'
+import PlainText from './examples/plain-text'
+import ReadOnly from './examples/read-only'
+import SearchHighlighting from './examples/search-highlighting'
+import Tables from './examples/tables'
 import RichText from './examples/rich-text'
 import { Link, useLocation } from 'react-router-dom'
 
 const EXAMPLES = [
-  // ['Checklists', CheckLists, 'check-lists'],
-  // ['Embeds', Embeds, 'embeds'],
-  // ['Forced Layout', ForcedLayout, 'forced-layout'],
-  // ['Hovering Toolbar', HoveringToolbar, 'hovering-toolbar'],
-  // ['Huge Document', HugeDocument, 'huge-document'],
-  // ['Images', Images, 'images'],
-  // ['Links', Links, 'links'],
-  // ['Markdown Preview', MarkdownPreview, 'markdown-preview'],
-  // ['Markdown Shortcuts', MarkdownShortcuts, 'markdown-shortcuts'],
-  // ['Mentions', Mentions, 'mentions'],
-  // ['Paste HTML', PasteHtml, 'paste-html'],
-  // ['Plain Text', PlainText, 'plain-text'],
-  // ['Read-only', ReadOnly, 'read-only'],
-  // ['Search Highlighting', SearchHighlighting, 'search-highlighting'],
-  // ['Tables', Tables, 'tables'],
+  ['Checklists', CheckLists, 'check-lists'],
+  ['Embeds', Embeds, 'embeds'],
+  ['Forced Layout', ForcedLayout, 'forced-layout'],
+  ['Hovering Toolbar', HoveringToolbar, 'hovering-toolbar'],
+  ['Huge Document', HugeDocument, 'huge-document'],
+  ['Images', Images, 'images'],
+  ['Links', Links, 'links'],
+  ['Markdown Preview', MarkdownPreview, 'markdown-preview'],
+  ['Markdown Shortcuts', MarkdownShortcuts, 'markdown-shortcuts'],
+  ['Mentions', Mentions, 'mentions'],
+  ['Paste HTML', PasteHtml, 'paste-html'],
+  ['Plain Text', PlainText, 'plain-text'],
+  ['Read-only', ReadOnly, 'read-only'],
+  ['Search Highlighting', SearchHighlighting, 'search-highlighting'],
+  ['Tables', Tables, 'tables'],
   ['Rich Text', RichText, 'rich-text'],
 ]
 
@@ -143,7 +143,7 @@ const TabButton = (props: any) => (
 const Tab = React.forwardRef(({ active, href, ...props }: any, ref) => (
   <Link
     ref={ref}
-    to={href}
+    to={`/examples/${href}`}
     {...props}
     className={css`
       display: inline-block;
@@ -227,15 +227,10 @@ export const ExamplePage = () => {
   const [stacktrace, setStacktrace] = useState()
   const [showTabs, setShowTabs] = useState()
 
-  // const router = useRouter()
-  // const { example = 'rich-text' } = router.query
-
   const location = useLocation()
   const example = location.pathname.split('/')[2] || 'rich-text'
-  console.log('example:', example)
 
   const EXAMPLE = EXAMPLES.find(e => e[2] === example)
-  // const EXAMPLE = EXAMPLES.find(e => e[2] === 'rich-text')
 
   if (!EXAMPLE) return null
 
