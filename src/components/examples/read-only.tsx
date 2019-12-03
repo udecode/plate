@@ -1,15 +1,6 @@
-import React, { useMemo } from 'react'
-import { createEditor } from 'slate'
-import { Slate, Editable, withReact } from 'slate-react'
-
-const ReadOnlyExample = () => {
-  const editor = useMemo(() => withReact(createEditor()), [])
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable readOnly placeholder="Enter some plain text..." />
-    </Slate>
-  )
-}
+import React, { useMemo } from 'react';
+import { createEditor } from 'slate';
+import { Editable, Slate, withReact } from 'slate-react';
 
 const initialValue = [
   {
@@ -20,6 +11,13 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default ReadOnlyExample
+export const ReadOnly = () => {
+  const editor = useMemo(() => withReact(createEditor()), []);
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Editable readOnly placeholder="Enter some plain text..." />
+    </Slate>
+  );
+};

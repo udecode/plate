@@ -1,34 +1,16 @@
-import React, { useMemo, useCallback } from 'react'
-import { withReact, useEditor, useReadOnly } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { Editor, Range, Point, createEditor } from 'slate'
-import { css } from 'emotion'
-import { withHistory } from 'slate-history'
-import { CustomElementProps } from 'slate-react/lib/components/custom'
-
-const CheckListsExample = () => {
-  const renderElement = useCallback(props => <Element {...props} />, [])
-  const editor = useMemo(
-    () => withChecklists(withHistory(withReact(createEditor()))),
-    []
-  )
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable
-        renderElement={renderElement}
-        placeholder="Get to work…"
-        spellCheck
-        autoFocus
-      />
-    </Slate>
-  )
-}
+import React, { useCallback, useMemo } from 'react';
+import { css } from 'emotion';
+import { createEditor, Editor, Point, Range } from 'slate';
+import { withHistory } from 'slate-history';
+import { useEditor, useReadOnly, withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomElementProps } from 'slate-react/lib/components/custom';
 
 const withChecklists = (editor: Editor) => {
-  const { exec } = editor
+  const { exec } = editor;
 
   editor.exec = command => {
-    const { selection } = editor
+    const { selection } = editor;
 
     if (
       command.type === 'delete_backward' &&
@@ -37,48 +19,48 @@ const withChecklists = (editor: Editor) => {
     ) {
       const [match] = Editor.nodes(editor, {
         match: { type: 'check-list-item' },
-      })
+      });
 
       if (match) {
-        const [, path] = match
-        const start = Editor.start(editor, path)
+        const [, path] = match;
+        const start = Editor.start(editor, path);
 
         if (Point.equals(selection.anchor, start)) {
           Editor.setNodes(
             editor,
             { type: 'paragraph' },
             { match: { type: 'check-list-item' } }
-          )
-          return
+          );
+          return;
         }
       }
     }
 
-    exec(command)
-  }
+    exec(command);
+  };
 
-  return editor
-}
+  return editor;
+};
 
 const Element = (props: CustomElementProps) => {
-  const { attributes, children, element } = props
+  const { attributes, children, element } = props;
 
   switch (element.type) {
     case 'check-list-item':
-      return <CheckListItemElement {...props} />
+      return <CheckListItemElement {...props} />;
     default:
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
   }
-}
+};
 
 const CheckListItemElement = ({
   attributes,
   children,
   element,
 }: CustomElementProps) => {
-  const editor = useEditor()
-  const readOnly = useReadOnly()
-  const { checked } = element
+  const editor = useEditor();
+  const readOnly = useReadOnly();
+  const { checked } = element;
   return (
     <div
       {...attributes}
@@ -102,8 +84,8 @@ const CheckListItemElement = ({
           type="checkbox"
           checked={checked}
           onChange={event => {
-            const path = editor.findPath(element)
-            editor.setNodes({ checked: event.target.checked }, { at: path })
+            const path = editor.findPath(element);
+            editor.setNodes({ checked: event.target.checked }, { at: path });
           }}
         />
       </span>
@@ -123,8 +105,8 @@ const CheckListItemElement = ({
         {children}
       </span>
     </div>
-  )
-}
+  );
+};
 
 const initialValue = [
   {
@@ -204,6 +186,22 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default CheckListsExample
+export const CheckLists = () => {
+  const renderElement = useCallback(props => <Element {...props} />, []);
+  const editor = useMemo(
+    () => withChecklists(withHistory(withReact(createEditor()))),
+    []
+  );
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Editable
+        renderElement={renderElement}
+        placeholder="Get to work…"
+        spellCheck
+        autoFocus
+      />
+    </Slate>
+  );
+};

@@ -1,111 +1,103 @@
-import React, { useMemo } from 'react'
-import imageExtensions from 'image-extensions'
-import isUrl from 'is-url'
-import { Editor, createEditor } from 'slate'
-import { useEditor, useSelected, useFocused, withReact } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { withHistory } from 'slate-history'
-import { css } from 'emotion'
+/* eslint-disable no-alert */
+import React, { useMemo } from 'react';
+import { css } from 'emotion';
+import imageExtensions from 'image-extensions';
+import isUrl from 'is-url';
+import { createEditor, Editor } from 'slate';
+import { withHistory } from 'slate-history';
+import { useEditor, useFocused, useSelected, withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { Button, Icon, Toolbar } from '../components';
 
-import { Button, Icon, Toolbar } from '../components'
-import { CustomElementProps } from 'slate-react/lib/components/custom'
+const isImageUrl = (url: string) => {
+  if (!url) return false;
+  if (!isUrl(url)) return false;
+  const ext = new URL(url).pathname.split('.').pop();
+  if (!ext) return false;
 
-const ImagesExample = () => {
-  const editor = useMemo(
-    () => withImages(withHistory(withReact(createEditor()))),
-    []
-  )
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Toolbar>
-        <InsertImageButton />
-      </Toolbar>
-      <Editable
-        renderElement={props => <Element {...props} />}
-        placeholder="Enter some text..."
-      />
-    </Slate>
-  )
-}
+  return imageExtensions.includes(ext);
+};
 
 const withImages = (editor: Editor) => {
-  const { exec, isVoid } = editor
+  const { exec, isVoid } = editor;
 
   editor.isVoid = element => {
-    return element.type === 'image' ? true : isVoid(element)
-  }
+    return element.type === 'image' ? true : isVoid(element);
+  };
 
   editor.exec = command => {
     switch (command.type) {
       case 'insert_data': {
-        const { data } = command
-        const text = data.getData('text/plain')
-        const { files } = data
+        const { data } = command;
+        const text = data.getData('text/plain');
+        const { files } = data;
 
         if (files && files.length > 0) {
           for (const file of files) {
-            const reader = new FileReader()
-            const [mime] = file.type.split('/')
+            const reader = new FileReader();
+            const [mime] = file.type.split('/');
 
             if (mime === 'image') {
               reader.addEventListener('load', () => {
-                const url = reader.result
-                editor.exec({ type: 'insert_image', url })
-              })
+                const url = reader.result;
+                editor.exec({ type: 'insert_image', url });
+              });
 
-              reader.readAsDataURL(file)
+              reader.readAsDataURL(file);
             }
           }
         } else if (isImageUrl(text)) {
-          editor.exec({ type: 'insert_image', url: text })
+          editor.exec({ type: 'insert_image', url: text });
         } else {
-          exec(command)
+          exec(command);
         }
 
-        break
+        break;
       }
 
       case 'insert_image': {
-        const { url } = command
-        const text = { text: '', marks: [] }
-        const image = { type: 'image', url, children: [text] }
-        Editor.insertNodes(editor, image)
-        break
+        const { url } = command;
+        const text = { text: '', marks: [] };
+        const image = { type: 'image', url, children: [text] };
+        Editor.insertNodes(editor, image);
+        break;
       }
 
       default: {
-        exec(command)
-        break
+        exec(command);
+        break;
       }
     }
-  }
+  };
 
-  return editor
-}
+  return editor;
+};
 
 const Element = (props: any) => {
-  const { attributes, children, element } = props
+  const { attributes, children, element } = props;
 
   switch (element.type) {
     case 'image':
-      return <ImageElement {...props} />
+      return <ImageElement {...props} />;
     default:
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
   }
-}
+};
 
 const ImageElement = ({
   attributes,
   children,
   element,
 }: CustomElementProps) => {
-  const selected = useSelected()
-  const focused = useFocused()
+  const selected = useSelected();
+  const focused = useFocused();
   return (
     <div {...attributes}>
       <div contentEditable={false}>
         <img
           src={element.url}
+          alt=""
           className={css`
             display: block;
             max-width: 100%;
@@ -116,33 +108,24 @@ const ImageElement = ({
       </div>
       {children}
     </div>
-  )
-}
+  );
+};
 
 const InsertImageButton = () => {
-  const editor = useEditor()
+  const editor = useEditor();
   return (
     <Button
       onMouseDown={(event: Event) => {
-        event.preventDefault()
-        const url = window.prompt('Enter the URL of the image:')
-        if (!url) return
-        editor.exec({ type: 'insert_url', url })
+        event.preventDefault();
+        const url = window.prompt('Enter the URL of the image:');
+        if (!url) return;
+        editor.exec({ type: 'insert_url', url });
       }}
     >
       <Icon>image</Icon>
     </Button>
-  )
-}
-
-const isImageUrl = (url: string) => {
-  if (!url) return false
-  if (!isUrl(url)) return false
-  const ext = new URL(url).pathname.split('.').pop()
-  if (!ext) return false
-
-  return imageExtensions.includes(ext)
-}
+  );
+};
 
 const initialValue = [
   {
@@ -175,6 +158,22 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default ImagesExample
+export const Images = () => {
+  const editor = useMemo(
+    () => withImages(withHistory(withReact(createEditor()))),
+    []
+  );
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Toolbar>
+        <InsertImageButton />
+      </Toolbar>
+      <Editable
+        renderElement={props => <Element {...props} />}
+        placeholder="Enter some text..."
+      />
+    </Slate>
+  );
+};

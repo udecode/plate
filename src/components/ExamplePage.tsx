@@ -1,32 +1,30 @@
-import React, { useState } from 'react'
-import { cx, css } from 'emotion'
-import ErrorBoundary from 'react-error-boundary'
-
-import { Icon } from './components'
-
-import CheckLists from './examples/check-lists'
-import Embeds from './examples/embeds'
-import ForcedLayout from './examples/forced-layout'
-import HoveringToolbar from './examples/hovering-toolbar'
-import HugeDocument from './examples/huge-document'
-import Images from './examples/images'
-import Links from './examples/links'
-import MarkdownPreview from './examples/markdown-preview'
-import MarkdownShortcuts from './examples/markdown-shortcuts'
-import Mentions from './examples/mentions'
-import PasteHtml from './examples/paste-html'
-import PlainText from './examples/plain-text'
-import ReadOnly from './examples/read-only'
-import SearchHighlighting from './examples/search-highlighting'
-import Tables from './examples/tables'
-import RichText from './examples/rich-text'
-import { Link, useLocation } from 'react-router-dom'
+import React, { useState } from 'react';
+import ErrorBoundary from 'react-error-boundary';
+import { Link, useLocation } from 'react-router-dom';
+import { css, cx } from 'emotion';
+import { CheckLists } from './examples/check-lists';
+import { Embeds } from './examples/embeds';
+import { ForcedLayout } from './examples/forced-layout';
+import { HoveringMenu } from './examples/hovering-toolbar';
+import { HugeDocument } from './examples/huge-document';
+import { Images } from './examples/images';
+import { Links } from './examples/links';
+import { MarkdownPreview } from './examples/markdown-preview';
+import { MarkdownShortcuts } from './examples/markdown-shortcuts';
+import { Mentions } from './examples/mentions/mentions';
+import { PasteHtml } from './examples/paste-html';
+import { PlainText } from './examples/plain-text';
+import { ReadOnly } from './examples/read-only';
+import { RichText } from './examples/rich-text';
+import { SearchHighlighting } from './examples/search-highlighting';
+import { Tables } from './examples/tables';
+import { Icon } from './components';
 
 const EXAMPLES = [
   ['Checklists', CheckLists, 'check-lists'],
   ['Embeds', Embeds, 'embeds'],
   ['Forced Layout', ForcedLayout, 'forced-layout'],
-  ['Hovering Toolbar', HoveringToolbar, 'hovering-toolbar'],
+  ['Hovering Toolbar', HoveringMenu, 'hovering-toolbar'],
   ['Huge Document', HugeDocument, 'huge-document'],
   ['Images', Images, 'images'],
   ['Links', Links, 'links'],
@@ -39,7 +37,7 @@ const EXAMPLES = [
   ['Search Highlighting', SearchHighlighting, 'search-highlighting'],
   ['Tables', Tables, 'tables'],
   ['Rich Text', RichText, 'rich-text'],
-]
+];
 
 const Header = (props: any) => (
   <div
@@ -54,7 +52,7 @@ const Header = (props: any) => (
       z-index: 1; /* To appear above the underlay */
     `}
   />
-)
+);
 
 const Title = (props: any) => (
   <span
@@ -63,7 +61,7 @@ const Title = (props: any) => (
       margin-left: 1em;
     `}
   />
-)
+);
 
 const LinkList = (props: any) => (
   <div
@@ -73,9 +71,9 @@ const LinkList = (props: any) => (
       margin-right: 1em;
     `}
   />
-)
+);
 
-const A = (props: any) => (
+const A = ({ children, ...props }: any) => (
   <a
     {...props}
     className={css`
@@ -88,8 +86,10 @@ const A = (props: any) => (
         text-decoration: underline;
       }
     `}
-  />
-)
+  >
+    {children}
+  </a>
+);
 
 const TabList = ({ isVisible, ...props }: any) => (
   <div
@@ -108,7 +108,7 @@ const TabList = ({ isVisible, ...props }: any) => (
       z-index: 1; /* To appear above the underlay */
     `}
   />
-)
+);
 
 const TabListUnderlay = ({ isVisible, ...props }: any) => (
   <div
@@ -122,7 +122,7 @@ const TabListUnderlay = ({ isVisible, ...props }: any) => (
       width: 100%;
     `}
   />
-)
+);
 
 const TabButton = (props: any) => (
   <span
@@ -138,7 +138,7 @@ const TabButton = (props: any) => (
       }
     `}
   />
-)
+);
 
 const Tab = React.forwardRef(({ active, href, ...props }: any, ref) => (
   <Link
@@ -158,7 +158,7 @@ const Tab = React.forwardRef(({ active, href, ...props }: any, ref) => (
       }
     `}
   />
-))
+));
 
 const Wrapper = ({ className, ...props }: any) => (
   <div
@@ -172,7 +172,7 @@ const Wrapper = ({ className, ...props }: any) => (
       `
     )}
   />
-)
+);
 
 const ExampleHeader = (props: any) => (
   <div
@@ -187,7 +187,7 @@ const ExampleHeader = (props: any) => (
       z-index: 1; /* To appear above the underlay */
     `}
   />
-)
+);
 
 const ExampleTitle = (props: any) => (
   <span
@@ -196,7 +196,7 @@ const ExampleTitle = (props: any) => (
       margin-left: 1em;
     `}
   />
-)
+);
 
 const ExampleContent = (props: any) => (
   <Wrapper
@@ -205,7 +205,7 @@ const ExampleContent = (props: any) => (
       background: #fff;
     `}
   />
-)
+);
 
 const Warning = (props: any) => (
   <Wrapper
@@ -220,27 +220,27 @@ const Warning = (props: any) => (
       }
     `}
   />
-)
+);
 
 export const ExamplePage = () => {
-  const [error, setError] = useState()
-  const [stacktrace, setStacktrace] = useState()
-  const [showTabs, setShowTabs] = useState()
+  const [error, setError] = useState();
+  const [stacktrace, setStacktrace] = useState();
+  const [showTabs, setShowTabs] = useState();
 
-  const location = useLocation()
-  const example = location.pathname.split('/')[2] || 'rich-text'
+  const location = useLocation();
+  const example = location.pathname.split('/')[2] || 'rich-text';
 
-  const EXAMPLE = EXAMPLES.find(e => e[2] === example)
+  const EXAMPLE = EXAMPLES.find(e => e[2] === example);
 
-  if (!EXAMPLE) return null
+  if (!EXAMPLE) return null;
 
-  const [name, Component, path] = EXAMPLE
+  const [name, Component, path] = EXAMPLE;
 
   return (
     <ErrorBoundary
-      onError={(error, stacktrace) => {
-        setError(error)
-        setStacktrace(stacktrace)
+      onError={(errorValue, stacktraceValue) => {
+        setError(errorValue);
+        setStacktrace(stacktraceValue);
       }}
     >
       <div>
@@ -254,8 +254,8 @@ export const ExamplePage = () => {
         <ExampleHeader>
           <TabButton
             onClick={(e: any) => {
-              e.stopPropagation()
-              setShowTabs(!showTabs)
+              e.stopPropagation();
+              setShowTabs(!showTabs);
             }}
           >
             <Icon>menu</Icon>
@@ -278,7 +278,7 @@ export const ExamplePage = () => {
         </TabList>
         {error ? (
           <Warning>
-            <p>An error was thrown by one of the example's React components!</p>
+            <p>An error was thrown by one of the example React components!</p>
             <pre>
               <code>
                 {error.stack}
@@ -298,5 +298,5 @@ export const ExamplePage = () => {
         />
       </div>
     </ErrorBoundary>
-  )
-}
+  );
+};

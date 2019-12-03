@@ -1,17 +1,8 @@
-import React, { useMemo } from 'react'
-import { createEditor } from 'slate'
-import { withReact } from 'slate-react'
-import { withHistory } from 'slate-history'
-import { Editable, Slate } from 'slate-react-next'
-
-const PlainTextExample = () => {
-  const editor = useMemo(() => withHistory(withReact(createEditor())), [])
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable placeholder="Enter some plain text..." />
-    </Slate>
-  )
-}
+import React, { useMemo } from 'react';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
 
 const initialValue = [
   {
@@ -22,6 +13,13 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default PlainTextExample
+export const PlainText = () => {
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Editable placeholder="Enter some plain text..." />
+    </Slate>
+  );
+};

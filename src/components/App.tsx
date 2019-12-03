@@ -1,6 +1,6 @@
-import React from 'react'
-import { Switch, Route, BrowserRouter as Router } from 'react-router-dom'
-import { ExamplePage } from './ExamplePage'
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { ExamplePage } from './ExamplePage';
 
 const App = () => (
   <Router>
@@ -9,6 +9,6 @@ const App = () => (
       <Route path="/examples" component={ExamplePage} />
     </Switch>
   </Router>
-)
+);
 
-export default App
+export default App;

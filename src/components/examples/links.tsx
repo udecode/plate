@@ -1,85 +1,67 @@
-import React, { useMemo } from 'react'
-import isUrl from 'is-url'
-import { withReact, useSlate } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { Editor, createEditor } from 'slate'
-import { withHistory } from 'slate-history'
-
-import { Button, Icon, Toolbar } from '../components'
-import { CustomElementProps } from 'slate-react/lib/components/custom'
-
-const LinkExample = () => {
-  const editor = useMemo(
-    () => withLinks(withHistory(withReact(createEditor()))),
-    []
-  )
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Toolbar>
-        <LinkButton />
-      </Toolbar>
-      <Editable
-        renderElement={props => <Element {...props} />}
-        placeholder="Enter some text..."
-      />
-    </Slate>
-  )
-}
-
-const withLinks = (editor: Editor) => {
-  const { exec, isInline } = editor
-
-  editor.isInline = element => {
-    return element.type === 'link' ? true : isInline(element)
-  }
-
-  editor.exec = command => {
-    if (command.type === 'insert_link') {
-      const { url } = command
-
-      if (editor.selection) {
-        wrapLink(editor, url)
-      }
-
-      return
-    }
-
-    let text
-
-    if (command.type === 'insert_data') {
-      text = command.data.getData('text/plain')
-    } else if (command.type === 'insert_text') {
-      text = command.text
-    }
-
-    if (text && isUrl(text)) {
-      wrapLink(editor, text)
-    } else {
-      exec(command)
-    }
-  }
-
-  return editor
-}
+/* eslint-disable no-alert */
+import React, { useMemo } from 'react';
+import isUrl from 'is-url';
+import { createEditor, Editor } from 'slate';
+import { withHistory } from 'slate-history';
+import { useSlate, withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { Button, Icon, Toolbar } from '../components';
 
 const isLinkActive = (editor: Editor) => {
-  const [link] = Editor.nodes(editor, { match: { type: 'link' } })
-  return !!link
-}
+  const [link] = Editor.nodes(editor, { match: { type: 'link' } });
+  return !!link;
+};
 
 const unwrapLink = (editor: Editor) => {
-  Editor.unwrapNodes(editor, { match: { type: 'link' } })
-}
+  Editor.unwrapNodes(editor, { match: { type: 'link' } });
+};
 
 const wrapLink = (editor: Editor, url: string) => {
   if (isLinkActive(editor)) {
-    unwrapLink(editor)
+    unwrapLink(editor);
   }
 
-  const link = { type: 'link', url, children: [] }
-  Editor.wrapNodes(editor, link, { split: true })
-  Editor.collapse(editor, { edge: 'end' })
-}
+  const link = { type: 'link', url, children: [] };
+  Editor.wrapNodes(editor, link, { split: true });
+  Editor.collapse(editor, { edge: 'end' });
+};
+
+const withLinks = (editor: Editor) => {
+  const { exec, isInline } = editor;
+
+  editor.isInline = element => {
+    return element.type === 'link' ? true : isInline(element);
+  };
+
+  editor.exec = command => {
+    if (command.type === 'insert_link') {
+      const { url } = command;
+
+      if (editor.selection) {
+        wrapLink(editor, url);
+      }
+
+      return;
+    }
+
+    let text;
+
+    if (command.type === 'insert_data') {
+      text = command.data.getData('text/plain');
+    } else if (command.type === 'insert_text') {
+      text = command.text;
+    }
+
+    if (text && isUrl(text)) {
+      wrapLink(editor, text);
+    } else {
+      exec(command);
+    }
+  };
+
+  return editor;
+};
 
 const Element = ({ attributes, children, element }: CustomElementProps) => {
   switch (element.type) {
@@ -92,28 +74,28 @@ const Element = ({ attributes, children, element }: CustomElementProps) => {
         >
           {children}
         </a>
-      )
+      );
     default:
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
   }
-}
+};
 
 const LinkButton = () => {
-  const editor = useSlate()
+  const editor = useSlate();
   return (
     <Button
       active={isLinkActive(editor)}
       onMouseDown={(event: Event) => {
-        event.preventDefault()
-        const url = window.prompt('Enter the URL of the link:')
-        if (!url) return
-        editor.exec({ type: 'insert_link', url })
+        event.preventDefault();
+        const url = window.prompt('Enter the URL of the link:');
+        if (!url) return;
+        editor.exec({ type: 'insert_link', url });
       }}
     >
       <Icon>link</Icon>
     </Button>
-  )
-}
+  );
+};
 
 const initialValue = [
   {
@@ -147,6 +129,22 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default LinkExample
+export const Links = () => {
+  const editor = useMemo(
+    () => withLinks(withHistory(withReact(createEditor()))),
+    []
+  );
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Toolbar>
+        <LinkButton />
+      </Toolbar>
+      <Editable
+        renderElement={props => <Element {...props} />}
+        placeholder="Enter some text..."
+      />
+    </Slate>
+  );
+};

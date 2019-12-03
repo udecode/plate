@@ -1,16 +1,16 @@
-import React, { useCallback, useMemo } from 'react'
-import { withReact } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { Editor, createEditor } from 'slate'
-import { withHistory } from 'slate-history'
+import React, { useCallback, useMemo } from 'react';
+import { createEditor, Editor } from 'slate';
+import { withHistory } from 'slate-history';
+import { withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomElementProps } from 'slate-react/lib/components/custom';
 import {
-  withSchema,
   ChildInvalidError,
-  NodeRule,
   ChildMaxInvalidError,
   ChildMinInvalidError,
-} from 'slate-schema'
-import { CustomElementProps } from 'slate-react/lib/components/custom'
+  NodeRule,
+  withSchema,
+} from 'slate-schema';
 
 const schema: NodeRule[] = [
   {
@@ -26,58 +26,42 @@ const schema: NodeRule[] = [
       error = error as
         | ChildInvalidError
         | ChildMinInvalidError
-        | ChildMaxInvalidError
+        | ChildMaxInvalidError;
 
-      const { code, path, index } = error
-      const type = index === 0 ? 'title' : 'paragraph'
+      const { code, path, index } = error;
+      const type = index === 0 ? 'title' : 'paragraph';
 
       switch (code) {
         case 'child_invalid': {
-          Editor.setNodes(editor, { type }, { at: path })
-          break
+          Editor.setNodes(editor, { type }, { at: path });
+          break;
         }
         case 'child_min_invalid': {
-          const block = { type, children: [{ text: '', marks: [] }] }
-          Editor.insertNodes(editor, block, { at: path.concat(index) })
-          break
+          const block = { type, children: [{ text: '', marks: [] }] };
+          Editor.insertNodes(editor, block, { at: path.concat(index) });
+          break;
         }
         case 'child_max_invalid': {
-          Editor.setNodes(editor, { type }, { at: path.concat(index) })
-          break
+          Editor.setNodes(editor, { type }, { at: path.concat(index) });
+          break;
         }
+        default:
+          break;
       }
     },
   },
-]
-
-const ForcedLayoutExample = () => {
-  const renderElement = useCallback(props => <Element {...props} />, [])
-  const editor = useMemo(
-    () => withSchema(withHistory(withReact(createEditor())), schema),
-    []
-  )
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable
-        renderElement={renderElement}
-        placeholder="Enter a title…"
-        spellCheck
-        autoFocus
-      />
-    </Slate>
-  )
-}
+];
 
 const Element = ({ attributes, children, element }: CustomElementProps) => {
   switch (element.type) {
     case 'title':
-      return <h2 {...attributes}>{children}</h2>
+      return <h2 {...attributes}>{children}</h2>;
     case 'paragraph':
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
     default:
-      return <div {...attributes}>{children}</div>
+      return <div {...attributes}>{children}</div>;
   }
-}
+};
 
 const initialValue = [
   {
@@ -99,6 +83,22 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default ForcedLayoutExample
+export const ForcedLayout = () => {
+  const renderElement = useCallback(props => <Element {...props} />, []);
+  const editor = useMemo(
+    () => withSchema(withHistory(withReact(createEditor())), schema),
+    []
+  );
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Editable
+        renderElement={renderElement}
+        placeholder="Enter a title…"
+        spellCheck
+        autoFocus
+      />
+    </Slate>
+  );
+};

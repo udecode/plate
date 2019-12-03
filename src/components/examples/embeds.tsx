@@ -1,46 +1,35 @@
-import React, { useMemo } from 'react'
-import { Editor, createEditor } from 'slate'
-import { withReact, useEditor, useFocused, useSelected } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { CustomElementProps } from 'slate-react/lib/components/custom'
-
-const EmbedsExample = () => {
-  const editor = useMemo(() => withEmbeds(withReact(createEditor())), [])
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable
-        renderElement={props => <Element {...props} />}
-        placeholder="Enter some text..."
-      />
-    </Slate>
-  )
-}
+import React, { useMemo } from 'react';
+import { createEditor, Editor } from 'slate';
+import { useEditor, useFocused, useSelected, withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomElementProps } from 'slate-react/lib/components/custom';
 
 const withEmbeds = (editor: Editor) => {
-  const { isVoid } = editor
-  editor.isVoid = element => (element.type === 'video' ? true : isVoid(element))
-  return editor
-}
+  const { isVoid } = editor;
+  editor.isVoid = element =>
+    element.type === 'video' ? true : isVoid(element);
+  return editor;
+};
 
 const Element = (props: CustomElementProps) => {
-  const { attributes, children, element } = props
+  const { attributes, children, element } = props;
   switch (element.type) {
     case 'video':
-      return <VideoElement {...props} />
+      return <VideoElement {...props} />;
     default:
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
   }
-}
+};
 
 const VideoElement = ({
   attributes,
   children,
   element,
 }: CustomElementProps) => {
-  const editor = useEditor()
-  const selected = useSelected()
-  const focused = useFocused()
-  const { url } = element
+  const editor = useEditor();
+  const selected = useSelected();
+  const focused = useFocused();
+  const { url } = element;
   return (
     <div {...attributes}>
       <div
@@ -69,6 +58,7 @@ const VideoElement = ({
           }}
         >
           <iframe
+            title="embed"
             src={`${url}?title=0&byline=0&portrait=0`}
             frameBorder="0"
             style={{
@@ -89,16 +79,16 @@ const VideoElement = ({
               boxSizing: 'border-box',
             }}
             onChange={value => {
-              const path = editor.findPath(element)
-              Editor.setNodes(editor, { url: value }, { at: path })
+              const path = editor.findPath(element);
+              Editor.setNodes(editor, { url: value }, { at: path });
             }}
           />
         ) : null}
       </div>
       {children}
     </div>
-  )
-}
+  );
+};
 
 const initialValue = [
   {
@@ -129,6 +119,16 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default EmbedsExample
+export const Embeds = () => {
+  const editor = useMemo(() => withEmbeds(withReact(createEditor())), []);
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <Editable
+        renderElement={props => <Element {...props} />}
+        placeholder="Enter some text..."
+      />
+    </Slate>
+  );
+};

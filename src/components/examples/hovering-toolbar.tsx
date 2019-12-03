@@ -1,91 +1,63 @@
-import React, { useMemo, useRef, useEffect } from 'react'
-import { ReactEditor, withReact, useSlate } from 'slate-react'
-import { Slate, Editable } from 'slate-react-next'
-import { Editor, createEditor } from 'slate'
-import { css } from 'emotion'
-import { withHistory } from 'slate-history'
+import React, { useEffect, useMemo, useRef } from 'react';
+import { css } from 'emotion';
+import { createEditor, Editor, Range } from 'slate';
+import { withHistory } from 'slate-history';
+import { ReactEditor, useSlate, withReact } from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { CustomMarkProps } from 'slate-react/lib/components/custom';
+import { Button, Icon, Menu, Portal } from '../components';
 
-import { Button, Icon, Menu, Portal } from '../components'
-import { Range } from 'slate'
-import { CustomMarkProps } from 'slate-react/lib/components/custom'
-
-const HoveringMenuExample = () => {
-  const editor = useMemo(
-    () => withMarks(withHistory(withReact(createEditor()))),
-    []
-  )
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <HoveringToolbar />
-      <Editable
-        renderMark={props => <Mark {...props} />}
-        placeholder="Enter some text..."
-        onDOMBeforeInput={(event: any) => {
-          switch (event.inputType) {
-            case 'formatBold':
-              return editor.exec({ type: 'toggle_mark', mark: 'bold' })
-            case 'formatItalic':
-              return editor.exec({ type: 'toggle_mark', mark: 'italic' })
-            case 'formatUnderline':
-              return editor.exec({ type: 'toggle_mark', mark: 'underlined' })
-          }
-        }}
-      />
-    </Slate>
-  )
-}
+const isMarkActive = (editor: Editor, type: string) => {
+  const [mark] = Editor.marks(editor, { match: { type }, mode: 'universal' });
+  return !!mark;
+};
 
 const withMarks = (editor: Editor) => {
-  const { exec } = editor
+  const { exec } = editor;
 
   editor.exec = command => {
     switch (command.type) {
       case 'toggle_mark': {
-        const { mark } = command
-        const isActive = isMarkActive(editor, mark.type)
-        const cmd = isActive ? 'remove_mark' : 'add_mark'
-        editor.exec({ type: cmd, mark })
-        break
+        const { mark } = command;
+        const isActive = isMarkActive(editor, mark.type);
+        const cmd = isActive ? 'remove_mark' : 'add_mark';
+        editor.exec({ type: cmd, mark });
+        break;
       }
 
       default: {
-        exec(command)
-        break
+        exec(command);
+        break;
       }
     }
-  }
+  };
 
-  return editor
-}
-
-const isMarkActive = (editor: Editor, type: string) => {
-  const [mark] = Editor.marks(editor, { match: { type }, mode: 'universal' })
-  return !!mark
-}
+  return editor;
+};
 
 const Mark = ({ attributes, children, mark }: CustomMarkProps) => {
   switch (mark.type) {
     case 'bold':
-      return <strong {...attributes}>{children}</strong>
+      return <strong {...attributes}>{children}</strong>;
     case 'italic':
-      return <em {...attributes}>{children}</em>
+      return <em {...attributes}>{children}</em>;
     case 'underlined':
-      return <u {...attributes}>{children}</u>
+      return <u {...attributes}>{children}</u>;
     default:
-      return <span {...attributes}>{children}</span>
+      return <span {...attributes}>{children}</span>;
   }
-}
+};
 
 const HoveringToolbar = () => {
-  const ref = useRef()
-  const editor = useSlate()
+  const ref = useRef();
+  const editor = useSlate();
 
   useEffect(() => {
-    const el: any = ref.current
-    const { selection } = editor
+    const el: any = ref.current;
+    const { selection } = editor;
 
     if (!el) {
-      return
+      return;
     }
 
     if (
@@ -94,23 +66,23 @@ const HoveringToolbar = () => {
       Range.isCollapsed(selection) ||
       Editor.text(editor, selection) === ''
     ) {
-      el.removeAttribute('style')
-      return
+      el.removeAttribute('style');
+      return;
     }
 
-    const domSelection = window.getSelection()
-    const domRange = domSelection && domSelection.getRangeAt(0)
-    const rect = domRange && domRange.getBoundingClientRect()
+    const domSelection = window.getSelection();
+    const domRange = domSelection && domSelection.getRangeAt(0);
+    const rect = domRange && domRange.getBoundingClientRect();
 
-    el.style.opacity = 1
+    el.style.opacity = 1;
     if (rect) {
-      el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
+      el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`;
       el.style.left = `${rect.left +
         window.pageXOffset -
         el.offsetWidth / 2 +
-        rect.width / 2}px`
+        rect.width / 2}px`;
     }
-  })
+  });
 
   return (
     <Portal>
@@ -134,24 +106,24 @@ const HoveringToolbar = () => {
         <MarkButton type="underlined" icon="format_underlined" />
       </Menu>
     </Portal>
-  )
-}
+  );
+};
 
 const MarkButton = ({ type, icon }: any) => {
-  const editor = useSlate()
+  const editor = useSlate();
   return (
     <Button
       reversed
       active={isMarkActive(editor, type)}
       onMouseDown={(event: Event) => {
-        event.preventDefault()
-        editor.exec({ type: 'toggle_mark', mark: { type } })
+        event.preventDefault();
+        editor.exec({ type: 'toggle_mark', mark: { type } });
       }}
     >
       <Icon>{icon}</Icon>
     </Button>
-  )
-}
+  );
+};
 
 const initialValue = [
   {
@@ -195,6 +167,32 @@ const initialValue = [
       },
     ],
   },
-]
+];
 
-export default HoveringMenuExample
+export const HoveringMenu = () => {
+  const editor = useMemo(
+    () => withMarks(withHistory(withReact(createEditor()))),
+    []
+  );
+  return (
+    <Slate editor={editor} defaultValue={initialValue}>
+      <HoveringToolbar />
+      <Editable
+        renderMark={props => <Mark {...props} />}
+        placeholder="Enter some text..."
+        onDOMBeforeInput={(event: any) => {
+          switch (event.inputType) {
+            case 'formatBold':
+              return editor.exec({ type: 'toggle_mark', mark: 'bold' });
+            case 'formatItalic':
+              return editor.exec({ type: 'toggle_mark', mark: 'italic' });
+            case 'formatUnderline':
+              return editor.exec({ type: 'toggle_mark', mark: 'underlined' });
+            default:
+              break;
+          }
+        }}
+      />
+    </Slate>
+  );
+};
