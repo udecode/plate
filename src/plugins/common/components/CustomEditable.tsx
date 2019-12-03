@@ -1,9 +1,12 @@
 import React, { useCallback } from 'react';
-import { Editable, EditableProps, Plugin, useSlate } from 'slate-react';
 import {
-  CustomElementProps,
-  CustomMarkProps,
-} from 'slate-react/lib/components/custom';
+  Editable,
+  EditableProps,
+  Plugin,
+  RenderElementProps,
+  RenderMarkProps,
+  useSlate,
+} from 'slate-react';
 
 interface CustomEditableProps extends EditableProps {
   plugins?: Plugin[];
@@ -18,7 +21,7 @@ export const CustomEditable = ({
   const { renderElement, renderMark, onKeyDown } = props;
 
   const renderElementPlugins = useCallback(
-    (elementProps: CustomElementProps) => {
+    (elementProps: RenderElementProps) => {
       let element;
       if (plugins) {
         if (renderElement) {
@@ -45,7 +48,7 @@ export const CustomEditable = ({
   );
 
   const renderMarkPlugins = useCallback(
-    (markProps: CustomMarkProps) => {
+    (markProps: RenderMarkProps) => {
       let mark;
       if (plugins) {
         if (renderMark) {

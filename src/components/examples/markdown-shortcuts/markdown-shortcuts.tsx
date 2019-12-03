@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import { createEditor, Editor, Point, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
+import { RenderElementProps, withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { initialValue } from './config';
 
 const SHORTCUTS: any = {
   '*': 'list-item',
@@ -84,7 +84,7 @@ const withShortcuts = (editor: Editor) => {
   return editor;
 };
 
-const Element = ({ attributes, children, element }: CustomElementProps) => {
+const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'block-quote':
       return <blockquote {...attributes}>{children}</blockquote>;
@@ -108,57 +108,6 @@ const Element = ({ attributes, children, element }: CustomElementProps) => {
       return <p {...attributes}>{children}</p>;
   }
 };
-
-const initialValue = [
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text:
-          'The editor gives you full control over the logic you can add. For example, it\'s fairly common to want to add markdown-like shortcuts to editors. So that, when you start a line with "> " you get a blockquote that looks like this:',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'block-quote',
-    children: [
-      {
-        text: 'A wise quote.',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text:
-          'Order when you start a line with "## " you get a level-two heading, like this:',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'heading-two',
-    children: [
-      {
-        text: 'Try it out!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text:
-          'Try it out for yourself! Try starting a new line with ">", "-", or "#"s.',
-        marks: [],
-      },
-    ],
-  },
-];
 
 export const MarkdownShortcuts = () => {
   const renderElement = useCallback(props => <Element {...props} />, []);

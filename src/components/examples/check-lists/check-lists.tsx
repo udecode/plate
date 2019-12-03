@@ -2,9 +2,14 @@ import React, { useCallback, useMemo } from 'react';
 import { css } from 'emotion';
 import { createEditor, Editor, Point, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { useEditor, useReadOnly, withReact } from 'slate-react';
+import {
+  RenderElementProps,
+  useEditor,
+  useReadOnly,
+  withReact,
+} from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { initialValue } from './config';
 
 const withChecklists = (editor: Editor) => {
   const { exec } = editor;
@@ -42,7 +47,7 @@ const withChecklists = (editor: Editor) => {
   return editor;
 };
 
-const Element = (props: CustomElementProps) => {
+const Element = (props: RenderElementProps) => {
   const { attributes, children, element } = props;
 
   switch (element.type) {
@@ -57,7 +62,7 @@ const CheckListItemElement = ({
   attributes,
   children,
   element,
-}: CustomElementProps) => {
+}: RenderElementProps) => {
   const editor = useEditor();
   const readOnly = useReadOnly();
   const { checked } = element;
@@ -107,86 +112,6 @@ const CheckListItemElement = ({
     </div>
   );
 };
-
-const initialValue = [
-  {
-    children: [
-      {
-        text:
-          'With Slate you can build complex block types that have their own embedded content and behaviors, like rendering checkboxes inside check list items!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: true,
-    children: [
-      {
-        text: 'Slide to the left.',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: true,
-    children: [
-      {
-        text: 'Slide to the right.',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: false,
-    children: [
-      {
-        text: 'Criss-cross.',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: true,
-    children: [
-      {
-        text: 'Criss-cross!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: false,
-    children: [
-      {
-        text: 'Cha cha real smooth…',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'check-list-item',
-    checked: false,
-    children: [
-      {
-        text: "Let's go to work!",
-        marks: [],
-      },
-    ],
-  },
-  {
-    children: [
-      {
-        text: 'Try it out for yourself!',
-        marks: [],
-      },
-    ],
-  },
-];
 
 export const CheckLists = () => {
   const renderElement = useCallback(props => <Element {...props} />, []);

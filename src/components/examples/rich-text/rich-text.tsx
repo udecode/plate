@@ -2,13 +2,15 @@ import React, { useCallback, useMemo } from 'react';
 import isHotkey from 'is-hotkey';
 import { createEditor, Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { useSlate, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import {
-  CustomElementProps,
-  CustomMarkProps,
-} from 'slate-react/lib/components/custom';
-import { Button, Icon, Toolbar } from '../components';
+  RenderElementProps,
+  RenderMarkProps,
+  useSlate,
+  withReact,
+} from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { Button, Icon, Toolbar } from '../../components';
+import { initialValue } from './config';
 
 const MARK_HOTKEYS: any = {
   'mod+b': 'bold',
@@ -62,7 +64,7 @@ const withRichText = (editor: Editor) => {
   return editor;
 };
 
-const Element = ({ attributes, children, element }: CustomElementProps) => {
+const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'block-quote':
       return <blockquote {...attributes}>{children}</blockquote>;
@@ -81,7 +83,7 @@ const Element = ({ attributes, children, element }: CustomElementProps) => {
   }
 };
 
-const Mark = ({ attributes, children, mark }: CustomMarkProps) => {
+const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
   switch (mark.type) {
     case 'bold':
       return <strong {...attributes}>{children}</strong>;
@@ -125,79 +127,6 @@ const BlockButton = ({ type, icon }: any) => {
     </Button>
   );
 };
-
-const initialValue = [
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text: 'This is editable ',
-        marks: [],
-      },
-      {
-        text: 'rich',
-        marks: [{ type: 'bold' }],
-      },
-      {
-        text: ' text, ',
-        marks: [],
-      },
-      {
-        text: 'much',
-        marks: [{ type: 'italic' }],
-      },
-      {
-        text: ' better than a ',
-        marks: [],
-      },
-      {
-        text: '<textarea>',
-        marks: [{ type: 'code' }],
-      },
-      {
-        text: '!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text:
-          "Since it's rich text, you can do things like turn a selection of text ",
-        marks: [],
-      },
-      {
-        text: 'bold',
-        marks: [{ type: 'bold' }],
-      },
-      {
-        text:
-          ', or add a semantically rendered block quote in the middle of the page, like this:',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'block-quote',
-    children: [
-      {
-        text: 'A wise quote.',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text: 'Try it out for yourself!',
-        marks: [],
-      },
-    ],
-  },
-];
 
 export const RichText = () => {
   const renderElement = useCallback(props => <Element {...props} />, []);

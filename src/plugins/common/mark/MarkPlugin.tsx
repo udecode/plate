@@ -1,8 +1,7 @@
 import React from 'react';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { Plugin } from 'slate-react';
-import { CustomMarkProps } from 'slate-react/lib/components/custom';
+import { Plugin, RenderMarkProps } from 'slate-react';
 import { CommonMark } from './CommonMark';
 
 const MARK_HOTKEYS: any = {
@@ -30,7 +29,7 @@ export const MarkPlugin = (): Plugin => ({
 
     return editor;
   },
-  renderMark: ({ attributes, children, mark }: CustomMarkProps) => {
+  renderMark: ({ attributes, children, mark }: RenderMarkProps) => {
     switch (mark.type) {
       case 'bold':
         return <strong {...attributes}>{children}</strong>;

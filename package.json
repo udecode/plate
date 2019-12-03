@@ -43,11 +43,11 @@
     "react-error-boundary": "^1.2.5",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
-    "slate": "^0.50.4",
-    "slate-history": "^0.50.4",
-    "slate-hyperscript": "^0.50.4",
-    "slate-react": "^0.50.5",
-    "slate-schema": "^0.50.4",
+    "slate": "^0.50.8",
+    "slate-history": "^0.50.10",
+    "slate-hyperscript": "^0.50.8",
+    "slate-react": "^0.50.10",
+    "slate-schema": "^0.50.12",
     "typescript": "3.7.2"
   },
   "devDependencies": {

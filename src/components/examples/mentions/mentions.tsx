@@ -1,23 +1,23 @@
-/* eslint-disable no-alert */
-import React, { useMemo } from 'react';
-import { createEditor, Editor } from 'slate';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { useFocused, useSelected, useSlate, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
-import { Button, Icon, Toolbar } from '../../components';
-import { initialValue, USERS } from './data';
-
-const promptMention = (editor: Editor) => {
-  const name = window.prompt('Who would you like to mention?');
-  if (!name) return;
-  const regex = new RegExp(`^${name}`, 'i');
-  const match = Object.entries(USERS).find(([, nameValue]: any) =>
-    regex.test(nameValue)
-  );
-  const id = match ? match[0] : 57;
-  editor.exec({ type: 'insert_mention', id });
-};
+import {
+  Editable,
+  ReactEditor,
+  RenderElementProps,
+  Slate,
+  useFocused,
+  useSelected,
+  withReact,
+} from 'slate-react';
+import { Portal } from '../../components';
+import { CHARACTERS, initialValue } from './config';
 
 const withMentions = (editor: Editor) => {
   const { exec, isInline, isVoid } = editor;
@@ -32,13 +32,14 @@ const withMentions = (editor: Editor) => {
 
   editor.exec = command => {
     if (command.type === 'insert_mention') {
-      const { id } = command;
       const mention = {
         type: 'mention',
-        id,
+        character: command.character,
         children: [{ text: '', marks: [] }],
       };
+
       Editor.insertNodes(editor, mention);
+      Editor.move(editor);
     } else {
       exec(command);
     }
@@ -47,14 +48,8 @@ const withMentions = (editor: Editor) => {
   return editor;
 };
 
-const isMentionActive = (editor: Editor) => {
-  const [mention] = Editor.nodes(editor, { match: { type: 'mention' } });
-  return !!mention;
-};
-
-const Element = (props: CustomElementProps) => {
+const Element = (props: RenderElementProps) => {
   const { attributes, children, element } = props;
-
   switch (element.type) {
     case 'mention':
       return <MentionElement {...props} />;
@@ -67,7 +62,7 @@ const MentionElement = ({
   attributes,
   children,
   element,
-}: CustomElementProps) => {
+}: RenderElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
   return (
@@ -85,48 +80,144 @@ const MentionElement = ({
         boxShadow: selected && focused ? '0 0 0 2px #B4D5FF' : 'none',
       }}
     >
-      @{USERS[element.id]}
+      @{element.character}
       {children}
     </span>
   );
 };
 
-const MentionButton = () => {
-  const editor = useSlate();
-  return (
-    <Button
-      active={isMentionActive(editor)}
-      onMouseDown={(event: Event) => {
-        event.preventDefault();
-        promptMention(editor);
-      }}
-    >
-      <Icon>person_pin</Icon>
-    </Button>
-  );
-};
-
 export const Mentions = () => {
+  const ref: any = useRef();
+  const [target, setTarget] = useState();
+  const [index, setIndex] = useState(0);
+  const [search, setSearch] = useState('');
+  const renderElement = useCallback(props => <Element {...props} />, []);
   const editor = useMemo(
     () => withMentions(withReact(withHistory(createEditor()))),
     []
   );
 
-  return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Toolbar>
-        <MentionButton />
-      </Toolbar>
-      <Editable
-        renderElement={props => <Element {...props} />}
-        placeholder="Enter some text..."
-        onKeyDown={event => {
-          if (event.key === '@') {
+  const chars = CHARACTERS.filter(c =>
+    c.toLowerCase().startsWith(search)
+  ).slice(0, 10);
+  const suggest = target && chars.length > 0;
+
+  const onKeyDown = useCallback(
+    event => {
+      if (target) {
+        switch (event.key) {
+          case 'ArrowDown': {
             event.preventDefault();
-            promptMention(editor);
+            const prevIndex = index >= chars.length - 1 ? 0 : index + 1;
+            setIndex(prevIndex);
+            break;
           }
-        }}
+          case 'ArrowUp': {
+            event.preventDefault();
+            const nextIndex = index <= 0 ? chars.length - 1 : index - 1;
+            setIndex(nextIndex);
+            break;
+          }
+          case 'Tab':
+          case 'Enter':
+            event.preventDefault();
+            Editor.select(editor, target);
+            editor.exec({ type: 'insert_mention', character: chars[index] });
+            setTarget(null);
+            break;
+          case 'Escape':
+            event.preventDefault();
+            setTarget(null);
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [chars, editor, index, target]
+  );
+
+  useEffect(() => {
+    if (suggest) {
+      const el = ref.current;
+      const domRange = ReactEditor.toDOMRange(editor, target);
+      const rect = domRange.getBoundingClientRect();
+      if (el) {
+        el.style.top = `${rect.top + window.pageYOffset + 24}px`;
+        el.style.left = `${rect.left + window.pageXOffset}px`;
+      }
+    }
+  }, [editor, index, search, suggest, target]);
+
+  return (
+    <Slate
+      editor={editor}
+      defaultValue={initialValue}
+      onChange={() => {
+        const { selection } = editor;
+
+        if (selection && Range.isCollapsed(selection)) {
+          const [start] = Range.edges(selection);
+          const wordBefore = Editor.before(editor, start, { unit: 'word' });
+          let before;
+          if (wordBefore) before = Editor.before(editor, wordBefore);
+          let beforeRange;
+          if (before) beforeRange = Editor.range(editor, before, start);
+          let beforeText;
+          if (beforeRange) beforeText = Editor.text(editor, beforeRange);
+          let beforeMatch;
+          if (beforeText) beforeMatch = beforeText.match(/^@(\w+)$/);
+          const after = Editor.after(editor, start);
+          const afterRange = Editor.range(editor, start, after);
+          const afterText = Editor.text(editor, afterRange);
+          const afterMatch = afterText.match(/^(\s|$)/);
+
+          if (beforeMatch && afterMatch) {
+            setTarget(beforeRange);
+            setSearch(beforeMatch[1]);
+            setIndex(0);
+            return;
+          }
+        }
+
+        setTarget(null);
+      }}
+    >
+      <Editable
+        renderElement={renderElement}
+        onKeyDown={onKeyDown}
+        placeholder="Enter some text..."
       />
+      {suggest && (
+        <Portal>
+          <div
+            ref={ref}
+            style={{
+              top: '-9999px',
+              left: '-9999px',
+              position: 'absolute',
+              zIndex: 1,
+              padding: '3px',
+              background: 'white',
+              borderRadius: '4px',
+              boxShadow: '0 1px 5px rgba(0,0,0,.2)',
+            }}
+          >
+            {chars.map((char, i) => (
+              <div
+                key={char}
+                style={{
+                  padding: '1px 3px',
+                  borderRadius: '3px',
+                  background: i === index ? '#B4D5FF' : 'transparent',
+                }}
+              >
+                {char}
+              </div>
+            ))}
+          </div>
+        </Portal>
+      )}
     </Slate>
   );
 };

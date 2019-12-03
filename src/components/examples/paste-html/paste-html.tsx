@@ -3,58 +3,15 @@ import { css } from 'emotion';
 import { createEditor, Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from 'slate-hyperscript';
-import { useFocused, useSelected, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import {
-  CustomElementProps,
-  CustomMarkProps,
-} from 'slate-react/lib/components/custom';
-
-const initialValue = [
-  {
-    children: [
-      {
-        text:
-          "By default, pasting content into a Slate editor will use the clipboard's ",
-        marks: [],
-      },
-      {
-        text: "'text/plain'",
-        marks: [{ type: 'code' }],
-      },
-      {
-        text:
-          " data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintaing its formatting. To do this, your editor needs to handle ",
-        marks: [],
-      },
-      {
-        text: "'text/html'",
-        marks: [{ type: 'code' }],
-      },
-      {
-        text: ' data. ',
-        marks: [],
-      },
-    ],
-  },
-  {
-    children: [
-      {
-        text: 'This is an example of doing exactly that!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    children: [
-      {
-        text:
-          "Try it out for yourself! Copy and paste some rendered HTML rich text content (not the source code) from another site into this editor and it's formatting should be preserved.",
-        marks: [],
-      },
-    ],
-  },
-];
+  RenderElementProps,
+  RenderMarkProps,
+  useFocused,
+  useSelected,
+  withReact,
+} from 'slate-react';
+import { Editable, Slate } from 'slate-react-next';
+import { initialValue } from './config';
 
 const ELEMENT_TAGS: any = {
   A: (el: any) => ({ type: 'link', url: el.getAttribute('href') }),
@@ -154,7 +111,7 @@ const withHtml = (editor: Editor) => {
   return editor;
 };
 
-const Element = (props: CustomElementProps) => {
+const Element = (props: RenderElementProps) => {
   const { attributes, children, element } = props;
 
   switch (element.type) {
@@ -201,7 +158,7 @@ const ImageElement = ({
   attributes,
   children,
   element,
-}: CustomElementProps) => {
+}: RenderElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
   return (
@@ -221,7 +178,7 @@ const ImageElement = ({
   );
 };
 
-const Mark = ({ attributes, children, mark }: CustomMarkProps) => {
+const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
   switch (mark.type) {
     case 'bold':
       return <strong {...attributes}>{children}</strong>;

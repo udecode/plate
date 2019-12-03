@@ -1,9 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { createEditor, Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
+import { RenderElementProps, withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
 import {
   ChildInvalidError,
   ChildMaxInvalidError,
@@ -11,6 +10,7 @@ import {
   NodeRule,
   withSchema,
 } from 'slate-schema';
+import { initialValue } from './config';
 
 const schema: NodeRule[] = [
   {
@@ -52,7 +52,7 @@ const schema: NodeRule[] = [
   },
 ];
 
-const Element = ({ attributes, children, element }: CustomElementProps) => {
+const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'title':
       return <h2 {...attributes}>{children}</h2>;
@@ -62,28 +62,6 @@ const Element = ({ attributes, children, element }: CustomElementProps) => {
       return <div {...attributes}>{children}</div>;
   }
 };
-
-const initialValue = [
-  {
-    type: 'title',
-    children: [
-      {
-        text: 'Enforce Your Layout!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    children: [
-      {
-        text:
-          'This example shows how to enforce your layout with schema-specific rules. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!',
-        marks: [],
-      },
-    ],
-  },
-];
 
 export const ForcedLayout = () => {
   const renderElement = useCallback(props => <Element {...props} />, []);

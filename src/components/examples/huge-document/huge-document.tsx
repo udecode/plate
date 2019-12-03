@@ -1,28 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
-import faker from 'faker';
 import { createEditor } from 'slate';
-import { withReact } from 'slate-react';
+import { RenderElementProps, withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { initialValue } from './config';
 
-const HEADINGS = 100;
-const PARAGRAPHS = 7;
-const initialValue: any = [];
-
-for (let h = 0; h < HEADINGS; h++) {
-  initialValue.push({
-    type: 'heading',
-    children: [{ text: faker.lorem.sentence(), marks: [] }],
-  });
-
-  for (let p = 0; p < PARAGRAPHS; p++) {
-    initialValue.push({
-      children: [{ text: faker.lorem.paragraph(), marks: [] }],
-    });
-  }
-}
-
-const Element = ({ attributes, children, element }: CustomElementProps) => {
+const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'heading':
       return <h1 {...attributes}>{children}</h1>;

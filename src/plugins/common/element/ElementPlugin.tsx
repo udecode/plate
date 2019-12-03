@@ -1,8 +1,7 @@
 import React from 'react';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { Plugin } from 'slate-react';
-import { CustomElementProps } from 'slate-react/lib/components/custom';
+import { Plugin, RenderElementProps } from 'slate-react';
 import { BLOCKS } from '../constants';
 import { CommonElement } from './CommonElement';
 
@@ -44,7 +43,7 @@ export const BlockPlugin = (): Plugin => ({
 
     return editor;
   },
-  renderElement: ({ attributes, children, element }: CustomElementProps) => {
+  renderElement: ({ attributes, children, element }: RenderElementProps) => {
     switch (element.type) {
       case 'block-quote':
         return <blockquote {...attributes}>{children}</blockquote>;

@@ -1,4 +1,12 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Slate Plugins
+
+```json
+"slate": "^0.50.8",
+"slate-history": "^0.50.10",
+"slate-hyperscript": "^0.50.8",
+"slate-react": "^0.50.10",
+"slate-schema": "^0.50.12",
+```
 
 ## Available Scripts
 

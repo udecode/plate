@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { css } from 'emotion';
 import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { ReactEditor, useSlate, withReact } from 'slate-react';
+import { ReactEditor, RenderMarkProps, useSlate, withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import { CustomMarkProps } from 'slate-react/lib/components/custom';
-import { Button, Icon, Menu, Portal } from '../components';
+import { Button, Icon, Menu, Portal } from '../../components';
+import { initialValue } from './config';
 
 const isMarkActive = (editor: Editor, type: string) => {
   const [mark] = Editor.marks(editor, { match: { type }, mode: 'universal' });
@@ -35,7 +35,7 @@ const withMarks = (editor: Editor) => {
   return editor;
 };
 
-const Mark = ({ attributes, children, mark }: CustomMarkProps) => {
+const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
   switch (mark.type) {
     case 'bold':
       return <strong {...attributes}>{children}</strong>;
@@ -124,50 +124,6 @@ const MarkButton = ({ type, icon }: any) => {
     </Button>
   );
 };
-
-const initialValue = [
-  {
-    children: [
-      {
-        text:
-          'This example shows how you can make a hovering menu appear above your content, which you can use to make text ',
-        marks: [],
-      },
-      {
-        text: 'bold',
-        marks: [{ type: 'bold' }],
-      },
-      {
-        text: ', ',
-        marks: [],
-      },
-      {
-        text: 'italic',
-        marks: [{ type: 'italic' }],
-      },
-      {
-        text: ', or anything else you might want to do!',
-        marks: [],
-      },
-    ],
-  },
-  {
-    children: [
-      {
-        text: 'Try it out yourself! Just ',
-        marks: [],
-      },
-      {
-        text: 'select any piece of text and the menu will appear',
-        marks: [{ type: 'bold' }, { type: 'italic' }],
-      },
-      {
-        text: '.',
-        marks: [],
-      },
-    ],
-  },
-];
 
 export const HoveringMenu = () => {
   const editor = useMemo(

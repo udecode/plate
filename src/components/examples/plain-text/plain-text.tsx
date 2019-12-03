@@ -3,17 +3,7 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-
-const initialValue = [
-  {
-    children: [
-      {
-        text: '',
-        marks: [],
-      },
-    ],
-  },
-];
+import { initialValue } from './config';
 
 export const PlainText = () => {
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);

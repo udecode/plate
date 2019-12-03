@@ -1,17 +1,7 @@
 import React, { useMemo } from 'react';
 import { createEditor } from 'slate';
 import { Editable, Slate, withReact } from 'slate-react';
-
-const initialValue = [
-  {
-    children: [
-      {
-        text: 'This is editable plain text, just like a <textarea>!',
-        marks: [],
-      },
-    ],
-  },
-];
+import { initialValue } from './config';
 
 export const ReadOnly = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
