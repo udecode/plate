@@ -97,9 +97,9 @@ export const Mentions = () => {
     []
   );
 
-  const chars = CHARACTERS.filter(c =>
-    c.toLowerCase().startsWith(search)
-  ).slice(0, 10);
+  const chars = CHARACTERS.filter(c => {
+    return c.toLowerCase().startsWith(search.toLowerCase());
+  }).slice(0, 10);
   const suggest = target && chars.length > 0;
 
   const onKeyDown = useCallback(

@@ -37,8 +37,15 @@ const withRichText = (editor: Editor) => {
       const { block: type } = command;
       const isActive = isBlockActive(editor, type);
       const isListType = type === 'bulleted-list' || type === 'numbered-list';
-      Editor.unwrapNodes(editor, { match: { type: 'bulleted-list' } });
-      Editor.unwrapNodes(editor, { match: { type: 'numbered-list' } });
+      Editor.unwrapNodes(editor, {
+        match: { type: 'bulleted-list' },
+        split: true,
+      });
+
+      Editor.unwrapNodes(editor, {
+        match: { type: 'numbered-list' },
+        split: true,
+      });
 
       const newType = isActive ? 'paragraph' : isListType ? 'list-item' : type;
       Editor.setNodes(editor, { type: newType });

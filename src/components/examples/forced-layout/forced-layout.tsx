@@ -3,13 +3,7 @@ import { createEditor, Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { RenderElementProps, withReact } from 'slate-react';
 import { Editable, Slate } from 'slate-react-next';
-import {
-  ChildInvalidError,
-  ChildMaxInvalidError,
-  ChildMinInvalidError,
-  NodeRule,
-  withSchema,
-} from 'slate-schema';
+import { NodeError, NodeRule, withSchema } from 'slate-schema';
 import { initialValue } from './config';
 
 const schema: NodeRule[] = [
@@ -23,12 +17,7 @@ const schema: NodeRule[] = [
       ],
     },
     normalize: (editor, error) => {
-      error = error as
-        | ChildInvalidError
-        | ChildMinInvalidError
-        | ChildMaxInvalidError;
-
-      const { code, path, index } = error;
+      const { code, path, index } = error as NodeError & { index: number };
       const type = index === 0 ? 'title' : 'paragraph';
 
       switch (code) {
