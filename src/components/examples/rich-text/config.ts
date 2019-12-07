@@ -1,3 +1,10 @@
+export const MARK_HOTKEYS: any = {
+  'mod+b': 'bold',
+  'mod+i': 'italic',
+  'mod+u': 'underlined',
+  'mod+`': 'code',
+};
+
 export const initialValue = [
   {
     type: 'paragraph',

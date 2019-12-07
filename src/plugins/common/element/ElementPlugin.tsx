@@ -12,64 +12,77 @@ const BLOCKS_HOTKEYS: any = {
   // 'mod+`': 'code',
 };
 
+export const withBlock = (editor: Editor) => {
+  const { exec } = editor;
+
+  editor.exec = command => {
+    if (command.type === 'toggle_block') {
+      const { block: type } = command;
+      const isActive = CommonElement.isBlockActive(editor, type);
+      const isListType = type === 'bulleted-list' || type === 'numbered-list';
+      Editor.unwrapNodes(editor, {
+        match: { type: 'bulleted-list' },
+        split: true,
+      });
+
+      Editor.unwrapNodes(editor, {
+        match: { type: 'numbered-list' },
+        split: true,
+      });
+
+      const newType = isActive ? 'paragraph' : isListType ? 'list-item' : type;
+      Editor.setNodes(editor, { type: newType });
+
+      if (!isActive && isListType) {
+        Editor.wrapNodes(editor, { type, children: [] });
+      }
+
+      return;
+    }
+
+    exec(command);
+  };
+
+  return editor;
+};
+
+export const BlockRender = ({
+  attributes,
+  children,
+  element,
+}: RenderElementProps) => {
+  switch (element.type) {
+    case 'block-quote':
+      return <blockquote {...attributes}>{children}</blockquote>;
+    case 'bulleted-list':
+      return <ul {...attributes}>{children}</ul>;
+    case BLOCKS.HEADING_1:
+      return <h1 {...attributes}>{children}</h1>;
+    case 'heading-two':
+      return <h2 {...attributes}>{children}</h2>;
+    case 'list-item':
+      return <li {...attributes}>{children}</li>;
+    case 'numbered-list':
+      return <ol {...attributes}>{children}</ol>;
+    default:
+      break;
+  }
+};
+
+export const BlockOnKeyDown = (e: any, editor: Editor) => {
+  for (const hotkey of Object.keys(BLOCKS_HOTKEYS)) {
+    if (isHotkey(hotkey, e)) {
+      e.preventDefault();
+      editor.exec({
+        type: 'toggle_block',
+        block: BLOCKS_HOTKEYS[hotkey],
+      });
+    }
+  }
+};
+
 export const BlockPlugin = (): Plugin => ({
-  editor: (editor: Editor) => {
-    const { exec } = editor;
-
-    editor.exec = command => {
-      if (command.type === 'toggle_block') {
-        const { block: type } = command;
-        const isActive = CommonElement.isBlockActive(editor, type);
-        const isListType = type === BLOCKS.UL_LIST || type === BLOCKS.OL_LIST;
-        Editor.unwrapNodes(editor, { match: { type: BLOCKS.UL_LIST } });
-        Editor.unwrapNodes(editor, { match: { type: BLOCKS.OL_LIST } });
-
-        const newType = isActive
-          ? BLOCKS.PARAGRAPH
-          : isListType
-          ? BLOCKS.LIST_ITEM
-          : type;
-        Editor.setNodes(editor, { type: newType });
-
-        if (!isActive && isListType) {
-          Editor.wrapNodes(editor, { type, children: [] });
-        }
-
-        return;
-      }
-
-      exec(command);
-    };
-
-    return editor;
-  },
-  renderElement: ({ attributes, children, element }: RenderElementProps) => {
-    switch (element.type) {
-      case 'block-quote':
-        return <blockquote {...attributes}>{children}</blockquote>;
-      case 'bulleted-list':
-        return <ul {...attributes}>{children}</ul>;
-      case BLOCKS.HEADING_1:
-        return <h1 {...attributes}>{children}</h1>;
-      case 'heading-two':
-        return <h2 {...attributes}>{children}</h2>;
-      case 'list-item':
-        return <li {...attributes}>{children}</li>;
-      case 'numbered-list':
-        return <ol {...attributes}>{children}</ol>;
-      default:
-        break;
-    }
-  },
-  onKeyDown: (e, editor) => {
-    for (const hotkey of Object.keys(BLOCKS_HOTKEYS)) {
-      if (isHotkey(hotkey, e)) {
-        e.preventDefault();
-        editor.exec({
-          type: 'toggle_block',
-          block: BLOCKS_HOTKEYS[hotkey],
-        });
-      }
-    }
-  },
+  editor: withBlock,
+  renderElement: BlockRender,
+  onKeyDown: BlockOnKeyDown,
 });
