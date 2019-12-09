@@ -34,9 +34,9 @@ const EXAMPLES = [
   ['Paste HTML', PasteHtml, 'paste-html'],
   ['Plain Text', PlainText, 'plain-text'],
   ['Read-only', ReadOnly, 'read-only'],
+  ['Rich Text', RichText, 'rich-text'],
   ['Search Highlighting', SearchHighlighting, 'search-highlighting'],
   ['Tables', Tables, 'tables'],
-  ['Rich Text', RichText, 'rich-text'],
 ];
 
 const Header = (props: any) => (
@@ -223,9 +223,9 @@ const Warning = (props: any) => (
 );
 
 export const ExamplePage = () => {
-  const [error, setError] = useState();
-  const [stacktrace, setStacktrace] = useState();
-  const [showTabs, setShowTabs] = useState();
+  const [error, setError] = useState<Error>();
+  const [stacktrace, setStacktrace] = useState<string>();
+  const [showTabs, setShowTabs] = useState<boolean>();
 
   const location = useLocation();
   const example = location.pathname.split('/')[2] || 'rich-text';
@@ -245,7 +245,7 @@ export const ExamplePage = () => {
     >
       <div>
         <Header>
-          <Title>Slate 0.50 - Plugins</Title>
+          <Title>Slate 0.52 - Plugins</Title>
           <LinkList>
             <A href="https://github.com/ianstormtaylor/slate">GitHub</A>
             <A href="https://docs.slatejs.org/">Docs</A>

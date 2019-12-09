@@ -28,7 +28,7 @@ declare module 'slate-react' {
   interface Plugin {
     editor?: PluginEditor;
     decorate?: (entry: NodeEntry, pluginProps?: any) => Range[];
-    renderElement?: (props: RenderElementProps) => JSX.Element;
+    renderElement?: (props: RenderElementProps) => JSX.Element | undefined;
     renderLeaf?: (props: RenderLeafProps) => JSX.Element;
     onKeyDown?: (e: any, editor: Editor) => void;
   }

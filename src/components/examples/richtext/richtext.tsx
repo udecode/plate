@@ -4,9 +4,9 @@ import { Slate } from 'slate-react';
 import { CustomEditable } from 'plugins/common/components/CustomEditable';
 import { createCustomEditor } from 'plugins/common/helpers/createCustomEditor';
 import { Toolbar } from '../../components';
-import { initialValue } from './config';
 import { FormatButton } from './FormatButton';
-import { editorPlugins, plugins } from './plugins';
+import { initialValue } from './richtext.config';
+import { editorPlugins, plugins } from './richtext.plugins';
 
 export const RichText = () => {
   const [value, setValue] = useState(initialValue);

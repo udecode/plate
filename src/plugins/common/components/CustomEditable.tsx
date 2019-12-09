@@ -47,41 +47,26 @@ export const CustomEditable = ({
   };
 
   const renderElementPlugins = (elementProps: RenderElementProps) => {
-    let element;
-    if (plugins) {
-      element = renderElement && renderElement(elementProps);
+    let element = renderElement && renderElement(elementProps);
+    if (element) return element;
 
-      if (!element) {
-        plugins.some(plugin => {
-          element = plugin.renderElement && plugin.renderElement(elementProps);
-          return !!element;
-        });
-      }
-    }
-    if (!element) {
-      element = <p {...elementProps.attributes}>{elementProps.children}</p>;
-    }
+    plugins.some(plugin => {
+      element = plugin.renderElement && plugin.renderElement(elementProps);
+      return !!element;
+    });
+    if (element) return element;
 
-    return element;
+    return <p {...elementProps.attributes}>{elementProps.children}</p>;
   };
 
   const renderLeafPlugins = (leafProps: RenderLeafProps) => {
-    let leaf;
-    if (plugins) {
-      leaf = renderLeaf && renderLeaf(leafProps);
+    if (renderLeaf) leafProps.children = renderLeaf(leafProps);
 
-      if (!leaf) {
-        plugins.some(plugin => {
-          leaf = plugin.renderLeaf && plugin.renderLeaf(leafProps);
-          return !!leaf;
-        });
-      }
-    }
-    if (!leaf) {
-      leaf = <span {...leafProps.attributes}>{leafProps.children}</span>;
-    }
+    plugins.forEach(plugin => {
+      if (plugin.renderLeaf) leafProps.children = plugin.renderLeaf(leafProps);
+    });
 
-    return leaf;
+    return <span {...leafProps.attributes}>{leafProps.children}</span>;
   };
 
   const onKeyDownPlugins = (e: any) => {

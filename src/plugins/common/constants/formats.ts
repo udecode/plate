@@ -14,9 +14,20 @@ export enum ListFormat {
   UL_LIST = 'bulleted-list',
 }
 export const BlockFormat = {
-  ...ListFormat,
+  // Classic blocks
+  PARAGRAPH: 'paragraph',
+  BLOCK_QUOTE: 'block-quote',
+
+  // Headings
   HEADING_1: 'heading-one',
   HEADING_2: 'heading-two',
-  BLOCK_QUOTE: 'block-quote',
+
+  // Table
+  TABLE: 'table',
+  TABLE_ROW: 'table-row',
+  TABLE_CELL: 'table-cell',
+
+  // Lists
+  ...ListFormat,
+  LIST_ITEM: 'list-item',
 };
-// LIST_ITEM = 'list_item',

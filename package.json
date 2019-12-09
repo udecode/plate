@@ -9,6 +9,7 @@
     "start": "react-scripts start",
     "test": "react-scripts test"
   },
+  "license": "MIT",
   "browserslist": {
     "production": [
       ">0.2%",

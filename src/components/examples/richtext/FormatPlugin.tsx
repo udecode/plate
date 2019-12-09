@@ -33,7 +33,11 @@ export const withFormat = (editor: Editor) => {
         });
 
         Editor.setNodes(editor, {
-          type: isActive ? 'paragraph' : isList ? 'list-item' : format,
+          type: isActive
+            ? BlockFormat.PARAGRAPH
+            : isList
+            ? BlockFormat.LIST_ITEM
+            : format,
         });
 
         if (!isActive && isList) {
@@ -54,28 +58,24 @@ export const renderElementFormat = ({
   element,
 }: RenderElementProps) => {
   switch (element.type) {
-    case 'block-quote':
+    case BlockFormat.BLOCK_QUOTE:
       return <blockquote {...attributes}>{children}</blockquote>;
-    case 'bulleted-list':
-      return <ul {...attributes}>{children}</ul>;
-    case 'heading-one':
+    case BlockFormat.HEADING_1:
       return <h1 {...attributes}>{children}</h1>;
-    case 'heading-two':
+    case BlockFormat.HEADING_2:
       return <h2 {...attributes}>{children}</h2>;
-    case 'list-item':
-      return <li {...attributes}>{children}</li>;
-    case 'numbered-list':
+    case BlockFormat.UL_LIST:
+      return <ul {...attributes}>{children}</ul>;
+    case BlockFormat.OL_LIST:
       return <ol {...attributes}>{children}</ol>;
+    case BlockFormat.LIST_ITEM:
+      return <li {...attributes}>{children}</li>;
     default:
-      return <p {...attributes}>{children}</p>;
+      break;
   }
 };
 
-export const renderLeafFormat = ({
-  attributes,
-  children,
-  leaf,
-}: RenderLeafProps) => {
+export const renderLeafFormat = ({ children, leaf }: RenderLeafProps) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -92,7 +92,7 @@ export const renderLeafFormat = ({
     children = <u>{children}</u>;
   }
 
-  return <span {...attributes}>{children}</span>;
+  return children;
 };
 
 export const onKeyDownFormat = (e: any, editor: Editor) => {

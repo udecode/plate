@@ -30,23 +30,16 @@ export const decorateHighlight = (
   return ranges;
 };
 
-export const renderLeafHighlight = ({
-  attributes,
-  children,
-  leaf,
-}: RenderLeafProps) => {
-  return (
-    <span
-      {...attributes}
-      className={css`
-        font-weight: ${leaf.bold && 'bold'};
-        background-color: ${leaf.highlight && '#ffeeba'};
-      `}
-    >
-      {children}
-    </span>
-  );
-};
+export const renderLeafHighlight = ({ children, leaf }: RenderLeafProps) => (
+  <span
+    className={css`
+      font-weight: ${leaf.bold && 'bold'};
+      background-color: ${leaf.highlight && '#ffeeba'};
+    `}
+  >
+    {children}
+  </span>
+);
 
 export const HighlightPlugin = (): Plugin => ({
   decorate: decorateHighlight,
