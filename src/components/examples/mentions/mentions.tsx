@@ -35,7 +35,7 @@ const withMentions = (editor: Editor) => {
       const mention = {
         type: 'mention',
         character: command.character,
-        children: [{ text: '', marks: [] }],
+        children: [{ text: '' }],
       };
 
       Editor.insertNodes(editor, mention);
@@ -88,7 +88,9 @@ const MentionElement = ({
 
 export const Mentions = () => {
   const ref: any = useRef();
-  const [target, setTarget] = useState();
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
+  const [target, setTarget] = useState<Range | null>();
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
   const renderElement = useCallback(props => <Element {...props} />, []);
@@ -97,10 +99,9 @@ export const Mentions = () => {
     []
   );
 
-  const chars = CHARACTERS.filter(c => {
-    return c.toLowerCase().startsWith(search.toLowerCase());
-  }).slice(0, 10);
-  const suggest = target && chars.length > 0;
+  const chars = CHARACTERS.filter(c =>
+    c.toLowerCase().startsWith(search.toLowerCase())
+  ).slice(0, 10);
 
   const onKeyDown = useCallback(
     event => {
@@ -138,7 +139,7 @@ export const Mentions = () => {
   );
 
   useEffect(() => {
-    if (suggest) {
+    if (target && chars.length > 0) {
       const el = ref.current;
       const domRange = ReactEditor.toDOMRange(editor, target);
       const rect = domRange.getBoundingClientRect();
@@ -147,26 +148,23 @@ export const Mentions = () => {
         el.style.left = `${rect.left + window.pageXOffset}px`;
       }
     }
-  }, [editor, index, search, suggest, target]);
+  }, [chars.length, editor, index, search, target]);
 
   return (
     <Slate
       editor={editor}
-      defaultValue={initialValue}
-      onChange={() => {
-        const { selection } = editor;
-
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
         if (selection && Range.isCollapsed(selection)) {
           const [start] = Range.edges(selection);
           const wordBefore = Editor.before(editor, start, { unit: 'word' });
-          let before;
-          if (wordBefore) before = Editor.before(editor, wordBefore);
-          let beforeRange;
-          if (before) beforeRange = Editor.range(editor, before, start);
-          let beforeText;
-          if (beforeRange) beforeText = Editor.text(editor, beforeRange);
-          let beforeMatch;
-          if (beforeText) beforeMatch = beforeText.match(/^@(\w+)$/);
+          const before = wordBefore && Editor.before(editor, wordBefore);
+          const beforeRange = before && Editor.range(editor, before, start);
+          const beforeText = beforeRange && Editor.text(editor, beforeRange);
+          const beforeMatch = beforeText && beforeText.match(/^@(\w+)$/);
           const after = Editor.after(editor, start);
           const afterRange = Editor.range(editor, start, after);
           const afterText = Editor.text(editor, afterRange);
@@ -188,7 +186,7 @@ export const Mentions = () => {
         onKeyDown={onKeyDown}
         placeholder="Enter some text..."
       />
-      {suggest && (
+      {target && chars.length > 0 && (
         <Portal>
           <div
             ref={ref}

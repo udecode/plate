@@ -1,27 +1,39 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { css } from 'emotion';
 import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { ReactEditor, RenderMarkProps, useSlate, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
+import {
+  Editable,
+  ReactEditor,
+  RenderLeafProps,
+  Slate,
+  useSlate,
+  withReact,
+} from 'slate-react';
 import { Button, Icon, Menu, Portal } from '../../components';
 import { initialValue } from './config';
 
-const isMarkActive = (editor: Editor, type: string) => {
-  const [mark] = Editor.marks(editor, { match: { type }, mode: 'universal' });
-  return !!mark;
+const isFormatActive = (editor: Editor, format: string) => {
+  const [match] = Editor.nodes(editor, {
+    match: { [format]: true },
+    mode: 'all',
+  });
+  return !!match;
 };
 
-const withMarks = (editor: Editor) => {
+const withFormatting = (editor: Editor) => {
   const { exec } = editor;
 
   editor.exec = command => {
     switch (command.type) {
-      case 'toggle_mark': {
-        const { mark } = command;
-        const isActive = isMarkActive(editor, mark.type);
-        const cmd = isActive ? 'remove_mark' : 'add_mark';
-        editor.exec({ type: cmd, mark });
+      case 'toggle_format': {
+        const { format } = command;
+        const isActive = isFormatActive(editor, format);
+        Editor.setNodes(
+          editor,
+          { [format]: isActive ? null : true },
+          { match: 'text', split: true }
+        );
         break;
       }
 
@@ -35,17 +47,20 @@ const withMarks = (editor: Editor) => {
   return editor;
 };
 
-const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
-  switch (mark.type) {
-    case 'bold':
-      return <strong {...attributes}>{children}</strong>;
-    case 'italic':
-      return <em {...attributes}>{children}</em>;
-    case 'underlined':
-      return <u {...attributes}>{children}</u>;
-    default:
-      return <span {...attributes}>{children}</span>;
+const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
   }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+
+  if (leaf.underlined) {
+    children = <u>{children}</u>;
+  }
+
+  return <span {...attributes}>{children}</span>;
 };
 
 const HoveringToolbar = () => {
@@ -101,23 +116,23 @@ const HoveringToolbar = () => {
           transition: opacity 0.75s;
         `}
       >
-        <MarkButton type="bold" icon="format_bold" />
-        <MarkButton type="italic" icon="format_italic" />
-        <MarkButton type="underlined" icon="format_underlined" />
+        <FormatButton format="bold" icon="format_bold" />
+        <FormatButton format="italic" icon="format_italic" />
+        <FormatButton format="underlined" icon="format_underlined" />
       </Menu>
     </Portal>
   );
 };
 
-const MarkButton = ({ type, icon }: any) => {
+const FormatButton = ({ format, icon }: any) => {
   const editor = useSlate();
   return (
     <Button
       reversed
-      active={isMarkActive(editor, type)}
+      active={isFormatActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        editor.exec({ type: 'toggle_mark', mark: { type } });
+        editor.exec({ type: 'toggle_format', format });
       }}
     >
       <Icon>{icon}</Icon>
@@ -126,24 +141,38 @@ const MarkButton = ({ type, icon }: any) => {
 };
 
 export const HoveringMenu = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const editor = useMemo(
-    () => withMarks(withHistory(withReact(createEditor()))),
+    () => withFormatting(withHistory(withReact(createEditor()))),
     []
   );
+
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <HoveringToolbar />
       <Editable
-        renderMark={props => <Mark {...props} />}
+        renderLeaf={props => <Leaf {...props} />}
         placeholder="Enter some text..."
         onDOMBeforeInput={(event: any) => {
           switch (event.inputType) {
             case 'formatBold':
-              return editor.exec({ type: 'toggle_mark', mark: 'bold' });
+              return editor.exec({ type: 'toggle_format', format: 'bold' });
             case 'formatItalic':
-              return editor.exec({ type: 'toggle_mark', mark: 'italic' });
+              return editor.exec({ type: 'toggle_format', format: 'italic' });
             case 'formatUnderline':
-              return editor.exec({ type: 'toggle_mark', mark: 'underlined' });
+              return editor.exec({
+                type: 'toggle_format',
+                format: 'underlined',
+              });
             default:
               break;
           }

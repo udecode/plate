@@ -15,7 +15,7 @@ import { Mentions } from './examples/mentions/mentions';
 import { PasteHtml } from './examples/paste-html/paste-html';
 import { PlainText } from './examples/plain-text/plain-text';
 import { ReadOnly } from './examples/read-only/read-only';
-import { RichText } from './examples/rich-text/rich-text';
+import { RichText } from './examples/richtext/richtext';
 import { SearchHighlighting } from './examples/search-highlighting/search-highlighting';
 import { Tables } from './examples/tables/tables';
 import { Icon } from './components';

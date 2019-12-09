@@ -1,78 +1,88 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { NodeEntry, Range } from 'slate';
 import {
   Editable,
   EditableProps,
   Plugin,
   RenderElementProps,
-  RenderMarkProps,
+  RenderLeafProps,
   useSlate,
 } from 'slate-react';
 
 interface CustomEditableProps extends EditableProps {
   plugins?: Plugin[];
+  pluginProps?: any;
 }
 
 export const CustomEditable = ({
   plugins = [],
+  pluginProps = {},
+  decorate,
+  renderElement,
+  renderLeaf,
+  onKeyDown,
   ...props
 }: CustomEditableProps) => {
   const editor = useSlate();
 
-  const { renderElement, renderMark, onKeyDown } = props;
+  const decoratePlugins = (entry: NodeEntry) => {
+    let ranges: Range[] = [];
 
-  const renderElementPlugins = useCallback(
-    (elementProps: RenderElementProps) => {
-      let element;
-      if (plugins) {
-        if (renderElement) {
-          element = renderElement(elementProps);
-        }
-
-        if (!element) {
-          plugins.some(plugin => {
-            if (plugin.renderElement) {
-              element = plugin.renderElement(elementProps);
-              if (element) return true;
-            }
-            return false;
-          });
-        }
+    if (plugins) {
+      if (decorate) {
+        ranges = decorate(entry);
       }
+
+      if (!ranges.length) {
+        plugins.some(plugin => {
+          if (plugin.decorate) {
+            ranges = plugin.decorate(entry, pluginProps);
+          }
+          return ranges.length > 0;
+        });
+      }
+    }
+
+    return ranges;
+  };
+
+  const renderElementPlugins = (elementProps: RenderElementProps) => {
+    let element;
+    if (plugins) {
+      element = renderElement && renderElement(elementProps);
+
       if (!element) {
-        element = <p {...elementProps.attributes}>{elementProps.children}</p>;
+        plugins.some(plugin => {
+          element = plugin.renderElement && plugin.renderElement(elementProps);
+          return !!element;
+        });
       }
+    }
+    if (!element) {
+      element = <p {...elementProps.attributes}>{elementProps.children}</p>;
+    }
 
-      return element;
-    },
-    [plugins, renderElement]
-  );
+    return element;
+  };
 
-  const renderMarkPlugins = useCallback(
-    (markProps: RenderMarkProps) => {
-      let mark;
-      if (plugins) {
-        if (renderMark) {
-          mark = renderMark(markProps);
-        }
+  const renderLeafPlugins = (leafProps: RenderLeafProps) => {
+    let leaf;
+    if (plugins) {
+      leaf = renderLeaf && renderLeaf(leafProps);
 
-        if (!mark) {
-          plugins.some(plugin => {
-            if (plugin.renderMark) {
-              mark = plugin.renderMark(markProps);
-              if (mark) return true;
-            }
-            return false;
-          });
-        }
+      if (!leaf) {
+        plugins.some(plugin => {
+          leaf = plugin.renderLeaf && plugin.renderLeaf(leafProps);
+          return !!leaf;
+        });
       }
-      if (!mark) {
-        mark = <span {...markProps.attributes}>{markProps.children}</span>;
-      }
+    }
+    if (!leaf) {
+      leaf = <span {...leafProps.attributes}>{leafProps.children}</span>;
+    }
 
-      return mark;
-    },
-    [plugins, renderMark]
-  );
+    return leaf;
+  };
 
   const onKeyDownPlugins = (e: any) => {
     if (onKeyDown) onKeyDown(e);
@@ -87,8 +97,9 @@ export const CustomEditable = ({
   return (
     <Editable
       {...props}
+      decorate={decoratePlugins}
       renderElement={renderElementPlugins}
-      renderMark={renderMarkPlugins}
+      renderLeaf={renderLeafPlugins}
       onKeyDown={onKeyDownPlugins}
     />
   );

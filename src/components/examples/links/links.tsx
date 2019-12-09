@@ -1,10 +1,15 @@
 /* eslint-disable no-alert */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import isUrl from 'is-url';
-import { createEditor, Editor } from 'slate';
+import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { RenderElementProps, useSlate, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
+import {
+  Editable,
+  RenderElementProps,
+  Slate,
+  useSlate,
+  withReact,
+} from 'slate-react';
 import { Button, Icon, Toolbar } from '../../components';
 import { initialValue } from './config';
 
@@ -67,11 +72,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'link':
       return (
-        <a
-          {...attributes}
-          href={element.url}
-          style={{ border: '1px solid red', padding: '5px', margin: '5px' }}
-        >
+        <a {...attributes} href={element.url}>
           {children}
         </a>
       );
@@ -98,12 +99,23 @@ const LinkButton = () => {
 };
 
 export const Links = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const editor = useMemo(
     () => withLinks(withHistory(withReact(createEditor()))),
     []
   );
+
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Toolbar>
         <LinkButton />
       </Toolbar>

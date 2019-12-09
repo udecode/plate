@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
-import { createEditor, Editor } from 'slate';
+import React, { useMemo, useState } from 'react';
+import { createEditor, Editor, Range } from 'slate';
 import {
+  Editable,
   RenderElementProps,
+  Slate,
   useEditor,
   useFocused,
   useSelected,
   withReact,
 } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import { initialValue } from './config';
 
 const withEmbeds = (editor: Editor) => {
@@ -97,9 +98,19 @@ const VideoElement = ({
 };
 
 export const Embeds = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const editor = useMemo(() => withEmbeds(withReact(createEditor())), []);
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Editable
         renderElement={props => <Element {...props} />}
         placeholder="Enter some text..."

@@ -1,18 +1,19 @@
 /* eslint-disable no-alert */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { css } from 'emotion';
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
-import { createEditor, Editor } from 'slate';
+import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
+  Editable,
   RenderElementProps,
+  Slate,
   useEditor,
   useFocused,
   useSelected,
   withReact,
 } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import { Button, Icon, Toolbar } from '../../components';
 import { initialValue } from './config';
 
@@ -64,7 +65,7 @@ const withImages = (editor: Editor) => {
 
       case 'insert_image': {
         const { url } = command;
-        const text = { text: '', marks: [] };
+        const text = { text: '' };
         const image = { type: 'image', url, children: [text] };
         Editor.insertNodes(editor, image);
         break;
@@ -134,12 +135,23 @@ const InsertImageButton = () => {
 };
 
 export const Images = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const editor = useMemo(
     () => withImages(withHistory(withReact(createEditor()))),
     []
   );
+
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Toolbar>
         <InsertImageButton />
       </Toolbar>

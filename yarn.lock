@@ -1742,10 +1742,18 @@
     "@types/history" "*"
     "@types/react" "*"
 
-"@types/react@*", "@types/react@16.9.13", "@types/react@^16.9.13":
+"@types/react@*":
   version "16.9.13"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.13.tgz#b3ea5dd443f4a680599e2abba8cc66f5e1ce0059"
   integrity sha512-LikzRslbiufJYHyzbHSW0GrAiff8QYLMBFeZmSxzCYGXKxi8m/1PHX+rsVOwhr7mJNq+VIu2Dhf7U6mjFERK6w==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^2.2.0"
+
+"@types/react@16.9.15":
+  version "16.9.15"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.15.tgz#aeabb7a50f96c9e31a16079ada20ede9ed602977"
+  integrity sha512-WsmM1b6xQn1tG3X2Hx4F3bZwc2E82pJXt5OPs2YJgg71IzvUoKOSSSYOvLXYCg1ttipM+UuA4Lj3sfvqjVxyZw==
   dependencies:
     "@types/prop-types" "*"
     csstype "^2.2.0"
@@ -1767,6 +1775,17 @@
   dependencies:
     "@types/yargs-parser" "*"
 
+"@typescript-eslint/eslint-plugin@^2.10.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-2.10.0.tgz#c4cb103275e555e8a7e9b3d14c5951eb6d431e70"
+  integrity sha512-rT51fNLW0u3fnDGnAHVC5nu+Das+y2CpW10yqvf6/j5xbuUV3FxA3mBaIbM24CXODXjbgUznNb4Kg9XZOUxKAw==
+  dependencies:
+    "@typescript-eslint/experimental-utils" "2.10.0"
+    eslint-utils "^1.4.3"
+    functional-red-black-tree "^1.0.1"
+    regexpp "^3.0.0"
+    tsutils "^3.17.1"
+
 "@typescript-eslint/eslint-plugin@^2.2.0", "@typescript-eslint/eslint-plugin@^2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-2.9.0.tgz#fa810282c0e45f6c2310b9c0dfcd25bff97ab7e9"
@@ -1787,6 +1806,15 @@
     "@typescript-eslint/typescript-estree" "1.13.0"
     eslint-scope "^4.0.0"
 
+"@typescript-eslint/experimental-utils@2.10.0", "@typescript-eslint/experimental-utils@^2.5.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.10.0.tgz#8db1656cdfd3d9dcbdbf360b8274dea76f0b2c2c"
+  integrity sha512-FZhWq6hWWZBP76aZ7bkrfzTMP31CCefVIImrwP3giPLcoXocmLTmr92NLZxuIcTL4GTEOE33jQMWy9PwelL+yQ==
+  dependencies:
+    "@types/json-schema" "^7.0.3"
+    "@typescript-eslint/typescript-estree" "2.10.0"
+    eslint-scope "^5.0.0"
+
 "@typescript-eslint/experimental-utils@2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.9.0.tgz#bbe99a8d9510240c055fc4b17230dd0192ba3c7f"
@@ -1794,15 +1822,6 @@
   dependencies:
     "@types/json-schema" "^7.0.3"
     "@typescript-eslint/typescript-estree" "2.9.0"
-    eslint-scope "^5.0.0"
-
-"@typescript-eslint/experimental-utils@^2.5.0":
-  version "2.10.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.10.0.tgz#8db1656cdfd3d9dcbdbf360b8274dea76f0b2c2c"
-  integrity sha512-FZhWq6hWWZBP76aZ7bkrfzTMP31CCefVIImrwP3giPLcoXocmLTmr92NLZxuIcTL4GTEOE33jQMWy9PwelL+yQ==
-  dependencies:
-    "@types/json-schema" "^7.0.3"
-    "@typescript-eslint/typescript-estree" "2.10.0"
     eslint-scope "^5.0.0"
 
 "@typescript-eslint/parser@^1.10.2":
@@ -1814,6 +1833,16 @@
     "@typescript-eslint/experimental-utils" "1.13.0"
     "@typescript-eslint/typescript-estree" "1.13.0"
     eslint-visitor-keys "^1.0.0"
+
+"@typescript-eslint/parser@^2.10.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-2.10.0.tgz#24b2e48384ab6d5a6121e4c4faf8892c79657ad3"
+  integrity sha512-wQNiBokcP5ZsTuB+i4BlmVWq6o+oAhd8en2eSm/EE9m7BgZUIfEeYFd6z3S+T7bgNuloeiHA1/cevvbBDLr98g==
+  dependencies:
+    "@types/eslint-visitor-keys" "^1.0.0"
+    "@typescript-eslint/experimental-utils" "2.10.0"
+    "@typescript-eslint/typescript-estree" "2.10.0"
+    eslint-visitor-keys "^1.1.0"
 
 "@typescript-eslint/parser@^2.2.0", "@typescript-eslint/parser@^2.9.0":
   version "2.9.0"
@@ -10924,46 +10953,45 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-slate-history@^0.50.10:
-  version "0.50.10"
-  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.50.10.tgz#1910406ce5546a4ab8a2ac5837bdfb9697a43844"
-  integrity sha512-fxaBgQA4pCa9GNGa1ra4x10rosPMM+26TeLH6NBHW+YwNFmGW7OptB0+EBgi4ZWX2pSIKay8tBMA7ZzVcGdjAA==
+slate-history@0.52.2:
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.52.2.tgz#4e31373e64a0d26ba8fde273038847e0bfb3d8e6"
+  integrity sha512-Y5SL/1M3BDZ/42EoJ/nKAeKNldhxgPXJ5b7EhcMg8sfkAYqTlMLgDBBRjl2+Gn3f+8vPJITSoBH0Pb/QJqKDJQ==
   dependencies:
     immer "^5.0.0"
     is-plain-object "^3.0.0"
 
-slate-hyperscript@^0.50.8:
-  version "0.50.8"
-  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.50.8.tgz#a9dbc19d624980f08cee9d0c6351c82ac83fb8c0"
-  integrity sha512-psdBsKOHgD0IaKiDWh+Ur/9HRYVcz9nBpskwETJr9AyWJRfuKTrs8bAMLaCBpviWKQW4tza3WnH86j1tUFssFg==
+slate-hyperscript@0.52.2:
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.52.2.tgz#605f85aa76870d978572327e80b8f463c21e2aa3"
+  integrity sha512-rcVydLEec8P1UE8+flrawPcZi4474vXdeUC+mevhsz3eoUwPObmOFLBYdYAneMhO/OoC4R6djvSf6IPrwWwMgA==
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-react@^0.50.10:
-  version "0.50.10"
-  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.50.10.tgz#083364c802013244f108d0ef483cdb9d8001d9ba"
-  integrity sha512-pI0YeAxypRnMkIlGIcWSjclv3udCJ+2/EaBSEwdlCEybueum+/J1avu2XYx+qXavrviG3JZSDh/g/eox8PQ/Fw==
+slate-react@0.52.2:
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.52.2.tgz#491dbb523b5fc01d6c53c46d5611dc6f7371a484"
+  integrity sha512-N5hu15HzgfLblgZXqwpDwY+mMyB0BFdNxvH3iDYK5iJ6BvljtBJDJtBQsKZ4DDV3ZTXj0A4pO44KHmAfYMFx2A==
   dependencies:
     "@types/debounce" "^1.2.0"
     "@types/debug" "^4.1.5"
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
-    "@types/react" "^16.9.13"
     debounce "^1.2.0"
     direction "^1.0.3"
     is-hotkey "^0.1.6"
     is-plain-object "^3.0.0"
     scroll-into-view-if-needed "^2.2.20"
 
-slate-schema@^0.50.12:
-  version "0.50.12"
-  resolved "https://registry.yarnpkg.com/slate-schema/-/slate-schema-0.50.12.tgz#ef281fb5f1594eeb42b819ae19c3b751c4689feb"
-  integrity sha512-nsD6Eyj3xiK8BZ+oH32ZD/vsqAmzWKYcM5LgzAkAeMAIpkhs44crpw1VBxbphKlxwXujN1IqsP2r1Wj+nlhZSg==
+slate-schema@^0.52.2:
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/slate-schema/-/slate-schema-0.52.2.tgz#ced18c3299b3eff8cb6ce97a290014df63864952"
+  integrity sha512-i+nEKyi2yAezZy278jj7eAXcrZRUu0y8kIcviNgn0lq+9mnQcKwODVdvP+6QOD9lZFU5o8R6zRasB0T+PKUEEQ==
 
-slate@^0.50.8:
-  version "0.50.8"
-  resolved "https://registry.yarnpkg.com/slate/-/slate-0.50.8.tgz#e2fbf69ffa234082e5c538c1dade059076eb1745"
-  integrity sha512-z4YZrHa+a3G0JUf4wbln2Klvd/15uHO2oHbTkDwTjdm1qH5IjumQmKOSw3vOFYy9KYI6FUh2QxHgu5Vl651R7Q==
+slate@0.52.2:
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/slate/-/slate-0.52.2.tgz#b25dd7aad270067c7979d96b6a0f6faa08aadbd4"
+  integrity sha512-TAU7hW4Pv23cUrFPgscDE0J7X+URk8OcLNCdTgB1eVawRMpVWsEVfxLJGa5yagDoC3r/jlpqENFL58SfE04S5A==
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"
@@ -11826,7 +11854,12 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@3.7.2, typescript@^3.2.1:
+typescript@3.7.3:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.3.tgz#b36840668a16458a7025b9eabfad11b66ab85c69"
+  integrity sha512-Mcr/Qk7hXqFBXMN7p7Lusj1ktCBydylfQM/FZCk5glCNQJrCUKPkMHdo9R0MTFWsC/4kPFvDS0fDPvukfCkFsw==
+
+typescript@^3.2.1:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.2.tgz#27e489b95fa5909445e9fef5ee48d81697ad18fb"
   integrity sha512-ml7V7JfiN2Xwvcer+XAf2csGO1bPBdRbFCkYBczNZggrBZ9c7G3riSUeJmqEU5uOtXNPMhE3n+R4FA/3YOAWOQ==

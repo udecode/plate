@@ -1,8 +1,13 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { createEditor, Editor, Point, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { RenderElementProps, RenderMarkProps, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
+import {
+  Editable,
+  RenderElementProps,
+  RenderLeafProps,
+  Slate,
+  withReact,
+} from 'slate-react';
 import { initialValue } from './config';
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {
@@ -22,67 +27,76 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
   }
 };
 
-const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
-  switch (mark.type) {
-    case 'bold':
-      return <strong {...attributes}>{children}</strong>;
-    default:
-      return <span {...attributes}>{children}</span>;
+const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
   }
+
+  return <span {...attributes}>{children}</span>;
 };
 
-export const Tables = () => {
-  const renderElement = useCallback(props => <Element {...props} />, []);
-  const renderMark = useCallback(props => <Mark {...props} />, []);
+const withTables = (editor: Editor) => {
+  const { exec } = editor;
 
-  const withTables = (editor: Editor) => {
-    const { exec } = editor;
+  editor.exec = command => {
+    const { selection } = editor;
+    const { type } = command;
 
-    editor.exec = command => {
-      const { selection } = editor;
-      const { type } = command;
+    if (
+      (type === 'delete_forward' || type === 'delete_backward') &&
+      selection &&
+      Range.isCollapsed(selection)
+    ) {
+      const [cell] = Editor.nodes(editor, { match: { type: 'table-cell' } });
 
-      if (
-        (type === 'delete_forward' || type === 'delete_backward') &&
-        selection &&
-        Range.isCollapsed(selection)
-      ) {
-        const [cell] = Editor.nodes(editor, { match: { type: 'table-cell' } });
+      if (cell) {
+        const [, cellPath] = cell;
+        const edge =
+          type === 'delete_backward'
+            ? Editor.start(editor, cellPath)
+            : Editor.end(editor, cellPath);
 
-        if (cell) {
-          const [, cellPath] = cell;
-          const edge =
-            type === 'delete_backward'
-              ? Editor.start(editor, cellPath)
-              : Editor.end(editor, cellPath);
-
-          if (Point.equals(selection.anchor, edge)) {
-            return;
-          }
-        }
-      }
-
-      if (type === 'insert_break' && selection) {
-        const [table] = Editor.nodes(editor, { match: { type: 'table' } });
-
-        if (table) {
+        if (Point.equals(selection.anchor, edge)) {
           return;
         }
       }
+    }
 
-      exec(command);
-    };
+    if (type === 'insert_break' && selection) {
+      const [table] = Editor.nodes(editor, { match: { type: 'table' } });
 
-    return editor;
+      if (table) {
+        return;
+      }
+    }
+
+    exec(command);
   };
+
+  return editor;
+};
+
+export const Tables = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
+  const renderElement = useCallback(props => <Element {...props} />, []);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, []);
 
   const editor = useMemo(
     () => withTables(withHistory(withReact(createEditor()))),
     []
   );
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
-      <Editable renderElement={renderElement} renderMark={renderMark} />
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
+      <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
     </Slate>
   );
 };

@@ -1,104 +1,68 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { css } from 'emotion';
 import Prism from 'prismjs';
-import { createEditor, Text } from 'slate';
+import { createEditor, Range, Text } from 'slate';
 import { withHistory } from 'slate-history';
-import { RenderDecorationProps, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
+import { Editable, RenderLeafProps, Slate, withReact } from 'slate-react';
 import { initialValue } from './config';
 
 // @ts-ignore
 // eslint-disable-next-line
 ;Prism.languages.markdown=Prism.languages.extend("markup",{}),Prism.languages.insertBefore("markdown","prolog",{blockquote:{pattern:/^>(?:[\t ]*>)*/m,alias:"punctuation"},code:[{pattern:/^(?: {4}|\t).+/m,alias:"keyword"},{pattern:/``.+?``|`[^`\n]+`/,alias:"keyword"}],title:[{pattern:/\w+.*(?:\r?\n|\r)(?:==+|--+)/,alias:"important",inside:{punctuation:/==+$|--+$/}},{pattern:/(^\s*)#+.+/m,lookbehind:!0,alias:"important",inside:{punctuation:/^#+|#+$/}}],hr:{pattern:/(^\s*)([*-])([\t ]*\2){2,}(?=\s*$)/m,lookbehind:!0,alias:"punctuation"},list:{pattern:/(^\s*)(?:[*+-]|\d+\.)(?=[\t ].)/m,lookbehind:!0,alias:"punctuation"},"url-reference":{pattern:/!?\[[^\]]+\]:[\t ]+(?:\S+|<(?:\\.|[^>\\])+>)(?:[\t ]+(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\)))?/,inside:{variable:{pattern:/^(!?\[)[^\]]+/,lookbehind:!0},string:/(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\((?:\\.|[^)\\])*\))$/,punctuation:/^[\[\]!:]|[<>]/},alias:"url"},bold:{pattern:/(^|[^\\])(\*\*|__)(?:(?:\r?\n|\r)(?!\r?\n|\r)|.)+?\2/,lookbehind:!0,inside:{punctuation:/^\*\*|^__|\*\*$|__$/}},italic:{pattern:/(^|[^\\])([*_])(?:(?:\r?\n|\r)(?!\r?\n|\r)|.)+?\2/,lookbehind:!0,inside:{punctuation:/^[*_]|[*_]$/}},url:{pattern:/!?\[[^\]]+\](?:\([^\s)]+(?:[\t ]+"(?:\\.|[^"\\])*")?\)| ?\[[^\]\n]*\])/,inside:{variable:{pattern:/(!?\[)[^\]]+(?=\]$)/,lookbehind:!0},string:{pattern:/"(?:\\.|[^"\\])*"(?=\)$)/}}}}),Prism.languages.markdown.bold.inside.url=Prism.util.clone(Prism.languages.markdown.url),Prism.languages.markdown.italic.inside.url=Prism.util.clone(Prism.languages.markdown.url),Prism.languages.markdown.bold.inside.italic=Prism.util.clone(Prism.languages.markdown.italic),Prism.languages.markdown.italic.inside.bold=Prism.util.clone(Prism.languages.markdown.bold); // prettier-ignore
 
-
-const Decoration = (props: RenderDecorationProps) => {
-  const { children, decoration, attributes } = props;
-
-  switch (decoration.type) {
-    case 'bold':
-      return <strong {...attributes}>{children}</strong>;
-    case 'code':
-      return <code {...attributes}>{children}</code>;
-    case 'italic':
-      return <em {...attributes}>{children}</em>;
-    case 'underlined':
-      return <u {...attributes}>{children}</u>;
-    case 'title': {
-      return (
-        <span
-          {...attributes}
-          style={{
-            fontWeight: 'bold',
-            fontSize: '20px',
-            margin: '20px 0 10px 0',
-            display: 'inline-block',
-          }}
-        >
-          {children}
-        </span>
-      );
-    }
-    case 'punctuation': {
-      return (
-        <span {...attributes} style={{ opacity: 0.2 }}>
-          {children}
-        </span>
-      );
-    }
-    case 'list': {
-      return (
-        <span
-          {...attributes}
-          style={{
-            paddingLeft: '10px',
-            lineHeight: '10px',
-            fontSize: '20px',
-          }}
-        >
-          {children}
-        </span>
-      );
-    }
-    case 'hr': {
-      return (
-        <span
-          {...attributes}
-          style={{
-            borderBottom: '2px solid #000',
-            display: 'block',
-            opacity: 0.2,
-          }}
-        >
-          {children}
-        </span>
-      );
-    }
-    case 'blockquote': {
-      return (
-        <span
-          {...attributes}
-          style={{
-            borderLeft: '2px solid #ddd',
-            display: 'inline-block',
-            paddingLeft: '10px',
-            color: '#aaa',
-            fontStyle: 'italic',
-          }}
-        >
-          {children}
-        </span>
-      );
-    }
-
-    default: {
-      throw new Error(`Unknown markdown decoration type: "${decoration.type}"`);
-    }
-  }
+const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  return (
+    <span
+      {...attributes}
+      className={css`
+        font-weight: ${leaf.bold && 'bold'};
+        font-style: ${leaf.italic && 'italic'};
+        text-decoration: ${leaf.underlined && 'underline'};
+        ${leaf.title &&
+          css`
+            display: inline-block;
+            font-weight: bold;
+            font-size: 20px;
+            margin: 20px 0 10px 0;
+          `}
+        ${leaf.list &&
+          css`
+            padding-left: 10px;
+            font-size: 20px;
+            line-height: 10px;
+          `}
+        ${leaf.hr &&
+          css`
+            display: block;
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+          `}
+        ${leaf.blockquote &&
+          css`
+            display: inline-block;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
+            color: #aaa;
+            font-style: italic;
+          `}
+        ${leaf.code &&
+          css`
+            font-family: monospace;
+            background-color: #eee;
+            padding: 3px;
+          `}
+      `}
+    >
+      {children}
+    </span>
+  );
 };
 
 export const MarkdownPreview = () => {
-  const renderDecoration = useCallback(props => <Decoration {...props} />, []);
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, []);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
   const decorate = useCallback(([node, path]) => {
     const ranges: any[] = [];
@@ -126,7 +90,7 @@ export const MarkdownPreview = () => {
 
       if (typeof token !== 'string') {
         ranges.push({
-          type: token.type,
+          [token.type]: true,
           anchor: { path, offset: start },
           focus: { path, offset: end },
         });
@@ -139,10 +103,18 @@ export const MarkdownPreview = () => {
   }, []);
 
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Editable
         decorate={decorate}
-        renderDecoration={renderDecoration}
+        renderLeaf={renderLeaf}
         placeholder="Write some markdown..."
       />
     </Slate>

@@ -1,16 +1,17 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { css } from 'emotion';
-import { createEditor, Editor } from 'slate';
+import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from 'slate-hyperscript';
 import {
+  Editable,
   RenderElementProps,
-  RenderMarkProps,
+  RenderLeafProps,
+  Slate,
   useFocused,
   useSelected,
   withReact,
 } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import { initialValue } from './config';
 
 const ELEMENT_TAGS: any = {
@@ -30,14 +31,15 @@ const ELEMENT_TAGS: any = {
   UL: () => ({ type: 'bulleted-list' }),
 };
 
-const MARK_TAGS: any = {
-  CODE: () => ({ type: 'code' }),
-  DEL: () => ({ type: 'strikethrough' }),
-  EM: () => ({ type: 'italic' }),
-  I: () => ({ type: 'italic' }),
-  S: () => ({ type: 'strikethrough' }),
-  STRONG: () => ({ type: 'bold' }),
-  U: () => ({ type: 'underline' }),
+// COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
+const TEXT_TAGS: any = {
+  CODE: () => ({ code: true }),
+  DEL: () => ({ strikethrough: true }),
+  EM: () => ({ italic: true }),
+  I: () => ({ italic: true }),
+  S: () => ({ strikethrough: true }),
+  STRONG: () => ({ bold: true }),
+  U: () => ({ underline: true }),
 };
 
 export const deserialize = (el: any) => {
@@ -62,7 +64,9 @@ export const deserialize = (el: any) => {
     [parent] = el.childNodes;
   }
 
-  const children: any = Array.from(parent.childNodes).map(deserialize);
+  const children: any[] = Array.from(parent.childNodes)
+    .map(deserialize)
+    .flat();
 
   if (el.nodeName === 'BODY') {
     return jsx('fragment', {}, children);
@@ -73,9 +77,9 @@ export const deserialize = (el: any) => {
     return jsx('element', attrs, children);
   }
 
-  if (MARK_TAGS[nodeName]) {
-    const attrs = MARK_TAGS[nodeName](el);
-    return jsx('mark', attrs, children);
+  if (TEXT_TAGS[nodeName]) {
+    const attrs = TEXT_TAGS[nodeName](el);
+    return children.map(child => jsx('text', attrs, child));
   }
 
   return children;
@@ -178,35 +182,52 @@ const ImageElement = ({
   );
 };
 
-const Mark = ({ attributes, children, mark }: RenderMarkProps) => {
-  switch (mark.type) {
-    case 'bold':
-      return <strong {...attributes}>{children}</strong>;
-    case 'code':
-      return <code {...attributes}>{children}</code>;
-    case 'italic':
-      return <em {...attributes}>{children}</em>;
-    case 'underlined':
-      return <u {...attributes}>{children}</u>;
-    case 'strikethrough':
-      return <del {...attributes}>{children}</del>;
-    default:
-      return <span {...attributes}>{children}</span>;
+const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>;
   }
+
+  if (leaf.code) {
+    children = <code>{children}</code>;
+  }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>;
+  }
+
+  if (leaf.underlined) {
+    children = <u>{children}</u>;
+  }
+
+  if (leaf.strikethrough) {
+    children = <del>{children}</del>;
+  }
+
+  return <span {...attributes}>{children}</span>;
 };
 
 export const PasteHtml = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const renderElement = useCallback(props => <Element {...props} />, []);
-  const renderMark = useCallback(props => <Mark {...props} />, []);
+  const renderLeaf = useCallback(props => <Leaf {...props} />, []);
   const editor = useMemo(
     () => withHtml(withReact(withHistory(createEditor()))),
     []
   );
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Editable
         renderElement={renderElement}
-        renderMark={renderMark}
+        renderLeaf={renderLeaf}
         placeholder="Paste in some HTML..."
       />
     </Slate>

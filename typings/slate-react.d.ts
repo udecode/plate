@@ -1,9 +1,5 @@
 import { Editor, Node, NodeEntry, Range } from 'slate';
-import {
-  RenderDecorationProps,
-  RenderElementProps,
-  RenderMarkProps,
-} from 'slate-react';
+import { RenderElementProps, RenderLeafProps } from 'slate-react';
 
 declare module 'slate-react' {
   type SlateType = (props: {
@@ -20,11 +16,9 @@ declare module 'slate-react' {
     placeholder?: string;
     readOnly?: boolean;
     role?: string;
-    style?: Record<string, any>;
-    renderDecoration?: (props: RenderDecorationProps) => JSX.Element;
-
+    style?: React.CSSProperties;
     renderElement?: (props: RenderElementProps) => JSX.Element;
-    renderMark?: (props: RenderMarkProps) => JSX.Element;
+    renderLeaf?: (props: RenderLeafProps) => JSX.Element;
   }
 
   type EditableType = (props: EditableProps) => JSX.Element;
@@ -32,10 +26,10 @@ declare module 'slate-react' {
   type PluginEditor = (editor: Editor) => Editor;
 
   interface Plugin {
-    [key: string]: any;
     editor?: PluginEditor;
-    renderElement?: (props: RenderElementProps) => JSX.Element | undefined;
-    renderMark?: (props: RenderMarkProps) => JSX.Element | undefined;
+    decorate?: (entry: NodeEntry, pluginProps?: any) => Range[];
+    renderElement?: (props: RenderElementProps) => JSX.Element;
+    renderLeaf?: (props: RenderLeafProps) => JSX.Element;
     onKeyDown?: (e: any, editor: Editor) => void;
   }
 }

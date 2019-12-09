@@ -1,12 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
-import { createEditor, Editor } from 'slate';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createEditor, Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
-import { RenderElementProps, withReact } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
-import { NodeError, NodeRule, withSchema } from 'slate-schema';
+import { Editable, RenderElementProps, Slate, withReact } from 'slate-react';
+import { defineSchema } from 'slate-schema';
 import { initialValue } from './config';
 
-const schema: NodeRule[] = [
+const withSchema = defineSchema([
   {
     for: 'node',
     match: 'editor',
@@ -17,7 +16,8 @@ const schema: NodeRule[] = [
       ],
     },
     normalize: (editor, error) => {
-      const { code, path, index } = error as NodeError & { index: number };
+      const { code, path } = error;
+      const [index] = path;
       const type = index === 0 ? 'title' : 'paragraph';
 
       switch (code) {
@@ -26,12 +26,12 @@ const schema: NodeRule[] = [
           break;
         }
         case 'child_min_invalid': {
-          const block = { type, children: [{ text: '', marks: [] }] };
-          Editor.insertNodes(editor, block, { at: path.concat(index) });
+          const block = { type, children: [{ text: '' }] };
+          Editor.insertNodes(editor, block, { at: path });
           break;
         }
         case 'child_max_invalid': {
-          Editor.setNodes(editor, { type }, { at: path.concat(index) });
+          Editor.setNodes(editor, { type }, { at: path });
           break;
         }
         default:
@@ -39,7 +39,7 @@ const schema: NodeRule[] = [
       }
     },
   },
-];
+]);
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
@@ -53,13 +53,24 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
 };
 
 export const ForcedLayout = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const renderElement = useCallback(props => <Element {...props} />, []);
   const editor = useMemo(
-    () => withSchema(withHistory(withReact(createEditor())), schema),
+    () => withSchema(withHistory(withReact(createEditor()))),
     []
   );
+
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Editable
         renderElement={renderElement}
         placeholder="Enter a title…"

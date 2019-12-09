@@ -1,14 +1,16 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { css } from 'emotion';
 import { createEditor, Editor, Point, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
+  Editable,
+  ReactEditor,
   RenderElementProps,
+  Slate,
   useEditor,
   useReadOnly,
   withReact,
 } from 'slate-react';
-import { Editable, Slate } from 'slate-react-next';
 import { initialValue } from './config';
 
 const withChecklists = (editor: Editor) => {
@@ -89,8 +91,12 @@ const CheckListItemElement = ({
           type="checkbox"
           checked={checked}
           onChange={event => {
-            const path = editor.findPath(element);
-            editor.setNodes({ checked: event.target.checked }, { at: path });
+            const path = ReactEditor.findPath(editor, element);
+            Editor.setNodes(
+              editor,
+              { checked: event.target.checked },
+              { at: path }
+            );
           }}
         />
       </span>
@@ -114,13 +120,23 @@ const CheckListItemElement = ({
 };
 
 export const CheckLists = () => {
+  const [value, setValue] = useState(initialValue);
+  const [selection, setSelection] = useState<Range | null>(null);
   const renderElement = useCallback(props => <Element {...props} />, []);
   const editor = useMemo(
     () => withChecklists(withHistory(withReact(createEditor()))),
     []
   );
   return (
-    <Slate editor={editor} defaultValue={initialValue}>
+    <Slate
+      editor={editor}
+      value={value}
+      selection={selection}
+      onChange={(newValue, newSelection) => {
+        setValue(newValue);
+        setSelection(newSelection);
+      }}
+    >
       <Editable
         renderElement={renderElement}
         placeholder="Get to work…"

@@ -1,12 +1,12 @@
 # Slate Plugins
 
-```json
-"slate": "^0.50.8",
-"slate-history": "^0.50.10",
-"slate-hyperscript": "^0.50.8",
-"slate-react": "^0.50.10",
-"slate-schema": "^0.50.12",
-```
+## Dependencies
+
+- slate@0.52.3
+- slate-history@0.52.3
+- slate-hyperscript@0.52.3
+- slate-react@0.52.3
+- slate-schema@0.52.3
 
 ## Available Scripts
 
