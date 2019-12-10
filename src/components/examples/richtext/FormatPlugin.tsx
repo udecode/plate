@@ -1,7 +1,12 @@
 import React from 'react';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
+import {
+  OnKeyDown,
+  Plugin,
+  RenderElementProps,
+  RenderLeafProps,
+} from 'slate-react';
 import { HotKey } from 'plugins/common/constants';
 import {
   BlockFormat,
@@ -95,7 +100,7 @@ export const renderLeafFormat = ({ children, leaf }: RenderLeafProps) => {
   return children;
 };
 
-export const onKeyDownFormat = (e: any, editor: Editor) => {
+export const onKeyDownFormat: OnKeyDown = (e, { editor }) => {
   for (const hotkey of Object.keys(HotKey)) {
     if (isHotkey(hotkey, e)) {
       e.preventDefault();

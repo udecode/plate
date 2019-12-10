@@ -74,7 +74,7 @@ export const CustomEditable = ({
 
     plugins.forEach(plugin => {
       if (plugin.onKeyDown) {
-        plugin.onKeyDown(e, editor);
+        plugin.onKeyDown(e, { ...pluginProps, editor });
       }
     });
   };
