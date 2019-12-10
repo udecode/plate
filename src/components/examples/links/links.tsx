@@ -2,11 +2,12 @@
 import React, { useMemo, useState } from 'react';
 import { Range } from 'slate';
 import { Editable, Slate } from 'slate-react';
+import { CustomEditable } from 'plugins/common/components/CustomEditable';
 import { createCustomEditor } from 'plugins/common/helpers/createCustomEditor';
 import { Toolbar } from '../../components';
 import { initialValue } from './config';
 import { LinkButton } from './LinkButton';
-import { editorPlugins } from './links.plugins';
+import { editorPlugins, plugins } from './links.plugins';
 
 export const Links = () => {
   const [value, setValue] = useState(initialValue);
@@ -27,7 +28,7 @@ export const Links = () => {
       <Toolbar>
         <LinkButton />
       </Toolbar>
-      <Editable placeholder="Enter some text..." />
+      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );
 };
