@@ -1,71 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Editor, Range } from 'slate';
-import { ReactEditor, Slate, useSlate } from 'slate-react';
+import { Slate } from 'slate-react';
 import { CustomEditable } from 'plugins/common/components/CustomEditable';
 import { createCustomEditor } from 'plugins/common/helpers/createCustomEditor';
-import { Portal } from '../../components';
 import { CHARACTERS, initialValue } from './config';
 import { editorPlugins, plugins } from './mentions.plugins';
-
-const MentionSelect = ({
-  target,
-  chars,
-  index,
-}: {
-  target: any;
-  chars: string[];
-  index: number;
-}) => {
-  const ref: any = useRef();
-  const editor = useSlate();
-
-  useEffect(() => {
-    if (target && chars.length > 0) {
-      const el = ref.current;
-      const domRange = ReactEditor.toDOMRange(editor, target);
-      const rect = domRange.getBoundingClientRect();
-      if (el) {
-        el.style.top = `${rect.top + window.pageYOffset + 24}px`;
-        el.style.left = `${rect.left + window.pageXOffset}px`;
-      }
-    }
-  }, [chars.length, editor, target]);
-
-  return (
-    <Portal>
-      <div
-        ref={ref}
-        style={{
-          top: '-9999px',
-          left: '-9999px',
-          position: 'absolute',
-          zIndex: 1,
-          padding: '3px',
-          background: 'white',
-          borderRadius: '4px',
-          boxShadow: '0 1px 5px rgba(0,0,0,.2)',
-        }}
-      >
-        {chars.map((char, i) => (
-          <div
-            key={char}
-            style={{
-              padding: '1px 3px',
-              borderRadius: '3px',
-              background: i === index ? '#B4D5FF' : 'transparent',
-            }}
-          >
-            {char}
-          </div>
-        ))}
-      </div>
-    </Portal>
-  );
-};
+import { MentionSelect } from './MentionSelect';
 
 export const Mentions = () => {
   const [value, setValue] = useState(initialValue);
-  const ref: any = useRef();
   const [selection, setSelection] = useState<Range | null>(null);
   const [target, setTarget] = useState<Range | null>();
   const [index, setIndex] = useState(0);
@@ -81,16 +24,6 @@ export const Mentions = () => {
     () => ({ chars, index, target, setIndex, setTarget }),
     [chars, index, target]
   );
-
-  useEffect(() => {
-    if (target && chars.length > 0) {
-      const el = ref.current;
-      const domRange = ReactEditor.toDOMRange(editor, target);
-      const rect = domRange.getBoundingClientRect();
-      el.style.top = `${rect.top + window.pageYOffset + 24}px`;
-      el.style.left = `${rect.left + window.pageXOffset}px`;
-    }
-  }, [chars.length, editor, index, search, target]);
 
   return (
     <Slate
@@ -129,41 +62,8 @@ export const Mentions = () => {
         placeholder="Enter some text..."
       />
       {target && chars.length > 0 && (
-        <Portal>
-          <div
-            ref={ref}
-            style={{
-              top: '-9999px',
-              left: '-9999px',
-              position: 'absolute',
-              zIndex: 1,
-              padding: '3px',
-              background: 'white',
-              borderRadius: '4px',
-              boxShadow: '0 1px 5px rgba(0,0,0,.2)',
-            }}
-          >
-            {chars.map((char, i) => {
-              return (
-                <div
-                  key={char}
-                  style={{
-                    padding: '1px 3px',
-                    borderRadius: '3px',
-                    background: i === index ? '#B4D5FF' : 'transparent',
-                  }}
-                >
-                  {char}
-                </div>
-              );
-            })}
-          </div>
-        </Portal>
+        <MentionSelect target={target} index={index} chars={chars} />
       )}
     </Slate>
   );
 };
-
-// {/* {target && chars.length > 0 && (
-//   <MentionSelect target={target} index={index} chars={chars} />
-// )} */}
