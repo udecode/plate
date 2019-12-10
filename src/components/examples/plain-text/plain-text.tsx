@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createEditor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import { Editable, Slate, withReact } from 'slate-react';
-import { initialValue } from './config';
+import { initialValue } from './plain-text.config';
 
 export const PlainText = () => {
   const [value, setValue] = useState(initialValue);
