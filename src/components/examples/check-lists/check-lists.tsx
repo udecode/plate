@@ -3,8 +3,15 @@ import { Range } from 'slate';
 import { Slate } from 'slate-react';
 import { CustomEditable } from 'plugins/common/components/CustomEditable';
 import { createCustomEditor } from 'plugins/common/helpers/createCustomEditor';
+import { CreateEditablePlugins } from 'plugins/common/helpers/createEditablePlugins';
+import {
+  onKeyDownFormat,
+  renderElementFormat,
+  renderLeafFormat,
+} from '../richtext/FormatPlugin';
+import { initialValue } from './check-lists.config';
 import { editorPlugins, plugins } from './check-lists.plugins';
-import { initialValue } from './config';
+import { renderElementCheckList } from './CheckListPlugin';
 
 export const CheckLists = () => {
   const [value, setValue] = useState(initialValue);
@@ -22,12 +29,20 @@ export const CheckLists = () => {
         setSelection(newSelection);
       }}
     >
-      <CustomEditable
-        plugins={plugins}
+      <CreateEditablePlugins
+        renderElement={[renderElementCheckList, renderElementFormat]}
+        renderLeaf={[renderLeafFormat]}
+        onKeyDown={[onKeyDownFormat]}
         placeholder="Get to work…"
         spellCheck
         autoFocus
       />
+      {/* <CustomEditable
+        plugins={plugins}
+        placeholder="Get to work…"
+        spellCheck
+        autoFocus
+      /> */}
     </Slate>
   );
 };

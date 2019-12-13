@@ -61,14 +61,17 @@ export const withFormat = (editor: Editor) => {
 const onDOMBeforeInputFormat = (event: any, editor: Editor) => {
   switch (event.inputType) {
     case 'formatBold':
-      return editor.exec({ type: 'toggle_format', format: TextFormat.BOLD });
+      editor.exec({ type: 'toggle_format', format: TextFormat.BOLD });
+      return true;
     case 'formatItalic':
-      return editor.exec({ type: 'toggle_format', format: TextFormat.ITALIC });
+      editor.exec({ type: 'toggle_format', format: TextFormat.ITALIC });
+      return true;
     case 'formatUnderline':
-      return editor.exec({
+      editor.exec({
         type: 'toggle_format',
         format: TextFormat.UNDERLINED,
       });
+      return true;
     default:
       break;
   }

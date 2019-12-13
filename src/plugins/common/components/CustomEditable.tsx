@@ -1,27 +1,37 @@
 import React from 'react';
-import { NodeEntry, Range } from 'slate';
+import { Editor, NodeEntry, Range } from 'slate';
 import {
   Editable,
-  EditableProps,
+  OnKeyDown,
   Plugin,
   RenderElementProps,
   RenderLeafProps,
   useSlate,
 } from 'slate-react';
 
-interface CustomEditableProps extends EditableProps {
+interface CustomEditableProps {
+  [key: string]: any;
+  placeholder?: string;
+  readOnly?: boolean;
+  role?: string;
+  style?: React.CSSProperties;
   plugins?: Plugin[];
   pluginProps?: any;
+  decorate?: ((entry: NodeEntry) => Range[])[];
+  onDOMBeforeInput?: ((event: Event, editor: Editor) => void)[];
+  renderElement?: ((props: RenderElementProps) => JSX.Element)[];
+  renderLeaf?: ((props: RenderLeafProps) => JSX.Element)[];
+  onKeyDown?: OnKeyDown[];
 }
 
 export const CustomEditable = ({
   plugins = [],
   pluginProps = {},
-  decorate,
-  renderElement,
-  renderLeaf,
-  onDOMBeforeInput,
-  onKeyDown,
+  decorate: decorateList = [],
+  renderElement: renderElementList = [],
+  renderLeaf: renderLeafList = [],
+  onDOMBeforeInput: onDOMBeforeInputList = [],
+  onKeyDown: onKeyDownList = [],
   ...props
 }: CustomEditableProps) => {
   const editor = useSlate();
@@ -29,41 +39,43 @@ export const CustomEditable = ({
   const decoratePlugins = (entry: NodeEntry) => {
     let ranges: Range[] = [];
 
-    if (plugins) {
-      if (decorate) {
-        ranges = decorate(entry);
-      }
+    decorateList.forEach(decorate => {
+      const newRanges = decorate(entry) ?? [];
+      if (newRanges.length) ranges = [...ranges, ...newRanges];
+    });
 
-      if (!ranges.length) {
-        plugins.some(plugin => {
-          if (plugin.decorate) {
-            ranges = plugin.decorate(entry, pluginProps);
-          }
-          return ranges.length > 0;
-        });
-      }
-    }
+    plugins.forEach(plugin => {
+      if (!plugin.decorate) return;
+
+      const newRanges = plugin.decorate(entry) ?? [];
+      if (newRanges.length) ranges = [...ranges, ...newRanges];
+    });
 
     return ranges;
   };
 
   const onDOMBeforeInputPlugins = (event: Event) => {
-    let element = onDOMBeforeInput && onDOMBeforeInput(event);
-    if (element) return;
+    onDOMBeforeInputList.forEach(onDOMBeforeInput => {
+      onDOMBeforeInput(event, editor);
+    });
 
-    plugins.some(plugin => {
-      element =
-        plugin.onDOMBeforeInput && plugin.onDOMBeforeInput(event, editor);
-      return !!element;
+    plugins.forEach(({ onDOMBeforeInput }) => {
+      if (!onDOMBeforeInput) return;
+      onDOMBeforeInput(event, editor);
     });
   };
 
   const renderElementPlugins = (elementProps: RenderElementProps) => {
-    let element = renderElement && renderElement(elementProps);
+    let element;
+
+    renderElementList.some(renderElement => {
+      element = renderElement(elementProps);
+      return !!element;
+    });
     if (element) return element;
 
-    plugins.some(plugin => {
-      element = plugin.renderElement && plugin.renderElement(elementProps);
+    plugins.some(({ renderElement }) => {
+      element = renderElement && renderElement(elementProps);
       return !!element;
     });
     if (element) return element;
@@ -72,22 +84,26 @@ export const CustomEditable = ({
   };
 
   const renderLeafPlugins = (leafProps: RenderLeafProps) => {
-    if (renderLeaf) leafProps.children = renderLeaf(leafProps);
+    renderLeafList.forEach(renderLeaf => {
+      leafProps.children = renderLeaf(leafProps);
+    });
 
-    plugins.forEach(plugin => {
-      if (plugin.renderLeaf) leafProps.children = plugin.renderLeaf(leafProps);
+    plugins.forEach(({ renderLeaf }) => {
+      if (!renderLeaf) return;
+      leafProps.children = renderLeaf(leafProps);
     });
 
     return <span {...leafProps.attributes}>{leafProps.children}</span>;
   };
 
   const onKeyDownPlugins = (e: any) => {
-    if (onKeyDown) onKeyDown(e);
+    onKeyDownList.forEach(onKeyDown => {
+      onKeyDown(e, { ...pluginProps, editor });
+    });
 
-    plugins.forEach(plugin => {
-      if (plugin.onKeyDown) {
-        plugin.onKeyDown(e, { ...pluginProps, editor });
-      }
+    plugins.forEach(({ onKeyDown }) => {
+      if (!onKeyDown) return;
+      onKeyDown(e, { ...pluginProps, editor });
     });
   };
 
