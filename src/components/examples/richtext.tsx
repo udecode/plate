@@ -1,27 +1,23 @@
 import React, { useMemo, useState } from 'react';
-import { Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
+  BlockButton,
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  FormatButton,
   FormatPlugin,
+  MarkButton,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from 'config/initialValues';
 import { Toolbar } from '../components';
 
-export const plugins = [FormatPlugin()];
+const plugins = [FormatPlugin()];
 
-export const editorPlugins = createEditorPlugins(
-  [withReact, withHistory],
-  plugins
-);
+const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
 export const RichText = () => {
   const [value, setValue] = useState(initialValueRichText);
-  const [selection, setSelection] = useState<Range | null>(null);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -29,22 +25,18 @@ export const RichText = () => {
     <Slate
       editor={editor}
       value={value}
-      selection={selection}
-      onChange={(newValue, newSelection) => {
-        setValue(newValue);
-        setSelection(newSelection);
-      }}
+      onChange={newValue => setValue(newValue)}
     >
       <Toolbar>
-        <FormatButton format="bold" icon="format_bold" />
-        <FormatButton format="italic" icon="format_italic" />
-        <FormatButton format="underlined" icon="format_underlined" />
-        <FormatButton format="code" icon="code" />
-        <FormatButton format="heading-one" icon="looks_one" />
-        <FormatButton format="heading-two" icon="looks_two" />
-        <FormatButton format="block-quote" icon="format_quote" />
-        <FormatButton format="numbered-list" icon="format_list_numbered" />
-        <FormatButton format="bulleted-list" icon="format_list_bulleted" />
+        <MarkButton format="bold" icon="format_bold" />
+        <MarkButton format="italic" icon="format_italic" />
+        <MarkButton format="underline" icon="format_underlined" />
+        <MarkButton format="code" icon="code" />
+        <BlockButton format="heading-one" icon="looks_one" />
+        <BlockButton format="heading-two" icon="looks_two" />
+        <BlockButton format="block-quote" icon="format_quote" />
+        <BlockButton format="numbered-list" icon="format_list_numbered" />
+        <BlockButton format="bulleted-list" icon="format_list_bulleted" />
       </Toolbar>
       <CustomEditable
         plugins={plugins}

@@ -1,7 +1,7 @@
 export const TextFormat = {
   BOLD: 'bold',
   ITALIC: 'italic',
-  UNDERLINED: 'underlined',
+  UNDERLINE: 'underline',
   STRIKETHROUGH: 'strikethrough',
   CODE: 'code',
 
@@ -10,7 +10,7 @@ export const TextFormat = {
   FONTSIZE: 'FONTSIZE',
 };
 
-export enum ListFormat {
+export enum ListType {
   OL_LIST = 'numbered-list',
   UL_LIST = 'bulleted-list',
 }
@@ -35,7 +35,7 @@ export const ElementType = {
   TABLE_CELL: 'table-cell',
 
   // Lists
-  ...ListFormat,
+  ...ListType,
   LIST_ITEM: 'list-item',
 
   CHECK_LIST_ITEM: 'check-list-item',

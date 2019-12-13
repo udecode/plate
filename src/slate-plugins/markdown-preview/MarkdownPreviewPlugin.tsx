@@ -57,7 +57,7 @@ export const renderLeafPreview = ({
     className={css`
     font-weight: ${leaf.bold && 'bold'};
     font-style: ${leaf.italic && 'italic'};
-    text-decoration: ${leaf.underlined && 'underline'};
+    text-decoration: ${leaf.underline && 'underline'};
     ${leaf.title &&
       css`
         display: inline-block;

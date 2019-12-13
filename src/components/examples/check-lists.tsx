@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   CheckListPlugin,
@@ -24,7 +23,6 @@ const editorPlugins = createEditorPlugins(
 
 export const CheckLists = () => {
   const [value, setValue] = useState(initialValueCheckLists);
-  const [selection, setSelection] = useState<Range | null>(null);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -32,11 +30,7 @@ export const CheckLists = () => {
     <Slate
       editor={editor}
       value={value}
-      selection={selection}
-      onChange={(newValue, newSelection) => {
-        setValue(newValue);
-        setSelection(newSelection);
-      }}
+      onChange={newValue => setValue(newValue)}
     >
       <CustomEditable
         renderElement={[renderElementCheckList, renderElementFormat]}

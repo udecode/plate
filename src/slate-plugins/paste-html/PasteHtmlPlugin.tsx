@@ -163,7 +163,7 @@ export const renderLeafPasteHtml = ({ children, leaf }: RenderLeafProps) => {
     children = <em>{children}</em>;
   }
 
-  if (leaf.underlined) {
+  if (leaf.underline) {
     children = <u>{children}</u>;
   }
 

@@ -30,14 +30,13 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
-    "next": "^9.1.5",
     "prismjs": "^1.17.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "slate": "0.53.0",
-    "slate-history": "0.53.0",
-    "slate-hyperscript": "0.53.0",
-    "slate-react": "0.53.0"
+    "slate": "0.54.4",
+    "slate-history": "0.54.4",
+    "slate-hyperscript": "0.54.4",
+    "slate-react": "0.54.4"
   },
   "devDependencies": {
     "@borealisgroup/eslint-config-ts": "1.1.3",

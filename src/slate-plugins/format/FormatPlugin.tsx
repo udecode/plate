@@ -4,7 +4,7 @@ import { Editor } from 'slate';
 import { HotKey } from 'slate-plugins/common/constants';
 import {
   ElementType,
-  ListFormat,
+  ListType,
   TextFormat,
 } from 'slate-plugins/common/constants/formats';
 import {
@@ -13,41 +13,31 @@ import {
   RenderElementProps,
   RenderLeafProps,
 } from 'slate-react';
-import { isFormatActive } from './queries';
+import { isBlockActive } from './queries';
 
 export const withFormat = (editor: Editor) => {
   const { exec } = editor;
 
   editor.exec = command => {
-    if (command.type === 'toggle_format') {
+    if (command.type === 'format_block') {
       const { format } = command;
-      const isActive = isFormatActive(editor, format);
-      const isList = Object.values(ListFormat).includes(format);
+      const isActive = isBlockActive(editor, format);
+      const isList = Object.values(ListType).includes(format);
 
-      if (Object.values(TextFormat).includes(format)) {
-        Editor.setNodes(
-          editor,
-          { [format]: isActive ? null : true },
-          { match: 'text', split: true }
-        );
-      }
+      Object.values(ListType).forEach(f => {
+        Editor.unwrapNodes(editor, { match: { type: f }, split: true });
+      });
 
-      if (Object.values(ElementType).includes(format)) {
-        Object.values(ListFormat).forEach(f => {
-          Editor.unwrapNodes(editor, { match: { type: f }, split: true });
-        });
+      Editor.setNodes(editor, {
+        type: isActive
+          ? ElementType.PARAGRAPH
+          : isList
+          ? ElementType.LIST_ITEM
+          : format,
+      });
 
-        Editor.setNodes(editor, {
-          type: isActive
-            ? ElementType.PARAGRAPH
-            : isList
-            ? ElementType.LIST_ITEM
-            : format,
-        });
-
-        if (!isActive && isList) {
-          Editor.wrapNodes(editor, { type: format, children: [] });
-        }
+      if (!isActive && isList) {
+        Editor.wrapNodes(editor, { type: format, children: [] });
       }
     } else {
       exec(command);
@@ -69,7 +59,7 @@ const onDOMBeforeInputFormat = (event: any, editor: Editor) => {
     case 'formatUnderline':
       editor.exec({
         type: 'toggle_format',
-        format: TextFormat.UNDERLINED,
+        format: TextFormat.UNDERLINE,
       });
       return true;
     default:
@@ -113,7 +103,7 @@ export const renderLeafFormat = ({ children, leaf }: RenderLeafProps) => {
     children = <em>{children}</em>;
   }
 
-  if (leaf.underlined) {
+  if (leaf.underline) {
     children = <u>{children}</u>;
   }
 
@@ -124,9 +114,10 @@ export const onKeyDownFormat: OnKeyDown = (e, { editor }) => {
   for (const hotkey of Object.keys(HotKey)) {
     if (isHotkey(hotkey, e)) {
       e.preventDefault();
+      const mark = HotKey[hotkey];
       editor.exec({
-        type: 'toggle_format',
-        format: HotKey[hotkey],
+        type: 'format_text',
+        properties: { [mark]: true },
       });
     }
   }

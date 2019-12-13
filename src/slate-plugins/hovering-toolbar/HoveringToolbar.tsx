@@ -3,7 +3,7 @@ import { css } from 'emotion';
 import { Editor, Range } from 'slate';
 import { ReactEditor, useSlate } from 'slate-react';
 import { Menu, Portal } from 'components/components';
-import { FormatButton } from '../format/FormatButton';
+import { MarkButton } from '../format/MarkButton';
 
 export const HoveringToolbar = () => {
   const ref = useRef();
@@ -54,9 +54,9 @@ export const HoveringToolbar = () => {
           /* transition: opacity 0.75s; */
         `}
       >
-        <FormatButton reversed format="bold" icon="format_bold" />
-        <FormatButton reversed format="italic" icon="format_italic" />
-        <FormatButton reversed format="underlined" icon="format_underlined" />
+        <MarkButton reversed format="bold" icon="format_bold" />
+        <MarkButton reversed format="italic" icon="format_italic" />
+        <MarkButton reversed format="underline" icon="format_underlined" />
       </Menu>
     </Portal>
   );

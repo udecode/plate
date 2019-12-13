@@ -12,16 +12,12 @@ import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from 'config/data';
 import { initialValueMentions } from 'config/initialValues';
 
-export const plugins = [MentionPlugin()];
+const plugins = [MentionPlugin()];
 
-export const editorPlugins = createEditorPlugins(
-  [withReact, withHistory],
-  plugins
-);
+const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
 export const Mentions = () => {
   const [value, setValue] = useState(initialValueMentions);
-  const [selection, setSelection] = useState<Range | null>(null);
   const [target, setTarget] = useState<Range | null>();
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
@@ -41,12 +37,13 @@ export const Mentions = () => {
     <Slate
       editor={editor}
       value={value}
-      selection={selection}
-      onChange={(newValue, newSelection) => {
+      onChange={newValue => {
         setValue(newValue);
-        setSelection(newSelection);
-        if (newSelection && Range.isCollapsed(newSelection)) {
-          const [start] = Range.edges(newSelection);
+
+        const { selection } = editor;
+
+        if (selection && Range.isCollapsed(selection)) {
+          const [start] = Range.edges(selection);
           const wordBefore = Editor.before(editor, start, { unit: 'word' });
           const before = wordBefore && Editor.before(editor, wordBefore);
           const beforeRange = before && Editor.range(editor, before, start);
