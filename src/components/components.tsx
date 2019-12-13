@@ -69,6 +69,7 @@ export const EditorValue = React.forwardRef(
     );
   }
 );
+
 export const Icon = React.forwardRef(({ className, ...props }: any, ref) => (
   <span
     {...props}
@@ -84,6 +85,7 @@ export const Icon = React.forwardRef(({ className, ...props }: any, ref) => (
     )}
   />
 ));
+
 export const Instruction = React.forwardRef(
   ({ className, ...props }: any, ref) => (
     <div
@@ -102,6 +104,7 @@ export const Instruction = React.forwardRef(
     />
   )
 );
+
 export const Menu = React.forwardRef(({ className, ...props }: any, ref) => (
   <div
     {...props}
@@ -119,9 +122,11 @@ export const Menu = React.forwardRef(({ className, ...props }: any, ref) => (
     )}
   />
 ));
+
 export const Portal = ({ children }: any) => {
   return ReactDOM.createPortal(children, document.body);
 };
+
 export const Toolbar = React.forwardRef(({ className, ...props }: any, ref) => (
   <Menu
     {...props}
