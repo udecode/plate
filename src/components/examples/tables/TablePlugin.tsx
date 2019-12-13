@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
-import { BlockFormat } from 'plugins/common/constants/formats';
+import { ElementType } from 'plugins/common/constants/formats';
 
 export const withTable = (editor: Editor) => {
   const { exec } = editor;
@@ -16,7 +16,7 @@ export const withTable = (editor: Editor) => {
       Range.isCollapsed(selection)
     ) {
       const [cell] = Editor.nodes(editor, {
-        match: { type: BlockFormat.TABLE_CELL },
+        match: { type: ElementType.TABLE_CELL },
       });
 
       if (cell) {
@@ -34,7 +34,7 @@ export const withTable = (editor: Editor) => {
 
     if (type === 'insert_break' && selection) {
       const [table] = Editor.nodes(editor, {
-        match: { type: BlockFormat.TABLE },
+        match: { type: ElementType.TABLE },
       });
 
       if (table) {
@@ -54,15 +54,15 @@ export const renderElementTable = ({
   element,
 }: RenderElementProps) => {
   switch (element.type) {
-    case BlockFormat.TABLE:
+    case ElementType.TABLE:
       return (
         <table>
           <tbody {...attributes}>{children}</tbody>
         </table>
       );
-    case BlockFormat.TABLE_ROW:
+    case ElementType.TABLE_ROW:
       return <tr {...attributes}>{children}</tr>;
-    case BlockFormat.TABLE_CELL:
+    case ElementType.TABLE_CELL:
       return <td {...attributes}>{children}</td>;
     default:
       break;

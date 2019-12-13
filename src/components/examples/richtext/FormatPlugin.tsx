@@ -9,11 +9,11 @@ import {
 } from 'slate-react';
 import { HotKey } from 'plugins/common/constants';
 import {
-  BlockFormat,
+  ElementType,
   ListFormat,
   TextFormat,
 } from 'plugins/common/constants/formats';
-import { FormatElement } from './FormatElement';
+import { isFormatActive } from './queries';
 
 export const withFormat = (editor: Editor) => {
   const { exec } = editor;
@@ -21,7 +21,7 @@ export const withFormat = (editor: Editor) => {
   editor.exec = command => {
     if (command.type === 'toggle_format') {
       const { format } = command;
-      const isActive = FormatElement.isFormatActive(editor, format);
+      const isActive = isFormatActive(editor, format);
       const isList = Object.values(ListFormat).includes(format);
 
       if (Object.values(TextFormat).includes(format)) {
@@ -32,16 +32,16 @@ export const withFormat = (editor: Editor) => {
         );
       }
 
-      if (Object.values(BlockFormat).includes(format)) {
+      if (Object.values(ElementType).includes(format)) {
         Object.values(ListFormat).forEach(f => {
           Editor.unwrapNodes(editor, { match: { type: f }, split: true });
         });
 
         Editor.setNodes(editor, {
           type: isActive
-            ? BlockFormat.PARAGRAPH
+            ? ElementType.PARAGRAPH
             : isList
-            ? BlockFormat.LIST_ITEM
+            ? ElementType.LIST_ITEM
             : format,
         });
 
@@ -57,23 +57,40 @@ export const withFormat = (editor: Editor) => {
   return editor;
 };
 
+// ?
+const onDOMBeforeInputFormat = (event: any, editor: Editor) => {
+  switch (event.inputType) {
+    case 'formatBold':
+      return editor.exec({ type: 'toggle_format', format: TextFormat.BOLD });
+    case 'formatItalic':
+      return editor.exec({ type: 'toggle_format', format: TextFormat.ITALIC });
+    case 'formatUnderline':
+      return editor.exec({
+        type: 'toggle_format',
+        format: TextFormat.UNDERLINED,
+      });
+    default:
+      break;
+  }
+};
+
 export const renderElementFormat = ({
   attributes,
   children,
   element,
 }: RenderElementProps) => {
   switch (element.type) {
-    case BlockFormat.BLOCK_QUOTE:
+    case ElementType.BLOCK_QUOTE:
       return <blockquote {...attributes}>{children}</blockquote>;
-    case BlockFormat.HEADING_1:
+    case ElementType.HEADING_1:
       return <h1 {...attributes}>{children}</h1>;
-    case BlockFormat.HEADING_2:
+    case ElementType.HEADING_2:
       return <h2 {...attributes}>{children}</h2>;
-    case BlockFormat.UL_LIST:
+    case ElementType.UL_LIST:
       return <ul {...attributes}>{children}</ul>;
-    case BlockFormat.OL_LIST:
+    case ElementType.OL_LIST:
       return <ol {...attributes}>{children}</ol>;
-    case BlockFormat.LIST_ITEM:
+    case ElementType.LIST_ITEM:
       return <li {...attributes}>{children}</li>;
     default:
       break;
@@ -114,6 +131,7 @@ export const onKeyDownFormat: OnKeyDown = (e, { editor }) => {
 
 export const FormatPlugin = (): Plugin => ({
   editor: withFormat,
+  onDOMBeforeInput: onDOMBeforeInputFormat,
   renderElement: renderElementFormat,
   renderLeaf: renderLeafFormat,
   onKeyDown: onKeyDownFormat,

@@ -7,7 +7,7 @@ export const initialValue: Node[] = [];
 
 for (let h = 0; h < HEADINGS; h++) {
   initialValue.push({
-    type: 'heading',
+    type: 'heading-one',
     children: [{ text: faker.lorem.sentence() }],
   });
 

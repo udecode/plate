@@ -3,8 +3,9 @@
  */
 
 export enum BLOCKS {
-  DOCUMENT = 'document',
-  TEXT = 'unstyled',
+  // Default block
+  DEFAULT = 'paragraph',
+
   // Classic blocks
   CODE = 'code_block',
   CODE_LINE = 'code_line',
@@ -13,6 +14,7 @@ export enum BLOCKS {
   FOOTNOTE = 'footnote',
   HTML = 'html_block',
   HR = 'hr',
+
   // Headings
   HEADING_1 = 'header_one',
   HEADING_2 = 'header_two',
@@ -20,17 +22,16 @@ export enum BLOCKS {
   HEADING_4 = 'header_four',
   HEADING_5 = 'header_five',
   HEADING_6 = 'header_six',
+
   // Table
   TABLE = 'table',
   TABLE_ROW = 'table_row',
   TABLE_CELL = 'table_cell',
+
   // Lists
   OL_LIST = 'ordered_list',
   UL_LIST = 'unordered_list',
   LIST_ITEM = 'list_item',
-
-  // Default block
-  DEFAULT = 'paragraph',
 
   // Special
   IMAGE = 'image',
@@ -38,6 +39,9 @@ export enum BLOCKS {
   FLASHCARD = 'flashcard',
   FLASHCARD_FRONT = 'flashcard_front',
   FLASHCARD_BACK = 'flashcard_back',
+
+  // Inlines
+  LINK = 'link',
 }
 
 export enum VIDEOS {

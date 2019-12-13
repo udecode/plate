@@ -15,7 +15,7 @@ export enum ListFormat {
   UL_LIST = 'bulleted-list',
 }
 
-export const BlockFormat = {
+export const ElementType = {
   // Classic blocks
   PARAGRAPH: 'paragraph',
   BLOCK_QUOTE: 'block-quote',
@@ -38,11 +38,13 @@ export const BlockFormat = {
   ...ListFormat,
   LIST_ITEM: 'list-item',
 
-  IMAGE: 'image',
-};
+  CHECK_LIST_ITEM: 'check-list-item',
 
-export enum InlineFormat {
-  HTML = 'html',
-  LINK = 'link',
-  EMOJI = 'emoji',
-}
+  IMAGE: 'image',
+  VIDEO: 'video',
+
+  // Inlines
+  LINK: 'link',
+  HTML: 'html',
+  EMOJI: 'emoji',
+};

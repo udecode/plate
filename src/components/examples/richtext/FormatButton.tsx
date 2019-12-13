@@ -1,13 +1,15 @@
 import React from 'react';
 import { useSlate } from 'slate-react';
-import { FormatElement } from 'components/examples/richtext/FormatElement';
 import { Button, Icon } from '../../components';
+import { isFormatActive } from './queries';
 
-export const FormatButton = ({ format, icon }: any) => {
+export const FormatButton = ({ format, icon, reversed = false }: any) => {
   const editor = useSlate();
+  
   return (
     <Button
-      active={FormatElement.isFormatActive(editor, format)}
+      reversed={reversed}
+      active={isFormatActive(editor, format)}
       onMouseDown={(event: any) => {
         event.preventDefault();
         editor.exec({ type: 'toggle_format', format });

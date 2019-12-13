@@ -1,19 +1,19 @@
 import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { Plugin, RenderElementProps } from 'slate-react';
-import { BlockFormat } from 'plugins/common/constants/formats';
+import { ElementType } from 'plugins/common/constants/formats';
 
 const SHORTCUTS: { [key: string]: string } = {
-  '*': BlockFormat.LIST_ITEM,
-  '-': BlockFormat.LIST_ITEM,
-  '+': BlockFormat.LIST_ITEM,
-  '>': BlockFormat.BLOCK_QUOTE,
-  '#': BlockFormat.HEADING_1,
-  '##': BlockFormat.HEADING_2,
-  '###': BlockFormat.HEADING_3,
-  '####': BlockFormat.HEADING_4,
-  '#####': BlockFormat.HEADING_5,
-  '######': BlockFormat.HEADING_6,
+  '*': ElementType.LIST_ITEM,
+  '-': ElementType.LIST_ITEM,
+  '+': ElementType.LIST_ITEM,
+  '>': ElementType.BLOCK_QUOTE,
+  '#': ElementType.HEADING_1,
+  '##': ElementType.HEADING_2,
+  '###': ElementType.HEADING_3,
+  '####': ElementType.HEADING_4,
+  '#####': ElementType.HEADING_5,
+  '######': ElementType.HEADING_6,
 };
 
 export const withShortcuts = (editor: Editor) => {
@@ -41,10 +41,10 @@ export const withShortcuts = (editor: Editor) => {
         Editor.delete(editor);
         Editor.setNodes(editor, { type }, { match: 'block' });
 
-        if (type === BlockFormat.LIST_ITEM) {
-          const list = { type: BlockFormat.UL_LIST, children: [] };
+        if (type === ElementType.LIST_ITEM) {
+          const list = { type: ElementType.UL_LIST, children: [] };
           Editor.wrapNodes(editor, list, {
-            match: { type: BlockFormat.LIST_ITEM },
+            match: { type: ElementType.LIST_ITEM },
           });
         }
 
@@ -64,14 +64,14 @@ export const withShortcuts = (editor: Editor) => {
         const start = Editor.start(editor, path);
 
         if (
-          block.type !== BlockFormat.PARAGRAPH &&
+          block.type !== ElementType.PARAGRAPH &&
           Point.equals(selection.anchor, start)
         ) {
-          Editor.setNodes(editor, { type: BlockFormat.PARAGRAPH });
+          Editor.setNodes(editor, { type: ElementType.PARAGRAPH });
 
-          if (block.type === BlockFormat.LIST_ITEM) {
+          if (block.type === ElementType.LIST_ITEM) {
             Editor.unwrapNodes(editor, {
-              match: { type: BlockFormat.UL_LIST },
+              match: { type: ElementType.UL_LIST },
             });
           }
 
@@ -92,23 +92,23 @@ export const renderElementShortcuts = ({
   element,
 }: RenderElementProps) => {
   switch (element.type) {
-    case BlockFormat.BLOCK_QUOTE:
+    case ElementType.BLOCK_QUOTE:
       return <blockquote {...attributes}>{children}</blockquote>;
-    case BlockFormat.UL_LIST:
+    case ElementType.UL_LIST:
       return <ul {...attributes}>{children}</ul>;
-    case BlockFormat.HEADING_1:
+    case ElementType.HEADING_1:
       return <h1 {...attributes}>{children}</h1>;
-    case BlockFormat.HEADING_2:
+    case ElementType.HEADING_2:
       return <h2 {...attributes}>{children}</h2>;
-    case BlockFormat.HEADING_3:
+    case ElementType.HEADING_3:
       return <h3 {...attributes}>{children}</h3>;
-    case BlockFormat.HEADING_4:
+    case ElementType.HEADING_4:
       return <h4 {...attributes}>{children}</h4>;
-    case BlockFormat.HEADING_5:
+    case ElementType.HEADING_5:
       return <h5 {...attributes}>{children}</h5>;
-    case BlockFormat.HEADING_6:
+    case ElementType.HEADING_6:
       return <h6 {...attributes}>{children}</h6>;
-    case BlockFormat.LIST_ITEM:
+    case ElementType.LIST_ITEM:
       return <li {...attributes}>{children}</li>;
     default:
       break;

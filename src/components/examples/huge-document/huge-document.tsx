@@ -1,22 +1,17 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { createEditor, Range } from 'slate';
-import { Editable, RenderElementProps, Slate, withReact } from 'slate-react';
+import React, { useMemo, useState } from 'react';
+import { Range } from 'slate';
+import { Slate } from 'slate-react';
+import { CustomEditable } from 'plugins/common/components/CustomEditable';
+import { createCustomEditor } from 'plugins/common/helpers/createCustomEditor';
 import { initialValue } from './config';
-
-const Element = ({ attributes, children, element }: RenderElementProps) => {
-  switch (element.type) {
-    case 'heading':
-      return <h1 {...attributes}>{children}</h1>;
-    default:
-      return <p {...attributes}>{children}</p>;
-  }
-};
+import { editorPlugins, plugins } from './huge-documents.plugins';
 
 export const HugeDocument = () => {
   const [value, setValue] = useState(initialValue);
   const [selection, setSelection] = useState<Range | null>(null);
-  const renderElement = useCallback(props => <Element {...props} />, []);
-  const editor = useMemo(() => withReact(createEditor()), []);
+
+  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+
   return (
     <Slate
       editor={editor}
@@ -27,7 +22,7 @@ export const HugeDocument = () => {
         setSelection(newSelection);
       }}
     >
-      <Editable renderElement={renderElement} spellCheck autoFocus />
+      <CustomEditable plugins={plugins} spellCheck autoFocus />
     </Slate>
   );
 };

@@ -245,7 +245,7 @@ export const ExamplePage = () => {
     >
       <div>
         <Header>
-          <Title>Slate 0.52 - Plugins</Title>
+          <Title>Slate Plugins - 0.52</Title>
           <LinkList>
             <A href="https://github.com/ianstormtaylor/slate">GitHub</A>
             <A href="https://docs.slatejs.org/">Docs</A>

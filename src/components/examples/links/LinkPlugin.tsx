@@ -2,13 +2,14 @@ import React from 'react';
 import isUrl from 'is-url';
 import { Editor } from 'slate';
 import { Plugin, RenderElementProps } from 'slate-react';
+import { ElementType } from 'plugins/common/constants/formats';
 import { wrapLink } from './commands';
 
 export const withLink = (editor: Editor) => {
   const { exec, isInline } = editor;
 
   editor.isInline = element => {
-    return element.type === 'link' ? true : isInline(element);
+    return element.type === ElementType.LINK ? true : isInline(element);
   };
 
   editor.exec = command => {
@@ -46,7 +47,7 @@ export const renderElementLink = ({
   element,
 }: RenderElementProps) => {
   switch (element.type) {
-    case 'link':
+    case ElementType.LINK:
       return (
         <a {...attributes} href={element.url}>
           {children}

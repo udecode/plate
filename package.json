@@ -44,11 +44,10 @@
     "react-error-boundary": "^1.2.5",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
-    "slate": "0.52.2",
-    "slate-history": "0.52.2",
-    "slate-hyperscript": "0.52.2",
-    "slate-react": "0.52.2",
-    "slate-schema": "^0.52.2",
+    "slate": "0.53.0",
+    "slate-history": "0.53.0",
+    "slate-hyperscript": "0.53.0",
+    "slate-react": "0.53.0",
     "typescript": "3.7.3"
   },
   "devDependencies": {

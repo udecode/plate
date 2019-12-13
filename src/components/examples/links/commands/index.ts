@@ -1,8 +1,9 @@
-import { Editor } from 'slate';
+import { Editor, Range } from 'slate';
+import { ElementType } from 'plugins/common/constants/formats';
 import { isLinkActive } from '../queries';
 
 export const unwrapLink = (editor: Editor) => {
-  Editor.unwrapNodes(editor, { match: { type: 'link' } });
+  Editor.unwrapNodes(editor, { match: { type: ElementType.LINK } });
 };
 
 export const wrapLink = (editor: Editor, url: string) => {
@@ -10,7 +11,18 @@ export const wrapLink = (editor: Editor, url: string) => {
     unwrapLink(editor);
   }
 
-  const link = { type: 'link', url, children: [] };
-  Editor.wrapNodes(editor, link, { split: true });
-  Editor.collapse(editor, { edge: 'end' });
+  const { selection } = editor;
+  const isCollapsed = selection && Range.isCollapsed(selection);
+  const link = {
+    type: 'link',
+    url,
+    children: isCollapsed ? [{ text: url }] : [],
+  };
+
+  if (isCollapsed) {
+    Editor.insertNodes(editor, link);
+  } else {
+    Editor.wrapNodes(editor, link, { split: true });
+    Editor.collapse(editor, { edge: 'end' });
+  }
 };

@@ -2,7 +2,7 @@ import { Node } from 'slate';
 
 export const initialValue: Node[] = [
   {
-    type: 'title',
+    type: 'heading-one',
     children: [{ text: 'Enforce Your Layout!' }],
   },
   {
@@ -10,7 +10,7 @@ export const initialValue: Node[] = [
     children: [
       {
         text:
-          'This example shows how to enforce your layout with schema-specific rules. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!',
+          'This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one paragraph in the body. Try deleting them and see what happens!',
       },
     ],
   },

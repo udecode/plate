@@ -2,24 +2,24 @@ import React from 'react';
 import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
-import { BlockFormat, InlineFormat } from 'plugins/common/constants/formats';
+import { ElementType } from 'plugins/common/constants/formats';
 import { ImageElement } from './ImageElement';
 
 const ELEMENT_TAGS: any = {
-  A: (el: any) => ({ type: InlineFormat.LINK, url: el.getAttribute('href') }),
-  BLOCKQUOTE: () => ({ type: BlockFormat.BLOCK_QUOTE }),
-  H1: () => ({ type: BlockFormat.HEADING_1 }),
-  H2: () => ({ type: BlockFormat.HEADING_2 }),
-  H3: () => ({ type: BlockFormat.HEADING_3 }),
-  H4: () => ({ type: BlockFormat.HEADING_4 }),
-  H5: () => ({ type: BlockFormat.HEADING_5 }),
-  H6: () => ({ type: BlockFormat.HEADING_6 }),
-  IMG: (el: any) => ({ type: BlockFormat.IMAGE, url: el.getAttribute('src') }),
-  LI: () => ({ type: BlockFormat.LIST_ITEM }),
-  OL: () => ({ type: BlockFormat.OL_LIST }),
-  P: () => ({ type: BlockFormat.PARAGRAPH }),
-  PRE: () => ({ type: BlockFormat.CODE }),
-  UL: () => ({ type: BlockFormat.UL_LIST }),
+  A: (el: any) => ({ type: ElementType.LINK, url: el.getAttribute('href') }),
+  BLOCKQUOTE: () => ({ type: ElementType.BLOCK_QUOTE }),
+  H1: () => ({ type: ElementType.HEADING_1 }),
+  H2: () => ({ type: ElementType.HEADING_2 }),
+  H3: () => ({ type: ElementType.HEADING_3 }),
+  H4: () => ({ type: ElementType.HEADING_4 }),
+  H5: () => ({ type: ElementType.HEADING_5 }),
+  H6: () => ({ type: ElementType.HEADING_6 }),
+  IMG: (el: any) => ({ type: ElementType.IMAGE, url: el.getAttribute('src') }),
+  LI: () => ({ type: ElementType.LIST_ITEM }),
+  OL: () => ({ type: ElementType.OL_LIST }),
+  P: () => ({ type: ElementType.PARAGRAPH }),
+  PRE: () => ({ type: ElementType.CODE }),
+  UL: () => ({ type: ElementType.UL_LIST }),
 };
 
 // COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
@@ -81,11 +81,11 @@ export const withPasteHtml = (editor: Editor) => {
   const { exec, isInline, isVoid } = editor;
 
   editor.isInline = element => {
-    return element.type === InlineFormat.LINK ? true : isInline(element);
+    return element.type === ElementType.LINK ? true : isInline(element);
   };
 
   editor.isVoid = element => {
-    return element.type === BlockFormat.IMAGE ? true : isVoid(element);
+    return element.type === ElementType.IMAGE ? true : isVoid(element);
   };
 
   editor.exec = command => {
@@ -111,39 +111,39 @@ export const renderElementPasteHtml = (props: RenderElementProps) => {
   const { attributes, children, element } = props;
 
   switch (element.type) {
-    case BlockFormat.BLOCK_QUOTE:
+    case ElementType.BLOCK_QUOTE:
       return <blockquote {...attributes}>{children}</blockquote>;
-    case BlockFormat.CODE:
+    case ElementType.CODE:
       return (
         <pre>
           <code {...attributes}>{children}</code>
         </pre>
       );
-    case BlockFormat.UL_LIST:
+    case ElementType.UL_LIST:
       return <ul {...attributes}>{children}</ul>;
-    case BlockFormat.HEADING_1:
+    case ElementType.HEADING_1:
       return <h1 {...attributes}>{children}</h1>;
-    case BlockFormat.HEADING_2:
+    case ElementType.HEADING_2:
       return <h2 {...attributes}>{children}</h2>;
-    case BlockFormat.HEADING_3:
+    case ElementType.HEADING_3:
       return <h3 {...attributes}>{children}</h3>;
-    case BlockFormat.HEADING_4:
+    case ElementType.HEADING_4:
       return <h4 {...attributes}>{children}</h4>;
-    case BlockFormat.HEADING_5:
+    case ElementType.HEADING_5:
       return <h5 {...attributes}>{children}</h5>;
-    case BlockFormat.HEADING_6:
+    case ElementType.HEADING_6:
       return <h6 {...attributes}>{children}</h6>;
-    case BlockFormat.LIST_ITEM:
+    case ElementType.LIST_ITEM:
       return <li {...attributes}>{children}</li>;
-    case BlockFormat.OL_LIST:
+    case ElementType.OL_LIST:
       return <ol {...attributes}>{children}</ol>;
-    case InlineFormat.LINK:
+    case ElementType.LINK:
       return (
         <a {...attributes} href={element.url}>
           {children}
         </a>
       );
-    case BlockFormat.IMAGE:
+    case ElementType.IMAGE:
       return <ImageElement {...props} />;
     default:
       break;

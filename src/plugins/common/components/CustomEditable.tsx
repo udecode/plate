@@ -20,6 +20,7 @@ export const CustomEditable = ({
   decorate,
   renderElement,
   renderLeaf,
+  onDOMBeforeInput,
   onKeyDown,
   ...props
 }: CustomEditableProps) => {
@@ -44,6 +45,17 @@ export const CustomEditable = ({
     }
 
     return ranges;
+  };
+
+  const onDOMBeforeInputPlugins = (event: Event) => {
+    let element = onDOMBeforeInput && onDOMBeforeInput(event);
+    if (element) return;
+
+    plugins.some(plugin => {
+      element =
+        plugin.onDOMBeforeInput && plugin.onDOMBeforeInput(event, editor);
+      return !!element;
+    });
   };
 
   const renderElementPlugins = (elementProps: RenderElementProps) => {
@@ -83,6 +95,7 @@ export const CustomEditable = ({
     <Editable
       {...props}
       decorate={decoratePlugins}
+      onDOMBeforeInput={onDOMBeforeInputPlugins}
       renderElement={renderElementPlugins}
       renderLeaf={renderLeafPlugins}
       onKeyDown={onKeyDownPlugins}
