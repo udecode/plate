@@ -1188,19 +1188,19 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@borealisgroup/eslint-config-ts@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@borealisgroup/eslint-config-ts/-/eslint-config-ts-1.1.2.tgz#3351fc18c2821cc2f90e9c18b8e9dc5ff00634fd"
-  integrity sha512-U6xAwv2mcCCW1cs7oRBoINU1KU7CYa21Guun0oe3Bf68zpLdANhxHAMzIDUFD0/Z2nZmiJgUqAQaMS8bEt/bNQ==
+"@borealisgroup/eslint-config-ts@1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@borealisgroup/eslint-config-ts/-/eslint-config-ts-1.1.3.tgz#c5e58cd943ed537b3cca2f15edcd161ab0e7fb33"
+  integrity sha512-D0ERWSiIXpjGkr9vUjo7eSxCk5zUxZbWAVYWg8KXIoT1a/EmxZMRJ4dW+THb1to5qFFSm4ExjmyFghqsLzxV2A==
   dependencies:
-    "@borealisgroup/eslint-config" "^1.12.3"
+    "@borealisgroup/eslint-config" "^1.12.4"
     "@typescript-eslint/eslint-plugin" "^2.9.0"
     "@typescript-eslint/parser" "^2.9.0"
 
-"@borealisgroup/eslint-config@^1.12.3":
-  version "1.12.3"
-  resolved "https://registry.yarnpkg.com/@borealisgroup/eslint-config/-/eslint-config-1.12.3.tgz#9d875f6358794c5376ba0a4024c62ddb22b1bc9a"
-  integrity sha512-iXpLDcsDan1m3lhP+n9KhOJ3kxx1t8W9Q4Lt5I5zd0kTQcOgrRkS37a3q7B8c8xaQNbACw+z6bfPsFB+Jh3T9w==
+"@borealisgroup/eslint-config@^1.12.4":
+  version "1.12.4"
+  resolved "https://registry.yarnpkg.com/@borealisgroup/eslint-config/-/eslint-config-1.12.4.tgz#92d4dc1624dc698936ec42241e01ccd4e9b8aa7f"
+  integrity sha512-psm1K6zU1IsZwSMkHRTEf2YmGveJoThoQEohtqkbZeqX9SOykwJndBmhdpsrMvJgwRSm0/U9ZHcp2XefsO6vUA==
   dependencies:
     babel-eslint "^10.0.3"
     eslint-config-airbnb "^18.0.1"
@@ -1813,15 +1813,6 @@
     "@typescript-eslint/typescript-estree" "2.11.0"
     eslint-scope "^5.0.0"
 
-"@typescript-eslint/experimental-utils@2.9.0":
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.9.0.tgz#bbe99a8d9510240c055fc4b17230dd0192ba3c7f"
-  integrity sha512-0lOLFdpdJsCMqMSZT7l7W2ta0+GX8A3iefG3FovJjrX+QR8y6htFlFdU7aOVPL6pDvt6XcsOb8fxk5sq+girTw==
-  dependencies:
-    "@types/json-schema" "^7.0.3"
-    "@typescript-eslint/typescript-estree" "2.9.0"
-    eslint-scope "^5.0.0"
-
 "@typescript-eslint/parser@^1.10.2":
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-1.13.0.tgz#61ac7811ea52791c47dc9fd4dd4a184fae9ac355"
@@ -1832,7 +1823,7 @@
     "@typescript-eslint/typescript-estree" "1.13.0"
     eslint-visitor-keys "^1.0.0"
 
-"@typescript-eslint/parser@^2.10.0":
+"@typescript-eslint/parser@^2.10.0", "@typescript-eslint/parser@^2.2.0", "@typescript-eslint/parser@^2.9.0":
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-2.10.0.tgz#24b2e48384ab6d5a6121e4c4faf8892c79657ad3"
   integrity sha512-wQNiBokcP5ZsTuB+i4BlmVWq6o+oAhd8en2eSm/EE9m7BgZUIfEeYFd6z3S+T7bgNuloeiHA1/cevvbBDLr98g==
@@ -1840,16 +1831,6 @@
     "@types/eslint-visitor-keys" "^1.0.0"
     "@typescript-eslint/experimental-utils" "2.10.0"
     "@typescript-eslint/typescript-estree" "2.10.0"
-    eslint-visitor-keys "^1.1.0"
-
-"@typescript-eslint/parser@^2.2.0", "@typescript-eslint/parser@^2.9.0":
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-2.9.0.tgz#2e9cf438de119b143f642a3a406e1e27eb70b7cd"
-  integrity sha512-fJ+dNs3CCvEsJK2/Vg5c2ZjuQ860ySOAsodDPwBaVlrGvRN+iCNC8kUfLFL8cT49W4GSiLPa/bHiMjYXA7EhKQ==
-  dependencies:
-    "@types/eslint-visitor-keys" "^1.0.0"
-    "@typescript-eslint/experimental-utils" "2.9.0"
-    "@typescript-eslint/typescript-estree" "2.9.0"
     eslint-visitor-keys "^1.1.0"
 
 "@typescript-eslint/typescript-estree@1.13.0":
@@ -1877,19 +1858,6 @@
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-2.11.0.tgz#21ada6504274cd1644855926312c798fc697e9fb"
   integrity sha512-HGY4+d4MagO6cKMcKfIKaTMxcAv7dEVnji2Zi+vi5VV8uWAM631KjAB5GxFcexMYrwKT0EekRiiGK1/Sd7VFGA==
-  dependencies:
-    debug "^4.1.1"
-    eslint-visitor-keys "^1.1.0"
-    glob "^7.1.6"
-    is-glob "^4.0.1"
-    lodash.unescape "4.0.1"
-    semver "^6.3.0"
-    tsutils "^3.17.1"
-
-"@typescript-eslint/typescript-estree@2.9.0":
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-2.9.0.tgz#09138daf8f47d0e494ba7db9e77394e928803017"
-  integrity sha512-v6btSPXEWCP594eZbM+JCXuFoXWXyF/z8kaSBSdCb83DF+Y7+xItW29SsKtSULgLemqJBT+LpT+0ZqdfH7QVmA==
   dependencies:
     debug "^4.1.1"
     eslint-visitor-keys "^1.1.0"
