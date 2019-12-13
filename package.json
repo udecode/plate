@@ -45,7 +45,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
     "slate": "0.53.0",
-    "slate-history": "0.53.0",
+    "slate-history": "0.54.4",
     "slate-hyperscript": "0.53.0",
     "slate-react": "0.53.0",
     "typescript": "3.7.3"
