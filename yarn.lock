@@ -1624,7 +1624,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@typescript-eslint/eslint-plugin@^2.11.0", "@typescript-eslint/eslint-plugin@^2.8.0":
+"@typescript-eslint/eslint-plugin@^2.8.0":
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-2.11.0.tgz#4477c33491ccf0a9a3f4a30ef84978fa0ea0cad2"
   integrity sha512-G2HHA1vpMN0EEbUuWubiCCfd0R3a30BB+UdvnFkxwZIxYEGOrWEXDv8tBFO9f44CWc47Xv9lLM3VSn4ORLI2bA==
@@ -1664,15 +1664,6 @@
     "@typescript-eslint/typescript-estree" "2.11.0"
     eslint-scope "^5.0.0"
 
-"@typescript-eslint/experimental-utils@2.11.0", "@typescript-eslint/experimental-utils@^2.5.0":
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.11.0.tgz#cef18e6b122706c65248a5d8984a9779ed1e52ac"
-  integrity sha512-YxcA/y0ZJaCc/fB/MClhcDxHI0nOBB7v2/WxBju2cOTanX7jO9ttQq6Fy4yW9UaY5bPd9xL3cun3lDVqk67sPQ==
-  dependencies:
-    "@types/json-schema" "^7.0.3"
-    "@typescript-eslint/typescript-estree" "2.11.0"
-    eslint-scope "^5.0.0"
-
 "@typescript-eslint/experimental-utils@2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/experimental-utils/-/experimental-utils-2.9.0.tgz#bbe99a8d9510240c055fc4b17230dd0192ba3c7f"
@@ -1701,7 +1692,7 @@
     "@typescript-eslint/typescript-estree" "1.13.0"
     eslint-visitor-keys "^1.0.0"
 
-"@typescript-eslint/parser@^2.11.0", "@typescript-eslint/parser@^2.8.0":
+"@typescript-eslint/parser@^2.8.0":
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-2.11.0.tgz#cdcc3be73ee31cbef089af5ff97ccaa380ef6e8b"
   integrity sha512-DyGXeqhb3moMioEFZIHIp7oXBBh7dEfPTzGrlyP0Mi9ScCra4SWEGs3kPd18mG7Sy9Wy8z88zmrw5tSGL6r/6A==
@@ -10540,25 +10531,25 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-slate-history@0.54.4:
-  version "0.54.4"
-  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.54.4.tgz#42f24860ff6d729961715d81dfbb27eed65c91ef"
-  integrity sha512-ml6ll8I7UAZwauU7OMocPMNblwCHS17/4We7eGAnrTmajY5HNRmyYtbXSUxiMbAa9Oj1T7Ha1abKg1yKcflPqA==
+slate-history@0.54.5:
+  version "0.54.5"
+  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.54.5.tgz#ff66ff985bf9a4e6eb1d5de92c0cdf426f6ad3c4"
+  integrity sha512-VJtDD8aCpf9+yZhv1r7Tq5VwwYhTaju+6FEyMB8iRPN5VToizuKaxyIcBH5ki91H2W3mQAbV9EWIo0Ud4TC1ZA==
   dependencies:
     immer "^5.0.0"
     is-plain-object "^3.0.0"
 
-slate-hyperscript@0.54.4:
-  version "0.54.4"
-  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.54.4.tgz#40a89bb4c235aa0c89f2c842e455455f8e6adc7d"
-  integrity sha512-q+RAXv/GJr1SYmwjlOQ6QK/SoyAfs3nODmdhmoNmCx+HpVWlDJ1HipYLSiGrVzTKW9/WxC56CwigfWqIEQYJBA==
+slate-hyperscript@0.54.5:
+  version "0.54.5"
+  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.54.5.tgz#258d1a148f975a0a0405f6a3b9bfdc9a4c2a8024"
+  integrity sha512-DqodMmGv0jeRvOmerhETVmMJyvwIrVVupsU0UiPM8s49VZeX9Sa8rm6ovaZ83VuBHH6AK400CMByv+31WI13hw==
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-react@0.54.4:
-  version "0.54.4"
-  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.54.4.tgz#05e64d1feaae9a8d490572882f48b8e7d4203486"
-  integrity sha512-2qpBF0nCEzVW2Z5kBn/5LFU/OYje/XKnpSEwKe5K7gE7RpxXDtzNdmqUMPm3/QXCMVGln8XLE8XKGoYaGuuEIw==
+slate-react@0.54.5:
+  version "0.54.5"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.54.5.tgz#4489610dd1c451092131155de76ad71091c74943"
+  integrity sha512-v3NbQH0mbCFjKymNVE2g1EUtY/qNW8XWTsz/fCsoZcO54g763rWe4FExqp8SFkHvCN97kwsCQhmH+043v0eWAA==
   dependencies:
     "@types/debounce" "^1.2.0"
     "@types/debug" "^4.1.5"
@@ -10570,10 +10561,10 @@ slate-react@0.54.4:
     is-plain-object "^3.0.0"
     scroll-into-view-if-needed "^2.2.20"
 
-slate@0.54.4:
-  version "0.54.4"
-  resolved "https://registry.yarnpkg.com/slate/-/slate-0.54.4.tgz#008f0eb586780da27227f9abf5a5b61f7823bb3b"
-  integrity sha512-788FqEeCN/HDtxp1GhkoV8H/yF8a3qREEOD1FcZhaAJVvLnX9Wv30exdL+SwpEttv/wv52/19bmROgEbzT9G/g==
+slate@0.54.5:
+  version "0.54.5"
+  resolved "https://registry.yarnpkg.com/slate/-/slate-0.54.5.tgz#748edf74050a60213a56e859b873255abcf3f769"
+  integrity sha512-zLfWpgW4nBzVl8ubupbC5DKBSNVi+czfyxsOStPQTUWpTc7SldirVsP993ufH+hyf5UIs0D1N4D1+txjqFKgOw==
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"
