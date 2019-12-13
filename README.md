@@ -2,11 +2,10 @@
 
 ## Dependencies
 
-- slate@0.52.3
-- slate-history@0.52.3
-- slate-hyperscript@0.52.3
-- slate-react@0.52.3
-- slate-schema@0.52.3
+- slate@0.54.4
+- slate-history@0.54.4
+- slate-hyperscript@0.54.4
+- slate-react@0.54.4
 
 ## Available Scripts
 
