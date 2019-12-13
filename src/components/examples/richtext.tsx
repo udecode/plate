@@ -9,7 +9,7 @@ import {
   FormatPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueRichText } from '../../config/initialValues';
+import { initialValueRichText } from 'config/initialValues';
 import { Toolbar } from '../components';
 
 export const plugins = [FormatPlugin()];

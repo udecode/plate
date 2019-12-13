@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { css } from 'emotion';
 import { Editor, Range } from 'slate';
 import { ReactEditor, useSlate } from 'slate-react';
-import { Menu, Portal } from '../../components/components';
+import { Menu, Portal } from 'components/components';
 import { FormatButton } from '../format/FormatButton';
 
 export const HoveringToolbar = () => {

@@ -9,7 +9,7 @@ import {
   HoveringToolbar,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHoveringToolbar } from '../../config/initialValues';
+import { initialValueHoveringToolbar } from 'config/initialValues';
 
 export const plugins = [FormatPlugin()];
 

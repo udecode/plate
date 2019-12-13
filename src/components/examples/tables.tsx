@@ -8,7 +8,7 @@ import {
   TablePlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueTables } from '../../config/initialValues';
+import { initialValueTables } from 'config/initialValues';
 
 export const plugins = [TablePlugin()];
 

@@ -8,7 +8,7 @@ import {
   VideoPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueEmbeds } from '../../config/initialValues';
+import { initialValueEmbeds } from 'config/initialValues';
 
 export const plugins = [VideoPlugin()];
 

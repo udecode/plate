@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { ReactEditor, useSlate } from 'slate-react';
-import { Portal } from '../../components/components';
+import { Portal } from 'components/components';
 
 export const MentionSelect = ({
   target,

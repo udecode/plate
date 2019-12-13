@@ -9,7 +9,7 @@ import {
   ToolbarHighlight,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueSearchHighlighting } from '../../config/initialValues';
+import { initialValueSearchHighlighting } from 'config/initialValues';
 
 export const plugins = [HighlightPlugin()];
 

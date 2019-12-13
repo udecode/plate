@@ -9,7 +9,7 @@ import {
   InsertImageButton,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueImages } from '../../config/initialValues';
+import { initialValueImages } from 'config/initialValues';
 import { Toolbar } from '../components';
 
 export const plugins = [ImagePlugin()];

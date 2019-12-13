@@ -8,7 +8,7 @@ import {
   MarkdownShortcutsPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueMarkdownShortcuts } from '../../config/initialValues';
+import { initialValueMarkdownShortcuts } from 'config/initialValues';
 
 export const plugins = [MarkdownShortcutsPlugin()];
 

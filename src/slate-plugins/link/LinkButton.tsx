@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSlate } from 'slate-react';
-import { Button, Icon } from '../../components/components';
+import { Button, Icon } from 'components/components';
 import { isLinkActive } from './queries';
 
 export const LinkButton = () => {

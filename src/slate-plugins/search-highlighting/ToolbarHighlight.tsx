@@ -1,6 +1,6 @@
 import React from 'react';
 import { css } from 'emotion';
-import { Icon, Toolbar } from '../../components/components';
+import { Icon, Toolbar } from 'components/components';
 
 export const ToolbarHighlight = ({ setSearch }: any) => (
   <Toolbar>

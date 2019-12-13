@@ -9,8 +9,8 @@ import {
   MentionSelect,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { CHARACTERS } from '../../config/data';
-import { initialValueMentions } from '../../config/initialValues';
+import { CHARACTERS } from 'config/data';
+import { initialValueMentions } from 'config/initialValues';
 
 export const plugins = [MentionPlugin()];
 

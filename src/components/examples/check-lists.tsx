@@ -7,12 +7,13 @@ import {
   createEditorPlugins,
   CustomEditable,
   onKeyDownFormat,
+  renderElementCheckList,
   renderElementFormat,
   renderLeafFormat,
   withFormat,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueCheckLists } from '../../config/initialValues';
+import { initialValueCheckLists } from 'config/initialValues';
 
 const plugins = [CheckListPlugin()];
 

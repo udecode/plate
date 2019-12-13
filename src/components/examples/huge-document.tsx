@@ -8,7 +8,7 @@ import {
   FormatPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHugeDocument } from '../../config/initialValues';
+import { initialValueHugeDocument } from 'config/initialValues';
 
 export const plugins = [FormatPlugin()];
 

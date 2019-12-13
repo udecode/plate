@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { Node, Node } from 'slate';
+import { Node } from 'slate';
 
 export const initialValueCheckLists: Node[] = [
   {

@@ -9,7 +9,7 @@ import {
   FormatPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueForcedLayout } from '../../config/initialValues';
+import { initialValueForcedLayout } from 'config/initialValues';
 
 export const plugins = [ForcedLayoutPlugin(), FormatPlugin()];
 

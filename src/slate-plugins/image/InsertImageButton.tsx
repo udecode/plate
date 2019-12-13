@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEditor } from 'slate-react';
-import { Button, Icon } from '../../components/components';
+import { Button, Icon } from 'components/components';
 
 export const InsertImageButton = () => {
   const editor = useEditor();

@@ -10,7 +10,7 @@ import {
   LinkPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueLinks } from '../../config/initialValues';
+import { initialValueLinks } from 'config/initialValues';
 import { Toolbar } from '../components';
 
 export const plugins = [LinkPlugin()];

@@ -8,7 +8,7 @@ import {
   MarkdownPreviewPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueMarkdownPreview } from '../../config/initialValues';
+import { initialValueMarkdownPreview } from 'config/initialValues';
 
 export const plugins = [MarkdownPreviewPlugin()];
 
