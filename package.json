@@ -4,11 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "react-scripts build",
-    "eject": "react-scripts eject",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "start": "react-scripts start",
-    "test": "react-scripts test"
+    "build-storybook": "build-storybook",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"stories/**/*.{js,jsx,ts,tsx}\"",
+    "storybook": "start-storybook -p 6006"
   },
   "browserslist": {
     "production": [
@@ -26,7 +24,6 @@
     "extends": "react-app"
   },
   "dependencies": {
-    "emotion": "^10.0.23",
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
@@ -36,24 +33,37 @@
     "slate": "0.54.5",
     "slate-history": "0.54.5",
     "slate-hyperscript": "0.54.5",
-    "slate-react": "0.54.5"
+    "slate-react": "0.54.5",
+    "styled-components": "^4.4.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.7.5",
     "@borealisgroup/eslint-config-ts": "1.1.3",
+    "@material-ui/core": "^4.7.2",
+    "@material-ui/icons": "^4.5.1",
+    "@storybook/addon-actions": "^5.2.8",
+    "@storybook/addon-info": "^5.2.8",
+    "@storybook/addon-links": "^5.2.8",
+    "@storybook/addons": "^5.2.8",
+    "@storybook/cli": "^5.2.8",
+    "@storybook/react": "^5.2.8",
     "@types/faker": "^4.1.8",
     "@types/is-hotkey": "^0.1.1",
-    "@types/jest": "24.0.23",
+    "@types/jest": "^24.0.23",
     "@types/lodash": "^4.14.149",
     "@types/node": "12.12.17",
     "@types/prismjs": "^1.16.0",
     "@types/react": "16.9.16",
     "@types/react-dom": "16.9.4",
-    "@types/react-router-dom": "^5.1.3",
+    "@types/styled-components": "^4.4.1",
+    "awesome-typescript-loader": "^5.2.1",
+    "babel-loader": "^8.0.6",
     "eslint": "^6.7.2",
     "faker": "^4.1.0",
-    "react-error-boundary": "^1.2.5",
+    "jest": "^24.9.0",
+    "react-docgen-typescript-loader": "^3.6.0",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.3.0",
+    "ts-jest": "^24.2.0",
     "typescript": "3.7.3"
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
+import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
-import { Button, Icon } from 'components/components';
 import { isBlockActive } from './queries';
 
 interface Props {
@@ -19,7 +19,7 @@ export const BlockButton = ({ format, icon }: Props) => {
         editor.exec({ type: 'format_block', format });
       }}
     >
-      <Icon>{icon}</Icon>
+      {icon}
     </Button>
   );
 };

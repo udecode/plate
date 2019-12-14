@@ -4,18 +4,17 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  ForcedLayoutPlugin,
   FormatPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueForcedLayout } from 'config/initialValues';
+import { initialValueHugeDocument } from './config/initialValues';
 
-const plugins = [ForcedLayoutPlugin(), FormatPlugin()];
+const plugins = [FormatPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const ForcedLayout = () => {
-  const [value, setValue] = useState(initialValueForcedLayout);
+export const HugeDocument = () => {
+  const [value, setValue] = useState(initialValueHugeDocument);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -25,12 +24,7 @@ export const ForcedLayout = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable
-        plugins={plugins}
-        placeholder="Enter a title…"
-        spellCheck
-        autoFocus
-      />
+      <CustomEditable plugins={plugins} spellCheck autoFocus />
     </Slate>
   );
 };

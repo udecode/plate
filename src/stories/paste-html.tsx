@@ -4,17 +4,17 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  VideoPlugin,
+  PasteHtmlPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueEmbeds } from 'config/initialValues';
+import { initialValuePasteHtml } from './config/initialValues';
 
-const plugins = [VideoPlugin()];
+const plugins = [PasteHtmlPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const Embeds = () => {
-  const [value, setValue] = useState(initialValueEmbeds);
+export const PasteHtml = () => {
+  const [value, setValue] = useState(initialValuePasteHtml);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -24,7 +24,7 @@ export const Embeds = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
+      <CustomEditable plugins={plugins} placeholder="Paste in some HTML..." />
     </Slate>
   );
 };

@@ -1,12 +1,26 @@
 import React, { useEffect, useRef } from 'react';
-import { css } from 'emotion';
 import { Editor, Range } from 'slate';
+import { Menu } from 'slate-plugins/common/components/Menu';
+import { Portal } from "slate-plugins/common/components/Portal";
+import { MarkButton } from 'slate-plugins/format/MarkButton';
 import { ReactEditor, useSlate } from 'slate-react';
-import { Menu, Portal } from 'components/components';
-import { MarkButton } from '../format/MarkButton';
+import styled from 'styled-components';
+
+const StyledMenu = styled(Menu)`
+  padding: 8px 7px 6px;
+  position: absolute;
+  z-index: 1;
+  top: -10000px;
+  left: -10000px;
+  margin-top: -6px;
+  opacity: 0;
+  background-color: #222;
+  border-radius: 4px;
+  /* transition: opacity 0.75s; */
+`;
 
 export const HoveringToolbar = () => {
-  const ref = useRef();
+  const ref: any = useRef();
   const editor = useSlate();
 
   useEffect(() => {
@@ -39,25 +53,11 @@ export const HoveringToolbar = () => {
 
   return (
     <Portal>
-      <Menu
-        ref={ref}
-        className={css`
-          padding: 8px 7px 6px;
-          position: absolute;
-          z-index: 1;
-          top: -10000px;
-          left: -10000px;
-          margin-top: -6px;
-          opacity: 0;
-          background-color: #222;
-          border-radius: 4px;
-          /* transition: opacity 0.75s; */
-        `}
-      >
+      <StyledMenu ref={ref}>
         <MarkButton reversed format="bold" icon="format_bold" />
         <MarkButton reversed format="italic" icon="format_italic" />
         <MarkButton reversed format="underline" icon="format_underlined" />
-      </Menu>
+      </StyledMenu>
     </Portal>
   );
 };

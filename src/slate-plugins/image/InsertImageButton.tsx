@@ -1,6 +1,12 @@
 import React from 'react';
+import { Image } from '@material-ui/icons';
+import { Button } from 'slate-plugins/common/components/Button';
 import { useEditor } from 'slate-react';
-import { Button, Icon } from 'components/components';
+import styled from 'styled-components';
+
+const StyledImage = styled(Image)`
+  color: red;
+`;
 
 export const InsertImageButton = () => {
   const editor = useEditor();
@@ -13,7 +19,7 @@ export const InsertImageButton = () => {
         editor.exec({ type: 'insert_image', url });
       }}
     >
-      <Icon>image</Icon>
+      <StyledImage />
     </Button>
   );
 };

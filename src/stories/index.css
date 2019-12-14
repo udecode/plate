@@ -3,7 +3,10 @@ input,
 textarea {
   font-family: 'Roboto', sans-serif;
   line-height: 1.4;
-  background: #eee;
+}
+
+#root {
+  padding: 20px;
 }
 
 body {

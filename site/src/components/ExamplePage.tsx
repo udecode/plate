@@ -2,25 +2,27 @@ import React, { useState } from 'react';
 import ErrorBoundary from 'react-error-boundary';
 import { Link, useLocation } from 'react-router-dom';
 import { css, cx } from 'emotion';
-import { CheckLists } from './examples/check-lists';
-import { Embeds } from './examples/embeds';
-import { ForcedLayout } from './examples/forced-layout';
-import { HoveringMenu } from './examples/hovering-toolbar';
-import { HugeDocument } from './examples/huge-document';
-import { Images } from './examples/images';
-import { Links } from './examples/links';
-import { MarkdownPreview } from './examples/markdown-preview';
-import { MarkdownShortcuts } from './examples/markdown-shortcuts';
-import { Mentions } from './examples/mentions';
-import { PasteHtml } from './examples/paste-html';
-import { PlainText } from './examples/plain-text';
-import { ReadOnly } from './examples/read-only';
-import { RichText } from './examples/richtext';
-import { SearchHighlighting } from './examples/search-highlighting';
-import { Tables } from './examples/tables';
-import { Icon } from './components';
+import { Icon } from '../../../src/slate-plugins/common/components/components';
+import { CheckLists } from '../../../stories/check-lists';
+import { Embeds } from '../../../stories/embeds';
+import { ForcedLayout } from '../../../stories/forced-layout';
+import { HoveringMenu } from '../../../stories/hovering-toolbar';
+import { HugeDocument } from '../../../stories/huge-document';
+import { Images } from '../../../stories/images';
+import { Links } from '../../../stories/links';
+import { MarkdownPreview } from '../../../stories/markdown-preview';
+import { MarkdownShortcuts } from '../../../stories/markdown-shortcuts';
+import { Mentions } from '../../../stories/mentions';
+import { PasteHtml } from '../../../stories/paste-html';
+import { PlainText } from '../../../stories/plain-text';
+import { PluginsExample } from '../../../stories/plugins';
+import { ReadOnly } from '../../../stories/read-only.stories';
+import { RichText } from '../../../stories/richtext';
+import { SearchHighlighting } from '../../../stories/search-highlighting';
+import { Tables } from '../../../stories/tables';
 
 const EXAMPLES = [
+  ['Plugins', PluginsExample, 'plugins'],
   ['Checklists', CheckLists, 'check-lists'],
   ['Embeds', Embeds, 'embeds'],
   ['Forced Layout', ForcedLayout, 'forced-layout'],
@@ -228,7 +230,7 @@ export const ExamplePage = () => {
   const [showTabs, setShowTabs] = useState<boolean>();
 
   const location = useLocation();
-  const example = location.pathname.split('/')[2] || 'rich-text';
+  const example = location.pathname.split('/')[2] || 'plugins';
 
   const EXAMPLE = EXAMPLES.find(e => e[2] === example);
 

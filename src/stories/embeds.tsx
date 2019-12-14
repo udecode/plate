@@ -4,17 +4,17 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  FormatPlugin,
+  VideoPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHugeDocument } from 'config/initialValues';
+import { initialValueEmbeds } from './config/initialValues';
 
-const plugins = [FormatPlugin()];
+const plugins = [VideoPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const HugeDocument = () => {
-  const [value, setValue] = useState(initialValueHugeDocument);
+export const Embeds = () => {
+  const [value, setValue] = useState(initialValueEmbeds);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -24,7 +24,7 @@ export const HugeDocument = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} spellCheck autoFocus />
+      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );
 };

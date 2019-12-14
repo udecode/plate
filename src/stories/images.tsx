@@ -4,18 +4,19 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  FormatPlugin,
-  HoveringToolbar,
+  ImagePlugin,
+  InsertImageButton,
 } from 'slate-plugins';
+import { Toolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHoveringToolbar } from 'config/initialValues';
+import { initialValueImages } from './config/initialValues';
 
-const plugins = [FormatPlugin()];
+const plugins = [ImagePlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const HoveringMenu = () => {
-  const [value, setValue] = useState(initialValueHoveringToolbar);
+export const Images = () => {
+  const [value, setValue] = useState(initialValueImages);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -25,7 +26,9 @@ export const HoveringMenu = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <HoveringToolbar />
+      <Toolbar>
+        <InsertImageButton />
+      </Toolbar>
       <CustomEditable plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );

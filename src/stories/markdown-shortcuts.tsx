@@ -4,19 +4,17 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  LinkButton,
-  LinkPlugin,
+  MarkdownShortcutsPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueLinks } from 'config/initialValues';
-import { Toolbar } from '../components';
+import { initialValueMarkdownShortcuts } from './config/initialValues';
 
-const plugins = [LinkPlugin()];
+const plugins = [MarkdownShortcutsPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const Links = () => {
-  const [value, setValue] = useState(initialValueLinks);
+export const MarkdownShortcuts = () => {
+  const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -26,10 +24,12 @@ export const Links = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <Toolbar>
-        <LinkButton />
-      </Toolbar>
-      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
+      <CustomEditable
+        plugins={plugins}
+        placeholder="Write some markdown..."
+        spellCheck
+        autoFocus
+      />
     </Slate>
   );
 };

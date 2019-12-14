@@ -18,6 +18,5 @@
     "baseUrl": "src",
     "suppressImplicitAnyIndexErrors": true
   },
-  "include": ["src", "typings"],
-  "exclude": ["node_modules", "build", "scripts"]
+  "include": ["src", "typings"]
 }

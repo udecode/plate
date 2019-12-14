@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { Editable, Slate, withReact } from 'slate-react';
-import { initialValueReadOnly } from 'config/initialValues';
+import { initialValueReadOnly } from './config/initialValues';
 
 export const ReadOnly = () => {
   const [value, setValue] = useState(initialValueReadOnly);

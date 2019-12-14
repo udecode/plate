@@ -4,18 +4,20 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  TablePlugin,
+  HighlightPlugin,
+  ToolbarHighlight,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueTables } from 'config/initialValues';
+import { initialValueSearchHighlighting } from './config/initialValues';
 
-const plugins = [TablePlugin()];
+const plugins = [HighlightPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const Tables = () => {
-  const [value, setValue] = useState(initialValueTables);
-
+export const SearchHighlighting = () => {
+  const [value, setValue] = useState(initialValueSearchHighlighting);
+  const [search, setSearch] = useState<string>();
+  const pluginProps = useMemo(() => ({ search }), [search]);
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
   return (
@@ -24,7 +26,8 @@ export const Tables = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} />
+      <ToolbarHighlight setSearch={setSearch} />
+      <CustomEditable plugins={plugins} pluginProps={pluginProps} />
     </Slate>
   );
 };

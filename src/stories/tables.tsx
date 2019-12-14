@@ -4,17 +4,17 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  PasteHtmlPlugin,
+  TablePlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValuePasteHtml } from 'config/initialValues';
+import { initialValueTables } from './config/initialValues';
 
-const plugins = [PasteHtmlPlugin()];
+const plugins = [TablePlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const PasteHtml = () => {
-  const [value, setValue] = useState(initialValuePasteHtml);
+export const Tables = () => {
+  const [value, setValue] = useState(initialValueTables);
 
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
@@ -24,7 +24,7 @@ export const PasteHtml = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} placeholder="Paste in some HTML..." />
+      <CustomEditable plugins={plugins} />
     </Slate>
   );
 };

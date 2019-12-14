@@ -1,6 +1,14 @@
 import React from 'react';
-import { css } from 'emotion';
 import { RenderElementProps, useFocused, useSelected } from 'slate-react';
+import styled from 'styled-components';
+
+const Image = styled.img<{ selected: boolean; focused: boolean }>`
+  display: block;
+  max-width: 100%;
+  max-height: 20em;
+  box-shadow: ${props =>
+    props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
+`;
 
 export const ImageElement = ({
   attributes,
@@ -13,16 +21,7 @@ export const ImageElement = ({
   return (
     <div {...attributes}>
       <div contentEditable={false}>
-        <img
-          src={element.url}
-          alt=""
-          className={css`
-            display: block;
-            max-width: 100%;
-            max-height: 20em;
-            box-shadow: ${selected && focused ? '0 0 0 3px #B4D5FF' : 'none'};
-          `}
-        />
+        <Image src={element.url} alt="" selected={selected} focused={focused} />
       </div>
       {children}
     </div>

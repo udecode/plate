@@ -4,20 +4,19 @@ import {
   createCustomEditor,
   createEditorPlugins,
   CustomEditable,
-  HighlightPlugin,
-  ToolbarHighlight,
+  ForcedLayoutPlugin,
+  FormatPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueSearchHighlighting } from 'config/initialValues';
+import { initialValueForcedLayout } from './config/initialValues';
 
-const plugins = [HighlightPlugin()];
+const plugins = [ForcedLayoutPlugin(), FormatPlugin()];
 
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
-export const SearchHighlighting = () => {
-  const [value, setValue] = useState(initialValueSearchHighlighting);
-  const [search, setSearch] = useState<string>();
-  const pluginProps = useMemo(() => ({ search }), [search]);
+export const ForcedLayout = () => {
+  const [value, setValue] = useState(initialValueForcedLayout);
+
   const editor = useMemo(() => createCustomEditor(editorPlugins), []);
 
   return (
@@ -26,8 +25,12 @@ export const SearchHighlighting = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <ToolbarHighlight setSearch={setSearch} />
-      <CustomEditable plugins={plugins} pluginProps={pluginProps} />
+      <CustomEditable
+        plugins={plugins}
+        placeholder="Enter a title…"
+        spellCheck
+        autoFocus
+      />
     </Slate>
   );
 };

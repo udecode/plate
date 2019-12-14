@@ -1,7 +1,7 @@
 import React from 'react';
-import { css } from 'emotion';
 import { NodeEntry, Range, Text } from 'slate';
 import { Plugin, RenderLeafProps } from 'slate-react';
+import { HighlightLeaf } from './HighlightLeaf';
 
 export const decorateHighlight = (
   [node, path]: NodeEntry,
@@ -31,14 +31,7 @@ export const decorateHighlight = (
 };
 
 export const renderLeafHighlight = ({ children, leaf }: RenderLeafProps) => (
-  <span
-    className={css`
-      font-weight: ${leaf.bold && 'bold'};
-      background-color: ${leaf.highlight && '#ffeeba'};
-    `}
-  >
-    {children}
-  </span>
+  <HighlightLeaf {...leaf}>{children}</HighlightLeaf>
 );
 
 export const HighlightPlugin = (): Plugin => ({
