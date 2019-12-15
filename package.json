@@ -32,7 +32,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "slate": "0.54.5",
-    "slate-history": "0.54.5",
+    "slate-history": "0.54.6",
     "slate-hyperscript": "0.54.5",
     "slate-react": "0.54.5",
     "styled-components": "^4.4.1"
