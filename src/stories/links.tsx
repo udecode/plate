@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   LinkButton,
   LinkPlugin,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Toolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
@@ -18,7 +18,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const Links = () => {
   const [value, setValue] = useState(initialValueLinks);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -29,7 +29,7 @@ export const Links = () => {
       <Toolbar>
         <LinkButton />
       </Toolbar>
-      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );
 };

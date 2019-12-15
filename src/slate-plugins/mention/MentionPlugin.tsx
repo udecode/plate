@@ -1,7 +1,15 @@
 import React from 'react';
 import { Editor } from 'slate';
-import { OnKeyDown, Plugin, RenderElementProps } from 'slate-react';
+import { Plugin, RenderElementProps } from 'slate-react';
 import { MentionElement } from './MentionElement';
+
+interface Options {
+  chars: any[];
+  index: number;
+  target: any;
+  setIndex: any;
+  setTarget: any;
+}
 
 export const withMention = (editor: Editor) => {
   const { exec, isInline, isVoid } = editor;
@@ -42,9 +50,10 @@ export const renderElementMention = (props: RenderElementProps) => {
   }
 };
 
-export const onKeyDownMention: OnKeyDown = (
-  e,
-  { editor, chars, index, target, setIndex, setTarget }
+export const onKeyDownMention = (
+  e: any,
+  editor: Editor,
+  { chars, index, target, setIndex, setTarget }: Options
 ) => {
   if (target) {
     switch (e.key) {

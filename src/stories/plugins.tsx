@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox';
 import { green } from '@material-ui/core/colors';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -8,8 +8,8 @@ import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import Favorite from '@material-ui/icons/Favorite';
 import FavoriteBorder from '@material-ui/icons/FavoriteBorder';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { useCreateEditor } from 'slate-plugins';
 import { Editable, Slate, withReact } from 'slate-react';
 import { initialValuePlainText } from './config/initialValues';
 
@@ -25,7 +25,8 @@ const GreenCheckbox = withStyles({
 
 export const PluginsExample = () => {
   const [value, setValue] = useState(initialValuePlainText);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+  const editor = useCreateEditor([withReact, withHistory]);
 
   const [state, setState] = React.useState({
     checkedA: true,

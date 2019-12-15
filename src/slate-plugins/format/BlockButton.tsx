@@ -1,12 +1,17 @@
 import React from 'react';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
+import styled from 'styled-components';
 import { isBlockActive } from './queries';
 
 interface Props {
   format: string;
   icon: any;
 }
+
+const Icon = styled.span`
+  font-size: 18px;
+`;
 
 export const BlockButton = ({ format, icon }: Props) => {
   const editor = useSlate();
@@ -19,7 +24,7 @@ export const BlockButton = ({ format, icon }: Props) => {
         editor.exec({ type: 'format_block', format });
       }}
     >
-      {icon}
+      <Icon>{icon}</Icon>
     </Button>
   );
 };

@@ -9,6 +9,10 @@ textarea {
   padding: 20px;
 }
 
+.MuiSvgIcon-root {
+  font-size: 18px !important;
+}
+
 body {
   margin: 0;
 }

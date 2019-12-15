@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   TablePlugin,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueTables } from './config/initialValues';
@@ -16,7 +16,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const Tables = () => {
   const [value, setValue] = useState(initialValueTables);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -24,7 +24,7 @@ export const Tables = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} />
+      <EditablePlugins plugins={plugins} />
     </Slate>
   );
 };

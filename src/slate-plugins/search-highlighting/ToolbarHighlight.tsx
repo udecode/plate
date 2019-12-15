@@ -22,7 +22,7 @@ const Input = styled.input`
 export const ToolbarHighlight = ({ setSearch }: any) => (
   <Toolbar>
     <Wrapper>
-      <Icon />
+      <Icon style={{ fontSize: '18px' }} />
       <Input
         type="search"
         placeholder="Search the text..."

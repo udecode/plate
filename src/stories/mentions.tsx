@@ -1,19 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   MentionPlugin,
   MentionSelect,
+  onKeyDownMention,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from './config/data';
 import { initialValueMentions } from './config/initialValues';
 
 const plugins = [MentionPlugin()];
-
 const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
 export const Mentions = () => {
@@ -22,16 +22,11 @@ export const Mentions = () => {
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
-
   const chars = CHARACTERS.filter(c =>
     c.toLowerCase().startsWith(search.toLowerCase())
   ).slice(0, 10);
 
-  const pluginProps = useMemo(
-    () => ({ chars, index, target, setIndex, setTarget }),
-    [chars, index, target]
-  );
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -65,10 +60,19 @@ export const Mentions = () => {
         setTarget(null);
       }}
     >
-      <CustomEditable
+      <EditablePlugins
         plugins={plugins}
-        pluginProps={pluginProps}
         placeholder="Enter some text..."
+        onKeyDown={[
+          e =>
+            onKeyDownMention(e, editor, {
+              chars,
+              index,
+              target,
+              setIndex,
+              setTarget,
+            }),
+        ]}
       />
       {target && chars.length > 0 && (
         <MentionSelect target={target} index={index} chars={chars} />

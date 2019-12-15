@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build-storybook": "build-storybook",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" \"stories/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "storybook": "start-storybook -p 6006"
   },
   "browserslist": {
@@ -24,6 +24,7 @@
     "extends": "react-app"
   },
   "dependencies": {
+    "@primer/components": "^15.1.2",
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
@@ -42,7 +43,9 @@
     "@material-ui/core": "^4.7.2",
     "@material-ui/icons": "^4.5.1",
     "@storybook/addon-actions": "^5.2.8",
+    "@storybook/addon-docs": "^5.2.8",
     "@storybook/addon-info": "^5.2.8",
+    "@storybook/addon-knobs": "^5.2.8",
     "@storybook/addon-links": "^5.2.8",
     "@storybook/addons": "^5.2.8",
     "@storybook/cli": "^5.2.8",
@@ -59,6 +62,7 @@
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.6",
     "eslint": "^6.7.2",
+    "eslint-plugin-mdx": "^1.6.3",
     "faker": "^4.1.0",
     "jest": "^24.9.0",
     "react-docgen-typescript-loader": "^3.6.0",

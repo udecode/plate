@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
   CheckListPlugin,
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   onKeyDownFormat,
   renderElementCheckList,
   renderElementFormat,
   renderLeafFormat,
+  useCreateEditor,
   withFormat,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -24,7 +24,7 @@ const editorPlugins = createEditorPlugins(
 export const CheckLists = () => {
   const [value, setValue] = useState(initialValueCheckLists);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -32,7 +32,7 @@ export const CheckLists = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable
+      <EditablePlugins
         renderElement={[renderElementCheckList, renderElementFormat]}
         renderLeaf={[renderLeafFormat]}
         onKeyDown={[onKeyDownFormat]}
@@ -40,7 +40,7 @@ export const CheckLists = () => {
         spellCheck
         autoFocus
       />
-      {/* <CustomEditable
+      {/* <EditablePlugins
         plugins={plugins}
         placeholder="Get to work…"
         spellCheck

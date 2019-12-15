@@ -1,5 +1,5 @@
 module.exports = {
-  extends: '@borealisgroup/eslint-config-ts',
+  extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
   rules: {
     'no-alert': 'off',
     'import/extensions': [
@@ -12,5 +12,5 @@ module.exports = {
         jsx: 'never',
       },
     ],
-  }
+  },
 };

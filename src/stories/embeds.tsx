@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
+  useCreateEditor,
   VideoPlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -16,7 +16,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const Embeds = () => {
   const [value, setValue] = useState(initialValueEmbeds);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -24,7 +24,7 @@ export const Embeds = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );
 };

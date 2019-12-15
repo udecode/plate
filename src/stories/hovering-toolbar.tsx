@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   FormatPlugin,
   HoveringToolbar,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueHoveringToolbar } from './config/initialValues';
@@ -17,7 +17,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const HoveringMenu = () => {
   const [value, setValue] = useState(initialValueHoveringToolbar);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -26,7 +26,7 @@ export const HoveringMenu = () => {
       onChange={newValue => setValue(newValue)}
     >
       <HoveringToolbar />
-      <CustomEditable plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>
   );
 };

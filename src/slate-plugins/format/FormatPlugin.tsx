@@ -7,12 +7,7 @@ import {
   ListType,
   TextFormat,
 } from 'slate-plugins/common/constants/formats';
-import {
-  OnKeyDown,
-  Plugin,
-  RenderElementProps,
-  RenderLeafProps,
-} from 'slate-react';
+import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
 import { isBlockActive } from './queries';
 
 export const withFormat = (editor: Editor) => {
@@ -110,7 +105,7 @@ export const renderLeafFormat = ({ children, leaf }: RenderLeafProps) => {
   return children;
 };
 
-export const onKeyDownFormat: OnKeyDown = (e, { editor }) => {
+export const onKeyDownFormat = (e: any, editor: Editor) => {
   for (const hotkey of Object.keys(HotKey)) {
     if (isHotkey(hotkey, e)) {
       e.preventDefault();

@@ -25,16 +25,11 @@ declare module 'slate-react' {
 
   type PluginEditor = (editor: Editor) => Editor;
 
-  type Decorate = (entry: NodeEntry, pluginProps?: any) => Range[];
+  type Decorate = (entry: NodeEntry) => Range[];
   type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
   type RenderElement = (props: RenderElementProps) => JSX.Element | undefined;
   type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
-
-  interface OnKeyDownProps {
-    [key: string]: any;
-    editor: Editor;
-  }
-  type OnKeyDown = (e: any, props: OnKeyDownProps) => void;
+  type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
 
   interface Plugin {
     editor?: PluginEditor;

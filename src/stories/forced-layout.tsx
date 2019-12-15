@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   ForcedLayoutPlugin,
   FormatPlugin,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueForcedLayout } from './config/initialValues';
@@ -17,7 +17,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const ForcedLayout = () => {
   const [value, setValue] = useState(initialValueForcedLayout);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -25,7 +25,7 @@ export const ForcedLayout = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable
+      <EditablePlugins
         plugins={plugins}
         placeholder="Enter a title…"
         spellCheck

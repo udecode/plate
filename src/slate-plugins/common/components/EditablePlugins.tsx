@@ -1,39 +1,41 @@
 import React from 'react';
-import { Editor, NodeEntry, Range } from 'slate';
+import { NodeEntry, Range } from 'slate';
 import {
+  Decorate,
   Editable,
+  OnDOMBeforeInput,
   OnKeyDown,
   Plugin,
+  RenderElement,
   RenderElementProps,
+  RenderLeaf,
   RenderLeafProps,
   useSlate,
 } from 'slate-react';
 
-interface CustomEditableProps {
+interface Props {
   [key: string]: any;
   placeholder?: string;
   readOnly?: boolean;
   role?: string;
   style?: React.CSSProperties;
   plugins?: Plugin[];
-  pluginProps?: any;
-  decorate?: ((entry: NodeEntry) => Range[])[];
-  onDOMBeforeInput?: ((event: Event, editor: Editor) => void)[];
-  renderElement?: ((props: RenderElementProps) => JSX.Element | undefined)[];
-  renderLeaf?: ((props: RenderLeafProps) => JSX.Element)[];
+  decorate?: Decorate[];
+  onDOMBeforeInput?: OnDOMBeforeInput[];
+  renderElement?: RenderElement[];
+  renderLeaf?: RenderLeaf[];
   onKeyDown?: OnKeyDown[];
 }
 
-export const CustomEditable = ({
+export const EditablePlugins = ({
   plugins = [],
-  pluginProps = {},
   decorate: decorateList = [],
   renderElement: renderElementList = [],
   renderLeaf: renderLeafList = [],
   onDOMBeforeInput: onDOMBeforeInputList = [],
   onKeyDown: onKeyDownList = [],
   ...props
-}: CustomEditableProps) => {
+}: Props) => {
   const editor = useSlate();
 
   const decoratePlugins = (entry: NodeEntry) => {
@@ -96,14 +98,14 @@ export const CustomEditable = ({
     return <span {...leafProps.attributes}>{leafProps.children}</span>;
   };
 
-  const onKeyDownPlugins = (e: any) => {
+  const onKeyDownPlugins = (event: any) => {
     onKeyDownList.forEach(onKeyDown => {
-      onKeyDown(e, { ...pluginProps, editor });
+      onKeyDown(event, editor);
     });
 
     plugins.forEach(({ onKeyDown }) => {
       if (!onKeyDown) return;
-      onKeyDown(e, { ...pluginProps, editor });
+      onKeyDown(event, editor);
     });
   };
 

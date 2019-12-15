@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Code,
   FormatBold,
@@ -13,11 +13,11 @@ import {
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   FormatPlugin,
   MarkButton,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Toolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
@@ -30,7 +30,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const RichText = () => {
   const [value, setValue] = useState(initialValueRichText);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -38,7 +38,7 @@ export const RichText = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <Toolbar>
+      <Toolbar height={18}>
         <MarkButton format="bold" icon={<FormatBold />} />
         <MarkButton format="italic" icon={<FormatItalic />} />
         <MarkButton format="underline" icon={<FormatUnderlined />} />
@@ -49,7 +49,7 @@ export const RichText = () => {
         <BlockButton format="numbered-list" icon={<FormatListNumbered />} />
         <BlockButton format="bulleted-list" icon={<FormatListBulleted />} />
       </Toolbar>
-      <CustomEditable
+      <EditablePlugins
         plugins={plugins}
         placeholder="Enter some rich text…"
         spellCheck

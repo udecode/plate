@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
-  createCustomEditor,
   createEditorPlugins,
-  CustomEditable,
+  EditablePlugins,
   MarkdownShortcutsPlugin,
+  useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueMarkdownShortcuts } from './config/initialValues';
@@ -16,7 +16,7 @@ const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 export const MarkdownShortcuts = () => {
   const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
-  const editor = useMemo(() => createCustomEditor(editorPlugins), []);
+  const editor = useCreateEditor(editorPlugins);
 
   return (
     <Slate
@@ -24,7 +24,7 @@ export const MarkdownShortcuts = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <CustomEditable
+      <EditablePlugins
         plugins={plugins}
         placeholder="Write some markdown..."
         spellCheck

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
+import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { Editor, Range } from 'slate';
 import { Menu } from 'slate-plugins/common/components/Menu';
-import { Portal } from "slate-plugins/common/components/Portal";
+import { Portal } from 'slate-plugins/common/components/Portal';
 import { MarkButton } from 'slate-plugins/format/MarkButton';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
@@ -16,6 +17,7 @@ const StyledMenu = styled(Menu)`
   opacity: 0;
   background-color: #222;
   border-radius: 4px;
+  height: 18px;
   /* transition: opacity 0.75s; */
 `;
 
@@ -54,9 +56,9 @@ export const HoveringToolbar = () => {
   return (
     <Portal>
       <StyledMenu ref={ref}>
-        <MarkButton reversed format="bold" icon="format_bold" />
-        <MarkButton reversed format="italic" icon="format_italic" />
-        <MarkButton reversed format="underline" icon="format_underlined" />
+        <MarkButton reversed format="bold" icon={<FormatBold />} />
+        <MarkButton reversed format="italic" icon={<FormatItalic />} />
+        <MarkButton reversed format="underline" icon={<FormatUnderlined />} />
       </StyledMenu>
     </Portal>
   );

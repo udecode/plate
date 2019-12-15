@@ -3,10 +3,7 @@ import { NodeEntry, Range, Text } from 'slate';
 import { Plugin, RenderLeafProps } from 'slate-react';
 import { HighlightLeaf } from './HighlightLeaf';
 
-export const decorateHighlight = (
-  [node, path]: NodeEntry,
-  { search }: any = {}
-) => {
+export const decorateHighlight = ([node, path]: NodeEntry, search?: string) => {
   const ranges: Range[] = [];
 
   if (search && Text.isText(node)) {
