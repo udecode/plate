@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from '@material-ui/icons';
-import { Toolbar } from 'slate-plugins/common/components/Toolbar';
+import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
@@ -20,7 +20,7 @@ const Input = styled.input`
 `;
 
 export const ToolbarHighlight = ({ setSearch }: any) => (
-  <Toolbar>
+  <StyledToolbar>
     <Wrapper>
       <Icon style={{ fontSize: '18px' }} />
       <Input
@@ -29,5 +29,5 @@ export const ToolbarHighlight = ({ setSearch }: any) => (
         onChange={e => setSearch(e.target.value)}
       />
     </Wrapper>
-  </Toolbar>
+  </StyledToolbar>
 );

@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
-  createEditorPlugins,
   EditablePlugins,
   MarkdownShortcutsPlugin,
+  renderElementShortcuts,
   useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueMarkdownShortcuts } from './config/initialValues';
+import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
-const plugins = [MarkdownShortcutsPlugin()];
-
-const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
+export default {
+  title: 'Plugins|MarkdownShortcutsPlugin',
+};
 
 export const MarkdownShortcuts = () => {
+  const plugins = [];
+  const renderElement = [];
+  if (boolean('MarkdownShortcutsPlugin', true, 'plugins'))
+    plugins.push(MarkdownShortcutsPlugin());
+  else if (boolean('renderElementShortcuts', false, 'renderElement'))
+    renderElement.push(renderElementShortcuts);
+
   const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
-  const editor = useCreateEditor(editorPlugins);
+  const editor = useCreateEditor([withReact, withHistory], plugins);
 
   return (
     <Slate
@@ -26,6 +34,7 @@ export const MarkdownShortcuts = () => {
     >
       <EditablePlugins
         plugins={plugins}
+        renderElement={renderElement}
         placeholder="Write some markdown..."
         spellCheck
         autoFocus

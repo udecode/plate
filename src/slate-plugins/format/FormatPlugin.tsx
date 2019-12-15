@@ -43,7 +43,7 @@ export const withFormat = (editor: Editor) => {
 };
 
 // ?
-const onDOMBeforeInputFormat = (event: any, editor: Editor) => {
+export const onDOMBeforeInputFormat = (event: any, editor: Editor) => {
   switch (event.inputType) {
     case 'formatBold':
       editor.exec({ type: 'toggle_format', format: TextFormat.BOLD });

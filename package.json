@@ -47,8 +47,10 @@
     "@storybook/addon-info": "^5.2.8",
     "@storybook/addon-knobs": "^5.2.8",
     "@storybook/addon-links": "^5.2.8",
+    "@storybook/addon-storysource": "^5.2.8",
     "@storybook/addons": "^5.2.8",
     "@storybook/cli": "^5.2.8",
+    "@storybook/preset-typescript": "^1.1.0",
     "@storybook/react": "^5.2.8",
     "@types/faker": "^4.1.8",
     "@types/is-hotkey": "^0.1.1",
@@ -68,6 +70,7 @@
     "react-docgen-typescript-loader": "^3.6.0",
     "react-router-dom": "^5.1.2",
     "ts-jest": "^24.2.0",
+    "ts-loader": "^6.2.1",
     "typescript": "3.7.3"
   }
 }

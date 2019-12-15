@@ -12,5 +12,19 @@ module.exports = {
         jsx: 'never',
       },
     ],
+    'react/jsx-filename-extension': [
+      'error',
+      { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },
+    ],
   },
+  overrides: [
+    {
+      files: '**/*.mdx',
+      rules: {
+        'prettier/prettier': 'off',
+        'simple-import-sort/sort': 'off',
+        'import/order': ['error', { 'newlines-between': 'never' }],
+      },
+    },
+  ]
 };

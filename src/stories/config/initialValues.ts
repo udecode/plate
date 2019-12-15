@@ -296,14 +296,6 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueReadOnly: Node[] = [
-  {
-    children: [
-      { text: 'This is editable plain text, just like a <textarea>!' },
-    ],
-  },
-];
-
 export const initialValueRichText: Node[] = [
   {
     type: 'paragraph',

@@ -1,30 +1,31 @@
 import React, { useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
   CheckListPlugin,
-  createEditorPlugins,
   EditablePlugins,
-  onKeyDownFormat,
   renderElementCheckList,
-  renderElementFormat,
-  renderLeafFormat,
   useCreateEditor,
   withFormat,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { initialValueCheckLists } from './config/initialValues';
+import { initialValueCheckLists } from '../config/initialValues';
 
-const plugins = [CheckListPlugin()];
-
-const editorPlugins = createEditorPlugins(
-  [withFormat, withReact, withHistory],
-  plugins
-);
+export default {
+  title: 'Plugins|CheckListPlugin',
+};
 
 export const CheckLists = () => {
+  const plugins = [];
+  const renderElement = [];
+  if (boolean('CheckListPlugin', true, 'plugins'))
+    plugins.push(CheckListPlugin());
+  else if (boolean('renderElementCheckList', false, 'renderElement'))
+    renderElement.push(renderElementCheckList);
+
   const [value, setValue] = useState(initialValueCheckLists);
 
-  const editor = useCreateEditor(editorPlugins);
+  const editor = useCreateEditor([withFormat, withReact, withHistory], plugins);
 
   return (
     <Slate
@@ -33,19 +34,12 @@ export const CheckLists = () => {
       onChange={newValue => setValue(newValue)}
     >
       <EditablePlugins
-        renderElement={[renderElementCheckList, renderElementFormat]}
-        renderLeaf={[renderLeafFormat]}
-        onKeyDown={[onKeyDownFormat]}
+        plugins={plugins}
+        renderElement={renderElement}
         placeholder="Get to work…"
         spellCheck
         autoFocus
       />
-      {/* <EditablePlugins
-        plugins={plugins}
-        placeholder="Get to work…"
-        spellCheck
-        autoFocus
-      /> */}
     </Slate>
   );
 };

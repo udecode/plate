@@ -19,5 +19,8 @@
     "suppressImplicitAnyIndexErrors": true
   },
   "include": ["src", "typings"],
-  "exclude": ["node_modules", "build", "scripts"]
+  "exclude": ["node_modules", "build", "scripts"],
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [7005]
+  }
 }

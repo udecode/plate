@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import { boolean, text } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import { useCreateEditor } from 'slate-plugins';
 import { Editable, Slate, withReact } from 'slate-react';
-import { initialValuePlainText } from './config/initialValues';
+import { initialValuePlainText } from '../config/initialValues';
 
-export const PlainText = () => {
+export default {
+  title: 'Basic|Editable',
+};
+
+export const Props = () => {
   const [value, setValue] = useState(initialValuePlainText);
 
   const editor = useCreateEditor([withReact, withHistory]);
@@ -15,7 +20,10 @@ export const PlainText = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <Editable placeholder="Enter some plain text..." />
+      <Editable
+        readOnly={boolean('readOnly', false)}
+        placeholder={text('placeholder', 'Enter some plain text...')}
+      />
     </Slate>
   );
 };

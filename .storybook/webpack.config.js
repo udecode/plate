@@ -7,17 +7,30 @@ module.exports = ({ config }) => {
       {
         loader: require.resolve('awesome-typescript-loader'),
       },
-      // Optional
       {
         loader: require.resolve('react-docgen-typescript-loader'),
       },
     ],
   });
+  
+  // config.module.rules.push({
+  //   test: /\.stories\.tsx?$/,
+  //   loaders: [
+  //     {
+  //       loader: require.resolve('@storybook/source-loader'),
+  //       options: { parser: 'typescript' },
+  //     },
+  //   ],
+  //   enforce: 'pre',
+  // });
+  
   config.resolve.modules = [
     ...(config.resolve.modules || []),
     path.resolve(__dirname, '../src'),
   ];
+  
   config.resolve.extensions.push('.ts', '.tsx');
+  
   return config;
-  };
+};
   

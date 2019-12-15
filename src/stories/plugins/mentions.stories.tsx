@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
-  createEditorPlugins,
   EditablePlugins,
   MentionPlugin,
   MentionSelect,
@@ -10,11 +9,14 @@ import {
   useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
-import { CHARACTERS } from './config/data';
-import { initialValueMentions } from './config/initialValues';
+import { CHARACTERS } from '../config/data';
+import { initialValueMentions } from '../config/initialValues';
+
+export default {
+  title: 'Plugins|MentionPlugin',
+};
 
 const plugins = [MentionPlugin()];
-const editorPlugins = createEditorPlugins([withReact, withHistory], plugins);
 
 export const Mentions = () => {
   const [value, setValue] = useState(initialValueMentions);
@@ -26,7 +28,7 @@ export const Mentions = () => {
     c.toLowerCase().startsWith(search.toLowerCase())
   ).slice(0, 10);
 
-  const editor = useCreateEditor(editorPlugins);
+  const editor = useCreateEditor([withReact, withHistory], plugins);
 
   return (
     <Slate
