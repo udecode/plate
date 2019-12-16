@@ -11945,10 +11945,10 @@ slate-hyperscript@0.54.5:
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-react@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.54.5.tgz#4489610dd1c451092131155de76ad71091c74943"
-  integrity sha512-v3NbQH0mbCFjKymNVE2g1EUtY/qNW8XWTsz/fCsoZcO54g763rWe4FExqp8SFkHvCN97kwsCQhmH+043v0eWAA==
+slate-react@0.55.0:
+  version "0.55.0"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.55.0.tgz#eeb601a23c47ce71a43741e9d89ad8a791dd193d"
+  integrity sha512-ZHufjfhCZlRY4/2ZZHsh9omuvrB3jPJQ0E6QvRa2M1yvNtZyZ+nZTO4DRt1pWCoXCygJJ2j82g/pjNdlVnpK7g==
   dependencies:
     "@types/debounce" "^1.2.0"
     "@types/debug" "^4.1.5"
