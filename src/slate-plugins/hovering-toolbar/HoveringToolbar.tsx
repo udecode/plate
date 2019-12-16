@@ -3,7 +3,7 @@ import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { Editor, Range } from 'slate';
 import { Menu } from 'slate-plugins/common/components/Menu';
 import { Portal } from 'slate-plugins/common/components/Portal';
-import { MarkButton } from 'slate-plugins/format/MarkButton';
+import { MarkButton } from 'slate-plugins/marks/components/MarkButton';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
 

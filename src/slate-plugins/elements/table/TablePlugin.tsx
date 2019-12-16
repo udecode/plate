@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
+import { Plugin, RenderElementProps } from 'slate-react';
 
 export const withTable = (editor: Editor) => {
   const { exec } = editor;
@@ -69,16 +69,7 @@ export const renderElementTable = ({
   }
 };
 
-export const renderLeafTable = ({ children, leaf }: RenderLeafProps) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>;
-  }
-
-  return children;
-};
-
 export const TablePlugin = (): Plugin => ({
   editor: withTable,
   renderElement: renderElementTable,
-  renderLeaf: renderLeafTable,
 });

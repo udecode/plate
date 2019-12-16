@@ -63,11 +63,8 @@ export const withImage = (editor: Editor) => {
 export const renderElementImage = (props: RenderElementProps) => {
   const { element } = props;
 
-  switch (element.type) {
-    case ElementType.IMAGE:
-      return <ImageElement {...props} />;
-    default:
-      break;
+  if (element.type === ElementType.IMAGE) {
+    return <ImageElement {...props} />;
   }
 };
 

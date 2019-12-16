@@ -43,11 +43,8 @@ export const withChecklist = (editor: Editor) => {
 export const renderElementCheckList = (props: RenderElementProps) => {
   const { element } = props;
 
-  switch (element.type) {
-    case ElementType.CHECK_LIST_ITEM:
-      return <CheckListItemElement {...props} />;
-    default:
-      break;
+  if (element.type === ElementType.CHECK_LIST_ITEM) {
+    return <CheckListItemElement {...props} />;
   }
 };
 

@@ -1,4 +1,4 @@
-export * from './BlockButton';
+export * from '../elements/components/BlockButton';
 export * from './FormatPlugin';
-export * from './MarkButton';
+export * from '../marks/components/MarkButton';
 export * from './queries';

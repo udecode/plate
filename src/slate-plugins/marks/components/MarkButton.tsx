@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
-import { isMarkActive } from './queries';
+import { isMarkActive } from '../format/queries';
 
 interface Props {
   format: string;

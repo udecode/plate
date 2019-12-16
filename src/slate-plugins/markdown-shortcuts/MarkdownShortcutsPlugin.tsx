@@ -86,36 +86,6 @@ export const withShortcuts = (editor: Editor) => {
   return editor;
 };
 
-export const renderElementShortcuts = ({
-  attributes,
-  children,
-  element,
-}: RenderElementProps) => {
-  switch (element.type) {
-    case ElementType.BLOCK_QUOTE:
-      return <blockquote {...attributes}>{children}</blockquote>;
-    case ElementType.UL_LIST:
-      return <ul {...attributes}>{children}</ul>;
-    case ElementType.HEADING_1:
-      return <h1 {...attributes}>{children}</h1>;
-    case ElementType.HEADING_2:
-      return <h2 {...attributes}>{children}</h2>;
-    case ElementType.HEADING_3:
-      return <h3 {...attributes}>{children}</h3>;
-    case ElementType.HEADING_4:
-      return <h4 {...attributes}>{children}</h4>;
-    case ElementType.HEADING_5:
-      return <h5 {...attributes}>{children}</h5>;
-    case ElementType.HEADING_6:
-      return <h6 {...attributes}>{children}</h6>;
-    case ElementType.LIST_ITEM:
-      return <li {...attributes}>{children}</li>;
-    default:
-      break;
-  }
-};
-
 export const MarkdownShortcutsPlugin = (): Plugin => ({
   editor: withShortcuts,
-  renderElement: renderElementShortcuts,
 });

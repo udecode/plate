@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
+  BlockquotePlugin,
   EditablePlugins,
+  HeadingPlugin,
+  ListPlugin,
   MarkdownShortcutsPlugin,
   renderElementShortcuts,
   useCreateEditor,
@@ -15,7 +18,7 @@ export default {
 };
 
 export const MarkdownShortcuts = () => {
-  const plugins = [];
+  const plugins = [BlockquotePlugin(), ListPlugin(), HeadingPlugin()];
   const renderElement = [];
   if (boolean('MarkdownShortcutsPlugin', true, 'plugins'))
     plugins.push(MarkdownShortcutsPlugin());

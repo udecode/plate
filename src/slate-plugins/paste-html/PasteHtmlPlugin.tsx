@@ -1,9 +1,7 @@
-import React from 'react';
 import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { ImageElement } from 'slate-plugins/image';
-import { Plugin, RenderElementProps, RenderLeafProps } from 'slate-react';
+import { Plugin } from 'slate-react';
 
 const ELEMENT_TAGS: any = {
   A: (el: any) => ({ type: ElementType.LINK, url: el.getAttribute('href') }),
@@ -107,75 +105,6 @@ export const withPasteHtml = (editor: Editor) => {
   return editor;
 };
 
-export const renderElementPasteHtml = (props: RenderElementProps) => {
-  const { attributes, children, element } = props;
-
-  switch (element.type) {
-    case ElementType.BLOCK_QUOTE:
-      return <blockquote {...attributes}>{children}</blockquote>;
-    case ElementType.CODE:
-      return (
-        <pre>
-          <code {...attributes}>{children}</code>
-        </pre>
-      );
-    case ElementType.UL_LIST:
-      return <ul {...attributes}>{children}</ul>;
-    case ElementType.HEADING_1:
-      return <h1 {...attributes}>{children}</h1>;
-    case ElementType.HEADING_2:
-      return <h2 {...attributes}>{children}</h2>;
-    case ElementType.HEADING_3:
-      return <h3 {...attributes}>{children}</h3>;
-    case ElementType.HEADING_4:
-      return <h4 {...attributes}>{children}</h4>;
-    case ElementType.HEADING_5:
-      return <h5 {...attributes}>{children}</h5>;
-    case ElementType.HEADING_6:
-      return <h6 {...attributes}>{children}</h6>;
-    case ElementType.LIST_ITEM:
-      return <li {...attributes}>{children}</li>;
-    case ElementType.OL_LIST:
-      return <ol {...attributes}>{children}</ol>;
-    case ElementType.LINK:
-      return (
-        <a {...attributes} href={element.url}>
-          {children}
-        </a>
-      );
-    case ElementType.IMAGE:
-      return <ImageElement {...props} />;
-    default:
-      break;
-  }
-};
-
-export const renderLeafPasteHtml = ({ children, leaf }: RenderLeafProps) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>;
-  }
-
-  if (leaf.code) {
-    children = <code>{children}</code>;
-  }
-
-  if (leaf.italic) {
-    children = <em>{children}</em>;
-  }
-
-  if (leaf.underline) {
-    children = <u>{children}</u>;
-  }
-
-  if (leaf.strikethrough) {
-    children = <del>{children}</del>;
-  }
-
-  return children;
-};
-
 export const PasteHtmlPlugin = (): Plugin => ({
   editor: withPasteHtml,
-  renderElement: renderElementPasteHtml,
-  renderLeaf: renderLeafPasteHtml,
 });

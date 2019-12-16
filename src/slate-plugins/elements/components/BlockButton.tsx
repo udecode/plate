@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
 import styled from 'styled-components';
-import { isBlockActive } from './queries';
+import { isBlockActive } from '../format/queries';
 
 interface Props {
   format: string;

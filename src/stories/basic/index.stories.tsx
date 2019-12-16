@@ -23,6 +23,8 @@ export const Props = () => {
       <Editable
         readOnly={boolean('readOnly', false)}
         placeholder={text('placeholder', 'Enter some plain text...')}
+        spellCheck={boolean('spellCheck', true)}
+        autoFocus
       />
     </Slate>
   );
