@@ -14,16 +14,12 @@ import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
+  BlockquotePlugin,
   BoldPlugin,
   EditablePlugins,
-  FormatPlugin,
   InlineCodePlugin,
   ItalicPlugin,
   MarkButton,
-  onDOMBeforeInputFormat,
-  onKeyDownFormat,
-  renderElementFormat,
-  renderLeafFormat,
   UnderlinePlugin,
   useCreateEditor,
 } from 'slate-plugins';
@@ -32,31 +28,19 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|FormatPlugin',
+  title: 'Plugins|Marks',
 };
 
-export const RichText = () => {
+export const MarkPlugins = () => {
   const plugins = [];
-  const renderElement = [];
-  const renderLeaf = [];
-  const onKeyDown = [];
-  const onDOMBeforeInput = [];
   if (boolean('BoldPlugin', true, 'plugins')) plugins.push(BoldPlugin());
   if (boolean('InlineCodePlugin', true, 'plugins'))
     plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true, 'plugins')) plugins.push(ItalicPlugin());
   if (boolean('UnderlinePlugin', true, 'plugins'))
     plugins.push(UnderlinePlugin());
-  else {
-    if (boolean('renderElementFormat', false, 'renderElement'))
-      renderElement.push(renderElementFormat);
-    if (boolean('renderLeafFormat', false, 'renderLeaf'))
-      renderLeaf.push(renderLeafFormat);
-    if (boolean('onKeyDownFormat', false, 'onKeyDown'))
-      onKeyDown.push(onKeyDownFormat);
-    if (boolean('onDOMBeforeInputFormat', false, 'onDOMBeforeInput'))
-      onDOMBeforeInput.push(onDOMBeforeInputFormat);
-  }
+  if (boolean('BlockquotePlugin', true, 'plugins'))
+    plugins.push(BlockquotePlugin());
 
   const [value, setValue] = useState(initialValueRichText);
 
@@ -73,18 +57,9 @@ export const RichText = () => {
         <MarkButton format="italic" icon={<FormatItalic />} />
         <MarkButton format="underline" icon={<FormatUnderlined />} />
         <MarkButton format="code" icon={<Code />} />
-        <BlockButton format="heading-one" icon={<LooksOne />} />
-        <BlockButton format="heading-two" icon={<LooksTwo />} />
-        <BlockButton format="block-quote" icon={<FormatQuote />} />
-        <BlockButton format="numbered-list" icon={<FormatListNumbered />} />
-        <BlockButton format="bulleted-list" icon={<FormatListBulleted />} />
       </StyledToolbar>
       <EditablePlugins
         plugins={plugins}
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        onKeyDown={onKeyDown}
-        onDOMBeforeInput={onDOMBeforeInput}
         placeholder="Enter some rich text…"
         spellCheck
         autoFocus

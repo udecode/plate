@@ -296,7 +296,26 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
+export const initialValueMark: Node[] = [
+  {
+    type: 'paragraph',
+    children: [
+      { text: 'This is editable ' },
+      { text: 'rich', bold: true, underline: true, italic: true },
+      { text: ' text, ' },
+      { text: 'much' },
+      { text: ' better than a ' },
+      { text: '<textarea>', code: true },
+      { text: '!' },
+    ],
+  },
+];
+
 export const initialValueRichText: Node[] = [
+  {
+    type: 'heading-one',
+    children: [{ text: 'Welcome' }],
+  },
   {
     type: 'paragraph',
     children: [
@@ -326,10 +345,6 @@ export const initialValueRichText: Node[] = [
   {
     type: 'block-quote',
     children: [{ text: 'A wise quote.' }],
-  },
-  {
-    type: 'paragraph',
-    children: [{ text: 'Try it out for yourself!' }],
   },
 ];
 

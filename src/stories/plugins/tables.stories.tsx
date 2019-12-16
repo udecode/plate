@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
+  BoldPlugin,
   EditablePlugins,
   renderElementTable,
-  renderLeafTable,
   TablePlugin,
   useCreateEditor,
 } from 'slate-plugins';
@@ -16,16 +16,11 @@ export default {
 };
 
 export const Tables = () => {
-  const plugins = [];
+  const plugins = [BoldPlugin()];
   const renderElement = [];
-  const renderLeaf = [];
   if (boolean('TablePlugin', true, 'plugins')) plugins.push(TablePlugin());
-  else {
-    if (boolean('renderElementTable', false, 'renderElement'))
-      renderElement.push(renderElementTable);
-    if (boolean('renderLeafTable', false, 'renderLeaf'))
-      renderLeaf.push(renderLeafTable);
-  }
+  else if (boolean('renderElementTable', false, 'renderElement'))
+    renderElement.push(renderElementTable);
 
   const [value, setValue] = useState(initialValueTables);
 
@@ -37,11 +32,7 @@ export const Tables = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <EditablePlugins
-        plugins={plugins}
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-      />
+      <EditablePlugins plugins={plugins} renderElement={renderElement} />
     </Slate>
   );
 };

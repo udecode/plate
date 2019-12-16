@@ -10,7 +10,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueHoveringToolbar } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|HoveringToolbarPlugin',
+  title: 'Basic|HoveringToolbar',
 };
 
 const plugins = [FormatPlugin()];

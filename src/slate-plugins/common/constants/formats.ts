@@ -10,11 +10,6 @@ export const TextFormat = {
   FONTSIZE: 'FONTSIZE',
 };
 
-export enum ListType {
-  OL_LIST = 'numbered-list',
-  UL_LIST = 'bulleted-list',
-}
-
 export const ElementType = {
   // Classic blocks
   PARAGRAPH: 'paragraph',
@@ -33,10 +28,6 @@ export const ElementType = {
   TABLE: 'table',
   TABLE_ROW: 'table-row',
   TABLE_CELL: 'table-cell',
-
-  // Lists
-  ...ListType,
-  LIST_ITEM: 'list-item',
 
   CHECK_LIST_ITEM: 'check-list-item',
 
