@@ -11960,10 +11960,10 @@ slate-react@0.54.5:
     is-plain-object "^3.0.0"
     scroll-into-view-if-needed "^2.2.20"
 
-slate@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate/-/slate-0.54.5.tgz#748edf74050a60213a56e859b873255abcf3f769"
-  integrity sha512-zLfWpgW4nBzVl8ubupbC5DKBSNVi+czfyxsOStPQTUWpTc7SldirVsP993ufH+hyf5UIs0D1N4D1+txjqFKgOw==
+slate@0.55.0:
+  version "0.55.0"
+  resolved "https://registry.yarnpkg.com/slate/-/slate-0.55.0.tgz#94b5a3864955bce0e05457f80081e9d8ce2c55e0"
+  integrity sha512-9fE4E6ExFeuN4JG0P17Gx5qTMVXpc1e0YfBT3CwkM+BUhwt4KfQ+J3OKR9fXF042Hd9ZEcF7n8GVAnQGE3KqUg==
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"
