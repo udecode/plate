@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
-import { EditablePlugins, FormatPlugin, useCreateEditor } from 'slate-plugins';
+import { EditablePlugins, HeadingPlugin, useCreateEditor } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueHugeDocument } from '../config/initialValues';
 
@@ -8,7 +8,7 @@ export default {
   title: 'Basic|Huge Document',
 };
 
-const plugins = [FormatPlugin()];
+const plugins = [HeadingPlugin()];
 
 export const HugeDocument = () => {
   const [value, setValue] = useState(initialValueHugeDocument);

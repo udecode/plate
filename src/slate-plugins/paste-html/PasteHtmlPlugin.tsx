@@ -1,9 +1,11 @@
 import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { ElementType } from 'slate-plugins/common/constants/formats';
+import { ListType } from 'slate-plugins/elements';
 import { Plugin } from 'slate-react';
 
 const ELEMENT_TAGS: any = {
+  P: () => ({ type: ElementType.PARAGRAPH }),
   A: (el: any) => ({ type: ElementType.LINK, url: el.getAttribute('href') }),
   BLOCKQUOTE: () => ({ type: ElementType.BLOCK_QUOTE }),
   H1: () => ({ type: ElementType.HEADING_1 }),
@@ -13,11 +15,10 @@ const ELEMENT_TAGS: any = {
   H5: () => ({ type: ElementType.HEADING_5 }),
   H6: () => ({ type: ElementType.HEADING_6 }),
   IMG: (el: any) => ({ type: ElementType.IMAGE, url: el.getAttribute('src') }),
-  LI: () => ({ type: ElementType.LIST_ITEM }),
-  OL: () => ({ type: ElementType.OL_LIST }),
-  P: () => ({ type: ElementType.PARAGRAPH }),
+  UL: () => ({ type: ListType.UL_LIST }),
+  OL: () => ({ type: ListType.OL_LIST }),
+  LI: () => ({ type: ListType.LIST_ITEM }),
   PRE: () => ({ type: ElementType.CODE }),
-  UL: () => ({ type: ElementType.UL_LIST }),
 };
 
 // COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.

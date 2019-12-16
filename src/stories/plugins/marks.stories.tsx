@@ -3,18 +3,11 @@ import {
   Code,
   FormatBold,
   FormatItalic,
-  FormatListBulleted,
-  FormatListNumbered,
-  FormatQuote,
   FormatUnderlined,
-  LooksOne,
-  LooksTwo,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { withHistory } from 'slate-history';
 import {
-  BlockButton,
-  BlockquotePlugin,
   BoldPlugin,
   EditablePlugins,
   InlineCodePlugin,
@@ -25,7 +18,7 @@ import {
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
-import { initialValueRichText } from '../config/initialValues';
+import { initialValueMark } from '../config/initialValues';
 
 export default {
   title: 'Plugins|Marks',
@@ -33,16 +26,14 @@ export default {
 
 export const MarkPlugins = () => {
   const plugins = [];
-  if (boolean('BoldPlugin', true, 'plugins')) plugins.push(BoldPlugin());
-  if (boolean('InlineCodePlugin', true, 'plugins'))
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
+  if (boolean('InlineCodePlugin', true))
     plugins.push(InlineCodePlugin());
-  if (boolean('ItalicPlugin', true, 'plugins')) plugins.push(ItalicPlugin());
-  if (boolean('UnderlinePlugin', true, 'plugins'))
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
+  if (boolean('UnderlinePlugin', true))
     plugins.push(UnderlinePlugin());
-  if (boolean('BlockquotePlugin', true, 'plugins'))
-    plugins.push(BlockquotePlugin());
 
-  const [value, setValue] = useState(initialValueRichText);
+  const [value, setValue] = useState(initialValueMark);
 
   const editor = useCreateEditor([withReact, withHistory], plugins);
 

@@ -31,6 +31,7 @@ export const renderLeafHighlight = ({ children, leaf }: RenderLeafProps) => (
   <HighlightLeaf {...leaf}>{children}</HighlightLeaf>
 );
 
+// TODO: options
 export const HighlightPlugin = (): Plugin => ({
   decorate: decorateHighlight,
   renderLeaf: renderLeafHighlight,

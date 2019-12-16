@@ -19,13 +19,11 @@ export const MarkdownPreview = () => {
   const plugins = [];
   const decorate = [];
   const renderLeaf = [];
-  if (boolean('MarkdownPreviewPlugin', true, 'plugins'))
+  if (boolean('MarkdownPreviewPlugin', true))
     plugins.push(MarkdownPreviewPlugin());
   else {
-    if (boolean('decoratePreview', false, 'decorate'))
-      decorate.push(decoratePreview);
-    if (boolean('renderLeafLink', false, 'renderLeaf'))
-      renderLeaf.push(renderLeafPreview);
+    if (boolean('decoratePreview', false)) decorate.push(decoratePreview);
+    if (boolean('renderLeafLink', false)) renderLeaf.push(renderLeafPreview);
   }
 
   const [value, setValue] = useState(initialValueMarkdownPreview);

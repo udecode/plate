@@ -3,6 +3,8 @@ import { Editor } from 'slate';
 import { Plugin, RenderElementProps } from 'slate-react';
 import { MentionElement } from './MentionElement';
 
+export const MentionType = 'mention';
+
 interface Options {
   chars: any[];
   index: number;
@@ -15,17 +17,17 @@ export const withMention = (editor: Editor) => {
   const { exec, isInline, isVoid } = editor;
 
   editor.isInline = element => {
-    return element.type === 'mention' ? true : isInline(element);
+    return element.type === MentionType ? true : isInline(element);
   };
 
   editor.isVoid = element => {
-    return element.type === 'mention' ? true : isVoid(element);
+    return element.type === MentionType ? true : isVoid(element);
   };
 
   editor.exec = command => {
     if (command.type === 'insert_mention') {
       const mention = {
-        type: 'mention',
+        type: MentionType,
         character: command.character,
         children: [{ text: '' }],
       };
@@ -43,7 +45,7 @@ export const withMention = (editor: Editor) => {
 export const renderElementMention = (props: RenderElementProps) => {
   const { element } = props;
   switch (element.type) {
-    case 'mention':
+    case MentionType:
       return <MentionElement {...props} />;
     default:
       break;
@@ -89,5 +91,5 @@ export const onKeyDownMention = (
 export const MentionPlugin = (): Plugin => ({
   editor: withMention,
   renderElement: renderElementMention,
-  onKeyDown: onKeyDownMention,
+  // onKeyDown: onKeyDownMention,
 });

@@ -6,7 +6,6 @@ import {
   EditablePlugins,
   renderElementCheckList,
   useCreateEditor,
-  withFormat,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueCheckLists } from '../config/initialValues';
@@ -18,14 +17,13 @@ export default {
 export const CheckLists = () => {
   const plugins = [];
   const renderElement = [];
-  if (boolean('CheckListPlugin', true, 'plugins'))
-    plugins.push(CheckListPlugin());
-  else if (boolean('renderElementCheckList', false, 'renderElement'))
+  if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
+  if (boolean('renderElementCheckList', false))
     renderElement.push(renderElementCheckList);
 
   const [value, setValue] = useState(initialValueCheckLists);
 
-  const editor = useCreateEditor([withFormat, withReact, withHistory], plugins);
+  const editor = useCreateEditor([withReact, withHistory], plugins);
 
   return (
     <Slate

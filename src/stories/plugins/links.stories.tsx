@@ -19,8 +19,8 @@ export default {
 export const Links = () => {
   const plugins = [];
   const renderElement = [];
-  if (boolean('LinkPlugin', true, 'plugins')) plugins.push(LinkPlugin());
-  else if (boolean('renderElementLink', false, 'renderElement'))
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
+  if (boolean('renderElementLink', false))
     renderElement.push(renderElementLink);
 
   const [value, setValue] = useState(initialValueLinks);

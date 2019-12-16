@@ -18,7 +18,7 @@ export default {
 
 export const MarkdownShortcuts = () => {
   const plugins = [BlockquotePlugin(), ListPlugin(), HeadingPlugin()];
-  if (boolean('MarkdownShortcutsPlugin', true, 'plugins'))
+  if (boolean('MarkdownShortcutsPlugin', true))
     plugins.push(MarkdownShortcutsPlugin());
 
   const [value, setValue] = useState(initialValueMarkdownShortcuts);

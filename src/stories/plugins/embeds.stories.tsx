@@ -17,8 +17,8 @@ export default {
 export const Embeds = () => {
   const plugins = [];
   const renderElement = [];
-  if (boolean('VideoPlugin', true, 'plugins')) plugins.push(VideoPlugin());
-  else if (boolean('renderElementVideo', false, 'renderElement'))
+  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
+  if (boolean('renderElementVideo', false))
     renderElement.push(renderElementVideo);
 
   const [value, setValue] = useState(initialValueEmbeds);

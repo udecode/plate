@@ -2,7 +2,6 @@ export * from './check-list';
 export * from './common';
 export * from './elements';
 export * from './forced-layout';
-export * from './format';
 export * from './hovering-toolbar';
 export * from './markdown-preview';
 export * from './markdown-shortcuts';

@@ -11,29 +11,40 @@ import {
   LooksTwo,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
+import { Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
+  BlockquotePlugin,
+  BoldPlugin,
   CheckListPlugin,
   EditablePlugins,
   ForcedLayoutPlugin,
-  FormatPlugin,
+  HeadingPlugin,
   HoveringToolbar,
   ImagePlugin,
+  InlineCodePlugin,
   InsertImageButton,
+  ItalicPlugin,
   LinkButton,
   LinkPlugin,
+  ListPlugin,
   MarkButton,
   MarkdownPreviewPlugin,
   MarkdownShortcutsPlugin,
   MentionPlugin,
+  onKeyDownMention,
   PasteHtmlPlugin,
   StyledToolbar,
   TablePlugin,
+  UnderlinePlugin,
   useCreateEditor,
   VideoPlugin,
 } from 'slate-plugins';
+import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
+import { ListButton } from 'slate-plugins/elements/list/ListButton';
 import { Slate, withReact } from 'slate-react';
+import { CHARACTERS } from 'stories/config/data';
 import {
   initialValueCheckLists,
   initialValueEmbeds,
@@ -52,29 +63,30 @@ export const AllPlugins = () => {
   const renderLeaf: any = [];
   const onKeyDown: any = [];
   const onDOMBeforeInput: any = [];
-  if (boolean('CheckListPlugin', true, 'plugins'))
-    plugins.push(CheckListPlugin());
-  if (boolean('VideoPlugin', true, 'plugins')) plugins.push(VideoPlugin());
-  if (boolean('FormatPlugin', true, 'plugins')) plugins.push(FormatPlugin());
-  if (boolean('MentionPlugin', true, 'plugins')) plugins.push(MentionPlugin());
-  if (boolean('ForcedLayoutPlugin', true, 'plugins'))
-    plugins.push(ForcedLayoutPlugin());
-  if (boolean('ImagePlugin', true, 'plugins')) plugins.push(ImagePlugin());
-  if (boolean('LinkPlugin', true, 'plugins')) plugins.push(LinkPlugin());
-  if (boolean('MarkdownPreviewPlugin', true, 'plugins'))
-    plugins.push(MarkdownPreviewPlugin());
-  if (boolean('MarkdownShortcutsPlugin', true, 'plugins'))
+  if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
+  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
+  if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
+  // if (boolean('ForcedLayoutPlugin', true)) plugins.push(ForcedLayoutPlugin());
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
+  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
+  if (boolean('MarkdownShortcutsPlugin', true))
     plugins.push(MarkdownShortcutsPlugin());
-  if (boolean('PasteHtmlPlugin', true, 'plugins'))
-    plugins.push(PasteHtmlPlugin());
-  if (boolean('TablePlugin', true, 'plugins')) plugins.push(TablePlugin());
+  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
+  if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
+  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
 
-  // if (boolean('renderElementFormat', false, 'renderElement'))
+  // if (boolean('renderElementFormat', false))
   //   renderElement.push(renderElementFormat);
-  // if (boolean('renderLeafFormat', false, 'renderLeaf'))
+  // if (boolean('renderLeafFormat', false))
   //   renderLeaf.push(renderLeafFormat);
-  // if (boolean('onKeyDownFormat', false, 'onKeyDown'))
-  //   onKeyDown.push(onKeyDownFormat);
+
   // if (boolean('onDOMBeforeInputFormat', false, 'onDOMBeforeInput'))
   //   onDOMBeforeInput.push(onDOMBeforeInputFormat);
 
@@ -86,14 +98,60 @@ export const AllPlugins = () => {
     ...initialValueImages,
   ]);
 
-  const editor = useCreateEditor([withReact, withHistory]);
+  const [target, setTarget] = useState<Range | null>();
+  const [index, setIndex] = useState(0);
+  const [search, setSearch] = useState('');
+
+  const chars = CHARACTERS.filter(c =>
+    c.toLowerCase().startsWith(search.toLowerCase())
+  ).slice(0, 10);
+
+  const editor = useCreateEditor([withReact, withHistory], plugins);
+
+  if (boolean('onKeyDownMentions', false, 'onKeyDown'))
+    onKeyDown.push((e: any) =>
+      onKeyDownMention(e, editor, {
+        chars,
+        index,
+        target,
+        setIndex,
+        setTarget,
+      })
+    );
 
   return (
     <>
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={newValue => {
+          setValue(newValue);
+
+          const { selection } = editor;
+
+          // mentions
+          if (selection && Range.isCollapsed(selection)) {
+            const [start] = Range.edges(selection);
+            const wordBefore = Editor.before(editor, start, { unit: 'word' });
+            const before = wordBefore && Editor.before(editor, wordBefore);
+            const beforeRange = before && Editor.range(editor, before, start);
+            const beforeText = beforeRange && Editor.text(editor, beforeRange);
+            const beforeMatch = beforeText && beforeText.match(/^@(\w+)$/);
+            const after = Editor.after(editor, start);
+            const afterRange = Editor.range(editor, start, after);
+            const afterText = Editor.text(editor, afterRange);
+            const afterMatch = afterText.match(/^(\s|$)/);
+
+            if (beforeMatch && afterMatch) {
+              setTarget(beforeRange);
+              setSearch(beforeMatch[1]);
+              setIndex(0);
+              return;
+            }
+          }
+
+          setTarget(null);
+        }}
       >
         <StyledToolbar height={18}>
           <MarkButton format="bold" icon={<FormatBold />} />
@@ -103,8 +161,8 @@ export const AllPlugins = () => {
           <BlockButton format="heading-one" icon={<LooksOne />} />
           <BlockButton format="heading-two" icon={<LooksTwo />} />
           <BlockButton format="block-quote" icon={<FormatQuote />} />
-          <BlockButton format="numbered-list" icon={<FormatListNumbered />} />
-          <BlockButton format="bulleted-list" icon={<FormatListBulleted />} />
+          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
+          <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
           <InsertImageButton />
           <LinkButton />
         </StyledToolbar>

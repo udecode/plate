@@ -18,8 +18,8 @@ export default {
 export const Tables = () => {
   const plugins = [BoldPlugin()];
   const renderElement = [];
-  if (boolean('TablePlugin', true, 'plugins')) plugins.push(TablePlugin());
-  else if (boolean('renderElementTable', false, 'renderElement'))
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
+  if (boolean('renderElementTable', false))
     renderElement.push(renderElementTable);
 
   const [value, setValue] = useState(initialValueTables);

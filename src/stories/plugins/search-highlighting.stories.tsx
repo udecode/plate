@@ -23,14 +23,11 @@ export const SearchHighlighting = () => {
   const plugins = [];
   const renderLeaf = [];
   const decorate = [];
-  if (boolean('HighlightPlugin', true, 'plugins'))
-    plugins.push(HighlightPlugin());
-  else {
-    if (boolean('renderLeafHighlight', false, 'renderLeaf'))
-      renderLeaf.push(renderLeafHighlight);
-    if (boolean('decorateHighlight', false, 'decorate'))
-      decorate.push((entry: NodeEntry) => decorateHighlight(entry, search));
-  }
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
+  if (boolean('renderLeafHighlight', false))
+    renderLeaf.push(renderLeafHighlight);
+  if (boolean('decorateHighlight', false))
+    decorate.push((entry: NodeEntry) => decorateHighlight(entry, search));
 
   const [value, setValue] = useState(initialValueSearchHighlighting);
 

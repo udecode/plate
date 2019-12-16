@@ -5,6 +5,7 @@ import { useEditor } from 'slate-react';
 
 export const InsertImageButton = () => {
   const editor = useEditor();
+
   return (
     <Button
       onMouseDown={(event: Event) => {

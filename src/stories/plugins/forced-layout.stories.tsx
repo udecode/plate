@@ -3,7 +3,7 @@ import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
   ForcedLayoutPlugin,
-  FormatPlugin,
+  HeadingPlugin,
   useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -14,7 +14,7 @@ export default {
   component: ForcedLayoutPlugin,
 };
 
-const plugins = [ForcedLayoutPlugin(), FormatPlugin()];
+const plugins = [ForcedLayoutPlugin(), HeadingPlugin()];
 
 export const ForcedLayout = () => {
   const [value, setValue] = useState(initialValueForcedLayout);

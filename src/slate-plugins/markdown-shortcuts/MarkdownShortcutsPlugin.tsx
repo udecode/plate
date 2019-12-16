@@ -1,12 +1,12 @@
-import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { ListType } from 'slate-plugins/elements';
+import { Plugin } from 'slate-react';
 
 const SHORTCUTS: { [key: string]: string } = {
-  '*': ElementType.LIST_ITEM,
-  '-': ElementType.LIST_ITEM,
-  '+': ElementType.LIST_ITEM,
+  '*': ListType.LIST_ITEM,
+  '-': ListType.LIST_ITEM,
+  '+': ListType.LIST_ITEM,
   '>': ElementType.BLOCK_QUOTE,
   '#': ElementType.HEADING_1,
   '##': ElementType.HEADING_2,
@@ -41,10 +41,10 @@ export const withShortcuts = (editor: Editor) => {
         Editor.delete(editor);
         Editor.setNodes(editor, { type }, { match: 'block' });
 
-        if (type === ElementType.LIST_ITEM) {
-          const list = { type: ElementType.UL_LIST, children: [] };
+        if (type === ListType.LIST_ITEM) {
+          const list = { type: ListType.UL_LIST, children: [] };
           Editor.wrapNodes(editor, list, {
-            match: { type: ElementType.LIST_ITEM },
+            match: { type: ListType.LIST_ITEM },
           });
         }
 
@@ -69,9 +69,9 @@ export const withShortcuts = (editor: Editor) => {
         ) {
           Editor.setNodes(editor, { type: ElementType.PARAGRAPH });
 
-          if (block.type === ElementType.LIST_ITEM) {
+          if (block.type === ListType.LIST_ITEM) {
             Editor.unwrapNodes(editor, {
-              match: { type: ElementType.UL_LIST },
+              match: { type: ListType.UL_LIST },
             });
           }
 

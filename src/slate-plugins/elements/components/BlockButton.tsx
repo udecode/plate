@@ -4,16 +4,21 @@ import { useSlate } from 'slate-react';
 import styled from 'styled-components';
 import { isBlockActive } from '../queries';
 
-interface Props {
+export interface BlockButtonProps {
   format: string;
   icon: any;
+  command?: string;
 }
 
 const Icon = styled.span`
   font-size: 18px;
 `;
 
-export const BlockButton = ({ format, icon }: Props) => {
+export const BlockButton = ({
+  format,
+  icon,
+  command = 'format_block',
+}: BlockButtonProps) => {
   const editor = useSlate();
 
   return (
@@ -21,7 +26,7 @@ export const BlockButton = ({ format, icon }: Props) => {
       active={isBlockActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        editor.exec({ type: 'format_block', format });
+        editor.exec({ type: command, format });
       }}
     >
       <Icon>{icon}</Icon>

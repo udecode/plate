@@ -17,6 +17,8 @@ import {
   useCreateEditor,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
+import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
+import { ListButton } from 'slate-plugins/elements/list/ListButton';
 import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
@@ -26,10 +28,11 @@ export default {
 
 export const BlockPlugins = () => {
   const plugins = [];
-  if (boolean('HeadingPlugin', true, 'plugins')) plugins.push(HeadingPlugin());
-  if (boolean('BlockquotePlugin', true, 'plugins'))
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
+  if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin());
-  if (boolean('ListPlugin', true, 'plugins')) plugins.push(ListPlugin());
+  if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
 
   const [value, setValue] = useState(initialValueRichText);
 
@@ -45,8 +48,8 @@ export const BlockPlugins = () => {
         <BlockButton format="heading-one" icon={<LooksOne />} />
         <BlockButton format="heading-two" icon={<LooksTwo />} />
         <BlockButton format="block-quote" icon={<FormatQuote />} />
-        <BlockButton format="numbered-list" icon={<FormatListNumbered />} />
-        <BlockButton format="bulleted-list" icon={<FormatListBulleted />} />
+        <ListButton format="numbered-list" icon={<FormatListNumbered />} />
+        <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
       </StyledToolbar>
       <EditablePlugins
         plugins={plugins}

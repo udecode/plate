@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { withHistory } from 'slate-history';
 import {
+  BoldPlugin,
   EditablePlugins,
-  FormatPlugin,
   HoveringToolbar,
+  ItalicPlugin,
+  UnderlinePlugin,
   useCreateEditor,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -13,7 +15,7 @@ export default {
   title: 'Basic|HoveringToolbar',
 };
 
-const plugins = [FormatPlugin()];
+const plugins = [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
 
 export const HoveringMenu = () => {
   const [value, setValue] = useState(initialValueHoveringToolbar);

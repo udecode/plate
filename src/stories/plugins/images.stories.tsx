@@ -19,8 +19,8 @@ export default {
 export const Images = () => {
   const plugins = [];
   const renderElement = [];
-  if (boolean('ImagePlugin', true, 'plugins')) plugins.push(ImagePlugin());
-  else if (boolean('renderElementImage', false, 'renderElement'))
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
+  if (boolean('renderElementImage', false))
     renderElement.push(renderElementImage);
 
   const [value, setValue] = useState(initialValueImages);

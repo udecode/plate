@@ -10,17 +10,24 @@ export enum ListType {
   LIST_ITEM = 'list-item',
 }
 
-export const withList = (type: string) => (editor: Editor) => {
+export const unwrapList = (editor: Editor) => {
+  [ListType.OL_LIST, ListType.UL_LIST].forEach(f => {
+    Editor.unwrapNodes(editor, { match: { type: f }, split: true });
+  });
+};
+
+/**
+ * Should be used after withBlock
+ */
+export const withList = (editor: Editor) => {
   const { exec } = editor;
 
   editor.exec = command => {
     const { format } = command;
-    if (command.type === 'format_block' && type === format) {
+    if (command.type === 'format_list') {
       const isActive = isBlockActive(editor, format);
 
-      [ListType.OL_LIST, ListType.UL_LIST].forEach(f => {
-        Editor.unwrapNodes(editor, { match: { type: f }, split: true });
-      });
+      unwrapList(editor);
 
       Editor.setNodes(editor, {
         type: isActive ? ElementType.PARAGRAPH : ListType.LIST_ITEM,
@@ -31,9 +38,7 @@ export const withList = (type: string) => (editor: Editor) => {
       }
     } else {
       if (command.type === 'format_block') {
-        Object.values(ListType).forEach(f => {
-          Editor.unwrapNodes(editor, { match: { type: f }, split: true });
-        });
+        unwrapList(editor);
       }
       exec(command);
     }
@@ -60,5 +65,6 @@ export const renderElementList = ({
 };
 
 export const ListPlugin = (): Plugin => ({
+  editor: withList,
   renderElement: renderElementList,
 });

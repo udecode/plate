@@ -24,7 +24,7 @@ addParameters({
     page: DocsPage,
   },
   options: {
-    panelPosition: 'bottom',
+    panelPosition: 'right',
   },
 });
 
