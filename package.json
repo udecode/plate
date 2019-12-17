@@ -34,7 +34,7 @@
     "slate": "0.54.5",
     "slate-history": "0.54.5",
     "slate-hyperscript": "0.54.5",
-    "slate-react": "0.54.5",
+    "slate-react": "0.55.2",
     "styled-components": "^4.4.1"
   },
   "devDependencies": {
