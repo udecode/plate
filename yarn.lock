@@ -5522,10 +5522,10 @@ eslint-import-resolver-node@^0.3.2:
     debug "^2.6.9"
     resolve "^1.5.0"
 
-eslint-mdx@^1.6.3:
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/eslint-mdx/-/eslint-mdx-1.6.3.tgz#f70a94d52c39aca0de93ee03fa1b09d744ff7056"
-  integrity sha512-KGGZmOMufSdfXQWdEdmVr+V4g58DnROY7SKtBSmndhT/2vVjg/9hZSasyB/Ov32SqsAY6QJGDAR87qUxersV9A==
+eslint-mdx@^1.6.4:
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/eslint-mdx/-/eslint-mdx-1.6.4.tgz#987b765bccc2d5911f7ba2a1edc4d65c7b8ced6d"
+  integrity sha512-6IWeQS1fDSITGNhiBFlQdNJWb2V+nEoXI3JvacwdeiWQXc+ovBIAJPfspe9WAgDjIuatBEPNC5TRDMV7iHa1pg==
   dependencies:
     espree "^6.1.2"
     remark-mdx "^1.5.1"
@@ -5598,13 +5598,13 @@ eslint-plugin-jsx-a11y@^6.2.3:
     has "^1.0.3"
     jsx-ast-utils "^2.2.1"
 
-eslint-plugin-mdx@^1.6.3:
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-mdx/-/eslint-plugin-mdx-1.6.3.tgz#fdecf82bfcae0a3bf1eaa41b606e0228ad8f0efd"
-  integrity sha512-ohCRzsEyoQz4XLM2DEfCd3yJos94wdfL10NpZUxO00YEoAD728+LY5pjSDkGg+5jmUVzv13RBPHtSZ8aAC3gLQ==
+eslint-plugin-mdx@^1.6.4:
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-mdx/-/eslint-plugin-mdx-1.6.4.tgz#e0214c26c6cf72e51e8fd6cdf3e810750d39e750"
+  integrity sha512-ZdEZ0UFKEsST8xCCbSpWl2/LDnj3Yf0kUfPLFAA0n27ZAAL0tT4Fkdzn8jxUqK4Qi0w2t1MK0vFthuw+kjLLhA==
   dependencies:
     cosmiconfig "^6.0.0"
-    eslint-mdx "^1.6.3"
+    eslint-mdx "^1.6.4"
     eslint-plugin-react ">=7.0.0"
     remark-mdx "^1.5.1"
     remark-parse "^7.0.2"
