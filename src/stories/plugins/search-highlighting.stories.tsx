@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
-import { NodeEntry } from 'slate';
 import { withHistory } from 'slate-history';
 import {
-  decorateHighlight,
+  decorateSearchHighlight,
   EditablePlugins,
-  HighlightPlugin,
-  renderLeafHighlight,
-  ToolbarHighlight,
+  ToolbarSearchHighlight,
   useCreateEditor,
 } from 'slate-plugins';
+import {
+  HighlightPlugin,
+  renderLeafHighlight,
+} from 'slate-plugins/marks/highlight';
+import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
 import { Slate, withReact } from 'slate-react';
 import { initialValueSearchHighlighting } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|SearchHighlightingPlugin',
+  title: 'Plugins|SearchHighlightPlugin',
+  component: HighlightPlugin,
 };
 
 export const SearchHighlighting = () => {
-  const [search, setSearch] = useState<string>();
+  const [search, setSearch] = useState('');
 
   const plugins = [];
   const renderLeaf = [];
   const decorate = [];
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
+  if (boolean('SearchHighlightPlugin', true))
+    plugins.push(SearchHighlightPlugin({ search }));
   if (boolean('renderLeafHighlight', false))
-    renderLeaf.push(renderLeafHighlight);
+    renderLeaf.push(renderLeafHighlight());
   if (boolean('decorateHighlight', false))
-    decorate.push((entry: NodeEntry) => decorateHighlight(entry, search));
+    decorate.push(decorateSearchHighlight({ search }));
 
   const [value, setValue] = useState(initialValueSearchHighlighting);
 
@@ -39,7 +43,7 @@ export const SearchHighlighting = () => {
       value={value}
       onChange={newValue => setValue(newValue)}
     >
-      <ToolbarHighlight setSearch={setSearch} />
+      <ToolbarSearchHighlight setSearch={setSearch} />
       <EditablePlugins
         plugins={plugins}
         renderLeaf={renderLeaf}

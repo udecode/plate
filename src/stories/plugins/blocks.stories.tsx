@@ -29,8 +29,7 @@ export default {
 export const BlockPlugins = () => {
   const plugins = [];
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
-  if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin());
+  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
 

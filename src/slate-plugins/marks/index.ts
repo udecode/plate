@@ -4,6 +4,6 @@ export * from './italic';
 export * from './components/MarkButton';
 export * from './utils/onKeyDownMark';
 export * from './queries';
-export * from './search-highlighting';
+export * from '../search-highlight';
 export * from './strikethrough';
 export * from './underline';

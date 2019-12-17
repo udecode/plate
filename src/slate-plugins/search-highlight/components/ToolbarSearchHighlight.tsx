@@ -19,7 +19,11 @@ const Input = styled.input`
   width: 100%;
 `;
 
-export const ToolbarHighlight = ({ setSearch }: any) => (
+interface Props {
+  setSearch: any;
+}
+
+export const ToolbarSearchHighlight = ({ setSearch }: Props) => (
   <StyledToolbar>
     <Wrapper>
       <Icon style={{ fontSize: '18px' }} />

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Editor } from 'slate';
+import React, { useState } from 'react';
+import { Editor, Range } from 'slate';
 import { Plugin, RenderElementProps } from 'slate-react';
 import { MentionElement } from './MentionElement';
 
@@ -12,6 +12,60 @@ interface Options {
   setIndex: any;
   setTarget: any;
 }
+
+export const useMention = ({
+  characters = [],
+  maxSuggestions = 10,
+}: {
+  characters: string[];
+  maxSuggestions: number;
+}) => {
+  const [target, setTarget] = useState<Range | null>();
+  const [index, setIndex] = useState(0);
+  const [search, setSearch] = useState('');
+  const chars = characters
+    .filter(c => c.toLowerCase().startsWith(search.toLowerCase()))
+    .slice(0, maxSuggestions);
+  return { target, setTarget, index, setIndex, search, setSearch, chars };
+};
+
+export const onChangeMention = ({
+  editor,
+  setTarget,
+  setSearch,
+  setIndex,
+  beforeRegex = /^@(\w+)$/,
+}: {
+  editor: Editor;
+  setTarget: any;
+  setSearch: any;
+  setIndex: any;
+  beforeRegex?: RegExp;
+}) => {
+  const { selection } = editor;
+
+  if (selection && Range.isCollapsed(selection)) {
+    const [start] = Range.edges(selection);
+    const wordBefore = Editor.before(editor, start, { unit: 'word' });
+    const before = wordBefore && Editor.before(editor, wordBefore);
+    const beforeRange = before && Editor.range(editor, before, start);
+    const beforeText = beforeRange && Editor.text(editor, beforeRange);
+    const beforeMatch = beforeText && beforeText.match(beforeRegex);
+    const after = Editor.after(editor, start);
+    const afterRange = Editor.range(editor, start, after);
+    const afterText = Editor.text(editor, afterRange);
+    const afterMatch = afterText.match(/^(\s|$)/);
+
+    if (beforeMatch && afterMatch) {
+      setTarget(beforeRange);
+      setSearch(beforeMatch[1]);
+      setIndex(0);
+      return;
+    }
+  }
+
+  setTarget(null);
+};
 
 export const withMention = (editor: Editor) => {
   const { exec, isInline, isVoid } = editor;

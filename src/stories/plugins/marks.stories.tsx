@@ -27,11 +27,9 @@ export default {
 export const MarkPlugins = () => {
   const plugins = [];
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('InlineCodePlugin', true))
-    plugins.push(InlineCodePlugin());
+  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
-  if (boolean('UnderlinePlugin', true))
-    plugins.push(UnderlinePlugin());
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
 
   const [value, setValue] = useState(initialValueMark);
 

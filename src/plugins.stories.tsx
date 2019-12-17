@@ -11,7 +11,6 @@ import {
   LooksTwo,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
-import { Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
@@ -33,16 +32,20 @@ import {
   MarkdownPreviewPlugin,
   MarkdownShortcutsPlugin,
   MentionPlugin,
+  onChangeMention,
   onKeyDownMention,
   PasteHtmlPlugin,
   StyledToolbar,
   TablePlugin,
+  ToolbarSearchHighlight,
   UnderlinePlugin,
   useCreateEditor,
+  useMention,
   VideoPlugin,
 } from 'slate-plugins';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
 import { ListButton } from 'slate-plugins/elements/list/ListButton';
+import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
 import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from 'stories/config/data';
 import {
@@ -57,12 +60,21 @@ export default {
   title: 'Plugins|Playground',
 };
 
+const initialValue = [
+  ...initialValueRichText,
+  ...initialValueCheckLists,
+  ...initialValueEmbeds,
+  ...initialValueMentions,
+  ...initialValueImages,
+];
+
 export const AllPlugins = () => {
-  const plugins = [];
+  const [search, setSearchHighlight] = useState('');
+
+  const plugins: any = [];
   const renderElement: any = [];
   const renderLeaf: any = [];
   const onKeyDown: any = [];
-  const onDOMBeforeInput: any = [];
   if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
@@ -78,37 +90,22 @@ export const AllPlugins = () => {
     plugins.push(MarkdownShortcutsPlugin());
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
   if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
+  if (boolean('SearchHighlightPlugin', true))
+    plugins.push(SearchHighlightPlugin({ search }));
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
 
-  // if (boolean('renderElementFormat', false))
-  //   renderElement.push(renderElementFormat);
-  // if (boolean('renderLeafFormat', false))
-  //   renderLeaf.push(renderLeafFormat);
-
-  // if (boolean('onDOMBeforeInputFormat', false, 'onDOMBeforeInput'))
-  //   onDOMBeforeInput.push(onDOMBeforeInputFormat);
-
-  const [value, setValue] = useState([
-    ...initialValueRichText,
-    ...initialValueCheckLists,
-    ...initialValueEmbeds,
-    ...initialValueMentions,
-    ...initialValueImages,
-  ]);
-
-  const [target, setTarget] = useState<Range | null>();
-  const [index, setIndex] = useState(0);
-  const [search, setSearch] = useState('');
-
-  const chars = CHARACTERS.filter(c =>
-    c.toLowerCase().startsWith(search.toLowerCase())
-  ).slice(0, 10);
+  const [value, setValue] = useState(initialValue);
 
   const editor = useCreateEditor([withReact, withHistory], plugins);
 
-  if (boolean('onKeyDownMentions', false, 'onKeyDown'))
+  const { target, setTarget, index, setIndex, setSearch, chars } = useMention({
+    characters: CHARACTERS,
+    maxSuggestions: 10,
+  });
+
+  if (boolean('onKeyDownMentions', true))
     onKeyDown.push((e: any) =>
       onKeyDownMention(e, editor, {
         chars,
@@ -127,32 +124,15 @@ export const AllPlugins = () => {
         onChange={newValue => {
           setValue(newValue);
 
-          const { selection } = editor;
-
-          // mentions
-          if (selection && Range.isCollapsed(selection)) {
-            const [start] = Range.edges(selection);
-            const wordBefore = Editor.before(editor, start, { unit: 'word' });
-            const before = wordBefore && Editor.before(editor, wordBefore);
-            const beforeRange = before && Editor.range(editor, before, start);
-            const beforeText = beforeRange && Editor.text(editor, beforeRange);
-            const beforeMatch = beforeText && beforeText.match(/^@(\w+)$/);
-            const after = Editor.after(editor, start);
-            const afterRange = Editor.range(editor, start, after);
-            const afterText = Editor.text(editor, afterRange);
-            const afterMatch = afterText.match(/^(\s|$)/);
-
-            if (beforeMatch && afterMatch) {
-              setTarget(beforeRange);
-              setSearch(beforeMatch[1]);
-              setIndex(0);
-              return;
-            }
-          }
-
-          setTarget(null);
+          onChangeMention({
+            editor,
+            setTarget,
+            setSearch,
+            setIndex,
+          });
         }}
       >
+        <ToolbarSearchHighlight setSearch={setSearchHighlight} />
         <StyledToolbar height={18}>
           <MarkButton format="bold" icon={<FormatBold />} />
           <MarkButton format="italic" icon={<FormatItalic />} />
@@ -172,7 +152,6 @@ export const AllPlugins = () => {
           renderElement={renderElement}
           renderLeaf={renderLeaf}
           onKeyDown={onKeyDown}
-          onDOMBeforeInput={onDOMBeforeInput}
           placeholder="Enter some plain text..."
         />
       </Slate>

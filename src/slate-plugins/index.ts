@@ -7,3 +7,4 @@ export * from './markdown-preview';
 export * from './markdown-shortcuts';
 export * from './marks';
 export * from './paste-html';
+export * from './search-highlight';

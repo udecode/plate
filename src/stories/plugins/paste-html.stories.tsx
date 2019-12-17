@@ -38,8 +38,7 @@ export const PasteHtml = () => {
     UnderlinePlugin(),
     StrikethroughPlugin(),
   ];
-  if (boolean('PasteHtmlPlugin', true))
-    plugins.push(PasteHtmlPlugin());
+  if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
 
   const [value, setValue] = useState(initialValuePasteHtml);
 
