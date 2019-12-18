@@ -2,7 +2,7 @@ import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 import { ListType } from 'slate-plugins/elements';
-import { Plugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 
 const ELEMENT_TAGS: any = {
   P: () => ({ type: ElementType.PARAGRAPH }),
@@ -106,6 +106,6 @@ export const withPasteHtml = (editor: Editor) => {
   return editor;
 };
 
-export const PasteHtmlPlugin = (): Plugin => ({
+export const PasteHtmlPlugin = (): SlatePlugin => ({
   editor: withPasteHtml,
 });

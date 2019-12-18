@@ -35,7 +35,7 @@ export const HoveringToolbar = () => {
       !selection ||
       !ReactEditor.isFocused(editor) ||
       Range.isCollapsed(selection) ||
-      Editor.text(editor, selection) === ''
+      Editor.string(editor, selection) === ''
     ) {
       el.removeAttribute('style');
       return;

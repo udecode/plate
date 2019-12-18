@@ -1,6 +1,6 @@
 import React from 'react';
 import { ElementType } from 'slate-plugins/common';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 
 export const renderElementBlockquote = ({
   attributes,
@@ -12,6 +12,6 @@ export const renderElementBlockquote = ({
   }
 };
 
-export const BlockquotePlugin = (): Plugin => ({
+export const BlockquotePlugin = (): SlatePlugin => ({
   renderElement: renderElementBlockquote,
 });

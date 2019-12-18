@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { VideoElement } from './VideoElement';
 
 export const withVideo = (editor: Editor) => {
@@ -21,7 +21,7 @@ export const renderElementVideo = (props: RenderElementProps) => {
   }
 };
 
-export const VideoPlugin = (): Plugin => ({
+export const VideoPlugin = (): SlatePlugin => ({
   editor: withVideo,
   renderElement: renderElementVideo,
 });

@@ -1,7 +1,7 @@
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 import { ListType } from 'slate-plugins/elements';
-import { Plugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 
 const SHORTCUTS: { [key: string]: string } = {
   '*': ListType.LIST_ITEM,
@@ -29,22 +29,28 @@ export const withShortcuts = (editor: Editor) => {
       Range.isCollapsed(selection)
     ) {
       const { anchor } = selection;
-      const [block] = Editor.nodes(editor, { match: 'block' });
+      const block = Editor.above(editor, {
+        match: n => Editor.isBlock(editor, n),
+      });
       const path = block ? block[1] : [];
       const start = Editor.start(editor, path);
       const range = { anchor, focus: start };
-      const beforeText = Editor.text(editor, range);
+      const beforeText = Editor.string(editor, range);
       const type = SHORTCUTS[beforeText];
 
       if (type) {
         Editor.select(editor, range);
         Editor.delete(editor);
-        Editor.setNodes(editor, { type }, { match: 'block' });
+        Editor.setNodes(
+          editor,
+          { type },
+          { match: n => Editor.isBlock(editor, n) }
+        );
 
         if (type === ListType.LIST_ITEM) {
           const list = { type: ListType.UL_LIST, children: [] };
           Editor.wrapNodes(editor, list, {
-            match: { type: ListType.LIST_ITEM },
+            match: n => n.type === ListType.LIST_ITEM,
           });
         }
 
@@ -57,7 +63,9 @@ export const withShortcuts = (editor: Editor) => {
       selection &&
       Range.isCollapsed(selection)
     ) {
-      const [match] = Editor.nodes(editor, { match: 'block' });
+      const match = Editor.above(editor, {
+        match: n => Editor.isBlock(editor, n),
+      });
 
       if (match) {
         const [block, path] = match;
@@ -71,7 +79,7 @@ export const withShortcuts = (editor: Editor) => {
 
           if (block.type === ListType.LIST_ITEM) {
             Editor.unwrapNodes(editor, {
-              match: { type: ListType.UL_LIST },
+              match: n => n.type === ListType.UL_LIST,
             });
           }
 
@@ -86,6 +94,6 @@ export const withShortcuts = (editor: Editor) => {
   return editor;
 };
 
-export const MarkdownShortcutsPlugin = (): Plugin => ({
+export const MarkdownShortcutsPlugin = (): SlatePlugin => ({
   editor: withShortcuts,
 });

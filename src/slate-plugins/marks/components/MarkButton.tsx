@@ -18,7 +18,7 @@ export const MarkButton = ({ format, icon, reversed = false }: Props) => {
       active={isMarkActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        editor.exec({ type: 'format_text', properties: { [format]: true } });
+        editor.exec({ type: 'toggle_mark', format });
       }}
     >
       {icon}

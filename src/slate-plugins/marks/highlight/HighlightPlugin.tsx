@@ -1,9 +1,9 @@
-import { Plugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions } from './types';
 
 export const HighlightPlugin = ({
   style,
-}: HighlightPluginOptions = {}): Plugin => ({
+}: HighlightPluginOptions = {}): SlatePlugin => ({
   renderLeaf: renderLeafHighlight({ style }),
 });

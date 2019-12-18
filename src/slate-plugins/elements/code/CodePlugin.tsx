@@ -1,6 +1,6 @@
 import React from 'react';
 import { ElementType } from 'slate-plugins/common';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 
 export const renderElementCode = ({
   attributes,
@@ -16,6 +16,6 @@ export const renderElementCode = ({
   }
 };
 
-export const CodePlugin = (): Plugin => ({
+export const CodePlugin = (): SlatePlugin => ({
   renderElement: renderElementCode,
 });

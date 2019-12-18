@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plugin, RenderLeafProps } from 'slate-react';
+import { RenderLeafProps, SlatePlugin } from 'slate-react';
 
 export const renderLeafStrikethrough = ({
   children,
@@ -10,6 +10,6 @@ export const renderLeafStrikethrough = ({
   return children;
 };
 
-export const StrikethroughPlugin = (): Plugin => ({
+export const StrikethroughPlugin = (): SlatePlugin => ({
   renderLeaf: renderLeafStrikethrough,
 });

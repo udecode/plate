@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-- slate@0.54.5
-- slate-history@0.54.5
-- slate-hyperscript@0.54.5
-- slate-react@0.54.5
+- slate@0.56.0
+- slate-history@0.56.0
+- slate-hyperscript@0.56.0
+- slate-react@0.56.0

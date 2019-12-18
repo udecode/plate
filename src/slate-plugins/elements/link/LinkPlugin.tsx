@@ -2,7 +2,7 @@ import React from 'react';
 import isUrl from 'is-url';
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { wrapLink } from './commands';
 
 export const withLink = (editor: Editor) => {
@@ -55,7 +55,7 @@ export const renderElementLink = ({
   }
 };
 
-export const LinkPlugin = (): Plugin => ({
+export const LinkPlugin = (): SlatePlugin => ({
   editor: withLink,
   renderElement: renderElementLink,
 });

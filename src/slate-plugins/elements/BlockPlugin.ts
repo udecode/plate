@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common';
-import { Plugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 import { isBlockActive } from './queries';
 
 export const withBlock = (editor: Editor) => {
@@ -8,7 +8,7 @@ export const withBlock = (editor: Editor) => {
 
   editor.exec = command => {
     const { format } = command;
-    if (command.type === 'format_block') {
+    if (command.type === 'toggle_block') {
       const isActive = isBlockActive(editor, format);
 
       Editor.setNodes(editor, {
@@ -22,6 +22,6 @@ export const withBlock = (editor: Editor) => {
   return editor;
 };
 
-export const BlockPlugin = (): Plugin => ({
+export const BlockPlugin = (): SlatePlugin => ({
   editor: withBlock,
 });

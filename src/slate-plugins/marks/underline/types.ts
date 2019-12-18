@@ -1,4 +1,5 @@
-export interface UnderlinePluginOptions {
-  type?: string;
-  hotkey?: string;
-}
+import { OnKeyDownMarkOptions } from '../types';
+
+export const UNDERLINE = 'underline';
+
+export interface UnderlinePluginOptions extends Partial<OnKeyDownMarkOptions> {}

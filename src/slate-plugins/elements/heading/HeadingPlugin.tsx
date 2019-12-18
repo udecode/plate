@@ -1,6 +1,6 @@
 import React from 'react';
 import { ElementType } from 'slate-plugins/common';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 
 export const renderElementHeading = (props: RenderElementProps) => {
   const { attributes, children, element } = props;
@@ -23,6 +23,6 @@ export const renderElementHeading = (props: RenderElementProps) => {
   }
 };
 
-export const HeadingPlugin = (): Plugin => ({
+export const HeadingPlugin = (): SlatePlugin => ({
   renderElement: renderElementHeading,
 });

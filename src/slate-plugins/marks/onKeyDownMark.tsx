@@ -1,16 +1,16 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { OnKeyDownMarkOptions } from './types';
+import { MarkCommand, OnKeyDownMarkOptions } from './types';
 
-export const onKeyDownMark = ({ type, hotkey }: OnKeyDownMarkOptions) => (
+export const onKeyDownMark = ({ mark, hotkey }: OnKeyDownMarkOptions) => (
   e: any,
   editor: Editor
 ) => {
   if (isHotkey(hotkey, e)) {
     e.preventDefault();
     editor.exec({
-      type: 'format_text',
-      properties: { [type]: true },
+      type: MarkCommand.TOGGLE_MARK,
+      format: mark,
     });
   }
 };

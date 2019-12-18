@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
-import { Plugin, PluginEditor } from 'slate-react';
+import { PluginEditor, SlatePlugin } from 'slate-react';
 import { createEditorPlugins } from '../utils';
 
 export const useCreateEditor = (
   editorPlugins: PluginEditor[] = [],
-  plugins: Plugin[] = []
+  plugins: SlatePlugin[] = []
 ) => {
   const rawEditor = useMemo(() => createEditor(), []);
 

@@ -19,6 +19,13 @@ module.exports = {
   },
   overrides: [
     {
+      files: '**/*.stories.tsx',
+      rules: {
+        // just for showing the code in addon-docs
+        'react-hooks/rules-of-hooks': 'off'
+      },
+    },
+    {
       files: '**/*.mdx',
       rules: {
         'prettier/prettier': 'off',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { CheckListItemElement } from './CheckListItemElement';
 
 export const withChecklist = (editor: Editor) => {
@@ -16,7 +16,7 @@ export const withChecklist = (editor: Editor) => {
       Range.isCollapsed(selection)
     ) {
       const [match] = Editor.nodes(editor, {
-        match: { type: ElementType.CHECK_LIST_ITEM },
+        match: n => n.type === ElementType.CHECK_LIST_ITEM,
       });
 
       if (match) {
@@ -27,7 +27,7 @@ export const withChecklist = (editor: Editor) => {
           Editor.setNodes(
             editor,
             { type: ElementType.PARAGRAPH },
-            { match: { type: ElementType.CHECK_LIST_ITEM } }
+            { match: n => n.type === ElementType.CHECK_LIST_ITEM }
           );
           return;
         }
@@ -48,7 +48,7 @@ export const renderElementCheckList = (props: RenderElementProps) => {
   }
 };
 
-export const CheckListPlugin = (): Plugin => ({
+export const CheckListPlugin = (): SlatePlugin => ({
   editor: withChecklist,
   renderElement: renderElementCheckList,
 });

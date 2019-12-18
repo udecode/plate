@@ -17,7 +17,7 @@ const Icon = styled.span`
 export const BlockButton = ({
   format,
   icon,
-  command = 'format_block',
+  command = 'toggle_block',
 }: BlockButtonProps) => {
   const editor = useSlate();
 

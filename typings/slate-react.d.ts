@@ -31,7 +31,7 @@ declare module 'slate-react' {
   type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
   type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
 
-  interface Plugin {
+  interface SlatePlugin {
     editor?: PluginEditor;
     decorate?: Decorate;
     onDOMBeforeInput?: OnDOMBeforeInput;

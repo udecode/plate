@@ -1,8 +1,8 @@
-import { Plugin, PluginEditor } from 'slate-react';
+import { PluginEditor, SlatePlugin } from 'slate-react';
 
 export const createEditorPlugins = (
   editorPlugins: PluginEditor[] = [],
-  plugins: Plugin[] = []
+  plugins: SlatePlugin[] = []
 ) => {
   const newEditorPlugins = [...editorPlugins];
 

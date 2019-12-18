@@ -1,9 +1,7 @@
 import React from 'react';
-import { Plugin, RenderLeafProps } from 'slate-react';
+import { RenderLeafProps, SlatePlugin } from 'slate-react';
 import { onKeyDownMark } from '../onKeyDownMark';
-import { UnderlinePluginOptions } from './types';
-
-export const UNDERLINE = 'underline';
+import { UNDERLINE, UnderlinePluginOptions } from './types';
 
 export const renderLeafUnderline = ({ children, leaf }: RenderLeafProps) => {
   if (leaf[UNDERLINE]) children = <u>{children}</u>;
@@ -12,9 +10,9 @@ export const renderLeafUnderline = ({ children, leaf }: RenderLeafProps) => {
 };
 
 export const UnderlinePlugin = ({
-  type = UNDERLINE,
+  mark = UNDERLINE,
   hotkey = 'mod+u',
-}: UnderlinePluginOptions = {}): Plugin => ({
+}: UnderlinePluginOptions = {}): SlatePlugin => ({
   renderLeaf: renderLeafUnderline,
-  onKeyDown: onKeyDownMark({ type, hotkey }),
+  onKeyDown: onKeyDownMark({ mark, hotkey }),
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { ImageElement } from './ImageElement';
 import { isImageUrl } from './utils';
 
@@ -68,7 +68,7 @@ export const renderElementImage = (props: RenderElementProps) => {
   }
 };
 
-export const ImagePlugin = (): Plugin => ({
+export const ImagePlugin = (): SlatePlugin => ({
   editor: withImage,
   renderElement: renderElementImage,
 });

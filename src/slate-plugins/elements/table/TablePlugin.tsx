@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 
 export const withTable = (editor: Editor) => {
   const { exec } = editor;
@@ -16,7 +16,7 @@ export const withTable = (editor: Editor) => {
       Range.isCollapsed(selection)
     ) {
       const [cell] = Editor.nodes(editor, {
-        match: { type: ElementType.TABLE_CELL },
+        match: n => n.type === ElementType.TABLE_CELL,
       });
 
       if (cell) {
@@ -34,12 +34,10 @@ export const withTable = (editor: Editor) => {
 
     if (type === 'insert_break' && selection) {
       const [table] = Editor.nodes(editor, {
-        match: { type: ElementType.TABLE },
+        match: n => n.type === ElementType.TABLE,
       });
 
-      if (table) {
-        return;
-      }
+      if (table) return;
     }
 
     exec(command);
@@ -69,7 +67,7 @@ export const renderElementTable = ({
   }
 };
 
-export const TablePlugin = (): Plugin => ({
+export const TablePlugin = (): SlatePlugin => ({
   editor: withTable,
   renderElement: renderElementTable,
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plugin, RenderLeafProps } from 'slate-react';
+import { RenderLeafProps, SlatePlugin } from 'slate-react';
 import { onKeyDownMark } from '../onKeyDownMark';
 
 export const renderLeafInlineCode = ({ children, leaf }: RenderLeafProps) => {
@@ -8,7 +8,7 @@ export const renderLeafInlineCode = ({ children, leaf }: RenderLeafProps) => {
   return children;
 };
 
-export const InlineCodePlugin = (): Plugin => ({
+export const InlineCodePlugin = (): SlatePlugin => ({
   renderLeaf: renderLeafInlineCode,
-  onKeyDown: onKeyDownMark({ type: 'code', hotkey: 'mod+`' }),
+  onKeyDown: onKeyDownMark({ mark: 'code', hotkey: 'mod+`' }),
 });

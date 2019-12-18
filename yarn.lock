@@ -2114,11 +2114,6 @@
   resolved "https://registry.yarnpkg.com/@types/debounce/-/debounce-1.2.0.tgz#9ee99259f41018c640b3929e1bb32c3dcecdb192"
   integrity sha512-bWG5wapaWgbss9E238T0R6bfo5Fh3OkeoSt245CM7JJwVwpw6MEBCbIxLq5z8KzsE3uJhzcIuQkyiZmzV3M/Dw==
 
-"@types/debug@^4.1.5":
-  version "4.1.5"
-  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
-  integrity sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==
-
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#1ee30d79544ca84d68d4b3cdb0af4f205663dd2d"
@@ -2191,10 +2186,10 @@
     "@types/istanbul-lib-coverage" "*"
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@^24.0.23":
-  version "24.0.23"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-24.0.23.tgz#046f8e2ade026fe831623e361a36b6fb9a4463e4"
-  integrity sha512-L7MBvwfNpe7yVPTXLn32df/EK+AMBFAFvZrRuArGs7npEWnlziUXK+5GMIUTI4NIuwok3XibsjXCs5HxviYXjg==
+"@types/jest@^24.0.24":
+  version "24.0.24"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-24.0.24.tgz#0f2f523dc77cc1bc6bef34eaf287ede887a73f05"
+  integrity sha512-vgaG968EDPSJPMunEDdZvZgvxYSmeH8wKqBlHSkBt1pV2XlLEVDzsj1ZhLuI4iG4Pv841tES61txSBF0obh4CQ==
   dependencies:
     jest-diff "^24.3.0"
 
@@ -2218,10 +2213,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.18.tgz#8d16634797d63c2af5bc647ce879f8de20b56469"
   integrity sha512-DBkZuIMFuAfjJHiunyRc+aNvmXYNwV1IPMgGKGlwCp6zh6MKrVtmvjSWK/axWcD25KJffkXgkfvFra8ndenXAw==
 
-"@types/node@12.12.20":
-  version "12.12.20"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.20.tgz#7b693038ce661fe57a7ffa4679440b5e7c5e8b99"
-  integrity sha512-VAe+DiwpnC/g448uN+/3gRl4th0BTdrR9gSLIOHA+SUQskaYZQDOHG7xmjiE7JUhjbXnbXytf6Ih+/pA6CtMFQ==
+"@types/node@12.12.21":
+  version "12.12.21"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.21.tgz#aa44a6363291c7037111c47e4661ad210aded23f"
+  integrity sha512-8sRGhbpU+ck1n0PGAUgVrWrWdjSW2aqNeyC15W88GRsMpSwzv6RJGlLhE7s2RhVSOdyDmxbqlWSeThq4/7xqlA==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -12051,40 +12046,38 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-slate-history@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.54.5.tgz#ff66ff985bf9a4e6eb1d5de92c0cdf426f6ad3c4"
-  integrity sha512-VJtDD8aCpf9+yZhv1r7Tq5VwwYhTaju+6FEyMB8iRPN5VToizuKaxyIcBH5ki91H2W3mQAbV9EWIo0Ud4TC1ZA==
+slate-history@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/slate-history/-/slate-history-0.56.0.tgz#a6fc5e042c313e76adc303e3efd141064ac97a8f"
+  integrity sha512-qfN9FWM8RnNjMIxmgTd3kuyKZM36x7uBFPcpAOrZ62qSKOdz6ZblifnqwN6ctX1cHvRQeksbIjqExh0gAZfCjw==
   dependencies:
     immer "^5.0.0"
     is-plain-object "^3.0.0"
 
-slate-hyperscript@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.54.5.tgz#258d1a148f975a0a0405f6a3b9bfdc9a4c2a8024"
-  integrity sha512-DqodMmGv0jeRvOmerhETVmMJyvwIrVVupsU0UiPM8s49VZeX9Sa8rm6ovaZ83VuBHH6AK400CMByv+31WI13hw==
+slate-hyperscript@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/slate-hyperscript/-/slate-hyperscript-0.56.0.tgz#8c01d42e38b7bd51dac3084b80a0ad7c3812284c"
+  integrity sha512-Gbs1RG8Zds+KzQZbj2j45M1ph15rcVixZOXGrVStOHRSKw3c+Ga/yb1hF35OUXzbjqqU6owVhyVbzPGg1xtZkw==
   dependencies:
     is-plain-object "^3.0.0"
 
-slate-react@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.54.5.tgz#4489610dd1c451092131155de76ad71091c74943"
-  integrity sha512-v3NbQH0mbCFjKymNVE2g1EUtY/qNW8XWTsz/fCsoZcO54g763rWe4FExqp8SFkHvCN97kwsCQhmH+043v0eWAA==
+slate-react@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.56.0.tgz#16c34d4cd107c929cc854c65f70d398ae681ff3d"
+  integrity sha512-S0KEM58NUsmqo4quiTOcDn6QwF2GuKntmMoDd6yRNBn88HkfGUwy4RTQKXo6bFePZfs7N3ztYAAncO3Bt4KsSg==
   dependencies:
     "@types/debounce" "^1.2.0"
-    "@types/debug" "^4.1.5"
     "@types/is-hotkey" "^0.1.1"
-    "@types/lodash" "^4.14.149"
     debounce "^1.2.0"
     direction "^1.0.3"
     is-hotkey "^0.1.6"
     is-plain-object "^3.0.0"
     scroll-into-view-if-needed "^2.2.20"
 
-slate@0.54.5:
-  version "0.54.5"
-  resolved "https://registry.yarnpkg.com/slate/-/slate-0.54.5.tgz#748edf74050a60213a56e859b873255abcf3f769"
-  integrity sha512-zLfWpgW4nBzVl8ubupbC5DKBSNVi+czfyxsOStPQTUWpTc7SldirVsP993ufH+hyf5UIs0D1N4D1+txjqFKgOw==
+slate@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/slate/-/slate-0.56.0.tgz#583ac2e8460c17705db4a3322d7241a01af29f0c"
+  integrity sha512-PKH5D6lsML6JijGmtr0iwKVDdzsK3furYA009mH+PcH6ymDdoQbgynJcplpwuURQJGyp9TyyVVMT2kDyqi7XAg==
   dependencies:
     "@types/esrever" "^0.2.0"
     esrever "^0.2.0"

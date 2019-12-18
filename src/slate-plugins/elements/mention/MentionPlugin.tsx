@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Editor, Range } from 'slate';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { MentionElement } from './MentionElement';
 
 export const MentionType = 'mention';
@@ -49,11 +49,11 @@ export const onChangeMention = ({
     const wordBefore = Editor.before(editor, start, { unit: 'word' });
     const before = wordBefore && Editor.before(editor, wordBefore);
     const beforeRange = before && Editor.range(editor, before, start);
-    const beforeText = beforeRange && Editor.text(editor, beforeRange);
+    const beforeText = beforeRange && Editor.string(editor, beforeRange);
     const beforeMatch = beforeText && beforeText.match(beforeRegex);
     const after = Editor.after(editor, start);
     const afterRange = Editor.range(editor, start, after);
-    const afterText = Editor.text(editor, afterRange);
+    const afterText = Editor.string(editor, afterRange);
     const afterMatch = afterText.match(/^(\s|$)/);
 
     if (beforeMatch && afterMatch) {
@@ -142,7 +142,7 @@ export const onKeyDownMention = (
   }
 };
 
-export const MentionPlugin = (): Plugin => ({
+export const MentionPlugin = (): SlatePlugin => ({
   editor: withMention,
   renderElement: renderElementMention,
   // onKeyDown: onKeyDownMention,

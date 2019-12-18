@@ -5,11 +5,11 @@ import {
   Editable,
   OnDOMBeforeInput,
   OnKeyDown,
-  Plugin,
   RenderElement,
   RenderElementProps,
   RenderLeaf,
   RenderLeafProps,
+  SlatePlugin,
   useSlate,
 } from 'slate-react';
 
@@ -19,7 +19,7 @@ interface Props {
   readOnly?: boolean;
   role?: string;
   style?: React.CSSProperties;
-  plugins?: Plugin[];
+  plugins?: SlatePlugin[];
   decorate?: Decorate[];
   onDOMBeforeInput?: OnDOMBeforeInput[];
   renderElement?: RenderElement[];

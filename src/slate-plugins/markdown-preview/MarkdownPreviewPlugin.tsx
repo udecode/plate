@@ -2,7 +2,7 @@
 import React from 'react';
 import Prism from 'prismjs';
 import { NodeEntry, Text } from 'slate';
-import { Plugin, RenderLeafProps } from 'slate-react';
+import { RenderLeafProps, SlatePlugin } from 'slate-react';
 import { MarkdownPreviewLeaf } from './MarkdownPreviewLeaf';
 
 // @ts-ignore
@@ -57,7 +57,7 @@ export const renderLeafPreview = ({
   </MarkdownPreviewLeaf>
 );
 
-export const MarkdownPreviewPlugin = (): Plugin => ({
+export const MarkdownPreviewPlugin = (): SlatePlugin => ({
   decorate: decoratePreview,
   renderLeaf: renderLeafPreview,
 });

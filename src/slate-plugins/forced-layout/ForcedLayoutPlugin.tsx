@@ -1,6 +1,6 @@
 import { Editor, Node } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
-import { Plugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 
 export const withLayout = (editor: Editor) => {
   const { normalizeNode } = editor;
@@ -39,6 +39,6 @@ export const withLayout = (editor: Editor) => {
   return editor;
 };
 
-export const ForcedLayoutPlugin = (): Plugin => ({
+export const ForcedLayoutPlugin = (): SlatePlugin => ({
   editor: withLayout,
 });

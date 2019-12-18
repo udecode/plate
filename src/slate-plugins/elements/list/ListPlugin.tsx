@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common';
-import { Plugin, RenderElementProps } from 'slate-react';
+import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { isBlockActive } from '../queries';
 
 export enum ListType {
@@ -11,8 +11,9 @@ export enum ListType {
 }
 
 export const unwrapList = (editor: Editor) => {
-  [ListType.OL_LIST, ListType.UL_LIST].forEach(f => {
-    Editor.unwrapNodes(editor, { match: { type: f }, split: true });
+  Editor.unwrapNodes(editor, {
+    match: n => [ListType.OL_LIST, ListType.UL_LIST].includes(n.type),
+    split: true,
   });
 };
 
@@ -34,7 +35,8 @@ export const withList = (editor: Editor) => {
       });
 
       if (!isActive) {
-        Editor.wrapNodes(editor, { type: format, children: [] });
+        const block = { type: format, children: [] };
+        Editor.wrapNodes(editor, block);
       }
     } else {
       if (command.type === 'format_block') {
@@ -64,7 +66,7 @@ export const renderElementList = ({
   }
 };
 
-export const ListPlugin = (): Plugin => ({
+export const ListPlugin = (): SlatePlugin => ({
   editor: withList,
   renderElement: renderElementList,
 });
