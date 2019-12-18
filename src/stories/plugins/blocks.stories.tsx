@@ -23,7 +23,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|Blocks',
+  title: 'Plugins/Blocks',
 };
 
 export const BlockPlugins = () => {

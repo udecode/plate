@@ -13,7 +13,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueImages } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|ImagePlugin',
+  title: 'Plugins/ImagePlugin',
 };
 
 export const Images = () => {

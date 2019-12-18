@@ -57,7 +57,7 @@ import {
 } from './stories/config/initialValues';
 
 export default {
-  title: 'Plugins|Playground',
+  title: 'Plugins/Playground',
 };
 
 const initialValue = [

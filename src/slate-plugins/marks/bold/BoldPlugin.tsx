@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plugin, RenderLeafProps } from 'slate-react';
-import { onKeyDownMark } from '../utils/onKeyDownMark';
+import { onKeyDownMark } from '../onKeyDownMark';
 
 export const renderLeafBold = ({ children, leaf }: RenderLeafProps) => {
   if (leaf.bold) children = <strong>{children}</strong>;
@@ -10,5 +10,5 @@ export const renderLeafBold = ({ children, leaf }: RenderLeafProps) => {
 
 export const BoldPlugin = (): Plugin => ({
   renderLeaf: renderLeafBold,
-  onKeyDown: onKeyDownMark('mod+b', 'bold'),
+  onKeyDown: onKeyDownMark({ type: 'bold', hotkey: 'mod+b' }),
 });

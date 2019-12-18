@@ -1,8 +1,5 @@
 import { NodeEntry, Range, Text } from 'slate';
-
-export interface DecorateSearchHighlightOptions {
-  search: string;
-}
+import { DecorateSearchHighlightOptions } from './types';
 
 export const decorateSearchHighlight = ({
   search,

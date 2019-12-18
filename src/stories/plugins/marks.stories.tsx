@@ -21,7 +21,8 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueMark } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|Marks',
+  title: 'Plugins/Marks',
+  subcomponents: { UnderlinePlugin },
 };
 
 export const MarkPlugins = () => {

@@ -13,7 +13,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueLinks } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|LinkPlugin',
+  title: 'Plugins/LinkPlugin',
 };
 
 export const Links = () => {

@@ -1,7 +1,8 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
+import { OnKeyDownMarkOptions } from './types';
 
-export const onKeyDownMark = (hotkey: string, mark: string) => (
+export const onKeyDownMark = ({ type, hotkey }: OnKeyDownMarkOptions) => (
   e: any,
   editor: Editor
 ) => {
@@ -9,7 +10,7 @@ export const onKeyDownMark = (hotkey: string, mark: string) => (
     e.preventDefault();
     editor.exec({
       type: 'format_text',
-      properties: { [mark]: true },
+      properties: { [type]: true },
     });
   }
 };

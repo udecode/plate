@@ -16,8 +16,9 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueSearchHighlighting } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|SearchHighlightPlugin',
-  component: HighlightPlugin,
+  title: 'Plugins/SearchHighlightPlugin',
+  component: SearchHighlightPlugin,
+  subcomponents: { HighlightPlugin },
 };
 
 export const SearchHighlighting = () => {

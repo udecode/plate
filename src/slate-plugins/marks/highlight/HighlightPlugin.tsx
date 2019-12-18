@@ -1,8 +1,6 @@
 import { Plugin } from 'slate-react';
 import { renderLeafHighlight } from './renderLeafHighlight';
-import { RenderLeafHighlightOptions } from './RenderLeafHighlightOptions';
-
-export interface HighlightPluginOptions extends RenderLeafHighlightOptions {}
+import { HighlightPluginOptions } from './types';
 
 export const HighlightPlugin = ({
   style,

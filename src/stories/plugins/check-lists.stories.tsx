@@ -11,7 +11,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueCheckLists } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|CheckListPlugin',
+  title: 'Plugins/CheckListPlugin',
 };
 
 export const CheckLists = () => {

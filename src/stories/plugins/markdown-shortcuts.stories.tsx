@@ -13,7 +13,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|MarkdownShortcutsPlugin',
+  title: 'Plugins/MarkdownShortcutsPlugin',
 };
 
 export const MarkdownShortcuts = () => {

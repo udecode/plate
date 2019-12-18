@@ -5,7 +5,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueHugeDocument } from '../config/initialValues';
 
 export default {
-  title: 'Basic|Huge Document',
+  title: 'Basic/Huge Document',
 };
 
 const plugins = [HeadingPlugin()];

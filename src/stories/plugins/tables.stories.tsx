@@ -12,7 +12,8 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueTables } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|TablePlugin',
+  title: 'Plugins/TablePlugin',
+  component: TablePlugin,
 };
 
 export const Tables = () => {

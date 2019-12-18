@@ -1,14 +1,20 @@
 import React from 'react';
 import { Plugin, RenderLeafProps } from 'slate-react';
-import { onKeyDownMark } from '../utils/onKeyDownMark';
+import { onKeyDownMark } from '../onKeyDownMark';
+import { UnderlinePluginOptions } from './types';
+
+export const UNDERLINE = 'underline';
 
 export const renderLeafUnderline = ({ children, leaf }: RenderLeafProps) => {
-  if (leaf.underline) children = <u>{children}</u>;
+  if (leaf[UNDERLINE]) children = <u>{children}</u>;
 
   return children;
 };
 
-export const UnderlinePlugin = (): Plugin => ({
+export const UnderlinePlugin = ({
+  type = UNDERLINE,
+  hotkey = 'mod+u',
+}: UnderlinePluginOptions = {}): Plugin => ({
   renderLeaf: renderLeafUnderline,
-  onKeyDown: onKeyDownMark('mod+u', 'underline'),
+  onKeyDown: onKeyDownMark({ type, hotkey }),
 });

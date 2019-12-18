@@ -11,7 +11,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueEmbeds } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|VideoPlugin',
+  title: 'Plugins/VideoPlugin',
 };
 
 export const Embeds = () => {

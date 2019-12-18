@@ -12,7 +12,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueMarkdownPreview } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|MarkdownPreviewPlugin',
+  title: 'Plugins/MarkdownPreviewPlugin',
 };
 
 export const MarkdownPreview = () => {

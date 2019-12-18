@@ -10,7 +10,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValueForcedLayout } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|ForcedLayoutPlugin',
+  title: 'Plugins/ForcedLayoutPlugin',
   component: ForcedLayoutPlugin,
 };
 

@@ -6,7 +6,7 @@ import { Editable, Slate, withReact } from 'slate-react';
 import { initialValuePlainText } from '../config/initialValues';
 
 export default {
-  title: 'Basic|Editable',
+  title: 'Basic/Editable',
 };
 
 export const Props = () => {

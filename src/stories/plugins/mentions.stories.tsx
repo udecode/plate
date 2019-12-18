@@ -14,7 +14,7 @@ import { CHARACTERS } from '../config/data';
 import { initialValueMentions } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|MentionPlugin',
+  title: 'Plugins/MentionPlugin',
 };
 
 const plugins = [MentionPlugin()];

@@ -21,7 +21,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValuePasteHtml } from '../config/initialValues';
 
 export default {
-  title: 'Plugins|PasteHtmlPlugin',
+  title: 'Plugins/PasteHtmlPlugin',
 };
 
 export const PasteHtml = () => {

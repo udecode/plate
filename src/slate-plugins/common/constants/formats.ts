@@ -1,14 +1,13 @@
-export const TextFormat = {
-  BOLD: 'bold',
-  ITALIC: 'italic',
-  UNDERLINE: 'underline',
-  STRIKETHROUGH: 'strikethrough',
-  CODE: 'code',
+// export const TextFormat = {
+//   BOLD: 'bold',
+//   ITALIC: 'italic',
+//   STRIKETHROUGH: 'strikethrough',
+//   CODE: 'code',
 
-  FONTBGCOLOR: 'FONTBGCOLOR',
-  FONTCOLOR: 'FONTCOLOR',
-  FONTSIZE: 'FONTSIZE',
-};
+//   FONTBGCOLOR: 'FONTBGCOLOR',
+//   FONTCOLOR: 'FONTCOLOR',
+//   FONTSIZE: 'FONTSIZE',
+// };
 
 export const ElementType = {
   // Classic blocks
