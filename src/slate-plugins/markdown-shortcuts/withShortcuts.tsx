@@ -15,7 +15,7 @@ const SHORTCUTS: { [key: string]: string } = {
   '######': ElementType.HEADING_6,
 };
 
-export const withShortcuts = (editor: Editor) => {
+export const withShortcuts = <T extends Editor>(editor: T) => {
   const { deleteBackward, insertText } = editor;
 
   editor.insertText = text => {

@@ -1,7 +1,7 @@
 import { Editor, Node, Transforms } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 
-export const withLayout = (editor: Editor) => {
+export const withForcedLayout = <T extends Editor>(editor: T) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {

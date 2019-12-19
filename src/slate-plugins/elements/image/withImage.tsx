@@ -1,9 +1,10 @@
 import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
+import { ReactEditor } from 'slate-react';
 import { isImageUrl } from './utils/isImageUrl';
 import { insertImage } from './transforms';
 
-export const withImage = (editor: Editor) => {
+export const withImage = <T extends ReactEditor>(editor: T) => {
   const { insertData, isVoid } = editor;
 
   editor.isVoid = element => {

@@ -16,7 +16,6 @@ import {
   MarkButton,
   StrikethroughPlugin,
   UnderlinePlugin,
-  useCreateEditor,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { MARK_STRIKETHROUGH } from 'slate-plugins/marks/strikethrough/types';
@@ -35,7 +34,7 @@ export default {
 };
 
 export const MarkPlugins = () => {
-  const plugins: SlatePlugin[] = [];
+  const plugins: any[] = [];
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
@@ -45,6 +44,7 @@ export const MarkPlugins = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMark);
 
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const editor = useCreateEditor([withReact, withHistory], plugins);
 
     return (

@@ -1,9 +1,9 @@
 import isUrl from 'is-url';
-import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
+import { ReactEditor } from 'slate-react';
 import { wrapLink } from './transforms';
 
-export const withLink = (editor: Editor) => {
+export const withLink = <T extends ReactEditor>(editor: T) => {
   const { insertData, insertText, isInline } = editor;
 
   editor.isInline = element => {

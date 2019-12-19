@@ -4,8 +4,8 @@ import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
   renderElementVideo,
-  useCreateEditor,
   VideoPlugin,
+  withVideo,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueEmbeds } from '../config/initialValues';
@@ -15,27 +15,37 @@ export default {
 };
 
 export const Embeds = () => {
-  const plugins = [];
-  const renderElement = [];
+  const plugins: any[] = [];
+  const renderElement: any = [];
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
   if (boolean('renderElementVideo', false))
     renderElement.push(renderElementVideo());
 
-  const [value, setValue] = useState(initialValueEmbeds);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueEmbeds);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useCreateEditor(
+      [withVideo, withReact, withHistory],
+      plugins
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <EditablePlugins
-        plugins={plugins}
-        renderElement={renderElement}
-        placeholder="Enter some text..."
-      />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <EditablePlugins
+          plugins={plugins}
+          renderElement={renderElement}
+          placeholder="Enter some text..."
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

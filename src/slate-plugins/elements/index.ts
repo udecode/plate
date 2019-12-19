@@ -1,4 +1,3 @@
-export * from './BlockPlugin';
 export * from './blockquote';
 export * from './code';
 export * from './components';
@@ -9,5 +8,6 @@ export * from './list';
 export * from './mention';
 export * from './queries';
 export * from './table';
+export * from './types';
 export * from './video';
 export * from './withBlock';

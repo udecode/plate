@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   decorateSearchHighlight,
   EditablePlugins,
   ToolbarSearchHighlight,
-  useCreateEditor,
 } from 'slate-plugins';
 import {
   HighlightPlugin,
@@ -22,34 +22,42 @@ export default {
 };
 
 export const SearchHighlighting = () => {
-  const [search, setSearch] = useState('');
-
-  const plugins = [];
-  const renderLeaf = [];
-  const decorate = [];
+  const plugins: any[] = [];
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
-  if (boolean('decorateHighlight', true))
-    decorate.push(decorateSearchHighlight({ search }));
-  if (boolean('renderLeafHighlight', false))
-    renderLeaf.push(renderLeafHighlight());
 
-  const [value, setValue] = useState(initialValueSearchHighlighting);
+  const createReactEditor = () => () => {
+    const renderLeaf = [];
+    const decorate = [];
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const [search, setSearch] = useState('');
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <ToolbarSearchHighlight setSearch={setSearch} />
-      <EditablePlugins
-        plugins={plugins}
-        renderLeaf={renderLeaf}
-        decorate={decorate}
-      />
-    </Slate>
-  );
+    if (boolean('decorateHighlight', true))
+      decorate.push(decorateSearchHighlight({ search }));
+    if (boolean('renderLeafHighlight', false))
+      renderLeaf.push(renderLeafHighlight());
+
+    const [value, setValue] = useState(initialValueSearchHighlighting);
+
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <ToolbarSearchHighlight setSearch={setSearch} />
+        <EditablePlugins
+          plugins={plugins}
+          renderLeaf={renderLeaf}
+          decorate={decorate}
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

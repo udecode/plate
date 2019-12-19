@@ -6,7 +6,6 @@ import {
   LinkButton,
   LinkPlugin,
   renderElementLink,
-  useCreateEditor,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
@@ -17,30 +16,37 @@ export default {
 };
 
 export const Links = () => {
-  const plugins = [];
-  const renderElement = [];
+  const plugins: any[] = [];
+  const renderElement: any = [];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
   if (boolean('renderElementLink', false))
     renderElement.push(renderElementLink());
 
-  const [value, setValue] = useState(initialValueLinks);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueLinks);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useCreateEditor([withLink, withReact, withHistory], plugins);
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <StyledToolbar>
-        <LinkButton />
-      </StyledToolbar>
-      <EditablePlugins
-        plugins={plugins}
-        renderElement={renderElement}
-        placeholder="Enter some text..."
-      />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <StyledToolbar>
+          <LinkButton />
+        </StyledToolbar>
+        <EditablePlugins
+          plugins={plugins}
+          renderElement={renderElement}
+          placeholder="Enter some text..."
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

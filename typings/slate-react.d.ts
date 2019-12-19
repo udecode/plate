@@ -23,7 +23,7 @@ declare module 'slate-react' {
 
   type EditableType = (props: EditableProps) => JSX.Element;
 
-  type PluginEditor = (editor: Editor) => Editor;
+  type PluginEditor = <T extends Editor>(editor: T) => T & Editor;
 
   type Decorate = (entry: NodeEntry) => Range[];
   type OnDOMBeforeInput = (event: Event, editor: Editor) => void;

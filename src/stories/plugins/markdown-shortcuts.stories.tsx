@@ -6,37 +6,45 @@ import {
   EditablePlugins,
   HeadingPlugin,
   ListPlugin,
-  MarkdownShortcutsPlugin,
-  useCreateEditor,
+  withList,
+  withShortcuts,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/MarkdownShortcutsPlugin',
+  title: 'Plugins/withShortcuts',
 };
 
 export const MarkdownShortcuts = () => {
   const plugins = [BlockquotePlugin(), ListPlugin(), HeadingPlugin()];
-  if (boolean('MarkdownShortcutsPlugin', true))
-    plugins.push(MarkdownShortcutsPlugin());
 
-  const [value, setValue] = useState(initialValueMarkdownShortcuts);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useCreateEditor(
+      [withShortcuts, withList, withReact, withHistory],
+      plugins
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <EditablePlugins
-        plugins={plugins}
-        placeholder="Write some markdown..."
-        spellCheck
-        autoFocus
-      />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <EditablePlugins
+          plugins={plugins}
+          placeholder="Write some markdown..."
+          spellCheck
+          autoFocus
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

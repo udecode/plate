@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Code,
   FormatBold,
@@ -11,6 +11,7 @@ import {
   LooksTwo,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
@@ -19,7 +20,6 @@ import {
   CheckListPlugin,
   decorateSearchHighlight,
   EditablePlugins,
-  ForcedLayoutPlugin,
   HeadingPlugin,
   HoveringToolbar,
   ImagePlugin,
@@ -32,18 +32,23 @@ import {
   ListPlugin,
   MarkButton,
   MarkdownPreviewPlugin,
-  MarkdownShortcutsPlugin,
   MentionPlugin,
   onChangeMention,
   onKeyDownMention,
-  PasteHtmlPlugin,
   StyledToolbar,
   TablePlugin,
   ToolbarSearchHighlight,
   UnderlinePlugin,
-  useCreateEditor,
   useMention,
   VideoPlugin,
+  withChecklist,
+  withImage,
+  withLink,
+  withList,
+  withMention,
+  withPasteHtml,
+  withTable,
+  withVideo,
 } from 'slate-plugins';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
 import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
@@ -70,23 +75,19 @@ const initialValue = [
 ];
 
 export const AllPlugins = () => {
-  const plugins: SlatePlugin[] = [];
+  const plugins: any[] = [];
 
   if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
   if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
-  // if (boolean('ForcedLayoutPlugin', true)) plugins.push(ForcedLayoutPlugin());
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
   if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
-  if (boolean('MarkdownShortcutsPlugin', true))
-    plugins.push(MarkdownShortcutsPlugin());
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
-  if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
@@ -101,7 +102,23 @@ export const AllPlugins = () => {
 
     const [value, setValue] = useState(initialValue);
 
-    const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(
+      () =>
+        withVideo(
+          withChecklist(
+            withMention(
+              withImage(
+                withList(
+                  withPasteHtml(
+                    withLink(withTable(withHistory(withReact(createEditor()))))
+                  )
+                )
+              )
+            )
+          )
+        ),
+      []
+    );
 
     const [search, setSearchHighlight] = useState('');
 
@@ -166,7 +183,6 @@ export const AllPlugins = () => {
       </Slate>
     );
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const Editor = createReactEditor();
 

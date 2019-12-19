@@ -1,8 +1,9 @@
-import { Editor, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
+import { ReactEditor } from 'slate-react';
 import { deserialize } from './deserialize';
 
-export const withPasteHtml = (editor: Editor) => {
+export const withPasteHtml = <T extends ReactEditor>(editor: T) => {
   const { insertData, isInline, isVoid } = editor;
 
   editor.isInline = element => {

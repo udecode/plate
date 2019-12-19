@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 import { MENTION_TYPE } from './types';
 
-export const withMention = (editor: Editor) => {
+export const withMention = <T extends Editor>(editor: T) => {
   const { isInline, isVoid } = editor;
 
   editor.isInline = element =>

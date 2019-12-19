@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BoldPlugin,
   EditablePlugins,
   renderElementTable,
   TablePlugin,
-  useCreateEditor,
+  withTable,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueTables } from '../config/initialValues';
@@ -18,22 +19,31 @@ export default {
 
 export const Tables = () => {
   const plugins = [BoldPlugin()];
-  const renderElement = [];
+  const renderElement: any = [];
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('renderElementTable', false))
     renderElement.push(renderElementTable);
 
-  const [value, setValue] = useState(initialValueTables);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueTables);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(
+      () => withTable(withHistory(withReact(createEditor()))),
+      []
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <EditablePlugins plugins={plugins} renderElement={renderElement} />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <EditablePlugins plugins={plugins} renderElement={renderElement} />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

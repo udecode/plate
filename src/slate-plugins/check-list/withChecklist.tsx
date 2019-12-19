@@ -1,7 +1,7 @@
 import { Editor, Point, Range, Transforms } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 
-export const withChecklist = (editor: Editor) => {
+export const withChecklist = <T extends Editor>(editor: T) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (...args) => {

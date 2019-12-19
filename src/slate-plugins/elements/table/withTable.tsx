@@ -1,7 +1,7 @@
 import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 
-export const withTable = (editor: Editor) => {
+export const withTable = <T extends Editor>(editor: T) => {
   const { deleteBackward, deleteForward, insertBreak } = editor;
 
   editor.deleteBackward = unit => {

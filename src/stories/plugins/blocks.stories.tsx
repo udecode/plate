@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FormatListBulleted,
   FormatListNumbered,
@@ -7,6 +7,7 @@ import {
   LooksTwo,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
@@ -15,10 +16,10 @@ import {
   HeadingPlugin,
   ListButton,
   ListPlugin,
-  useCreateEditor,
+  withBlock,
+  withList,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
-import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
 import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
@@ -27,35 +28,43 @@ export default {
 };
 
 export const BlockPlugins = () => {
-  const plugins = [];
+  const plugins: any[] = [];
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
-  if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
 
-  const [value, setValue] = useState(initialValueRichText);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueRichText);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(
+      () => withBlock(withList(withHistory(withReact(createEditor())))),
+      []
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <StyledToolbar height={18}>
-        <BlockButton format="heading-one" icon={<LooksOne />} />
-        <BlockButton format="heading-two" icon={<LooksTwo />} />
-        <BlockButton format="block-quote" icon={<FormatQuote />} />
-        <ListButton format="numbered-list" icon={<FormatListNumbered />} />
-        <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
-      </StyledToolbar>
-      <EditablePlugins
-        plugins={plugins}
-        placeholder="Enter some rich text…"
-        spellCheck
-        autoFocus
-      />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <StyledToolbar height={18}>
+          <BlockButton format="heading-one" icon={<LooksOne />} />
+          <BlockButton format="heading-two" icon={<LooksTwo />} />
+          <BlockButton format="block-quote" icon={<FormatQuote />} />
+          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
+          <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
+        </StyledToolbar>
+        <EditablePlugins
+          plugins={plugins}
+          placeholder="Enter some rich text…"
+          spellCheck
+          autoFocus
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

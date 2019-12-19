@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { useCreateEditor } from 'slate-plugins';
 import { Editable, Slate, withReact } from 'slate-react';
 import { initialValuePlainText } from '../config/initialValues';
 
@@ -12,7 +12,7 @@ export default {
 export const Props = () => {
   const [value, setValue] = useState(initialValuePlainText);
 
-  const editor = useCreateEditor([withReact, withHistory]);
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
   return (
     <Slate

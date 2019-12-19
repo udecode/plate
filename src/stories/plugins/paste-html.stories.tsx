@@ -5,8 +5,10 @@ import {
   EditablePlugins,
   ImagePlugin,
   LinkPlugin,
-  PasteHtmlPlugin,
-  useCreateEditor,
+  withImage,
+  withLink,
+  withList,
+  withPasteHtml,
 } from 'slate-plugins';
 import { BlockquotePlugin } from 'slate-plugins/elements/blockquote/BlockquotePlugin';
 import { CodePlugin } from 'slate-plugins/elements/code/CodePlugin';
@@ -21,7 +23,7 @@ import { Slate, withReact } from 'slate-react';
 import { initialValuePasteHtml } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/PasteHtmlPlugin',
+  title: 'Plugins/withPasteHtml',
 };
 
 export const PasteHtml = () => {
@@ -38,19 +40,31 @@ export const PasteHtml = () => {
     UnderlinePlugin(),
     StrikethroughPlugin(),
   ];
-  if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
 
-  const [value, setValue] = useState(initialValuePasteHtml);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValuePasteHtml);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useCreateEditor(
+      [withImage, withList, withPasteHtml, withLink, withReact, withHistory],
+      plugins
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <EditablePlugins plugins={plugins} placeholder="Paste in some HTML..." />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <EditablePlugins
+          plugins={plugins}
+          placeholder="Paste in some HTML..."
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

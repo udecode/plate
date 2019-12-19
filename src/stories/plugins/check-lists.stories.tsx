@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   CheckListPlugin,
   EditablePlugins,
   renderElementCheckList,
-  useCreateEditor,
+  withChecklist,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueCheckLists } from '../config/initialValues';
@@ -15,29 +16,39 @@ export default {
 };
 
 export const CheckLists = () => {
-  const plugins = [];
-  const renderElement = [];
+  const plugins: any[] = [];
+  const renderElement: any = [];
   if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
   if (boolean('renderElementCheckList', false))
     renderElement.push(renderElementCheckList());
 
-  const [value, setValue] = useState(initialValueCheckLists);
+  const createReactEditor = () => () => {
+    const [value, setValue] = useState(initialValueCheckLists);
 
-  const editor = useCreateEditor([withReact, withHistory], plugins);
+    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(
+      () => withChecklist(withHistory(withReact(createEditor()))),
+      []
+    );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue)}
-    >
-      <EditablePlugins
-        plugins={plugins}
-        renderElement={renderElement}
-        placeholder="Get to work…"
-        spellCheck
-        autoFocus
-      />
-    </Slate>
-  );
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => setValue(newValue)}
+      >
+        <EditablePlugins
+          plugins={plugins}
+          renderElement={renderElement}
+          placeholder="Get to work…"
+          spellCheck
+          autoFocus
+        />
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

@@ -1,16 +1,20 @@
 import { Editor } from 'slate';
+import { ToggleBlockEditor } from '../types';
 import { unwrapList } from './transforms/unwrapList';
 
 /**
  * Should be used after withBlock
+ * TODO
  */
-export const withList = (editor: Editor) => {
-  const { toggleBlock } = editor;
+export const withList = <T extends Editor>(editor: T) => {
+  const e = editor as T & ToggleBlockEditor;
 
-  editor.toggleBlock = (format: string) => {
-    unwrapList(editor);
+  const { toggleBlock } = e;
+
+  e.toggleBlock = (format: string) => {
+    unwrapList(e);
     toggleBlock(format);
   };
 
-  return editor;
+  return e;
 };
