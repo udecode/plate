@@ -6,17 +6,16 @@ import { createEditorPlugins } from '../utils';
 export const useCreateEditor = (
   editorPlugins: PluginEditor[] = [],
   plugins: SlatePlugin[] = []
-) => {
-  const rawEditor = useMemo(() => createEditor(), []);
+) =>
+  useMemo(() => {
+    let editor = createEditor();
 
-  return useMemo(() => {
     const newEditorPlugins = createEditorPlugins(editorPlugins, plugins);
 
-    let editor = rawEditor;
     newEditorPlugins.forEach(plugin => {
       editor = plugin(editor);
     });
 
     return editor;
-  }, [editorPlugins, plugins, rawEditor]);
-};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);

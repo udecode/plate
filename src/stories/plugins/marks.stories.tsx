@@ -14,7 +14,6 @@ import {
   InlineCodePlugin,
   ItalicPlugin,
   MarkButton,
-  MarkPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
   useCreateEditor,
@@ -27,7 +26,6 @@ import { initialValueMark } from '../config/initialValues';
 export default {
   title: 'Plugins/Marks',
   subcomponents: {
-    MarkPlugin,
     BoldPlugin,
     ItalicPlugin,
     UnderlinePlugin,
@@ -38,7 +36,6 @@ export default {
 
 export const MarkPlugins = () => {
   const plugins: SlatePlugin[] = [];
-  if (boolean('MarkPlugin', true)) plugins.push(MarkPlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());

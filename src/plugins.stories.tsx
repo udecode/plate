@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Code,
   FormatBold,
@@ -27,11 +27,11 @@ import {
   ItalicPlugin,
   LinkButton,
   LinkPlugin,
+  ListButton,
   ListPlugin,
   MarkButton,
   MarkdownPreviewPlugin,
   MarkdownShortcutsPlugin,
-  MarkPlugin,
   MentionPlugin,
   onChangeMention,
   onKeyDownMention,
@@ -43,7 +43,6 @@ import {
   useCreateEditor,
   useMention,
   VideoPlugin,
-  ListButton,
 } from 'slate-plugins';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
 import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
@@ -87,7 +86,6 @@ export const AllPlugins = () => {
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
-  if (boolean('MarkPlugin', true)) plugins.push(MarkPlugin());
   if (boolean('MarkdownShortcutsPlugin', true))
     plugins.push(MarkdownShortcutsPlugin());
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());

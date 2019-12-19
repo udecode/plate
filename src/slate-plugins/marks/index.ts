@@ -3,7 +3,6 @@ export * from './components';
 export * from './highlight';
 export * from './inline-code';
 export * from './italic';
-export * from './MarkPlugin';
 export * from './onKeyDownMark';
 export * from './queries';
 export * from './strikethrough';
