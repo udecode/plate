@@ -2,7 +2,7 @@ import React from 'react';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 import { RenderElementProps } from 'slate-react';
 
-export const renderElementLink = ({
+export const renderElementLink = () => ({
   attributes,
   children,
   element,

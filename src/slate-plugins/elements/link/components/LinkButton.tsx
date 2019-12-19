@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from '@material-ui/icons';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
-import { isLinkActive } from './queries';
-import { insertLink } from './transforms';
+import { isLinkActive } from '../queries';
+import { insertLink } from '../transforms';
 
 export const LinkButton = () => {
   const editor = useSlate();

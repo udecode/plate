@@ -7,6 +7,4 @@ export interface DecorateSearchHighlightOptions {
   search: string;
 }
 
-export interface SearchHighlightPluginOptions
-  extends DecorateSearchHighlightOptions,
-    HighlightPluginOptions {}
+export interface SearchHighlightPluginOptions extends HighlightPluginOptions {}

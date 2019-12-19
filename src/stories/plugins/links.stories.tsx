@@ -21,7 +21,7 @@ export const Links = () => {
   const renderElement = [];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
   if (boolean('renderElementLink', false))
-    renderElement.push(renderElementLink);
+    renderElement.push(renderElementLink());
 
   const [value, setValue] = useState(initialValueLinks);
 

@@ -1,19 +1,14 @@
 import { Editor, Transforms } from 'slate';
 import { insertMention } from './transforms';
+import { OnKeyDownMentionOptions } from './types';
 
-interface Options {
-  chars: any[];
-  index: number;
-  target: any;
-  setIndex: any;
-  setTarget: any;
-}
-
-export const onKeyDownMention = (
-  e: any,
-  editor: Editor,
-  { chars, index, target, setIndex, setTarget }: Options
-) => {
+export const onKeyDownMention = ({
+  chars,
+  index,
+  target,
+  setIndex,
+  setTarget,
+}: OnKeyDownMentionOptions) => (e: any, editor: Editor) => {
   if (target) {
     switch (e.key) {
       case 'ArrowDown': {

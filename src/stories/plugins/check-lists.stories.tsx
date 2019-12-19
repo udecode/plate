@@ -19,7 +19,7 @@ export const CheckLists = () => {
   const renderElement = [];
   if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
   if (boolean('renderElementCheckList', false))
-    renderElement.push(renderElementCheckList);
+    renderElement.push(renderElementCheckList());
 
   const [value, setValue] = useState(initialValueCheckLists);
 

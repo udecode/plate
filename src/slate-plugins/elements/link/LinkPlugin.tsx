@@ -4,5 +4,5 @@ import { withLink } from './withLink';
 
 export const LinkPlugin = (): SlatePlugin => ({
   editor: withLink,
-  renderElement: renderElementLink,
+  renderElement: renderElementLink(),
 });

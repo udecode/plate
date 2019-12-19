@@ -1,4 +1,4 @@
-export * from './LinkButton';
+export * from './components';
 export * from './LinkPlugin';
 export * from './queries';
 export * from './renderElementLink';

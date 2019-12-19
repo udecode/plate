@@ -1,6 +1,5 @@
-export * from './MentionElement';
+export * from './components';
 export * from './MentionPlugin';
-export * from './MentionSelect';
 export * from './onChangeMention';
 export * from './onKeyDownMention';
 export * from './renderElementMention';

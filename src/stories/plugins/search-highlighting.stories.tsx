@@ -28,11 +28,11 @@ export const SearchHighlighting = () => {
   const renderLeaf = [];
   const decorate = [];
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin({ search }));
+    plugins.push(SearchHighlightPlugin());
+  if (boolean('decorateHighlight', true))
+    decorate.push(decorateSearchHighlight({ search }));
   if (boolean('renderLeafHighlight', false))
     renderLeaf.push(renderLeafHighlight());
-  if (boolean('decorateHighlight', false))
-    decorate.push(decorateSearchHighlight({ search }));
 
   const [value, setValue] = useState(initialValueSearchHighlighting);
 

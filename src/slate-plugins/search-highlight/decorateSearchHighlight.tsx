@@ -5,6 +5,7 @@ export const decorateSearchHighlight = ({
   search,
 }: DecorateSearchHighlightOptions) => ([node, path]: NodeEntry) => {
   const ranges: Range[] = [];
+
   if (search && Text.isText(node)) {
     const { text } = node;
     const parts = text.split(search);
@@ -20,5 +21,6 @@ export const decorateSearchHighlight = ({
       offset = offset + part.length + search.length;
     });
   }
+
   return ranges;
 };

@@ -19,7 +19,7 @@ export const Embeds = () => {
   const renderElement = [];
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
   if (boolean('renderElementVideo', false))
-    renderElement.push(renderElementVideo);
+    renderElement.push(renderElementVideo());
 
   const [value, setValue] = useState(initialValueEmbeds);
 

@@ -1,6 +1,8 @@
+import React from 'react';
+import { RenderLeafProps } from 'slate-react';
 import styled, { css } from 'styled-components';
 
-export interface PreviewLeafProps {
+interface PreviewLeafProps {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
@@ -11,7 +13,7 @@ export interface PreviewLeafProps {
   code?: boolean;
 }
 
-export const MarkdownPreviewLeaf = styled.span<PreviewLeafProps>`
+const MarkdownPreviewLeaf = styled.span<PreviewLeafProps>`
   font-weight: ${({ bold }) => bold && 'bold'};
   font-style: ${({ italic }) => italic && 'italic'};
   text-decoration: ${({ underline }) => underline && 'underline'};
@@ -55,3 +57,13 @@ export const MarkdownPreviewLeaf = styled.span<PreviewLeafProps>`
       padding: 3px;
     `}
 `;
+
+export const renderLeafPreview = ({
+  attributes,
+  children,
+  leaf,
+}: RenderLeafProps) => (
+  <MarkdownPreviewLeaf {...attributes} {...leaf}>
+    {children}
+  </MarkdownPreviewLeaf>
+);

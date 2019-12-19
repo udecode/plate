@@ -9,5 +9,5 @@ export * from './list';
 export * from './mention';
 export * from './queries';
 export * from './table';
-export * from './transforms';
 export * from './video';
+export * from './withBlock';

@@ -13,6 +13,7 @@ export const MentionSelect = ({
 }) => {
   const ref: any = useRef();
   const editor = useSlate();
+
   useEffect(() => {
     if (target && chars.length > 0) {
       const el = ref.current;
@@ -24,6 +25,7 @@ export const MentionSelect = ({
       }
     }
   }, [chars.length, editor, target]);
+
   return (
     <Portal>
       <div

@@ -2,7 +2,7 @@ import React from 'react';
 import { Image } from '@material-ui/icons';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useEditor } from 'slate-react';
-import { insertImage } from './transforms';
+import { insertImage } from '../transforms';
 
 export const InsertImageButton = () => {
   const editor = useEditor();

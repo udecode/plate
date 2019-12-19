@@ -17,6 +17,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CheckListPlugin,
+  decorateSearchHighlight,
   EditablePlugins,
   ForcedLayoutPlugin,
   HeadingPlugin,
@@ -69,12 +70,8 @@ const initialValue = [
 ];
 
 export const AllPlugins = () => {
-  const [search, setSearchHighlight] = useState('');
-
   const plugins: SlatePlugin[] = [];
-  const renderElement: any = [];
-  const renderLeaf: any = [];
-  const onKeyDown: any = [];
+
   if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
@@ -91,79 +88,85 @@ export const AllPlugins = () => {
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
   if (boolean('PasteHtmlPlugin', true)) plugins.push(PasteHtmlPlugin());
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin({ search }));
+    plugins.push(SearchHighlightPlugin());
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
 
-  const createReactEditor = useCallback(() => {
-    console.log(plugins.length);
-    return useCallback(() => {
-      console.log('whuu');
-      const [value, setValue] = useState(initialValue);
-      const editor = useCreateEditor([withReact, withHistory], plugins);
-      const {
-        target,
-        setTarget,
-        index,
-        setIndex,
-        setSearch,
-        chars,
-      } = useMention({
+  const createReactEditor = () => () => {
+    const decorate: any = [];
+    const renderElement: any = [];
+    const renderLeaf: any = [];
+    const onKeyDown: any = [];
+
+    const [value, setValue] = useState(initialValue);
+
+    const editor = useCreateEditor([withReact, withHistory], plugins);
+
+    const [search, setSearchHighlight] = useState('');
+
+    if (boolean('decorateSearchHighlight', true))
+      decorate.push(decorateSearchHighlight({ search }));
+
+    const { target, setTarget, index, setIndex, setSearch, chars } = useMention(
+      {
         characters: CHARACTERS,
         maxSuggestions: 10,
-      });
-      if (boolean('onKeyDownMentions', true))
-        onKeyDown.push((e: any) =>
-          onKeyDownMention(e, editor, {
-            chars,
-            index,
-            target,
-            setIndex,
-            setTarget,
-          })
-        );
-      return (
-        <Slate
-          editor={editor}
-          value={value}
-          onChange={newValue => {
-            setValue(newValue);
-            onChangeMention({
-              editor,
-              setTarget,
-              setSearch,
-              setIndex,
-            });
-          }}
-        >
-          <ToolbarSearchHighlight setSearch={setSearchHighlight} />
-          <StyledToolbar height={18}>
-            <MarkButton format="bold" icon={<FormatBold />} />
-            <MarkButton format="italic" icon={<FormatItalic />} />
-            <MarkButton format="underline" icon={<FormatUnderlined />} />
-            <MarkButton format="code" icon={<Code />} />
-            <BlockButton format="heading-one" icon={<LooksOne />} />
-            <BlockButton format="heading-two" icon={<LooksTwo />} />
-            <BlockButton format="block-quote" icon={<FormatQuote />} />
-            <ListButton format="numbered-list" icon={<FormatListNumbered />} />
-            <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
-            <InsertImageButton />
-            <LinkButton />
-          </StyledToolbar>
-          <HoveringToolbar />
-          <EditablePlugins
-            plugins={plugins}
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            onKeyDown={onKeyDown}
-            placeholder="Enter some plain text..."
-          />
-        </Slate>
+      }
+    );
+
+    if (boolean('onKeyDownMentions', true))
+      onKeyDown.push(
+        onKeyDownMention({
+          chars,
+          index,
+          target,
+          setIndex,
+          setTarget,
+        })
       );
-    }, []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => {
+          setValue(newValue);
+          onChangeMention({
+            editor,
+            setTarget,
+            setSearch,
+            setIndex,
+          });
+        }}
+      >
+        <ToolbarSearchHighlight setSearch={setSearchHighlight} />
+        <StyledToolbar height={18}>
+          <MarkButton format="bold" icon={<FormatBold />} />
+          <MarkButton format="italic" icon={<FormatItalic />} />
+          <MarkButton format="underline" icon={<FormatUnderlined />} />
+          <MarkButton format="code" icon={<Code />} />
+          <BlockButton format="heading-one" icon={<LooksOne />} />
+          <BlockButton format="heading-two" icon={<LooksTwo />} />
+          <BlockButton format="block-quote" icon={<FormatQuote />} />
+          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
+          <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
+          <InsertImageButton />
+          <LinkButton />
+        </StyledToolbar>
+        <HoveringToolbar />
+        <EditablePlugins
+          plugins={plugins}
+          decorate={decorate}
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          onKeyDown={onKeyDown}
+          placeholder="Enter some plain text..."
+        />
+      </Slate>
+    );
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const Editor = createReactEditor();
 

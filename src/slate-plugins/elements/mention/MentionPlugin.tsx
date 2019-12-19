@@ -4,6 +4,5 @@ import { withMention } from './withMention';
 
 export const MentionPlugin = (): SlatePlugin => ({
   editor: withMention,
-  renderElement: renderElementMention,
-  // onKeyDown: onKeyDownMention,
+  renderElement: renderElementMention(),
 });

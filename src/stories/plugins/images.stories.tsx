@@ -21,7 +21,7 @@ export const Images = () => {
   const renderElement = [];
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
   if (boolean('renderElementImage', false))
-    renderElement.push(renderElementImage);
+    renderElement.push(renderElementImage());
 
   const [value, setValue] = useState(initialValueImages);
 

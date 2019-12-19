@@ -28,9 +28,8 @@ export const HoveringToolbar = () => {
   useEffect(() => {
     const el: any = ref.current;
     const { selection } = editor;
-    if (!el) {
-      return;
-    }
+    if (!el) return;
+
     if (
       !selection ||
       !ReactEditor.isFocused(editor) ||
@@ -40,6 +39,7 @@ export const HoveringToolbar = () => {
       el.removeAttribute('style');
       return;
     }
+
     const domSelection = window.getSelection();
     const domRange = domSelection && domSelection.getRangeAt(0);
     const rect = domRange && domRange.getBoundingClientRect();

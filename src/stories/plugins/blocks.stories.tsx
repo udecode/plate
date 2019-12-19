@@ -13,9 +13,9 @@ import {
   BlockquotePlugin,
   EditablePlugins,
   HeadingPlugin,
+  ListButton,
   ListPlugin,
   useCreateEditor,
-  ListButton,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';

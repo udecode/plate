@@ -4,5 +4,5 @@ import { withList } from './withList';
 
 export const ListPlugin = (): SlatePlugin => ({
   editor: withList,
-  renderElement: renderElementList,
+  renderElement: renderElementList(),
 });

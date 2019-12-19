@@ -1,1 +1,1 @@
-export * from './HoveringToolbar';
+export * from './components';

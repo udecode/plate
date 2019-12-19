@@ -14,5 +14,6 @@ export const useMention = ({
   const chars = characters
     .filter(c => c.toLowerCase().startsWith(search.toLowerCase()))
     .slice(0, maxSuggestions);
+
   return { target, setTarget, index, setIndex, search, setSearch, chars };
 };

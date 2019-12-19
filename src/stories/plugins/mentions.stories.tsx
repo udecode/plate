@@ -48,14 +48,13 @@ export const Mentions = () => {
         plugins={plugins}
         placeholder="Enter some text..."
         onKeyDown={[
-          e =>
-            onKeyDownMention(e, editor, {
-              chars,
-              target,
-              setTarget,
-              index,
-              setIndex,
-            }),
+          onKeyDownMention({
+            chars,
+            target,
+            setTarget,
+            index,
+            setIndex,
+          }),
         ]}
       />
       {target && chars.length > 0 && (
