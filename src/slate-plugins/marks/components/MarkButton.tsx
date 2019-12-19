@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
 import { isMarkActive } from '../queries';
+import { toggleMark } from '../transforms/toggleMark';
 
 interface Props {
   format: string;
@@ -9,6 +10,9 @@ interface Props {
   reversed?: boolean;
 }
 
+/**
+ * Toolbar button to toggle mark.
+ */
 export const MarkButton = ({ format, icon, reversed = false }: Props) => {
   const editor = useSlate();
 
@@ -18,7 +22,7 @@ export const MarkButton = ({ format, icon, reversed = false }: Props) => {
       active={isMarkActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        editor.exec({ type: 'toggle_mark', format });
+        toggleMark(editor, format);
       }}
     >
       {icon}

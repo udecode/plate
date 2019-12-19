@@ -5,8 +5,8 @@ import { SearchHighlightPluginOptions } from './types';
 
 export const SearchHighlightPlugin = ({
   search,
-  style,
+  bg,
 }: SearchHighlightPluginOptions): SlatePlugin => ({
-  ...HighlightPlugin({ style }),
+  ...HighlightPlugin({ bg }),
   decorate: decorateSearchHighlight({ search }),
 });

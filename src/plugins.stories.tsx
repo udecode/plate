@@ -43,9 +43,9 @@ import {
   useCreateEditor,
   useMention,
   VideoPlugin,
+  ListButton,
 } from 'slate-plugins';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
-import { ListButton } from 'slate-plugins/elements/list/ListButton';
 import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
 import { Slate, SlatePlugin, withReact } from 'slate-react';
 import { CHARACTERS } from 'stories/config/data';

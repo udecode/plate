@@ -3,7 +3,7 @@ import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions } from './types';
 
 export const HighlightPlugin = ({
-  style,
+  bg,
 }: HighlightPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafHighlight({ style }),
+  renderLeaf: renderLeafHighlight({ bg }),
 });

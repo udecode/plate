@@ -12,7 +12,7 @@ export const InsertImageButton = () => {
         event.preventDefault();
         const url = window.prompt('Enter the URL of the image:');
         if (!url) return;
-        editor.exec({ type: 'insert_image', url });
+        insertImage(editor, url);
       }}
     >
       <Image />

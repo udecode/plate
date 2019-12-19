@@ -7,6 +7,6 @@ export * from './MarkPlugin';
 export * from './onKeyDownMark';
 export * from './queries';
 export * from './strikethrough';
+export * from './transforms';
 export * from './types';
 export * from './underline';
-export * from './withToggleMark';

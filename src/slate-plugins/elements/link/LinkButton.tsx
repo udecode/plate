@@ -3,6 +3,7 @@ import { Link } from '@material-ui/icons';
 import { Button } from 'slate-plugins/common/components/Button';
 import { useSlate } from 'slate-react';
 import { isLinkActive } from './queries';
+import { insertLink } from './transforms';
 
 export const LinkButton = () => {
   const editor = useSlate();
@@ -14,7 +15,7 @@ export const LinkButton = () => {
         event.preventDefault();
         const url = window.prompt('Enter the URL of the link:');
         if (!url) return;
-        editor.exec({ type: 'insert_link', url });
+        insertLink(editor, url);
       }}
     >
       <Link />

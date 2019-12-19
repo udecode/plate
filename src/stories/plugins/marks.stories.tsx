@@ -3,6 +3,7 @@ import {
   Code,
   FormatBold,
   FormatItalic,
+  FormatStrikethrough,
   FormatUnderlined,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
@@ -14,25 +15,35 @@ import {
   ItalicPlugin,
   MarkButton,
   MarkPlugin,
+  StrikethroughPlugin,
   UnderlinePlugin,
   useCreateEditor,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
+import { MARK_STRIKETHROUGH } from 'slate-plugins/marks/strikethrough/types';
 import { Slate, SlatePlugin, withReact } from 'slate-react';
 import { initialValueMark } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Marks',
-  subcomponents: { UnderlinePlugin },
+  subcomponents: {
+    MarkPlugin,
+    BoldPlugin,
+    ItalicPlugin,
+    UnderlinePlugin,
+    StrikethroughPlugin,
+    InlineCodePlugin,
+  },
 };
 
 export const MarkPlugins = () => {
   const plugins: SlatePlugin[] = [];
   if (boolean('MarkPlugin', true)) plugins.push(MarkPlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
+  if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
+  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMark);
@@ -49,6 +60,10 @@ export const MarkPlugins = () => {
           <MarkButton format="bold" icon={<FormatBold />} />
           <MarkButton format="italic" icon={<FormatItalic />} />
           <MarkButton format="underline" icon={<FormatUnderlined />} />
+          <MarkButton
+            format={MARK_STRIKETHROUGH}
+            icon={<FormatStrikethrough />}
+          />
           <MarkButton format="code" icon={<Code />} />
         </StyledToolbar>
         <EditablePlugins

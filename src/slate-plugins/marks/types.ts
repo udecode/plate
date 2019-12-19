@@ -1,7 +1,5 @@
-export enum MarkCommand {
-  ADD_MARK = 'add_mark',
-  REMOVE_MARK = 'remove_mark',
-  TOGGLE_MARK = 'toggle_mark',
+export interface MarkPluginOptions {
+  hotkey?: string;
 }
 
 export interface OnKeyDownMarkOptions {

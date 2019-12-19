@@ -1,10 +1,10 @@
-import { CSSProperties } from 'styled-components';
+export const MARK_HIGHLIGHT = 'highlight';
 
 export interface RenderLeafHighlightOptions {
   /**
-   * Style of the highlighted ranges
+   * Background color of the highlighted ranges
    */
-  style?: CSSProperties;
+  bg?: string;
 }
 
 export interface HighlightPluginOptions extends RenderLeafHighlightOptions {}

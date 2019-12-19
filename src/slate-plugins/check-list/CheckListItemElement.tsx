@@ -1,5 +1,5 @@
 import React from 'react';
-import { Editor } from 'slate';
+import { Transforms } from 'slate';
 import {
   ReactEditor,
   RenderElementProps,
@@ -49,7 +49,7 @@ export const CheckListItemElement = ({
           checked={checked}
           onChange={event => {
             const path = ReactEditor.findPath(editor, element);
-            Editor.setNodes(
+            Transforms.setNodes(
               editor,
               { checked: event.target.checked },
               { at: path }

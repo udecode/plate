@@ -1,14 +1,11 @@
-import React from 'react';
-import { RenderLeafProps, SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 import { onKeyDownMark } from '../onKeyDownMark';
+import { renderLeafInlineCode } from './renderLeafInlineCode';
+import { InlineCodePluginOptions, MARK_CODE } from './types';
 
-export const renderLeafInlineCode = ({ children, leaf }: RenderLeafProps) => {
-  if (leaf.code) children = <code>{children}</code>;
-
-  return children;
-};
-
-export const InlineCodePlugin = (): SlatePlugin => ({
-  renderLeaf: renderLeafInlineCode,
-  onKeyDown: onKeyDownMark({ mark: 'code', hotkey: 'mod+`' }),
+export const InlineCodePlugin = ({
+  hotkey = 'mod+`',
+}: InlineCodePluginOptions = {}): SlatePlugin => ({
+  renderLeaf: renderLeafInlineCode(),
+  onKeyDown: onKeyDownMark({ mark: MARK_CODE, hotkey }),
 });

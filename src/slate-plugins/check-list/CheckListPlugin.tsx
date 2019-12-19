@@ -1,44 +1,8 @@
 import React from 'react';
-import { Editor, Point, Range } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 import { RenderElementProps, SlatePlugin } from 'slate-react';
 import { CheckListItemElement } from './CheckListItemElement';
-
-export const withChecklist = (editor: Editor) => {
-  const { exec } = editor;
-
-  editor.exec = command => {
-    const { selection } = editor;
-
-    if (
-      command.type === 'delete_backward' &&
-      selection &&
-      Range.isCollapsed(selection)
-    ) {
-      const [match] = Editor.nodes(editor, {
-        match: n => n.type === ElementType.CHECK_LIST_ITEM,
-      });
-
-      if (match) {
-        const [, path] = match;
-        const start = Editor.start(editor, path);
-
-        if (Point.equals(selection.anchor, start)) {
-          Editor.setNodes(
-            editor,
-            { type: ElementType.PARAGRAPH },
-            { match: n => n.type === ElementType.CHECK_LIST_ITEM }
-          );
-          return;
-        }
-      }
-    }
-
-    exec(command);
-  };
-
-  return editor;
-};
+import { withChecklist } from './withChecklist';
 
 export const renderElementCheckList = (props: RenderElementProps) => {
   const { element } = props;

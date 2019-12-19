@@ -1,4 +1,4 @@
-import { Editor, Range } from 'slate';
+import { Editor, Range, Transforms } from 'slate';
 import { isLinkActive } from '../queries/isLinkActive';
 import { unwrapLink } from './unwrapLink';
 
@@ -14,9 +14,9 @@ export const wrapLink = (editor: Editor, url: string) => {
     children: isCollapsed ? [{ text: url }] : [],
   };
   if (isCollapsed) {
-    Editor.insertNodes(editor, link);
+    Transforms.insertNodes(editor, link);
   } else {
-    Editor.wrapNodes(editor, link, { split: true });
-    Editor.collapse(editor, { edge: 'end' });
+    Transforms.wrapNodes(editor, link, { split: true });
+    Transforms.collapse(editor, { edge: 'end' });
   }
 };

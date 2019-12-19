@@ -1,5 +1,5 @@
 import React from 'react';
-import { Editor } from 'slate';
+import { Transforms } from 'slate';
 import {
   RenderElementProps,
   useEditor,
@@ -74,7 +74,7 @@ export const VideoElement = ({
             onClick={e => e.stopPropagation()}
             onChange={value => {
               const path = editor.findPath(element);
-              Editor.setNodes(editor, { url: value }, { at: path });
+              Transforms.setNodes(editor, { url: value }, { at: path });
             }}
           />
         ) : null}

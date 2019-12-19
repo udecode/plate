@@ -1,5 +1,5 @@
-import { OnKeyDownMarkOptions } from '../types';
+import { MarkPluginOptions } from '../types';
 
-export const UNDERLINE = 'underline';
+export const MARK_UNDERLINE = 'underline';
 
-export interface UnderlinePluginOptions extends Partial<OnKeyDownMarkOptions> {}
+export interface UnderlinePluginOptions extends MarkPluginOptions {}

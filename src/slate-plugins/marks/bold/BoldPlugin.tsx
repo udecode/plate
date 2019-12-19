@@ -1,14 +1,11 @@
-import React from 'react';
-import { RenderLeafProps, SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
 import { onKeyDownMark } from '../onKeyDownMark';
+import { renderLeafBold } from './renderLeafBold';
+import { BoldPluginOptions, MARK_BOLD } from './types';
 
-export const renderLeafBold = ({ children, leaf }: RenderLeafProps) => {
-  if (leaf.bold) children = <strong>{children}</strong>;
-
-  return children;
-};
-
-export const BoldPlugin = (): SlatePlugin => ({
-  renderLeaf: renderLeafBold,
-  onKeyDown: onKeyDownMark({ mark: 'bold', hotkey: 'mod+b' }),
+export const BoldPlugin = ({
+  hotkey = 'mod+b',
+}: BoldPluginOptions = {}): SlatePlugin => ({
+  renderLeaf: renderLeafBold(),
+  onKeyDown: onKeyDownMark({ mark: MARK_BOLD, hotkey }),
 });

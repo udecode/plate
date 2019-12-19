@@ -1,15 +1,11 @@
-import React from 'react';
-import { RenderLeafProps, SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-react';
+import { onKeyDownMark } from '../onKeyDownMark';
+import { renderLeafStrikethrough } from './renderLeafStrikethrough';
+import { MARK_STRIKETHROUGH, StrikethroughPluginOptions } from './types';
 
-export const renderLeafStrikethrough = ({
-  children,
-  leaf,
-}: RenderLeafProps) => {
-  if (leaf.strikethrough) children = <u>{children}</u>;
-
-  return children;
-};
-
-export const StrikethroughPlugin = (): SlatePlugin => ({
-  renderLeaf: renderLeafStrikethrough,
+export const StrikethroughPlugin = ({
+  hotkey = 'mod+shift+k',
+}: StrikethroughPluginOptions = {}): SlatePlugin => ({
+  renderLeaf: renderLeafStrikethrough(),
+  onKeyDown: onKeyDownMark({ mark: MARK_STRIKETHROUGH, hotkey }),
 });

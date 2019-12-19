@@ -15,10 +15,10 @@ import {
   HeadingPlugin,
   ListPlugin,
   useCreateEditor,
+  ListButton,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
-import { ListButton } from 'slate-plugins/elements/list/ListButton';
 import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
