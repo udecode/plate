@@ -1436,16 +1436,16 @@
     qs "^6.6.0"
     ts-dedent "^1.1.0"
 
-"@storybook/addon-storysource@^5.3.0-beta.31":
-  version "5.3.0-beta.31"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-storysource/-/addon-storysource-5.3.0-beta.31.tgz#329ac04f15f77be429458db020fa28321f2f4caa"
-  integrity sha512-A3i2LZ6oAp5eRxszWZKbYKgFKDxCUk1kZD8WU//W3x33vUkC3HEepzP92uXyjlH/nEkTAeVse1n4npR51RIP0A==
+"@storybook/addon-storysource@^5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-storysource/-/addon-storysource-5.3.0-rc.0.tgz#717ae2fee252e97d6c11236847d3df76f040c93a"
+  integrity sha512-1+Ipir3u2g/IuRYAOFPo6+wv0N4tamdqVST2Ejh6fEoc5h8QlwU0BZ8LgZj9V41bfEiEid4Yxyk/7R89lgqN6w==
   dependencies:
-    "@storybook/addons" "5.3.0-beta.31"
-    "@storybook/components" "5.3.0-beta.31"
-    "@storybook/router" "5.3.0-beta.31"
-    "@storybook/source-loader" "5.3.0-beta.31"
-    "@storybook/theming" "5.3.0-beta.31"
+    "@storybook/addons" "5.3.0-rc.0"
+    "@storybook/components" "5.3.0-rc.0"
+    "@storybook/router" "5.3.0-rc.0"
+    "@storybook/source-loader" "5.3.0-rc.0"
+    "@storybook/theming" "5.3.0-rc.0"
     core-js "^3.0.1"
     estraverse "^4.2.0"
     loader-utils "^1.2.3"
@@ -1661,6 +1661,33 @@
     simplebar-react "^1.0.0-alpha.6"
     ts-dedent "^1.1.0"
 
+"@storybook/components@5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/components/-/components-5.3.0-rc.0.tgz#c55f45bf9fee568a4096ac45c254e2257d099db1"
+  integrity sha512-fIQVM3+zhBl9EegZy3yGVin9jkRTQvROIjC7/7Z+IpjVR48tHIGIL5qAuzfKlRAmOT0yl/hPabieAlX0BcbvJQ==
+  dependencies:
+    "@storybook/client-logger" "5.3.0-rc.0"
+    "@storybook/theming" "5.3.0-rc.0"
+    "@types/react-syntax-highlighter" "11.0.2"
+    "@types/react-textarea-autosize" "^4.3.3"
+    core-js "^3.0.1"
+    global "^4.3.2"
+    lodash "^4.17.15"
+    markdown-to-jsx "^6.9.1"
+    memoizerific "^1.11.3"
+    polished "^3.3.1"
+    popper.js "^1.14.7"
+    prop-types "^15.7.2"
+    react "^16.8.3"
+    react-dom "^16.8.3"
+    react-focus-lock "^2.1.0"
+    react-helmet-async "^1.0.2"
+    react-popper-tooltip "^2.8.3"
+    react-syntax-highlighter "^11.0.2"
+    react-textarea-autosize "^7.1.0"
+    simplebar-react "^1.0.0-alpha.6"
+    ts-dedent "^1.1.0"
+
 "@storybook/core-events@5.3.0-beta.31":
   version "5.3.0-beta.31"
   resolved "https://registry.yarnpkg.com/@storybook/core-events/-/core-events-5.3.0-beta.31.tgz#c875aed0713f735913815f8eb064eceab4910c0b"
@@ -1841,6 +1868,22 @@
   dependencies:
     "@storybook/addons" "5.3.0-beta.31"
     "@storybook/client-logger" "5.3.0-beta.31"
+    "@storybook/csf" "0.0.1"
+    core-js "^3.0.1"
+    estraverse "^4.2.0"
+    global "^4.3.2"
+    loader-utils "^1.2.3"
+    prettier "^1.16.4"
+    prop-types "^15.7.2"
+    regenerator-runtime "^0.13.3"
+
+"@storybook/source-loader@5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/source-loader/-/source-loader-5.3.0-rc.0.tgz#d38f91a8c99a24cbc52e096eb4e13225238afc56"
+  integrity sha512-ImwN9p/Am2ucVbCd4NizTbxkDYMpq+ud6xl4yNIYubS2XqLuQHdsqXGu3DciBRoTM4nwBZT9Zu+4dwjFO+9g1A==
+  dependencies:
+    "@storybook/addons" "5.3.0-rc.0"
+    "@storybook/client-logger" "5.3.0-rc.0"
     "@storybook/csf" "0.0.1"
     core-js "^3.0.1"
     estraverse "^4.2.0"
