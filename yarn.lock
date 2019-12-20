@@ -1554,14 +1554,14 @@
   dependencies:
     core-js "^3.0.1"
 
-"@storybook/cli@^5.3.0-beta.31":
-  version "5.3.0-beta.31"
-  resolved "https://registry.yarnpkg.com/@storybook/cli/-/cli-5.3.0-beta.31.tgz#b85adc9439fd4b33ea30f4b5acc4d028560b3fb0"
-  integrity sha512-dTf9DFVza0JQQ3iitSEg9naKP3PcaeNPWjA0+T9gr3bYG2/mBgcLFL3DqAjp5J/TS7gvT20ZF242z6B7uptAfw==
+"@storybook/cli@^5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/cli/-/cli-5.3.0-rc.0.tgz#30bb6eadf70b045cb742942b439fb8c541267a53"
+  integrity sha512-V54dcNV+60hL3ufGBZzhce4ykidjOJ6+Zp4GELiXC1/VN90PcoO5AO3d/EOd9o+MpDZF/2SBBBYamSEXAvTZFw==
   dependencies:
     "@babel/core" "^7.4.5"
     "@babel/preset-env" "^7.4.5"
-    "@storybook/codemod" "5.3.0-beta.31"
+    "@storybook/codemod" "5.3.0-rc.0"
     chalk "^3.0.0"
     commander "^4.0.1"
     core-js "^3.0.1"
@@ -1616,14 +1616,14 @@
   dependencies:
     core-js "^3.0.1"
 
-"@storybook/codemod@5.3.0-beta.31":
-  version "5.3.0-beta.31"
-  resolved "https://registry.yarnpkg.com/@storybook/codemod/-/codemod-5.3.0-beta.31.tgz#36c98a4ed60bcba716b73f6b3c29d147a7613a06"
-  integrity sha512-jxCdwtEDpOr++n67NmCFa0n+QtKMKIIIsn5MeuGcEk8i6UiK8q7KcmNRamwbjKeRoP71YUqGp/dZS49ggtHKTA==
+"@storybook/codemod@5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/codemod/-/codemod-5.3.0-rc.0.tgz#aa23ddc9d75226d9ea38ebbd7cf385fe81f6f43f"
+  integrity sha512-3JXgSGtY1zALJNYPwqqEKSDu23eTfDyJtdbJisufdCuH029Jn9KGzeYDgi6CrKk9H07Hag8b10CIFSVrw0YfMg==
   dependencies:
     "@mdx-js/mdx" "^1.5.1"
     "@storybook/csf" "0.0.1"
-    "@storybook/node-logger" "5.3.0-beta.31"
+    "@storybook/node-logger" "5.3.0-rc.0"
     core-js "^3.0.1"
     cross-spawn "^7.0.0"
     globby "^10.0.1"
@@ -1765,6 +1765,17 @@
   version "5.3.0-beta.31"
   resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-5.3.0-beta.31.tgz#2c0520ad96a244baf5683dd50f9518336f12e92c"
   integrity sha512-fHsGc98bJQhzEz70Z6qvRRdrxZWgjUK/eVRmhjt21kxzLYPTrzJpFvvUEUCuHRhl+DdYAMfipF83raIpBZsGtw==
+  dependencies:
+    chalk "^3.0.0"
+    core-js "^3.0.1"
+    npmlog "^4.1.2"
+    pretty-hrtime "^1.0.3"
+    regenerator-runtime "^0.13.3"
+
+"@storybook/node-logger@5.3.0-rc.0":
+  version "5.3.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-5.3.0-rc.0.tgz#7def65c53a6a70b90e58bf79a71f07517786dcc3"
+  integrity sha512-1FmjcQPWOkI6B3aBqezWLhRLGq1JOYw4v1rinnrcp7WrF2WyW6BcmBVftCaYQ2UGgxoyMBUqtwm4za55X0U0ig==
   dependencies:
     chalk "^3.0.0"
     core-js "^3.0.1"
