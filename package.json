@@ -43,7 +43,7 @@
     "@material-ui/core": "^4.8.0",
     "@material-ui/icons": "^4.5.1",
     "@storybook/addon-docs": "^5.3.0-beta.31",
-    "@storybook/addon-knobs": "^5.3.0-beta.31",
+    "@storybook/addon-knobs": "^5.3.0-rc.0",
     "@storybook/addon-links": "^5.3.0-rc.0",
     "@storybook/addon-storysource": "^5.3.0-beta.31",
     "@storybook/addons": "^5.3.0-beta.31",
