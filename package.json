@@ -24,7 +24,7 @@
     "extends": "react-app"
   },
   "dependencies": {
-    "@primer/components": "^15.1.2",
+    "@primer/components": "^15.2.0",
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
