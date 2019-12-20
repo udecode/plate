@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
@@ -44,10 +45,14 @@ export const PasteHtml = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValuePasteHtml);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withImage, withList, withPasteHtml, withLink, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () =>
+        withImage(
+          withList(
+            withPasteHtml(withLink(withHistory(withReact(createEditor()))))
+          )
+        ),
+      []
     );
 
     return (

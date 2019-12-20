@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
@@ -18,18 +19,14 @@ export default {
 
 export const Images = () => {
   const plugins: any[] = [];
-  const renderElement: any = [];
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
-  if (boolean('renderElementImage', false))
-    renderElement.push(renderElementImage());
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueImages);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withImage, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () => withImage(withHistory(withReact(createEditor()))),
+      []
     );
 
     return (
@@ -41,11 +38,7 @@ export const Images = () => {
         <StyledToolbar height={18}>
           <InsertImageButton />
         </StyledToolbar>
-        <EditablePlugins
-          plugins={plugins}
-          renderElement={renderElement}
-          placeholder="Enter some text..."
-        />
+        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );
   };

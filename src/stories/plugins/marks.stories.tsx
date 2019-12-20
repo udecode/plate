@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Code,
   FormatBold,
@@ -7,6 +7,7 @@ import {
   FormatUnderlined,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BoldPlugin,
@@ -19,7 +20,7 @@ import {
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { MARK_STRIKETHROUGH } from 'slate-plugins/marks/strikethrough/types';
-import { Slate, SlatePlugin, withReact } from 'slate-react';
+import { Slate, withReact } from 'slate-react';
 import { initialValueMark } from '../config/initialValues';
 
 export default {
@@ -30,6 +31,7 @@ export default {
     UnderlinePlugin,
     StrikethroughPlugin,
     InlineCodePlugin,
+    MarkButton,
   },
 };
 
@@ -45,7 +47,6 @@ export const MarkPlugins = () => {
     const [value, setValue] = useState(initialValueMark);
 
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor([withReact, withHistory], plugins);
 
     return (
       <Slate

@@ -23,7 +23,7 @@ declare module 'slate-react' {
 
   type EditableType = (props: EditableProps) => JSX.Element;
 
-  type PluginEditor = <T extends Editor>(editor: T) => T & Editor;
+  type PluginEditor = <T extends Editor>(editor: T) => T;
 
   type Decorate = (entry: NodeEntry) => Range[];
   type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
@@ -32,7 +32,6 @@ declare module 'slate-react' {
   type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
 
   interface SlatePlugin {
-    editor?: PluginEditor;
     decorate?: Decorate;
     onDOMBeforeInput?: OnDOMBeforeInput;
     renderElement?: RenderElement;

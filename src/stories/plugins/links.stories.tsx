@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
   LinkButton,
   LinkPlugin,
   renderElementLink,
+  withLink,
 } from 'slate-plugins';
 import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
@@ -13,20 +15,23 @@ import { initialValueLinks } from '../config/initialValues';
 
 export default {
   title: 'Plugins/LinkPlugin',
+  component: LinkPlugin,
+  subcomponents: {
+    LinkButton,
+  },
 };
 
 export const Links = () => {
   const plugins: any[] = [];
-  const renderElement: any = [];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
-  if (boolean('renderElementLink', false))
-    renderElement.push(renderElementLink());
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueLinks);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor([withLink, withReact, withHistory], plugins);
+    const editor = useMemo(
+      () => withLink(withHistory(withReact(createEditor()))),
+      []
+    );
 
     return (
       <Slate
@@ -37,11 +42,7 @@ export const Links = () => {
         <StyledToolbar>
           <LinkButton />
         </StyledToolbar>
-        <EditablePlugins
-          plugins={plugins}
-          renderElement={renderElement}
-          placeholder="Enter some text..."
-        />
+        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );
   };

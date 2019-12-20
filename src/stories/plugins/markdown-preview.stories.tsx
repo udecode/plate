@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   decoratePreview,
@@ -12,24 +13,23 @@ import { initialValueMarkdownPreview } from '../config/initialValues';
 
 export default {
   title: 'Plugins/MarkdownPreviewPlugin',
+  component: MarkdownPreviewPlugin,
+  subcomponents: {
+    decoratePreview,
+    renderLeafPreview,
+  },
 };
 
 export const MarkdownPreview = () => {
   const plugins: any[] = [];
-  const decorate = [];
-  const renderLeaf = [];
+
   if (boolean('MarkdownPreviewPlugin', true))
     plugins.push(MarkdownPreviewPlugin());
-  else {
-    if (boolean('decoratePreview', false)) decorate.push(decoratePreview);
-    if (boolean('renderLeafLink', false)) renderLeaf.push(renderLeafPreview);
-  }
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarkdownPreview);
 
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor([withReact, withHistory], plugins);
 
     return (
       <Slate
@@ -39,8 +39,6 @@ export const MarkdownPreview = () => {
       >
         <EditablePlugins
           plugins={plugins}
-          decorate={decorate}
-          renderLeaf={renderLeaf}
           placeholder="Write some markdown..."
         />
       </Slate>

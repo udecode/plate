@@ -15,14 +15,12 @@ import { initialValueTables } from '../config/initialValues';
 export default {
   title: 'Plugins/TablePlugin',
   component: TablePlugin,
+  subcomponents: { renderElementTable },
 };
 
 export const Tables = () => {
   const plugins = [BoldPlugin()];
-  const renderElement: any = [];
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
-  if (boolean('renderElementTable', false))
-    renderElement.push(renderElementTable);
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueTables);
@@ -38,7 +36,7 @@ export const Tables = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <EditablePlugins plugins={plugins} renderElement={renderElement} />
+        <EditablePlugins plugins={plugins} />
       </Slate>
     );
   };

@@ -18,7 +18,11 @@ import { initialValueSearchHighlighting } from '../config/initialValues';
 export default {
   title: 'Plugins/SearchHighlightPlugin',
   component: SearchHighlightPlugin,
-  subcomponents: { HighlightPlugin },
+  subcomponents: {
+    HighlightPlugin,
+    renderLeafHighlight,
+    decorateSearchHighlight,
+  },
 };
 
 export const SearchHighlighting = () => {
@@ -27,15 +31,12 @@ export const SearchHighlighting = () => {
     plugins.push(SearchHighlightPlugin());
 
   const createReactEditor = () => () => {
-    const renderLeaf = [];
     const decorate = [];
 
     const [search, setSearch] = useState('');
 
     if (boolean('decorateHighlight', true))
       decorate.push(decorateSearchHighlight({ search }));
-    if (boolean('renderLeafHighlight', false))
-      renderLeaf.push(renderLeafHighlight());
 
     const [value, setValue] = useState(initialValueSearchHighlighting);
 
@@ -48,11 +49,7 @@ export const SearchHighlighting = () => {
         onChange={newValue => setValue(newValue)}
       >
         <ToolbarSearchHighlight setSearch={setSearch} />
-        <EditablePlugins
-          plugins={plugins}
-          renderLeaf={renderLeaf}
-          decorate={decorate}
-        />
+        <EditablePlugins plugins={plugins} decorate={decorate} />
       </Slate>
     );
   };

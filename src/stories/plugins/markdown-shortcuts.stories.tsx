@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockquotePlugin,
   EditablePlugins,
   HeadingPlugin,
   ListPlugin,
+  withBlock,
   withList,
   withShortcuts,
 } from 'slate-plugins';
@@ -14,6 +16,7 @@ import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
   title: 'Plugins/withShortcuts',
+  component: withShortcuts,
 };
 
 export const MarkdownShortcuts = () => {
@@ -22,10 +25,12 @@ export const MarkdownShortcuts = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withShortcuts, withList, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () =>
+        withShortcuts(
+          withList(withBlock(withHistory(withReact(createEditor()))))
+        ),
+      []
     );
 
     return (

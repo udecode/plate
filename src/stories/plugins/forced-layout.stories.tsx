@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
@@ -19,10 +20,9 @@ export const ForcedLayout = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueForcedLayout);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withForcedLayout, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () => withForcedLayout(withHistory(withReact(createEditor()))),
+      []
     );
 
     return (

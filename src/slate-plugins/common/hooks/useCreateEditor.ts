@@ -1,18 +1,12 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
-import { PluginEditor, SlatePlugin } from 'slate-react';
-import { createEditorPlugins } from '../utils';
+import { PluginEditor } from 'slate-react';
 
-export const useCreateEditor = (
-  editorPlugins: PluginEditor[] = [],
-  plugins: SlatePlugin[] = []
-) =>
+export const useCreateEditor = (plugins: PluginEditor[] = []) =>
   useMemo(() => {
     let editor = createEditor();
 
-    const newEditorPlugins = createEditorPlugins(editorPlugins, plugins);
-
-    newEditorPlugins.forEach(plugin => {
+    plugins.forEach(plugin => {
       editor = plugin(editor);
     });
 

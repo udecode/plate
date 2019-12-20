@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
@@ -15,6 +16,13 @@ import { initialValueMentions } from '../config/initialValues';
 
 export default {
   title: 'Plugins/MentionPlugin',
+  component: MentionPlugin,
+  subcomponents: {
+    useMention,
+    onChangeMention,
+    onKeyDownMention,
+    MentionSelect,
+  },
 };
 
 const plugins = [MentionPlugin()];
@@ -23,10 +31,9 @@ export const Mentions = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withMention, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () => withMention(withHistory(withReact(createEditor()))),
+      []
     );
 
     const { target, setTarget, index, setIndex, setSearch, chars } = useMention(

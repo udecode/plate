@@ -37,7 +37,7 @@ export const BlockPlugins = () => {
     const [value, setValue] = useState(initialValueRichText);
 
     const editor = useMemo(
-      () => withBlock(withList(withHistory(withReact(createEditor())))),
+      () => withList(withBlock(withHistory(withReact(createEditor())))),
       []
     );
 
@@ -51,8 +51,8 @@ export const BlockPlugins = () => {
           <BlockButton format="heading-one" icon={<LooksOne />} />
           <BlockButton format="heading-two" icon={<LooksTwo />} />
           <BlockButton format="block-quote" icon={<FormatQuote />} />
-          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
           <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
+          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
         </StyledToolbar>
         <EditablePlugins
           plugins={plugins}

@@ -25,7 +25,6 @@ export const CheckLists = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueCheckLists);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const editor = useMemo(
       () => withChecklist(withHistory(withReact(createEditor()))),
       []

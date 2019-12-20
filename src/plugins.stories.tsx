@@ -31,10 +31,11 @@ import {
   ListButton,
   ListPlugin,
   MarkButton,
-  MarkdownPreviewPlugin,
   MentionPlugin,
+  MentionSelect,
   onChangeMention,
   onKeyDownMention,
+  SearchHighlightPlugin,
   StyledToolbar,
   TablePlugin,
   ToolbarSearchHighlight,
@@ -50,9 +51,7 @@ import {
   withTable,
   withVideo,
 } from 'slate-plugins';
-import { BlockPlugin } from 'slate-plugins/elements/BlockPlugin';
-import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
-import { Slate, SlatePlugin, withReact } from 'slate-react';
+import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from 'stories/config/data';
 import {
   initialValueCheckLists,
@@ -77,7 +76,6 @@ const initialValue = [
 export const AllPlugins = () => {
   const plugins: any[] = [];
 
-  if (boolean('BlockPlugin', true)) plugins.push(BlockPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
   if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
@@ -149,6 +147,7 @@ export const AllPlugins = () => {
         value={value}
         onChange={newValue => {
           setValue(newValue);
+
           onChangeMention({
             editor,
             setTarget,
@@ -172,6 +171,9 @@ export const AllPlugins = () => {
           <LinkButton />
         </StyledToolbar>
         <HoveringToolbar />
+        {target && chars.length > 0 && (
+          <MentionSelect target={target} index={index} chars={chars} />
+        )}
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}

@@ -1,4 +1,3 @@
-import { Editor } from 'slate';
 import { ElementType } from 'slate-plugins/common/constants/formats';
 import { ReactEditor } from 'slate-react';
 import { isImageUrl } from './utils/isImageUrl';

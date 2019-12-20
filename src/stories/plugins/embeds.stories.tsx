@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
@@ -24,10 +25,9 @@ export const Embeds = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueEmbeds);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const editor = useCreateEditor(
-      [withVideo, withReact, withHistory],
-      plugins
+    const editor = useMemo(
+      () => withVideo(withHistory(withReact(createEditor()))),
+      []
     );
 
     return (
