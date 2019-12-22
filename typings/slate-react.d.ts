@@ -1,4 +1,5 @@
 import { Editor, Node, NodeEntry, Range } from 'slate';
+import { DeserializeHtml } from 'slate-plugins/paste-html/types';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 
 declare module 'slate-react' {
@@ -37,5 +38,6 @@ declare module 'slate-react' {
     renderElement?: RenderElement;
     renderLeaf?: RenderLeaf;
     onKeyDown?: OnKeyDown;
+    deserialize?: DeserializeHtml;
   }
 }

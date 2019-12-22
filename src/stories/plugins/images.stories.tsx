@@ -15,6 +15,11 @@ import { initialValueImages } from '../config/initialValues';
 
 export default {
   title: 'Plugins/ImagePlugin',
+  component: ImagePlugin,
+  subcomponents: {
+    renderElementImage,
+    InsertImageButton,
+  },
 };
 
 export const Images = () => {

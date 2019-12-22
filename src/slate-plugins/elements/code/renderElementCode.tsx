@@ -1,13 +1,13 @@
 import React from 'react';
-import { ElementType } from 'slate-plugins/common';
 import { RenderElementProps } from 'slate-react';
+import { CODE } from './types';
 
 export const renderElementCode = () => ({
   attributes,
   children,
   element,
 }: RenderElementProps) => {
-  if (element.type === ElementType.CODE) {
+  if (element.type === CODE) {
     return (
       <pre>
         <code {...attributes}>{children}</code>

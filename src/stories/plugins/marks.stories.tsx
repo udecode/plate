@@ -14,6 +14,10 @@ import {
   EditablePlugins,
   InlineCodePlugin,
   ItalicPlugin,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
   MarkButton,
   StrikethroughPlugin,
   UnderlinePlugin,
@@ -55,14 +59,14 @@ export const MarkPlugins = () => {
         onChange={newValue => setValue(newValue)}
       >
         <StyledToolbar height={18}>
-          <MarkButton format="bold" icon={<FormatBold />} />
-          <MarkButton format="italic" icon={<FormatItalic />} />
-          <MarkButton format="underline" icon={<FormatUnderlined />} />
+          <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
+          <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
+          <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
           <MarkButton
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
-          <MarkButton format="code" icon={<Code />} />
+          <MarkButton format={MARK_CODE} icon={<Code />} />
         </StyledToolbar>
         <EditablePlugins
           plugins={plugins}

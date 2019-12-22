@@ -13,14 +13,15 @@ import { initialValueEmbeds } from '../config/initialValues';
 
 export default {
   title: 'Plugins/VideoPlugin',
+  component: VideoPlugin,
+  subcomponents: {
+    renderElementVideo,
+  },
 };
 
 export const Embeds = () => {
   const plugins: any[] = [];
-  const renderElement: any = [];
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
-  if (boolean('renderElementVideo', false))
-    renderElement.push(renderElementVideo());
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueEmbeds);
@@ -36,11 +37,7 @@ export const Embeds = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <EditablePlugins
-          plugins={plugins}
-          renderElement={renderElement}
-          placeholder="Enter some text..."
-        />
+        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );
   };

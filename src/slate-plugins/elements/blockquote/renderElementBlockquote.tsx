@@ -1,13 +1,13 @@
 import React from 'react';
-import { ElementType } from 'slate-plugins/common';
 import { RenderElementProps } from 'slate-react';
+import { BLOCKQUOTE } from './types';
 
 export const renderElementBlockquote = () => ({
   attributes,
   children,
   element,
 }: RenderElementProps) => {
-  if (element.type === ElementType.BLOCK_QUOTE) {
+  if (element.type === BLOCKQUOTE) {
     return <blockquote {...attributes}>{children}</blockquote>;
   }
 };

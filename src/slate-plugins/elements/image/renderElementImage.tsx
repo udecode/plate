@@ -1,10 +1,10 @@
 import React from 'react';
-import { ElementType } from 'slate-plugins/common/constants/formats';
 import { RenderElementProps } from 'slate-react';
 import { ImageElement } from './components/ImageElement';
+import { IMAGE } from './types';
 
 export const renderElementImage = () => (props: RenderElementProps) => {
-  if (props.element.type === ElementType.IMAGE) {
+  if (props.element.type === IMAGE) {
     return <ImageElement {...props} />;
   }
 };

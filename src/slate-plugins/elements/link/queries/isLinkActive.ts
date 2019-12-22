@@ -1,9 +1,9 @@
 import { Editor } from 'slate';
-import { ElementType } from 'slate-plugins/common/constants/formats';
+import { LINK } from '../types';
 
 export const isLinkActive = (editor: Editor) => {
   const [link] = Editor.nodes(editor, {
-    match: n => n.type === ElementType.LINK,
+    match: n => n.type === LINK,
   });
 
   return !!link;

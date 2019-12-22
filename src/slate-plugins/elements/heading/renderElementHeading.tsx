@@ -1,7 +1,6 @@
 import React from 'react';
-import { ElementType } from 'slate-plugins/common';
 import { RenderElementProps } from 'slate-react';
-import { HeadingPluginOptions } from './types';
+import { HeadingPluginOptions, HeadingType } from './types';
 
 const getHeading = (Heading: any) => ({
   attributes,
@@ -21,10 +20,10 @@ export const renderElementHeading = ({
     element: { type },
   } = props;
 
-  if (levels >= 1 && type === ElementType.HEADING_1) return <H1 {...props} />;
-  if (levels >= 2 && type === ElementType.HEADING_2) return <H2 {...props} />;
-  if (levels >= 3 && type === ElementType.HEADING_3) return <H3 {...props} />;
-  if (levels >= 4 && type === ElementType.HEADING_4) return <H4 {...props} />;
-  if (levels >= 5 && type === ElementType.HEADING_5) return <H5 {...props} />;
-  if (levels >= 6 && type === ElementType.HEADING_6) return <H6 {...props} />;
+  if (levels >= 1 && type === HeadingType.H1) return <H1 {...props} />;
+  if (levels >= 2 && type === HeadingType.H2) return <H2 {...props} />;
+  if (levels >= 3 && type === HeadingType.H3) return <H3 {...props} />;
+  if (levels >= 4 && type === HeadingType.H4) return <H4 {...props} />;
+  if (levels >= 5 && type === HeadingType.H5) return <H5 {...props} />;
+  if (levels >= 6 && type === HeadingType.H6) return <H6 {...props} />;
 };

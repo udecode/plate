@@ -11,7 +11,6 @@ import { initialValueForcedLayout } from '../config/initialValues';
 
 export default {
   title: 'Plugins/withForcedLayout',
-  component: withForcedLayout,
 };
 
 const plugins = [HeadingPlugin()];

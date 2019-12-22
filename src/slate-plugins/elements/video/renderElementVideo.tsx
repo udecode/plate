@@ -1,10 +1,10 @@
 import React from 'react';
-import { ElementType } from 'slate-plugins/common/constants/formats';
 import { RenderElementProps } from 'slate-react';
 import { VideoElement } from './components/VideoElement';
+import { VIDEO } from './types';
 
 export const renderElementVideo = () => (props: RenderElementProps) => {
-  if (props.element.type === ElementType.VIDEO) {
+  if (props.element.type === VIDEO) {
     return <VideoElement {...props} />;
   }
 };

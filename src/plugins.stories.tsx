@@ -6,6 +6,7 @@ import {
   FormatListBulleted,
   FormatListNumbered,
   FormatQuote,
+  FormatStrikethrough,
   FormatUnderlined,
   LooksOne,
   LooksTwo,
@@ -14,10 +15,10 @@ import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
+  ActionItemPlugin,
   BlockButton,
   BlockquotePlugin,
   BoldPlugin,
-  CheckListPlugin,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
@@ -30,6 +31,12 @@ import {
   LinkPlugin,
   ListButton,
   ListPlugin,
+  ListType,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  MARK_UNDERLINE,
   MarkButton,
   MentionPlugin,
   MentionSelect,
@@ -42,7 +49,7 @@ import {
   UnderlinePlugin,
   useMention,
   VideoPlugin,
-  withChecklist,
+  withActionItem,
   withImage,
   withLink,
   withList,
@@ -51,10 +58,13 @@ import {
   withTable,
   withVideo,
 } from 'slate-plugins';
+import { BLOCKQUOTE } from 'slate-plugins/elements/blockquote/types';
+import { HeadingType } from 'slate-plugins/elements/heading/types';
+import { ParagraphPlugin } from 'slate-plugins/elements/paragraph/ParagraphPlugin';
 import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from 'stories/config/data';
 import {
-  initialValueCheckLists,
+  initialValueActionItem,
   initialValueEmbeds,
   initialValueImages,
   initialValueMentions,
@@ -67,7 +77,7 @@ export default {
 
 const initialValue = [
   ...initialValueRichText,
-  ...initialValueCheckLists,
+  ...initialValueActionItem,
   ...initialValueEmbeds,
   ...initialValueMentions,
   ...initialValueImages,
@@ -78,7 +88,7 @@ export const AllPlugins = () => {
 
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('CheckListPlugin', true)) plugins.push(CheckListPlugin());
+  if (boolean('ActionItemPlugin', true)) plugins.push(ActionItemPlugin());
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
   if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
@@ -86,107 +96,100 @@ export const AllPlugins = () => {
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
 
-  const createReactEditor = () => () => {
-    const decorate: any = [];
-    const renderElement: any = [];
-    const renderLeaf: any = [];
-    const onKeyDown: any = [];
+  const decorate: any = [];
+  const onKeyDown: any = [];
 
-    const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue);
 
-    const editor = useMemo(
-      () =>
-        withVideo(
-          withChecklist(
-            withMention(
-              withImage(
-                withList(
-                  withPasteHtml(
-                    withLink(withTable(withHistory(withReact(createEditor()))))
-                  )
+  const editor = useMemo(
+    () =>
+      withVideo(
+        withActionItem(
+          withMention(
+            withImage(
+              withList(
+                withPasteHtml(plugins)(
+                  withLink(withTable(withHistory(withReact(createEditor()))))
                 )
               )
             )
           )
-        ),
-      []
+        )
+      ),
+    [plugins]
+  );
+
+  const [search, setSearchHighlight] = useState('');
+
+  if (boolean('decorateSearchHighlight', true))
+    decorate.push(decorateSearchHighlight({ search }));
+
+  const { target, setTarget, index, setIndex, setSearch, chars } = useMention({
+    characters: CHARACTERS,
+    maxSuggestions: 10,
+  });
+
+  if (boolean('onKeyDownMentions', true))
+    onKeyDown.push(
+      onKeyDownMention({
+        chars,
+        index,
+        target,
+        setIndex,
+        setTarget,
+      })
     );
 
-    const [search, setSearchHighlight] = useState('');
+  return (
+    <Slate
+      editor={editor}
+      value={value}
+      onChange={newValue => {
+        setValue(newValue);
 
-    if (boolean('decorateSearchHighlight', true))
-      decorate.push(decorateSearchHighlight({ search }));
-
-    const { target, setTarget, index, setIndex, setSearch, chars } = useMention(
-      {
-        characters: CHARACTERS,
-        maxSuggestions: 10,
-      }
-    );
-
-    if (boolean('onKeyDownMentions', true))
-      onKeyDown.push(
-        onKeyDownMention({
-          chars,
-          index,
-          target,
-          setIndex,
+        onChangeMention({
+          editor,
           setTarget,
-        })
-      );
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={newValue => {
-          setValue(newValue);
-
-          onChangeMention({
-            editor,
-            setTarget,
-            setSearch,
-            setIndex,
-          });
-        }}
-      >
-        <ToolbarSearchHighlight setSearch={setSearchHighlight} />
-        <StyledToolbar height={18}>
-          <MarkButton format="bold" icon={<FormatBold />} />
-          <MarkButton format="italic" icon={<FormatItalic />} />
-          <MarkButton format="underline" icon={<FormatUnderlined />} />
-          <MarkButton format="code" icon={<Code />} />
-          <BlockButton format="heading-one" icon={<LooksOne />} />
-          <BlockButton format="heading-two" icon={<LooksTwo />} />
-          <BlockButton format="block-quote" icon={<FormatQuote />} />
-          <ListButton format="numbered-list" icon={<FormatListNumbered />} />
-          <ListButton format="bulleted-list" icon={<FormatListBulleted />} />
-          <InsertImageButton />
-          <LinkButton />
-        </StyledToolbar>
-        <HoveringToolbar />
-        {target && chars.length > 0 && (
-          <MentionSelect target={target} index={index} chars={chars} />
-        )}
-        <EditablePlugins
-          plugins={plugins}
-          decorate={decorate}
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onKeyDown={onKeyDown}
-          placeholder="Enter some plain text..."
+          setSearch,
+          setIndex,
+        });
+      }}
+    >
+      <ToolbarSearchHighlight setSearch={setSearchHighlight} />
+      <StyledToolbar height={18}>
+        <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
+        <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
+        <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
+        <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
+        <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+        <MarkButton
+          format={MARK_STRIKETHROUGH}
+          icon={<FormatStrikethrough />}
         />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
+        <MarkButton format={MARK_CODE} icon={<Code />} />
+        <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
+        <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
+        <LinkButton />
+        <InsertImageButton />
+        <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
+      </StyledToolbar>
+      <HoveringToolbar />
+      {target && chars.length > 0 && (
+        <MentionSelect target={target} index={index} chars={chars} />
+      )}
+      <EditablePlugins
+        plugins={plugins}
+        decorate={decorate}
+        onKeyDown={onKeyDown}
+        placeholder="Enter some plain text..."
+      />
+    </Slate>
+  );
 };

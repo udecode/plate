@@ -1,7 +1,8 @@
 import faker from 'faker';
 import { Node } from 'slate';
+import { ACTION_ITEM, PARAGRAPH } from 'slate-plugins';
 
-export const initialValueCheckLists: Node[] = [
+export const initialValueActionItem: Node[] = [
   {
     children: [
       {
@@ -11,32 +12,32 @@ export const initialValueCheckLists: Node[] = [
     ],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: true,
     children: [{ text: 'Slide to the left.' }],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: true,
     children: [{ text: 'Slide to the right.' }],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: false,
     children: [{ text: 'Criss-cross.' }],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: true,
     children: [{ text: 'Criss-cross!' }],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: false,
     children: [{ text: 'Cha cha real smooth…' }],
   },
   {
-    type: 'check-list-item',
+    type: ACTION_ITEM,
     checked: false,
     children: [{ text: "Let's go to work!" }],
   },
@@ -75,7 +76,7 @@ export const initialValueForcedLayout: Node[] = [
     children: [{ text: 'Enforce Your Layout!' }],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -126,7 +127,7 @@ for (let h = 0; h < HEADINGS; h++) {
 
 export const initialValueImages: Node[] = [
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -140,7 +141,7 @@ export const initialValueImages: Node[] = [
     children: [{ text: '' }],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -195,7 +196,7 @@ export const initialValueMarkdownPreview: Node[] = [
 
 export const initialValueMarkdownShortcuts: Node[] = [
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -208,7 +209,7 @@ export const initialValueMarkdownShortcuts: Node[] = [
     children: [{ text: 'A wise quote.' }],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -221,7 +222,7 @@ export const initialValueMarkdownShortcuts: Node[] = [
     children: [{ text: 'Try it out!' }],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:
@@ -298,7 +299,7 @@ export const initialValuePlainText: Node[] = [
 
 export const initialValueMark: Node[] = [
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       { text: 'This is editable ' },
       { text: 'rich', bold: true, underline: true, italic: true },
@@ -317,7 +318,7 @@ export const initialValueRichText: Node[] = [
     children: [{ text: 'Welcome' }],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       { text: 'This is editable ' },
       { text: 'rich', bold: true },
@@ -329,7 +330,7 @@ export const initialValueRichText: Node[] = [
     ],
   },
   {
-    type: 'paragraph',
+    type: PARAGRAPH,
     children: [
       {
         text:

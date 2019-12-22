@@ -17,6 +17,7 @@ export default {
   title: 'Plugins/LinkPlugin',
   component: LinkPlugin,
   subcomponents: {
+    renderElementLink,
     LinkButton,
   },
 };

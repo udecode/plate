@@ -16,7 +16,6 @@ import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
   title: 'Plugins/withShortcuts',
-  component: withShortcuts,
 };
 
 export const MarkdownShortcuts = () => {

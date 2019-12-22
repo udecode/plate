@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
@@ -15,6 +14,7 @@ import { BlockquotePlugin } from 'slate-plugins/elements/blockquote/BlockquotePl
 import { CodePlugin } from 'slate-plugins/elements/code/CodePlugin';
 import { HeadingPlugin } from 'slate-plugins/elements/heading/HeadingPlugin';
 import { ListPlugin } from 'slate-plugins/elements/list/ListPlugin';
+import { ParagraphPlugin } from 'slate-plugins/elements/paragraph/ParagraphPlugin';
 import { BoldPlugin } from 'slate-plugins/marks/bold/BoldPlugin';
 import { InlineCodePlugin } from 'slate-plugins/marks/inline-code/InlineCodePlugin';
 import { ItalicPlugin } from 'slate-plugins/marks/italic/ItalicPlugin';
@@ -25,21 +25,23 @@ import { initialValuePasteHtml } from '../config/initialValues';
 
 export default {
   title: 'Plugins/withPasteHtml',
+  component: withPasteHtml,
 };
 
 export const PasteHtml = () => {
   const plugins = [
-    ImagePlugin(),
-    LinkPlugin(),
-    ListPlugin(),
     BlockquotePlugin(),
-    HeadingPlugin(),
-    CodePlugin(),
     BoldPlugin(),
+    CodePlugin(),
+    HeadingPlugin(),
+    ImagePlugin(),
     InlineCodePlugin(),
     ItalicPlugin(),
-    UnderlinePlugin(),
+    LinkPlugin(),
+    ListPlugin(),
+    ParagraphPlugin(),
     StrikethroughPlugin(),
+    UnderlinePlugin(),
   ];
 
   const createReactEditor = () => () => {
@@ -49,7 +51,9 @@ export const PasteHtml = () => {
       () =>
         withImage(
           withList(
-            withPasteHtml(withLink(withHistory(withReact(createEditor()))))
+            withPasteHtml(plugins)(
+              withLink(withHistory(withReact(createEditor())))
+            )
           )
         ),
       []
