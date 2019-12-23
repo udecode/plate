@@ -1,6 +1,8 @@
 import { jsx } from 'slate-hyperscript';
+import { SlatePlugin } from 'slate-react';
+import { DeserializeElement, DeserializeLeafValue } from './types';
 
-export const deserialize = (plugins: any[]) => (el: any) => {
+export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
   // text
   if (el.nodeType === 3) return el.textContent;
 
@@ -31,14 +33,23 @@ export const deserialize = (plugins: any[]) => (el: any) => {
     return jsx('fragment', {}, children);
   }
 
-  let elementTags = {};
-  let textTags = {};
+  let elementTags: DeserializeElement = {};
+  const textTags: {
+    [key: string]: DeserializeLeafValue[];
+  } = {};
+
   plugins.forEach(({ deserialize: deserializePlugin }) => {
     if (deserializePlugin?.element)
       elementTags = { ...elementTags, ...deserializePlugin.element };
 
-    if (deserializePlugin?.leaf)
-      textTags = { ...textTags, ...deserializePlugin.leaf };
+    if (!deserializePlugin?.leaf) return;
+
+    Object.keys(deserializePlugin.leaf).forEach(tag => {
+      if (!deserializePlugin?.leaf) return;
+
+      if (!textTags[tag]) textTags[tag] = [deserializePlugin.leaf[tag]];
+      else textTags[tag].push(deserializePlugin.leaf[tag]);
+    });
   });
 
   // element
@@ -50,7 +61,15 @@ export const deserialize = (plugins: any[]) => (el: any) => {
 
   // mark
   if (textTags[nodeName]) {
-    const attrs = textTags[nodeName](el);
+    let attrs = {};
+
+    textTags[nodeName].forEach(tag => {
+      const newAttrs = tag(el);
+      if (newAttrs) {
+        attrs = { ...attrs, ...newAttrs };
+      }
+    });
+
     return children.map(child => jsx('text', attrs, child));
   }
 

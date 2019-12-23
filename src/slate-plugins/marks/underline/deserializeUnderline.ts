@@ -1,8 +1,11 @@
 import { DeserializeHtml } from 'slate-plugins/paste-html/types';
 import { MARK_UNDERLINE } from './types';
 
+const leaf = { [MARK_UNDERLINE]: true };
+
 export const deserializeUnderline = (): DeserializeHtml => ({
   leaf: {
-    U: () => ({ [MARK_UNDERLINE]: true }),
+    SPAN: el => el.style.textDecoration === 'underline' && leaf,
+    U: () => leaf,
   },
 });

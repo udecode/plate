@@ -18,8 +18,6 @@ export const ImageElement = ({
   const selected = useSelected();
   const focused = useFocused();
 
-  console.log(element.url);
-
   return (
     <div {...attributes}>
       <div contentEditable={false}>

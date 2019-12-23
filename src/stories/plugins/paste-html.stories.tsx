@@ -5,10 +5,12 @@ import {
   EditablePlugins,
   ImagePlugin,
   LinkPlugin,
+  TablePlugin,
   withImage,
   withLink,
   withList,
   withPasteHtml,
+  withTable,
 } from 'slate-plugins';
 import { BlockquotePlugin } from 'slate-plugins/elements/blockquote/BlockquotePlugin';
 import { CodePlugin } from 'slate-plugins/elements/code/CodePlugin';
@@ -41,6 +43,7 @@ export const PasteHtml = () => {
     ListPlugin(),
     ParagraphPlugin(),
     StrikethroughPlugin(),
+    TablePlugin(),
     UnderlinePlugin(),
   ];
 
@@ -49,10 +52,12 @@ export const PasteHtml = () => {
 
     const editor = useMemo(
       () =>
-        withImage(
-          withList(
-            withPasteHtml(plugins)(
-              withLink(withHistory(withReact(createEditor())))
+        withTable(
+          withImage(
+            withList(
+              withPasteHtml(plugins)(
+                withLink(withHistory(withReact(createEditor())))
+              )
             )
           )
         ),

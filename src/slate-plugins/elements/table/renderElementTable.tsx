@@ -2,7 +2,7 @@ import React from 'react';
 import { RenderElementProps } from 'slate-react';
 import { TableType } from './types';
 
-export const renderElementTable = ({
+export const renderElementTable = () => ({
   attributes,
   children,
   element,

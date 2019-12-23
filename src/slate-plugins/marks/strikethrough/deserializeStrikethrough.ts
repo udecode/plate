@@ -1,9 +1,12 @@
 import { DeserializeHtml } from 'slate-plugins/paste-html/types';
 import { MARK_STRIKETHROUGH } from './types';
 
+const leaf = { [MARK_STRIKETHROUGH]: true };
+
 export const deserializeStrikethrough = (): DeserializeHtml => ({
   leaf: {
-    DEL: () => ({ [MARK_STRIKETHROUGH]: true }),
-    S: () => ({ [MARK_STRIKETHROUGH]: true }),
+    SPAN: el => el.style.textDecoration === 'line-through' && leaf,
+    DEL: () => leaf,
+    S: () => leaf,
   },
 });

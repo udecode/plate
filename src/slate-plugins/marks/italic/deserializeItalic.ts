@@ -1,9 +1,12 @@
 import { DeserializeHtml } from 'slate-plugins/paste-html/types';
 import { MARK_ITALIC } from './types';
 
+const leaf = { [MARK_ITALIC]: true };
+
 export const deserializeItalic = (): DeserializeHtml => ({
   leaf: {
-    EM: () => ({ [MARK_ITALIC]: true }),
-    I: () => ({ [MARK_ITALIC]: true }),
+    SPAN: el => el.style.fontStyle === 'italic' && leaf,
+    EM: () => leaf,
+    I: () => leaf,
   },
 });

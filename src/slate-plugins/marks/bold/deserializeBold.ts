@@ -1,8 +1,11 @@
 import { DeserializeHtml } from 'slate-plugins/paste-html/types';
 import { MARK_BOLD } from './types';
 
+const leaf = { [MARK_BOLD]: true };
+
 export const deserializeBold = (): DeserializeHtml => ({
   leaf: {
-    STRONG: () => ({ [MARK_BOLD]: true }),
+    SPAN: el => ['600', '700', 'bold'].includes(el.style.fontWeight) && leaf,
+    STRONG: () => leaf,
   },
 });

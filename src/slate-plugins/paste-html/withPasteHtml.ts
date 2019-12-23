@@ -14,6 +14,7 @@ export const withPasteHtml = (plugins: SlatePlugin[]) => <
 
     if (html) {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
+      console.log('parsed.body:', parsed.body);
       const fragment = deserialize(plugins)(parsed.body);
       Transforms.insertFragment(editor, fragment);
       return;

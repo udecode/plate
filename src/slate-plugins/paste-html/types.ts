@@ -1,18 +1,25 @@
-interface DeserializeElement {
+export interface DeserializeElement {
   [key: string]: (
-    el?: any
-  ) => {
-    type: string;
-    [key: string]: any;
-  };
+    el: HTMLElement
+  ) =>
+    | {
+        type: string;
+        [key: string]: any;
+      }
+    | undefined;
 }
 
+export type DeserializeLeafValue = (
+  el: HTMLElement
+) =>
+  | {
+      [key: string]: any;
+    }
+  | undefined
+  | false;
+
 interface DeserializeLeaf {
-  [key: string]: (
-    el?: any
-  ) => {
-    [key: string]: any;
-  };
+  [key: string]: DeserializeLeafValue;
 }
 
 export interface DeserializeHtml {

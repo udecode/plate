@@ -3,6 +3,6 @@ import { LINK } from './types';
 
 export const deserializeLink = (): DeserializeHtml => ({
   element: {
-    A: (el: any) => ({ type: LINK, url: el.getAttribute('href') }),
+    A: el => ({ type: LINK, url: el.getAttribute('href') }),
   },
 });
