@@ -41,13 +41,10 @@ export const deserialize = (plugins: any[]) => (el: any) => {
       textTags = { ...textTags, ...deserializePlugin.leaf };
   });
 
-  console.log('elementTags:', elementTags);
-  console.log('textTags:', textTags);
-  console.log('nodeName:', nodeName);
-
   // element
   if (elementTags[nodeName]) {
     const attrs = elementTags[nodeName](el);
+
     return jsx('element', attrs, children);
   }
 
