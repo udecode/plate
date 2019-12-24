@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from '@material-ui/icons';
-import { FormatButton } from 'slate-plugins';
+import { ToolbarButton } from 'slate-plugins';
 import { useSlate } from 'slate-react';
 import { isLinkActive } from '../queries';
 import { insertLink } from '../transforms';
 
-export const LinkButton = () => {
+export const ToolbarLink = () => {
   const editor = useSlate();
 
   return (
-    <FormatButton
+    <ToolbarButton
       active={isLinkActive(editor)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
@@ -19,6 +19,6 @@ export const LinkButton = () => {
       }}
     >
       <Link />
-    </FormatButton>
+    </ToolbarButton>
   );
 };

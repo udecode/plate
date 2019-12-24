@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormatButton } from 'slate-plugins';
+import { ToolbarButton } from 'slate-plugins';
 import { useSlate } from 'slate-react';
 import { isMarkActive } from '../queries';
 import { toggleMark } from '../transforms/toggleMark';
@@ -13,11 +13,11 @@ interface Props {
 /**
  * Toolbar button to toggle mark.
  */
-export const MarkButton = ({ format, icon, reversed = false }: Props) => {
+export const ToolbarMark = ({ format, icon, reversed = false }: Props) => {
   const editor = useSlate();
 
   return (
-    <FormatButton
+    <ToolbarButton
       reversed={reversed}
       active={isMarkActive(editor, format)}
       onMouseDown={(event: Event) => {
@@ -26,6 +26,6 @@ export const MarkButton = ({ format, icon, reversed = false }: Props) => {
       }}
     >
       {icon}
-    </FormatButton>
+    </ToolbarButton>
   );
 };

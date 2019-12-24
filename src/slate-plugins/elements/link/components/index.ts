@@ -1,1 +1,1 @@
-export * from './LinkButton';
+export * from './ToolbarLink';

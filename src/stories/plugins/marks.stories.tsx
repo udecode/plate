@@ -12,6 +12,7 @@ import { withHistory } from 'slate-history';
 import {
   BoldPlugin,
   EditablePlugins,
+  HeadingToolbar,
   InlineCodePlugin,
   ItalicPlugin,
   MARK_BOLD,
@@ -19,9 +20,8 @@ import {
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
-  MarkButton,
   StrikethroughPlugin,
-  ToolbarHeader,
+  ToolbarMark,
   UnderlinePlugin,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -35,7 +35,7 @@ export default {
     UnderlinePlugin,
     StrikethroughPlugin,
     InlineCodePlugin,
-    MarkButton,
+    MarkButton: ToolbarMark,
   },
 };
 
@@ -58,16 +58,16 @@ export const MarkPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <ToolbarHeader height={18}>
-          <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
-          <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
-          <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
-          <MarkButton
+        <HeadingToolbar height={18}>
+          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark format={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+          <ToolbarMark
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
-          <MarkButton format={MARK_CODE} icon={<Code />} />
-        </ToolbarHeader>
+          <ToolbarMark format={MARK_CODE} icon={<Code />} />
+        </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some rich text…"

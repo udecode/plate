@@ -16,22 +16,19 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
-  BlockButton,
   BLOCKQUOTE,
   BlockquotePlugin,
   BoldPlugin,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
+  HeadingToolbar,
   HeadingType,
   HoveringToolbar,
   ImagePlugin,
   InlineCodePlugin,
-  InsertImageButton,
   ItalicPlugin,
-  LinkButton,
   LinkPlugin,
-  ListButton,
   ListPlugin,
   ListType,
   MARK_BOLD,
@@ -39,7 +36,6 @@ import {
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
-  MarkButton,
   MentionPlugin,
   MentionSelect,
   onChangeMention,
@@ -47,7 +43,11 @@ import {
   ParagraphPlugin,
   SearchHighlightPlugin,
   TablePlugin,
-  ToolbarHeader,
+  ToolbarBlock,
+  ToolbarImage,
+  ToolbarLink,
+  ToolbarList,
+  ToolbarMark,
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
@@ -166,23 +166,29 @@ export const AllPlugins = () => {
         }}
       >
         <ToolbarSearchHighlight setSearch={setSearchHighlight} />
-        <ToolbarHeader height={18}>
-          <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
-          <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
-          <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
-          <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
-          <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
-          <MarkButton
+        <HeadingToolbar height={18}>
+          <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
+          <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
+          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark format={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+          <ToolbarMark
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
-          <MarkButton format={MARK_CODE} icon={<Code />} />
-          <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
-          <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
-          <LinkButton />
-          <InsertImageButton />
-          <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
-        </ToolbarHeader>
+          <ToolbarMark format={MARK_CODE} icon={<Code />} />
+          <ToolbarList
+            format={ListType.UL_LIST}
+            icon={<FormatListBulleted />}
+          />
+          <ToolbarList
+            format={ListType.OL_LIST}
+            icon={<FormatListNumbered />}
+          />
+          <ToolbarLink />
+          <ToolbarImage />
+          <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
+        </HeadingToolbar>
         <HoveringToolbar />
         {target && chars.length > 0 && (
           <MentionSelect target={target} index={index} chars={chars} />

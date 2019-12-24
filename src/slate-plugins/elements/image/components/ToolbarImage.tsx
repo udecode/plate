@@ -1,14 +1,14 @@
 import React from 'react';
 import { Image } from '@material-ui/icons';
-import { FormatButton } from 'slate-plugins';
+import { ToolbarButton } from 'slate-plugins';
 import { useEditor } from 'slate-react';
 import { insertImage } from '../transforms';
 
-export const InsertImageButton = () => {
+export const ToolbarImage = () => {
   const editor = useEditor();
 
   return (
-    <FormatButton
+    <ToolbarButton
       onMouseDown={(event: Event) => {
         event.preventDefault();
         const url = window.prompt('Enter the URL of the image:');
@@ -17,6 +17,6 @@ export const InsertImageButton = () => {
       }}
     >
       <Image />
-    </FormatButton>
+    </ToolbarButton>
   );
 };

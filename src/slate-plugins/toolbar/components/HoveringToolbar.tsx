@@ -5,8 +5,8 @@ import {
   MARK_BOLD,
   MARK_ITALIC,
   MARK_UNDERLINE,
-  MarkButton,
   Portal,
+  ToolbarMark,
 } from 'slate-plugins';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
@@ -61,9 +61,9 @@ export const HoveringToolbar = () => {
   return (
     <Portal>
       <StyledToolbar ref={ref}>
-        <MarkButton reversed format={MARK_BOLD} icon={<FormatBold />} />
-        <MarkButton reversed format={MARK_ITALIC} icon={<FormatItalic />} />
-        <MarkButton
+        <ToolbarMark reversed format={MARK_BOLD} icon={<FormatBold />} />
+        <ToolbarMark reversed format={MARK_ITALIC} icon={<FormatItalic />} />
+        <ToolbarMark
           reversed
           format={MARK_UNDERLINE}
           icon={<FormatUnderlined />}

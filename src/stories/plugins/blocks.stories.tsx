@@ -10,17 +10,17 @@ import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
-  BlockButton,
   BLOCKQUOTE,
   BlockquotePlugin,
   EditablePlugins,
   HeadingPlugin,
+  HeadingToolbar,
   HeadingType,
-  ListButton,
   ListPlugin,
   ListType,
   ParagraphPlugin,
-  ToolbarHeader,
+  ToolbarBlock,
+  ToolbarList,
   withBlock,
   withList,
 } from 'slate-plugins';
@@ -58,13 +58,19 @@ export const BlockPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <ToolbarHeader height={18}>
-          <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
-          <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
-          <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
-          <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
-          <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
-        </ToolbarHeader>
+        <HeadingToolbar height={18}>
+          <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
+          <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
+          <ToolbarList
+            format={ListType.UL_LIST}
+            icon={<FormatListBulleted />}
+          />
+          <ToolbarList
+            format={ListType.OL_LIST}
+            icon={<FormatListNumbered />}
+          />
+          <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
+        </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some rich text…"

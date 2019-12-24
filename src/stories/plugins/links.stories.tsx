@@ -4,10 +4,10 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
-  LinkButton,
+  HeadingToolbar,
   LinkPlugin,
   renderElementLink,
-  ToolbarHeader,
+  ToolbarLink,
   withLink,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -18,7 +18,7 @@ export default {
   component: LinkPlugin,
   subcomponents: {
     renderElementLink,
-    LinkButton,
+    LinkButton: ToolbarLink,
   },
 };
 
@@ -40,9 +40,9 @@ export const Links = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <ToolbarHeader>
-          <LinkButton />
-        </ToolbarHeader>
+        <HeadingToolbar>
+          <ToolbarLink />
+        </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );

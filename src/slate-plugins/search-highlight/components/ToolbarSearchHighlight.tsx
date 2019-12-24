@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from '@material-ui/icons';
-import { ToolbarHeader } from 'slate-plugins';
+import { HeadingToolbar } from 'slate-plugins';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const ToolbarSearchHighlight = ({ setSearch }: Props) => (
-  <ToolbarHeader>
+  <HeadingToolbar>
     <Wrapper>
       <Icon style={{ fontSize: '18px' }} />
       <Input
@@ -33,5 +33,5 @@ export const ToolbarSearchHighlight = ({ setSearch }: Props) => (
         onChange={e => setSearch(e.target.value)}
       />
     </Wrapper>
-  </ToolbarHeader>
+  </HeadingToolbar>
 );

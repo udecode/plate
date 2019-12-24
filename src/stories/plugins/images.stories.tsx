@@ -4,10 +4,10 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
+  HeadingToolbar,
   ImagePlugin,
-  InsertImageButton,
   renderElementImage,
-  ToolbarHeader,
+  ToolbarImage,
   withImage,
 } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
@@ -18,7 +18,7 @@ export default {
   component: ImagePlugin,
   subcomponents: {
     renderElementImage,
-    InsertImageButton,
+    InsertImageButton: ToolbarImage,
   },
 };
 
@@ -40,9 +40,9 @@ export const Images = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <ToolbarHeader height={18}>
-          <InsertImageButton />
-        </ToolbarHeader>
+        <HeadingToolbar height={18}>
+          <ToolbarImage />
+        </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );

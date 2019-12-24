@@ -1,4 +1,4 @@
-export * from './FormatButton';
+export * from './ToolbarButton';
 export * from './HoveringToolbar';
 export * from './Toolbar';
-export * from './ToolbarHeader';
+export * from './HeadingToolbar';

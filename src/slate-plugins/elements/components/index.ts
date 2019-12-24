@@ -1,1 +1,1 @@
-export * from './BlockButton';
+export * from './ToolbarBlock';

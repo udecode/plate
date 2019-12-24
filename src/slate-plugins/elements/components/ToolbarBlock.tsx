@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormatButton, toggleList } from 'slate-plugins';
+import { toggleList, ToolbarButton } from 'slate-plugins';
 import { useSlate } from 'slate-react';
 import styled from 'styled-components';
 import { isBlockActive } from '../queries';
@@ -14,11 +14,11 @@ const Icon = styled.span`
   font-size: 18px;
 `;
 
-export const BlockButton = ({ format, icon }: BlockButtonProps) => {
+export const ToolbarBlock = ({ format, icon }: BlockButtonProps) => {
   const editor = useSlate();
 
   return (
-    <FormatButton
+    <ToolbarButton
       active={isBlockActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
@@ -26,15 +26,15 @@ export const BlockButton = ({ format, icon }: BlockButtonProps) => {
       }}
     >
       <Icon>{icon}</Icon>
-    </FormatButton>
+    </ToolbarButton>
   );
 };
 
-export const ListButton = ({ format, icon }: BlockButtonProps) => {
+export const ToolbarList = ({ format, icon }: BlockButtonProps) => {
   const editor = useSlate();
 
   return (
-    <FormatButton
+    <ToolbarButton
       active={isBlockActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
@@ -42,6 +42,6 @@ export const ListButton = ({ format, icon }: BlockButtonProps) => {
       }}
     >
       <Icon>{icon}</Icon>
-    </FormatButton>
+    </ToolbarButton>
   );
 };

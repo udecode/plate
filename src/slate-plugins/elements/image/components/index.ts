@@ -1,2 +1,2 @@
 export * from './ImageElement';
-export * from './InsertImageButton';
+export * from './ToolbarImage';
