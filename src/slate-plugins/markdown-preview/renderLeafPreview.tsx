@@ -58,7 +58,7 @@ const MarkdownPreviewLeaf = styled.span<PreviewLeafProps>`
     `}
 `;
 
-export const renderLeafPreview = ({
+export const renderLeafPreview = () => ({
   attributes,
   children,
   leaf,
