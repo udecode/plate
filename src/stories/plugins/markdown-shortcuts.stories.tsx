@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {

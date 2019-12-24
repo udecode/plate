@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { onKeyDownMark } from '../onKeyDownMark';
 import { deserializeItalic } from './deserializeItalic';
 import { renderLeafItalic } from './renderLeafItalic';

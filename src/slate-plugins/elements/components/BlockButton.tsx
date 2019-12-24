@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button } from 'slate-plugins/common/components/Button';
+import { FormatButton, toggleList } from 'slate-plugins';
 import { useSlate } from 'slate-react';
 import styled from 'styled-components';
-import { toggleList } from '../list/transforms/toggleList';
 import { isBlockActive } from '../queries';
 
 export interface BlockButtonProps {
@@ -19,7 +18,7 @@ export const BlockButton = ({ format, icon }: BlockButtonProps) => {
   const editor = useSlate();
 
   return (
-    <Button
+    <FormatButton
       active={isBlockActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
@@ -27,7 +26,7 @@ export const BlockButton = ({ format, icon }: BlockButtonProps) => {
       }}
     >
       <Icon>{icon}</Icon>
-    </Button>
+    </FormatButton>
   );
 };
 
@@ -35,7 +34,7 @@ export const ListButton = ({ format, icon }: BlockButtonProps) => {
   const editor = useSlate();
 
   return (
-    <Button
+    <FormatButton
       active={isBlockActive(editor, format)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
@@ -43,6 +42,6 @@ export const ListButton = ({ format, icon }: BlockButtonProps) => {
       }}
     >
       <Icon>{icon}</Icon>
-    </Button>
+    </FormatButton>
   );
 };

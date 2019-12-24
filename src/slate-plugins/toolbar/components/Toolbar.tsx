@@ -1,7 +1,7 @@
 import { Box } from '@primer/components';
 import styled from 'styled-components';
 
-export const Menu = styled(Box)`
+export const Toolbar = styled(Box)`
   & > * {
     display: inline-block;
   }

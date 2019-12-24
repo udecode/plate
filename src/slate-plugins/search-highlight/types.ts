@@ -1,4 +1,4 @@
-import { HighlightPluginOptions } from 'slate-plugins/marks';
+import { HighlightPluginOptions } from 'slate-plugins';
 
 export interface DecorateSearchHighlightOptions {
   /**

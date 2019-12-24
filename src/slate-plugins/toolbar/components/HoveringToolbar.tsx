@@ -1,14 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { Editor, Range } from 'slate';
-import { Menu } from 'slate-plugins/common/components/Menu';
-import { Portal } from 'slate-plugins/common/components/Portal';
-import { MARK_BOLD, MARK_ITALIC, MARK_UNDERLINE } from 'slate-plugins/marks';
-import { MarkButton } from 'slate-plugins/marks/components/MarkButton';
+import {
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
+  MarkButton,
+  Portal,
+} from 'slate-plugins';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
+import { Toolbar } from './Toolbar';
 
-const StyledMenu = styled(Menu)`
+const StyledToolbar = styled(Toolbar)`
   padding: 8px 7px 6px;
   position: absolute;
   z-index: 1;
@@ -56,7 +60,7 @@ export const HoveringToolbar = () => {
 
   return (
     <Portal>
-      <StyledMenu ref={ref}>
+      <StyledToolbar ref={ref}>
         <MarkButton reversed format={MARK_BOLD} icon={<FormatBold />} />
         <MarkButton reversed format={MARK_ITALIC} icon={<FormatItalic />} />
         <MarkButton
@@ -64,7 +68,7 @@ export const HoveringToolbar = () => {
           format={MARK_UNDERLINE}
           icon={<FormatUnderlined />}
         />
-      </StyledMenu>
+      </StyledToolbar>
     </Portal>
   );
 };

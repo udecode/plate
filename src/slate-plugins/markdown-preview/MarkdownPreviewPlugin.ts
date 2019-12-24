@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { decoratePreview } from './decoratePreview';
 import { renderLeafPreview } from './renderLeafPreview';
 

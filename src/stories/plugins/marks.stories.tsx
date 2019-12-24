@@ -17,13 +17,13 @@ import {
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
+  MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
   MarkButton,
   StrikethroughPlugin,
+  ToolbarHeader,
   UnderlinePlugin,
 } from 'slate-plugins';
-import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
-import { MARK_STRIKETHROUGH } from 'slate-plugins/marks/strikethrough/types';
 import { Slate, withReact } from 'slate-react';
 import { initialValueMark } from '../config/initialValues';
 
@@ -58,7 +58,7 @@ export const MarkPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <StyledToolbar height={18}>
+        <ToolbarHeader height={18}>
           <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
           <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
           <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
@@ -67,7 +67,7 @@ export const MarkPlugins = () => {
             icon={<FormatStrikethrough />}
           />
           <MarkButton format={MARK_CODE} icon={<Code />} />
-        </StyledToolbar>
+        </ToolbarHeader>
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some rich text…"

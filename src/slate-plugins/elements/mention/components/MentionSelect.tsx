@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Portal } from 'slate-plugins/common/components/Portal';
+import { Portal } from 'slate-plugins';
 import { ReactEditor, useSlate } from 'slate-react';
 
 export const MentionSelect = ({

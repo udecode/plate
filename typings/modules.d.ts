@@ -1,1 +1,1 @@
-declare module 'is-url'
+declare module 'is-url';

@@ -1,6 +1,5 @@
 import { Editor, Node, Transforms } from 'slate';
-import { PARAGRAPH } from 'slate-plugins/elements';
-import { HeadingType } from 'slate-plugins/elements/heading/types';
+import { HeadingType, PARAGRAPH } from 'slate-plugins';
 
 export const withForcedLayout = <T extends Editor>(editor: T) => {
   const { normalizeNode } = editor;

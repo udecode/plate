@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { deserializeBlockquote } from './deserializeBlockquote';
 import { renderElementBlockquote } from './renderElementBlockquote';
 

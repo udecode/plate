@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions } from './types';
 

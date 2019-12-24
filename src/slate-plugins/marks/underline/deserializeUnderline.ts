@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'slate-plugins/paste-html/types';
+import { DeserializeHtml } from 'slate-plugins';
 import { MARK_UNDERLINE } from './types';
 
 const leaf = { [MARK_UNDERLINE]: true };

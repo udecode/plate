@@ -7,9 +7,9 @@ import {
   LinkButton,
   LinkPlugin,
   renderElementLink,
+  ToolbarHeader,
   withLink,
 } from 'slate-plugins';
-import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
 import { initialValueLinks } from '../config/initialValues';
 
@@ -40,9 +40,9 @@ export const Links = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <StyledToolbar>
+        <ToolbarHeader>
           <LinkButton />
-        </StyledToolbar>
+        </ToolbarHeader>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );

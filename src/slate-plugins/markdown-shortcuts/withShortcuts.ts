@@ -1,7 +1,5 @@
 import { Editor, Point, Range, Transforms } from 'slate';
-import { ListType, PARAGRAPH } from 'slate-plugins/elements';
-import { BLOCKQUOTE } from 'slate-plugins/elements/blockquote/types';
-import { HeadingType } from 'slate-plugins/elements/heading/types';
+import { BLOCKQUOTE, HeadingType, ListType, PARAGRAPH } from 'slate-plugins';
 
 const SHORTCUTS: { [key: string]: string } = {
   '*': ListType.LIST_ITEM,

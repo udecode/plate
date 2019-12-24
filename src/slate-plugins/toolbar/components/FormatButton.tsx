@@ -6,7 +6,7 @@ interface Props {
   reversed?: boolean;
 }
 
-export const Button = styled.span<Props>`
+export const FormatButton = styled.span<Props>`
   cursor: pointer;
   color: ${({ active, reversed }) =>
     reversed ? (active ? 'white' : '#aaa') : active ? 'black' : '#ccc'};

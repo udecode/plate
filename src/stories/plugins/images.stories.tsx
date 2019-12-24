@@ -7,9 +7,9 @@ import {
   ImagePlugin,
   InsertImageButton,
   renderElementImage,
+  ToolbarHeader,
   withImage,
 } from 'slate-plugins';
-import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
 import { Slate, withReact } from 'slate-react';
 import { initialValueImages } from '../config/initialValues';
 
@@ -40,9 +40,9 @@ export const Images = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <StyledToolbar height={18}>
+        <ToolbarHeader height={18}>
           <InsertImageButton />
-        </StyledToolbar>
+        </ToolbarHeader>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );

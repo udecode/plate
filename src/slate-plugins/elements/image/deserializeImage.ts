@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'slate-plugins/paste-html/types';
+import { DeserializeHtml } from 'slate-plugins';
 import { IMAGE } from './types';
 
 export const deserializeImage = (): DeserializeHtml => ({

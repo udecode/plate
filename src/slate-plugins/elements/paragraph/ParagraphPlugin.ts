@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { deserializeParagraph } from './deserializeParagraph';
 import { renderElementParagraph } from './renderElementParagraph';
 

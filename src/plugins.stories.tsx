@@ -17,11 +17,13 @@ import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
   BlockButton,
+  BLOCKQUOTE,
   BlockquotePlugin,
   BoldPlugin,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
+  HeadingType,
   HoveringToolbar,
   ImagePlugin,
   InlineCodePlugin,
@@ -42,9 +44,10 @@ import {
   MentionSelect,
   onChangeMention,
   onKeyDownMention,
+  ParagraphPlugin,
   SearchHighlightPlugin,
-  StyledToolbar,
   TablePlugin,
+  ToolbarHeader,
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
@@ -58,9 +61,6 @@ import {
   withTable,
   withVideo,
 } from 'slate-plugins';
-import { BLOCKQUOTE } from 'slate-plugins/elements/blockquote/types';
-import { HeadingType } from 'slate-plugins/elements/heading/types';
-import { ParagraphPlugin } from 'slate-plugins/elements/paragraph/ParagraphPlugin';
 import { Slate, withReact } from 'slate-react';
 import { CHARACTERS } from 'stories/config/data';
 import {
@@ -103,93 +103,101 @@ export const AllPlugins = () => {
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
 
-  const decorate: any = [];
-  const onKeyDown: any = [];
+  const createReactEditor = () => () => {
+    const decorate: any = [];
+    const onKeyDown: any = [];
 
-  const [value, setValue] = useState(initialValue);
+    const [value, setValue] = useState(initialValue);
 
-  const editor = useMemo(
-    () =>
-      withVideo(
-        withActionItem(
-          withMention(
-            withImage(
-              withList(
-                withPasteHtml(plugins)(
-                  withLink(withTable(withHistory(withReact(createEditor()))))
+    const editor = useMemo(
+      () =>
+        withVideo(
+          withActionItem(
+            withMention(
+              withImage(
+                withList(
+                  withPasteHtml(plugins)(
+                    withLink(withTable(withHistory(withReact(createEditor()))))
+                  )
                 )
               )
             )
           )
-        )
-      ),
-    [plugins]
-  );
-
-  const [search, setSearchHighlight] = useState('');
-
-  if (boolean('decorateSearchHighlight', true))
-    decorate.push(decorateSearchHighlight({ search }));
-
-  const { target, setTarget, index, setIndex, setSearch, chars } = useMention({
-    characters: CHARACTERS,
-    maxSuggestions: 10,
-  });
-
-  if (boolean('onKeyDownMentions', true))
-    onKeyDown.push(
-      onKeyDownMention({
-        chars,
-        index,
-        target,
-        setIndex,
-        setTarget,
-      })
+        ),
+      []
     );
 
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => {
-        setValue(newValue);
+    const [search, setSearchHighlight] = useState('');
 
-        onChangeMention({
-          editor,
-          setTarget,
-          setSearch,
+    if (boolean('decorateSearchHighlight', true))
+      decorate.push(decorateSearchHighlight({ search }));
+
+    const { target, setTarget, index, setIndex, setSearch, chars } = useMention(
+      {
+        characters: CHARACTERS,
+        maxSuggestions: 10,
+      }
+    );
+
+    if (boolean('onKeyDownMentions', true))
+      onKeyDown.push(
+        onKeyDownMention({
+          chars,
+          index,
+          target,
           setIndex,
-        });
-      }}
-    >
-      <ToolbarSearchHighlight setSearch={setSearchHighlight} />
-      <StyledToolbar height={18}>
-        <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
-        <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
-        <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
-        <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
-        <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
-        <MarkButton
-          format={MARK_STRIKETHROUGH}
-          icon={<FormatStrikethrough />}
+          setTarget,
+        })
+      );
+
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={newValue => {
+          setValue(newValue);
+
+          onChangeMention({
+            editor,
+            setTarget,
+            setSearch,
+            setIndex,
+          });
+        }}
+      >
+        <ToolbarSearchHighlight setSearch={setSearchHighlight} />
+        <ToolbarHeader height={18}>
+          <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
+          <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
+          <MarkButton format={MARK_BOLD} icon={<FormatBold />} />
+          <MarkButton format={MARK_ITALIC} icon={<FormatItalic />} />
+          <MarkButton format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+          <MarkButton
+            format={MARK_STRIKETHROUGH}
+            icon={<FormatStrikethrough />}
+          />
+          <MarkButton format={MARK_CODE} icon={<Code />} />
+          <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
+          <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
+          <LinkButton />
+          <InsertImageButton />
+          <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
+        </ToolbarHeader>
+        <HoveringToolbar />
+        {target && chars.length > 0 && (
+          <MentionSelect target={target} index={index} chars={chars} />
+        )}
+        <EditablePlugins
+          plugins={plugins}
+          decorate={decorate}
+          onKeyDown={onKeyDown}
+          placeholder="Enter some plain text..."
         />
-        <MarkButton format={MARK_CODE} icon={<Code />} />
-        <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
-        <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
-        <LinkButton />
-        <InsertImageButton />
-        <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
-      </StyledToolbar>
-      <HoveringToolbar />
-      {target && chars.length > 0 && (
-        <MentionSelect target={target} index={index} chars={chars} />
-      )}
-      <EditablePlugins
-        plugins={plugins}
-        decorate={decorate}
-        onKeyDown={onKeyDown}
-        placeholder="Enter some plain text..."
-      />
-    </Slate>
-  );
+      </Slate>
+    );
+  };
+
+  const Editor = createReactEditor();
+
+  return <Editor />;
 };

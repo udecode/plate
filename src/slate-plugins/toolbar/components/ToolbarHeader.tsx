@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import { Menu } from './Menu';
+import { Toolbar } from './Toolbar';
 
-export const StyledToolbar = styled(Menu)`
+export const ToolbarHeader = styled(Toolbar)`
   position: relative;
   padding: 1px 18px 17px;
   margin: 0 -20px;

@@ -1,5 +1,5 @@
 import { jsx } from 'slate-hyperscript';
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { DeserializeElement, DeserializeLeafValue } from './types';
 
 export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {

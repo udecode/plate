@@ -2,14 +2,16 @@ import React from 'react';
 import { NodeEntry, Range } from 'slate';
 import {
   Decorate,
-  Editable,
   OnDOMBeforeInput,
   OnKeyDown,
   RenderElement,
-  RenderElementProps,
   RenderLeaf,
-  RenderLeafProps,
   SlatePlugin,
+} from 'slate-plugins/types';
+import {
+  Editable,
+  RenderElementProps,
+  RenderLeafProps,
   useSlate,
 } from 'slate-react';
 

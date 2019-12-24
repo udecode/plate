@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
 import { deserializeHeading } from './deserializeHeading';
 import { renderElementHeading } from './renderElementHeading';
 import { HeadingPluginOptions } from './types';

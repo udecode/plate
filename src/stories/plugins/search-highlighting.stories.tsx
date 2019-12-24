@@ -5,13 +5,11 @@ import { withHistory } from 'slate-history';
 import {
   decorateSearchHighlight,
   EditablePlugins,
-  ToolbarSearchHighlight,
-} from 'slate-plugins';
-import {
   HighlightPlugin,
   renderLeafHighlight,
-} from 'slate-plugins/marks/highlight';
-import { SearchHighlightPlugin } from 'slate-plugins/search-highlight/SearchHighlightPlugin';
+  SearchHighlightPlugin,
+  ToolbarSearchHighlight,
+} from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
 import { initialValueSearchHighlighting } from '../config/initialValues';
 

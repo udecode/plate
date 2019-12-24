@@ -11,19 +11,19 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BlockButton,
+  BLOCKQUOTE,
   BlockquotePlugin,
   EditablePlugins,
   HeadingPlugin,
+  HeadingType,
   ListButton,
   ListPlugin,
   ListType,
+  ParagraphPlugin,
+  ToolbarHeader,
   withBlock,
   withList,
 } from 'slate-plugins';
-import { StyledToolbar } from 'slate-plugins/common/components/Toolbar';
-import { BLOCKQUOTE } from 'slate-plugins/elements/blockquote/types';
-import { HeadingType } from 'slate-plugins/elements/heading/types';
-import { ParagraphPlugin } from 'slate-plugins/elements/paragraph/ParagraphPlugin';
 import { Slate, withReact } from 'slate-react';
 import { initialValueRichText } from '../config/initialValues';
 
@@ -58,13 +58,13 @@ export const BlockPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <StyledToolbar height={18}>
+        <ToolbarHeader height={18}>
           <BlockButton format={HeadingType.H1} icon={<LooksOne />} />
           <BlockButton format={HeadingType.H2} icon={<LooksTwo />} />
           <ListButton format={ListType.UL_LIST} icon={<FormatListBulleted />} />
           <ListButton format={ListType.OL_LIST} icon={<FormatListNumbered />} />
           <BlockButton format={BLOCKQUOTE} icon={<FormatQuote />} />
-        </StyledToolbar>
+        </ToolbarHeader>
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some rich text…"

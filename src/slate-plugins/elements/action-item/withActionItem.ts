@@ -1,5 +1,5 @@
 import { Editor, Point, Range, Transforms } from 'slate';
-import { PARAGRAPH } from 'slate-plugins/elements';
+import { PARAGRAPH } from 'slate-plugins';
 import { ACTION_ITEM } from './types';
 
 export const withActionItem = <T extends Editor>(editor: T) => {

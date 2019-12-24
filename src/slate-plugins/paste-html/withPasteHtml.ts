@@ -1,5 +1,6 @@
 import { Transforms } from 'slate';
-import { ReactEditor, SlatePlugin } from 'slate-react';
+import { SlatePlugin } from 'slate-plugins/types';
+import { ReactEditor } from 'slate-react';
 import { deserialize } from './deserialize';
 
 export const withPasteHtml = (plugins: SlatePlugin[]) => <
@@ -14,7 +15,6 @@ export const withPasteHtml = (plugins: SlatePlugin[]) => <
 
     if (html) {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
-      console.log('parsed.body:', parsed.body);
       const fragment = deserialize(plugins)(parsed.body);
       Transforms.insertFragment(editor, fragment);
       return;

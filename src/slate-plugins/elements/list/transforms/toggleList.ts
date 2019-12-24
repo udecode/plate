@@ -1,6 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { PARAGRAPH } from 'slate-plugins/elements/paragraph';
-import { isBlockActive } from 'slate-plugins/elements/queries';
+import { isBlockActive, PARAGRAPH } from 'slate-plugins';
 import { ListType } from '../types';
 import { unwrapList } from './unwrapList';
 

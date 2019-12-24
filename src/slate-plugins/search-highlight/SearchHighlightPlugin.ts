@@ -1,5 +1,5 @@
-import { HighlightPlugin } from 'slate-plugins/marks/highlight';
-import { SlatePlugin } from 'slate-react';
+import { HighlightPlugin } from 'slate-plugins';
+import { SlatePlugin } from 'slate-plugins/types';
 import { SearchHighlightPluginOptions } from './types';
 
 export const SearchHighlightPlugin = ({
