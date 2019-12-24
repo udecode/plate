@@ -1,4 +1,4 @@
-export const MENTION_TYPE = 'mention';
+export const MENTION = 'mention';
 
 export interface OnKeyDownMentionOptions {
   chars: any[];

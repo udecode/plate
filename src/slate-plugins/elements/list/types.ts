@@ -3,3 +3,9 @@ export enum ListType {
   UL_LIST = 'bulleted-list',
   LIST_ITEM = 'list-item',
 }
+
+export interface RenderElementListOptions {
+  UL?: any;
+  OL?: any;
+  LI?: any;
+}

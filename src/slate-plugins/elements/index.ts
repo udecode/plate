@@ -11,5 +11,6 @@ export * from './paragraph';
 export * from './queries';
 export * from './table';
 export * from './types';
+export * from './utils';
 export * from './video';
 export * from './withBlock';

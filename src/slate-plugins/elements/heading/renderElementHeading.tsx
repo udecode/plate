@@ -1,21 +1,17 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
-import { HeadingPluginOptions, HeadingType } from './types';
-
-const getHeading = (Heading: any) => ({
-  attributes,
-  children,
-}: RenderElementProps) => <Heading {...attributes}>{children}</Heading>;
+import { getElement } from '../utils';
+import { HeadingType, RenderElementHeadingOptions } from './types';
 
 export const renderElementHeading = ({
   levels = 6,
-  H1 = getHeading('h1'),
-  H2 = getHeading('h2'),
-  H3 = getHeading('h3'),
-  H4 = getHeading('h4'),
-  H5 = getHeading('h5'),
-  H6 = getHeading('h6'),
-}: HeadingPluginOptions) => (props: RenderElementProps) => {
+  H1 = getElement('h1'),
+  H2 = getElement('h2'),
+  H3 = getElement('h3'),
+  H4 = getElement('h4'),
+  H5 = getElement('h5'),
+  H6 = getElement('h6'),
+}: RenderElementHeadingOptions = {}) => (props: RenderElementProps) => {
   const {
     element: { type },
   } = props;

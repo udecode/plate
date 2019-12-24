@@ -1,17 +1,8 @@
-import React from 'react';
-import { RenderElementProps } from 'slate-react';
+import { getRenderElement } from '../utils';
+import { CodeElement } from './components';
 import { CODE } from './types';
 
-export const renderElementCode = () => ({
-  attributes,
-  children,
-  element,
-}: RenderElementProps) => {
-  if (element.type === CODE) {
-    return (
-      <pre>
-        <code {...attributes}>{children}</code>
-      </pre>
-    );
-  }
-};
+export const renderElementCode = getRenderElement({
+  type: CODE,
+  component: CodeElement,
+});
