@@ -1,6 +1,6 @@
 {
   "name": "slate-plugins-next",
-  "version": "0.56.2",
+  "version": "0.56.3",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -11,7 +11,8 @@
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "storybook": "start-storybook -p 6006"
+    "storybook": "start-storybook -p 6006",
+    "release": "yarn build && yarn publish"
   },
   "eslintConfig": {
     "extends": "react-app"
