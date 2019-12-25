@@ -1,10 +1,10 @@
 {
   "name": "slate-plugins-next",
-  "version": "0.56.1",
+  "version": "0.56.2",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/src/slate-plugins/index.d.ts",
   "scripts": {
     "prebuild": "yarn clean",
     "build": "rollup -c",
@@ -22,14 +22,7 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
-    "prismjs": "^1.17.1",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "slate": "0.57.1",
-    "slate-history": "0.57.1",
-    "slate-hyperscript": "0.57.1",
-    "slate-react": "0.57.1",
-    "styled-components": "^4.4.1"
+    "prismjs": "^1.17.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
@@ -49,7 +42,7 @@
     "@types/is-hotkey": "^0.1.1",
     "@types/jest": "^24.0.24",
     "@types/lodash": "^4.14.149",
-    "@types/node": "12.12.21",
+    "@types/node": "13.1.0",
     "@types/prismjs": "^1.16.0",
     "@types/react": "16.9.17",
     "@types/react-dom": "16.9.4",
@@ -63,7 +56,9 @@
     "eslint-plugin-mdx": "^1.6.5",
     "faker": "^4.1.0",
     "jest": "^24.9.0",
+    "react": "^16.12.0",
     "react-docgen-typescript-loader": "^3.6.0",
+    "react-dom": "^16.12.0",
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -73,8 +68,21 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-terser": "^5.1.3",
     "rollup-plugin-typescript2": "^0.25.3",
+    "slate": "0.57.1",
+    "slate-history": "0.57.1",
+    "slate-hyperscript": "0.57.1",
+    "slate-react": "0.57.1",
+    "styled-components": "^4.4.1",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
     "typescript": "3.7.4"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
+    "slate": "^0.57.1",
+    "slate-hyperscript": "^0.57.1",
+    "slate-react": "^0.57.1",
+    "styled-components": "^4.4.0"
   }
 }
