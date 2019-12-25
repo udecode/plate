@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./dist",
+    "outDir": "./dist"
+  },
+  "include": ["src/slate-plugins"],
+  "exclude": ["**/*.stories.*", "**/*.test.*"]
+}

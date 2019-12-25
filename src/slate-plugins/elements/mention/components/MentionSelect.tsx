@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Portal } from 'slate-plugins';
+import { PortalBody } from 'slate-plugins/common/components';
 import { ReactEditor, useSlate } from 'slate-react';
 
 export const MentionSelect = ({
@@ -27,7 +27,7 @@ export const MentionSelect = ({
   }, [chars.length, editor, target]);
 
   return (
-    <Portal>
+    <PortalBody>
       <div
         ref={ref}
         style={{
@@ -54,6 +54,6 @@ export const MentionSelect = ({
           </div>
         ))}
       </div>
-    </Portal>
+    </PortalBody>
   );
 };
