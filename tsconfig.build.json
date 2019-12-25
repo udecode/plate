@@ -8,6 +8,5 @@
     "declarationDir": "./dist",
     "outDir": "./dist"
   },
-  "include": ["src/slate-plugins"],
   "exclude": ["**/*.stories.*", "**/*.test.*"]
 }
