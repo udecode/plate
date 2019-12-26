@@ -3,7 +3,6 @@ import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import styled from 'styled-components';
 import {
   BoldPlugin,
   EditablePlugins,
