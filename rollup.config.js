@@ -9,7 +9,7 @@ import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
 
 const PACKAGE_ROOT_PATH = process.cwd();
-const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, 'src/slate-plugins/index.ts');
+const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const PKG_JSON = require(path.join(PACKAGE_ROOT_PATH, 'package.json'));
 
 const isUmd = false;
@@ -30,6 +30,20 @@ const plugins = [
   // modules by default.
   commonjs({
     include: 'node_modules/**',
+    namedExports: {
+      'node_modules/react/index.js': [
+        'cloneElement',
+        'createContext',
+        'Component',
+        'createElement',
+      ],
+      'node_modules/react-dom/index.js': ['render', 'hydrate'],
+      'node_modules/react-is/index.js': [
+        'isElement',
+        'isValidElementType',
+        'ForwardRef',
+      ],
+    },
   }),
 
   // Convert JSON imports to ES6 modules.
@@ -56,7 +70,6 @@ const plugins = [
     plugins: [
       '@babel/plugin-proposal-optional-chaining',
       '@babel/plugin-proposal-nullish-coalescing-operator',
-      'add-react-displayname',
       'babel-plugin-dynamic-import-node',
       'babel-plugin-styled-components',
       ['inline-json-import', {}],

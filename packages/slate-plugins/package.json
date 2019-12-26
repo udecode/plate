@@ -1,0 +1,44 @@
+{
+  "name": "slate-plugins-next",
+  "version": "0.56.3",
+  "description": "Slate Plugins",
+  "keywords": [],
+  "homepage": "https://github.com/zbeyens/slate-plugins-next/tree/master/packages/slate-plugins#readme",
+  "bugs": {
+    "url": "https://github.com/zbeyens/slate-plugins-next/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zbeyens/slate-plugins-next/tree/master/packages/slate-plugins"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "rollup -c=../../rollup.config.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.8.1",
+    "@material-ui/icons": "^4.5.1",
+    "image-extensions": "^1.1.0",
+    "is-hotkey": "^0.1.6",
+    "is-url": "^1.2.4",
+    "prismjs": "^1.17.1"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
+    "slate": "^0.57.1",
+    "slate-hyperscript": "^0.57.1",
+    "slate-react": "^0.57.1",
+    "styled-components": "^4.4.0"
+  }
+}

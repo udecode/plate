@@ -3,7 +3,7 @@ import { DocsContainer, DocsPage } from '@storybook/addon-docs/blocks';
 import { withKnobs } from '@storybook/addon-knobs';
 import addonAPI from '@storybook/addons';
 import { addDecorator, configure , addParameters } from '@storybook/react';
-import { GlobalStyle } from '../src/globalStyle';
+import { GlobalStyle } from '../stories/config/globalStyle';
 
 let firstLoad = true;
 addonAPI.register('my-organisation/my-addon', storybookAPI => {

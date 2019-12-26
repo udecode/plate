@@ -15,10 +15,8 @@
     "noEmit": true,
     "jsx": "react",
     "downlevelIteration": true,
-    "baseUrl": "src",
     "suppressImplicitAnyIndexErrors": true
   },
-  "include": ["src/slate-plugins", "typings"],
   "exclude": ["node_modules", "dist", "scripts"],
   "awesomeTypescriptLoaderOptions": {
     "ignoreDiagnostics": [7005]

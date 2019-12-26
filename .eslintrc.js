@@ -1,8 +1,6 @@
 module.exports = {
   extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
   rules: {
-    'import/no-cycle': [2, { maxDepth: 1 }],
-    
     'no-alert': 'off',
     'import/extensions': [
       'error',
