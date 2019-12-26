@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { PortalBody } from 'common/components';
-import { MARK_BOLD, MARK_ITALIC, MARK_UNDERLINE, ToolbarMark } from 'marks';
 import { Editor, Range } from 'slate';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
@@ -18,10 +16,9 @@ const StyledToolbar = styled(Toolbar)`
   background-color: #222;
   border-radius: 4px;
   height: 18px;
-  /* transition: opacity 0.75s; */
 `;
 
-export const HoveringToolbar = () => {
+export const HoveringToolbar = ({ children, ...props }: any) => {
   const ref: any = useRef();
   const editor = useSlate();
 
@@ -55,14 +52,8 @@ export const HoveringToolbar = () => {
 
   return (
     <PortalBody>
-      <StyledToolbar ref={ref}>
-        <ToolbarMark reversed format={MARK_BOLD} icon={<FormatBold />} />
-        <ToolbarMark reversed format={MARK_ITALIC} icon={<FormatItalic />} />
-        <ToolbarMark
-          reversed
-          format={MARK_UNDERLINE}
-          icon={<FormatUnderlined />}
-        />
+      <StyledToolbar {...props} ref={ref}>
+        {children}
       </StyledToolbar>
     </PortalBody>
   );

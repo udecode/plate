@@ -9,6 +9,7 @@ import {
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   BoldPlugin,
   EditablePlugins,
@@ -23,8 +24,7 @@ import {
   StrikethroughPlugin,
   ToolbarMark,
   UnderlinePlugin,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueMark } from '../config/initialValues';
 
 export default {
@@ -58,7 +58,7 @@ export const MarkPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <HeadingToolbar height={18}>
+        <HeadingToolbar>
           <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarMark format={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark format={MARK_UNDERLINE} icon={<FormatUnderlined />} />

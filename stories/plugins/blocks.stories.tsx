@@ -9,6 +9,7 @@ import {
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
@@ -23,8 +24,7 @@ import {
   ToolbarList,
   withBlock,
   withList,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueRichText } from '../config/initialValues';
 
 export default {
@@ -58,7 +58,7 @@ export const BlockPlugins = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <HeadingToolbar height={18}>
+        <HeadingToolbar>
           <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
           <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
           <ToolbarList

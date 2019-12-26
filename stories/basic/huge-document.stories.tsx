@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { EditablePlugins, HeadingPlugin } from 'slate-plugins';
 import { Slate, withReact } from 'slate-react';
+import {
+  EditablePlugins,
+  HeadingPlugin,
+} from '../../packages/slate-plugins/src';
 import { initialValueHugeDocument } from '../config/initialValues';
 
 export default {

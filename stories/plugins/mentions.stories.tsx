@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   MentionPlugin,
@@ -9,8 +10,7 @@ import {
   onKeyDownMention,
   useMention,
   withMention,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { CHARACTERS } from '../config/data';
 import { initialValueMentions } from '../config/initialValues';
 

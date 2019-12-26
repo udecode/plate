@@ -14,6 +14,7 @@ import {
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   BLOCKQUOTE,
@@ -60,9 +61,8 @@ import {
   withPasteHtml,
   withTable,
   withVideo,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
-import { CHARACTERS } from 'stories/config/data';
+} from '../packages/slate-plugins/src';
+import { CHARACTERS } from './config/data';
 import {
   initialValueActionItem,
   initialValueEmbeds,
@@ -166,7 +166,7 @@ export const AllPlugins = () => {
         }}
       >
         <ToolbarSearchHighlight setSearch={setSearchHighlight} />
-        <HeadingToolbar height={18}>
+        <HeadingToolbar>
           <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
           <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
           <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />

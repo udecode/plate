@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   HeadingToolbar,
@@ -9,8 +10,7 @@ import {
   renderElementImage,
   ToolbarImage,
   withImage,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueImages } from '../config/initialValues';
 
 export default {
@@ -40,7 +40,7 @@ export const Images = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <HeadingToolbar height={18}>
+        <HeadingToolbar>
           <ToolbarImage />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />

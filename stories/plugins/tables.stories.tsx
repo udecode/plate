@@ -2,14 +2,14 @@ import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   BoldPlugin,
   EditablePlugins,
   renderElementTable,
   TablePlugin,
   withTable,
-} from 'slate-plugins';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueTables } from '../config/initialValues';
 
 export default {
