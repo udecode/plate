@@ -5,6 +5,12 @@ import addonAPI from '@storybook/addons';
 import { addDecorator, configure , addParameters } from '@storybook/react';
 import { GlobalStyle } from '../stories/config/globalStyle';
 
+const theme = create({
+  // brandImage: ReavizLogo,
+  brandTitle: 'Slate Plugins',
+  url: 'https://github.com/zbeyens/slate-plugins-next'
+});
+
 let firstLoad = true;
 addonAPI.register('my-organisation/my-addon', storybookAPI => {
   storybookAPI.onStory((kind, story) => {
@@ -18,15 +24,27 @@ addonAPI.register('my-organisation/my-addon', storybookAPI => {
 
 addParameters({
   options: {
+    theme,
     showRoots: true,
     panelPosition: 'right',
+    storySort: (a, b) => {
+      if (a[0].includes('docs-')) {
+        if (a[0].includes('intro-')) {
+          return -1;
+        }
+
+        return 0;
+      }
+
+      return 1;
+    }
   },
   docs: {
     page: () => (
       <DocsPage
         // subtitleSlot={({ selectedKind }) => `Subtitle: ${selectedKind}`}
       />
-    ),
+    )
   },
   storySort: (a, b) =>
     a[1].kind === b[1].kind
@@ -46,6 +64,13 @@ addDecorator(withKnobs);
 // automatically import all files ending in *.stories.tsx
 configure(
   [
+    // require.context('../docs', true, /Intro.story.mdx/),
+    // require.context('../docs', true, /GettingStarted.story.mdx/),
+    // require.context('../docs', true, /Data.story.mdx/),
+    // require.context('../docs', true, /Developing.story.mdx/),
+    // require.context('../docs', true, /Why.story.mdx/),
+    // require.context('../docs/charts', true, /\.story.mdx/),
+    // require.context('../docs/advanced', true, /\.story.mdx/),
     require.context('../stories', true, /\.stories\.(tsx|mdx)$/),
   ],
   module

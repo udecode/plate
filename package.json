@@ -31,6 +31,7 @@
     "@storybook/addons": "^5.3.0-rc.0",
     "@storybook/cli": "^5.3.0-rc.0",
     "@storybook/react": "^5.3.0-rc.0",
+    "@storybook/theming": "^5.2.8",
     "@types/faker": "^4.1.8",
     "@types/is-hotkey": "^0.1.1",
     "@types/jest": "^24.0.24",
