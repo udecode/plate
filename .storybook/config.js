@@ -6,9 +6,8 @@ import { addDecorator, configure , addParameters } from '@storybook/react';
 import { GlobalStyle } from '../stories/config/globalStyle';
 
 const theme = create({
-  // brandImage: ReavizLogo,
   brandTitle: 'Slate Plugins',
-  url: 'https://github.com/zbeyens/slate-plugins-next'
+  brandUrl: 'https://github.com/zbeyens/slate-plugins-next'
 });
 
 let firstLoad = true;
