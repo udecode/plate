@@ -12,7 +12,7 @@ import {
 import { initialValueMarkdownPreview } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/MarkdownPreviewPlugin',
+  title: 'Plugins/Markdown Preview',
   component: MarkdownPreviewPlugin,
   subcomponents: {
     decoratePreview,
@@ -20,7 +20,7 @@ export default {
   },
 };
 
-export const MarkdownPreview = () => {
+export const Example = () => {
   const plugins: any[] = [];
 
   if (boolean('MarkdownPreviewPlugin', true))

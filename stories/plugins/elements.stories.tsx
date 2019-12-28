@@ -28,7 +28,7 @@ import {
 import { initialValueRichText } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/Blocks',
+  title: 'Plugins/Elements',
   subcomponents: {
     HeadingPlugin,
     BlockquotePlugin,

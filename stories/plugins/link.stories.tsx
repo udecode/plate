@@ -5,29 +5,32 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
-  renderElementVideo,
-  VideoPlugin,
-  withVideo,
+  HeadingToolbar,
+  LinkPlugin,
+  renderElementLink,
+  ToolbarLink,
+  withLink,
 } from '../../packages/slate-plugins/src';
-import { initialValueEmbeds } from '../config/initialValues';
+import { initialValueLinks } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/VideoPlugin',
-  component: VideoPlugin,
+  title: 'Plugins/Link',
+  component: LinkPlugin,
   subcomponents: {
-    renderElementVideo,
+    renderElementLink,
+    LinkButton: ToolbarLink,
   },
 };
 
-export const Embeds = () => {
+export const Example = () => {
   const plugins: any[] = [];
-  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueEmbeds);
+    const [value, setValue] = useState(initialValueLinks);
 
     const editor = useMemo(
-      () => withVideo(withHistory(withReact(createEditor()))),
+      () => withLink(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -37,6 +40,9 @@ export const Embeds = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
+        <HeadingToolbar>
+          <ToolbarLink />
+        </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>
     );

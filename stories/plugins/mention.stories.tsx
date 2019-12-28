@@ -15,7 +15,7 @@ import { CHARACTERS } from '../config/data';
 import { initialValueMentions } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/MentionPlugin',
+  title: 'Plugins/Mention',
   component: MentionPlugin,
   subcomponents: {
     useMention,
@@ -27,7 +27,7 @@ export default {
 
 const plugins = [MentionPlugin()];
 
-export const Mentions = () => {
+export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
 

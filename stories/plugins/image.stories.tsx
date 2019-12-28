@@ -14,7 +14,7 @@ import {
 import { initialValueImages } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/ImagePlugin',
+  title: 'Plugins/Image',
   component: ImagePlugin,
   subcomponents: {
     renderElementImage,
@@ -22,7 +22,7 @@ export default {
   },
 };
 
-export const Images = () => {
+export const Example = () => {
   const plugins: any[] = [];
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
 

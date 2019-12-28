@@ -14,10 +14,10 @@ import {
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/withShortcuts',
+  title: 'Plugins/Markdown Shortcuts',
 };
 
-export const MarkdownShortcuts = () => {
+export const Example = () => {
   const plugins = [BlockquotePlugin(), ListPlugin(), HeadingPlugin()];
 
   const createReactEditor = () => () => {

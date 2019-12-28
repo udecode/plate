@@ -17,7 +17,7 @@ addonAPI.register('my-organisation/my-addon', storybookAPI => {
     // when you enter a story, if you are just loading storybook up, default to a specific kind/story.
     if (firstLoad) {
       firstLoad = false; // make sure to set this flag to false, otherwise you will never be able to look at another story.
-      storybookAPI.selectStory('Plugins/Playground', 'PluginsExample');
+      storybookAPI.selectStory('Plugins/Playground', 'Plugins');
     }
   });
 });
@@ -27,23 +27,10 @@ addParameters({
     theme,
     showRoots: true,
     panelPosition: 'right',
-    storySort: (a, b) => {
-      if (a[0].includes('docs-')) {
-        if (a[0].includes('intro-')) {
-          return -1;
-        }
-
-        return 0;
-      }
-
-      return 1;
-    }
   },
   docs: {
     page: () => (
-      <DocsPage
-        // subtitleSlot={({ selectedKind }) => `Subtitle: ${selectedKind}`}
-      />
+      <DocsPage />
     )
   },
   storySort: (a, b) =>
@@ -64,14 +51,13 @@ addDecorator(withKnobs);
 // automatically import all files ending in *.stories.tsx
 configure(
   [
-    // require.context('../docs', true, /Intro.story.mdx/),
+    // require.context('../stories/docs/', true, /Intro.story.mdx/),
     // require.context('../docs', true, /GettingStarted.story.mdx/),
-    // require.context('../docs', true, /Data.story.mdx/),
-    // require.context('../docs', true, /Developing.story.mdx/),
-    // require.context('../docs', true, /Why.story.mdx/),
-    // require.context('../docs/charts', true, /\.story.mdx/),
-    // require.context('../docs/advanced', true, /\.story.mdx/),
-    require.context('../stories', true, /\.stories\.(tsx|mdx)$/),
+    require.context('../stories/docs', true, /\.stories\.(tsx|mdx)$/),
+    // require.context('../stories/basic/', true, /index.stories.tsx/),
+    require.context('../stories/basic/', true, /\.stories\.(tsx|mdx)$/),
+    require.context('../stories/plugins/', true, /playground.stories.tsx/),
+    require.context('../stories/plugins/', true, /\.stories\.(tsx|mdx)$/),
   ],
   module
 );

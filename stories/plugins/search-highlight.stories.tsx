@@ -14,7 +14,7 @@ import {
 import { initialValueSearchHighlighting } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/SearchHighlightPlugin',
+  title: 'Plugins/Search Highlight',
   component: SearchHighlightPlugin,
   subcomponents: {
     HighlightPlugin,
@@ -23,7 +23,7 @@ export default {
   },
 };
 
-export const SearchHighlighting = () => {
+export const Example = () => {
   const plugins: any[] = [];
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());

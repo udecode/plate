@@ -12,12 +12,12 @@ import {
 import { initialValueActionItem } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/ActionItemPlugin',
+  title: 'Plugins/Action Item',
   component: ActionItemPlugin,
   subcomponents: { renderElementActionItem },
 };
 
-export const ActionItems = () => {
+export const Example = () => {
   const plugins: any[] = [];
   if (boolean('ActionItemPlugin', true)) plugins.push(ActionItemPlugin());
 

@@ -14,7 +14,7 @@ export default {
 
 const plugins = [HeadingPlugin()];
 
-export const HugeDocument = () => {
+export const Example = () => {
   const [value, setValue] = useState(initialValueHugeDocument);
 
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);

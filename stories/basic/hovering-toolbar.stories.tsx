@@ -17,12 +17,12 @@ import {
 import { initialValueHoveringToolbar } from '../config/initialValues';
 
 export default {
-  title: 'Basic/HoveringToolbar',
+  title: 'Basic/Hovering Toolbar',
 };
 
 const plugins = [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
 
-export const HoveringMenu = () => {
+export const Example = () => {
   const [value, setValue] = useState(initialValueHoveringToolbar);
 
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);

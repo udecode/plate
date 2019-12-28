@@ -10,12 +10,12 @@ import {
 import { initialValueForcedLayout } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/withForcedLayout',
+  title: 'Plugins/Forced Layout',
 };
 
 const plugins = [HeadingPlugin()];
 
-export const ForcedLayout = () => {
+export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueForcedLayout);
 

@@ -26,11 +26,11 @@ import {
 import { initialValuePasteHtml } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/withPasteHtml',
+  title: 'Plugins/Paste Html',
   component: withPasteHtml,
 };
 
-export const PasteHtml = () => {
+export const Example = () => {
   const plugins = [
     BlockquotePlugin(),
     BoldPlugin(),

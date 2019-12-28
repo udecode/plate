@@ -13,12 +13,12 @@ import {
 import { initialValueTables } from '../config/initialValues';
 
 export default {
-  title: 'Plugins/TablePlugin',
+  title: 'Plugins/Table',
   component: TablePlugin,
   subcomponents: { renderElementTable },
 };
 
-export const Tables = () => {
+export const Example = () => {
   const plugins = [BoldPlugin()];
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
 

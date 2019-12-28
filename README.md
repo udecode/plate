@@ -8,7 +8,7 @@ Try out the existing ones and create your own plugins!
 ## 🚀 Included
 
 - 🎊 20+ Editor Plugins
-- 🏷️ Plugins follow separation of concerns
+- 🏷️ Separation of Concerns
 - 🎌 Supports the latest version of `slate@0.57.1`
 - 📖 Guide and Demos on Storybook
 

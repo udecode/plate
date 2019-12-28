@@ -61,15 +61,15 @@ import {
   withPasteHtml,
   withTable,
   withVideo,
-} from '../packages/slate-plugins/src';
-import { CHARACTERS } from './config/data';
+} from '../../packages/slate-plugins/src';
+import { CHARACTERS } from '../config/data';
 import {
   initialValueActionItem,
   initialValueEmbeds,
   initialValueImages,
   initialValueMentions,
   initialValueRichText,
-} from './config/initialValues';
+} from '../config/initialValues';
 
 export default {
   title: 'Plugins/Playground',
@@ -83,7 +83,7 @@ const initialValue = [
   ...initialValueImages,
 ];
 
-export const AllPlugins = () => {
+export const Plugins = () => {
   const plugins: any[] = [];
 
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
