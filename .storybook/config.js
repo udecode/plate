@@ -4,6 +4,7 @@ import { withKnobs } from '@storybook/addon-knobs';
 import addonAPI from '@storybook/addons';
 import { addDecorator, configure , addParameters } from '@storybook/react';
 import { GlobalStyle } from '../stories/config/globalStyle';
+import { create } from '@storybook/theming/create';
 
 const theme = create({
   brandTitle: '🧩 Slate Plugins',
