@@ -18,7 +18,7 @@ export default {
   component: ImagePlugin,
   subcomponents: {
     renderElementImage,
-    InsertImageButton: ToolbarImage,
+    ToolbarImage,
   },
 };
 

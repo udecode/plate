@@ -33,6 +33,7 @@ export default {
     HeadingPlugin,
     BlockquotePlugin,
     ListPlugin,
+    ParagraphPlugin,
   },
 };
 
