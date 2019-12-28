@@ -6,7 +6,7 @@ import { addDecorator, configure , addParameters } from '@storybook/react';
 import { GlobalStyle } from '../stories/config/globalStyle';
 
 const theme = create({
-  brandTitle: 'Slate Plugins',
+  brandTitle: '🧩 Slate Plugins',
   brandUrl: 'https://github.com/zbeyens/slate-plugins-next'
 });
 
