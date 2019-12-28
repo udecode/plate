@@ -1,16 +1,16 @@
 # slate-plugins-next
 
-Built on top of Slate framework, `slate-plugins-next` enables you to use a list of
+Built on top of [Slate](https://github.com/ianstormtaylor/slate) framework, `slate-plugins-next` enables you to use a list of
 customizable plugins for your Slate editor.
 
-Try out the existing ones and create your own plugins!
+[Try out the existing ones](https://slate-plugins-next.netlify.com/?path=/docs/plugins-playground--plugins) and [create your own plugins](https://slate-plugins-next.netlify.com/?path=/docs/docs-guide--page)!
 
 ## 🚀 Included
 
-- 🎊 20+ Editor Plugins
+- ✨ 20+ Editor Plugins
 - 🏷️ Separation of Concerns
 - 🎌 Supports the latest version of `slate@0.57.1`
-- 📖 Guide and Demos on Storybook
+- 📖 [Docs](https://slate-plugins-next.netlify.com/?path=/docs/docs-getting-started--page) and [Demos](https://slate-plugins-next.netlify.com/?path=/docs/plugins-playground--plugins) on Storybook
 
 ## 🧩 Plugins
 

@@ -33,10 +33,6 @@ addParameters({
       <DocsPage />
     )
   },
-  storySort: (a, b) =>
-    a[1].kind === b[1].kind
-      ? 0
-      : a[1].id.localeCompare(b[1].id, { numeric: true }),
 });
 
 addDecorator(story => (
@@ -51,10 +47,11 @@ addDecorator(withKnobs);
 // automatically import all files ending in *.stories.tsx
 configure(
   [
-    // require.context('../stories/docs/', true, /Intro.story.mdx/),
-    // require.context('../docs', true, /GettingStarted.story.mdx/),
+    require.context('../stories/docs', true, /intro.stories.mdx/),
+    require.context('../stories/docs', true, /getting-started.stories.mdx/),
+    require.context('../stories/docs', true, /guide.stories.mdx/),
+    require.context('../stories/docs', true, /contributing.stories.mdx/),
     require.context('../stories/docs', true, /\.stories\.(tsx|mdx)$/),
-    // require.context('../stories/basic/', true, /index.stories.tsx/),
     require.context('../stories/basic/', true, /\.stories\.(tsx|mdx)$/),
     require.context('../stories/plugins/', true, /playground.stories.tsx/),
     require.context('../stories/plugins/', true, /\.stories\.(tsx|mdx)$/),
