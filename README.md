@@ -2,23 +2,23 @@
 
 Built on top of Slate framework, `slate-plugins-next` enables you to use a list of
 customizable plugins for your Slate editor.
-Pick existing ones and create your own plugins!
 
-## 🚀 Features
+Try out the existing ones and create your own plugins!
 
-- 20+ Editor Plugins
-- Supports the latest version of Slate (0.57.1)
-- Plugins designed to follow the separation of concerns principle
+## 🚀 Included
+
+- 🎊 20+ Editor Plugins
+- 🏷️ Plugins follow separation of concerns
+- 🎌 Supports the latest version of `slate@0.57.1`
+- 📖 Guide and Demos on Storybook
 
 ## 🧩 Plugins
 
 A list of provided plugins extracted from [official examples](https://www.slatejs.org/examples/richtext).
 
-### Root
-
-- provides the interface of a plugin: `SlatePlugin`
-
 ### Elements
+
+<img src="https://i.imgur.com/EFORuVT.png" alt="blocks" width="500"/>
 
 A plugin for each type of element. All of these
 use `renderElement`.
@@ -37,6 +37,8 @@ use `renderElement`.
 
 ### Marks
 
+<img src="https://i.imgur.com/AVTAUqJ.png" alt="marks" width="400"/>
+
 A plugin for each type of leaf. All of these
 use `renderLeaf`.
 
@@ -47,7 +49,7 @@ use `renderLeaf`.
 - Strikethrough
 - Underline
 
-### Misc
+### Utilities
 
 - Forced Layout
 - Markdown Preview
@@ -55,28 +57,16 @@ use `renderLeaf`.
 - Paste Html
 - Search Highlight
 - Toolbar
-
-### common
-
-This includes common components usable by any other plugins.
-
-- components
-
-###
-
-- Hot Keys, support list
-- Full Screen Edit mode
-- Serialize and Deserialize into HTML
-- 🧩 Independent Plugins Copy and Paste HTML in Editor
-- Support Toolbar
-- Support Sidebar
-- 📖 Demos on Storybook 5
-
-WrapperPlugins support for slate@0.57.1
+- Common
+- Slate Plugins
 
 ## 👏 Contributing
 
-We welcome contributions to this repository!
+You can use this repository to **share your own plugins**.
+
+If your plugin is _tree-shakeable_, you can add it to `packages/slate-plugins`.
+
+Otherwise, create a new package in `packages`
 
 📥 Pull requests and 🌟 Stars are always welcome.
 
@@ -88,13 +78,23 @@ Useful scripts include:
 
 > Installs package dependencies
 
+#### `yarn storybook`
+
+> Starts storybook dev
+
 #### `yarn lint`
 
 > boolean check if code conforms to linting eslint rules
 
 #### `yarn release`
 
-> Push a release to git and npm will ask for version in interactive mode - using lerna.
+> Lint, build and push a release to git and npm will ask for version in interactive mode - using lerna.
+
+## 📝 Notice
+
+For simplicity, a single package `slate-plugins-next` has been published to share all the plugins.
+It's not a problem as it is [tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next). However, a few plugins use external dependencies.
+These should be moved into their own package.
 
 ## License
 
