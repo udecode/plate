@@ -189,7 +189,15 @@ export const Plugins = () => {
           <ToolbarImage />
           <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
         </HeadingToolbar>
-        <HoveringToolbar />
+        <HoveringToolbar>
+          <ToolbarMark reversed format={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark reversed format={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark
+            reversed
+            format={MARK_UNDERLINE}
+            icon={<FormatUnderlined />}
+          />
+        </HoveringToolbar>
         {target && chars.length > 0 && (
           <MentionSelect target={target} index={index} chars={chars} />
         )}
