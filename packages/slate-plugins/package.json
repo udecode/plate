@@ -26,8 +26,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@material-ui/core": "^4.8.1",
-    "@material-ui/icons": "^4.5.1",
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",

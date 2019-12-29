@@ -8,8 +8,11 @@ import {
   FormatQuote,
   FormatStrikethrough,
   FormatUnderlined,
+  Image,
+  Link,
   LooksOne,
   LooksTwo,
+  Search,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
@@ -165,7 +168,7 @@ export const Plugins = () => {
           });
         }}
       >
-        <ToolbarSearchHighlight setSearch={setSearchHighlight} />
+        <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar>
           <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
           <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
@@ -185,8 +188,8 @@ export const Plugins = () => {
             format={ListType.OL_LIST}
             icon={<FormatListNumbered />}
           />
-          <ToolbarLink />
-          <ToolbarImage />
+          <ToolbarLink icon={<Link />} />
+          <ToolbarImage icon={<Image />} />
           <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
         </HeadingToolbar>
         <HoveringToolbar>

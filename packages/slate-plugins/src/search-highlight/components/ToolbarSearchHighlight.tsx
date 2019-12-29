@@ -1,17 +1,9 @@
 import React from 'react';
-import { Search } from '@material-ui/icons';
 import styled from 'styled-components';
 import { HeadingToolbar } from 'toolbar';
 
 const Wrapper = styled.div`
   position: relative;
-`;
-
-const Icon = styled(Search)`
-  position: absolute;
-  top: 0.5em;
-  left: 0.5em;
-  color: #ccc;
 `;
 
 const Input = styled.input`
@@ -20,13 +12,22 @@ const Input = styled.input`
 `;
 
 interface Props {
+  icon: any;
   setSearch: any;
 }
 
-export const ToolbarSearchHighlight = ({ setSearch }: Props) => (
+export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
   <HeadingToolbar>
     <Wrapper>
-      <Icon style={{ fontSize: '18px' }} />
+      <Icon
+        style={{
+          position: 'absolute',
+          top: '0.5em',
+          left: '0.5em',
+          color: '#ccc',
+          fontSize: '18px',
+        }}
+      />
       <Input
         type="search"
         placeholder="Search the text..."

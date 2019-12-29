@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Image } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -41,7 +42,7 @@ export const Example = () => {
         onChange={newValue => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarImage />
+          <ToolbarImage icon={<Image />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

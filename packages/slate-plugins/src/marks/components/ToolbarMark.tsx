@@ -1,31 +1,24 @@
 import React from 'react';
 import { ToolbarButton } from 'common';
+import { ToolbarFormatProps } from 'common/types';
 import { useSlate } from 'slate-react';
 import { isMarkActive } from '../queries';
 import { toggleMark } from '../transforms/toggleMark';
 
-interface Props {
-  format: string;
-  icon: any;
-  reversed?: boolean;
-}
-
 /**
  * Toolbar button to toggle mark.
  */
-export const ToolbarMark = ({ format, icon, reversed = false }: Props) => {
+export const ToolbarMark = ({ format, ...props }: ToolbarFormatProps) => {
   const editor = useSlate();
 
   return (
     <ToolbarButton
-      reversed={reversed}
+      {...props}
       active={isMarkActive(editor, format)}
-      onMouseDown={(event: Event) => {
+      onClick={(event: Event) => {
         event.preventDefault();
         toggleMark(editor, format);
       }}
-    >
-      {icon}
-    </ToolbarButton>
+    />
   );
 };

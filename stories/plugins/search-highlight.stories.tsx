@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Search } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -46,7 +47,7 @@ export const Example = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
-        <ToolbarSearchHighlight setSearch={setSearch} />
+        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <EditablePlugins plugins={plugins} decorate={decorate} />
       </Slate>
     );
