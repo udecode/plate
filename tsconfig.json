@@ -15,7 +15,8 @@
     "noEmit": true,
     "jsx": "react",
     "downlevelIteration": true,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "baseUrl": "packages/slate-plugins/src"
   },
   "exclude": ["node_modules", "dist", "scripts"],
   "awesomeTypescriptLoaderOptions": {
