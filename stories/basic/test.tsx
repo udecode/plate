@@ -1,26 +1,3 @@
-import { Meta } from '@storybook/addon-docs/blocks';
-
-<Meta title="Docs/Getting Started" />
-
-# Getting Started
-
-## 📦 Install
-
-```bash
-yarn add slate-plugins-next
-```
-
-You will also need these peerDependencies:
-
-```bash
-yarn add slate slate-hyperscript slate-react styled-components react react-dom
-```
-
-## Editor
-
-Now, let's create a simple editor with 3 plugins: 
-
-```js
 import React, { useMemo, useState } from 'react';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -30,7 +7,7 @@ import {
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
-} from 'slate-plugins-next';
+} from '../../packages/slate-plugins/src';
 
 const initialValue: Node[] = [
   {
@@ -57,8 +34,3 @@ export const Editor = () => {
     </Slate>
   );
 };
-```
-
-If you want to add more features to your editor, just extend the `plugins` list. That's it! 
-
-The following guide will explain you more in details `EditablePlugins` and how to create your own plugins.

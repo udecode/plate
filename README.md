@@ -60,6 +60,18 @@ use `renderLeaf`.
 - [Search Highlight](https://slate-plugins-next.netlify.com/?path=/docs/plugins-search-highlight--example)
 - [Toolbar](https://slate-plugins-next.netlify.com/?path=/docs/basic-hovering-toolbar--example)
 
+## 📦 Install
+
+```bash
+yarn add slate-plugins-next
+```
+
+You will also need these peerDependencies:
+
+```bash
+yarn add slate slate-hyperscript slate-react styled-components react react-dom
+```
+
 ## 👏 Contributing
 
 You can use this repository to **share your own plugins**.
