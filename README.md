@@ -5,6 +5,7 @@
 [<img src="https://badgen.net/bundlephobia/minzip/slate-plugins-next" />](https://bundlephobia.com/result?p=slate-plugins-next)&nbsp;
 [<img src="https://badgen.now.sh/badge/license/MIT" />](https://github.com/zbeyens/slate-plugins-next/blob/master/LICENSE)&nbsp;
 [<img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" />](https://slate-slack.herokuapp.com)&nbsp;
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2cc9e07a-2339-48c4-a2b8-26adf0e5569d/deploy-status)](https://app.netlify.com/sites/slate-plugins-next/deploys)
 
 Built on top of [Slate](https://github.com/ianstormtaylor/slate#documentation) framework, `slate-plugins-next` enables you to use a list of
 customizable plugins for your Slate editor.
