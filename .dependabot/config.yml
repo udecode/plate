@@ -1,0 +1,28 @@
+version: 1
+update_configs:
+  # Keep package.json (& lockfiles) up to date as soon as
+  # new versions are published to the npm registry
+  - package_manager: 'javascript'
+    directory: '/'
+    update_schedule: 'live'
+    automerged_updates:
+      - match:
+          dependency_type: 'development'
+          # Supported dependency types:
+          # - "development"
+          # - "production"
+          # - "all"
+          update_type: 'all'
+          # Supported updates to automerge:
+          # - "security:patch"
+          #   SemVer patch update that fixes a known security vulnerability
+          # - "semver:patch"
+          #   SemVer patch update, e.g. > 1.x && 1.0.1 to 1.0.3
+          # - "semver:minor"
+          #   SemVer minor update, e.g. > 1.x && 2.1.4 to 2.3.1
+          # - "in_range"
+          #   matching the version requirement in your package manifest
+          # - "all"
+      - match:
+          dependency_type: 'production'
+          update_type: 'semver:patch'
