@@ -4,10 +4,12 @@ import styled from 'styled-components';
 interface ButtonProps {
   active?: boolean;
   reversed?: boolean;
-  onClick: (event: any) => void;
+  onMouseDown?: (event: any) => void;
+  [key: string]: any;
 }
 
 const Button = styled.span<ButtonProps>`
+  user-select: none;
   cursor: pointer;
   color: ${({ active, reversed }) =>
     reversed ? (active ? 'white' : '#aaa') : active ? 'black' : '#ccc'};

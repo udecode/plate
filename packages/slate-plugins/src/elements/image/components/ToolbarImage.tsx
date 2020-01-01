@@ -10,7 +10,7 @@ export const ToolbarImage = (props: ToolbarElementProps) => {
   return (
     <ToolbarButton
       {...props}
-      onClick={(event: Event) => {
+      onMouseDown={(event: Event) => {
         event.preventDefault();
 
         const url = window.prompt('Enter the URL of the image:');

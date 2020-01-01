@@ -12,7 +12,7 @@ export const ToolbarLink = (props: ToolbarElementProps) => {
     <ToolbarButton
       {...props}
       active={isLinkActive(editor)}
-      onClick={(event: Event) => {
+      onMouseDown={(event: Event) => {
         event.preventDefault();
 
         const url = window.prompt('Enter the URL of the link:');

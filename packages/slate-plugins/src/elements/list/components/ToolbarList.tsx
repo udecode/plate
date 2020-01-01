@@ -11,7 +11,7 @@ export const ToolbarList = (props: ToolbarFormatProps) => {
   return (
     <ToolbarBlock
       {...props}
-      onClick={(event: Event) => {
+      onMouseDown={(event: Event) => {
         event.preventDefault();
         toggleList(editor, format);
       }}

@@ -15,7 +15,7 @@ export const ToolbarMark = ({ format, ...props }: ToolbarFormatProps) => {
     <ToolbarButton
       {...props}
       active={isMarkActive(editor, format)}
-      onClick={(event: Event) => {
+      onMouseDown={(event: Event) => {
         event.preventDefault();
         toggleMark(editor, format);
       }}

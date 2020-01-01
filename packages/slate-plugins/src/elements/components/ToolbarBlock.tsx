@@ -22,7 +22,7 @@ export const ToolbarBlock = ({
     <ToolbarButton
       {...props}
       active={isBlockActive(editor, format)}
-      onClick={onClick}
+      onMouseDown={onClick}
     />
   );
 };

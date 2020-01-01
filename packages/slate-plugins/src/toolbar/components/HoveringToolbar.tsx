@@ -3,22 +3,26 @@ import { PortalBody } from 'common/components';
 import { Editor, Range } from 'slate';
 import { ReactEditor, useSlate } from 'slate-react';
 import styled from 'styled-components';
-import { Toolbar } from './Toolbar';
+import { Toolbar, ToolbarProps } from './Toolbar';
 
 const StyledToolbar = styled(Toolbar)`
-  padding: 8px 7px 6px;
   position: absolute;
   z-index: 1;
   top: -10000px;
   left: -10000px;
+
+  padding: 8px 7px 6px;
   margin-top: -6px;
-  opacity: 0;
   background-color: #222;
   border-radius: 4px;
-  height: 18px;
+  opacity: 0;
 `;
 
-export const HoveringToolbar = ({ children, ...props }: any) => {
+interface Props extends ToolbarProps {
+  children: any;
+}
+
+export const HoveringToolbar = ({ children, ...props }: Props) => {
   const ref: any = useRef();
   const editor = useSlate();
 
