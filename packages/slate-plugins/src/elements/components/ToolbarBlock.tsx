@@ -6,13 +6,13 @@ import { isBlockActive } from '../queries';
 
 export const ToolbarBlock = ({
   format,
-  onClick,
+  onMouseDown,
   ...props
 }: ToolbarFormatProps) => {
   const editor = useSlate();
 
-  if (!onClick) {
-    onClick = (event: Event) => {
+  if (!onMouseDown) {
+    onMouseDown = (event: Event) => {
       event.preventDefault();
       editor.toggleBlock(format);
     };
@@ -22,7 +22,7 @@ export const ToolbarBlock = ({
     <ToolbarButton
       {...props}
       active={isBlockActive(editor, format)}
-      onMouseDown={onClick}
+      onMouseDown={onMouseDown}
     />
   );
 };

@@ -7,5 +7,5 @@ export interface ToolbarElementProps {
 
 export interface ToolbarFormatProps extends ToolbarElementProps {
   format: string;
-  onClick?: (event: any) => void;
+  onMouseDown?: (event: any) => void;
 }

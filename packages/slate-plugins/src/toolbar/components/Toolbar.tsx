@@ -13,6 +13,7 @@ export const Toolbar = styled.div<ToolbarProps>`
     margin-left: 15px;
   }
 
+  box-sizing: content-box;
   user-select: none;
 
   height: ${props => props.height || '18px'};
