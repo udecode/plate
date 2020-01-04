@@ -25,7 +25,7 @@ const InputWrapper = styled.span`
 const Text = styled.span<{ checked: boolean }>`
   flex: 1;
   opacity: ${props => (props.checked ? 0.666 : 1)};
-  text-decoration: ${props => (props.checked ? 'none' : 'line-through')};
+  text-decoration: ${props => (props.checked ? 'line-through' : 'none')};
 
   &:focus {
     outline: none;
