@@ -66,6 +66,7 @@ export const withShortcuts = <T extends Editor>(editor: T) => {
           if (block.type === ListType.LIST_ITEM) {
             Transforms.unwrapNodes(editor, {
               match: n => n.type === ListType.UL_LIST,
+              split: true,
             });
           }
           return;
