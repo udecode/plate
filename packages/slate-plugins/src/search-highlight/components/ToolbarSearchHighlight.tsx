@@ -2,8 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 import { HeadingToolbar } from 'toolbar';
 
+const StyledHeadingToolbar = styled(HeadingToolbar)`
+  height: 38px;
+`;
+
 const Wrapper = styled.div`
   position: relative;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 `;
 
 const Input = styled.input`
@@ -17,7 +23,7 @@ interface Props {
 }
 
 export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
-  <HeadingToolbar>
+  <StyledHeadingToolbar>
     <Wrapper>
       <Icon
         style={{
@@ -34,5 +40,5 @@ export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
         onChange={e => setSearch(e.target.value)}
       />
     </Wrapper>
-  </HeadingToolbar>
+  </StyledHeadingToolbar>
 );
