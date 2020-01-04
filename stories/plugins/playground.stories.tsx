@@ -18,6 +18,7 @@ import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import styled from 'styled-components';
 import {
   ActionItemPlugin,
   BLOCKQUOTE,
@@ -57,11 +58,13 @@ import {
   useMention,
   VideoPlugin,
   withActionItem,
+  withBlock,
   withImage,
   withLink,
   withList,
   withMention,
   withPasteHtml,
+  withShortcuts,
   withTable,
   withVideo,
 } from '../../packages/slate-plugins/src';
@@ -114,13 +117,19 @@ export const Plugins = () => {
 
     const editor = useMemo(
       () =>
-        withVideo(
-          withActionItem(
-            withMention(
-              withImage(
-                withList(
-                  withPasteHtml(plugins)(
-                    withLink(withTable(withHistory(withReact(createEditor()))))
+        withShortcuts(
+          withVideo(
+            withActionItem(
+              withMention(
+                withImage(
+                  withList(
+                    withBlock(
+                      withPasteHtml(plugins)(
+                        withLink(
+                          withTable(withHistory(withReact(createEditor())))
+                        )
+                      )
+                    )
                   )
                 )
               )
