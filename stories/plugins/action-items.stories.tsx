@@ -4,10 +4,12 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  ACTION_ITEM,
   ActionItemPlugin,
   EditablePlugins,
   renderElementActionItem,
   withActionItem,
+  withBreakReset,
 } from '../../packages/slate-plugins/src';
 import { initialValueActionItem } from '../config/initialValues';
 
@@ -25,9 +27,14 @@ export const Example = () => {
     const [value, setValue] = useState(initialValueActionItem);
 
     const editor = useMemo(
-      () => withActionItem(withHistory(withReact(createEditor()))),
+      () =>
+        withBreakReset({ types: [ACTION_ITEM] })(
+          withActionItem(withHistory(withReact(createEditor())))
+        ),
       []
     );
+
+    console.log(value);
 
     return (
       <Slate

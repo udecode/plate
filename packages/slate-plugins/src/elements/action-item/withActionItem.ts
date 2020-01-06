@@ -2,15 +2,17 @@ import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Point, Range, Transforms } from 'slate';
 import { ACTION_ITEM } from './types';
 
-export const withActionItem = <T extends Editor>(editor: T) => {
-  const { deleteBackward, insertBreak } = editor;
+/**
+ * Pressing enter on an empty block (except paragraph)
+ * replaces it with a new paragraph and unwrap action item.
+ */
+export const withBreakReset = ({ types }: { types: string[] }) => <
+  T extends Editor
+>(
+  editor: T
+) => {
+  const { insertBreak } = editor;
 
-  /**
-   * Pressing enter on:
-   * - an empty block (except paragraph) replaces it with a new paragraph. Unwrap action item.
-   * - an action item block, add a new one
-   * TODO: same for list
-   */
   editor.insertBreak = () => {
     const match = Editor.above(editor, {
       match: n => Editor.isBlock(editor, n),
@@ -23,28 +25,32 @@ export const withActionItem = <T extends Editor>(editor: T) => {
           matchingNode.children[matchingNode.children.length - 1].text
             .length === 0
         ) {
-          Transforms.setNodes(editor, { type: PARAGRAPH });
-          Transforms.unwrapNodes(editor, {
-            match: n => n.type === ACTION_ITEM,
-            split: true,
-          });
-          return;
-        }
-        // if action item, add a new one
-        if (matchingNode.type === ACTION_ITEM) {
-          const checklist = {
-            type: ACTION_ITEM,
-            checked: false,
+          // should use setNodes once it reset the state of the node
+          Transforms.delete(editor);
+          const paragraph = {
+            type: PARAGRAPH,
             children: [{ text: '' }],
           };
-          Transforms.insertNodes(editor, checklist);
-          return;
+          return Transforms.insertNodes(editor, paragraph);
         }
+
+        // if (types.includes(matchingNode.type)) {
+        //   return Transforms.insertNodes(editor, {
+        //     type: matchingNode.type,
+        //     children: [{ text: '' }],
+        //   });
+        // }
       }
     }
 
     insertBreak();
   };
+
+  return editor;
+};
+
+export const withActionItem = <T extends Editor>(editor: T) => {
+  const { deleteBackward } = editor;
 
   /**
    * If at the start of an action item (not selected),
