@@ -49,7 +49,13 @@ export const withDeleteStartReset = ({
     });
 
     if (match) {
-      Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
+      const [li] = Editor.nodes(editor, {
+        match: n => n.type === ListType.LIST_ITEM,
+      });
+
+      if (!li) {
+        Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
+      }
     }
   };
 
