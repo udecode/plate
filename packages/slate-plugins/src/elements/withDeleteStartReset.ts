@@ -43,12 +43,12 @@ export const withDeleteStartReset = ({
 
     deleteBackward(...args);
 
+    // temporary quick fix for list item
     const match = Editor.above(editor, {
       match: n => unwrapTypes.includes(n.type),
     });
 
     if (match) {
-      // temporary quick fix for list item
       Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
     }
   };
