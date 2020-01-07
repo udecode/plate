@@ -62,7 +62,6 @@ import {
   withDeleteEmptyReset,
   withImage,
   withLink,
-  withList,
   withMention,
   withPasteHtml,
   withShortcuts,
@@ -124,12 +123,12 @@ export const Plugins = () => {
               withDeleteEmptyReset({ types: [ACTION_ITEM, BLOCKQUOTE] })(
                 withMention(
                   withImage(
-                    withList(
-                      withBlock(
-                        withPasteHtml(plugins)(
-                          withLink(
-                            withTable(withHistory(withReact(createEditor())))
-                          )
+                    withBlock({
+                      unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+                    })(
+                      withPasteHtml(plugins)(
+                        withLink(
+                          withTable(withHistory(withReact(createEditor())))
                         )
                       )
                     )

@@ -19,7 +19,6 @@ import {
   UnderlinePlugin,
   withImage,
   withLink,
-  withList,
   withPasteHtml,
   withTable,
 } from '../../packages/slate-plugins/src';
@@ -54,10 +53,8 @@ export const Example = () => {
       () =>
         withTable(
           withImage(
-            withList(
-              withPasteHtml(plugins)(
-                withLink(withHistory(withReact(createEditor())))
-              )
+            withPasteHtml(plugins)(
+              withLink(withHistory(withReact(createEditor())))
             )
           )
         ),

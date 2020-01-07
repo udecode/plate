@@ -1,13 +1,36 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
+import styled from 'styled-components';
 import { getElement } from '../utils';
 import { HeadingType, RenderElementHeadingOptions } from './types';
 
+const Heading = styled.div`
+  font-weight: 600;
+`;
+
+const StyledH1 = styled(Heading)`
+  margin-top: 32px;
+  margin-bottom: 4px;
+  font-size: 30px;
+`;
+
+const StyledH2 = styled(Heading)`
+  margin-top: 16px;
+  margin-bottom: 1px;
+  font-size: 24px;
+`;
+
+const StyledH3 = styled(Heading)`
+  margin-top: 8px;
+  margin-bottom: 1px;
+  font-size: 20px;
+`;
+
 export const renderElementHeading = ({
   levels = 6,
-  H1 = getElement('h1'),
-  H2 = getElement('h2'),
-  H3 = getElement('h3'),
+  H1 = StyledH1,
+  H2 = StyledH2,
+  H3 = StyledH3,
   H4 = getElement('h4'),
   H5 = getElement('h5'),
   H6 = getElement('h6'),

@@ -84,7 +84,7 @@ export const EditablePlugins = ({
     });
     if (element) return element;
 
-    return <p {...elementProps.attributes}>{elementProps.children}</p>;
+    return <div {...elementProps.attributes}>{elementProps.children}</div>;
   };
 
   const renderLeafPlugins = (leafProps: RenderLeafProps) => {

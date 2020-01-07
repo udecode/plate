@@ -15,7 +15,7 @@ const SHORTCUTS: { [key: string]: string } = {
 };
 
 export const withShortcuts = <T extends Editor>(editor: T) => {
-  const { deleteBackward, insertText } = editor;
+  const { insertText } = editor;
 
   editor.insertText = text => {
     const { selection } = editor;
@@ -49,32 +49,6 @@ export const withShortcuts = <T extends Editor>(editor: T) => {
     }
 
     insertText(text);
-  };
-
-  editor.deleteBackward = (...args) => {
-    const { selection } = editor;
-
-    if (selection && Range.isCollapsed(selection)) {
-      const match = Editor.above(editor, {
-        match: n => Editor.isBlock(editor, n),
-      });
-      if (match) {
-        const [block, path] = match;
-        const start = Editor.start(editor, path);
-        if (block.type !== PARAGRAPH && Point.equals(selection.anchor, start)) {
-          Transforms.setNodes(editor, { type: PARAGRAPH });
-          if (block.type === ListType.LIST_ITEM) {
-            Transforms.unwrapNodes(editor, {
-              match: n => n.type === ListType.UL_LIST,
-              split: true,
-            });
-          }
-          return;
-        }
-      }
-    }
-
-    deleteBackward(...args);
   };
 
   return editor;
