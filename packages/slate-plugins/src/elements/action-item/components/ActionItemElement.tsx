@@ -13,9 +13,7 @@ const Wrapper = styled.div`
   flex-direction: row;
   align-items: center;
 
-  & + & {
-    margin-top: 0;
-  }
+  padding: 3px;
 `;
 
 const InputWrapper = styled.span`

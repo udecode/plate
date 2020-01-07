@@ -24,6 +24,14 @@ export const bodyStyles = css`
     margin: 0;
   }
 
+  ul {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+  }
+
   pre {
     padding: 10px;
     background-color: #eee;
@@ -39,22 +47,6 @@ export const bodyStyles = css`
   img {
     max-width: 100%;
     max-height: 20em;
-  }
-
-  blockquote {
-    border-left: 2px solid #ddd;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 10px;
-    color: #aaa;
-    font-style: italic;
-  }
-
-  blockquote[dir='rtl'] {
-    border-left: none;
-    padding-left: 0;
-    padding-right: 10px;
-    border-right: 2px solid #ddd;
   }
 
   table {
@@ -80,8 +72,9 @@ export const bodyStyles = css`
     border-color: blue;
   }
 
-  [data-slate-editor] > * + * {
-    margin-top: 1em;
+  [data-slate-editor] > * {
+    line-height: 1.5em;
+    padding: 3px 0;
   }
 `;
 

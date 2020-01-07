@@ -1,10 +1,15 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
+import styled from 'styled-components';
 import { getElement } from '../utils';
 import { ListType, RenderElementListOptions } from './types';
 
+const UlElement = styled.ul`
+  padding-left: 24px;
+`;
+
 export const renderElementList = ({
-  UL = getElement('ul'),
+  UL = UlElement,
   OL = getElement('ol'),
   LI = getElement('li'),
 }: RenderElementListOptions = {}) => (props: RenderElementProps) => {

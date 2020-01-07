@@ -8,8 +8,8 @@ import {
   ActionItemPlugin,
   EditablePlugins,
   renderElementActionItem,
-  withActionItem,
-  withBreakReset,
+  withBreakEmptyReset,
+  withDeleteEmptyReset,
 } from '../../packages/slate-plugins/src';
 import { initialValueActionItem } from '../config/initialValues';
 
@@ -28,13 +28,13 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withBreakReset({ types: [ACTION_ITEM] })(
-          withActionItem(withHistory(withReact(createEditor())))
+        withBreakEmptyReset({ types: [ACTION_ITEM] })(
+          withDeleteEmptyReset({ types: [ACTION_ITEM] })(
+            withHistory(withReact(createEditor()))
+          )
         ),
       []
     );
-
-    console.log(value);
 
     return (
       <Slate

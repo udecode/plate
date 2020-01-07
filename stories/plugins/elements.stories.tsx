@@ -11,6 +11,7 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  ACTION_ITEM,
   BLOCKQUOTE,
   BlockquotePlugin,
   EditablePlugins,
@@ -23,6 +24,8 @@ import {
   ToolbarBlock,
   ToolbarList,
   withBlock,
+  withBreakEmptyReset,
+  withDeleteEmptyReset,
   withList,
 } from '../../packages/slate-plugins/src';
 import { initialValueRichText } from '../config/initialValues';
@@ -49,7 +52,12 @@ export const BlockPlugins = () => {
     const [value, setValue] = useState(initialValueRichText);
 
     const editor = useMemo(
-      () => withList(withBlock(withHistory(withReact(createEditor())))),
+      () =>
+        withBreakEmptyReset({ types: [BLOCKQUOTE] })(
+          withDeleteEmptyReset({ types: [BLOCKQUOTE] })(
+            withList(withBlock(withHistory(withReact(createEditor()))))
+          )
+        ),
       []
     );
 
