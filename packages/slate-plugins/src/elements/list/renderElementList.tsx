@@ -1,12 +1,28 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
-import { getElement } from '../utils';
+import styled from 'styled-components';
 import { ListType, RenderElementListOptions } from './types';
 
+const UlElement = styled.ul`
+  padding-inline-start: 24px;
+  margin-block-start: 0;
+  margin-block-end: 0;
+`;
+
+const OlElement = styled.ol`
+  padding-inline-start: 24px;
+  margin-block-start: 0;
+  margin-block-end: 0;
+`;
+
+const LiElement = styled.li`
+  padding: 3px 0;
+`;
+
 export const renderElementList = ({
-  UL = getElement('ul'),
-  OL = getElement('ol'),
-  LI = getElement('li'),
+  UL = UlElement,
+  OL = OlElement,
+  LI = LiElement,
 }: RenderElementListOptions = {}) => (props: RenderElementProps) => {
   switch (props.element.type) {
     case ListType.UL_LIST:

@@ -3,12 +3,16 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  BLOCKQUOTE,
   BlockquotePlugin,
   EditablePlugins,
   HeadingPlugin,
   ListPlugin,
+  ListType,
+  ParagraphPlugin,
   withBlock,
-  withList,
+  withBreakEmptyReset,
+  withDeleteStartReset,
   withShortcuts,
 } from '../../packages/slate-plugins/src';
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
@@ -17,16 +21,32 @@ export default {
   title: 'Plugins/Markdown Shortcuts',
 };
 
+const resetOptions = {
+  types: [BLOCKQUOTE, ListType.LIST_ITEM],
+  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+};
+
 export const Example = () => {
-  const plugins = [BlockquotePlugin(), ListPlugin(), HeadingPlugin()];
+  const plugins = [
+    BlockquotePlugin(),
+    ListPlugin(),
+    HeadingPlugin(),
+    ParagraphPlugin(),
+  ];
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
     const editor = useMemo(
       () =>
-        withShortcuts(
-          withList(withBlock(withHistory(withReact(createEditor()))))
+        withBreakEmptyReset(resetOptions)(
+          withDeleteStartReset(resetOptions)(
+            withShortcuts(
+              withBlock({
+                unwrapTypes: resetOptions.unwrapTypes,
+              })(withHistory(withReact(createEditor())))
+            )
+          )
         ),
       []
     );

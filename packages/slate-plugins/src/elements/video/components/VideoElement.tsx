@@ -17,6 +17,8 @@ const Wrapper = styled.div<Props>`
   position: relative;
   box-shadow: ${props =>
     props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
+
+  padding: 10px 0;
 `;
 
 const VideoCell = styled.div<Props>`

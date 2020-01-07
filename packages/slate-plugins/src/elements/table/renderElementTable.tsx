@@ -1,18 +1,29 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
+import styled from 'styled-components';
 import { getElement } from '../utils';
 import { RenderElementTableOptions, TableType } from './types';
 
+const StyledTable = styled.table`
+  margin: 10px 0;
+  border-collapse: collapse;
+`;
+
+const Td = styled.td`
+  padding: 10px;
+  border: 2px solid #ddd;
+`;
+
 const TableElement = ({ attributes, children }: RenderElementProps) => (
-  <table>
+  <StyledTable>
     <tbody {...attributes}>{children}</tbody>
-  </table>
+  </StyledTable>
 );
 
 export const renderElementTable = ({
   Table = TableElement,
   Row = getElement('tr'),
-  Cell = getElement('td'),
+  Cell = Td,
 }: RenderElementTableOptions = {}) => (props: RenderElementProps) => {
   switch (props.element.type) {
     case TableType.TABLE:

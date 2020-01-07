@@ -18,8 +18,8 @@ import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import styled from 'styled-components';
 import {
+  ACTION_ITEM,
   ActionItemPlugin,
   BLOCKQUOTE,
   BlockquotePlugin,
@@ -57,11 +57,11 @@ import {
   UnderlinePlugin,
   useMention,
   VideoPlugin,
-  withActionItem,
   withBlock,
+  withBreakEmptyReset,
+  withDeleteStartReset,
   withImage,
   withLink,
-  withList,
   withMention,
   withPasteHtml,
   withShortcuts,
@@ -88,6 +88,11 @@ const initialValue = [
   ...initialValueMentions,
   ...initialValueImages,
 ];
+
+const resetOptions = {
+  types: [ACTION_ITEM, BLOCKQUOTE, ListType.LIST_ITEM],
+  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+};
 
 export const Plugins = () => {
   const plugins: any[] = [];
@@ -119,11 +124,13 @@ export const Plugins = () => {
       () =>
         withShortcuts(
           withVideo(
-            withActionItem(
-              withMention(
-                withImage(
-                  withList(
-                    withBlock(
+            withBreakEmptyReset(resetOptions)(
+              withDeleteStartReset(resetOptions)(
+                withBlock({
+                  unwrapTypes: resetOptions.unwrapTypes,
+                })(
+                  withMention(
+                    withImage(
                       withPasteHtml(plugins)(
                         withLink(
                           withTable(withHistory(withReact(createEditor())))

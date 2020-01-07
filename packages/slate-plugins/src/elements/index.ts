@@ -14,3 +14,5 @@ export * from './types';
 export * from './utils';
 export * from './video';
 export * from './withBlock';
+export * from './withBreakEmptyReset';
+export * from './withDeleteStartReset';
