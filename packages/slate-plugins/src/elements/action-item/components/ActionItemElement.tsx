@@ -11,13 +11,22 @@ import styled from 'styled-components';
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
-
-  padding: 3px;
 `;
 
-const InputWrapper = styled.span`
-  margin-right: 0.75em;
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+`;
+
+const Checkbox = styled.input`
+  width: 16px;
+  height: 16px;
+  margin: 0;
 `;
 
 const Text = styled.span<{ checked: boolean }>`
@@ -41,20 +50,20 @@ export const ActionItemElement = ({
 
   return (
     <Wrapper {...attributes}>
-      <InputWrapper contentEditable={false}>
-        <input
+      <CheckboxWrapper contentEditable={false}>
+        <Checkbox
           type="checkbox"
           checked={checked}
-          onChange={event => {
+          onChange={e => {
             const path = ReactEditor.findPath(editor, element);
             Transforms.setNodes(
               editor,
-              { checked: event.target.checked },
+              { checked: e.target.checked },
               { at: path }
             );
           }}
         />
-      </InputWrapper>
+      </CheckboxWrapper>
       <Text
         contentEditable={!readOnly}
         suppressContentEditableWarning
