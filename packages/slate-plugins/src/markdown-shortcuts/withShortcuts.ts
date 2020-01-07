@@ -1,5 +1,5 @@
-import { BLOCKQUOTE, HeadingType, ListType, PARAGRAPH } from 'elements';
-import { Editor, Point, Range, Transforms } from 'slate';
+import { BLOCKQUOTE, HeadingType, ListType } from 'elements';
+import { Editor, Range, Transforms } from 'slate';
 
 const SHORTCUTS: { [key: string]: string } = {
   '*': ListType.LIST_ITEM,
