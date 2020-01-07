@@ -9,19 +9,25 @@ const Heading = styled.div`
 `;
 
 const StyledH1 = styled(Heading)`
-  margin-top: 32px;
+  :not(:first-child) {
+    margin-top: 32px;
+  }
   margin-bottom: 4px;
   font-size: 30px;
 `;
 
 const StyledH2 = styled(Heading)`
-  margin-top: 16px;
+  :not(:first-child) {
+    margin-top: 16px;
+  }
   margin-bottom: 1px;
   font-size: 24px;
 `;
 
 const StyledH3 = styled(Heading)`
-  margin-top: 8px;
+  :not(:first-child) {
+    margin-top: 8px;
+  }
   margin-bottom: 1px;
   font-size: 20px;
 `;
