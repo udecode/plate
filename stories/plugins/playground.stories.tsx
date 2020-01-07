@@ -59,7 +59,7 @@ import {
   VideoPlugin,
   withBlock,
   withBreakEmptyReset,
-  withDeleteEmptyReset,
+  withDeleteStartReset,
   withImage,
   withLink,
   withMention,
@@ -88,6 +88,11 @@ const initialValue = [
   ...initialValueMentions,
   ...initialValueImages,
 ];
+
+const resetOptions = {
+  types: [ACTION_ITEM, BLOCKQUOTE, ListType.LIST_ITEM],
+  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+};
 
 export const Plugins = () => {
   const plugins: any[] = [];
@@ -119,13 +124,13 @@ export const Plugins = () => {
       () =>
         withShortcuts(
           withVideo(
-            withBreakEmptyReset({ types: [ACTION_ITEM, BLOCKQUOTE] })(
-              withDeleteEmptyReset({ types: [ACTION_ITEM, BLOCKQUOTE] })(
-                withMention(
-                  withImage(
-                    withBlock({
-                      unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
-                    })(
+            withBreakEmptyReset(resetOptions)(
+              withDeleteStartReset(resetOptions)(
+                withBlock({
+                  unwrapTypes: resetOptions.unwrapTypes,
+                })(
+                  withMention(
+                    withImage(
                       withPasteHtml(plugins)(
                         withLink(
                           withTable(withHistory(withReact(createEditor())))

@@ -9,7 +9,7 @@ import {
   EditablePlugins,
   renderElementActionItem,
   withBreakEmptyReset,
-  withDeleteEmptyReset,
+  withDeleteStartReset,
 } from '../../packages/slate-plugins/src';
 import { initialValueActionItem } from '../config/initialValues';
 
@@ -17,6 +17,10 @@ export default {
   title: 'Plugins/Action Item',
   component: ActionItemPlugin,
   subcomponents: { renderElementActionItem },
+};
+
+const resetOptions = {
+  types: [ACTION_ITEM],
 };
 
 export const Example = () => {
@@ -28,8 +32,8 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withBreakEmptyReset({ types: [ACTION_ITEM] })(
-          withDeleteEmptyReset({ types: [ACTION_ITEM] })(
+        withBreakEmptyReset(resetOptions)(
+          withDeleteStartReset(resetOptions)(
             withHistory(withReact(createEditor()))
           )
         ),

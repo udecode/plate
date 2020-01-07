@@ -15,4 +15,4 @@ export * from './utils';
 export * from './video';
 export * from './withBlock';
 export * from './withBreakEmptyReset';
-export * from './withDeleteEmptyReset';
+export * from './withDeleteStartReset';

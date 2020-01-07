@@ -1,11 +1,12 @@
 import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Point, Range, Transforms } from 'slate';
+import { ListType } from './list';
 
 /**
  * On delete at the start of an empty block in types,
  * replace it with a new paragraph.
  */
-export const withDeleteEmptyReset = ({
+export const withDeleteStartReset = ({
   types,
   unwrapTypes = [],
 }: {
@@ -41,6 +42,15 @@ export const withDeleteEmptyReset = ({
     }
 
     deleteBackward(...args);
+
+    const match = Editor.above(editor, {
+      match: n => unwrapTypes.includes(n.type),
+    });
+
+    if (match) {
+      // temporary quick fix for list item
+      Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
+    }
   };
 
   return editor;

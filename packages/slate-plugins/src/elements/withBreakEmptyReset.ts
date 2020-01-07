@@ -5,11 +5,13 @@ import { Editor, Transforms } from 'slate';
  * On insert break at the start of an empty block in types,
  * replace it with a new paragraph.
  */
-export const withBreakEmptyReset = ({ types }: { types: string[] }) => <
-  T extends Editor
->(
-  editor: T
-) => {
+export const withBreakEmptyReset = ({
+  types,
+  unwrapTypes = [],
+}: {
+  types: string[];
+  unwrapTypes?: string[];
+}) => <T extends Editor>(editor: T) => {
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {
@@ -24,7 +26,15 @@ export const withBreakEmptyReset = ({ types }: { types: string[] }) => <
           matchingNode.children[matchingNode.children.length - 1].text
             .length === 0
         ) {
-          return Transforms.setNodes(editor, { type: PARAGRAPH });
+          Transforms.setNodes(editor, { type: PARAGRAPH });
+
+          if (unwrapTypes.length) {
+            Transforms.unwrapNodes(editor, {
+              match: n => unwrapTypes.includes(n.type),
+              split: true,
+            });
+          }
+          return;
         }
       }
     }

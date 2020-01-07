@@ -12,13 +12,18 @@ import {
   ParagraphPlugin,
   withBlock,
   withBreakEmptyReset,
-  withDeleteEmptyReset,
+  withDeleteStartReset,
   withShortcuts,
 } from '../../packages/slate-plugins/src';
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Markdown Shortcuts',
+};
+
+const resetOptions = {
+  types: [BLOCKQUOTE, ListType.LIST_ITEM],
+  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
 };
 
 export const Example = () => {
@@ -34,14 +39,11 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withBreakEmptyReset({ types: [BLOCKQUOTE] })(
-          withDeleteEmptyReset({
-            types: [BLOCKQUOTE, ListType.LIST_ITEM],
-            unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
-          })(
+        withBreakEmptyReset(resetOptions)(
+          withDeleteStartReset(resetOptions)(
             withShortcuts(
               withBlock({
-                unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+                unwrapTypes: resetOptions.unwrapTypes,
               })(withHistory(withReact(createEditor())))
             )
           )
