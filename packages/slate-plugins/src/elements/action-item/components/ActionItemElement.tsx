@@ -12,6 +12,7 @@ import { ACTION_ITEM } from '../types';
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
+  padding: 3px 0;
 `;
 
 const CheckboxWrapper = styled.div`
