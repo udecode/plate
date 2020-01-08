@@ -13,8 +13,18 @@ const Wrapper = styled.div`
 `;
 
 const Input = styled.input`
-  padding-left: 2em;
+  box-sizing: border-box;
+  font-size: 0.85em;
   width: 100%;
+  padding: 0.5em;
+  padding-left: 2em;
+  border: 2px solid #ddd;
+  background: #fafafa;
+
+  :focus {
+    outline: 0;
+    border-color: blue;
+  }
 `;
 
 interface Props {

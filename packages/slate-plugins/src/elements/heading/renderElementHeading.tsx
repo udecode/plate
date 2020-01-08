@@ -6,22 +6,25 @@ import { HeadingType, RenderElementHeadingOptions } from './types';
 
 const Heading = styled.div`
   font-weight: 600;
+  line-height: 1.2;
 `;
 
 const StyledH1 = styled(Heading)`
   :not(:first-child) {
-    margin-top: 32px;
+    margin-top: 30px;
   }
-  margin-bottom: 4px;
+  margin-bottom: 12px;
   font-size: 30px;
+  line-height: 36px;
 `;
 
 const StyledH2 = styled(Heading)`
   :not(:first-child) {
-    margin-top: 16px;
+    margin-top: 18px;
   }
-  margin-bottom: 1px;
-  font-size: 24px;
+  margin-bottom: 6px;
+  font-size: 21px;
+  line-height: 28px;
 `;
 
 const StyledH3 = styled(Heading)`
