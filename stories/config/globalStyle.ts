@@ -17,10 +17,6 @@ export const bodyStyles = css`
   .MuiSvgIcon-root {
     font-size: 18px !important;
   }
-
-  [data-slate-editor] > * {
-    line-height: 1.5em;
-  }
 `;
 
 export const GlobalStyle = createGlobalStyle`

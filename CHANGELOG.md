@@ -4,6 +4,12 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.6` — January 8, 2020
+
+###### FIX
+
+- `line-height` of heading
+
 ### `0.57.5` — January 7, 2020
 
 ###### BREAKING

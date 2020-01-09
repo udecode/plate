@@ -6,6 +6,7 @@ import {
   RenderLeafProps,
   useSlate,
 } from 'slate-react';
+import styled from 'styled-components';
 import {
   Decorate,
   OnDOMBeforeInput,
@@ -28,6 +29,11 @@ interface Props {
   renderLeaf?: RenderLeaf[];
   onKeyDown?: OnKeyDown[];
 }
+
+const StyledEditable = styled(Editable)`
+  font-size: 16px;
+  line-height: 26px;
+`;
 
 export const EditablePlugins = ({
   plugins = [],
@@ -112,7 +118,7 @@ export const EditablePlugins = ({
   };
 
   return (
-    <Editable
+    <StyledEditable
       {...props}
       decorate={decoratePlugins}
       onDOMBeforeInput={onDOMBeforeInputPlugins}

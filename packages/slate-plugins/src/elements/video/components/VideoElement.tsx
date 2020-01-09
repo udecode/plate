@@ -7,6 +7,7 @@ import {
   useSelected,
 } from 'slate-react';
 import styled from 'styled-components';
+import { VIDEO } from '../types';
 
 interface Props {
   selected?: boolean;
@@ -60,7 +61,7 @@ export const VideoElement = ({
   const { url } = element;
 
   return (
-    <div {...attributes}>
+    <div {...attributes} data-slate-type={VIDEO}>
       <Wrapper selected={selected} focused={focused} contentEditable={false}>
         <VideoCell selected={selected} focused={focused} />
         <VideoWrapper>

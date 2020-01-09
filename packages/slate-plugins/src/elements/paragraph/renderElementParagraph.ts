@@ -1,8 +1,7 @@
-import { getRenderElement } from '../utils';
-import { ParagraphElement } from './components';
+import { getElement, getRenderElement } from '../utils';
 import { PARAGRAPH } from './types';
 
 export const renderElementParagraph = getRenderElement({
   type: PARAGRAPH,
-  component: ParagraphElement,
+  component: getElement('div'),
 });

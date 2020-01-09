@@ -1,5 +1,6 @@
 import React from 'react';
 import { RenderElementProps, useFocused, useSelected } from 'slate-react';
+import { MENTION } from '../types';
 
 export const MentionElement = ({
   attributes,
@@ -12,6 +13,7 @@ export const MentionElement = ({
   return (
     <span
       {...attributes}
+      data-slate-type={MENTION}
       contentEditable={false}
       style={{
         padding: '3px 3px 2px',

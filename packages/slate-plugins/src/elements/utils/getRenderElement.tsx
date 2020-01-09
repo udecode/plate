@@ -11,7 +11,8 @@ export const getRenderElement = ({
 }: GetRenderElementOptions) => ({
   component: Component = component,
 }: RenderElementOptions = {}) => (props: RenderElementProps) => {
-  if (props.element.type === type) {
+  const elementType = props.element.type;
+  if (elementType === type) {
     return <Component {...props} />;
   }
 };

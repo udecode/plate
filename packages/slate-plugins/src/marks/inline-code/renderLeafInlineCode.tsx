@@ -6,6 +6,7 @@ import { MARK_CODE } from './types';
 const Code = styled.code`
   font-family: monospace;
   background-color: #eee;
+  font-size: 12px;
   padding: 3px;
 `;
 

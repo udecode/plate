@@ -6,5 +6,10 @@ import { RenderElementProps } from 'slate-react';
  */
 export const getElement = (Component: any) => ({
   attributes,
+  element,
   children,
-}: RenderElementProps) => <Component {...attributes}>{children}</Component>;
+}: RenderElementProps) => (
+  <Component {...attributes} data-slate-type={element.type}>
+    {children}
+  </Component>
+);

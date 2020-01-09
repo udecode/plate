@@ -15,8 +15,8 @@ const Td = styled.td`
 `;
 
 const TableElement = ({ attributes, children }: RenderElementProps) => (
-  <StyledTable>
-    <tbody {...attributes}>{children}</tbody>
+  <StyledTable {...attributes} data-slate-type={TableType.TABLE}>
+    <tbody>{children}</tbody>
   </StyledTable>
 );
 
