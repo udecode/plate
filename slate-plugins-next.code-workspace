@@ -1,0 +1,15 @@
+{
+  "folders": [
+    {
+      "name": "root",
+      "path": "."
+    },
+    {
+      "name": "slate-plugins-next",
+      "path": "./packages/slate-plugins"
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": ["root", "slate-plugins-next"]
+  }
+}
