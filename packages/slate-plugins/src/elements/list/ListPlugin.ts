@@ -1,5 +1,6 @@
 import { SlatePlugin } from 'types';
 import { deserializeList } from './deserializeList';
+import { onKeyDownList } from './onKeyDownList';
 import { renderElementList } from './renderElementList';
 import { RenderElementListOptions } from './types';
 
@@ -8,4 +9,5 @@ export const ListPlugin = (
 ): SlatePlugin => ({
   renderElement: renderElementList(options),
   deserialize: deserializeList(),
+  onKeyDown: onKeyDownList(),
 });
