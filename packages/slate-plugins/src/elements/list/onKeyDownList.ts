@@ -31,17 +31,15 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
           currentItem &&
           Path.isSibling(previousItem[1], currentItem[1])
         ) {
+          console.log("new path", previousItem[1].concat([previousItem[0].children.length]));
           Transforms.insertNodes(
             editor,
-            // @ts-ignore
-            [
-              {
-                type: currentList && currentList[0].type,
-                children: [currentItem],
-              },
-            ],
             {
-              at: previousItem[1].concat([previousItem[0].children.length + 1]),
+              type: currentList && currentList[0].type,
+              children: [currentItem[0]],
+            },
+            {
+              at: previousItem[1].concat([previousItem[0].children.length]),
             }
           );
           console.log('valid item!');
