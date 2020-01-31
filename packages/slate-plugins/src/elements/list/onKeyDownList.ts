@@ -1,87 +1,64 @@
-import { Editor, NodeEntry, Path, Text, Transforms } from 'slate';
+import { Editor, Node, Path, Text, Transforms } from 'slate';
 import { isBlockActive } from '../queries';
 import { isList } from './queries';
 import { ListType } from './types';
 
-const previousSibling = (
-  editor: Editor,
-  type: string,
-  siblingPath: Path,
-  lastPath: Path
-): NodeEntry | undefined => {
-  const previousItem = Editor.previous(editor, {
-    match: n => n.type === type,
-    at: lastPath,
-  });
+const isFirstChild = (path: Path): boolean => path[path.length - 1] === 0;
 
-  if (!previousItem) {
-    return undefined;
-  }
+const isSelectionInList = (editor: Editor): boolean =>
+  isBlockActive(editor, ListType.LIST_ITEM);
 
-  const [, previousPath] = previousItem;
-
-  if (Path.isSibling(previousPath, siblingPath)) {
-    return previousItem;
-  }
-
-  return previousSibling(editor, type, siblingPath, previousPath);
-};
-
-/*
-  TODO - handle enter in paragraph in list item?
-
-  TODO - check if list exists before adding?
-
-  TODO - bug in sibling fn?
- */
+const isListItem = (node: Node) => node.type === ListType.LIST_ITEM;
 
 export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
-  if (isBlockActive(editor, ListType.LIST_ITEM)) {
+  if (isSelectionInList(editor)) {
     if (e.key === 'Tab') {
       e.preventDefault();
 
       const currentItem = Editor.above(editor, {
-        match: n => n.type === ListType.LIST_ITEM,
+        match: isListItem,
       });
       const currentList = Editor.above(editor, {
         match: isList,
       });
 
       if (currentItem && currentList) {
-        const [currentElement, currentPath] = currentItem;
+        const [, currentPath] = currentItem;
         const [currentListElem, currentListPath] = currentList;
 
         if (e.shiftKey) {
           const parentItem = Editor.above(editor, {
             at: currentListPath,
-            match: n => n.type === ListType.LIST_ITEM,
+            match: isListItem,
           });
 
           if (parentItem) {
             const [, parentPath] = parentItem;
 
+            // Move item one level up
             Transforms.moveNodes(editor, {
               at: currentPath,
               to: Path.next(parentPath),
             });
 
+            // Remove sublist if this was the last element
             if (currentListElem.children.length === 1) {
               Transforms.removeNodes(editor, {
                 at: currentListPath,
               });
             }
           }
-        } else {
-          const previousSiblingItem = previousSibling(
+        } else if (!isFirstChild(currentPath)) {
+          // Previous sibling is the new parent
+          const previousSiblingItem = Editor.node(
             editor,
-            ListType.LIST_ITEM,
-            currentPath,
-            currentPath
+            Path.previous(currentPath)
           );
 
           if (previousSiblingItem) {
             const [previousElem, previousPath] = previousSiblingItem;
-            Transforms.removeNodes(editor, { at: currentPath });
+
+            // All children must be blocks - move to normalization?
             previousElem.children.forEach((n: any, idx: number) => {
               if (Text.isText(n)) {
                 Transforms.wrapNodes(
@@ -91,17 +68,26 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
                 );
               }
             });
-            Transforms.insertNodes(
-              editor,
-              {
-                type: currentListElem.type,
-                children: [currentElement],
-              },
-              {
-                at: previousPath.concat(previousElem.children.length),
-                select: true,
-              }
+
+            const sublist = previousElem.children.find(isList);
+            const newPath = previousPath.concat(
+              sublist ? [1, sublist.children.length] : [1]
             );
+
+            if (!sublist) {
+              // Create new sublist
+              Transforms.wrapNodes(
+                editor,
+                { type: currentListElem.type, children: [] },
+                { at: currentPath }
+              );
+            }
+
+            // Move the current item to the sublist
+            Transforms.moveNodes(editor, {
+              at: currentPath,
+              to: newPath,
+            });
           }
         }
       }
