@@ -1,14 +1,12 @@
-import { Ancestor, Editor, Node, Path, Text, Transforms } from 'slate';
+import { Ancestor, Editor, Path, Text, Transforms } from 'slate';
 import { isBlockActive } from '../queries';
-import { isList } from './queries';
+import { isList, isListItem } from './queries';
 import { ListType } from './types';
 
 const isFirstChild = (path: Path): boolean => path[path.length - 1] === 0;
 
 const isSelectionInList = (editor: Editor): boolean =>
   isBlockActive(editor, ListType.LIST_ITEM);
-
-const isListItem = (node: Node) => node.type === ListType.LIST_ITEM;
 
 const moveUp = (
   editor: Editor,
