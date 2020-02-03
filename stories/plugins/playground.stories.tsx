@@ -62,6 +62,7 @@ import {
   withDeleteStartReset,
   withImage,
   withLink,
+  withList,
   withMention,
   withPasteHtml,
   withShortcuts,
@@ -90,8 +91,7 @@ const initialValue = [
 ];
 
 const resetOptions = {
-  types: [ACTION_ITEM, BLOCKQUOTE, ListType.LIST_ITEM],
-  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+  types: [ACTION_ITEM, BLOCKQUOTE],
 };
 
 export const Plugins = () => {
@@ -124,16 +124,16 @@ export const Plugins = () => {
       () =>
         withShortcuts(
           withVideo(
-            withBreakEmptyReset(resetOptions)(
-              withDeleteStartReset(resetOptions)(
-                withBlock({
-                  unwrapTypes: resetOptions.unwrapTypes,
-                })(
-                  withMention(
-                    withImage(
-                      withPasteHtml(plugins)(
-                        withLink(
-                          withTable(withHistory(withReact(createEditor())))
+            withList(
+              withBreakEmptyReset(resetOptions)(
+                withDeleteStartReset(resetOptions)(
+                  withBlock(
+                    withMention(
+                      withImage(
+                        withPasteHtml(plugins)(
+                          withLink(
+                            withTable(withHistory(withReact(createEditor())))
+                          )
                         )
                       )
                     )

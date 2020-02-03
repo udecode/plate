@@ -1,4 +1,4 @@
-import { BLOCKQUOTE, HeadingType, ListType } from 'elements';
+import { BLOCKQUOTE, HeadingType, ListType, toggleList } from 'elements';
 import { Editor, Range, Transforms } from 'slate';
 
 const SHORTCUTS: { [key: string]: string } = {
@@ -33,16 +33,14 @@ export const withShortcuts = <T extends Editor>(editor: T) => {
       if (type) {
         Transforms.select(editor, range);
         Transforms.delete(editor);
-        Transforms.setNodes(
-          editor,
-          { type },
-          { match: n => Editor.isBlock(editor, n) }
-        );
-        if (type === ListType.LIST_ITEM) {
-          const list = { type: ListType.UL_LIST, children: [] };
-          Transforms.wrapNodes(editor, list, {
-            match: n => n.type === ListType.LIST_ITEM,
-          });
+        if (type !== ListType.LIST_ITEM) {
+          Transforms.setNodes(
+            editor,
+            { type },
+            { match: n => Editor.isBlock(editor, n) }
+          );
+        } else {
+          toggleList(editor, ListType.UL_LIST);
         }
         return;
       }

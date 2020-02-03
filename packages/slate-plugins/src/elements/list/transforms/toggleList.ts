@@ -4,17 +4,20 @@ import { Editor, Transforms } from 'slate';
 import { ListType } from '../types';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: Editor, format: string) => {
-  const isActive = isBlockActive(editor, format);
+export const toggleList = (editor: Editor, listType: string) => {
+  const isActive = isBlockActive(editor, listType);
 
   unwrapList(editor);
 
   Transforms.setNodes(editor, {
-    type: isActive ? PARAGRAPH : ListType.LIST_ITEM,
+    type: PARAGRAPH,
   });
 
   if (!isActive) {
-    const block = { type: format, children: [] };
-    Transforms.wrapNodes(editor, block);
+    const list = { type: listType, children: [] };
+    Transforms.wrapNodes(editor, list);
+
+    const listItem = { type: ListType.LIST_ITEM, children: [] };
+    Transforms.wrapNodes(editor, listItem);
   }
 };

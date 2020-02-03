@@ -1,3 +1,9 @@
+export const ListHotkey = {
+  TAB: 'Tab',
+  ENTER: 'Enter',
+  DELETE_BACKWARD: 'Backspace',
+};
+
 export enum ListType {
   OL_LIST = 'numbered-list',
   UL_LIST = 'bulleted-list',

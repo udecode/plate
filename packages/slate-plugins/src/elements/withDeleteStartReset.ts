@@ -1,6 +1,5 @@
 import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Point, Range, Transforms } from 'slate';
-import { ListType } from './list';
 
 /**
  * On delete at the start of an empty block in types,
@@ -8,10 +7,10 @@ import { ListType } from './list';
  */
 export const withDeleteStartReset = ({
   types,
-  unwrapTypes = [],
+  onUnwrap,
 }: {
   types: string[];
-  unwrapTypes?: string[];
+  onUnwrap?: any;
 }) => <T extends Editor>(editor: T) => {
   const { deleteBackward } = editor;
 
@@ -19,23 +18,19 @@ export const withDeleteStartReset = ({
     const { selection } = editor;
 
     if (selection && Range.isCollapsed(selection)) {
-      const match = Editor.above(editor, {
+      const parent = Editor.above(editor, {
         match: n => types.includes(n.type),
       });
 
-      if (match) {
-        const [, path] = match;
-        const start = Editor.start(editor, path);
+      if (parent) {
+        const [, parentPath] = parent;
+        const parentStart = Editor.start(editor, parentPath);
 
-        if (Point.equals(selection.anchor, start)) {
+        if (Point.equals(selection.anchor, parentStart)) {
           Transforms.setNodes(editor, { type: PARAGRAPH });
 
-          if (unwrapTypes.length) {
-            Transforms.unwrapNodes(editor, {
-              match: n => unwrapTypes.includes(n.type),
-              split: true,
-            });
-          }
+          if (onUnwrap) onUnwrap();
+
           return;
         }
       }
@@ -44,19 +39,19 @@ export const withDeleteStartReset = ({
     deleteBackward(...args);
 
     // temporary quick fix for list item
-    const match = Editor.above(editor, {
-      match: n => unwrapTypes.includes(n.type),
-    });
+    // const match = Editor.above(editor, {
+    //   match: n => unwrapTypes.includes(n.type),
+    // });
 
-    if (match) {
-      const [li] = Editor.nodes(editor, {
-        match: n => n.type === ListType.LIST_ITEM,
-      });
+    // if (match) {
+    //   const [li] = Editor.nodes(editor, {
+    //     match: n => n.type === ListType.LIST_ITEM,
+    //   });
 
-      if (!li) {
-        Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
-      }
-    }
+    //   if (!li) {
+    //     Transforms.setNodes(editor, { type: ListType.LIST_ITEM });
+    //   }
+    // }
   };
 
   return editor;

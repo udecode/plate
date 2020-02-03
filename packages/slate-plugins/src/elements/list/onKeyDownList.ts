@@ -1,65 +1,85 @@
-import { Ancestor, Editor, Path, Text, Transforms } from 'slate';
-import { isBlockActive } from '../queries';
-import { isList, isListItem } from './queries';
-import { ListType } from './types';
+import { PARAGRAPH } from 'elements/paragraph';
+import { Ancestor, Editor, Path, Transforms } from 'slate';
+import { isBlockTextEmpty, isFirstChild } from '../queries';
+import { isList, isSelectionInList } from './queries';
+import { ListHotkey, ListType } from './types';
 
-const isFirstChild = (path: Path): boolean => path[path.length - 1] === 0;
-
-const isSelectionInList = (editor: Editor): boolean =>
-  isBlockActive(editor, ListType.LIST_ITEM);
-
+/**
+ * Move a list item next to its parent.
+ * The parent should be a list item.
+ */
 const moveUp = (
   editor: Editor,
-  currentListPath: number[],
-  currentPath: number[],
-  currentListElem: Ancestor
+  listNode: Ancestor,
+  listPath: number[],
+  listItemPath: number[]
 ) => {
-  const parentItem = Editor.above(editor, {
-    at: currentListPath,
-    match: isListItem,
+  const [listParentNode, listParentPath] = Editor.parent(editor, listPath);
+  if (listParentNode.type !== ListType.LIST_ITEM) return;
+
+  const newListItemPath = Path.next(listParentPath);
+
+  // Move item one level up
+  Transforms.moveNodes(editor, {
+    at: listItemPath,
+    to: newListItemPath,
   });
 
-  if (parentItem) {
-    const [, parentPath] = parentItem;
+  /**
+   * Move the next siblings to a new list
+   */
+  const listItemIdx = listItemPath[listItemPath.length - 1];
+  const siblingPath = [...listItemPath];
+  const newListPath = newListItemPath.concat(1);
+  let siblingFound = false;
+  let newSiblingIdx = 0;
+  listNode.children.forEach((n, idx) => {
+    if (listItemIdx < idx) {
+      if (!siblingFound) {
+        siblingFound = true;
 
-    // Move item one level up
-    Transforms.moveNodes(editor, {
-      at: currentPath,
-      to: Path.next(parentPath),
-    });
+        Transforms.insertNodes(
+          editor,
+          {
+            type: listNode.type,
+            children: [],
+          },
+          { at: newListPath }
+        );
+      }
 
-    // Remove sublist if this was the last element
-    if (currentListElem.children.length === 1) {
-      Transforms.removeNodes(editor, {
-        at: currentListPath,
+      siblingPath[siblingPath.length - 1] = listItemIdx;
+      const newSiblingsPath = newListPath.concat(newSiblingIdx);
+      newSiblingIdx++;
+      Transforms.moveNodes(editor, {
+        at: siblingPath,
+        to: newSiblingsPath,
       });
     }
+  });
+
+  // Remove sublist if it was the first list item
+  if (!listItemIdx) {
+    Transforms.removeNodes(editor, {
+      at: listPath,
+    });
   }
+
+  return true;
 };
 
 const moveDown = (
   editor: Editor,
-  currentPath: number[],
-  currentListElem: Ancestor
+  listNode: Ancestor,
+  listItemPath: number[]
 ) => {
   // Previous sibling is the new parent
-  const previousSiblingItem = Editor.node(editor, Path.previous(currentPath));
+  const previousSiblingItem = Editor.node(editor, Path.previous(listItemPath));
 
   if (previousSiblingItem) {
-    const [previousElem, previousPath] = previousSiblingItem;
+    const [previousNode, previousPath] = previousSiblingItem;
 
-    // All children must be blocks - move to normalization?
-    previousElem.children.forEach((n: any, idx: number) => {
-      if (Text.isText(n)) {
-        Transforms.wrapNodes(
-          editor,
-          { type: 'paragraph', children: [] },
-          { at: previousPath.concat(idx) }
-        );
-      }
-    });
-
-    const sublist = previousElem.children.find(isList);
+    const sublist = previousNode.children.find(isList);
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );
@@ -68,40 +88,50 @@ const moveDown = (
       // Create new sublist
       Transforms.wrapNodes(
         editor,
-        { type: currentListElem.type, children: [] },
-        { at: currentPath }
+        { type: listNode.type, children: [] },
+        { at: listItemPath }
       );
     }
 
     // Move the current item to the sublist
     Transforms.moveNodes(editor, {
-      at: currentPath,
+      at: listItemPath,
       to: newPath,
     });
   }
 };
 
 export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
-  if (isSelectionInList(editor)) {
-    if (e.key === 'Tab') {
-      e.preventDefault();
+  if (Object.values(ListHotkey).includes(e.key)) {
+    if (editor.selection && isSelectionInList(editor)) {
+      if (e.key === ListHotkey.TAB) {
+        e.preventDefault();
+      }
 
-      const currentItem = Editor.above(editor, {
-        match: isListItem,
-      });
-      const currentList = Editor.above(editor, {
-        match: isList,
-      });
+      const [paragraphNode, paragraphPath] = Editor.parent(
+        editor,
+        editor.selection
+      );
+      if (paragraphNode.type !== PARAGRAPH) return;
+      const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
+      if (listItemNode.type !== ListType.LIST_ITEM) return;
+      const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
-      if (currentItem && currentList) {
-        const [, currentPath] = currentItem;
-        const [currentListElem, currentListPath] = currentList;
+      if (
+        (e.shiftKey && e.key === ListHotkey.TAB) ||
+        ([ListHotkey.ENTER, ListHotkey.DELETE_BACKWARD].includes(e.key) &&
+          isBlockTextEmpty(paragraphNode))
+      ) {
+        const moved = moveUp(editor, listNode, listPath, listItemPath);
+        if (moved) e.preventDefault();
+      }
 
-        if (e.shiftKey) {
-          moveUp(editor, currentListPath, currentPath, currentListElem);
-        } else if (!isFirstChild(currentPath)) {
-          moveDown(editor, currentPath, currentListElem);
-        }
+      if (
+        !e.shiftKey &&
+        e.key === ListHotkey.TAB &&
+        !isFirstChild(listItemPath)
+      ) {
+        moveDown(editor, listNode, listItemPath);
       }
     }
   }

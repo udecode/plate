@@ -25,6 +25,7 @@ import {
   withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
+  withList,
 } from '../../packages/slate-plugins/src';
 import { initialValueRichText } from '../config/initialValues';
 
@@ -39,8 +40,7 @@ export default {
 };
 
 const resetOptions = {
-  types: [BLOCKQUOTE, ListType.LIST_ITEM],
-  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+  types: [BLOCKQUOTE],
 };
 
 export const BlockPlugins = () => {
@@ -56,10 +56,10 @@ export const BlockPlugins = () => {
 
     const editor = useMemo(
       () =>
-        withBreakEmptyReset(resetOptions)(
-          withDeleteStartReset(resetOptions)(
-            withBlock({ unwrapTypes: resetOptions.unwrapTypes })(
-              withHistory(withReact(createEditor()))
+        withList(
+          withBreakEmptyReset(resetOptions)(
+            withDeleteStartReset(resetOptions)(
+              withBlock(withHistory(withReact(createEditor())))
             )
           )
         ),
