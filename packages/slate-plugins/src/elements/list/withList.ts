@@ -122,20 +122,5 @@ export const withList = <T extends Editor>(editor: T) => {
     onUnwrap: withBreakEmptyList,
   })(e);
 
-  // e.toggleBlock = (format: string) => {
-  //   const isActive = isBlockActive(e, format);
-
-  //   Transforms.setNodes(e, {
-  //     type: isActive ? PARAGRAPH : format,
-  //   });
-
-  //   if (unwrapTypes.length) {
-  //     Transforms.unwrapNodes(editor, {
-  //       match: n => unwrapTypes.includes(n.type),
-  //       split: true,
-  //     });
-  //   }
-  // };
-
   return e;
 };
