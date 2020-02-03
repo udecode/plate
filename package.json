@@ -14,8 +14,8 @@
     "clean": "rimraf dist",
     "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
     "pre-release": "yarn release --conventional-prerelease",
-    "publish": "lerna publish",
     "release": "yarn lint && yarn build && lerna publish",
+    "release:publish": "lerna publish",
     "storybook": "start-storybook -p 6006"
   },
   "devDependencies": {
