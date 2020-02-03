@@ -8,11 +8,11 @@ import {
   EditablePlugins,
   HeadingPlugin,
   ListPlugin,
-  ListType,
   ParagraphPlugin,
   withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
+  withList,
   withShortcuts,
 } from '../../packages/slate-plugins/src';
 import { initialValueMarkdownShortcuts } from '../config/initialValues';
@@ -22,8 +22,7 @@ export default {
 };
 
 const resetOptions = {
-  types: [BLOCKQUOTE, ListType.LIST_ITEM],
-  unwrapTypes: [ListType.UL_LIST, ListType.OL_LIST],
+  types: [BLOCKQUOTE],
 };
 
 export const Example = () => {
@@ -39,12 +38,10 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withBreakEmptyReset(resetOptions)(
-          withDeleteStartReset(resetOptions)(
-            withShortcuts(
-              withBlock({
-                unwrapTypes: resetOptions.unwrapTypes,
-              })(withHistory(withReact(createEditor())))
+        withList(
+          withBreakEmptyReset(resetOptions)(
+            withDeleteStartReset(resetOptions)(
+              withShortcuts(withBlock(withHistory(withReact(createEditor()))))
             )
           )
         ),

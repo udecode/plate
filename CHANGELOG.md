@@ -4,6 +4,18 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.7` — February 2, 2020
+
+###### BREAKING
+
+- Each list item now has a paragraph child.
+
+###### NEW
+
+- Nested lists
+  - Press `Tab` on a list item (except the first one) to indent the current list.
+  - Press `Shift+Tab`, `Enter` or `Backspace` to unindent the current list.
+
 ### `0.57.6` — January 8, 2020
 
 ###### FIX
