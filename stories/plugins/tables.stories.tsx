@@ -4,7 +4,11 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 
-import { BorderAll, FormatBold } from '@material-ui/icons';
+import {
+  BorderAll,
+  BorderClear,
+  FormatBold
+} from '@material-ui/icons';
 
 import {
   BoldPlugin,
@@ -14,6 +18,7 @@ import {
   HeadingToolbar,
   withTable,
   ToolbarMark,
+  ToolbarDeleteTable,
   ToolbarInsertTable,
   MARK_BOLD, TableType,
 } from '../../packages/slate-plugins/src';
@@ -46,6 +51,7 @@ export const Example = () => {
         <HeadingToolbar>
           <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarInsertTable format={TableType.TABLE} icon={<BorderAll />} />
+          <ToolbarDeleteTable format={TableType.TABLE} icon={<BorderClear />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} />
       </Slate>
