@@ -1,13 +1,10 @@
-import { isBlockActive } from 'elements/queries';
 import { Editor, Transforms } from 'slate';
-import { TableType } from '../types';
+import { isSelectionInTable, isTable } from '../queries';
 
 export const deleteTable = (editor: Editor) => {
-  const isActive = isBlockActive(editor, TableType.TABLE);
-
-  if (isActive) {
+  if (isSelectionInTable(editor)) {
     const tableItem = Editor.above(editor, {
-      match: node => node.type === TableType.TABLE,
+      match: isTable,
     });
     if (tableItem) {
       Transforms.removeNodes(editor, {

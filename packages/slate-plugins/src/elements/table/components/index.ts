@@ -1,2 +1,1 @@
-export * from './ToolbarDeleteTable';
-export * from './ToolbarInsertTable';
+export * from './ToolbarTable';

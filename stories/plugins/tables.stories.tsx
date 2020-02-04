@@ -7,6 +7,10 @@ import { Slate, withReact } from 'slate-react';
 import {
   BorderAll,
   BorderClear,
+  BorderBottom,
+  BorderTop,
+  BorderLeft,
+  BorderRight,
   FormatBold
 } from '@material-ui/icons';
 
@@ -18,9 +22,14 @@ import {
   HeadingToolbar,
   withTable,
   ToolbarMark,
-  ToolbarDeleteTable,
-  ToolbarInsertTable,
-  MARK_BOLD, TableType,
+  ToolbarTable,
+  MARK_BOLD,
+  addColumn,
+  addRow,
+  deleteColumn,
+  deleteRow,
+  insertTable,
+  deleteTable,
 } from '../../packages/slate-plugins/src';
 import { initialValueTables } from '../config/initialValues';
 
@@ -50,8 +59,12 @@ export const Example = () => {
       >
         <HeadingToolbar>
           <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarInsertTable format={TableType.TABLE} icon={<BorderAll />} />
-          <ToolbarDeleteTable format={TableType.TABLE} icon={<BorderClear />} />
+          <ToolbarTable action={insertTable} icon={<BorderAll />} />
+          <ToolbarTable action={deleteTable} icon={<BorderClear />} />
+          <ToolbarTable action={addRow} icon={<BorderBottom />} />
+          <ToolbarTable action={deleteRow} icon={<BorderTop />} />
+          <ToolbarTable action={addColumn} icon={<BorderLeft />} />
+          <ToolbarTable action={deleteColumn} icon={<BorderRight />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} />
       </Slate>

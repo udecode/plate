@@ -7,6 +7,7 @@ import { RenderElementTableOptions, TableType } from './types';
 const StyledTable = styled.table`
   margin: 10px 0;
   border-collapse: collapse;
+  width: 100%;
 `;
 
 const Td = styled.td`
