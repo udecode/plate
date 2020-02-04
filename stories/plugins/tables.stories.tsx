@@ -3,12 +3,19 @@ import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+
+import { BorderAll, FormatBold } from '@material-ui/icons';
+
 import {
   BoldPlugin,
   EditablePlugins,
   renderElementTable,
   TablePlugin,
+  HeadingToolbar,
   withTable,
+  ToolbarMark,
+  ToolbarInsertTable,
+  MARK_BOLD, TableType,
 } from '../../packages/slate-plugins/src';
 import { initialValueTables } from '../config/initialValues';
 
@@ -36,6 +43,10 @@ export const Example = () => {
         value={value}
         onChange={newValue => setValue(newValue)}
       >
+        <HeadingToolbar>
+          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarInsertTable format={TableType.TABLE} icon={<BorderAll />} />
+        </HeadingToolbar>
         <EditablePlugins plugins={plugins} />
       </Slate>
     );
