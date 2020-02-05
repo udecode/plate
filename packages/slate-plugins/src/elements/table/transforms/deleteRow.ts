@@ -1,12 +1,20 @@
 import { Editor, Transforms } from 'slate';
-import { isSelectionInTable, isTableRow } from '../queries';
+import { isSelectionInTable, isTable, isTableRow } from '../queries';
 
 export const deleteRow = (editor: Editor) => {
   if (isSelectionInTable(editor)) {
+    const currentTableItem = Editor.above(editor, {
+      match: isTable,
+    });
     const currentRowItem = Editor.above(editor, {
       match: isTableRow,
     });
-    if (currentRowItem) {
+    if (
+      currentRowItem &&
+      currentTableItem &&
+      // Cannot delete the last row
+      currentTableItem[0].children.length > 1
+    ) {
       Transforms.removeNodes(editor, {
         at: currentRowItem[1],
       });
