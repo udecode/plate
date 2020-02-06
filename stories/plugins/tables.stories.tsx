@@ -1,35 +1,33 @@
 import React, { useMemo, useState } from 'react';
+import {
+  BorderAll,
+  BorderBottom,
+  BorderClear,
+  BorderLeft,
+  BorderRight,
+  BorderTop,
+  FormatBold,
+} from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-
 import {
-  BorderAll,
-  BorderClear,
-  BorderBottom,
-  BorderTop,
-  BorderLeft,
-  BorderRight,
-  FormatBold
-} from '@material-ui/icons';
-
-import {
-  BoldPlugin,
-  EditablePlugins,
-  renderElementTable,
-  TablePlugin,
-  HeadingToolbar,
-  withTable,
-  ToolbarMark,
-  ToolbarTable,
-  MARK_BOLD,
   addColumn,
   addRow,
+  BoldPlugin,
   deleteColumn,
   deleteRow,
-  insertTable,
   deleteTable,
+  EditablePlugins,
+  HeadingToolbar,
+  insertTable,
+  MARK_BOLD,
+  renderElementTable,
+  TablePlugin,
+  ToolbarMark,
+  ToolbarTable,
+  withTable,
 } from '../../packages/slate-plugins/src';
 import { initialValueTables } from '../config/initialValues';
 
