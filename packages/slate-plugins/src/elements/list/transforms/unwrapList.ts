@@ -4,7 +4,6 @@ import { isList, isListItem } from '../queries';
 export const unwrapList = (editor: Editor) => {
   Transforms.unwrapNodes(editor, {
     match: isListItem,
-    split: true,
   });
 
   Transforms.unwrapNodes(editor, {
