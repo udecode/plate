@@ -1,7 +1,12 @@
 import { Editor, Transforms } from 'slate';
-import { isList } from '../queries';
+import { isList, isListItem } from '../queries';
 
 export const unwrapList = (editor: Editor) => {
+  Transforms.unwrapNodes(editor, {
+    match: isListItem,
+    split: true,
+  });
+
   Transforms.unwrapNodes(editor, {
     match: isList,
     split: true,
