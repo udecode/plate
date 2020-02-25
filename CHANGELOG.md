@@ -4,6 +4,15 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.10` — February 25, 2020
+
+###### FIX
+
+This fix attempt to solve issues with list toggle:
+
+- make sure list item is removed when unwrapping
+- if multiple paragraphs are selected when pressing toggle - they should end up as separate list items..
+
 ### `0.57.9` — February 25, 2020
 
 ###### FIX
