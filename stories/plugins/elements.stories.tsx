@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Code,
   FormatListBulleted,
   FormatListNumbered,
   FormatQuote,
@@ -13,6 +14,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
+  CodePlugin,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
@@ -21,6 +23,7 @@ import {
   ListType,
   ParagraphPlugin,
   ToolbarBlock,
+  ToolbarCode,
   ToolbarList,
   withBlock,
   withBreakEmptyReset,
@@ -36,6 +39,7 @@ export default {
     BlockquotePlugin,
     ListPlugin,
     ParagraphPlugin,
+    CodePlugin,
   },
 };
 
@@ -50,6 +54,7 @@ export const BlockPlugins = () => {
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
   if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin());
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueRichText);
@@ -84,6 +89,7 @@ export const BlockPlugins = () => {
             icon={<FormatListNumbered />}
           />
           <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
+          <ToolbarCode icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
