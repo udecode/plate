@@ -12,7 +12,7 @@
     "build": "lerna run build --parallel --since",
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",
-    "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"packages/*/src/**/*.{js,jsx,ts,tsx}\"",
     "pre-release": "yarn release --conventional-prerelease",
     "release": "yarn lint && yarn build && lerna publish",
     "storybook": "start-storybook -p 6006"
