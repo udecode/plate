@@ -4,6 +4,22 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.9` — February 25, 2020
+
+###### FIX
+
+- The default toggleBlock function creates several code blocks if there are multiple paragraphs selected. This fix creates a toggleCode function that just wraps the whole selection in a code block - or unwraps if it is already in a block.
+
+### `0.57.8` — February 5, 2020
+
+###### NEW
+
+- Table actions
+  - Insert table
+  - Delete table
+  - Add/delete row
+  - Add/delete cell
+
 ### `0.57.7` — February 2, 2020
 
 ###### BREAKING
