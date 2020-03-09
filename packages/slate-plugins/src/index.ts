@@ -6,6 +6,7 @@ export * from './markdown-preview';
 export * from './markdown-shortcuts';
 export * from './marks';
 export * from './paste-html';
+export * from './paste-md';
 export * from './search-highlight';
 export * from './toolbar';
 export * from './types';

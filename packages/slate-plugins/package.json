@@ -29,6 +29,7 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "is-url": "^1.2.4",
+    "marked": "^0.8.0",
     "prismjs": "^1.17.1"
   },
   "peerDependencies": {
@@ -38,5 +39,8 @@
     "slate-hyperscript": "^0.57.1",
     "slate-react": "^0.57.1",
     "styled-components": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/marked": "^0.7.2"
   }
 }
