@@ -4,6 +4,12 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.11` — March 3, 2020
+
+###### NEW
+
+- `paste-md` plugin + story: markdown can be pasted into the editor
+
 ### `0.57.10` — February 25, 2020
 
 ###### FIX
