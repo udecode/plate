@@ -14,7 +14,7 @@ const addAttrsToChildren = (child: any, attrs: any) => {
 
 export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
   // text
-  if (el.nodeType === 3) return el.textContent;
+  if (el.nodeType === 3) return el.nodeValue === '\n' ? null : el.textContent;
 
   // not a tag
   if (el.nodeType !== 1) return null;

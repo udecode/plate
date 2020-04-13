@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
-import { createEditor } from "slate";
-import { withHistory } from "slate-history";
-import { Slate, withReact } from "slate-react";
+import React, { useMemo, useState } from 'react';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -17,14 +17,16 @@ import {
   StrikethroughPlugin,
   TablePlugin,
   UnderlinePlugin,
+  withImage,
   withLink,
-  withPasteMd
-} from "../../packages/slate-plugins/src";
-import { initialValuePasteMd } from "../config/initialValues";
+  withPasteMd,
+  withTable,
+} from '../../packages/slate-plugins/src';
+import { initialValuePasteMd } from '../config/initialValues';
 
 export default {
-  title: "Plugins/Paste Markdown",
-  component: withPasteMd
+  title: 'Plugins/Paste Markdown',
+  component: withPasteMd,
 };
 
 export const Example = () => {
@@ -41,14 +43,21 @@ export const Example = () => {
     ParagraphPlugin(),
     StrikethroughPlugin(),
     TablePlugin(),
-    UnderlinePlugin()
+    UnderlinePlugin(),
   ];
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValuePasteMd);
 
     const editor = useMemo(
-      () => withPasteMd(withLink(withHistory(withReact(createEditor())))),
+      () =>
+        withTable(
+          withImage(
+            withPasteMd(plugins)(
+              withLink(withHistory(withReact(createEditor())))
+            )
+          )
+        ),
       []
     );
 
