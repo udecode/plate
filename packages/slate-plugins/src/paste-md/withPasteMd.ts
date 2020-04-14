@@ -2,7 +2,7 @@ import marked from 'marked';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { SlatePlugin } from 'types';
-import { deserialize } from '../paste-html/deserialize';
+import { htmlDeserialize } from '../deserializers';
 
 export function filterBreaklines(item: any): boolean {
   return !item.text;
@@ -21,7 +21,7 @@ export const withPasteMd = (plugins: SlatePlugin[]) => <T extends ReactEditor>(
       const parsed = new DOMParser().parseFromString(html, 'text/html');
 
       // `filterBreaklines` filters all the breaklines in the pasted document
-      const fragment: Array<Node> = deserialize(plugins)(parsed.body).filter(
+      const fragment: Array<Node> = htmlDeserialize(plugins)(parsed.body).filter(
         filterBreaklines
       );
 

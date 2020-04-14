@@ -1,6 +1,6 @@
-import { DeserializeHtml } from 'paste-html/types';
 import { Editor, NodeEntry, Range } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
+import { DeserializeHtml } from 'deserializers/types';
 
 export type Decorate = (entry: NodeEntry) => Range[];
 export type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
