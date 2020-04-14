@@ -1,13 +1,16 @@
+import isHotkey from 'is-hotkey';
 import { Editor, Range } from 'slate';
 
-export const onKeyDownSoftBreak = () => (e: KeyboardEvent, editor: Editor) => {
+export const onKeyDownSoftBreak = () => (
+  event: KeyboardEvent,
+  editor: Editor
+) => {
   if (
-    e.key === 'Enter' &&
-    e.shiftKey &&
+    isHotkey('shift+enter', event) &&
     editor.selection &&
     Range.isCollapsed(editor.selection)
   ) {
-    e.preventDefault();
+    event.preventDefault();
     editor.insertText('\n');
   }
 };
