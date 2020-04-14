@@ -21,9 +21,9 @@ export const withPasteMd = (plugins: SlatePlugin[]) => <T extends ReactEditor>(
       const parsed = new DOMParser().parseFromString(html, 'text/html');
 
       // `filterBreaklines` filters all the breaklines in the pasted document
-      const fragment: Array<Node> = htmlDeserialize(plugins)(parsed.body).filter(
-        filterBreaklines
-      );
+      const fragment: Array<Node> = htmlDeserialize(plugins)(
+        parsed.body
+      ).filter(filterBreaklines);
 
       Transforms.insertFragment(editor, fragment);
       return;
