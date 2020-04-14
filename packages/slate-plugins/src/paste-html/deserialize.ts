@@ -2,9 +2,19 @@ import { jsx } from 'slate-hyperscript';
 import { SlatePlugin } from 'types';
 import { DeserializeElement, DeserializeLeafValue } from './types';
 
+const addAttrsToChildren = (child: any, attrs: any) => {
+  if (child.children) {
+    child.children = child.children.map((item: any) => {
+      const itemWithAttrs = addAttrsToChildren(item, attrs);
+      return { ...itemWithAttrs, ...attrs };
+    });
+  }
+  return child;
+};
+
 export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
   // text
-  if (el.nodeType === 3) return el.textContent;
+  if (el.nodeType === 3) return el.nodeValue === '\n' ? null : el.textContent;
 
   // not a tag
   if (el.nodeType !== 1) return null;
@@ -70,7 +80,13 @@ export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
       }
     });
 
-    return children.map(child => jsx('text', attrs, child));
+    return children.map(child => {
+      if (child.children) {
+        return addAttrsToChildren(child, attrs);
+      }
+
+      return jsx('text', attrs, child);
+    });
   }
 
   return children;
