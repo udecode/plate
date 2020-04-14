@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'paste-html/types';
+import { DeserializeHtml } from 'deserializers/types';
 import { LINK } from './types';
 
 export const deserializeLink = (): DeserializeHtml => ({

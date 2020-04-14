@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'paste-html/types';
+import { DeserializeHtml } from 'deserializers/types';
 import { Editor, NodeEntry, Range } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 

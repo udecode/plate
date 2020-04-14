@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'paste-html/types';
+import { DeserializeHtml } from 'deserializers/types';
 import { MARK_STRIKETHROUGH } from './types';
 
 const leaf = { [MARK_STRIKETHROUGH]: true };

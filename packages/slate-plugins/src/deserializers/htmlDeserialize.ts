@@ -12,7 +12,7 @@ const addAttrsToChildren = (child: any, attrs: any) => {
   return child;
 };
 
-export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
+export const htmlDeserialize = (plugins: SlatePlugin[]) => (el: any) => {
   // text
   if (el.nodeType === 3) return el.nodeValue === '\n' ? null : el.textContent;
 
@@ -35,7 +35,7 @@ export const deserialize = (plugins: SlatePlugin[]) => (el: any) => {
   }
 
   const children: any[] = Array.from(parent.childNodes)
-    .map(deserialize(plugins))
+    .map(htmlDeserialize(plugins))
     .flat();
 
   // body

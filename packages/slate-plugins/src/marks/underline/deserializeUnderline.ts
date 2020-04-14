@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'paste-html/types';
+import { DeserializeHtml } from 'deserializers/types';
 import { MARK_UNDERLINE } from './types';
 
 const leaf = { [MARK_UNDERLINE]: true };

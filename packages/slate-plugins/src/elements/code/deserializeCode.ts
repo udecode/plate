@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'paste-html/types';
+import { DeserializeHtml } from 'deserializers/types';
 import { CODE } from './types';
 
 export const deserializeCode = (): DeserializeHtml => ({
