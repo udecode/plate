@@ -47,6 +47,7 @@ import {
   onKeyDownMention,
   ParagraphPlugin,
   SearchHighlightPlugin,
+  SoftBreakPlugin,
   TablePlugin,
   ToolbarBlock,
   ToolbarImage,
@@ -113,6 +114,7 @@ export const Plugins = () => {
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
+  if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
 
   const createReactEditor = () => () => {
     const decorate: any = [];

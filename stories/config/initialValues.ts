@@ -511,3 +511,37 @@ export const initialValueTables: Node[] = [
     ]
   }
 ];
+
+export const initialValueSoftBreak: Node[] = [
+  {
+    type: PARAGRAPH,
+    children: [
+      {
+        text: 'Basic example of using the SoftBreakPlugin. go and edit any node and by typing '
+      },
+      {
+        text: 'shift + Enter',
+        code: true        
+      },
+      {
+        text: ", you will be able to add an extra line to the same node."
+      }
+    ]
+  },
+  {
+    type: HeadingType.H2,
+    children: [
+      {
+        text: "This is a normal Heading 2"
+      }
+    ]
+  },
+  {
+    type: HeadingType.H2,
+    children: [
+      {
+        text: "This is a Heading 2\nwith a soft break"
+      }
+    ]
+  }
+]
