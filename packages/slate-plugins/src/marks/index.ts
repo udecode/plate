@@ -6,6 +6,7 @@ export * from './italic';
 export * from './onKeyDownMark';
 export * from './queries';
 export * from './strikethrough';
+export * from './superscript';
 export * from './transforms';
 export * from './types';
 export * from './underline';
