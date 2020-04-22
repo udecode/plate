@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
+  ArrowUpward,
+  ArrowDownward,
   Code,
   FormatBold,
   FormatItalic,
@@ -40,6 +42,8 @@ import {
   MARK_CODE,
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   MentionPlugin,
   MentionSelect,
@@ -48,6 +52,8 @@ import {
   ParagraphPlugin,
   SearchHighlightPlugin,
   SoftBreakPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   TablePlugin,
   ToolbarBlock,
   ToolbarImage,
@@ -115,6 +121,8 @@ export const Plugins = () => {
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
   if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
+  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
 
   const createReactEditor = () => () => {
     const decorate: any = [];
@@ -197,6 +205,8 @@ export const Plugins = () => {
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
+          <ToolbarMark format={MARK_SUPERSCRIPT} icon={<ArrowUpward />} />
+          <ToolbarMark format={MARK_SUBSCRIPT} icon={<ArrowDownward />} />
           <ToolbarMark format={MARK_CODE} icon={<Code />} />
           <ToolbarList
             format={ListType.UL_LIST}
