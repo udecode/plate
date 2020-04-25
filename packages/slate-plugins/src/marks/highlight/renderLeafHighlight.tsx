@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { MARK_HIGHLIGHT, RenderLeafHighlightOptions } from './types';
 
 const HighlightText = styled.span<{ bg: string }>`
-  background-color: ${props => props.bg};
+  background-color: ${(props) => props.bg};
 `;
 
 export const renderLeafHighlight = ({

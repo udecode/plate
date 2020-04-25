@@ -5,7 +5,7 @@ const leaf = { [MARK_ITALIC]: true };
 
 export const deserializeItalic = (): DeserializeHtml => ({
   leaf: {
-    SPAN: el => el.style.fontStyle === 'italic' && leaf,
+    SPAN: (el) => el.style.fontStyle === 'italic' && leaf,
     EM: () => leaf,
     I: () => leaf,
   },

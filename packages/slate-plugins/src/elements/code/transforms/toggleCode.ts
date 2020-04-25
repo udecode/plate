@@ -5,7 +5,7 @@ import { CODE } from '../types';
 export const toggleCode = (editor: Editor) => {
   if (isBlockActive(editor, CODE)) {
     Transforms.unwrapNodes(editor, {
-      match: node => node.type === CODE,
+      match: (node) => node.type === CODE,
     });
   } else {
     Transforms.wrapNodes(editor, {

@@ -17,7 +17,7 @@ export const withBreakEmptyReset = ({
 
   editor.insertBreak = () => {
     const currentNodeEntry = Editor.above(editor, {
-      match: n => Editor.isBlock(editor, n),
+      match: (n) => Editor.isBlock(editor, n),
     });
 
     if (currentNodeEntry) {
@@ -25,7 +25,7 @@ export const withBreakEmptyReset = ({
 
       if (isBlockTextEmpty(currentNode)) {
         const parent = Editor.above(editor, {
-          match: n => types.includes(n.type),
+          match: (n) => types.includes(n.type),
         });
 
         if (parent) {

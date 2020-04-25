@@ -54,7 +54,7 @@ export const htmlDeserialize = (plugins: SlatePlugin[]) => (el: any) => {
 
     if (!deserializePlugin?.leaf) return;
 
-    Object.keys(deserializePlugin.leaf).forEach(tag => {
+    Object.keys(deserializePlugin.leaf).forEach((tag) => {
       if (!deserializePlugin?.leaf) return;
 
       if (!textTags[tag]) textTags[tag] = [deserializePlugin.leaf[tag]];
@@ -73,14 +73,14 @@ export const htmlDeserialize = (plugins: SlatePlugin[]) => (el: any) => {
   if (textTags[nodeName]) {
     let attrs = {};
 
-    textTags[nodeName].forEach(tag => {
+    textTags[nodeName].forEach((tag) => {
       const newAttrs = tag(el);
       if (newAttrs) {
         attrs = { ...attrs, ...newAttrs };
       }
     });
 
-    return children.map(child => {
+    return children.map((child) => {
       if (child.children) {
         return addAttrsToChildren(child, attrs);
       }

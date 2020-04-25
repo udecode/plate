@@ -19,7 +19,7 @@ export const withDeleteStartReset = ({
 
     if (selection && Range.isCollapsed(selection)) {
       const parent = Editor.above(editor, {
-        match: n => types.includes(n.type),
+        match: (n) => types.includes(n.type),
       });
 
       if (parent) {

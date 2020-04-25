@@ -103,11 +103,11 @@ export const withList = <T extends Editor>(editor: T) => {
 
   const withBreakEmptyList = () => {
     Transforms.unwrapNodes(editor, {
-      match: n => n.type === ListType.LIST_ITEM,
+      match: (n) => n.type === ListType.LIST_ITEM,
       split: true,
     });
     Transforms.unwrapNodes(editor, {
-      match: n => [ListType.UL_LIST, ListType.OL_LIST].includes(n.type),
+      match: (n) => [ListType.UL_LIST, ListType.OL_LIST].includes(n.type),
       split: true,
     });
   };

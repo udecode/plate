@@ -8,7 +8,7 @@ const Image = styled.img<{ selected: boolean; focused: boolean }>`
   max-width: 100%;
   max-height: 20em;
   padding: 10px 0;
-  box-shadow: ${props =>
+  box-shadow: ${(props) =>
     props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
 `;
 
