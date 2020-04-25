@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Search } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
+import { Search } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';

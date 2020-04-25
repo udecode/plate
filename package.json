@@ -75,5 +75,8 @@
     "ts-jest": "^25.1.0",
     "ts-loader": "^6.2.1",
     "typescript": "3.7.5"
+  },
+  "dependencies": {
+    "styled-icons": "^10.2.1"
   }
 }

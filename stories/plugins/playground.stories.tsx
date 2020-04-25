@@ -15,7 +15,8 @@ import {
   LooksOne,
   LooksTwo,
   Search,
-} from '@material-ui/icons';
+} from '@styled-icons/material';
+import { Superscript, Subscript } from '@styled-icons/foundation';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -208,12 +209,12 @@ export const Plugins = () => {
           <ToolbarMark
             format={MARK_SUPERSCRIPT}
             clear={MARK_SUBSCRIPT}
-            icon={<ArrowUpward />}
+            icon={<Superscript />}
           />
           <ToolbarMark
             format={MARK_SUBSCRIPT}
             clear={MARK_SUPERSCRIPT}
-            icon={<ArrowDownward />}
+            icon={<Subscript />}
           />
           <ToolbarMark format={MARK_CODE} icon={<Code />} />
           <ToolbarList
