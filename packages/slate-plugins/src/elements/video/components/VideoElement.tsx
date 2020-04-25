@@ -16,14 +16,14 @@ interface Props {
 
 const Wrapper = styled.div<Props>`
   position: relative;
-  box-shadow: ${props =>
+  box-shadow: ${(props) =>
     props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
 
   padding: 10px 0;
 `;
 
 const VideoCell = styled.div<Props>`
-  display: ${props => (props.selected && props.focused ? 'none' : 'block')};
+  display: ${(props) => (props.selected && props.focused ? 'none' : 'block')};
   position: absolute;
   top: 0;
   left: 0;
@@ -74,8 +74,8 @@ export const VideoElement = ({
         {selected && focused ? (
           <Input
             value={url}
-            onClick={e => e.stopPropagation()}
-            onChange={value => {
+            onClick={(e) => e.stopPropagation()}
+            onChange={(value) => {
               const path = editor.findPath(element);
               Transforms.setNodes(editor, { url: value }, { at: path });
             }}

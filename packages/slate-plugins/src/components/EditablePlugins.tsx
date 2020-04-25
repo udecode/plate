@@ -49,12 +49,12 @@ export const EditablePlugins = ({
   const decoratePlugins = (entry: NodeEntry) => {
     let ranges: Range[] = [];
 
-    decorateList.forEach(decorate => {
+    decorateList.forEach((decorate) => {
       const newRanges = decorate(entry) || [];
       if (newRanges.length) ranges = [...ranges, ...newRanges];
     });
 
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
       if (!plugin.decorate) return;
 
       const newRanges = plugin.decorate(entry) || [];
@@ -65,7 +65,7 @@ export const EditablePlugins = ({
   };
 
   const onDOMBeforeInputPlugins = (event: Event) => {
-    onDOMBeforeInputList.forEach(onDOMBeforeInput => {
+    onDOMBeforeInputList.forEach((onDOMBeforeInput) => {
       onDOMBeforeInput(event, editor);
     });
 
@@ -78,7 +78,7 @@ export const EditablePlugins = ({
   const renderElementPlugins = (elementProps: RenderElementProps) => {
     let element;
 
-    renderElementList.some(renderElement => {
+    renderElementList.some((renderElement) => {
       element = renderElement(elementProps);
       return !!element;
     });
@@ -94,7 +94,7 @@ export const EditablePlugins = ({
   };
 
   const renderLeafPlugins = (leafProps: RenderLeafProps) => {
-    renderLeafList.forEach(renderLeaf => {
+    renderLeafList.forEach((renderLeaf) => {
       leafProps.children = renderLeaf(leafProps);
     });
 
@@ -107,7 +107,7 @@ export const EditablePlugins = ({
   };
 
   const onKeyDownPlugins = (event: any) => {
-    onKeyDownList.forEach(onKeyDown => {
+    onKeyDownList.forEach((onKeyDown) => {
       onKeyDown(event, editor);
     });
 

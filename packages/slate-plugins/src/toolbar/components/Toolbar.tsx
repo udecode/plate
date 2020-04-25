@@ -16,11 +16,11 @@ export const Toolbar = styled.div<ToolbarProps>`
   box-sizing: content-box;
   user-select: none;
 
-  height: ${props => props.height || '18px'};
+  height: ${(props) => props.height || '18px'};
 
   > span,
   svg {
-    width: ${props => props.height || '18px'};
-    height: ${props => props.height || '18px'};
+    width: ${(props) => props.height || '18px'};
+    height: ${(props) => props.height || '18px'};
   }
 `;

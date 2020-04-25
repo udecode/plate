@@ -4,11 +4,17 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.13` — April 25, 2020
+
+###### 
+
+- New plugins for HTML `<sub>` and `<sup>` tags: superscript and subscript plugins. Included in the "Marks" story.
+
 ### `0.57.12` — April 14, 2020
 
 ###### FIX
 
-- Deserializer: pasting html or markdown with Elements inside Text tags works correctly now. 
+- Deserializer: pasting html or markdown with Elements inside Text tags works correctly now.
 
 ### `0.57.11` — March 3, 2020
 

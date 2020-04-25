@@ -6,7 +6,7 @@ import { IMAGE } from './types';
 export const withImage = <T extends ReactEditor>(editor: T) => {
   const { insertData, isVoid } = editor;
 
-  editor.isVoid = element => {
+  editor.isVoid = (element) => {
     return element.type === IMAGE ? true : isVoid(element);
   };
 

@@ -17,13 +17,13 @@ const SHORTCUTS: { [key: string]: string } = {
 export const withShortcuts = <T extends Editor>(editor: T) => {
   const { insertText } = editor;
 
-  editor.insertText = text => {
+  editor.insertText = (text) => {
     const { selection } = editor;
 
     if (text === ' ' && selection && Range.isCollapsed(selection)) {
       const { anchor } = selection;
       const block = Editor.above(editor, {
-        match: n => Editor.isBlock(editor, n),
+        match: (n) => Editor.isBlock(editor, n),
       });
       const path = block ? block[1] : [];
       const start = Editor.start(editor, path);
@@ -37,7 +37,7 @@ export const withShortcuts = <T extends Editor>(editor: T) => {
           Transforms.setNodes(
             editor,
             { type },
-            { match: n => Editor.isBlock(editor, n) }
+            { match: (n) => Editor.isBlock(editor, n) }
           );
         } else {
           toggleList(editor, ListType.UL_LIST);

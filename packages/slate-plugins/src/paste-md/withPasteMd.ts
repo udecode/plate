@@ -13,7 +13,7 @@ export const withPasteMd = (plugins: SlatePlugin[]) => <T extends ReactEditor>(
 ) => {
   const { insertData } = editor;
 
-  editor.insertData = data => {
+  editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
     if (content) {

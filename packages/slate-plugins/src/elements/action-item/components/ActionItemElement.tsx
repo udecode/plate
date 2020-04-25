@@ -33,8 +33,8 @@ const Checkbox = styled.input`
 
 const Text = styled.span<{ checked: boolean }>`
   flex: 1;
-  opacity: ${props => (props.checked ? 0.666 : 1)};
-  text-decoration: ${props => (props.checked ? 'line-through' : 'none')};
+  opacity: ${(props) => (props.checked ? 0.666 : 1)};
+  text-decoration: ${(props) => (props.checked ? 'line-through' : 'none')};
 
   &:focus {
     outline: none;
@@ -56,7 +56,7 @@ export const ActionItemElement = ({
         <Checkbox
           type="checkbox"
           checked={checked}
-          onChange={e => {
+          onChange={(e) => {
             const path = ReactEditor.findPath(editor, element);
             Transforms.setNodes(
               editor,

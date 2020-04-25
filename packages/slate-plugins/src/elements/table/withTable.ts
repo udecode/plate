@@ -4,12 +4,12 @@ import { TableType } from './types';
 export const withTable = <T extends Editor>(editor: T) => {
   const { deleteBackward, deleteForward, insertBreak } = editor;
 
-  editor.deleteBackward = unit => {
+  editor.deleteBackward = (unit) => {
     const { selection } = editor;
 
     if (selection && Range.isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: n => n.type === TableType.CELL,
+        match: (n) => n.type === TableType.CELL,
       });
       if (cell) {
         const [, cellPath] = cell;
@@ -24,12 +24,12 @@ export const withTable = <T extends Editor>(editor: T) => {
     deleteBackward(unit);
   };
 
-  editor.deleteForward = unit => {
+  editor.deleteForward = (unit) => {
     const { selection } = editor;
 
     if (selection && Range.isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: n => n.type === TableType.CELL,
+        match: (n) => n.type === TableType.CELL,
       });
 
       if (cell) {
@@ -50,7 +50,7 @@ export const withTable = <T extends Editor>(editor: T) => {
 
     if (selection) {
       const [table] = Editor.nodes(editor, {
-        match: n => n.type === TableType.TABLE,
+        match: (n) => n.type === TableType.TABLE,
       });
 
       if (table) return;

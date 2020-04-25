@@ -47,7 +47,7 @@ export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
       <Input
         type="search"
         placeholder="Search the text..."
-        onChange={e => setSearch(e.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
       />
     </Wrapper>
   </StyledHeadingToolbar>

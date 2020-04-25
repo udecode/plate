@@ -5,7 +5,7 @@ const leaf = { [MARK_UNDERLINE]: true };
 
 export const deserializeUnderline = (): DeserializeHtml => ({
   leaf: {
-    SPAN: el => el.style.textDecoration === 'underline' && leaf,
+    SPAN: (el) => el.style.textDecoration === 'underline' && leaf,
     U: () => leaf,
   },
 });
