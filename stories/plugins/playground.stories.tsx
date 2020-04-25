@@ -205,8 +205,16 @@ export const Plugins = () => {
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
-          <ToolbarMark format={MARK_SUPERSCRIPT} icon={<ArrowUpward />} />
-          <ToolbarMark format={MARK_SUBSCRIPT} icon={<ArrowDownward />} />
+          <ToolbarMark
+            format={MARK_SUPERSCRIPT}
+            clear={MARK_SUBSCRIPT}
+            icon={<ArrowUpward />}
+          />
+          <ToolbarMark
+            format={MARK_SUBSCRIPT}
+            clear={MARK_SUPERSCRIPT}
+            icon={<ArrowDownward />}
+          />
           <ToolbarMark format={MARK_CODE} icon={<Code />} />
           <ToolbarList
             format={ListType.UL_LIST}

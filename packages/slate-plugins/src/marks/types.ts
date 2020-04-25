@@ -4,5 +4,6 @@ export interface MarkPluginOptions {
 
 export interface OnKeyDownMarkOptions {
   mark: string;
+  clear?: string;
   hotkey: string;
 }
