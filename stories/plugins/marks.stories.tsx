@@ -5,6 +5,8 @@ import {
   FormatItalic,
   FormatStrikethrough,
   FormatUnderlined,
+  ArrowUpward,
+  ArrowDownward,
 } from '@material-ui/icons';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
@@ -20,8 +22,12 @@ import {
   MARK_CODE,
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   ToolbarMark,
   UnderlinePlugin,
 } from '../../packages/slate-plugins/src';
@@ -34,6 +40,8 @@ export default {
     ItalicPlugin,
     UnderlinePlugin,
     StrikethroughPlugin,
+    SubscriptPlugin,
+    SuperscriptPlugin,
     InlineCodePlugin,
     MarkButton: ToolbarMark,
   },
@@ -45,6 +53,8 @@ export const MarkPlugins = () => {
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
   if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
+  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
   if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
 
   const createReactEditor = () => () => {
@@ -66,6 +76,8 @@ export const MarkPlugins = () => {
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
+          <ToolbarMark format={MARK_SUPERSCRIPT} icon={<ArrowUpward />} />
+          <ToolbarMark format={MARK_SUBSCRIPT} icon={<ArrowDownward />} />
           <ToolbarMark format={MARK_CODE} icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins
