@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
 import {
   Code,
   FormatListBulleted,
@@ -6,8 +7,7 @@ import {
   FormatQuote,
   LooksOne,
   LooksTwo,
-} from '@material-ui/icons';
-import { boolean } from '@storybook/addon-knobs';
+} from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';

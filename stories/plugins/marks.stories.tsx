@@ -7,7 +7,7 @@ import {
   FormatUnderlined,
   ArrowUpward,
   ArrowDownward,
-} from '@material-ui/icons';
+} from '@styled-icons/material';
 import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';

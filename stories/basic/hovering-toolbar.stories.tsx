@@ -1,5 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
+import {
+  FormatBold,
+  FormatItalic,
+  FormatUnderlined,
+} from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';

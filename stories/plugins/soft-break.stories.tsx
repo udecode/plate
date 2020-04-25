@@ -1,13 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-  Code,
-  FormatListBulleted,
-  FormatListNumbered,
-  FormatQuote,
-  LooksOne,
-  LooksTwo,
-} from '@material-ui/icons';
-import { boolean } from '@storybook/addon-knobs';
+import { Code, FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -20,13 +12,10 @@ import {
   HeadingToolbar,
   HeadingType,
   InlineCodePlugin,
-  ListPlugin,
-  ListType,
   ParagraphPlugin,
   SoftBreakPlugin,
   ToolbarBlock,
   ToolbarCode,
-  ToolbarList,
   withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
