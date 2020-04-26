@@ -17,7 +17,7 @@ customizable plugins for your Slate editor.
 - ✨ 20+ Editor Plugins.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
-- 🎌 Supports the latest version of `slate@0.57.1`.
+- 🎌 Supports the latest version of `slate@0.57.2`.
 - 📖 [Docs](https://slate-plugins-next.netlify.com/?path=/docs/docs-getting-started--page) and [Demos](https://slate-plugins-next.netlify.com/?path=/story/plugins-playground--plugins) on Storybook.
 
 ## 🧩 Plugins
@@ -42,7 +42,8 @@ use `renderElement`.
 - [Paragraph](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
 - [Table](https://slate-plugins-next.netlify.com/?path=/docs/plugins-table--example)
 - [Video](https://slate-plugins-next.netlify.com/?path=/docs/plugins-video--example)
-
+- [Editable Voids](https://slate-plugins-next.netlify.com/?path=/story/basic-editable-voids--example)
+ 
 ### Marks
 
 A plugin for each type of leaf. All of these
@@ -61,6 +62,7 @@ use `renderLeaf`.
 
 - Slate Plugins
 - Common
+
 - [Forced Layout](https://slate-plugins-next.netlify.com/?path=/docs/plugins-forced-layout--example)
 - [Markdown Preview](https://slate-plugins-next.netlify.com/?path=/docs/plugins-markdown-preview--example)
 - [Markdown Shortcuts](https://slate-plugins-next.netlify.com/?path=/docs/plugins-markdown-shortcuts--example)

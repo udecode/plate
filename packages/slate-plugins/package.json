@@ -35,9 +35,9 @@
   "peerDependencies": {
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
-    "slate": "^0.57.1",
-    "slate-hyperscript": "^0.57.1",
-    "slate-react": "^0.57.1",
+    "slate": "^0.57.2",
+    "slate-hyperscript": "^0.57.2",
+    "slate-react": "^0.57.2",
     "styled-components": "^4.4.0"
   },
   "devDependencies": {
