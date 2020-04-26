@@ -1,12 +1,9 @@
 import { Editor } from 'slate';
+import { withVoid } from 'slate-plugins-next/src';
 import { EDITABLE_VOID } from './types';
 
 export const withEditableVoids = <T extends Editor>(editor: T) => {
-  const { isVoid } = editor;
-
-  editor.isVoid = (element) => {
-    return element.type === EDITABLE_VOID ? true : isVoid(element);
-  };
+  editor = withVoid([EDITABLE_VOID])(editor);
 
   return editor;
 };
