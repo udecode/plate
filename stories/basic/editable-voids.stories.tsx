@@ -4,16 +4,23 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { EditablePlugins } from 'slate-plugins-next';
 import { Slate, withReact } from 'slate-react';
-import { initialValuePlainText } from '../config/initialValues';
+import { initialValueVoids } from '../config/initialValues';
+import { EditableVoidPlugin } from './editable-voids/EditableVoidPlugin';
+import { withEditableVoids } from './editable-voids/withEditableVoids';
 
 export default {
-  title: 'Basic/Editable',
+  title: 'Basic/Editable Voids',
 };
 
-export const Example = () => {
-  const [value, setValue] = useState(initialValuePlainText);
+const plugins = [EditableVoidPlugin()];
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+export const Example = () => {
+  const [value, setValue] = useState(initialValueVoids);
+
+  const editor = useMemo(
+    () => withEditableVoids(withHistory(withReact(createEditor()))),
+    []
+  );
 
   return (
     <Slate
@@ -23,7 +30,8 @@ export const Example = () => {
     >
       <EditablePlugins
         readOnly={boolean('readOnly', false)}
-        placeholder={text('placeholder', 'Enter some plain text...')}
+        plugins={plugins}
+        placeholder={text('placeholder', 'Enter some text...')}
         spellCheck={boolean('spellCheck', true)}
         autoFocus
       />
