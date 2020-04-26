@@ -1,4 +1,5 @@
 import { PARAGRAPH } from 'elements/paragraph';
+import { isPointAtRoot } from 'elements/queries/isPointAtRoot';
 import { Ancestor, Editor, Path, Transforms } from 'slate';
 import { isBlockTextEmpty, isFirstChild } from '../queries';
 import { isList, isSelectionInList } from './queries';
@@ -108,6 +109,10 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
         e.preventDefault();
       }
 
+      // Don't get the parent if the selection is at the root
+      if (isPointAtRoot(editor.selection.anchor)) return;
+
+      // If selection is in li > p
       const [paragraphNode, paragraphPath] = Editor.parent(
         editor,
         editor.selection
@@ -117,20 +122,19 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
       if (listItemNode.type !== ListType.LIST_ITEM) return;
       const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
-      if (
-        (e.shiftKey && e.key === ListHotkey.TAB) ||
-        ([ListHotkey.ENTER, ListHotkey.DELETE_BACKWARD].includes(e.key) &&
-          isBlockTextEmpty(paragraphNode))
-      ) {
+      // move up
+      const shiftTab = e.shiftKey && e.key === ListHotkey.TAB;
+      const deleteOnEmptyBlock =
+        [ListHotkey.ENTER, ListHotkey.DELETE_BACKWARD].includes(e.key) &&
+        isBlockTextEmpty(paragraphNode);
+      if (shiftTab || deleteOnEmptyBlock) {
         const moved = moveUp(editor, listNode, listPath, listItemPath);
         if (moved) e.preventDefault();
       }
 
-      if (
-        !e.shiftKey &&
-        e.key === ListHotkey.TAB &&
-        !isFirstChild(listItemPath)
-      ) {
+      // move down
+      const tab = !e.shiftKey && e.key === ListHotkey.TAB;
+      if (tab && !isFirstChild(listItemPath)) {
         moveDown(editor, listNode, listItemPath);
       }
     }
