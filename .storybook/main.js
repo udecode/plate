@@ -6,6 +6,7 @@ module.exports = {
     '../stories/docs/**/contributing.stories.mdx',
     '../stories/docs/**/*.stories.(tsx|mdx)',
     '../stories/basic/**/*.stories.(tsx|mdx)',
+    '../stories/basic/editable-voids.stories.tsx',
     '../stories/plugins/**/playground.stories.tsx',
     '../stories/plugins/**/*.stories.(tsx|mdx)',
   ],
