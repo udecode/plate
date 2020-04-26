@@ -11,3 +11,4 @@ export * from './search-highlight';
 export * from './toolbar';
 export * from './types';
 export * from './soft-break';
+export * from './withNodeID';

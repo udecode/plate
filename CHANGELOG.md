@@ -6,6 +6,14 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ### `0.57.14` — April 26, 2020
 
+###### NEW
+
+- queries:
+  - `isPointAtRoot(point: Point)` to check if a point is at the root.
+- plugins:
+  - `withVoid` to set a list of element types to void.
+  - `withInline` to set a list of element types to inline.
+
 ###### FIX
 
 - `plugin-list`: fixed a bug where toggling the list throws an error when a paragraph has few leafs
@@ -26,16 +34,16 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ###### NEW
 
-- `paste-md` plugin + story: markdown can be pasted into the editor
+- `paste-md`: 
+    - markdown can be pasted into the editor
 
 ### `0.57.10` — February 25, 2020
 
 ###### FIX
 
-This fix attempt to solve issues with list toggle:
-
-- make sure list item is removed when unwrapping
-- if multiple paragraphs are selected when pressing toggle - they should end up as separate list items..
+- `plugin-list`:
+    - make sure list item is removed when unwrapping.
+    - if multiple paragraphs are selected when pressing toggle - they should end up as separate list items.
 
 ### `0.57.9` — February 25, 2020
 
@@ -47,7 +55,7 @@ This fix attempt to solve issues with list toggle:
 
 ###### NEW
 
-- Table actions
+- `plugin-table`:
   - Insert table
   - Delete table
   - Add/delete row
@@ -57,41 +65,40 @@ This fix attempt to solve issues with list toggle:
 
 ###### BREAKING
 
-- Each list item now has a paragraph child.
+- `plugin-list`:
+    - Each list item now has a paragraph child.
 
 ###### NEW
 
-- Nested lists
-  - Press `Tab` on a list item (except the first one) to indent the current list.
-  - Press `Shift+Tab`, `Enter` or `Backspace` to unindent the current list.
+- `plugin-list`:
+    - Supports nested lists:
+      - Press `Tab` on a list item (except the first one) to indent the current list.
+      - Press `Shift+Tab`, `Enter` or `Backspace` to unindent the current list.
 
 ### `0.57.6` — January 8, 2020
 
 ###### FIX
 
-- `line-height` of heading
+- styles:
+    - `line-height` of heading
 
 ### `0.57.5` — January 7, 2020
 
 ###### BREAKING
 
-- `withList` has been removed and its logic is now inside `withBlock` with the new option `unwrapTypes`.
-- `p` tag was the default one if no `type` was provided. The new default is `div`.
-- `withShortcuts`: removed `deleteBackward` logic as its covered by `withDeleteStartReset`.
+- plugins:
+    - `withList` has been removed and its logic is now inside `withBlock` with the new option `unwrapTypes`.
+    - `withShortcuts`: removed `deleteBackward` logic as its covered by `withDeleteStartReset`.
+- `p` tag was the default if no `type` was provided. The new default is `div`.
 
 ###### NEW
 
-Editor plugins:
-
-- `withDeleteStartReset`: on delete at the start of an empty block in types, replace it with a new paragraph.
-- `withBreakEmptyReset`: on insert break at the start of an empty block in types, replace it with a new paragraph.
-
-Queries:
-
-- `isList`
-
-Styles
-
-- action item.
-- removed the element styling from `globalStyle` as it is not exported.
-- a lot of spacing changes.
+- plugins:
+    - `withDeleteStartReset`: on delete at the start of an empty block in types, replace it with a new paragraph.
+    - `withBreakEmptyReset`: on insert break at the start of an empty block in types, replace it with a new paragraph.
+- queries:
+    - `isList`
+- styles
+    - action item.
+    - removed the element styling from `globalStyle` as it is not exported.
+    - a lot of spacing changes.

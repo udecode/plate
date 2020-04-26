@@ -1,14 +1,13 @@
+import { withVoid } from 'elements/withVoid';
 import { ReactEditor } from 'slate-react';
 import { isImageUrl } from './utils/isImageUrl';
 import { insertImage } from './transforms';
 import { IMAGE } from './types';
 
 export const withImage = <T extends ReactEditor>(editor: T) => {
-  const { insertData, isVoid } = editor;
+  editor = withVoid([IMAGE])(editor);
 
-  editor.isVoid = (element) => {
-    return element.type === IMAGE ? true : isVoid(element);
-  };
+  const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
