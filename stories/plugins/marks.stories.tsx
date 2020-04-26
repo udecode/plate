@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
+import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   Code,
   FormatBold,
   FormatItalic,
   FormatStrikethrough,
   FormatUnderlined,
-  ArrowUpward,
-  ArrowDownward,
 } from '@styled-icons/material';
-import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -66,7 +65,7 @@ export const MarkPlugins = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
           <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
@@ -76,8 +75,16 @@ export const MarkPlugins = () => {
             format={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
-          <ToolbarMark format={MARK_SUPERSCRIPT} icon={<ArrowUpward />} />
-          <ToolbarMark format={MARK_SUBSCRIPT} icon={<ArrowDownward />} />
+          <ToolbarMark
+            format={MARK_SUPERSCRIPT}
+            clear={MARK_SUBSCRIPT}
+            icon={<Superscript />}
+          />
+          <ToolbarMark
+            format={MARK_SUBSCRIPT}
+            clear={MARK_SUPERSCRIPT}
+            icon={<Subscript />}
+          />
           <ToolbarMark format={MARK_CODE} icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
+import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
-  ArrowUpward,
-  ArrowDownward,
   Code,
   FormatBold,
   FormatItalic,
@@ -16,8 +16,6 @@ import {
   LooksTwo,
   Search,
 } from '@styled-icons/material';
-import { Superscript, Subscript } from '@styled-icons/foundation';
-import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -76,7 +74,10 @@ import {
   withShortcuts,
   withTable,
   withVideo,
+  withVoid,
 } from '../../packages/slate-plugins/src';
+import { EditableVoidPlugin } from '../basic/editable-voids/EditableVoidPlugin';
+import { EDITABLE_VOID } from '../basic/editable-voids/types';
 import { CHARACTERS } from '../config/data';
 import {
   initialValueActionItem,
@@ -84,6 +85,7 @@ import {
   initialValueImages,
   initialValueMentions,
   initialValueRichText,
+  initialValueVoids,
 } from '../config/initialValues';
 
 export default {
@@ -96,6 +98,7 @@ const initialValue = [
   ...initialValueEmbeds,
   ...initialValueMentions,
   ...initialValueImages,
+  ...initialValueVoids,
 ];
 
 const resetOptions = {
@@ -124,6 +127,7 @@ export const Plugins = () => {
   if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
   if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
   if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
+  if (boolean('EditableVoidPlugin', true)) plugins.push(EditableVoidPlugin());
 
   const createReactEditor = () => () => {
     const decorate: any = [];
@@ -133,17 +137,19 @@ export const Plugins = () => {
 
     const editor = useMemo(
       () =>
-        withShortcuts(
-          withVideo(
-            withList(
-              withBreakEmptyReset(resetOptions)(
-                withDeleteStartReset(resetOptions)(
-                  withBlock(
-                    withMention(
-                      withImage(
-                        withPasteHtml(plugins)(
-                          withLink(
-                            withTable(withHistory(withReact(createEditor())))
+        withVoid([EDITABLE_VOID])(
+          withShortcuts(
+            withVideo(
+              withList(
+                withBreakEmptyReset(resetOptions)(
+                  withDeleteStartReset(resetOptions)(
+                    withBlock(
+                      withMention(
+                        withImage(
+                          withPasteHtml(plugins)(
+                            withLink(
+                              withTable(withHistory(withReact(createEditor())))
+                            )
                           )
                         )
                       )
@@ -184,7 +190,7 @@ export const Plugins = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => {
+        onChange={(newValue) => {
           setValue(newValue);
 
           onChangeMention({

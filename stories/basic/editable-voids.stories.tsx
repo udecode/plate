@@ -3,10 +3,10 @@ import { boolean, text } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { EditablePlugins } from '../../packages/slate-plugins/src';
+import { EditablePlugins, withVoid } from '../../packages/slate-plugins/src';
 import { initialValueVoids } from '../config/initialValues';
 import { EditableVoidPlugin } from './editable-voids/EditableVoidPlugin';
-import { withEditableVoids } from './editable-voids/withEditableVoids';
+import { EDITABLE_VOID } from './editable-voids/types';
 
 export default {
   title: 'Basic/Editable Voids',
@@ -18,7 +18,7 @@ export const Example = () => {
   const [value, setValue] = useState(initialValueVoids);
 
   const editor = useMemo(
-    () => withEditableVoids(withHistory(withReact(createEditor()))),
+    () => withVoid([EDITABLE_VOID])(withHistory(withReact(createEditor()))),
     []
   );
 
