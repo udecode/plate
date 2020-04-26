@@ -1,37 +1,8 @@
 import React from 'react';
 import { Transforms } from 'slate';
-import {
-  RenderElementProps,
-  useEditor,
-  useFocused,
-  useSelected,
-} from 'slate-react';
+import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
 import styled from 'styled-components';
 import { VIDEO } from '../types';
-
-interface Props {
-  selected?: boolean;
-  focused?: boolean;
-}
-
-const Wrapper = styled.div<Props>`
-  position: relative;
-  box-shadow: ${(props) =>
-    props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
-
-  padding: 10px 0;
-`;
-
-const VideoCell = styled.div<Props>`
-  display: ${(props) => (props.selected && props.focused ? 'none' : 'block')};
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  cursor: cell;
-  z-index: 1;
-`;
 
 const VideoWrapper = styled.div`
   padding: 75% 0 0 0;
@@ -47,8 +18,29 @@ const Iframe = styled.iframe`
 `;
 
 const Input = styled.input`
+  font-size: 0.85em;
+  width: 100%;
+  padding: 0.5em;
+  border: 2px solid #ddd;
+  background: #fafafa;
   margin-top: 5px;
 `;
+
+const UrlInput = ({ url, onChange }: { url: string; onChange: Function }) => {
+  const [value, setValue] = React.useState(url);
+
+  return (
+    <Input
+      value={value}
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => {
+        const newUrl = e.target.value;
+        setValue(newUrl);
+        onChange(newUrl);
+      }}
+    />
+  );
+};
 
 export const VideoElement = ({
   attributes,
@@ -56,14 +48,11 @@ export const VideoElement = ({
   element,
 }: RenderElementProps) => {
   const editor = useEditor();
-  const selected = useSelected();
-  const focused = useFocused();
   const { url } = element;
 
   return (
     <div {...attributes} data-slate-type={VIDEO}>
-      <Wrapper selected={selected} focused={focused} contentEditable={false}>
-        <VideoCell selected={selected} focused={focused} />
+      <div contentEditable={false}>
         <VideoWrapper>
           <Iframe
             title="embed"
@@ -71,17 +60,15 @@ export const VideoElement = ({
             frameBorder="0"
           />
         </VideoWrapper>
-        {selected && focused ? (
-          <Input
-            value={url}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(value) => {
-              const path = editor.findPath(element);
-              Transforms.setNodes(editor, { url: value }, { at: path });
-            }}
-          />
-        ) : null}
-      </Wrapper>
+
+        <UrlInput
+          url={url}
+          onChange={(val: string) => {
+            const path = ReactEditor.findPath(editor, element);
+            Transforms.setNodes(editor, { url: val }, { at: path });
+          }}
+        />
+      </div>
       {children}
     </div>
   );
