@@ -17,13 +17,17 @@ export const toggleList = (editor: Editor, listType: string) => {
     const list = { type: listType, children: [] };
     Transforms.wrapNodes(editor, list);
 
-    const nodes = Editor.nodes(editor, {
+    const nodesIterable = Editor.nodes(editor, {
       match: (node) => node.type === PARAGRAPH,
     });
+    const nodes = [...nodesIterable];
 
     const listItem = { type: ListType.LIST_ITEM, children: [] };
+
     for (const [, path] of nodes) {
-      Transforms.wrapNodes(editor, listItem, { at: path });
+      Transforms.wrapNodes(editor, listItem, {
+        at: path,
+      });
     }
   }
 };

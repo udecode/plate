@@ -4,11 +4,17 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.14` — April 26, 2020
+
+###### FIX
+
+- `plugin-list`: fixed a bug where toggling the list throws an error when a paragraph has few leafs
+
 ### `0.57.13` — April 25, 2020
 
-###### 
+###### NEW
 
-- New plugins for HTML `<sub>` and `<sup>` tags: superscript and subscript plugins. Included in the "Marks" story.
+- `plugin-marks`: New plugins for HTML `<sub>` and `<sup>` tags: superscript and subscript plugins. Included in the "Marks" story.
 
 ### `0.57.12` — April 14, 2020
 
