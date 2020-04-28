@@ -7,9 +7,9 @@ export const ListHotkey = {
 };
 
 export enum ListType {
-  OL = 'numbered-list',
-  UL = 'bulleted-list',
-  LI = 'list-item',
+  OL = 'ol',
+  UL = 'ul',
+  LI = 'li',
 }
 
 export interface ListTypeOptions {

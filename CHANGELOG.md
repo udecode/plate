@@ -8,14 +8,27 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ###### BREAKING
 
-- Refactor:
-    - `getElement` to `getElementComponent`
-    - `getRenderElements`
+- refactor `getElement` to `getElementComponent`
+- refactor elements types to reflect the html tags. 
+Also avoiding `-` as it's not valid in GraphQL enums. 
+If you already saved elements in your database, you will need to override the types with the previous ones or migrate.
+    - `action-item` -> `action_item`
+    - `block-quote` -> `blockquote`
+    - `heading-one` -> `h1` (until `h6`)
+    - `link` -> `a`
+    - `numbered-list` -> `ol`
+    - `bulleted-list` -> `ul`
+    - `list-item` -> `li`
+    - `paragraph` -> `p`
+    - `table-row` -> `tr`
+    - `table-cell` -> `td`
+    
 
 ###### NEW
 
 - Ordered lists supported in `withShortcuts` (Markdown Shortcuts) by typing `1.`.
-- Option `type` to all elements. Not yet for the marks.
+- Option type to all elements. Not yet for the marks.
+- `getRenderElements`
 
 ### `0.57.15` — April 29, 2020
 

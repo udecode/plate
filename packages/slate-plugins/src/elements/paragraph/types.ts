@@ -1,1 +1,1 @@
-export const PARAGRAPH = 'paragraph';
+export const PARAGRAPH = 'p';

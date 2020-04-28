@@ -1,10 +1,10 @@
 export enum HeadingType {
-  H1 = 'heading-one',
-  H2 = 'heading-two',
-  H3 = 'heading-three',
-  H4 = 'heading-four',
-  H5 = 'heading-five',
-  H6 = 'heading-six',
+  H1 = 'h1',
+  H2 = 'h2',
+  H3 = 'h3',
+  H4 = 'h4',
+  H5 = 'h5',
+  H6 = 'h6',
 }
 
 export interface HeadingTypeOptions {

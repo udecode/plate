@@ -1,1 +1,1 @@
-export const ACTION_ITEM = 'action-item';
+export const ACTION_ITEM = 'action_item';

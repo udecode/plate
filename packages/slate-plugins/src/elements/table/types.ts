@@ -1,7 +1,7 @@
 export enum TableType {
   TABLE = 'table',
-  ROW = 'table-row',
-  CELL = 'table-cell',
+  ROW = 'tr',
+  CELL = 'td',
 }
 
 export interface TableTypeOptions {
