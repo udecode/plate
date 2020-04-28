@@ -1,10 +1,12 @@
 import { DeserializeHtml } from 'deserializers/types';
 import { IMAGE } from './types';
 
-export const deserializeImage = (): DeserializeHtml => ({
+export const deserializeImage = ({
+  typeImg = IMAGE,
+} = {}): DeserializeHtml => ({
   element: {
     IMG: (el) => ({
-      type: IMAGE,
+      type: typeImg,
       url: el.getAttribute('src'),
     }),
   },

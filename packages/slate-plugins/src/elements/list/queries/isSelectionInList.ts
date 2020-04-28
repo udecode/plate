@@ -1,6 +1,8 @@
 import { Editor } from 'slate';
 import { isBlockActive } from '../../queries';
-import { ListType } from '../types';
+import { defaultListTypes } from '../types';
 
-export const isSelectionInList = (editor: Editor): boolean =>
-  isBlockActive(editor, ListType.LIST_ITEM);
+export const isSelectionInList = (
+  editor: Editor,
+  options = defaultListTypes
+): boolean => isBlockActive(editor, options.typeLi || '');

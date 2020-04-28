@@ -10,7 +10,6 @@ import {
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
-  HeadingType,
   InlineCodePlugin,
   ParagraphPlugin,
   SoftBreakPlugin,
@@ -21,7 +20,7 @@ import {
   withDeleteStartReset,
   withList,
 } from '../../packages/slate-plugins/src';
-import { initialValueSoftBreak } from '../config/initialValues';
+import { initialValueSoftBreak, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Soft Break',
@@ -29,17 +28,18 @@ export default {
 };
 
 const resetOptions = {
+  ...nodeTypes,
   types: [BLOCKQUOTE],
 };
 
 export const BlockPlugins = () => {
   const plugins: any[] = [
+    ParagraphPlugin(nodeTypes),
+    HeadingPlugin(nodeTypes),
+    BlockquotePlugin(nodeTypes),
+    CodePlugin(nodeTypes),
     SoftBreakPlugin(),
     InlineCodePlugin(),
-    ParagraphPlugin(),
-    HeadingPlugin(),
-    BlockquotePlugin(),
-    CodePlugin(),
   ];
 
   const createReactEditor = () => () => {
@@ -47,10 +47,10 @@ export const BlockPlugins = () => {
 
     const editor = useMemo(
       () =>
-        withList(
+        withList(nodeTypes)(
           withBreakEmptyReset(resetOptions)(
             withDeleteStartReset(resetOptions)(
-              withBlock(withHistory(withReact(createEditor())))
+              withBlock(nodeTypes)(withHistory(withReact(createEditor())))
             )
           )
         ),
@@ -61,13 +61,16 @@ export const BlockPlugins = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
-          <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
-          <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
-          <ToolbarCode icon={<Code />} />
+          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarBlock
+            type={nodeTypes.typeBlockquote}
+            icon={<FormatQuote />}
+          />
+          <ToolbarCode {...nodeTypes} icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

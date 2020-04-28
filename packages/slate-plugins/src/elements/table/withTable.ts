@@ -1,19 +1,25 @@
 import { Editor, Point, Range } from 'slate';
-import { TableType } from './types';
+import { TableType, TableTypeOptions } from './types';
 
-export const withTable = <T extends Editor>(editor: T) => {
+export const withTable = ({
+  typeTable = TableType.TABLE,
+  typeTd = TableType.CELL,
+}: TableTypeOptions = {}) => <T extends Editor>(editor: T) => {
   const { deleteBackward, deleteForward, insertBreak } = editor;
 
-  editor.deleteBackward = (unit) => {
+  const preventDeleteCell = (operation: any, pointCallback: any) => (
+    unit: any
+  ) => {
     const { selection } = editor;
 
     if (selection && Range.isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === TableType.CELL,
+        match: (n) => n.type === typeTd,
       });
+
       if (cell) {
         const [, cellPath] = cell;
-        const start = Editor.start(editor, cellPath);
+        const start = pointCallback(editor, cellPath);
 
         if (Point.equals(selection.anchor, start)) {
           return;
@@ -21,36 +27,21 @@ export const withTable = <T extends Editor>(editor: T) => {
       }
     }
 
-    deleteBackward(unit);
+    operation(unit);
   };
 
-  editor.deleteForward = (unit) => {
-    const { selection } = editor;
+  // prevent deleting cells with deleteBackward
+  editor.deleteBackward = preventDeleteCell(deleteBackward, Editor.start);
 
-    if (selection && Range.isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === TableType.CELL,
-      });
-
-      if (cell) {
-        const [, cellPath] = cell;
-        const end = Editor.end(editor, cellPath);
-
-        if (Point.equals(selection.anchor, end)) {
-          return;
-        }
-      }
-    }
-
-    deleteForward(unit);
-  };
+  // prevent deleting cells with deleteForward
+  editor.deleteForward = preventDeleteCell(deleteForward, Editor.end);
 
   editor.insertBreak = () => {
     const { selection } = editor;
 
     if (selection) {
       const [table] = Editor.nodes(editor, {
-        match: (n) => n.type === TableType.TABLE,
+        match: (n) => n.type === typeTable,
       });
 
       if (table) return;

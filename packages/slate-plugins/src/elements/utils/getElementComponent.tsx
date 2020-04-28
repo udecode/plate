@@ -4,7 +4,7 @@ import { RenderElementProps } from 'slate-react';
 /**
  * get default element component
  */
-export const getElement = (Component: any) => ({
+export const getElementComponent = (Component: any) => ({
   attributes,
   element,
   children,

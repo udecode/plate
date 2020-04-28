@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import {
-  Code,
   FormatListBulleted,
   FormatListNumbered,
   FormatQuote,
@@ -18,9 +18,7 @@ import {
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
-  HeadingType,
   ListPlugin,
-  ListType,
   ParagraphPlugin,
   ToolbarBlock,
   ToolbarCode,
@@ -30,7 +28,7 @@ import {
   withDeleteStartReset,
   withList,
 } from '../../packages/slate-plugins/src';
-import { initialValueRichText } from '../config/initialValues';
+import { initialValueRichText, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Elements',
@@ -44,27 +42,30 @@ export default {
 };
 
 const resetOptions = {
+  ...nodeTypes,
   types: [BLOCKQUOTE],
 };
 
 export const BlockPlugins = () => {
   const plugins: any[] = [];
-  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
-  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin());
+  if (boolean('ParagraphPlugin', true))
+    plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+  if (boolean('BlockquotePlugin', true))
+    plugins.push(BlockquotePlugin(nodeTypes));
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueRichText);
 
     const editor = useMemo(
       () =>
-        withList(
+        withList(nodeTypes)(
           withBreakEmptyReset(resetOptions)(
             withDeleteStartReset(resetOptions)(
-              withBlock(withHistory(withReact(createEditor())))
+              withBlock(nodeTypes)(withHistory(withReact(createEditor())))
             )
           )
         ),
@@ -75,21 +76,23 @@ export const BlockPlugins = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
-          <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
+          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
           <ToolbarList
-            format={ListType.UL_LIST}
+            {...nodeTypes}
+            typeList={nodeTypes.typeUl}
             icon={<FormatListBulleted />}
           />
           <ToolbarList
-            format={ListType.OL_LIST}
+            {...nodeTypes}
+            typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
-          <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
-          <ToolbarCode icon={<Code />} />
+          <ToolbarBlock type={BLOCKQUOTE} icon={<FormatQuote />} />
+          <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

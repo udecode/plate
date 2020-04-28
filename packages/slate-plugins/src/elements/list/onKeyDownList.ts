@@ -3,7 +3,12 @@ import { isPointAtRoot } from 'elements/queries/isPointAtRoot';
 import { Ancestor, Editor, Path, Transforms } from 'slate';
 import { isBlockTextEmpty, isFirstChild } from '../queries';
 import { isList, isSelectionInList } from './queries';
-import { ListHotkey, ListType } from './types';
+import {
+  defaultListTypes,
+  ListHotkey,
+  ListType,
+  ListTypeOptions,
+} from './types';
 
 /**
  * Move a list item next to its parent.
@@ -13,10 +18,11 @@ const moveUp = (
   editor: Editor,
   listNode: Ancestor,
   listPath: number[],
-  listItemPath: number[]
+  listItemPath: number[],
+  options = defaultListTypes
 ) => {
   const [listParentNode, listParentPath] = Editor.parent(editor, listPath);
-  if (listParentNode.type !== ListType.LIST_ITEM) return;
+  if (listParentNode.type !== options.typeLi) return;
 
   const newListItemPath = Path.next(listParentPath);
 
@@ -72,7 +78,8 @@ const moveUp = (
 const moveDown = (
   editor: Editor,
   listNode: Ancestor,
-  listItemPath: number[]
+  listItemPath: number[],
+  options = defaultListTypes
 ) => {
   // Previous sibling is the new parent
   const previousSiblingItem = Editor.node(editor, Path.previous(listItemPath));
@@ -80,7 +87,7 @@ const moveDown = (
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = previousNode.children.find(isList);
+    const sublist = previousNode.children.find(isList(options));
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );
@@ -102,7 +109,14 @@ const moveDown = (
   }
 };
 
-export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
+export const onKeyDownList = ({
+  typeUl = ListType.UL,
+  typeOl = ListType.OL,
+  typeLi = ListType.LI,
+  typeP = PARAGRAPH,
+}: ListTypeOptions = {}) => (e: KeyboardEvent, editor: Editor) => {
+  const options = { typeUl, typeOl, typeLi };
+
   if (Object.values(ListHotkey).includes(e.key)) {
     if (editor.selection && isSelectionInList(editor)) {
       if (e.key === ListHotkey.TAB) {
@@ -117,9 +131,9 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
         editor,
         editor.selection
       );
-      if (paragraphNode.type !== PARAGRAPH) return;
+      if (paragraphNode.type !== typeP) return;
       const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
-      if (listItemNode.type !== ListType.LIST_ITEM) return;
+      if (listItemNode.type !== typeLi) return;
       const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
       // move up
@@ -128,14 +142,14 @@ export const onKeyDownList = () => (e: KeyboardEvent, editor: Editor) => {
         [ListHotkey.ENTER, ListHotkey.DELETE_BACKWARD].includes(e.key) &&
         isBlockTextEmpty(paragraphNode);
       if (shiftTab || deleteOnEmptyBlock) {
-        const moved = moveUp(editor, listNode, listPath, listItemPath);
+        const moved = moveUp(editor, listNode, listPath, listItemPath, options);
         if (moved) e.preventDefault();
       }
 
       // move down
       const tab = !e.shiftKey && e.key === ListHotkey.TAB;
       if (tab && !isFirstChild(listItemPath)) {
-        moveDown(editor, listNode, listItemPath);
+        moveDown(editor, listNode, listItemPath, options);
       }
     }
   }

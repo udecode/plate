@@ -6,9 +6,11 @@ import { Editor, Point, Range, Transforms } from 'slate';
  * replace it with a new paragraph.
  */
 export const withDeleteStartReset = ({
+  typeP = PARAGRAPH,
   types,
   onUnwrap,
 }: {
+  typeP?: string;
   types: string[];
   onUnwrap?: any;
 }) => <T extends Editor>(editor: T) => {
@@ -27,7 +29,7 @@ export const withDeleteStartReset = ({
         const parentStart = Editor.start(editor, parentPath);
 
         if (Point.equals(selection.anchor, parentStart)) {
-          Transforms.setNodes(editor, { type: PARAGRAPH });
+          Transforms.setNodes(editor, { type: typeP });
 
           if (onUnwrap) onUnwrap();
 

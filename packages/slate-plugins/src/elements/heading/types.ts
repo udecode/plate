@@ -7,18 +7,26 @@ export enum HeadingType {
   H6 = 'heading-six',
 }
 
-export interface RenderElementHeadingOptions {
+export interface HeadingTypeOptions {
+  typeH1?: string;
+  typeH2?: string;
+  typeH3?: string;
+  typeH4?: string;
+  typeH5?: string;
+  typeH6?: string;
+}
+
+export interface DeserializeHeadingOptions extends HeadingTypeOptions {
   levels?: number;
+}
+
+export interface RenderElementHeadingOptions extends DeserializeHeadingOptions {
   H1?: any;
   H2?: any;
   H3?: any;
   H4?: any;
   H5?: any;
   H6?: any;
-}
-
-export interface DeserializeHeadingOptions {
-  levels?: number;
 }
 
 export interface HeadingPluginOptions extends RenderElementHeadingOptions {}

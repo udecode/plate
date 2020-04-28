@@ -35,14 +35,14 @@ export const Example = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={newValue => setValue(newValue)}
+      onChange={(newValue) => setValue(newValue)}
     >
       <HoveringToolbar>
-        <ToolbarMark reversed format={MARK_BOLD} icon={<FormatBold />} />
-        <ToolbarMark reversed format={MARK_ITALIC} icon={<FormatItalic />} />
+        <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
+        <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
         <ToolbarMark
           reversed
-          format={MARK_UNDERLINE}
+          type={MARK_UNDERLINE}
           icon={<FormatUnderlined />}
         />
       </HoveringToolbar>

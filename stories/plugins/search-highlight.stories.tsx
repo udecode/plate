@@ -45,7 +45,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <EditablePlugins plugins={plugins} decorate={decorate} />

@@ -6,13 +6,13 @@ import {
   EditablePlugins,
   HeadingPlugin,
 } from '../../packages/slate-plugins/src';
-import { initialValueHugeDocument } from '../config/initialValues';
+import { initialValueHugeDocument, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Basic/Huge Document',
 };
 
-const plugins = [HeadingPlugin()];
+const plugins = [HeadingPlugin(nodeTypes)];
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueHugeDocument);
@@ -23,7 +23,7 @@ export const Example = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={newValue => setValue(newValue)}
+      onChange={(newValue) => setValue(newValue)}
     >
       <EditablePlugins plugins={plugins} spellCheck autoFocus />
     </Slate>

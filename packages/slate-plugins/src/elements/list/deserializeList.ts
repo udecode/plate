@@ -1,10 +1,14 @@
 import { DeserializeHtml } from 'deserializers/types';
-import { ListType } from './types';
+import { ListType, ListTypeOptions } from './types';
 
-export const deserializeList = (): DeserializeHtml => ({
+export const deserializeList = ({
+  typeUl = ListType.UL,
+  typeOl = ListType.OL,
+  typeLi = ListType.LI,
+}: ListTypeOptions = {}): DeserializeHtml => ({
   element: {
-    UL: () => ({ type: ListType.UL_LIST }),
-    OL: () => ({ type: ListType.OL_LIST }),
-    LI: () => ({ type: ListType.LIST_ITEM }),
+    UL: () => ({ type: typeUl }),
+    OL: () => ({ type: typeOl }),
+    LI: () => ({ type: typeLi }),
   },
 });

@@ -11,4 +11,5 @@ export interface GetRenderElementOptions {
 
 export interface RenderElementOptions {
   component?: any;
+  [key: string]: any;
 }

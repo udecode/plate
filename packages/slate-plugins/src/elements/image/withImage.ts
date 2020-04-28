@@ -4,8 +4,10 @@ import { isImageUrl } from './utils/isImageUrl';
 import { insertImage } from './transforms';
 import { IMAGE } from './types';
 
-export const withImage = <T extends ReactEditor>(editor: T) => {
-  editor = withVoid([IMAGE])(editor);
+export const withImage = ({ typeImg = IMAGE } = {}) => <T extends ReactEditor>(
+  editor: T
+) => {
+  editor = withVoid([typeImg])(editor);
 
   const { insertData } = editor;
 

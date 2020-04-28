@@ -12,7 +12,7 @@ import {
   ToolbarLink,
   withLink,
 } from '../../packages/slate-plugins/src';
-import { initialValueLinks } from '../config/initialValues';
+import { initialValueLinks, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Link',
@@ -25,13 +25,13 @@ export default {
 
 export const Example = () => {
   const plugins: any[] = [];
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueLinks);
 
     const editor = useMemo(
-      () => withLink(withHistory(withReact(createEditor()))),
+      () => withLink(nodeTypes)(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -39,10 +39,10 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarLink icon={<Link />} />
+          <ToolbarLink {...nodeTypes} icon={<Link />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

@@ -1,13 +1,14 @@
+import { defaultListTypes } from 'elements/list/types';
 import { Editor, Transforms } from 'slate';
 import { isList, isListItem } from '../queries';
 
-export const unwrapList = (editor: Editor) => {
+export const unwrapList = (editor: Editor, options = defaultListTypes) => {
   Transforms.unwrapNodes(editor, {
-    match: isListItem,
+    match: isListItem(options),
   });
 
   Transforms.unwrapNodes(editor, {
-    match: isList,
+    match: isList(options),
     split: true,
   });
 };

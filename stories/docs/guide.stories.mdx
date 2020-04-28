@@ -107,8 +107,8 @@ Another example without `getRenderElement`:
 ```js
 export const renderElementTable = ({
   Table = TableElement,
-  Row = getElement('tr'),
-  Cell = getElement('td'),
+  Row = getElementComponent('tr'),
+  Cell = getElementComponent('td'),
 }: RenderElementTableOptions = {}) => (props: RenderElementProps) => {
   switch (props.element.type) {
     case TableType.TABLE:

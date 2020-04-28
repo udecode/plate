@@ -1,3 +1,5 @@
+import { PARAGRAPH } from 'elements/paragraph';
+
 export const ListHotkey = {
   TAB: 'Tab',
   ENTER: 'Enter',
@@ -5,13 +7,27 @@ export const ListHotkey = {
 };
 
 export enum ListType {
-  OL_LIST = 'numbered-list',
-  UL_LIST = 'bulleted-list',
-  LIST_ITEM = 'list-item',
+  OL = 'numbered-list',
+  UL = 'bulleted-list',
+  LI = 'list-item',
 }
 
-export interface RenderElementListOptions {
+export interface ListTypeOptions {
+  typeUl?: string;
+  typeOl?: string;
+  typeLi?: string;
+  typeP?: string;
+}
+
+export interface RenderElementListOptions extends ListTypeOptions {
   UL?: any;
   OL?: any;
   LI?: any;
 }
+
+export const defaultListTypes: ListTypeOptions = {
+  typeUl: ListType.UL,
+  typeOl: ListType.OL,
+  typeLi: ListType.LI,
+  typeP: PARAGRAPH,
+};

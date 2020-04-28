@@ -6,17 +6,20 @@ import { isBlockActive } from '../../queries';
 import { toggleCode } from '../transforms';
 import { CODE } from '../types';
 
-export const ToolbarCode = (props: ToolbarElementProps) => {
+export const ToolbarCode = ({
+  typeCode = CODE,
+  ...props
+}: ToolbarElementProps) => {
   const editor = useSlate();
 
   return (
     <ToolbarButton
       {...props}
-      active={isBlockActive(editor, CODE)}
+      active={isBlockActive(editor, typeCode)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
 
-        toggleCode(editor);
+        toggleCode(editor, { typeCode });
       }}
     />
   );

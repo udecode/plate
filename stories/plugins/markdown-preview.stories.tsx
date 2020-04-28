@@ -35,7 +35,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <EditablePlugins
           plugins={plugins}

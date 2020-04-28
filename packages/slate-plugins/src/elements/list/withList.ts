@@ -2,13 +2,18 @@ import { PARAGRAPH } from 'elements/paragraph';
 import { withBreakEmptyReset } from 'elements/withBreakEmptyReset';
 import { withDeleteStartReset } from 'elements/withDeleteStartReset';
 import { Editor, Path, Point, Range, Transforms } from 'slate';
-import { ListType } from './types';
+import { ListType, ListTypeOptions } from './types';
 
-export const withList = <T extends Editor>(editor: T) => {
+export const withList = ({
+  typeUl = ListType.UL,
+  typeOl = ListType.OL,
+  typeLi = ListType.LI,
+  typeP = PARAGRAPH,
+}: ListTypeOptions = {}) => <T extends Editor>(editor: T) => {
   const { insertBreak } = editor;
 
   /**
-   * Add a new list item if selection is in a LIST_ITEM > PARAGRAPH.
+   * Add a new list item if selection is in a LIST_ITEM > typeP.
    */
   editor.insertBreak = () => {
     if (editor.selection) {
@@ -16,13 +21,13 @@ export const withList = <T extends Editor>(editor: T) => {
         editor,
         editor.selection
       );
-      if (paragraphNode.type === PARAGRAPH) {
+      if (paragraphNode.type === typeP) {
         const [listItemNode, listItemPath] = Editor.parent(
           editor,
           paragraphPath
         );
 
-        if (listItemNode.type === ListType.LIST_ITEM) {
+        if (listItemNode.type === typeLi) {
           if (!Range.isCollapsed(editor.selection)) {
             Transforms.delete(editor);
           }
@@ -43,8 +48,8 @@ export const withList = <T extends Editor>(editor: T) => {
             Transforms.insertNodes(
               editor,
               {
-                type: ListType.LIST_ITEM,
-                children: [{ type: PARAGRAPH, children: [{ text: '' }] }],
+                type: typeLi,
+                children: [{ type: typeP, children: [{ text: '' }] }],
               },
               { at: listItemPath }
             );
@@ -59,7 +64,7 @@ export const withList = <T extends Editor>(editor: T) => {
             Transforms.wrapNodes(
               editor,
               {
-                type: ListType.LIST_ITEM,
+                type: typeLi,
                 children: [],
               },
               { at: nextParagraphPath }
@@ -75,8 +80,8 @@ export const withList = <T extends Editor>(editor: T) => {
             Transforms.insertNodes(
               editor,
               {
-                type: ListType.LIST_ITEM,
-                children: [{ type: PARAGRAPH, children: [{ text: '' }] }],
+                type: typeLi,
+                children: [{ type: typeP, children: [{ text: '' }] }],
               },
               { at: nextListItemPath }
             );
@@ -103,22 +108,24 @@ export const withList = <T extends Editor>(editor: T) => {
 
   const withBreakEmptyList = () => {
     Transforms.unwrapNodes(editor, {
-      match: (n) => n.type === ListType.LIST_ITEM,
+      match: (n) => n.type === typeLi,
       split: true,
     });
     Transforms.unwrapNodes(editor, {
-      match: (n) => [ListType.UL_LIST, ListType.OL_LIST].includes(n.type),
+      match: (n) => [typeUl, typeOl].includes(n.type),
       split: true,
     });
   };
 
   let e = withBreakEmptyReset({
-    types: [ListType.LIST_ITEM],
+    typeP,
+    types: [typeLi],
     onUnwrap: withBreakEmptyList,
   })(editor);
 
   e = withDeleteStartReset({
-    types: [ListType.LIST_ITEM],
+    typeP,
+    types: [typeLi],
     onUnwrap: withBreakEmptyList,
   })(e);
 

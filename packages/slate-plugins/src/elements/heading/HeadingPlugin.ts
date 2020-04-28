@@ -5,5 +5,5 @@ import { HeadingPluginOptions } from './types';
 
 export const HeadingPlugin = (options?: HeadingPluginOptions): SlatePlugin => ({
   renderElement: renderElementHeading(options),
-  deserialize: deserializeHeading({ levels: options?.levels }),
+  deserialize: deserializeHeading(options),
 });

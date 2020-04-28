@@ -1,18 +1,42 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
-import { GetRenderElementOptions, RenderElementOptions } from '../types';
+import { GetRenderElementOptions } from '../types';
 
 /**
- * get generic renderElement with a custom component
+ * Get generic renderElement from a possible type + component
  */
 export const getRenderElement = ({
   type,
-  component,
+  component: Component,
 }: GetRenderElementOptions) => ({
-  component: Component = component,
-}: RenderElementOptions = {}) => (props: RenderElementProps) => {
-  const elementType = props.element.type;
-  if (elementType === type) {
-    return <Component {...props} />;
+  attributes,
+  ...props
+}: RenderElementProps) => {
+  if (props.element.type === type) {
+    return (
+      <Component
+        attributes={{ 'data-slate-type': type, ...attributes }}
+        {...props}
+      />
+    );
+  }
+};
+
+/**
+ * Get generic renderElement from a list of possible types + components
+ */
+export const getRenderElements = (options: GetRenderElementOptions[]) => ({
+  attributes,
+  ...props
+}: RenderElementProps) => {
+  for (const { type, component: Component } of options) {
+    if (props.element.type === type) {
+      return (
+        <Component
+          attributes={{ 'data-slate-type': type, ...attributes }}
+          {...props}
+        />
+      );
+    }
   }
 };

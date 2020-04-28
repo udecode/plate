@@ -1,10 +1,14 @@
 import { DeserializeHtml } from 'deserializers/types';
-import { TableType } from './types';
+import { TableType, TableTypeOptions } from './types';
 
-export const deserializeTable = (): DeserializeHtml => ({
+export const deserializeTable = ({
+  typeTable = TableType.TABLE,
+  typeTr = TableType.ROW,
+  typeTd = TableType.CELL,
+}: TableTypeOptions = {}): DeserializeHtml => ({
   element: {
-    TABLE: () => ({ type: TableType.TABLE }),
-    TR: () => ({ type: TableType.ROW }),
-    TD: () => ({ type: TableType.CELL }),
+    TABLE: () => ({ type: typeTable }),
+    TR: () => ({ type: typeTr }),
+    TD: () => ({ type: typeTd }),
   },
 });

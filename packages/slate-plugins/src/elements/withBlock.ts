@@ -3,14 +3,16 @@ import { PARAGRAPH } from './paragraph';
 import { isBlockActive } from './queries';
 import { ToggleBlockEditor } from './types';
 
-export const withBlock = <T extends Editor>(editor: T) => {
+export const withBlock = ({ typeP = PARAGRAPH } = {}) => <T extends Editor>(
+  editor: T
+) => {
   const e = editor as T & ToggleBlockEditor;
 
-  e.toggleBlock = (format: string) => {
-    const isActive = isBlockActive(e, format);
+  e.toggleBlock = (type: string) => {
+    const isActive = isBlockActive(e, type);
 
     Transforms.setNodes(e, {
-      type: isActive ? PARAGRAPH : format,
+      type: isActive ? typeP : type,
     });
   };
 

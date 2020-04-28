@@ -7,5 +7,5 @@ export const TablePlugin = (
   options?: RenderElementTableOptions
 ): SlatePlugin => ({
   renderElement: renderElementTable(options),
-  deserialize: deserializeTable(),
+  deserialize: deserializeTable(options),
 });

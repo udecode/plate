@@ -1,8 +1,8 @@
 import { DeserializeHtml } from 'deserializers/types';
 import { LINK } from './types';
 
-export const deserializeLink = (): DeserializeHtml => ({
+export const deserializeLink = ({ typeLink = LINK } = {}): DeserializeHtml => ({
   element: {
-    A: (el) => ({ type: LINK, url: el.getAttribute('href') }),
+    A: (el) => ({ type: typeLink, url: el.getAttribute('href') }),
   },
 });

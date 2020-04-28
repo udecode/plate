@@ -1,7 +1,6 @@
 import React from 'react';
 import { RenderElementProps, useFocused, useSelected } from 'slate-react';
 import styled from 'styled-components';
-import { IMAGE } from '../types';
 
 const Image = styled.img<{ selected: boolean; focused: boolean }>`
   display: block;
@@ -21,7 +20,7 @@ export const ImageElement = ({
   const focused = useFocused();
 
   return (
-    <div {...attributes} data-slate-type={IMAGE}>
+    <div {...attributes}>
       <div contentEditable={false}>
         <Image src={element.url} alt="" selected={selected} focused={focused} />
       </div>
