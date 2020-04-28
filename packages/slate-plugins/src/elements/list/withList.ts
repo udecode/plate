@@ -1,4 +1,5 @@
 import { PARAGRAPH } from 'elements/paragraph';
+import { isRangeAtRoot } from 'elements/queries';
 import { withBreakEmptyReset } from 'elements/withBreakEmptyReset';
 import { withDeleteStartReset } from 'elements/withDeleteStartReset';
 import { Editor, Path, Point, Range, Transforms } from 'slate';
@@ -11,7 +12,7 @@ export const withList = <T extends Editor>(editor: T) => {
    * Add a new list item if selection is in a LIST_ITEM > PARAGRAPH.
    */
   editor.insertBreak = () => {
-    if (editor.selection) {
+    if (editor.selection && !isRangeAtRoot(editor.selection)) {
       const [paragraphNode, paragraphPath] = Editor.parent(
         editor,
         editor.selection
