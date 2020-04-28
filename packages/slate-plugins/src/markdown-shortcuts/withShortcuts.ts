@@ -1,18 +1,39 @@
-import { BLOCKQUOTE, HeadingType, ListType, toggleList } from 'elements';
+import {
+  BLOCKQUOTE,
+  HeadingType,
+  ListType,
+  PARAGRAPH,
+  toggleList,
+} from 'elements';
 import { Editor, Range, Transforms } from 'slate';
 
 export const withShortcuts = ({
   typeUl = ListType.UL,
   typeOl = ListType.OL,
   typeLi = ListType.LI,
-  typeBlockquote = BLOCKQUOTE,
   typeH1 = HeadingType.H1,
   typeH2 = HeadingType.H2,
   typeH3 = HeadingType.H3,
   typeH4 = HeadingType.H4,
   typeH5 = HeadingType.H5,
   typeH6 = HeadingType.H6,
+  typeBlockquote = BLOCKQUOTE,
+  typeP = PARAGRAPH,
 } = {}) => <T extends Editor>(editor: T) => {
+  const options = {
+    typeUl,
+    typeOl,
+    typeLi,
+    typeBlockquote,
+    typeH1,
+    typeH2,
+    typeH3,
+    typeH4,
+    typeH5,
+    typeH6,
+    typeP,
+  };
+
   const { insertText } = editor;
 
   editor.insertText = (text) => {
@@ -55,7 +76,7 @@ export const withShortcuts = ({
         } else {
           const typeList = beforeText === '1.' ? typeOl : typeUl;
 
-          toggleList(editor, { typeList, typeLi });
+          toggleList(editor, { ...options, typeList });
         }
         return;
       }

@@ -35,7 +35,6 @@ import {
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
-  ListType,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -231,12 +230,12 @@ export const Plugins = () => {
           <ToolbarLink {...nodeTypes} icon={<Link />} />
           <ToolbarList
             {...nodeTypes}
-            typeList={ListType.UL}
+            typeList={nodeTypes.typeUl}
             icon={<FormatListBulleted />}
           />
           <ToolbarList
             {...nodeTypes}
-            typeList={ListType.OL}
+            typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
           <ToolbarBlock

@@ -15,8 +15,8 @@ const OlElement = styled.ol`
 `;
 
 export const renderElementList = ({
-  UL = UlElement,
-  OL = OlElement,
+  UL = getElementComponent(UlElement),
+  OL = getElementComponent(OlElement),
   LI = getElementComponent('li'),
   typeUl = ListType.UL,
   typeOl = ListType.OL,

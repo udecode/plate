@@ -7,7 +7,6 @@ import { toggleList } from '../transforms';
 
 export const ToolbarList = ({
   typeList = ListType.UL,
-  typeLi = ListType.LI,
   ...props
 }: ToolbarCustomProps) => {
   const editor = useSlate();
@@ -18,7 +17,7 @@ export const ToolbarList = ({
       type={typeList}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        toggleList(editor, { typeList, typeLi });
+        toggleList(editor, { ...props, typeList });
       }}
     />
   );

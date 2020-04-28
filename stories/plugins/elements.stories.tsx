@@ -91,7 +91,10 @@ export const BlockPlugins = () => {
             typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
-          <ToolbarBlock type={BLOCKQUOTE} icon={<FormatQuote />} />
+          <ToolbarBlock
+            type={nodeTypes.typeBlockquote}
+            icon={<FormatQuote />}
+          />
           <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins

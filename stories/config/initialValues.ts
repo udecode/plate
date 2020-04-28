@@ -3,6 +3,7 @@ import { Node } from 'slate';
 import {
   ACTION_ITEM,
   BLOCKQUOTE,
+  CODE,
   HeadingType,
   IMAGE,
   LINK,
@@ -11,12 +12,14 @@ import {
   PARAGRAPH,
   TableType,
   VIDEO,
-} from 'slate-plugins-next/src';
+} from '../../packages/slate-plugins/src';
+import { EDITABLE_VOID } from '../basic/editable-voids/types';
 
 export const nodeTypes = {
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
+  typeCode: CODE,
   typeLink: LINK,
   typeImg: IMAGE,
   typeVideo: VIDEO,
@@ -33,6 +36,7 @@ export const nodeTypes = {
   typeH4: HeadingType.H4,
   typeH5: HeadingType.H5,
   typeH6: HeadingType.H6,
+  typeEditableVoid: EDITABLE_VOID,
 };
 
 export const initialValueVoids: Node[] = [
@@ -46,7 +50,7 @@ export const initialValueVoids: Node[] = [
     ],
   },
   {
-    type: 'editable-void',
+    type: nodeTypes.typeEditableVoid,
     children: [{ text: '' }],
   },
   {
@@ -116,7 +120,7 @@ export const initialValueEmbeds: Node[] = [
     ],
   },
   {
-    type: 'video',
+    type: nodeTypes.typeVideo,
     url: 'https://player.vimeo.com/video/26689853',
     children: [{ text: '' }],
   },
@@ -199,7 +203,7 @@ export const initialValueImages: Node[] = [
     ],
   },
   {
-    type: 'image',
+    type: nodeTypes.typeImg,
     url: 'https://source.unsplash.com/kFrdX5IeQzI',
     children: [{ text: '' }],
   },
@@ -222,7 +226,7 @@ export const initialValueLinks: Node[] = [
         text: 'In addition to block nodes, you can create inline nodes, like ',
       },
       {
-        type: 'link',
+        type: nodeTypes.typeLink,
         url: 'https://en.wikipedia.org/wiki/Hypertext',
         children: [{ text: 'hyperlinks' }],
       },

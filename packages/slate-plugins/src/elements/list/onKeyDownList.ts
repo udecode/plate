@@ -115,10 +115,10 @@ export const onKeyDownList = ({
   typeLi = ListType.LI,
   typeP = PARAGRAPH,
 }: ListTypeOptions = {}) => (e: KeyboardEvent, editor: Editor) => {
-  const options = { typeUl, typeOl, typeLi };
+  const options = { typeUl, typeOl, typeLi, typeP };
 
   if (Object.values(ListHotkey).includes(e.key)) {
-    if (editor.selection && isSelectionInList(editor)) {
+    if (editor.selection && isSelectionInList(editor, options)) {
       if (e.key === ListHotkey.TAB) {
         e.preventDefault();
       }
@@ -141,6 +141,7 @@ export const onKeyDownList = ({
       const deleteOnEmptyBlock =
         [ListHotkey.ENTER, ListHotkey.DELETE_BACKWARD].includes(e.key) &&
         isBlockTextEmpty(paragraphNode);
+
       if (shiftTab || deleteOnEmptyBlock) {
         const moved = moveUp(editor, listNode, listPath, listItemPath, options);
         if (moved) e.preventDefault();

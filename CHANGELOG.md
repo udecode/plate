@@ -4,6 +4,19 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.15` — April 28, 2020
+
+###### BREAKING
+
+- Refactor:
+    - `getElement` to `getElementComponent`
+    - `getRenderElements`
+
+###### NEW
+
+- Ordered lists supported in `withShortcuts` (Markdown Shortcuts) by typing `1.`.
+- Option `type` to all elements. Not yet for the marks.
+
 ### `0.57.14` — April 26, 2020
 
 ###### NEW

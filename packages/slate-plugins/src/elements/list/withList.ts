@@ -10,6 +10,13 @@ export const withList = ({
   typeLi = ListType.LI,
   typeP = PARAGRAPH,
 }: ListTypeOptions = {}) => <T extends Editor>(editor: T) => {
+  const options = {
+    typeUl,
+    typeOl,
+    typeLi,
+    typeP,
+  };
+
   const { insertBreak } = editor;
 
   /**
@@ -118,13 +125,13 @@ export const withList = ({
   };
 
   let e = withBreakEmptyReset({
-    typeP,
+    ...options,
     types: [typeLi],
     onUnwrap: withBreakEmptyList,
   })(editor);
 
   e = withDeleteStartReset({
-    typeP,
+    ...options,
     types: [typeLi],
     onUnwrap: withBreakEmptyList,
   })(e);

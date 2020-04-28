@@ -8,13 +8,29 @@ export const toggleList = (
   editor: Editor,
   {
     typeList,
+    typeUl = ListType.UL,
+    typeOl = ListType.OL,
     typeLi = ListType.LI,
     typeP = PARAGRAPH,
-  }: { typeList: string; typeLi?: string; typeP?: string }
+  }: {
+    typeList: string;
+    typeUl?: string;
+    typeOl?: string;
+    typeLi?: string;
+    typeP?: string;
+  }
 ) => {
+  const options = {
+    typeList,
+    typeUl,
+    typeOl,
+    typeLi,
+    typeP,
+  };
+
   const isActive = isBlockActive(editor, typeList);
 
-  unwrapList(editor);
+  unwrapList(editor, options);
 
   Transforms.setNodes(editor, {
     type: typeP,

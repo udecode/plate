@@ -6,7 +6,7 @@ import { RenderElementTableOptions, TableType } from './types';
 export const renderElementTable = ({
   Table = TableElement,
   Row = getElementComponent('tr'),
-  Cell = TableCell,
+  Cell = getElementComponent(TableCell),
   typeTable = TableType.TABLE,
   typeTr = TableType.ROW,
   typeTd = TableType.CELL,

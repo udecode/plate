@@ -37,9 +37,9 @@ const StyledH3 = styled(Heading)`
 
 export const renderElementHeading = ({
   levels = 6,
-  H1 = StyledH1,
-  H2 = StyledH2,
-  H3 = StyledH3,
+  H1 = getElementComponent(StyledH1),
+  H2 = getElementComponent(StyledH2),
+  H3 = getElementComponent(StyledH3),
   H4 = getElementComponent('h4'),
   H5 = getElementComponent('h5'),
   H6 = getElementComponent('h6'),
