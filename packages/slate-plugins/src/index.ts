@@ -1,5 +1,6 @@
 export * from './common';
 export * from './components';
+export * from './deserializers';
 export * from './elements';
 export * from './forced-layout';
 export * from './markdown-preview';

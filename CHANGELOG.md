@@ -4,7 +4,7 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
-### `0.57.15` — April 28, 2020
+### `0.58.0` — April 29, 2020
 
 ###### BREAKING
 
@@ -16,6 +16,18 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 - Ordered lists supported in `withShortcuts` (Markdown Shortcuts) by typing `1.`.
 - Option `type` to all elements. Not yet for the marks.
+
+### `0.57.15` — April 29, 2020
+
+###### NEW
+
+- queries:
+  - `isRangeAtRoot(point: Point)` to check if anchor or focus of a range is at the root.
+
+###### FIX
+
+- use `isRangeAtRoot(point: Point)` before each `Editor.parent` call.
+
 
 ### `0.57.14` — April 26, 2020
 

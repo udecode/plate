@@ -1,7 +1,6 @@
 import { PARAGRAPH } from 'elements/paragraph';
-import { isPointAtRoot } from 'elements/queries/isPointAtRoot';
 import { Ancestor, Editor, Path, Transforms } from 'slate';
-import { isBlockTextEmpty, isFirstChild } from '../queries';
+import { isBlockTextEmpty, isFirstChild, isRangeAtRoot } from '../queries';
 import { isList, isSelectionInList } from './queries';
 import {
   defaultListTypes,
@@ -118,13 +117,14 @@ export const onKeyDownList = ({
   const options = { typeUl, typeOl, typeLi, typeP };
 
   if (Object.values(ListHotkey).includes(e.key)) {
-    if (editor.selection && isSelectionInList(editor, options)) {
+    if (
+      editor.selection &&
+      isSelectionInList(editor, options) &&
+      !isRangeAtRoot(editor.selection)
+    ) {
       if (e.key === ListHotkey.TAB) {
         e.preventDefault();
       }
-
-      // Don't get the parent if the selection is at the root
-      if (isPointAtRoot(editor.selection.anchor)) return;
 
       // If selection is in li > p
       const [paragraphNode, paragraphPath] = Editor.parent(
