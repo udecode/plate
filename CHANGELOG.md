@@ -4,6 +4,17 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.57.15` — April 29, 2020
+
+###### NEW
+
+- queries:
+  - `isRangeAtRoot(point: Point)` to check if anchor or focus of a range is at the root.
+
+###### FIX
+
+- use `isRangeAtRoot(point: Point)` before each `Editor.parent` call.
+
 ### `0.57.14` — April 26, 2020
 
 ###### NEW
