@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { ListType } from '../types';
+import { defaultListTypes } from '../types';
 
-export const isList = (n: Node) =>
-  [ListType.OL_LIST, ListType.UL_LIST].includes(n.type);
+export const isList = (options = defaultListTypes) => (n: Node) =>
+  [options.typeOl, options.typeUl].includes(n.type);

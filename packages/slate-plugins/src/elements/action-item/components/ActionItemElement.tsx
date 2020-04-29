@@ -7,7 +7,6 @@ import {
   useReadOnly,
 } from 'slate-react';
 import styled from 'styled-components';
-import { ACTION_ITEM } from '../types';
 
 const Wrapper = styled.div`
   display: flex;
@@ -51,7 +50,7 @@ export const ActionItemElement = ({
   const { checked } = element;
 
   return (
-    <Wrapper {...attributes} data-slate-type={ACTION_ITEM}>
+    <Wrapper {...attributes}>
       <CheckboxWrapper contentEditable={false}>
         <Checkbox
           type="checkbox"

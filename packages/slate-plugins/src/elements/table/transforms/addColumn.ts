@@ -1,14 +1,14 @@
 import { Editor, Path, Transforms } from 'slate';
 import { isSelectionInTable, isTable, isTableCell } from '../queries';
-import { emptyCell } from '../types';
+import { defaultTableTypes, emptyCell } from '../types';
 
-export const addColumn = (editor: Editor) => {
-  if (isSelectionInTable(editor)) {
+export const addColumn = (editor: Editor, options = defaultTableTypes) => {
+  if (isSelectionInTable(editor, options)) {
     const currentCellItem = Editor.above(editor, {
-      match: isTableCell,
+      match: isTableCell(options),
     });
     const currentTableItem = Editor.above(editor, {
-      match: isTable,
+      match: isTable(options),
     });
     if (currentCellItem && currentTableItem) {
       const nextCellPath = Path.next(currentCellItem[1]);
@@ -19,7 +19,7 @@ export const addColumn = (editor: Editor) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
 
-        Transforms.insertNodes(editor, emptyCell(), {
+        Transforms.insertNodes(editor, emptyCell(options), {
           at: newCellPath,
           select: rowIdx === currentRowIdx,
         });

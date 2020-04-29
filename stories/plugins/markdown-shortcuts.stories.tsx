@@ -15,22 +15,26 @@ import {
   withList,
   withShortcuts,
 } from '../../packages/slate-plugins/src';
-import { initialValueMarkdownShortcuts } from '../config/initialValues';
+import {
+  initialValueMarkdownShortcuts,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Plugins/Markdown Shortcuts',
 };
 
 const resetOptions = {
+  ...nodeTypes,
   types: [BLOCKQUOTE],
 };
 
 export const Example = () => {
   const plugins = [
-    BlockquotePlugin(),
-    ListPlugin(),
-    HeadingPlugin(),
-    ParagraphPlugin(),
+    BlockquotePlugin(nodeTypes),
+    ListPlugin(nodeTypes),
+    HeadingPlugin(nodeTypes),
+    ParagraphPlugin(nodeTypes),
   ];
 
   const createReactEditor = () => () => {
@@ -38,10 +42,12 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withList(
+        withList(nodeTypes)(
           withBreakEmptyReset(resetOptions)(
             withDeleteStartReset(resetOptions)(
-              withShortcuts(withBlock(withHistory(withReact(createEditor()))))
+              withShortcuts(nodeTypes)(
+                withBlock(nodeTypes)(withHistory(withReact(createEditor())))
+              )
             )
           )
         ),
@@ -52,7 +58,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <EditablePlugins
           plugins={plugins}

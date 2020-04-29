@@ -8,9 +8,11 @@ import { isBlockTextEmpty } from './queries';
  */
 export const withBreakEmptyReset = ({
   types,
+  typeP = PARAGRAPH,
   onUnwrap,
 }: {
   types: string[];
+  typeP?: string;
   onUnwrap?: any;
 }) => <T extends Editor>(editor: T) => {
   const { insertBreak } = editor;
@@ -29,7 +31,7 @@ export const withBreakEmptyReset = ({
         });
 
         if (parent) {
-          Transforms.setNodes(editor, { type: PARAGRAPH });
+          Transforms.setNodes(editor, { type: typeP });
 
           if (onUnwrap) onUnwrap();
 

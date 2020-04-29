@@ -2,14 +2,14 @@ import React from 'react';
 import { RenderElementProps } from 'slate-react';
 
 /**
- * get default element component
+ * Get default element component
  */
-export const getElement = (Component: any) => ({
+export const getElementComponent = (Component: any) => ({
   attributes,
   element,
   children,
 }: RenderElementProps) => (
-  <Component {...attributes} data-slate-type={element.type}>
+  <Component data-slate-type={element.type} {...attributes}>
     {children}
   </Component>
 );

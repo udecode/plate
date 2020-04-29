@@ -1,4 +1,5 @@
 import { Node } from 'slate';
-import { TableType } from '../types';
+import { defaultTableTypes } from '../types';
 
-export const isTableCell = (n: Node) => n.type === TableType.CELL;
+export const isTableCell = (options = defaultTableTypes) => (n: Node) =>
+  n.type === options.typeTd;

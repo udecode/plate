@@ -1,1 +1,1 @@
-export const IMAGE = 'image';
+export const IMAGE = 'img';

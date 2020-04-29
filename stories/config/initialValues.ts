@@ -3,15 +3,45 @@ import { Node } from 'slate';
 import {
   ACTION_ITEM,
   BLOCKQUOTE,
+  CODE,
   HeadingType,
+  IMAGE,
+  LINK,
+  ListType,
   MENTION,
   PARAGRAPH,
   TableType,
-} from 'slate-plugins-next/src';
+  VIDEO,
+} from '../../packages/slate-plugins/src';
+import { EDITABLE_VOID } from '../basic/editable-voids/types';
+
+export const nodeTypes = {
+  typeP: PARAGRAPH,
+  typeMention: MENTION,
+  typeBlockquote: BLOCKQUOTE,
+  typeCode: CODE,
+  typeLink: LINK,
+  typeImg: IMAGE,
+  typeVideo: VIDEO,
+  typeActionItem: ACTION_ITEM,
+  typeTable: TableType.TABLE,
+  typeTr: TableType.ROW,
+  typeTd: TableType.CELL,
+  typeUl: ListType.UL,
+  typeOl: ListType.OL,
+  typeLi: ListType.LI,
+  typeH1: HeadingType.H1,
+  typeH2: HeadingType.H2,
+  typeH3: HeadingType.H3,
+  typeH4: HeadingType.H4,
+  typeH5: HeadingType.H5,
+  typeH6: HeadingType.H6,
+  typeEditableVoid: EDITABLE_VOID,
+};
 
 export const initialValueVoids: Node[] = [
   {
-    type: 'paragraph',
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -20,11 +50,11 @@ export const initialValueVoids: Node[] = [
     ],
   },
   {
-    type: 'editable-void',
+    type: nodeTypes.typeEditableVoid,
     children: [{ text: '' }],
   },
   {
-    type: 'paragraph',
+    type: nodeTypes.typeP,
     children: [
       {
         text: '',
@@ -35,7 +65,7 @@ export const initialValueVoids: Node[] = [
 
 export const initialValueActionItem: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -44,44 +74,44 @@ export const initialValueActionItem: Node[] = [
     ],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: true,
     children: [{ text: 'Slide to the left.' }],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: true,
     children: [{ text: 'Slide to the right.' }],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: false,
     children: [{ text: 'Criss-cross.' }],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: true,
     children: [{ text: 'Criss-cross!' }],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: false,
     children: [{ text: 'Cha cha real smooth…' }],
   },
   {
-    type: ACTION_ITEM,
+    type: nodeTypes.typeActionItem,
     checked: false,
     children: [{ text: "Let's go to work!" }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [{ text: 'Try it out for yourself!' }],
   },
 ];
 
 export const initialValueEmbeds: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -90,12 +120,12 @@ export const initialValueEmbeds: Node[] = [
     ],
   },
   {
-    type: 'video',
+    type: nodeTypes.typeVideo,
     url: 'https://player.vimeo.com/video/26689853',
     children: [{ text: '' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -107,11 +137,11 @@ export const initialValueEmbeds: Node[] = [
 
 export const initialValueForcedLayout: Node[] = [
   {
-    type: HeadingType.H1,
+    type: nodeTypes.typeH1,
     children: [{ text: 'Enforce Your Layout!' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -123,7 +153,7 @@ export const initialValueForcedLayout: Node[] = [
 
 export const initialValueHoveringToolbar: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -136,7 +166,7 @@ export const initialValueHoveringToolbar: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'Try it out yourself! Just ' },
       { text: 'select any piece of text and the menu will appear', bold: true },
@@ -151,7 +181,7 @@ export const initialValueHugeDocument: Node[] = [];
 
 for (let h = 0; h < HEADINGS; h++) {
   initialValueHugeDocument.push({
-    type: HeadingType.H1,
+    type: nodeTypes.typeH1,
     children: [{ text: faker.lorem.sentence() }],
   });
 
@@ -164,7 +194,7 @@ for (let h = 0; h < HEADINGS; h++) {
 
 export const initialValueImages: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -173,12 +203,12 @@ export const initialValueImages: Node[] = [
     ],
   },
   {
-    type: 'image',
+    type: nodeTypes.typeImg,
     url: 'https://source.unsplash.com/kFrdX5IeQzI',
     children: [{ text: '' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -190,13 +220,13 @@ export const initialValueImages: Node[] = [
 
 export const initialValueLinks: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text: 'In addition to block nodes, you can create inline nodes, like ',
       },
       {
-        type: 'link',
+        type: nodeTypes.typeLink,
         url: 'https://en.wikipedia.org/wiki/Hypertext',
         children: [{ text: 'hyperlinks' }],
       },
@@ -206,7 +236,7 @@ export const initialValueLinks: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -218,7 +248,7 @@ export const initialValueLinks: Node[] = [
 
 export const initialValueMarkdownPreview: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -227,18 +257,18 @@ export const initialValueMarkdownPreview: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [{ text: '## Try it out!' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [{ text: 'Try it out for yourself!' }],
   },
 ];
 
 export const initialValueMarkdownShortcuts: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -251,7 +281,7 @@ export const initialValueMarkdownShortcuts: Node[] = [
     children: [{ text: 'A wise quote.' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -260,15 +290,15 @@ export const initialValueMarkdownShortcuts: Node[] = [
     ],
   },
   {
-    type: HeadingType.H2,
+    type: nodeTypes.typeH2,
     children: [{ text: 'Try it out!' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
-          'Try it out for yourself! Try starting a new line with ">", "-", or "#"s.',
+          'Try it out for yourself! Try starting a new line with ">", "-", "1." or "#"s.',
       },
     ],
   },
@@ -276,7 +306,7 @@ export const initialValueMarkdownShortcuts: Node[] = [
 
 export const initialValueMentions: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -285,17 +315,17 @@ export const initialValueMentions: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'Try mentioning characters, like ' },
       {
-        type: MENTION,
+        type: nodeTypes.typeMention,
         character: 'R2-D2',
         children: [{ text: '' }],
       },
       { text: ' or ' },
       {
-        type: MENTION,
+        type: nodeTypes.typeMention,
         character: 'Mace Windu',
         children: [{ text: '' }],
       },
@@ -306,7 +336,7 @@ export const initialValueMentions: Node[] = [
 
 export const initialValuePasteHtml: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -322,11 +352,11 @@ export const initialValuePasteHtml: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [{ text: 'This is an example of doing exactly that!' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -338,7 +368,7 @@ export const initialValuePasteHtml: Node[] = [
 
 export const initialValuePasteMd: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -354,11 +384,11 @@ export const initialValuePasteMd: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [{ text: 'This is an example of doing exactly that!' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -370,7 +400,7 @@ export const initialValuePasteMd: Node[] = [
 
 export const initialValuePlainText: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'This is editable plain text, just like a <textarea>!' },
     ],
@@ -379,7 +409,7 @@ export const initialValuePlainText: Node[] = [
 
 export const initialValueMark: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'This is editable ' },
       { text: 'rich', bold: true, underline: true, italic: true },
@@ -394,11 +424,11 @@ export const initialValueMark: Node[] = [
 
 export const initialValueRichText: Node[] = [
   {
-    type: HeadingType.H1,
+    type: nodeTypes.typeH1,
     children: [{ text: 'Welcome' }],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'This is editable ' },
       { text: 'rich', bold: true },
@@ -410,7 +440,7 @@ export const initialValueRichText: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -431,7 +461,7 @@ export const initialValueRichText: Node[] = [
 
 export const initialValueSearchHighlighting: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -442,7 +472,7 @@ export const initialValueSearchHighlighting: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       { text: 'Try it out for yourself by typing in the search box above!' },
     ],
@@ -451,7 +481,7 @@ export const initialValueSearchHighlighting: Node[] = [
 
 export const initialValueTables: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -460,67 +490,67 @@ export const initialValueTables: Node[] = [
     ],
   },
   {
-    type: TableType.TABLE,
+    type: nodeTypes.typeTable,
     children: [
       {
-        type: TableType.ROW,
+        type: nodeTypes.typeTr,
         children: [
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '' }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: 'Human', bold: true }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: 'Dog', bold: true }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: 'Cat', bold: true }],
           },
         ],
       },
       {
-        type: TableType.ROW,
+        type: nodeTypes.typeTr,
         children: [
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '# of Feet', bold: true }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '2' }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '4' }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '4' }],
           },
         ],
       },
       {
-        type: TableType.ROW,
+        type: nodeTypes.typeTr,
         children: [
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '# of Lives', bold: true }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '1' }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '1' }],
           },
           {
-            type: TableType.CELL,
+            type: nodeTypes.typeTd,
             children: [{ text: '9' }],
           },
         ],
@@ -528,7 +558,7 @@ export const initialValueTables: Node[] = [
     ],
   },
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -540,7 +570,7 @@ export const initialValueTables: Node[] = [
 
 export const initialValueSoftBreak: Node[] = [
   {
-    type: PARAGRAPH,
+    type: nodeTypes.typeP,
     children: [
       {
         text:
@@ -556,7 +586,7 @@ export const initialValueSoftBreak: Node[] = [
     ],
   },
   {
-    type: HeadingType.H2,
+    type: nodeTypes.typeH2,
     children: [
       {
         text: 'This is a normal Heading 2',
@@ -564,7 +594,7 @@ export const initialValueSoftBreak: Node[] = [
     ],
   },
   {
-    type: HeadingType.H2,
+    type: nodeTypes.typeH2,
     children: [
       {
         text: 'This is a Heading 2\nwith a soft break',

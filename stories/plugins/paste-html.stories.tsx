@@ -22,7 +22,7 @@ import {
   withPasteHtml,
   withTable,
 } from '../../packages/slate-plugins/src';
-import { initialValuePasteHtml } from '../config/initialValues';
+import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Paste Html',
@@ -31,18 +31,18 @@ export default {
 
 export const Example = () => {
   const plugins = [
-    BlockquotePlugin(),
+    BlockquotePlugin(nodeTypes),
+    CodePlugin(nodeTypes),
+    HeadingPlugin(nodeTypes),
+    ImagePlugin(nodeTypes),
+    LinkPlugin(nodeTypes),
+    ListPlugin(nodeTypes),
+    ParagraphPlugin(nodeTypes),
+    TablePlugin(nodeTypes),
     BoldPlugin(),
-    CodePlugin(),
-    HeadingPlugin(),
-    ImagePlugin(),
     InlineCodePlugin(),
     ItalicPlugin(),
-    LinkPlugin(),
-    ListPlugin(),
-    ParagraphPlugin(),
     StrikethroughPlugin(),
-    TablePlugin(),
     UnderlinePlugin(),
   ];
 
@@ -51,10 +51,10 @@ export const Example = () => {
 
     const editor = useMemo(
       () =>
-        withTable(
-          withImage(
+        withTable(nodeTypes)(
+          withImage(nodeTypes)(
             withPasteHtml(plugins)(
-              withLink(withHistory(withReact(createEditor())))
+              withLink(nodeTypes)(withHistory(withReact(createEditor())))
             )
           )
         ),
@@ -65,7 +65,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <EditablePlugins
           plugins={plugins}

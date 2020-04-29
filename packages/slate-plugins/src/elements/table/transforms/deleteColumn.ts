@@ -1,3 +1,4 @@
+import { defaultTableTypes } from 'elements/table/types';
 import { Editor, Transforms } from 'slate';
 import {
   isSelectionInTable,
@@ -6,16 +7,16 @@ import {
   isTableRow,
 } from '../queries';
 
-export const deleteColumn = (editor: Editor) => {
-  if (isSelectionInTable(editor)) {
+export const deleteColumn = (editor: Editor, options = defaultTableTypes) => {
+  if (isSelectionInTable(editor, options)) {
     const currentCellItem = Editor.above(editor, {
-      match: isTableCell,
+      match: isTableCell(options),
     });
     const currentRowItem = Editor.above(editor, {
-      match: isTableRow,
+      match: isTableRow(options),
     });
     const currentTableItem = Editor.above(editor, {
-      match: isTable,
+      match: isTable(options),
     });
     if (
       currentCellItem &&

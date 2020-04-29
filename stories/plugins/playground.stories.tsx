@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
-  Code,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -20,23 +21,20 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
-  ACTION_ITEM,
   ActionItemPlugin,
-  BLOCKQUOTE,
   BlockquotePlugin,
   BoldPlugin,
+  CodePlugin,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
-  HeadingType,
   HoveringToolbar,
   ImagePlugin,
   InlineCodePlugin,
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
-  ListType,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -55,6 +53,7 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   ToolbarBlock,
+  ToolbarCode,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -73,7 +72,6 @@ import {
   withPasteHtml,
   withShortcuts,
   withTable,
-  withVideo,
   withVoid,
 } from '../../packages/slate-plugins/src';
 import { EditableVoidPlugin } from '../basic/editable-voids/EditableVoidPlugin';
@@ -86,6 +84,7 @@ import {
   initialValueMentions,
   initialValueRichText,
   initialValueVoids,
+  nodeTypes,
 } from '../config/initialValues';
 
 export default {
@@ -102,28 +101,33 @@ const initialValue = [
 ];
 
 const resetOptions = {
-  types: [ACTION_ITEM, BLOCKQUOTE],
+  ...nodeTypes,
+  types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
 };
 
 export const Plugins = () => {
   const plugins: any[] = [];
 
-  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
+  if (boolean('BlockquotePlugin', true))
+    plugins.push(BlockquotePlugin(nodeTypes));
+  if (boolean('ActionItemPlugin', true))
+    plugins.push(ActionItemPlugin(nodeTypes));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(nodeTypes));
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
+  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(nodeTypes));
+  if (boolean('ParagraphPlugin', true))
+    plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
+  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('ActionItemPlugin', true)) plugins.push(ActionItemPlugin());
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
   if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
-  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
-  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
-  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin());
   if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
   if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
   if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
@@ -137,18 +141,18 @@ export const Plugins = () => {
 
     const editor = useMemo(
       () =>
-        withVoid([EDITABLE_VOID])(
-          withShortcuts(
-            withVideo(
-              withList(
-                withBreakEmptyReset(resetOptions)(
-                  withDeleteStartReset(resetOptions)(
-                    withBlock(
-                      withMention(
-                        withImage(
-                          withPasteHtml(plugins)(
-                            withLink(
-                              withTable(withHistory(withReact(createEditor())))
+        withVoid([EDITABLE_VOID, nodeTypes.typeVideo])(
+          withShortcuts(nodeTypes)(
+            withList(nodeTypes)(
+              withBreakEmptyReset(resetOptions)(
+                withDeleteStartReset(resetOptions)(
+                  withBlock(nodeTypes)(
+                    withMention(nodeTypes)(
+                      withImage(nodeTypes)(
+                        withPasteHtml(plugins)(
+                          withLink(nodeTypes)(
+                            withTable(nodeTypes)(
+                              withHistory(withReact(createEditor()))
                             )
                           )
                         )
@@ -203,44 +207,50 @@ export const Plugins = () => {
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar>
-          <ToolbarBlock format={HeadingType.H1} icon={<LooksOne />} />
-          <ToolbarBlock format={HeadingType.H2} icon={<LooksTwo />} />
-          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark format={MARK_ITALIC} icon={<FormatItalic />} />
-          <ToolbarMark format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
           <ToolbarMark
-            format={MARK_STRIKETHROUGH}
+            type={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
+          <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
           <ToolbarMark
-            format={MARK_SUPERSCRIPT}
+            type={MARK_SUPERSCRIPT}
             clear={MARK_SUBSCRIPT}
             icon={<Superscript />}
           />
           <ToolbarMark
-            format={MARK_SUBSCRIPT}
+            type={MARK_SUBSCRIPT}
             clear={MARK_SUPERSCRIPT}
             icon={<Subscript />}
           />
-          <ToolbarMark format={MARK_CODE} icon={<Code />} />
+          <ToolbarLink {...nodeTypes} icon={<Link />} />
           <ToolbarList
-            format={ListType.UL_LIST}
+            {...nodeTypes}
+            typeList={nodeTypes.typeUl}
             icon={<FormatListBulleted />}
           />
           <ToolbarList
-            format={ListType.OL_LIST}
+            {...nodeTypes}
+            typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
-          <ToolbarLink icon={<Link />} />
-          <ToolbarImage icon={<Image />} />
-          <ToolbarBlock format={BLOCKQUOTE} icon={<FormatQuote />} />
+          <ToolbarBlock
+            type={nodeTypes.typeBlockquote}
+            icon={<FormatQuote />}
+          />
+          <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
+          <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
         <HoveringToolbar>
-          <ToolbarMark reversed format={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark reversed format={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark
             reversed
-            format={MARK_UNDERLINE}
+            type={MARK_UNDERLINE}
             icon={<FormatUnderlined />}
           />
         </HoveringToolbar>

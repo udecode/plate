@@ -4,8 +4,10 @@ import { ReactEditor } from 'slate-react';
 import { wrapLink } from './transforms';
 import { LINK } from './types';
 
-export const withLink = <T extends ReactEditor>(editor: T) => {
-  editor = withInline([LINK])(editor);
+export const withLink = ({ typeLink = LINK } = {}) => <T extends ReactEditor>(
+  editor: T
+) => {
+  editor = withInline([typeLink])(editor);
 
   const { insertData, insertText } = editor;
 

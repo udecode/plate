@@ -1,7 +1,6 @@
 import React from 'react';
 import { RenderElementProps } from 'slate-react';
 import styled from 'styled-components';
-import { CODE } from '../types';
 
 const Pre = styled.pre`
   padding: 10px;
@@ -11,8 +10,6 @@ const Pre = styled.pre`
 
 export const CodeElement = ({ attributes, children }: RenderElementProps) => (
   <Pre>
-    <code {...attributes} data-slate-type={CODE}>
-      {children}
-    </code>
+    <code {...attributes}>{children}</code>
   </Pre>
 );

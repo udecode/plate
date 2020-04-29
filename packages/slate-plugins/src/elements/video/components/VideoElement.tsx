@@ -2,7 +2,6 @@ import React from 'react';
 import { Transforms } from 'slate';
 import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
 import styled from 'styled-components';
-import { VIDEO } from '../types';
 
 const VideoWrapper = styled.div`
   padding: 75% 0 0 0;
@@ -51,7 +50,7 @@ export const VideoElement = ({
   const { url } = element;
 
   return (
-    <div {...attributes} data-slate-type={VIDEO}>
+    <div {...attributes}>
       <div contentEditable={false}>
         <VideoWrapper>
           <Iframe

@@ -1,16 +1,25 @@
 import React from 'react';
+import { ToolbarButton, ToolbarButtonProps } from 'common/components';
+import { TableType, TableTypeOptions } from 'elements/table/types';
 import { Editor } from 'slate';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarButtonProps } from '../../../common/components';
 import { isSelectionInTable } from '../queries';
 
-export interface ToolbarTableProps extends ToolbarButtonProps {
-  action: (editor: Editor) => void;
+export interface ToolbarTableProps
+  extends ToolbarButtonProps,
+    TableTypeOptions {
+  action: (editor: Editor, options: TableTypeOptions) => void;
 }
 
-export const ToolbarTable = (props: ToolbarTableProps) => {
+export const ToolbarTable = ({
+  action,
+  typeTable = TableType.TABLE,
+  typeTr = TableType.ROW,
+  typeTd = TableType.CELL,
+  ...props
+}: ToolbarTableProps) => {
   const editor = useSlate();
-  const isTableActive = isSelectionInTable(editor);
+  const isTableActive = isSelectionInTable(editor, { typeTable });
 
   return (
     <ToolbarButton
@@ -18,7 +27,7 @@ export const ToolbarTable = (props: ToolbarTableProps) => {
       active={isTableActive}
       onMouseDown={(event: Event) => {
         event.preventDefault();
-        props.action(editor);
+        action(editor, { typeTable, typeTr, typeTd });
       }}
     />
   );

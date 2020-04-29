@@ -1,8 +1,8 @@
 import { DeserializeHtml } from 'deserializers/types';
 import { CODE } from './types';
 
-export const deserializeCode = (): DeserializeHtml => ({
+export const deserializeCode = ({ typeCode = CODE } = {}): DeserializeHtml => ({
   element: {
-    PRE: () => ({ type: CODE }),
+    PRE: () => ({ type: typeCode }),
   },
 });

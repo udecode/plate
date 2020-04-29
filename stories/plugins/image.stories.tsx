@@ -12,7 +12,7 @@ import {
   ToolbarImage,
   withImage,
 } from '../../packages/slate-plugins/src';
-import { initialValueImages } from '../config/initialValues';
+import { initialValueImages, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Image',
@@ -25,13 +25,13 @@ export default {
 
 export const Example = () => {
   const plugins: any[] = [];
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueImages);
 
     const editor = useMemo(
-      () => withImage(withHistory(withReact(createEditor()))),
+      () => withImage(nodeTypes)(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -39,10 +39,10 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarImage icon={<Image />} />
+          <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

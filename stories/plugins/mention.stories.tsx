@@ -12,7 +12,7 @@ import {
   withMention,
 } from '../../packages/slate-plugins/src';
 import { CHARACTERS } from '../config/data';
-import { initialValueMentions } from '../config/initialValues';
+import { initialValueMentions, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Mention',
@@ -25,14 +25,14 @@ export default {
   },
 };
 
-const plugins = [MentionPlugin()];
+const plugins = [MentionPlugin(nodeTypes)];
 
 export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
 
     const editor = useMemo(
-      () => withMention(withHistory(withReact(createEditor()))),
+      () => withMention(nodeTypes)(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -47,7 +47,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => {
+        onChange={(newValue) => {
           setValue(newValue);
 
           onChangeMention({

@@ -1,20 +1,39 @@
-import { BLOCKQUOTE, HeadingType, ListType, toggleList } from 'elements';
+import {
+  BLOCKQUOTE,
+  HeadingType,
+  ListType,
+  PARAGRAPH,
+  toggleList,
+} from 'elements';
 import { Editor, Range, Transforms } from 'slate';
 
-const SHORTCUTS: { [key: string]: string } = {
-  '*': ListType.LIST_ITEM,
-  '-': ListType.LIST_ITEM,
-  '+': ListType.LIST_ITEM,
-  '>': BLOCKQUOTE,
-  '#': HeadingType.H1,
-  '##': HeadingType.H2,
-  '###': HeadingType.H3,
-  '####': HeadingType.H4,
-  '#####': HeadingType.H5,
-  '######': HeadingType.H6,
-};
+export const withShortcuts = ({
+  typeUl = ListType.UL,
+  typeOl = ListType.OL,
+  typeLi = ListType.LI,
+  typeH1 = HeadingType.H1,
+  typeH2 = HeadingType.H2,
+  typeH3 = HeadingType.H3,
+  typeH4 = HeadingType.H4,
+  typeH5 = HeadingType.H5,
+  typeH6 = HeadingType.H6,
+  typeBlockquote = BLOCKQUOTE,
+  typeP = PARAGRAPH,
+} = {}) => <T extends Editor>(editor: T) => {
+  const options = {
+    typeUl,
+    typeOl,
+    typeLi,
+    typeBlockquote,
+    typeH1,
+    typeH2,
+    typeH3,
+    typeH4,
+    typeH5,
+    typeH6,
+    typeP,
+  };
 
-export const withShortcuts = <T extends Editor>(editor: T) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
@@ -29,18 +48,35 @@ export const withShortcuts = <T extends Editor>(editor: T) => {
       const start = Editor.start(editor, path);
       const range = { anchor, focus: start };
       const beforeText = Editor.string(editor, range);
+
+      const SHORTCUTS: { [key: string]: string } = {
+        '*': typeLi,
+        '-': typeLi,
+        '+': typeLi,
+        '1.': typeLi,
+        '>': typeBlockquote,
+        '#': typeH1,
+        '##': typeH2,
+        '###': typeH3,
+        '####': typeH4,
+        '#####': typeH5,
+        '######': typeH6,
+      };
+
       const type = SHORTCUTS[beforeText];
       if (type) {
         Transforms.select(editor, range);
         Transforms.delete(editor);
-        if (type !== ListType.LIST_ITEM) {
+        if (type !== typeLi) {
           Transforms.setNodes(
             editor,
             { type },
             { match: (n) => Editor.isBlock(editor, n) }
           );
         } else {
-          toggleList(editor, ListType.UL_LIST);
+          const typeList = beforeText === '1.' ? typeOl : typeUl;
+
+          toggleList(editor, { ...options, typeList });
         }
         return;
       }

@@ -1,4 +1,5 @@
 import { Node } from 'slate';
-import { ListType } from '../types';
+import { defaultListTypes } from '../types';
 
-export const isListItem = (node: Node) => node.type === ListType.LIST_ITEM;
+export const isListItem = (options = defaultListTypes) => (node: Node) =>
+  node.type === options.typeLi;

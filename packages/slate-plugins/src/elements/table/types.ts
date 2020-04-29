@@ -1,28 +1,40 @@
 export enum TableType {
   TABLE = 'table',
-  ROW = 'table-row',
-  CELL = 'table-cell',
+  ROW = 'tr',
+  CELL = 'td',
 }
 
-export interface RenderElementTableOptions {
+export interface TableTypeOptions {
+  typeTable?: string;
+  typeTr?: string;
+  typeTd?: string;
+}
+
+export interface RenderElementTableOptions extends TableTypeOptions {
   Table?: any;
   Row?: any;
   Cell?: any;
 }
 
-export const emptyCell = () => ({
-  type: TableType.CELL,
+export const defaultTableTypes: TableTypeOptions = {
+  typeTable: TableType.TABLE,
+  typeTr: TableType.ROW,
+  typeTd: TableType.CELL,
+};
+
+export const emptyCell = (options = defaultTableTypes) => ({
+  type: options.typeTd,
   children: [{ text: '' }],
 });
 
-export const emptyRow = (colCount: number) => ({
-  type: TableType.ROW,
+export const emptyRow = (colCount: number, options = defaultTableTypes) => ({
+  type: options.typeTr,
   children: Array(colCount)
     .fill(colCount)
-    .map(() => emptyCell()),
+    .map(() => emptyCell(options)),
 });
 
-export const emptyTable = () => ({
-  type: TableType.TABLE,
-  children: [emptyRow(2), emptyRow(2)],
+export const emptyTable = (options = defaultTableTypes) => ({
+  type: options.typeTable,
+  children: [emptyRow(2, options), emptyRow(2, options)],
 });

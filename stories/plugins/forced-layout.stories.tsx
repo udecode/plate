@@ -7,20 +7,20 @@ import {
   HeadingPlugin,
   withForcedLayout,
 } from '../../packages/slate-plugins/src';
-import { initialValueForcedLayout } from '../config/initialValues';
+import { initialValueForcedLayout, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Forced Layout',
 };
 
-const plugins = [HeadingPlugin()];
+const plugins = [HeadingPlugin(nodeTypes)];
 
 export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueForcedLayout);
 
     const editor = useMemo(
-      () => withForcedLayout(withHistory(withReact(createEditor()))),
+      () => withForcedLayout(nodeTypes)(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -28,7 +28,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <EditablePlugins
           plugins={plugins}

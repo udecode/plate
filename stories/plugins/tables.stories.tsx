@@ -29,7 +29,7 @@ import {
   ToolbarTable,
   withTable,
 } from '../../packages/slate-plugins/src';
-import { initialValueTables } from '../config/initialValues';
+import { initialValueTables, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Plugins/Table',
@@ -39,13 +39,13 @@ export default {
 
 export const Example = () => {
   const plugins = [BoldPlugin()];
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueTables);
 
     const editor = useMemo(
-      () => withTable(withHistory(withReact(createEditor()))),
+      () => withTable(nodeTypes)(withHistory(withReact(createEditor()))),
       []
     );
 
@@ -53,16 +53,40 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarTable action={insertTable} icon={<BorderAll />} />
-          <ToolbarTable action={deleteTable} icon={<BorderClear />} />
-          <ToolbarTable action={addRow} icon={<BorderBottom />} />
-          <ToolbarTable action={deleteRow} icon={<BorderTop />} />
-          <ToolbarTable action={addColumn} icon={<BorderLeft />} />
-          <ToolbarTable action={deleteColumn} icon={<BorderRight />} />
+          <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarTable
+            {...nodeTypes}
+            action={insertTable}
+            icon={<BorderAll />}
+          />
+          <ToolbarTable
+            {...nodeTypes}
+            action={deleteTable}
+            icon={<BorderClear />}
+          />
+          <ToolbarTable
+            {...nodeTypes}
+            action={addRow}
+            icon={<BorderBottom />}
+          />
+          <ToolbarTable
+            {...nodeTypes}
+            action={deleteRow}
+            icon={<BorderTop />}
+          />
+          <ToolbarTable
+            {...nodeTypes}
+            action={addColumn}
+            icon={<BorderLeft />}
+          />
+          <ToolbarTable
+            {...nodeTypes}
+            action={deleteColumn}
+            icon={<BorderRight />}
+          />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} />
       </Slate>

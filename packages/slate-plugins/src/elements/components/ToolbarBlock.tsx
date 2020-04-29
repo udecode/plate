@@ -1,27 +1,27 @@
 import React from 'react';
 import { ToolbarButton } from 'common';
-import { ToolbarFormatProps } from 'common/types';
+import { ToolbarBlockProps } from 'common/types';
 import { useSlate } from 'slate-react';
 import { isBlockActive } from '../queries';
 
 export const ToolbarBlock = ({
-  format,
+  type,
   onMouseDown,
   ...props
-}: ToolbarFormatProps) => {
+}: ToolbarBlockProps) => {
   const editor = useSlate();
 
   if (!onMouseDown) {
     onMouseDown = (event: Event) => {
       event.preventDefault();
-      editor.toggleBlock(format);
+      editor.toggleBlock(type);
     };
   }
 
   return (
     <ToolbarButton
       {...props}
-      active={isBlockActive(editor, format)}
+      active={isBlockActive(editor, type)}
       onMouseDown={onMouseDown}
     />
   );

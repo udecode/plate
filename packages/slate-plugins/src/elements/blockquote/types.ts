@@ -1,1 +1,1 @@
-export const BLOCKQUOTE = 'block-quote';
+export const BLOCKQUOTE = 'blockquote';

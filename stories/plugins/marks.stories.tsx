@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
-  Code,
   FormatBold,
   FormatItalic,
   FormatStrikethrough,
@@ -68,24 +68,24 @@ export const MarkPlugins = () => {
         onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarMark format={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark format={MARK_ITALIC} icon={<FormatItalic />} />
-          <ToolbarMark format={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+          <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
+          <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
+          <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
           <ToolbarMark
-            format={MARK_STRIKETHROUGH}
+            type={MARK_STRIKETHROUGH}
             icon={<FormatStrikethrough />}
           />
+          <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
           <ToolbarMark
-            format={MARK_SUPERSCRIPT}
+            type={MARK_SUPERSCRIPT}
             clear={MARK_SUBSCRIPT}
             icon={<Superscript />}
           />
           <ToolbarMark
-            format={MARK_SUBSCRIPT}
+            type={MARK_SUBSCRIPT}
             clear={MARK_SUPERSCRIPT}
             icon={<Subscript />}
           />
-          <ToolbarMark format={MARK_CODE} icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

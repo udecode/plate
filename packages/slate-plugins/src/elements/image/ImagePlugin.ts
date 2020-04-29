@@ -1,9 +1,11 @@
+import { renderElementImage } from 'elements/image/renderElementImage';
 import { SlatePlugin } from 'types';
 import { RenderElementOptions } from '../types';
 import { deserializeImage } from './deserializeImage';
-import { renderElementImage } from './renderElementImage';
 
-export const ImagePlugin = (options?: RenderElementOptions): SlatePlugin => ({
+export const ImagePlugin = (
+  options?: RenderElementOptions & { typeImg?: string }
+): SlatePlugin => ({
   renderElement: renderElementImage(options),
-  deserialize: deserializeImage(),
+  deserialize: deserializeImage(options),
 });

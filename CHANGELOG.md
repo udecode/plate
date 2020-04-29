@@ -4,6 +4,58 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.0` — April 29, 2020
+
+###### BREAKING
+
+- refactor `getElement` to `getElementComponent`
+- refactor elements types to reflect the html tags. 
+Also avoiding `-` as it's not valid in GraphQL enums. 
+    - `action-item` -> `action_item`
+    - `block-quote` -> `blockquote`
+    - `heading-one` -> `h1` (until `h6`)
+    - `link` -> `a`
+    - `numbered-list` -> `ol`
+    - `bulleted-list` -> `ul`
+    - `list-item` -> `li`
+    - `paragraph` -> `p`
+    - `table-row` -> `tr`
+    - `table-cell` -> `td`
+If you already saved elements in your database, you will need to migrate or override the types with the previous ones:
+
+```js
+// you can add nodeTypes to any element plugin
+export const nodeTypes = {
+  typeP: PARAGRAPH,
+  typeMention: MENTION,
+  typeBlockquote: BLOCKQUOTE,
+  typeCode: CODE,
+  typeLink: LINK,
+  typeImg: IMAGE,
+  typeVideo: VIDEO,
+  typeActionItem: ACTION_ITEM,
+  typeTable: TableType.TABLE,
+  typeTr: TableType.ROW,
+  typeTd: TableType.CELL,
+  typeUl: ListType.UL,
+  typeOl: ListType.OL,
+  typeLi: ListType.LI,
+  typeH1: HeadingType.H1,
+  typeH2: HeadingType.H2,
+  typeH3: HeadingType.H3,
+  typeH4: HeadingType.H4,
+  typeH5: HeadingType.H5,
+  typeH6: HeadingType.H6,
+  typeEditableVoid: EDITABLE_VOID,
+};
+```
+
+###### NEW
+
+- Ordered lists supported in `withShortcuts` (Markdown Shortcuts) by typing `1.`.
+- Option type to all elements. Not yet for the marks.
+- `getRenderElements`
+
 ### `0.57.15` — April 29, 2020
 
 ###### NEW
@@ -14,6 +66,7 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 ###### FIX
 
 - use `isRangeAtRoot(point: Point)` before each `Editor.parent` call.
+
 
 ### `0.57.14` — April 26, 2020
 

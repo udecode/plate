@@ -8,6 +8,6 @@ export const ListPlugin = (
   options?: RenderElementListOptions
 ): SlatePlugin => ({
   renderElement: renderElementList(options),
-  deserialize: deserializeList(),
-  onKeyDown: onKeyDownList(),
+  deserialize: deserializeList(options),
+  onKeyDown: onKeyDownList(options),
 });

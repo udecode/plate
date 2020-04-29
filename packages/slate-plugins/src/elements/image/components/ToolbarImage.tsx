@@ -1,10 +1,14 @@
 import React from 'react';
 import { ToolbarButton } from 'common';
 import { ToolbarElementProps } from 'common/types';
+import { IMAGE } from 'elements/image/types';
 import { useEditor } from 'slate-react';
 import { insertImage } from '../transforms';
 
-export const ToolbarImage = (props: ToolbarElementProps) => {
+export const ToolbarImage = ({
+  typeImg = IMAGE,
+  ...props
+}: ToolbarElementProps) => {
   const editor = useEditor();
 
   return (
@@ -15,7 +19,7 @@ export const ToolbarImage = (props: ToolbarElementProps) => {
 
         const url = window.prompt('Enter the URL of the image:');
         if (!url) return;
-        insertImage(editor, url);
+        insertImage(editor, url, { typeImg });
       }}
     />
   );
