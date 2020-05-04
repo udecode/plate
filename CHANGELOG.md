@@ -4,6 +4,17 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.1` — May 2, 2020
+
+###### NEW
+
+- `withPasteHtml`: 
+    - the deserializer is now using `data-slate-type` attribute of each HTML element. So copy/pasting slate values should now work.
+    - when pasting a value, the type of the first node will replace the type of the selected node (using `Transforms.setNodes`).
+###### FIX
+
+- `htmlDeserialize`: fix `Cannot read property 'children' of null`
+
 ### `0.58.0` — April 29, 2020
 
 ###### BREAKING

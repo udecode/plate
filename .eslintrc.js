@@ -16,6 +16,7 @@ module.exports = {
       'error',
       { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },
     ],
+    'mdx/no-unused-expressions': 'off'
   },
   overrides: [
     {

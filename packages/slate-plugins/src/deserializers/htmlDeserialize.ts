@@ -1,93 +1,54 @@
-import { jsx } from 'slate-hyperscript';
+import { deserializeBreak } from 'deserializers/utils/deserializeBreak';
+import { deserializeElement } from 'deserializers/utils/deserializeElement';
+import { deserializeFragment } from 'deserializers/utils/deserializeFragment';
+import { deserializeMarks } from 'deserializers/utils/deserializeMarks';
+import { deserializeTextNode } from 'deserializers/utils/deserializeTextNode';
+import { Node as SlateNode } from 'slate';
 import { SlatePlugin } from 'types';
-import { DeserializeElement, DeserializeLeafValue } from './types';
 
-const addAttrsToChildren = (child: any, attrs: any) => {
-  if (child.children) {
-    child.children = child.children.map((item: any) => {
-      const itemWithAttrs = addAttrsToChildren(item, attrs);
-      return { ...itemWithAttrs, ...attrs };
-    });
-  }
-  return child;
-};
+export const htmlDeserialize = (plugins: SlatePlugin[]) => (
+  node: HTMLElement | ChildNode
+): any => {
+  // text node
+  const textNode = deserializeTextNode(node);
+  if (textNode) return textNode;
 
-export const htmlDeserialize = (plugins: SlatePlugin[]) => (el: any) => {
-  // text
-  if (el.nodeType === 3) return el.nodeValue === '\n' ? null : el.textContent;
+  // if not an element node
+  if (node.nodeType !== Node.ELEMENT_NODE) return null;
 
-  // not a tag
-  if (el.nodeType !== 1) return null;
+  // break line
+  const breakLine = deserializeBreak(node);
+  if (breakLine) return breakLine;
 
-  // new line
-  if (el.nodeName === 'BR') return '\n';
-
-  const { nodeName } = el;
-  let parent = el;
+  const { nodeName } = node;
+  let parent = node;
 
   // blockquote
-  if (
-    nodeName === 'PRE' &&
-    el.childNodes[0] &&
-    el.childNodes[0].nodeName === 'CODE'
-  ) {
-    [parent] = el.childNodes;
+  if (nodeName === 'PRE' && node.childNodes[0]?.nodeName === 'CODE') {
+    [parent] = node.childNodes;
   }
 
-  const children: any[] = Array.from(parent.childNodes)
+  const children: (SlateNode | null)[] = Array.from(parent.childNodes)
     .map(htmlDeserialize(plugins))
     .flat();
 
+  const el = node as HTMLElement;
+
   // body
-  if (el.nodeName === 'BODY') {
-    return jsx('fragment', {}, children);
-  }
-
-  let elementTags: DeserializeElement = {};
-  const textTags: {
-    [key: string]: DeserializeLeafValue[];
-  } = {};
-
-  plugins.forEach(({ deserialize: deserializePlugin }) => {
-    if (deserializePlugin?.element)
-      elementTags = { ...elementTags, ...deserializePlugin.element };
-
-    if (!deserializePlugin?.leaf) return;
-
-    Object.keys(deserializePlugin.leaf).forEach((tag) => {
-      if (!deserializePlugin?.leaf) return;
-
-      if (!textTags[tag]) textTags[tag] = [deserializePlugin.leaf[tag]];
-      else textTags[tag].push(deserializePlugin.leaf[tag]);
-    });
-  });
+  const fragment = deserializeFragment({ el, children });
+  if (fragment) return fragment;
 
   // element
-  if (elementTags[nodeName]) {
-    const attrs = elementTags[nodeName](el);
-
-    return jsx('element', attrs, children);
-  }
+  const element = deserializeElement({ plugins, el, children });
+  if (element) return element;
 
   // mark
-  if (textTags[nodeName]) {
-    let attrs = {};
-
-    textTags[nodeName].forEach((tag) => {
-      const newAttrs = tag(el);
-      if (newAttrs) {
-        attrs = { ...attrs, ...newAttrs };
-      }
-    });
-
-    return children.map((child) => {
-      if (child.children) {
-        return addAttrsToChildren(child, attrs);
-      }
-
-      return jsx('text', attrs, child);
-    });
-  }
+  const texts = deserializeMarks({
+    plugins,
+    el,
+    children,
+  });
+  if (texts) return texts;
 
   return children;
 };

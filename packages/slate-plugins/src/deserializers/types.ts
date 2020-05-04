@@ -1,26 +1,20 @@
-export interface DeserializeElement {
-  [key: string]: (
+export type DeserializeElement = Record<
+  string,
+  (
     el: HTMLElement
   ) =>
     | {
         type: string;
         [key: string]: any;
       }
-    | undefined;
-}
+    | undefined
+>;
 
 export type DeserializeLeafValue = (
   el: HTMLElement
-) =>
-  | {
-      [key: string]: any;
-    }
-  | undefined
-  | false;
+) => Record<string, any> | undefined | false;
 
-interface DeserializeLeaf {
-  [key: string]: DeserializeLeafValue;
-}
+type DeserializeLeaf = Record<string, DeserializeLeafValue>;
 
 export interface DeserializeHtml {
   element?: DeserializeElement;

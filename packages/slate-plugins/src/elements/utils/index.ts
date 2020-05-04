@@ -1,2 +1,2 @@
-export * from 'elements/utils/getElementComponent';
+export * from './getElementComponent';
 export * from './getRenderElement';

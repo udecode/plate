@@ -1,7 +1,7 @@
-import { Transforms } from 'slate';
+import { htmlDeserialize } from 'deserializers';
+import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { SlatePlugin } from 'types';
-import { htmlDeserialize } from '../deserializers';
 
 export const withPasteHtml = (plugins: SlatePlugin[]) => <
   T extends ReactEditor
@@ -15,7 +15,13 @@ export const withPasteHtml = (plugins: SlatePlugin[]) => <
 
     if (html) {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
-      const fragment = htmlDeserialize(plugins)(parsed.body);
+      const fragment: Node[] = htmlDeserialize(plugins)(parsed.body);
+
+      if (!fragment.length) return;
+
+      // replace the selected node type by the first node type
+      Transforms.setNodes(editor, { type: fragment[0].type });
+
       Transforms.insertFragment(editor, fragment);
       return;
     }

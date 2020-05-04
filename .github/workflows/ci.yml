@@ -14,6 +14,6 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 12
-    - run: yarn && yarn lint && yarn build && yarn build-storybook
+    - run: yarn && yarn lint && yarn test && yarn build && yarn build-storybook
       env:
         CI: true
