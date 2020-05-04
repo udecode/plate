@@ -4,6 +4,7 @@ import {
 } from 'deserializers/utils/deserializeMarks';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { BoldPlugin } from 'marks/bold';
+import { ItalicPlugin } from 'marks/italic';
 import { Node } from 'slate';
 
 const node: Node = {
@@ -22,7 +23,7 @@ describe('when deserializeMarks', () => {
     it('should add the marks to all the Text nodes', () => {
       expect(
         deserializeMarks({
-          plugins: [ParagraphPlugin(), BoldPlugin()],
+          plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],
           el: document.createElement('strong'),
           children: [node],
         })
