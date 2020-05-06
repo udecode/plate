@@ -120,6 +120,7 @@ export const EditablePlugins = ({
   return (
     <StyledEditable
       {...props}
+      data-testid="EditablePlugins"
       decorate={decoratePlugins}
       onDOMBeforeInput={onDOMBeforeInputPlugins}
       renderElement={renderElementPlugins}

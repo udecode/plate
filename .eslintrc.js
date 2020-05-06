@@ -1,6 +1,7 @@
 module.exports = {
   extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
   rules: {
+    '@typescript-eslint/no-namespace': 'off',
     'no-alert': 'off',
     'import/extensions': [
       'error',
@@ -12,11 +13,14 @@ module.exports = {
         jsx: 'never',
       },
     ],
+    'import/no-named-as-default-member': 'off',
+    'jest/no-export': 'off',
+    'jest/no-standalone-expect': 'off',
     'react/jsx-filename-extension': [
       'error',
       { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },
     ],
-    'mdx/no-unused-expressions': 'off'
+    'mdx/no-unused-expressions': 'off',
   },
   overrides: [
     {
