@@ -47,7 +47,7 @@ export const VideoElement = ({
   element,
 }: RenderElementProps) => {
   const editor = useEditor();
-  const { url } = element;
+  const url = element.url as string;
 
   return (
     <div {...attributes}>

@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { ListType, ListTypeOptions } from './types';
 
 export const deserializeList = ({

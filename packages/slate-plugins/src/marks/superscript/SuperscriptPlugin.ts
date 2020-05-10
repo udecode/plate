@@ -1,6 +1,6 @@
-import { SlatePlugin } from 'types';
-import { onKeyDownMark } from '../onKeyDownMark';
-import { MARK_SUBSCRIPT } from '../subscript/types';
+import { SlatePlugin } from 'common/types';
+import { onKeyDownMark } from 'mark';
+import { MARK_SUBSCRIPT } from 'marks/subscript';
 import { deserializeSuperscript } from './deserializeSuperscript';
 import { renderLeafSuperscript } from './renderLeafSuperscript';
 import { MARK_SUPERSCRIPT, SuperscriptPluginOptions } from './types';

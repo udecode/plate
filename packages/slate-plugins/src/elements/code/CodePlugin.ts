@@ -1,5 +1,5 @@
-import { SlatePlugin } from 'types';
-import { RenderElementOptions } from '../types';
+import { SlatePlugin } from 'common/types';
+import { RenderElementOptions } from 'element';
 import { deserializeCode } from './deserializeCode';
 import { renderElementCode } from './renderElementCode';
 

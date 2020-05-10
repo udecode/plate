@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'types';
+import { SlatePlugin } from 'common/types';
 import { deserializeTable } from './deserializeTable';
 import { renderElementTable } from './renderElementTable';
 import { RenderElementTableOptions } from './types';

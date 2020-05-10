@@ -1,5 +1,5 @@
+import { SlatePlugin } from 'common/types';
 import { HighlightPlugin } from 'marks';
-import { SlatePlugin } from 'types';
 import { SearchHighlightPluginOptions } from './types';
 
 export const SearchHighlightPlugin = ({

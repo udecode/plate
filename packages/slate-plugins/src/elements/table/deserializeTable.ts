@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { TableType, TableTypeOptions } from './types';
 
 export const deserializeTable = ({

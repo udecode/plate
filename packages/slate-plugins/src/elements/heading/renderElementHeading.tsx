@@ -1,7 +1,7 @@
 import React from 'react';
+import { getElementComponent } from 'element/utils';
 import { RenderElementProps } from 'slate-react';
 import styled from 'styled-components';
-import { getElementComponent } from '../utils';
 import { HeadingType, RenderElementHeadingOptions } from './types';
 
 const Heading = styled.div`

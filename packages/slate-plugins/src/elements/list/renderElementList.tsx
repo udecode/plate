@@ -1,4 +1,4 @@
-import { getElementComponent, getRenderElements } from 'elements/utils';
+import { getElementComponent, getRenderElements } from 'element/utils';
 import styled from 'styled-components';
 import { ListType, RenderElementListOptions } from './types';
 

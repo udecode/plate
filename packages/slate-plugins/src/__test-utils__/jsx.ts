@@ -12,6 +12,19 @@ import { TableType } from 'elements/table';
 import { VIDEO } from 'elements/video';
 import { createHyperscript } from 'slate-hyperscript';
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [key: string]: any;
+      editor: any;
+      mention: any;
+      actionitem: any;
+      inline: any;
+      txt: any;
+    }
+  }
+}
+
 const nodeTypes = {
   typeP: PARAGRAPH,
   typeMention: MENTION,

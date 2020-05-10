@@ -1,5 +1,5 @@
-import { SlatePlugin } from 'types';
-import { onKeyDownMark } from '../onKeyDownMark';
+import { SlatePlugin } from 'common/types';
+import { onKeyDownMark } from 'mark';
 import { deserializeBold } from './deserializeBold';
 import { renderLeafBold } from './renderLeafBold';
 import { BoldPluginOptions, MARK_BOLD } from './types';

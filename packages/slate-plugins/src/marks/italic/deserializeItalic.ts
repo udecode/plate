@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { MARK_ITALIC } from './types';
 
 const leaf = { [MARK_ITALIC]: true };

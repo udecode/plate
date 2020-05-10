@@ -47,7 +47,7 @@ export const ActionItemElement = ({
 }: RenderElementProps) => {
   const editor = useEditor();
   const readOnly = useReadOnly();
-  const { checked } = element;
+  const checked = element.checked as boolean;
 
   return (
     <Wrapper {...attributes}>

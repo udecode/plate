@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'types';
+import { SlatePlugin } from 'common/types';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions } from './types';
 

@@ -7,8 +7,8 @@ module.exports = {
     '../stories/docs/**/*.stories.(tsx|mdx)',
     '../stories/basic/**/*.stories.(tsx|mdx)',
     '../stories/basic/editable-voids.stories.tsx',
-    '../stories/deserializers/**/playground.stories.tsx',
-    '../stories/deserializers/**/*.stories.(tsx|mdx)',
+    '../stories/plugins/**/playground.stories.tsx',
+    '../stories/plugins/**/*.stories.(tsx|mdx)',
   ],
   addons: [
     '@storybook/addon-knobs',

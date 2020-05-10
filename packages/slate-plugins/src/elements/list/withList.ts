@@ -1,7 +1,7 @@
+import { isRangeAtRoot } from 'common/queries';
+import { unwrapNodesByType } from 'common/transforms';
+import { withBreakEmptyReset, withDeleteStartReset } from 'element';
 import { PARAGRAPH } from 'elements/paragraph';
-import { isRangeAtRoot } from 'elements/queries';
-import { withBreakEmptyReset } from 'elements/withBreakEmptyReset';
-import { withDeleteStartReset } from 'elements/withDeleteStartReset';
 import { Editor, Path, Point, Range, Transforms } from 'slate';
 import { ListType, ListTypeOptions } from './types';
 
@@ -115,14 +115,8 @@ export const withList = ({
   };
 
   const withBreakEmptyList = () => {
-    Transforms.unwrapNodes(editor, {
-      match: (n) => n.type === typeLi,
-      split: true,
-    });
-    Transforms.unwrapNodes(editor, {
-      match: (n) => [typeUl, typeOl].includes(n.type),
-      split: true,
-    });
+    unwrapNodesByType(editor, typeLi, { split: true });
+    unwrapNodesByType(editor, [typeUl, typeOl], { split: true });
   };
 
   let e = withBreakEmptyReset({

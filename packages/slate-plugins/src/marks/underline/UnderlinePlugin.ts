@@ -1,5 +1,5 @@
-import { SlatePlugin } from 'types';
-import { onKeyDownMark } from '../onKeyDownMark';
+import { SlatePlugin } from 'common/types';
+import { onKeyDownMark } from 'mark';
 import { deserializeUnderline } from './deserializeUnderline';
 import { renderLeafUnderline } from './renderLeafUnderline';
 import { MARK_UNDERLINE, UnderlinePluginOptions } from './types';

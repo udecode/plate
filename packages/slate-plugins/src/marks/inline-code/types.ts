@@ -1,4 +1,4 @@
-import { MarkPluginOptions } from '../types';
+import { MarkPluginOptions } from 'mark';
 
 export const MARK_CODE = 'code';
 

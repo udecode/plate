@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { MARK_CODE } from './types';
 
 export const deserializeInlineCode = (): DeserializeHtml => ({

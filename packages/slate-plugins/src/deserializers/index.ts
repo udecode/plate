@@ -1,2 +1,2 @@
-export * from './htmlDeserialize';
-export * from './utils';
+export * from './paste-html';
+export * from './paste-md';

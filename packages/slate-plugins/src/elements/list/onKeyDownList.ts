@@ -1,7 +1,12 @@
+import {
+  isBlockTextEmpty,
+  isFirstChild,
+  isNodeInSelection,
+  isRangeAtRoot,
+} from 'common/queries';
 import { PARAGRAPH } from 'elements/paragraph';
-import { Ancestor, Editor, Path, Transforms } from 'slate';
-import { isBlockTextEmpty, isFirstChild, isRangeAtRoot } from '../queries';
-import { isList, isSelectionInList } from './queries';
+import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
+import { isList } from './queries';
 import {
   defaultListTypes,
   ListHotkey,
@@ -81,12 +86,17 @@ const moveDown = (
   options = defaultListTypes
 ) => {
   // Previous sibling is the new parent
-  const previousSiblingItem = Editor.node(editor, Path.previous(listItemPath));
+  const previousSiblingItem = Editor.node(
+    editor,
+    Path.previous(listItemPath)
+  ) as NodeEntry<Ancestor>;
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = previousNode.children.find(isList(options));
+    const sublist = previousNode.children.find(isList(options)) as
+      | Element
+      | undefined;
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );
@@ -119,7 +129,7 @@ export const onKeyDownList = ({
   if (Object.values(ListHotkey).includes(e.key)) {
     if (
       editor.selection &&
-      isSelectionInList(editor, options) &&
+      isNodeInSelection(editor, typeLi) &&
       !isRangeAtRoot(editor.selection)
     ) {
       if (e.key === ListHotkey.TAB) {

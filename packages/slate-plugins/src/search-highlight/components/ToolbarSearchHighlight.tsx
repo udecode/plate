@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { HeadingToolbar } from 'toolbar';
+import { HeadingToolbar } from 'components/Toolbar';
 
 const StyledHeadingToolbar = styled(HeadingToolbar)`
   height: 38px;

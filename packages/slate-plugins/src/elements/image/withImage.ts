@@ -1,8 +1,13 @@
-import { withVoid } from 'elements/withVoid';
+import { withVoid } from 'element';
 import { ReactEditor } from 'slate-react';
 import { isImageUrl } from './utils/isImageUrl';
 import { insertImage } from './transforms';
 import { IMAGE } from './types';
+
+export const onImageLoad = (editor: ReactEditor, reader: FileReader) => () => {
+  const url = reader.result;
+  if (url) insertImage(editor, url);
+};
 
 export const withImage = ({ typeImg = IMAGE } = {}) => <T extends ReactEditor>(
   editor: T
@@ -19,10 +24,7 @@ export const withImage = ({ typeImg = IMAGE } = {}) => <T extends ReactEditor>(
         const reader = new FileReader();
         const [mime] = file.type.split('/');
         if (mime === 'image') {
-          reader.addEventListener('load', () => {
-            const url = reader.result;
-            if (url) insertImage(editor, url);
-          });
+          reader.addEventListener('load', onImageLoad(editor, reader));
           reader.readAsDataURL(file);
         }
       }

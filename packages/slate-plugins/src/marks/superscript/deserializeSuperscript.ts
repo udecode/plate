@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { MARK_SUPERSCRIPT } from './types';
 
 const leaf = { [MARK_SUPERSCRIPT]: true };

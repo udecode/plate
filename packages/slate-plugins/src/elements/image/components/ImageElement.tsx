@@ -16,13 +16,14 @@ export const ImageElement = ({
   children,
   element,
 }: RenderElementProps) => {
+  const url = element.url as string;
   const selected = useSelected();
   const focused = useFocused();
 
   return (
     <div {...attributes}>
       <div contentEditable={false}>
-        <Image src={element.url} alt="" selected={selected} focused={focused} />
+        <Image src={url} alt="" selected={selected} focused={focused} />
       </div>
       {children}
     </div>

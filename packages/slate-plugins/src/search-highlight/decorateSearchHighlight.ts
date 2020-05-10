@@ -1,5 +1,5 @@
+import { DecorateSearchHighlightOptions } from 'search-highlight/types';
 import { NodeEntry, Range, Text } from 'slate';
-import { DecorateSearchHighlightOptions } from './types';
 
 export const decorateSearchHighlight = ({
   search,

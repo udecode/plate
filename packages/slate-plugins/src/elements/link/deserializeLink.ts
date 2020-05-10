@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
 import { LINK } from './types';
 
 export const deserializeLink = ({ typeLink = LINK } = {}): DeserializeHtml => ({

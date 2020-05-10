@@ -26,7 +26,7 @@ module.exports = ({ config }) => {
   
   config.resolve.modules = [
     ...(config.resolve.modules || []),
-    path.resolve(__dirname, '../packages/slate-deserializers/src'),
+    path.resolve(__dirname, '../packages/slate-plugins/src'),
   ];
   
   config.resolve.extensions.push('.ts', '.tsx');

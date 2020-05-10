@@ -5,9 +5,9 @@ export enum TableType {
 }
 
 export interface TableTypeOptions {
-  typeTable?: string;
-  typeTr?: string;
-  typeTd?: string;
+  typeTable: string;
+  typeTr: string;
+  typeTd: string;
 }
 
 export interface RenderElementTableOptions extends TableTypeOptions {

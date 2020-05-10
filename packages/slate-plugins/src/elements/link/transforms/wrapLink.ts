@@ -1,15 +1,15 @@
-import { isLinkActive } from 'elements/link/queries';
+import { isNodeInSelection } from 'common/queries';
+import { unwrapNodesByType } from 'common/transforms';
 import { Editor, Range, Transforms } from 'slate';
 import { LINK } from '../types';
-import { unwrapLink } from './unwrapLink';
 
 export const wrapLink = (
   editor: Editor,
   url: string,
   { typeLink = LINK } = {}
 ) => {
-  if (isLinkActive(editor)) {
-    unwrapLink(editor, { typeLink });
+  if (isNodeInSelection(editor, typeLink)) {
+    unwrapNodesByType(editor, typeLink);
   }
 
   const { selection } = editor;
