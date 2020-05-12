@@ -56,7 +56,7 @@ import { MARK_SUBSCRIPT, SubscriptPlugin } from 'marks/subscript';
 import { MARK_SUPERSCRIPT, SuperscriptPlugin } from 'marks/superscript';
 import { MARK_UNDERLINE, UnderlinePlugin } from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
-import { withNodeID } from 'node-id';
+import { withNodeID } from 'node';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';

@@ -1,39 +1,37 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withNodeID } from 'node';
+import { withNodeID, withTransforms } from 'node';
 import { Editor } from 'slate';
 
-const input = (
+const input = ((
   <editor>
     <p>
       test
       <cursor />
     </p>
   </editor>
-) as any;
+) as any) as Editor;
 
 const output = (
   <editor>
     <p>test</p>
-    <li id={1 as any}>
-      <p id={1 as any}>
-        <txt id={1}>inserted</txt>
-      </p>
-    </li>
+    <p id={1 as any}>inserted</p>
+    <p id={1 as any}>inserted</p>
   </editor>
 ) as any;
 
 const idGenerator = () => 1;
 
-it('should add an id to the new nodes', () => {
-  const editor: Editor = withNodeID({ idGenerator, textID: true })(input);
+it('should add an id to the new elements', () => {
+  const editor = withNodeID({ idGenerator })(withTransforms()(input));
 
-  editor.insertNode(
+  editor.insertNodes(
     (
-      <li>
+      <fragment>
         <p>inserted</p>
-      </li>
+        <p>inserted</p>
+      </fragment>
     ) as any
   );
 

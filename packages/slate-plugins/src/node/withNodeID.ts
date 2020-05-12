@@ -1,7 +1,14 @@
 import { isTextByPath } from 'common/queries/isTextByPath';
 import { setPropsToDescendants, setPropsToElements } from 'common/transforms';
-import { Editor } from 'slate';
+import { castArray } from 'lodash';
+import { EditorTransforms } from 'node/withTransforms';
+import { Editor, Node } from 'slate';
 
+/**
+ * Set an id to new `Element` nodes. If `textID` is true, set an id to `Text` nodes as well.
+ *
+ * Depends on `withForcedLayout`.
+ */
 export const withNodeID = ({
   idKey = 'id',
   idGenerator = () => Date.now(),
@@ -10,19 +17,30 @@ export const withNodeID = ({
   idKey?: string;
   idGenerator?: Function;
   textID?: boolean;
-} = {}) => <T extends Editor>(editor: T) => {
-  const { apply, insertNode } = editor;
+} = {}) => <T extends Editor & EditorTransforms>(editor: T) => {
+  const { apply, insertNode, insertNodes } = editor;
 
   const idProps = { [idKey]: idGenerator() };
 
-  editor.insertNode = (node) => {
+  const setProps = (node: Node) => {
     if (!textID) {
       setPropsToElements(node, idProps);
     } else {
       setPropsToDescendants(node, idProps);
     }
+  };
 
+  editor.insertNode = (node) => {
+    setProps(node);
     return insertNode(node);
+  };
+
+  editor.insertNodes = (nodes, options) => {
+    const nodesArray: Node[] = castArray(nodes);
+    nodesArray.forEach((node) => {
+      setProps(node);
+    });
+    return insertNodes(nodes, options);
   };
 
   editor.apply = (operation) => {
