@@ -12,7 +12,7 @@ export const useMention = ({
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
   const chars = characters
-    .filter((c) => c.toLowerCase().startsWith(search.toLowerCase()))
+    .filter((c) => c.toLowerCase().includes(search.toLowerCase()))
     .slice(0, maxSuggestions);
 
   return { target, setTarget, index, setIndex, search, setSearch, chars };
