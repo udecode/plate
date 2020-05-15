@@ -1,0 +1,27 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "horacioh",
+      "name": "Horacio Herrera",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/725120?v=4",
+      "profile": "http://horacioh.com",
+      "contributions": [
+        "code",
+        "plugin",
+        "example",
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "slate-plugins-next",
+  "projectOwner": "zbeyens",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
