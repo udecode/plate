@@ -14,7 +14,7 @@ const createOnChangeMention = (
     onChangeMention({ editor, setTarget, setSearch, setIndex, beforeRegex });
 };
 
-const renderMentionSelect = (
+const getMentionSelect = (
   target: Range | null,
   index: number,
   chars: string[]
@@ -50,7 +50,7 @@ export const useMention = ({
     setSearch,
     setIndex
   );
-  const MentionSelectComponent = renderMentionSelect(target, index, chars);
+  const MentionSelectComponent = getMentionSelect(target, index, chars);
   const defaultOnKeyDownMention = createOnKeyDownMentions({
     chars,
     target,
