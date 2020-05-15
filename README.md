@@ -135,7 +135,6 @@ Useful scripts include:
 
 ## Contributors ✨
 
-## License
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -148,5 +147,7 @@ Useful scripts include:
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+## License
 
 [MIT](LICENSE)
