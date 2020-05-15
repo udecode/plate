@@ -1,0 +1,27 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "zbeyens",
+      "name": "Ziad Beyens",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/19695832?v=4",
+      "profile": "https://github.com/zbeyens",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "plugin"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "slate-plugins-next",
+  "projectOwner": "zbeyens",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
