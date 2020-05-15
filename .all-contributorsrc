@@ -42,6 +42,17 @@
         "example",
         "bug"
       ]
+    },
+    {
+      "login": "spetex",
+      "name": "Petr Sahula",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/9515499?v=4",
+      "profile": "https://spetex.dev",
+      "contributions": [
+        "code",
+        "plugin",
+        "example"
+      ]
     }
   ],
   "contributorsPerLine": 7,
