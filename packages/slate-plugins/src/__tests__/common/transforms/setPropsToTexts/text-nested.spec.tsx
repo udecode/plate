@@ -19,11 +19,11 @@ const props = {
 const output = (
   <editor>
     <li>
-      <txt bold>test</txt>
+      <htext bold>test</htext>
       <p>
-        <txt bold>test</txt>
+        <htext bold>test</htext>
       </p>
-      <txt bold>test</txt>
+      <htext bold>test</htext>
     </li>
   </editor>
 ) as any;

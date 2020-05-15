@@ -9,7 +9,7 @@ const props = {
   bold: true,
 };
 
-const output = (<txt bold>test</txt>) as any;
+const output = (<htext bold>test</htext>) as any;
 
 it('should set props to the text node', () => {
   setPropsToTexts(node, props);

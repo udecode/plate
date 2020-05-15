@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { deserializeFragment } from 'deserializers/paste-html/utils';
+import { deserializeFragment } from 'deserializers/deserialize-html/utils';
 
 const fragment = (
   <fragment>
     <p>
-      <txt>test</txt>
+      <htext>test</htext>
     </p>
   </fragment>
 );

@@ -45,7 +45,7 @@ export const EditablePlugins = ({
     <Editable
       style={{
         fontSize: 16,
-        lineHeight: 26,
+        lineHeight: '26px',
       }}
       data-testid="EditablePlugins"
       decorate={decoratePlugins(plugins, decorateList)}

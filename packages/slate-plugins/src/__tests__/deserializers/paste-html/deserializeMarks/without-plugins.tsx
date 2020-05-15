@@ -1,4 +1,4 @@
-import { deserializeMarks } from 'deserializers/paste-html/utils';
+import { deserializeMarks } from 'deserializers/deserialize-html/utils';
 
 const input = {
   plugins: [{}],

@@ -12,7 +12,11 @@ export const renderLeafStrikethrough = () => ({
   leaf,
 }: RenderLeafProps) => {
   if (leaf[MARK_STRIKETHROUGH]) {
-    return <StrikethroughText>{children}</StrikethroughText>;
+    return (
+      <StrikethroughText data-slate-type={MARK_STRIKETHROUGH}>
+        {children}
+      </StrikethroughText>
+    );
   }
 
   return children;

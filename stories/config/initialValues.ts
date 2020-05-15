@@ -8,12 +8,20 @@ import {
   IMAGE,
   LINK,
   ListType,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_HIGHLIGHT,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
   MENTION,
   PARAGRAPH,
   TableType,
   VIDEO,
 } from '../../packages/slate-plugins/src';
-import { EDITABLE_VOID } from '../basic/editable-voids/types';
+import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export const nodeTypes = {
   typeP: PARAGRAPH,
@@ -149,6 +157,16 @@ export const initialValueForcedLayout: Node[] = [
       },
     ],
   },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      {
+        text:
+          'Slate editors can edit complex, nested data structures. And for the most part this is great. But in certain cases inconsistencies in the data structure can be introduced—most often when allowing a user to paste arbitrary richtext content.\n' +
+          '"Normalizing" is how you can ensure that your editor\'s content is always of a certain shape. It\'s similar to "validating", except instead of just determining whether the content is valid or invalid, its job is to fix the content to make it valid again.',
+      },
+    ],
+  },
 ];
 
 export const initialValueHoveringToolbar: Node[] = [
@@ -187,6 +205,7 @@ for (let h = 0; h < HEADINGS; h++) {
 
   for (let p = 0; p < PARAGRAPHS; p++) {
     initialValueHugeDocument.push({
+      type: nodeTypes.typeP,
       children: [{ text: faker.lorem.paragraph() }],
     });
   }
@@ -407,18 +426,103 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueMark: Node[] = [
+export const initialValueMarks: Node[] = [
   {
     type: nodeTypes.typeP,
     children: [
-      { text: 'This is editable ' },
-      { text: 'rich', bold: true, underline: true, italic: true },
-      { text: ' text, ' },
-      { text: 'much' },
-      { text: ' better than a ' },
-      { text: '<textarea>', code: true },
-      { text: '!' },
+      {
+        text:
+          'These are all the available marks. You can customize the type and component for each of these.',
+      },
     ],
+  },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      { text: 'Bold, ', [MARK_BOLD]: true },
+      { text: 'italic, ', [MARK_ITALIC]: true },
+      { text: 'underline, ', [MARK_UNDERLINE]: true },
+      { text: 'strikethrough, ', [MARK_STRIKETHROUGH]: true },
+      {
+        text: 'mixed, ',
+        [MARK_BOLD]: true,
+        [MARK_ITALIC]: true,
+        [MARK_UNDERLINE]: true,
+      },
+      { text: 'code, ', [MARK_CODE]: true },
+      { text: 'sub, ', [MARK_SUBSCRIPT]: true },
+      { text: 'sup, ', [MARK_SUPERSCRIPT]: true },
+      { text: 'highlight', [MARK_HIGHLIGHT]: true },
+    ],
+  },
+];
+
+export const initialValueElements: Node[] = [
+  {
+    type: nodeTypes.typeH1,
+    children: [{ text: 'Elements' }],
+  },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      {
+        text: 'These are the most common elements, known as blocks:',
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeH1,
+    children: [{ text: 'Heading 1' }],
+  },
+  {
+    type: nodeTypes.typeH2,
+    children: [{ text: 'Heading 2' }],
+  },
+  {
+    type: nodeTypes.typeH3,
+    children: [{ text: 'Heading 3' }],
+  },
+  {
+    type: nodeTypes.typeH4,
+    children: [{ text: 'Heading 4' }],
+  },
+  {
+    type: nodeTypes.typeH5,
+    children: [{ text: 'Heading 5' }],
+  },
+  {
+    type: nodeTypes.typeH6,
+    children: [{ text: 'Heading 6' }],
+  },
+  {
+    type: nodeTypes.typeUl,
+    children: [
+      {
+        type: nodeTypes.typeLi,
+        children: [
+          { type: nodeTypes.typeP, children: [{ text: 'Bulleted list' }] },
+        ],
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeOl,
+    children: [
+      {
+        type: nodeTypes.typeLi,
+        children: [
+          { type: nodeTypes.typeP, children: [{ text: 'Numbered list' }] },
+        ],
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeBlockquote,
+    children: [{ text: 'Blockquote' }],
+  },
+  {
+    type: nodeTypes.typeCode,
+    children: [{ text: 'Code block' }],
   },
 ];
 

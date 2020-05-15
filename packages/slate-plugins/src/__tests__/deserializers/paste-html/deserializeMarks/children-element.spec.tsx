@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { deserializeMarks } from 'deserializers/paste-html/utils';
+import { deserializeMarks } from 'deserializers/deserialize-html/utils';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { BoldPlugin } from 'marks/bold';
 import { ItalicPlugin } from 'marks/italic';
@@ -21,9 +21,9 @@ const output = (
   <fragment>
     <li>
       <p>
-        <txt bold>test</txt>
+        <htext bold>test</htext>
       </p>
-      <txt bold>test</txt>
+      <htext bold>test</htext>
     </li>
   </fragment>
 );

@@ -16,7 +16,7 @@ export interface RenderElementTableOptions extends TableTypeOptions {
   Cell?: any;
 }
 
-export const defaultTableTypes: TableTypeOptions = {
+export const defaultTableTypes: Required<TableTypeOptions> = {
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
   typeTd: TableType.CELL,

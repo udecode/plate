@@ -8,8 +8,9 @@ export const getElementComponent = (Component: any) => ({
   attributes,
   element,
   children,
+  ...props
 }: RenderElementProps) => (
-  <Component data-slate-type={element.type} {...attributes}>
+  <Component data-slate-type={element.type} {...attributes} {...props}>
     {children}
   </Component>
 );

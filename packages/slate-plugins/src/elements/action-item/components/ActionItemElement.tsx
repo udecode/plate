@@ -50,13 +50,14 @@ export const ActionItemElement = ({
   const checked = element.checked as boolean;
 
   return (
-    <Wrapper {...attributes}>
+    <Wrapper {...attributes} data-slate-checked={element.checked}>
       <CheckboxWrapper contentEditable={false}>
         <Checkbox
           type="checkbox"
           checked={checked}
           onChange={(e) => {
             const path = ReactEditor.findPath(editor, element);
+
             Transforms.setNodes(
               editor,
               { checked: e.target.checked },

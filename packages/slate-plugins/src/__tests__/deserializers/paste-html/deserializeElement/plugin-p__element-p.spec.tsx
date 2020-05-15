@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { deserializeElement } from 'deserializers/paste-html/utils';
+import { deserializeElement } from 'deserializers/deserialize-html/utils';
 import { ParagraphPlugin } from 'elements/paragraph';
 
 const input = {
@@ -12,7 +12,7 @@ const input = {
 
 const output = (
   <p>
-    <txt>test</txt>
+    <htext>test</htext>
   </p>
 );
 

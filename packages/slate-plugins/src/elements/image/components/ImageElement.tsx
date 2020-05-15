@@ -20,10 +20,19 @@ export const ImageElement = ({
   const selected = useSelected();
   const focused = useFocused();
 
+  const type = attributes['data-slate-type'];
+  delete attributes['data-slate-type'];
+
   return (
     <div {...attributes}>
       <div contentEditable={false}>
-        <Image src={url} alt="" selected={selected} focused={focused} />
+        <Image
+          data-slate-type={type}
+          src={url}
+          alt=""
+          selected={selected}
+          focused={focused}
+        />
       </div>
       {children}
     </div>

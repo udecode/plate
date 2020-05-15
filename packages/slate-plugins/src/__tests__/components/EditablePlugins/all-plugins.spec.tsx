@@ -16,7 +16,7 @@ import {
   LooksTwo,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
-import { withPasteHtml } from 'deserializers/paste-html';
+import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import {
   ToolbarBlock,
   withBlock,
@@ -51,12 +51,12 @@ import { BoldPlugin, MARK_BOLD } from 'marks/bold';
 import { renderLeafHighlight } from 'marks/highlight';
 import { InlineCodePlugin, MARK_CODE } from 'marks/inline-code';
 import { ItalicPlugin, MARK_ITALIC } from 'marks/italic';
-import { MARK_STRIKETHROUGH } from 'marks/strikethrough';
+import { MARK_STRIKETHROUGH, StrikethroughPlugin } from 'marks/strikethrough';
 import { MARK_SUBSCRIPT, SubscriptPlugin } from 'marks/subscript';
 import { MARK_SUPERSCRIPT, SuperscriptPlugin } from 'marks/superscript';
 import { MARK_UNDERLINE, UnderlinePlugin } from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
-import { withNodeID } from 'node';
+import { withNodeID, withTransforms } from 'node';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -65,10 +65,11 @@ import { SoftBreakPlugin } from 'soft-break';
 import { EditablePlugins, HeadingToolbar, HoveringToolbar } from 'components';
 import {
   initialValueActionItem,
+  initialValueElements,
   initialValueEmbeds,
   initialValueImages,
+  initialValueMarks,
   initialValueMentions,
-  initialValueRichText,
   initialValueVoids,
   nodeTypes,
 } from '../../../../../../stories/config/initialValues';
@@ -76,7 +77,7 @@ import {
 const plugins = [
   BlockquotePlugin(nodeTypes),
   ActionItemPlugin(nodeTypes),
-  HeadingPlugin(nodeTypes),
+  HeadingPlugin(),
   ImagePlugin(nodeTypes),
   LinkPlugin(nodeTypes),
   ListPlugin(nodeTypes),
@@ -88,6 +89,7 @@ const plugins = [
   BoldPlugin(),
   InlineCodePlugin(),
   ItalicPlugin(),
+  StrikethroughPlugin(),
   SearchHighlightPlugin(),
   UnderlinePlugin(),
   SoftBreakPlugin(),
@@ -96,7 +98,8 @@ const plugins = [
 ];
 
 const initialValue = [
-  ...initialValueRichText,
+  ...initialValueMarks,
+  ...initialValueElements,
   ...initialValueActionItem,
   ...initialValueEmbeds,
   ...initialValueMentions,
@@ -125,10 +128,14 @@ const Editor = () => {
                 withBlock(nodeTypes)(
                   withMention(nodeTypes)(
                     withImage(nodeTypes)(
-                      withPasteHtml(plugins)(
+                      withDeserializeHtml(plugins)(
                         withLink(nodeTypes)(
                           withTable(nodeTypes)(
-                            withNodeID()(withHistory(withReact(createEditor())))
+                            withNodeID()(
+                              withTransforms()(
+                                withHistory(withReact(createEditor()))
+                              )
+                            )
                           )
                         )
                       )

@@ -8,11 +8,15 @@ import {
   decorateSearchHighlight,
   EditablePlugins,
   HighlightPlugin,
+  ParagraphPlugin,
   renderLeafHighlight,
   SearchHighlightPlugin,
   ToolbarSearchHighlight,
 } from '../../packages/slate-plugins/src';
-import { initialValueSearchHighlighting } from '../config/initialValues';
+import {
+  initialValueSearchHighlighting,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Plugins/Search Highlight',
@@ -25,7 +29,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
 

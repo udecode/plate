@@ -7,9 +7,13 @@ import {
   decoratePreview,
   EditablePlugins,
   MarkdownPreviewPlugin,
+  ParagraphPlugin,
   renderLeafPreview,
 } from '../../packages/slate-plugins/src';
-import { initialValueMarkdownPreview } from '../config/initialValues';
+import {
+  initialValueMarkdownPreview,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Plugins/Markdown Preview',
@@ -21,7 +25,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
 
   if (boolean('MarkdownPreviewPlugin', true))
     plugins.push(MarkdownPreviewPlugin());

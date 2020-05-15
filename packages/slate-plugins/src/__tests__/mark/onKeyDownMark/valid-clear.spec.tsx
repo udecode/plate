@@ -9,7 +9,7 @@ import { MARK_ITALIC } from 'marks/italic';
 const input = (
   <editor>
     <p>
-      t<txt italic>est</txt>
+      t<htext italic>est</htext>
     </p>
     <selection>
       <anchor path={[0, 1]} offset={0} />
@@ -23,7 +23,7 @@ const event = new KeyboardEvent('keydown');
 const output = (
   <editor>
     <p>
-      t<txt bold>est</txt>
+      t<htext bold>est</htext>
     </p>
     <selection>
       <anchor path={[0, 1]} offset={0} />

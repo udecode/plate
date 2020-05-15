@@ -165,7 +165,7 @@ onKeyDown: onKeyDownMark({ mark: MARK_BOLD, 'mod+b' }),
 
 ### Paste Html
 
-- `deserialize` is used by `withPasteHtml` *editor plugin*.
+- `deserialize` is used by `withDeserializeHtml` *editor plugin*.
 
 #### `deserialize`
 
@@ -194,7 +194,7 @@ export const deserializeImage = (): DeserializeHtml => ({
 
 ### Notice
 
-If you don't use atoms like `withPasteHtml`, the bundle size grows for nothing.
+If you don't use atoms like `withDeserializeHtml`, the bundle size grows for nothing.
 Sometimes, you just want an atom from a molecule, and not the whole molecule. 
 That's why `slate-plugins-next` also exports the **atoms** of all the plugins 😎.
 You can just import them and create your own custom editor.

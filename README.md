@@ -17,7 +17,7 @@ customizable plugins for your Slate editor.
 - ✨ 20+ Editor Plugins.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
-- 🎌 Supports the latest version of `slate@0.57.2`.
+- ✅ Unit tested with `slate@0.58.1`.
 - 📖 [Docs](https://slate-plugins-next.netlify.com/?path=/docs/docs-getting-started--page) and [Demos](https://slate-plugins-next.netlify.com/?path=/story/plugins-playground--plugins) on Storybook.
 
 ## 🧩 Plugins
@@ -26,54 +26,61 @@ A list of provided plugins extracted from [official examples](https://www.slatej
 
 ### Elements
 
-A plugin for each type of element. All of these
-use `renderElement`.
+A plugin for each type of element. They all use `renderElement`.
 
-<img src="https://i.imgur.com/EFORuVT.png" alt="blocks" width="500"/>
+<img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
-- [Action Item](https://slate-plugins-next.netlify.com/?path=/docs/plugins-action-item--examp)
-- [Blockquote](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
-- [Code](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
-- [Heading](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
-- [Image](https://slate-plugins-next.netlify.com/?path=/docs/plugins-image--example)
-- [Link](https://slate-plugins-next.netlify.com/?path=/docs/plugins-link--example)
-- [List](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
-- [Mention](https://slate-plugins-next.netlify.com/?path=/docs/plugins-mention--example)
-- [Paragraph](https://slate-plugins-next.netlify.com/?path=/docs/plugins-elements--block-plugins)
-- [Table](https://slate-plugins-next.netlify.com/?path=/docs/plugins-table--example)
-- [Video](https://slate-plugins-next.netlify.com/?path=/docs/plugins-video--example)
-- [Editable Voids](https://slate-plugins-next.netlify.com/?path=/story/basic-editable-voids--example)
+- Action
+- Blockquote
+- Code
+- Editable
+- Heading
+- Image
+- Link
+- List
+- Mention
+- Paragraph
+- Table
+- Video
  
 ### Marks
 
-A plugin for each type of leaf. All of these
-use `renderLeaf`.
+A plugin for each type of leaf. They all use `renderLeaf`.
 
-<img src="https://i.imgur.com/AVTAUqJ.png" alt="marks" width="400"/>
+<img src="https://imgur.com/NQJgC5b.png" alt="marks" width="650"/>
 
-- [Bold](https://slate-plugins-next.netlify.com/?path=/docs/plugins-marks--mark-plugins)
-- [Highlight](https://slate-plugins-next.netlify.com/?path=/docs/plugins-search-highlight--example)
-- [Inline code](https://slate-plugins-next.netlify.com/?path=/docs/plugins-marks--mark-plugins)
-- [Italic](https://slate-plugins-next.netlify.com/?path=/docs/plugins-marks--mark-plugins)
-- [Strikethrough](https://slate-plugins-next.netlify.com/?path=/docs/plugins-marks--mark-plugins)
-- [Underline](https://slate-plugins-next.netlify.com/?path=/docs/plugins-marks--mark-plugins)
+- Bold
+- Code
+- Highlight
+- Italic
+- Strikethrough
+- Subscript
+- Superscript
+- Underline
 
-### Utilities
+### Deserializers
 
-- Slate Plugins
-- Common
+- HTML
+- Markdown
 
-- [Forced Layout](https://slate-plugins-next.netlify.com/?path=/docs/plugins-forced-layout--example)
-- [Markdown Preview](https://slate-plugins-next.netlify.com/?path=/docs/plugins-markdown-preview--example)
-- [Markdown Shortcuts](https://slate-plugins-next.netlify.com/?path=/docs/plugins-markdown-shortcuts--example)
-- [Paste Html](https://slate-plugins-next.netlify.com/?path=/docs/plugins-paste-html--example)
-- [Search Highlight](https://slate-plugins-next.netlify.com/?path=/docs/plugins-search-highlight--example)
-- [Toolbar](https://slate-plugins-next.netlify.com/?path=/docs/basic-hovering-toolbar--example)
+### Normalizers
+
+- Forced Layout
+
+### Plugins
+
+- Search Highlight
+- Editable
+
+### Components
+
+- Editable Plugins
+- Toolbar
 
 ## 📦 Install
 
 ```bash
-yarn add slate-plugins-next
+yarn add slate-plugins-next@0.58.1
 ```
 
 You will also need these peerDependencies:
@@ -108,9 +115,13 @@ Useful scripts include:
 
 > boolean check if code conforms to linting eslint rules
 
+#### `yarn test`
+
+> Test with Jest
+
 #### `yarn release`
 
-> Lint, build and push a release to git and npm will ask for version in interactive mode - using lerna.
+> Lint, test, build and push a release to git and npm will ask for version in interactive mode - using lerna.
 
 ## 📝 Notice
 

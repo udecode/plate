@@ -37,7 +37,5 @@ it('should run default insertText', () => {
 
   wrapLink(editor, url);
 
-  // console.log(input.children[0].);
-
   expect(input.children).toEqual(output.children);
 });

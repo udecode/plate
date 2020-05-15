@@ -8,7 +8,7 @@ const input = (
   <editor>
     <p>
       tes
-      <txt bold>t</txt>
+      <htext bold>t</htext>
       <cursor />
     </p>
   </editor>

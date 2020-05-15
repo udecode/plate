@@ -20,7 +20,7 @@ const event = new KeyboardEvent('keydown');
 const output = (
   <editor>
     <p>
-      t<txt bold>est</txt>
+      t<htext bold>est</htext>
     </p>
     <selection>
       <anchor path={[0, 1]} offset={0} />

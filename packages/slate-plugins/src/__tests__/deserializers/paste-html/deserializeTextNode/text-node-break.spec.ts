@@ -1,4 +1,4 @@
-import { deserializeTextNode } from 'deserializers/paste-html/utils';
+import { deserializeTextNode } from 'deserializers/deserialize-html/utils';
 
 const input = document.createTextNode('\n');
 

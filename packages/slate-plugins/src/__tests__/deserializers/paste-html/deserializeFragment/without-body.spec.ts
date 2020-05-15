@@ -1,4 +1,4 @@
-import { deserializeFragment } from 'deserializers/paste-html/utils';
+import { deserializeFragment } from 'deserializers/deserialize-html/utils';
 
 const input = {
   el: document.createElement('div'),

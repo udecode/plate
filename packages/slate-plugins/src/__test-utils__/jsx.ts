@@ -20,7 +20,7 @@ declare global {
       mention: any;
       actionitem: any;
       inline: any;
-      txt: any;
+      htext: any;
     }
   }
 }
@@ -54,8 +54,8 @@ export const jsx = createHyperscript({
     mention: { type: nodeTypes.typeMention },
     blockquote: { type: nodeTypes.typeBlockquote },
     code: { type: nodeTypes.typeCode },
-    link: { type: nodeTypes.typeLink },
-    img: { type: nodeTypes.typeImg },
+    ha: { type: nodeTypes.typeLink },
+    himg: { type: nodeTypes.typeImg },
     video: { type: nodeTypes.typeVideo },
     actionitem: { type: nodeTypes.typeActionItem },
     table: { type: nodeTypes.typeTable },
@@ -74,6 +74,6 @@ export const jsx = createHyperscript({
     block: {},
   },
   creators: {
-    txt: createText,
+    htext: createText,
   },
 });

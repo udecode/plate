@@ -7,3 +7,4 @@ export * from './transforms';
 export * from './types';
 export * from './useMention';
 export * from './withMention';
+export * from './deserializeMention';

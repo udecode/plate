@@ -27,6 +27,7 @@ export interface RenderElementHeadingOptions extends DeserializeHeadingOptions {
   H4?: any;
   H5?: any;
   H6?: any;
+  fontSize?: number;
 }
 
 export interface HeadingPluginOptions extends RenderElementHeadingOptions {}

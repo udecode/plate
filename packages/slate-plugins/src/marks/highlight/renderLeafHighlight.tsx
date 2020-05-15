@@ -14,7 +14,11 @@ export const renderLeafHighlight = ({
   leaf,
 }: RenderLeafProps) => {
   if (leaf[MARK_HIGHLIGHT])
-    return <HighlightText bg={bg}>{children}</HighlightText>;
+    return (
+      <HighlightText data-slate-type={MARK_HIGHLIGHT} bg={bg}>
+        {children}
+      </HighlightText>
+    );
 
   return children;
 };

@@ -18,7 +18,7 @@ const output = (
     <p>test</p>
     <li id={1 as any}>
       <p id={1 as any}>
-        <txt id={1}>inserted</txt>
+        <htext id={1}>inserted</htext>
       </p>
     </li>
   </editor>

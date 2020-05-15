@@ -1,3 +1,4 @@
 export * from './withForcedLayout';
-export * from 'node/withTransforms';
+export * from './withTransforms';
 export * from './withNodeID';
+export * from './utils';

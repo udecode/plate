@@ -4,7 +4,7 @@ import { jsx } from '__test-utils__/jsx';
 import {
   deserializeMarks,
   DeserializeMarksProps,
-} from 'deserializers/paste-html/utils';
+} from 'deserializers/deserialize-html/utils';
 import { BoldPlugin } from 'marks/bold';
 
 const input: DeserializeMarksProps = {
@@ -15,7 +15,7 @@ const input: DeserializeMarksProps = {
 
 const output = (
   <fragment>
-    <txt bold>test</txt>
+    <htext bold>test</htext>
   </fragment>
 );
 

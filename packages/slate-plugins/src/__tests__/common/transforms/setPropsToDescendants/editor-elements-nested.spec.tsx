@@ -19,11 +19,11 @@ const props = { a: 1 };
 const output = (
   <editor>
     <element type={ListType.LI} a={1}>
-      <txt a={1}>test</txt>
+      <htext a={1}>test</htext>
       <element type={PARAGRAPH} a={1}>
-        <txt a={1}>test</txt>
+        <htext a={1}>test</htext>
       </element>
-      <txt a={1}>test</txt>
+      <htext a={1}>test</htext>
     </element>
   </editor>
 ) as any;

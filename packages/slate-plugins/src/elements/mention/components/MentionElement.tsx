@@ -12,6 +12,7 @@ export const MentionElement = ({
   return (
     <span
       {...attributes}
+      data-slate-character={element.character}
       contentEditable={false}
       style={{
         padding: '3px 3px 2px',

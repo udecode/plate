@@ -8,11 +8,7 @@ addParameters({
   options: {
     showRoots: true,
   },
-  docs: {
-    page: () => (
-      <DocsPage />
-    )
-  },
+  docs: { page: DocsPage },
 });
 
 addDecorator(story => (

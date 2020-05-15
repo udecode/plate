@@ -8,7 +8,7 @@ import { ToolbarButton, ToolbarButtonProps } from 'components/Toolbar';
 export interface ToolbarTableProps
   extends ToolbarButtonProps,
     TableTypeOptions {
-  action: (editor: Editor, options: TableTypeOptions) => void;
+  action: (editor: Editor, options?: Required<TableTypeOptions>) => void;
 }
 
 export const ToolbarTable = ({
