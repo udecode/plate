@@ -82,6 +82,24 @@ You will also need these peerDependencies:
 yarn add slate slate-hyperscript slate-react styled-components react react-dom
 ```
 
+## 📝 Notice
+
+### Why
+
+[Slate](https://github.com/ianstormtaylor/slate) is a powerful editor framework that helps you deal with
+difficult parts when building an editor, such as events handlers, elements, formatting, commands, rendering,
+serializing, normalizing, etc.
+
+While you are trying to build your own editors, it still need a lot of efforts to make something
+similar to [Quill](https://quilljs.com/) or [ProseMirror](https://prosemirror.net/).
+This repository allows you to build your editor right away with **minimal** slate knowledge.
+
+### Bundle size
+
+For simplicity, a single package `slate-plugins-next` has been published to share all the plugins.
+It's not a problem as [it is tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next). However, a few plugins use external dependencies.
+These should be moved into their own package in the future.
+
 ## 👏 Contributing
 
 You can use this repository to **share your own plugins**.
@@ -112,23 +130,7 @@ Useful scripts include:
 
 > Lint, build and push a release to git and npm will ask for version in interactive mode - using lerna.
 
-## 📝 Notice
-
-### Why
-
-[Slate](https://github.com/ianstormtaylor/slate) is a powerful editor framework that helps you deal with
-difficult parts when building an editor, such as events handlers, elements, formatting, commands, rendering,
-serializing, normalizing, etc.
-
-While you are trying to build your own editors, it still need a lot of efforts to make something
-similar to [Quill](https://quilljs.com/) or [ProseMirror](https://prosemirror.net/).
-This repository allows you to build your editor right away with **minimal** slate knowledge.
-
-### Bundle size
-
-For simplicity, a single package `slate-plugins-next` has been published to share all the plugins.
-It's not a problem as [it is tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next). However, a few plugins use external dependencies.
-These should be moved into their own package in the future.
+## Contributors ✨
 
 ## License
 
