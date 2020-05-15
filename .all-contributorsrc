@@ -6,6 +6,18 @@
   "commit": false,
   "contributors": [
     {
+      "login": "zbeyens",
+      "name": "Ziad Beyens",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/19695832?v=4",
+      "profile": "https://github.com/zbeyens",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "plugin"
+      ]
+    },
+    {
       "login": "horacioh",
       "name": "Horacio Herrera",
       "avatar_url": "https://avatars3.githubusercontent.com/u/725120?v=4",
@@ -15,7 +27,6 @@
         "plugin",
         "example",
         "ideas"
-      ]
     }
   ],
   "contributorsPerLine": 7,
