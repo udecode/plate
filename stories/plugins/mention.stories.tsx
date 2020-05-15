@@ -36,7 +36,7 @@ export const Example = () => {
       []
     );
 
-    const { target, setTarget, index, setIndex, setSearch, chars } = useMention(
+    const { MentionSelectComponent,  defaultOnChangeMention, defaultOnKeyDownMention } = useMention(
       {
         characters: CHARACTERS,
         maxSuggestions: 10,
@@ -50,30 +50,17 @@ export const Example = () => {
         onChange={(newValue) => {
           setValue(newValue);
 
-          onChangeMention({
-            editor,
-            setTarget,
-            setSearch,
-            setIndex,
-          });
+          defaultOnChangeMention(editor);
         }}
       >
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some text..."
           onKeyDown={[
-            onKeyDownMention({
-              chars,
-              target,
-              setTarget,
-              index,
-              setIndex,
-            }),
+            defaultOnKeyDownMention(),
           ]}
         />
-        {target && chars.length > 0 && (
-          <MentionSelect target={target} index={index} chars={chars} />
-        )}
+          <MentionSelectComponent />
       </Slate>
     );
   };
