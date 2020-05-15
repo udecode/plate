@@ -30,6 +30,18 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "eivindw",
+      "name": "Eivind Barstad Waaler",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67761?v=4",
+      "profile": "https://github.com/eivindw",
+      "contributions": [
+        "code",
+        "plugin",
+        "example",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
