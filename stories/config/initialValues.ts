@@ -24,6 +24,7 @@ import {
 import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export const nodeTypes = {
+  // elements
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
@@ -45,6 +46,8 @@ export const nodeTypes = {
   typeH5: HeadingType.H5,
   typeH6: HeadingType.H6,
   typeEditableVoid: EDITABLE_VOID,
+  // marks
+  typeHighlight: MARK_HIGHLIGHT,
 };
 
 export const initialValueVoids: Node[] = [

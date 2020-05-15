@@ -48,7 +48,7 @@ import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
 import { ToolbarMark } from 'mark/components';
 import { BoldPlugin, MARK_BOLD } from 'marks/bold';
-import { renderLeafHighlight } from 'marks/highlight';
+import { HighlightPlugin, renderLeafHighlight } from 'marks/highlight';
 import { InlineCodePlugin, MARK_CODE } from 'marks/inline-code';
 import { ItalicPlugin, MARK_ITALIC } from 'marks/italic';
 import { MARK_STRIKETHROUGH, StrikethroughPlugin } from 'marks/strikethrough';
@@ -91,6 +91,7 @@ const plugins = [
   ItalicPlugin(),
   StrikethroughPlugin(),
   SearchHighlightPlugin(),
+  HighlightPlugin(),
   UnderlinePlugin(),
   SoftBreakPlugin(),
   SubscriptPlugin(),

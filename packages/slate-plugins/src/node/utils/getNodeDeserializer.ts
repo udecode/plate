@@ -14,10 +14,10 @@ export const getNodeDeserializer = <T extends CreateNode>(
   type: string,
   {
     createNode,
-    tagNames = [],
+    tagNames,
   }: {
     createNode: T;
-    tagNames?: string[];
+    tagNames: string[];
   }
 ) => {
   const deserializer = {
