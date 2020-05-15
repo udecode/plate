@@ -1,7 +1,11 @@
-import { DecorateSearchHighlightOptions } from 'search-highlight/types';
+import {
+  DecorateSearchHighlightOptions,
+  MARK_SEARCH_HIGHLIGHT,
+} from 'search-highlight/types';
 import { NodeEntry, Range, Text } from 'slate';
 
 export const decorateSearchHighlight = ({
+  typeSearchHighlight = MARK_SEARCH_HIGHLIGHT,
   search,
 }: DecorateSearchHighlightOptions) => ([node, path]: NodeEntry) => {
   const ranges: Range[] = [];
@@ -15,7 +19,7 @@ export const decorateSearchHighlight = ({
         ranges.push({
           anchor: { path, offset: offset - search.length },
           focus: { path, offset },
-          highlight: true,
+          [typeSearchHighlight]: true,
         });
       }
       offset = offset + part.length + search.length;

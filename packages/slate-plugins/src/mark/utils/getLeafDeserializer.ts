@@ -20,5 +20,5 @@ export const getLeafDeserializer = (
   }: {
     createLeaf?: CreateLeaf;
     tagNames?: string[];
-  }
+  } = {}
 ) => getNodeDeserializer(type, { createNode: createLeaf, tagNames });

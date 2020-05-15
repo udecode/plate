@@ -23,12 +23,15 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
     - Set an id to the new `Element` and/or `Text` nodes.
 - `deserializeMention`
 - `deserializeActionItem`
+- `deserializeIframe`
+- `deserializeHighlight`
 
 ###### FIX
 
 - `withDeserializeHtml`: fix `Cannot read property 'children' of null`
 - `withForcedLayout`: the previous behavior was forcing to have paragraph nodes after the title. New behavior: first node should be a title (otherwise insert/edit) and second node should exist (otherwise insert a paragraph by default).
 We will see how to generalize this plugin in a future release.
+- `Toolbar`: change `height` to `min-height` for dynamic height.
 
 ###### IMPROVEMENTS
 

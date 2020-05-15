@@ -33,6 +33,7 @@ import {
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
+  HighlightPlugin,
   HoveringToolbar,
   ImagePlugin,
   InlineCodePlugin,
@@ -132,6 +133,7 @@ export const Plugins = () => {
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
   if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
   if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin());
   if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
