@@ -7,7 +7,7 @@ import { TablePlugin, withTable } from 'elements/table';
 import { BoldPlugin } from 'marks/bold';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { initialValueTables } from '../../../../../../stories/config/initialValues';
+import { initialValueTables } from '../../../../../../../stories/config/initialValues';
 
 const input = ((
   <editor>

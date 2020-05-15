@@ -20,7 +20,9 @@ export const withDeserializeHtml = (plugins: SlatePlugin[]) => <
       if (!fragment.length) return;
 
       // replace the selected node type by the first node type
-      Transforms.setNodes(editor, { type: fragment[0].type });
+      if (fragment[0].type) {
+        Transforms.setNodes(editor, { type: fragment[0].type });
+      }
 
       Transforms.insertFragment(editor, fragment);
       return;

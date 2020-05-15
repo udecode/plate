@@ -42,7 +42,10 @@ const textTags = [
   '<sup>sup</sup>',
 ];
 
-const inlineTags = ['<a href="http://localhost:3000">a</a>'];
+const inlineTags = [
+  '<a href="http://localhost:3000">a</a>',
+  `<span data-slate-type=${MENTION} data-slate-character="zbeyens" />`,
+];
 
 const elementTags = [
   '<pre><code>code</code></pre>',
@@ -52,7 +55,7 @@ const elementTags = [
   '<table><tr><td>table</td></tr></table>',
   `<div data-slate-type=${ACTION_ITEM} data-slate-checked="true">checked</div>`,
   `<div data-slate-type=${ACTION_ITEM} data-slate-checked="false">unchecked</div>`,
-  `<span data-slate-type=${MENTION} data-slate-character="zbeyens" />`,
+  `<iframe src="https://player.vimeo.com/video/26689853" />`,
 ];
 
 const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
@@ -104,6 +107,7 @@ const output = (
     </p>
     <p>
       <ha url="http://localhost:3000">a</ha>
+      <mention character="zbeyens" />
     </p>
     <code>
       <htext>code</htext>
@@ -126,7 +130,9 @@ const output = (
     </table>
     <actionitem checked>checked</actionitem>
     <actionitem checked={false}>unchecked</actionitem>
-    <mention character="zbeyens" />
+    <hvideo url="https://player.vimeo.com/video/26689853">
+      {'</body></html>'}
+    </hvideo>
   </editor>
 ) as any;
 

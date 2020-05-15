@@ -6,7 +6,7 @@ import { ImagePlugin, withImage } from 'elements/image';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { initialValueImages } from '../../../../../../stories/config/initialValues';
+import { initialValueImages } from '../../../../../../../stories/config/initialValues';
 
 const input = ((
   <editor>

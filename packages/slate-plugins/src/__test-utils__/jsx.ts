@@ -56,7 +56,7 @@ export const jsx = createHyperscript({
     code: { type: nodeTypes.typeCode },
     ha: { type: nodeTypes.typeLink },
     himg: { type: nodeTypes.typeImg },
-    video: { type: nodeTypes.typeVideo },
+    hvideo: { type: nodeTypes.typeVideo },
     actionitem: { type: nodeTypes.typeActionItem },
     table: { type: nodeTypes.typeTable },
     tr: { type: nodeTypes.typeTr },
