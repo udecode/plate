@@ -1,7 +1,5 @@
 export * from './components';
 export * from './MentionPlugin';
-export * from './onChangeMention';
-export * from './onKeyDownMention';
 export * from './renderElementMention';
 export * from './transforms';
 export * from './types';
