@@ -3,9 +3,15 @@ on:
   push:
     branches:
     - master
+    paths:
+    - '**.jsx?'
+    - '**.tsx?'
   pull_request:
     branches:
     - master
+    paths:
+    - '**.jsx?'
+    - '**.tsx?'
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -21,7 +27,7 @@ jobs:
     - name: Test
       run: yarn test
     - name: Build
-      run: yarn build && yarn build-storybook
+      run: yarn build
     - name: Generate coverage report
       run: yarn test:cov
     - name: Upload coverage to Codecov
