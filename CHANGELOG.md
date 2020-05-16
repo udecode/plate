@@ -4,6 +4,16 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.2` — May 16, 2020
+
+###### BREAKING
+
+- `withNodeID`: renamed `idGenerator` to `idCreator`
+
+###### FIX
+
+- `withNodeID`
+
 ### `0.58.1` — May 16, 2020
 
 ###### BREAKING

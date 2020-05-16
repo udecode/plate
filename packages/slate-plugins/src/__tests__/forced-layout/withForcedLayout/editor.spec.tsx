@@ -8,12 +8,12 @@ const input = (<editor />) as any;
 
 const output = (
   <editor>
-    <h1>
-      <text />
-    </h1>
-    <p>
-      <text />
-    </p>
+    <hh1>
+      <htext />
+    </hh1>
+    <hp>
+      <htext />
+    </hp>
   </editor>
 ) as any;
 

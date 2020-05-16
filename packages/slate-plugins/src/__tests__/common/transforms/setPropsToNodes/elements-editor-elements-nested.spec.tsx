@@ -1,16 +1,17 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { setPropsToElements } from 'common/transforms';
+import { setPropsToNodes } from 'common/transforms';
 import { ListType } from 'elements/list';
 import { PARAGRAPH } from 'elements/paragraph';
+import { Element } from 'slate';
 
 const node = (
   <editor>
-    <li>
+    <hli>
       test
-      <p>test</p>test
-    </li>
+      <hp>test</hp>test
+    </hli>
   </editor>
 ) as any;
 
@@ -29,6 +30,8 @@ const output = (
 ) as any;
 
 it('should set props to all elements', () => {
-  setPropsToElements(node, props);
+  setPropsToNodes(node, props, {
+    filter: Element.isElement,
+  });
   expect(node.children).toEqual(output.children);
 });

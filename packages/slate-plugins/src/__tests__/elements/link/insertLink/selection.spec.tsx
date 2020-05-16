@@ -5,11 +5,11 @@ import { insertLink, LINK, withLink } from 'elements';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       insert link <anchor />
       here
       <focus />.
-    </p>
+    </hp>
   </editor>
 ) as any;
 
@@ -17,13 +17,13 @@ const url = 'http://localhost';
 
 const output = (
   <editor>
-    <p>
+    <hp>
       insert link{' '}
       <element type={LINK} url={url}>
         here
       </element>
       .
-    </p>
+    </hp>
   </editor>
 ) as any;
 

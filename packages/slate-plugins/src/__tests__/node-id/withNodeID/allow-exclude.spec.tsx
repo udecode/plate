@@ -2,32 +2,48 @@
 
 import { jsx } from '__test-utils__/jsx';
 import { idCreatorFixture } from '__tests__/node-id/withNodeID/fixtures';
+import { ListType } from 'elements/list';
+import { PARAGRAPH } from 'elements/paragraph';
 import { withNodeID } from 'node';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 
 const input = ((
   <editor>
     <hp>
-      tes
-      <cursor />t
+      test
+      <cursor />
     </hp>
   </editor>
 ) as any) as Editor;
 
 const output = (
   <editor>
-    <hp>tes</hp>
-    <hp id={1}>t</hp>
+    <hp>test</hp>
+    <hul id={1}>
+      <hli id={2}>
+        <hp>inserted</hp>
+      </hli>
+    </hul>
   </editor>
 ) as any;
 
-it('should add an id to the new element', () => {
+it('should add an id to the new elements', () => {
   const editor = withNodeID({
     idCreator: idCreatorFixture,
+    allow: [ListType.UL, ListType.LI, PARAGRAPH],
+    exclude: [PARAGRAPH],
   })(withHistory(input));
 
-  Transforms.splitNodes(editor);
+  editor.insertNode(
+    (
+      <hul>
+        <hli>
+          <hp>inserted</hp>
+        </hli>
+      </hul>
+    ) as any
+  );
 
   editor.undo();
   editor.redo();

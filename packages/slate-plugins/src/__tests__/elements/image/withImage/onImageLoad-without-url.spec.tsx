@@ -5,7 +5,7 @@ import { onImageLoad } from 'elements';
 
 const input = (
   <editor>
-    <p>test</p>
+    <hp>test</hp>
   </editor>
 ) as any;
 
@@ -15,7 +15,7 @@ const reader = {
 
 const output = (
   <editor>
-    <p>test</p>
+    <hp>test</hp>
   </editor>
 ) as any;
 

@@ -7,16 +7,16 @@ import { Editor } from 'slate';
 
 const input = (
   <editor>
-    <blockquote>
+    <hblockquote>
       <anchor />t<focus />
       est
-    </blockquote>
+    </hblockquote>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <blockquote>test</blockquote>
+    <hblockquote>test</hblockquote>
   </editor>
 ) as any;
 

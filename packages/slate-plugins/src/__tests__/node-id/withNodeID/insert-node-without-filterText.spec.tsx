@@ -3,34 +3,42 @@
 import { jsx } from '__test-utils__/jsx';
 import { idCreatorFixture } from '__tests__/node-id/withNodeID/fixtures';
 import { withNodeID } from 'node';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 
 const input = ((
   <editor>
     <hp>
-      tes
-      <cursor />t
+      test
+      <cursor />
     </hp>
   </editor>
 ) as any) as Editor;
 
 const output = (
   <editor>
-    <hp>tes</hp>
-    <hp id={1}>t</hp>
+    <hp>test</hp>
+    <hli id={1}>
+      <hp id={2}>
+        <htext id={3}>inserted</htext>
+      </hp>
+    </hli>
   </editor>
 ) as any;
 
-it('should add an id to the new element', () => {
+it('should add an id to the new nodes', () => {
   const editor = withNodeID({
     idCreator: idCreatorFixture,
+    filterText: false,
   })(withHistory(input));
 
-  Transforms.splitNodes(editor);
-
-  editor.undo();
-  editor.redo();
+  editor.insertNode(
+    (
+      <hli>
+        <hp>inserted</hp>
+      </hli>
+    ) as any
+  );
 
   expect(input.children).toEqual(output.children);
 });

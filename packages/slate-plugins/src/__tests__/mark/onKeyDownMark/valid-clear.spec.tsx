@@ -8,9 +8,9 @@ import { MARK_ITALIC } from 'marks/italic';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       t<htext italic>est</htext>
-    </p>
+    </hp>
     <selection>
       <anchor path={[0, 1]} offset={0} />
       <focus path={[0, 1]} offset={3} />
@@ -22,9 +22,9 @@ const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
-    <p>
+    <hp>
       t<htext bold>est</htext>
-    </p>
+    </hp>
     <selection>
       <anchor path={[0, 1]} offset={0} />
       <focus path={[0, 1]} offset={3} />

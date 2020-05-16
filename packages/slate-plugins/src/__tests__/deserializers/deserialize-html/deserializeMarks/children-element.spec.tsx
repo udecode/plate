@@ -10,21 +10,21 @@ const input = {
   plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],
   el: document.createElement('strong'),
   children: [
-    <li>
-      <p>test</p>test
-    </li>,
+    <hli>
+      <hp>test</hp>test
+    </hli>,
     null,
   ],
 };
 
 const output = (
   <fragment>
-    <li>
-      <p>
+    <hli>
+      <hp>
         <htext bold>test</htext>
-      </p>
+      </hp>
       <htext bold>test</htext>
-    </li>
+    </hli>
   </fragment>
 );
 

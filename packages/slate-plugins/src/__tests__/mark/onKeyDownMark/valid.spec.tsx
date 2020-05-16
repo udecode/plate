@@ -7,11 +7,11 @@ import { MARK_BOLD } from 'marks/bold';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       t<anchor />
       est
       <focus />
-    </p>
+    </hp>
   </editor>
 ) as any;
 
@@ -19,9 +19,9 @@ const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
-    <p>
+    <hp>
       t<htext bold>est</htext>
-    </p>
+    </hp>
     <selection>
       <anchor path={[0, 1]} offset={0} />
       <focus path={[0, 1]} offset={3} />

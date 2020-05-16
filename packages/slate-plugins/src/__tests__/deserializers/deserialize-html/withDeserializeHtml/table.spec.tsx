@@ -11,9 +11,9 @@ import { initialValueTables } from '../../../../../../../stories/config/initialV
 
 const input = ((
   <editor>
-    <p>
+    <hp>
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any) as Editor;
 

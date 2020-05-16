@@ -1,15 +1,16 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { setPropsToDescendants } from 'common/transforms';
+import { isDescendant } from 'common/queries';
+import { setPropsToNodes } from 'common/transforms';
 import { ListType } from 'elements/list';
 import { PARAGRAPH } from 'elements/paragraph';
 
 const node = (
-  <li>
+  <hli>
     test
-    <p>test</p>test
-  </li>
+    <hp>test</hp>test
+  </hli>
 ) as any;
 
 const props = { a: 1 };
@@ -25,6 +26,6 @@ const output = (
 ) as any;
 
 it('should set props to all descendants', () => {
-  setPropsToDescendants(node, props);
+  setPropsToNodes(node, props, { filter: isDescendant });
   expect(node).toEqual(output);
 });

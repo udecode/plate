@@ -18,13 +18,16 @@ const input = ((
 const output = (
   <editor>
     <hp>tes</hp>
-    <hp id={1}>t</hp>
+    <hp id={2}>
+      <htext id={1}>t</htext>
+    </hp>
   </editor>
 ) as any;
 
-it('should add an id to the new element', () => {
+it('should add an id to the new element and text', () => {
   const editor = withNodeID({
     idCreator: idCreatorFixture,
+    filterText: false,
   })(withHistory(input));
 
   Transforms.splitNodes(editor);

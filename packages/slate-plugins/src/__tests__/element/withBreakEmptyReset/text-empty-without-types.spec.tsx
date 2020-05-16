@@ -6,22 +6,22 @@ import { Editor } from 'slate';
 
 const input = (
   <editor>
-    <blockquote>
-      <text />
+    <hblockquote>
+      <htext />
       <cursor />
-    </blockquote>
+    </hblockquote>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <blockquote>
-      <text />
-    </blockquote>
-    <blockquote>
-      <text />
+    <hblockquote>
+      <htext />
+    </hblockquote>
+    <hblockquote>
+      <htext />
       <cursor />
-    </blockquote>
+    </hblockquote>
   </editor>
 ) as any;
 

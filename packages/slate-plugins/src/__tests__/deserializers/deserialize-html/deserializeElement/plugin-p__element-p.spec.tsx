@@ -11,9 +11,9 @@ const input = {
 };
 
 const output = (
-  <p>
+  <hp>
     <htext>test</htext>
-  </p>
+  </hp>
 );
 
 it('should be', () => {

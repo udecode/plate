@@ -5,7 +5,7 @@ import { insertLink, withLink } from 'elements';
 
 const input = (
   <editor>
-    <p>insert link</p>
+    <hp>insert link</hp>
   </editor>
 ) as any;
 
@@ -13,7 +13,7 @@ const url = 'http://localhost';
 
 const output = (
   <editor>
-    <p>insert link</p>
+    <hp>insert link</hp>
   </editor>
 ) as any;
 

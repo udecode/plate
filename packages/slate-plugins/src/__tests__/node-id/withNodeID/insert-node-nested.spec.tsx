@@ -1,39 +1,44 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
+import { idCreatorFixture } from '__tests__/node-id/withNodeID/fixtures';
 import { withNodeID } from 'node';
 import { Editor } from 'slate';
+import { withHistory } from 'slate-history';
 
-const input = (
+const input = ((
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
-) as any;
+) as any) as Editor;
 
 const output = (
   <editor>
-    <p>test</p>
-    <li id={1 as any}>
-      <p id={1 as any}>inserted</p>
-    </li>
+    <hp>test</hp>
+    <hli id={1}>
+      <hp id={2}>inserted</hp>
+    </hli>
   </editor>
 ) as any;
 
-const idGenerator = () => 1;
-
 it('should add an id to the new elements', () => {
-  const editor: Editor = withNodeID({ idGenerator })(input);
+  const editor = withNodeID({ idCreator: idCreatorFixture })(
+    withHistory(input)
+  );
 
   editor.insertNode(
     (
-      <li>
-        <p>inserted</p>
-      </li>
+      <hli>
+        <hp>inserted</hp>
+      </hli>
     ) as any
   );
+
+  editor.undo();
+  editor.redo();
 
   expect(input.children).toEqual(output.children);
 });
