@@ -10,11 +10,11 @@ const Code = styled.code`
   padding: 3px;
 `;
 
-export const renderLeafInlineCode = () => ({
+export const renderLeafInlineCode = ({ typeInlineCode = MARK_CODE }) => ({
   children,
   leaf,
 }: RenderLeafProps) => {
-  if (leaf[MARK_CODE]) return <Code>{children}</Code>;
+  if (leaf[typeInlineCode]) return <Code>{children}</Code>;
 
   return children;
 };

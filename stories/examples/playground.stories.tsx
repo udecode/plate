@@ -130,18 +130,25 @@ export const Plugins = () => {
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
   if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
+  if (boolean('InlineCodePlugin', true))
+    plugins.push(InlineCodePlugin(nodeTypes));
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
+  if (boolean('HighlightPlugin', true))
+    plugins.push(HighlightPlugin(nodeTypes));
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin());
-  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
-  if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
+    plugins.push(SearchHighlightPlugin(nodeTypes));
+  if (boolean('UnderlinePlugin', true))
+    plugins.push(UnderlinePlugin(nodeTypes));
+  if (boolean('StrikethroughPlugin', true))
+    plugins.push(StrikethroughPlugin(nodeTypes));
+  if (boolean('SubscriptPlugin', true))
+    plugins.push(SubscriptPlugin(nodeTypes));
+  if (boolean('SuperscriptPlugin', true))
+    plugins.push(SuperscriptPlugin(nodeTypes));
+  if (boolean('EditableVoidPlugin', true))
+    plugins.push(EditableVoidPlugin(nodeTypes));
   if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
-  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
-  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
-  if (boolean('EditableVoidPlugin', true)) plugins.push(EditableVoidPlugin());
 
   const createReactEditor = () => () => {
     const decorate: any = [];

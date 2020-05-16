@@ -38,8 +38,8 @@ export const BlockPlugins = () => {
     HeadingPlugin(nodeTypes),
     BlockquotePlugin(nodeTypes),
     CodePlugin(nodeTypes),
+    InlineCodePlugin(nodeTypes),
     SoftBreakPlugin(),
-    InlineCodePlugin(),
   ];
 
   const createReactEditor = () => () => {

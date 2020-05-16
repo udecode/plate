@@ -52,15 +52,15 @@ export const Example = () => {
     ActionItemPlugin(nodeTypes),
     MentionPlugin(nodeTypes),
     VideoPlugin(nodeTypes),
-    BoldPlugin(),
-    InlineCodePlugin(),
-    ItalicPlugin(),
-    StrikethroughPlugin(),
-    HighlightPlugin(),
-    UnderlinePlugin(),
+    BoldPlugin(nodeTypes),
+    InlineCodePlugin(nodeTypes),
+    ItalicPlugin(nodeTypes),
+    StrikethroughPlugin(nodeTypes),
+    HighlightPlugin(nodeTypes),
+    UnderlinePlugin(nodeTypes),
+    SubscriptPlugin(nodeTypes),
+    SuperscriptPlugin(nodeTypes),
     SoftBreakPlugin(),
-    SubscriptPlugin(),
-    SuperscriptPlugin(),
   ];
 
   const createReactEditor = () => () => {

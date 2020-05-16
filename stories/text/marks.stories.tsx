@@ -50,14 +50,20 @@ export default {
 
 export const All = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
-  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
-  if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
-  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
-  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
-  if (boolean('InlineCodePlugin', true)) plugins.push(InlineCodePlugin());
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
+  if (boolean('UnderlinePlugin', true))
+    plugins.push(UnderlinePlugin(nodeTypes));
+  if (boolean('StrikethroughPlugin', true))
+    plugins.push(StrikethroughPlugin(nodeTypes));
+  if (boolean('SubscriptPlugin', true))
+    plugins.push(SubscriptPlugin(nodeTypes));
+  if (boolean('SuperscriptPlugin', true))
+    plugins.push(SuperscriptPlugin(nodeTypes));
+  if (boolean('InlineCodePlugin', true))
+    plugins.push(InlineCodePlugin(nodeTypes));
+  if (boolean('HighlightPlugin', true))
+    plugins.push(HighlightPlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarks);

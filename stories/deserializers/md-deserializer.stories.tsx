@@ -39,11 +39,11 @@ export const Example = () => {
     LinkPlugin(nodeTypes),
     ListPlugin(nodeTypes),
     TablePlugin(nodeTypes),
-    BoldPlugin(),
-    InlineCodePlugin(),
-    ItalicPlugin(),
-    StrikethroughPlugin(),
-    UnderlinePlugin(),
+    BoldPlugin(nodeTypes),
+    InlineCodePlugin(nodeTypes),
+    ItalicPlugin(nodeTypes),
+    StrikethroughPlugin(nodeTypes),
+    UnderlinePlugin(nodeTypes),
   ];
 
   const createReactEditor = () => () => {

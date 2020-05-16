@@ -5,9 +5,10 @@ import { renderLeafBold } from './renderLeafBold';
 import { BoldPluginOptions, MARK_BOLD } from './types';
 
 export const BoldPlugin = ({
+  typeBold = MARK_BOLD,
   hotkey = 'mod+b',
 }: BoldPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafBold(),
-  onKeyDown: onKeyDownMark({ mark: MARK_BOLD, hotkey }),
-  deserialize: deserializeBold(),
+  renderLeaf: renderLeafBold({ typeBold }),
+  onKeyDown: onKeyDownMark({ type: typeBold, hotkey }),
+  deserialize: deserializeBold({ typeBold }),
 });

@@ -18,13 +18,20 @@ import {
   ToolbarMark,
   UnderlinePlugin,
 } from '../../packages/slate-plugins/src';
-import { initialValueHoveringToolbar } from '../config/initialValues';
+import {
+  initialValueHoveringToolbar,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Components/Hovering Toolbar',
 };
 
-const plugins = [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
+const plugins = [
+  BoldPlugin(nodeTypes),
+  ItalicPlugin(nodeTypes),
+  UnderlinePlugin(nodeTypes),
+];
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueHoveringToolbar);

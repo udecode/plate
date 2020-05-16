@@ -35,7 +35,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  onKeyDownMark({ hotkey: 'ctrl+b', mark: MARK_BOLD, clear: MARK_ITALIC })(
+  onKeyDownMark({ hotkey: 'ctrl+b', type: MARK_BOLD, clear: MARK_ITALIC })(
     event,
     input
   );

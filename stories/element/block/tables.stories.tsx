@@ -39,7 +39,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins = [ParagraphPlugin(nodeTypes), BoldPlugin()];
+  const plugins = [ParagraphPlugin(nodeTypes), BoldPlugin(nodeTypes)];
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
 
   const createReactEditor = () => () => {

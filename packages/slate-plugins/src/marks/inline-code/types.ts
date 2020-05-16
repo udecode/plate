@@ -2,4 +2,6 @@ import { MarkPluginOptions } from 'mark';
 
 export const MARK_CODE = 'code';
 
-export interface InlineCodePluginOptions extends MarkPluginOptions {}
+export interface InlineCodePluginOptions extends MarkPluginOptions {
+  typeInlineCode?: string;
+}

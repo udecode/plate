@@ -3,7 +3,7 @@ export interface MarkPluginOptions {
 }
 
 export interface OnKeyDownMarkOptions {
-  mark: string;
+  type: string;
   clear?: string;
   hotkey: string;
 }

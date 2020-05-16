@@ -31,7 +31,7 @@ export default {
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin());
+    plugins.push(SearchHighlightPlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const decorate = [];

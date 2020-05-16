@@ -10,7 +10,8 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 - renamed:
     - `withPasteHtml` to `withDeserializeHtml`
-    - `withPasteMd` to `withDeserializeMd` 
+    - `withPasteMd` to `withDeserializeMd`
+    - `onKeyDownMark.mark` to `onKeyDownMark.type` 
 
 ###### NEW
 

@@ -13,7 +13,7 @@ export default {
   title: 'Examples/Huge Document',
 };
 
-const plugins = [ParagraphPlugin(), HeadingPlugin(nodeTypes)];
+const plugins = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueHugeDocument);

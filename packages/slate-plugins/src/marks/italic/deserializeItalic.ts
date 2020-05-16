@@ -1,12 +1,12 @@
 import { DeserializeHtml } from 'common/types';
+import { getLeafDeserializer } from 'mark/utils';
 import { MARK_ITALIC } from './types';
 
-const leaf = { [MARK_ITALIC]: true };
-
-export const deserializeItalic = (): DeserializeHtml => ({
+export const deserializeItalic = ({
+  typeItalic = MARK_ITALIC,
+}): DeserializeHtml => ({
   leaf: {
-    SPAN: (el) => el.style.fontStyle === 'italic' && leaf,
-    EM: () => leaf,
-    I: () => leaf,
+    SPAN: (el) => el.style.fontStyle === 'italic' && { [typeItalic]: true },
+    ...getLeafDeserializer(typeItalic, { tagNames: ['EM', 'I'] }),
   },
 });

@@ -4,7 +4,7 @@ import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions } from './types';
 
 export const HighlightPlugin = (
-  options: HighlightPluginOptions & { typeHighlight?: string } = {}
+  options: HighlightPluginOptions = {}
 ): SlatePlugin => ({
   renderLeaf: renderLeafHighlight(options),
   deserialize: deserializeHighlight(options),

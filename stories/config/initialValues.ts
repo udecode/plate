@@ -12,6 +12,7 @@ import {
   MARK_CODE,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
+  MARK_SEARCH_HIGHLIGHT,
   MARK_STRIKETHROUGH,
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
@@ -47,7 +48,15 @@ export const nodeTypes = {
   typeH6: HeadingType.H6,
   typeEditableVoid: EDITABLE_VOID,
   // marks
+  typeBold: MARK_BOLD,
+  typeItalic: MARK_ITALIC,
+  typeUnderline: MARK_UNDERLINE,
+  typeStrikethrough: MARK_STRIKETHROUGH,
+  typeInlineCode: MARK_CODE,
+  typeSubscript: MARK_SUBSCRIPT,
+  typeSuperscript: MARK_SUPERSCRIPT,
   typeHighlight: MARK_HIGHLIGHT,
+  typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
 export const initialValueVoids: Node[] = [
@@ -180,9 +189,9 @@ export const initialValueHoveringToolbar: Node[] = [
         text:
           'This example shows how you can make a hovering menu appear above your content, which you can use to make text ',
       },
-      { text: 'bold', bold: true },
+      { text: 'bold', [nodeTypes.typeBold]: true },
       { text: ', ' },
-      { text: 'italic', italic: true },
+      { text: 'italic', [nodeTypes.typeItalic]: true },
       { text: ', or anything else you might want to do!' },
     ],
   },
@@ -190,7 +199,10 @@ export const initialValueHoveringToolbar: Node[] = [
     type: nodeTypes.typeP,
     children: [
       { text: 'Try it out yourself! Just ' },
-      { text: 'select any piece of text and the menu will appear', bold: true },
+      {
+        text: 'select any piece of text and the menu will appear',
+        [nodeTypes.typeBold]: true,
+      },
       { text: '.' },
     ],
   },
@@ -442,20 +454,20 @@ export const initialValueMarks: Node[] = [
   {
     type: nodeTypes.typeP,
     children: [
-      { text: 'Bold, ', [MARK_BOLD]: true },
-      { text: 'italic, ', [MARK_ITALIC]: true },
-      { text: 'underline, ', [MARK_UNDERLINE]: true },
-      { text: 'strikethrough, ', [MARK_STRIKETHROUGH]: true },
+      { text: 'Bold, ', [nodeTypes.typeBold]: true },
+      { text: 'italic, ', [nodeTypes.typeItalic]: true },
+      { text: 'underline, ', [nodeTypes.typeUnderline]: true },
+      { text: 'strikethrough, ', [nodeTypes.typeStrikethrough]: true },
       {
         text: 'mixed, ',
-        [MARK_BOLD]: true,
-        [MARK_ITALIC]: true,
-        [MARK_UNDERLINE]: true,
+        [nodeTypes.typeBold]: true,
+        [nodeTypes.typeItalic]: true,
+        [nodeTypes.typeUnderline]: true,
       },
-      { text: 'code, ', [MARK_CODE]: true },
-      { text: 'sub, ', [MARK_SUBSCRIPT]: true },
-      { text: 'sup, ', [MARK_SUPERSCRIPT]: true },
-      { text: 'highlight', [MARK_HIGHLIGHT]: true },
+      { text: 'code, ', [nodeTypes.typeInlineCode]: true },
+      { text: 'sub, ', [nodeTypes.typeSubscript]: true },
+      { text: 'sup, ', [nodeTypes.typeSuperscript]: true },
+      { text: 'highlight', [nodeTypes.typeHighlight]: true },
     ],
   },
 ];
@@ -538,11 +550,11 @@ export const initialValueRichText: Node[] = [
     type: nodeTypes.typeP,
     children: [
       { text: 'This is editable ' },
-      { text: 'rich', bold: true },
+      { text: 'rich', [nodeTypes.typeBold]: true },
       { text: ' text, ' },
-      { text: 'much', italic: true },
+      { text: 'much', [nodeTypes.typeItalic]: true },
       { text: ' better than a ' },
-      { text: '<textarea>', code: true },
+      { text: '<textarea>', [nodeTypes.typeInlineCode]: true },
       { text: '!' },
     ],
   },
@@ -553,7 +565,7 @@ export const initialValueRichText: Node[] = [
         text:
           "Since it's rich text, you can do things like turn a selection of text ",
       },
-      { text: 'bold', bold: true },
+      { text: 'bold', [nodeTypes.typeBold]: true },
       {
         text:
           ', or add a semantically rendered block quote in the middle of the page, like this:',
@@ -574,7 +586,7 @@ export const initialValueSearchHighlighting: Node[] = [
         text:
           'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
       },
-      { text: 'decorations', bold: true },
+      { text: 'decorations', [nodeTypes.typeBold]: true },
       { text: ' to them in realtime.' },
     ],
   },
@@ -608,15 +620,15 @@ export const initialValueTables: Node[] = [
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Human', bold: true }],
+            children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Dog', bold: true }],
+            children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Cat', bold: true }],
+            children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
           },
         ],
       },
@@ -625,7 +637,7 @@ export const initialValueTables: Node[] = [
         children: [
           {
             type: nodeTypes.typeTd,
-            children: [{ text: '# of Feet', bold: true }],
+            children: [{ text: '# of Feet', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
@@ -646,7 +658,7 @@ export const initialValueTables: Node[] = [
         children: [
           {
             type: nodeTypes.typeTd,
-            children: [{ text: '# of Lives', bold: true }],
+            children: [{ text: '# of Lives', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
