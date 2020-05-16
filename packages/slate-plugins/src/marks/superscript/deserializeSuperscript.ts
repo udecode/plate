@@ -1,10 +1,9 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
+import { getLeafDeserializer } from 'mark/utils';
 import { MARK_SUPERSCRIPT } from './types';
 
-const leaf = { [MARK_SUPERSCRIPT]: true };
-
-export const deserializeSuperscript = (): DeserializeHtml => ({
-  leaf: {
-    SUP: () => leaf,
-  },
+export const deserializeSuperscript = ({
+  typeSuperscript = MARK_SUPERSCRIPT,
+}): DeserializeHtml => ({
+  leaf: getLeafDeserializer(typeSuperscript, { tagNames: ['SUP'] }),
 });

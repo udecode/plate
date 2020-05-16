@@ -1,5 +1,4 @@
-import { RenderElementOptions } from 'elements/types';
-import { getRenderElement } from '../utils';
+import { getRenderElement, RenderElementOptions } from 'element';
 import { BlockquoteElement } from './components';
 import { BLOCKQUOTE } from './types';
 

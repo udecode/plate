@@ -6,7 +6,7 @@ export const LinkElement = ({
   children,
   element,
 }: RenderElementProps) => (
-  <a {...attributes} href={element.url}>
+  <a {...attributes} href={element.url as string}>
     {children}
   </a>
 );

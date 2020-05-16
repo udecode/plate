@@ -1,8 +1,8 @@
 import React from 'react';
-import { ToolbarCustomProps } from 'common/types';
-import { ToolbarBlock } from 'elements/components';
+import { ToolbarBlock } from 'element/components';
 import { ListType } from 'elements/list/types';
 import { useSlate } from 'slate-react';
+import { ToolbarCustomProps } from 'components/Toolbar';
 import { toggleList } from '../transforms';
 
 export const ToolbarList = ({

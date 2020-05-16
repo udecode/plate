@@ -1,8 +1,7 @@
 import React from 'react';
-import { ToolbarButton } from 'common';
-import { ToolbarCustomProps } from 'common/types';
+import { isNodeInSelection } from 'common/queries/isNodeInSelection';
 import { useSlate } from 'slate-react';
-import { isLinkActive } from '../queries';
+import { ToolbarButton, ToolbarCustomProps } from 'components/Toolbar';
 import { insertLink } from '../transforms';
 
 export const ToolbarLink = ({ typeLink, ...props }: ToolbarCustomProps) => {
@@ -11,7 +10,7 @@ export const ToolbarLink = ({ typeLink, ...props }: ToolbarCustomProps) => {
   return (
     <ToolbarButton
       {...props}
-      active={isLinkActive(editor, { typeLink })}
+      active={isNodeInSelection(editor, typeLink)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
 

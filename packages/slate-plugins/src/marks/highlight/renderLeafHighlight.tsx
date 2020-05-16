@@ -8,13 +8,18 @@ const HighlightText = styled.span<{ bg: string }>`
 `;
 
 export const renderLeafHighlight = ({
+  typeHighlight = MARK_HIGHLIGHT,
   bg = '#ffeeba',
 }: RenderLeafHighlightOptions = {}) => ({
   children,
   leaf,
 }: RenderLeafProps) => {
-  if (leaf[MARK_HIGHLIGHT])
-    return <HighlightText bg={bg}>{children}</HighlightText>;
+  if (leaf[typeHighlight])
+    return (
+      <HighlightText data-slate-type={typeHighlight} bg={bg}>
+        {children}
+      </HighlightText>
+    );
 
   return children;
 };

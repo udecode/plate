@@ -1,8 +1,50 @@
 # Changelog
 
-This is a list of changes to Slate with each new release. Until 1.0.0 is released, breaking changes will be added as minor version bumps, and smaller, patch-level changes won't be noted since the library is moving quickly while in beta.
+This is a list of changes to Slate with each new release. Until 1.0.0 is released, breaking changes will be added as minor or patch version bumps.
 
 ---
+
+### `0.58.1` — May 16, 2020
+
+###### BREAKING
+
+- renamed:
+    - `withPasteHtml` to `withDeserializeHtml`
+    - `withPasteMd` to `withDeserializeMd`
+    - `onKeyDownMark.mark` to `onKeyDownMark.type` 
+- refactored:
+    - `onKeyDownMention` and `onChangeMention` are now returned by `useMention`
+
+###### NEW
+
+- new options for mark plugins: type (`typeBold`, `typeItalic`, etc.) .
+- `withDeserializeHtml`: 
+    - the deserializer is now using `data-slate-type` attribute of each HTML element. So copy/pasting slate fragments should now work.
+    - when pasting a value, the type of the first node will replace the type of the selected node (using `Transforms.setNodes`).
+- `withTransforms`:
+    - extends `editor` with transforms (only one for now).
+- `withNodeID`:
+    - Set an id to the new `Element` and/or `Text` nodes.
+- `deserializeMention`
+- `deserializeActionItem`
+- `deserializeIframe`
+- `deserializeHighlight`
+
+###### FIX
+
+- `withDeserializeHtml`: fix `Cannot read property 'children' of null`
+- `withForcedLayout`: the previous behavior was forcing to have paragraph nodes after the title. New behavior: first node should be a title (otherwise insert/edit) and second node should exist (otherwise insert a paragraph by default).
+We will see how to generalize this plugin in a future release.
+- `Toolbar`: change `height` to `min-height` for dynamic height.
+
+###### IMPROVEMENTS
+
+- unit testing
+- a lot of refactoring
+- `HeadingPlugin`:
+    - styling change (from h1 to h6)
+- `EditablePlugins`:
+    - `style` props is now overridable
 
 ### `0.58.0` — April 29, 2020
 

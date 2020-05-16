@@ -1,5 +1,4 @@
-import { RenderElementOptions } from 'elements/types';
-import { getRenderElement } from '../utils';
+import { getRenderElement, RenderElementOptions } from 'element';
 import { ActionItemElement } from './components';
 import { ACTION_ITEM } from './types';
 

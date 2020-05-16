@@ -1,5 +1,4 @@
-import { withInline } from 'elements/withInline';
-import { withVoid } from 'elements/withVoid';
+import { withInline, withVoid } from 'element';
 import { Editor } from 'slate';
 import { MENTION } from './types';
 

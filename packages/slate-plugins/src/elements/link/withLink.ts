@@ -1,5 +1,5 @@
-import { withInline } from 'elements/withInline';
-import isUrl from 'is-url';
+import { isUrl } from 'common/utils';
+import { withInline } from 'element';
 import { ReactEditor } from 'slate-react';
 import { wrapLink } from './transforms';
 import { LINK } from './types';

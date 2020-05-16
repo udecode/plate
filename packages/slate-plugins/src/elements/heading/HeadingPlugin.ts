@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'types';
+import { SlatePlugin } from 'common/types';
 import { deserializeHeading } from './deserializeHeading';
 import { renderElementHeading } from './renderElementHeading';
 import { HeadingPluginOptions } from './types';

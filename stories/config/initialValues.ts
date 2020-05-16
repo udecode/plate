@@ -8,14 +8,24 @@ import {
   IMAGE,
   LINK,
   ListType,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_HIGHLIGHT,
+  MARK_ITALIC,
+  MARK_SEARCH_HIGHLIGHT,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
   MENTION,
   PARAGRAPH,
   TableType,
   VIDEO,
 } from '../../packages/slate-plugins/src';
-import { EDITABLE_VOID } from '../basic/editable-voids/types';
+import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export const nodeTypes = {
+  // elements
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
@@ -37,6 +47,16 @@ export const nodeTypes = {
   typeH5: HeadingType.H5,
   typeH6: HeadingType.H6,
   typeEditableVoid: EDITABLE_VOID,
+  // marks
+  typeBold: MARK_BOLD,
+  typeItalic: MARK_ITALIC,
+  typeUnderline: MARK_UNDERLINE,
+  typeStrikethrough: MARK_STRIKETHROUGH,
+  typeInlineCode: MARK_CODE,
+  typeSubscript: MARK_SUBSCRIPT,
+  typeSuperscript: MARK_SUPERSCRIPT,
+  typeHighlight: MARK_HIGHLIGHT,
+  typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
 export const initialValueVoids: Node[] = [
@@ -149,6 +169,16 @@ export const initialValueForcedLayout: Node[] = [
       },
     ],
   },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      {
+        text:
+          'Slate editors can edit complex, nested data structures. And for the most part this is great. But in certain cases inconsistencies in the data structure can be introduced—most often when allowing a user to paste arbitrary richtext content.\n' +
+          '"Normalizing" is how you can ensure that your editor\'s content is always of a certain shape. It\'s similar to "validating", except instead of just determining whether the content is valid or invalid, its job is to fix the content to make it valid again.',
+      },
+    ],
+  },
 ];
 
 export const initialValueHoveringToolbar: Node[] = [
@@ -159,9 +189,9 @@ export const initialValueHoveringToolbar: Node[] = [
         text:
           'This example shows how you can make a hovering menu appear above your content, which you can use to make text ',
       },
-      { text: 'bold', bold: true },
+      { text: 'bold', [nodeTypes.typeBold]: true },
       { text: ', ' },
-      { text: 'italic', italic: true },
+      { text: 'italic', [nodeTypes.typeItalic]: true },
       { text: ', or anything else you might want to do!' },
     ],
   },
@@ -169,7 +199,10 @@ export const initialValueHoveringToolbar: Node[] = [
     type: nodeTypes.typeP,
     children: [
       { text: 'Try it out yourself! Just ' },
-      { text: 'select any piece of text and the menu will appear', bold: true },
+      {
+        text: 'select any piece of text and the menu will appear',
+        [nodeTypes.typeBold]: true,
+      },
       { text: '.' },
     ],
   },
@@ -187,6 +220,7 @@ for (let h = 0; h < HEADINGS; h++) {
 
   for (let p = 0; p < PARAGRAPHS; p++) {
     initialValueHugeDocument.push({
+      type: nodeTypes.typeP,
       children: [{ text: faker.lorem.paragraph() }],
     });
   }
@@ -345,7 +379,7 @@ export const initialValuePasteHtml: Node[] = [
       { text: "'text/plain'", code: true },
       {
         text:
-          " data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintaing its formatting. To do this, your editor needs to handle ",
+          " data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintain its formatting. To do this, your editor needs to handle ",
       },
       { text: "'text/html'", code: true },
       { text: ' data. ' },
@@ -377,7 +411,7 @@ export const initialValuePasteMd: Node[] = [
       { text: "'text/plain'", code: true },
       {
         text:
-          " data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintaing its formatting. To do this, your editor needs to handle ",
+          " data. That's okay for some use cases, but sometimes you want users to be able to paste in content and have it maintain its formatting. To do this, your editor needs to handle ",
       },
       { text: "'text/html'", code: true },
       { text: ' data. ' },
@@ -407,18 +441,103 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueMark: Node[] = [
+export const initialValueMarks: Node[] = [
   {
     type: nodeTypes.typeP,
     children: [
-      { text: 'This is editable ' },
-      { text: 'rich', bold: true, underline: true, italic: true },
-      { text: ' text, ' },
-      { text: 'much' },
-      { text: ' better than a ' },
-      { text: '<textarea>', code: true },
-      { text: '!' },
+      {
+        text:
+          'These are all the available marks. You can customize the type and component for each of these.',
+      },
     ],
+  },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      { text: 'Bold, ', [nodeTypes.typeBold]: true },
+      { text: 'italic, ', [nodeTypes.typeItalic]: true },
+      { text: 'underline, ', [nodeTypes.typeUnderline]: true },
+      { text: 'strikethrough, ', [nodeTypes.typeStrikethrough]: true },
+      {
+        text: 'mixed, ',
+        [nodeTypes.typeBold]: true,
+        [nodeTypes.typeItalic]: true,
+        [nodeTypes.typeUnderline]: true,
+      },
+      { text: 'code, ', [nodeTypes.typeInlineCode]: true },
+      { text: 'sub, ', [nodeTypes.typeSubscript]: true },
+      { text: 'sup, ', [nodeTypes.typeSuperscript]: true },
+      { text: 'highlight', [nodeTypes.typeHighlight]: true },
+    ],
+  },
+];
+
+export const initialValueElements: Node[] = [
+  {
+    type: nodeTypes.typeH1,
+    children: [{ text: 'Elements' }],
+  },
+  {
+    type: nodeTypes.typeP,
+    children: [
+      {
+        text: 'These are the most common elements, known as blocks:',
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeH1,
+    children: [{ text: 'Heading 1' }],
+  },
+  {
+    type: nodeTypes.typeH2,
+    children: [{ text: 'Heading 2' }],
+  },
+  {
+    type: nodeTypes.typeH3,
+    children: [{ text: 'Heading 3' }],
+  },
+  {
+    type: nodeTypes.typeH4,
+    children: [{ text: 'Heading 4' }],
+  },
+  {
+    type: nodeTypes.typeH5,
+    children: [{ text: 'Heading 5' }],
+  },
+  {
+    type: nodeTypes.typeH6,
+    children: [{ text: 'Heading 6' }],
+  },
+  {
+    type: nodeTypes.typeUl,
+    children: [
+      {
+        type: nodeTypes.typeLi,
+        children: [
+          { type: nodeTypes.typeP, children: [{ text: 'Bulleted list' }] },
+        ],
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeOl,
+    children: [
+      {
+        type: nodeTypes.typeLi,
+        children: [
+          { type: nodeTypes.typeP, children: [{ text: 'Numbered list' }] },
+        ],
+      },
+    ],
+  },
+  {
+    type: nodeTypes.typeBlockquote,
+    children: [{ text: 'Blockquote' }],
+  },
+  {
+    type: nodeTypes.typeCode,
+    children: [{ text: 'Code block' }],
   },
 ];
 
@@ -431,11 +550,11 @@ export const initialValueRichText: Node[] = [
     type: nodeTypes.typeP,
     children: [
       { text: 'This is editable ' },
-      { text: 'rich', bold: true },
+      { text: 'rich', [nodeTypes.typeBold]: true },
       { text: ' text, ' },
-      { text: 'much', italic: true },
+      { text: 'much', [nodeTypes.typeItalic]: true },
       { text: ' better than a ' },
-      { text: '<textarea>', code: true },
+      { text: '<textarea>', [nodeTypes.typeInlineCode]: true },
       { text: '!' },
     ],
   },
@@ -446,7 +565,7 @@ export const initialValueRichText: Node[] = [
         text:
           "Since it's rich text, you can do things like turn a selection of text ",
       },
-      { text: 'bold', bold: true },
+      { text: 'bold', [nodeTypes.typeBold]: true },
       {
         text:
           ', or add a semantically rendered block quote in the middle of the page, like this:',
@@ -467,7 +586,7 @@ export const initialValueSearchHighlighting: Node[] = [
         text:
           'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
       },
-      { text: 'decorations', bold: true },
+      { text: 'decorations', [nodeTypes.typeBold]: true },
       { text: ' to them in realtime.' },
     ],
   },
@@ -501,15 +620,15 @@ export const initialValueTables: Node[] = [
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Human', bold: true }],
+            children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Dog', bold: true }],
+            children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
-            children: [{ text: 'Cat', bold: true }],
+            children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
           },
         ],
       },
@@ -518,7 +637,7 @@ export const initialValueTables: Node[] = [
         children: [
           {
             type: nodeTypes.typeTd,
-            children: [{ text: '# of Feet', bold: true }],
+            children: [{ text: '# of Feet', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,
@@ -539,7 +658,7 @@ export const initialValueTables: Node[] = [
         children: [
           {
             type: nodeTypes.typeTd,
-            children: [{ text: '# of Lives', bold: true }],
+            children: [{ text: '# of Lives', [nodeTypes.typeBold]: true }],
           },
           {
             type: nodeTypes.typeTd,

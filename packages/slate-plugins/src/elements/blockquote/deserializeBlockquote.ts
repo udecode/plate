@@ -1,10 +1,9 @@
-import { DeserializeHtml } from 'deserializers/types';
+import { DeserializeHtml } from 'common/types';
+import { getElementDeserializer } from 'element/utils';
 import { BLOCKQUOTE } from './types';
 
 export const deserializeBlockquote = ({
   typeBlockquote = BLOCKQUOTE,
 } = {}): DeserializeHtml => ({
-  element: {
-    BLOCKQUOTE: () => ({ type: typeBlockquote }),
-  },
+  element: getElementDeserializer(typeBlockquote, { tagNames: ['BLOCKQUOTE'] }),
 });

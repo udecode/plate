@@ -1,5 +1,4 @@
-import { RenderElementOptions } from 'elements/types';
-import { getRenderElement } from '../utils';
+import { getRenderElement, RenderElementOptions } from 'element';
 import { VideoElement } from './components';
 import { VIDEO } from './types';
 

@@ -1,13 +1,14 @@
-import { SlatePlugin } from 'types';
-import { onKeyDownMark } from '../onKeyDownMark';
-import { deserializeStrikethrough } from './deserializeStrikethrough';
+import { SlatePlugin } from 'common/types';
+import { onKeyDownMark } from 'mark';
+import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
 import { renderLeafStrikethrough } from './renderLeafStrikethrough';
 import { MARK_STRIKETHROUGH, StrikethroughPluginOptions } from './types';
 
 export const StrikethroughPlugin = ({
+  typeStrikethrough = MARK_STRIKETHROUGH,
   hotkey = 'mod+shift+k',
 }: StrikethroughPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafStrikethrough(),
-  onKeyDown: onKeyDownMark({ mark: MARK_STRIKETHROUGH, hotkey }),
-  deserialize: deserializeStrikethrough(),
+  renderLeaf: renderLeafStrikethrough({ typeStrikethrough }),
+  onKeyDown: onKeyDownMark({ type: typeStrikethrough, hotkey }),
+  deserialize: deserializeStrikethrough({ typeStrikethrough }),
 });

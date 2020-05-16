@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'types';
-import { RenderElementOptions } from '../types';
+import { SlatePlugin } from 'common/types';
+import { RenderElementOptions } from 'element/types';
+import { renderElementParagraph } from 'elements/paragraph/renderElementParagraph';
 import { deserializeParagraph } from './deserializeParagraph';
-import { renderElementParagraph } from './renderElementParagraph';
 
 export const ParagraphPlugin = (
   options?: RenderElementOptions & { typeP?: string }

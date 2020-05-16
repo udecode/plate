@@ -31,10 +31,10 @@ const resetOptions = {
 
 export const Example = () => {
   const plugins = [
+    ParagraphPlugin(nodeTypes),
     BlockquotePlugin(nodeTypes),
     ListPlugin(nodeTypes),
     HeadingPlugin(nodeTypes),
-    ParagraphPlugin(nodeTypes),
   ];
 
   const createReactEditor = () => () => {

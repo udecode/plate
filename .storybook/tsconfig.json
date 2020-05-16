@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDirs": [
+      "../packages/slate-plugins/src",
+      "../stories"
+    ]
+  },
+  "include": ["../packages/slate-plugins/src/**/*"],
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/*test*/**", "**/*spec*/**"]
+}

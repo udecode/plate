@@ -1,9 +1,10 @@
+import { isNodeInSelection } from 'common/queries';
 import { defaultTableTypes } from 'elements/table/types';
 import { Editor, Transforms } from 'slate';
-import { isSelectionInTable, isTable, isTableRow } from '../queries';
+import { isTable, isTableRow } from '../queries';
 
 export const deleteRow = (editor: Editor, options = defaultTableTypes) => {
-  if (isSelectionInTable(editor, options)) {
+  if (isNodeInSelection(editor, options.typeTable)) {
     const currentTableItem = Editor.above(editor, {
       match: isTable(options),
     });

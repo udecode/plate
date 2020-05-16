@@ -1,5 +1,8 @@
-import { MarkPluginOptions } from '../types';
+import { MarkPluginOptions } from 'mark';
 
 export const MARK_SUBSCRIPT = 'SUBSCRIPT';
 
-export interface SubscriptPluginOptions extends MarkPluginOptions {}
+export interface SubscriptPluginOptions extends MarkPluginOptions {
+  typeSubscript?: string;
+  typeSuperscript?: string;
+}

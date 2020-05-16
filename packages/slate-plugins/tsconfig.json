@@ -1,7 +1,26 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "downlevelIteration": true,
+    "suppressImplicitAnyIndexErrors": true,
     "baseUrl": "src"
   },
-  "include": ["src", "typings"]
+  "include": ["src", "typings", "../../stories"],
+  "exclude": ["node_modules", "dist", "scripts"],
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [7005]
+  }
 }

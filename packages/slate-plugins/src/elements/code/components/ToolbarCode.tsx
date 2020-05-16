@@ -1,8 +1,7 @@
 import React from 'react';
-import { ToolbarButton } from 'common';
-import { ToolbarElementProps } from 'common/types';
+import { isNodeInSelection } from 'common/queries';
 import { useSlate } from 'slate-react';
-import { isBlockActive } from '../../queries';
+import { ToolbarButton, ToolbarElementProps } from 'components/Toolbar';
 import { toggleCode } from '../transforms';
 import { CODE } from '../types';
 
@@ -15,7 +14,7 @@ export const ToolbarCode = ({
   return (
     <ToolbarButton
       {...props}
-      active={isBlockActive(editor, typeCode)}
+      active={isNodeInSelection(editor, typeCode)}
       onMouseDown={(event: Event) => {
         event.preventDefault();
 

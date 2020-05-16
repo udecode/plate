@@ -1,5 +1,7 @@
-import { MarkPluginOptions } from '../types';
+import { MarkPluginOptions } from 'mark';
 
 export const MARK_UNDERLINE = 'underline';
 
-export interface UnderlinePluginOptions extends MarkPluginOptions {}
+export interface UnderlinePluginOptions extends MarkPluginOptions {
+  typeUnderline?: string;
+}

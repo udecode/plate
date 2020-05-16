@@ -1,18 +1,23 @@
-import { SlatePlugin } from 'types';
-import { onKeyDownMark } from '../onKeyDownMark';
-import { MARK_SUBSCRIPT } from '../subscript/types';
-import { deserializeSuperscript } from './deserializeSuperscript';
-import { renderLeafSuperscript } from './renderLeafSuperscript';
-import { MARK_SUPERSCRIPT, SuperscriptPluginOptions } from './types';
+import { SlatePlugin } from 'common/types';
+import { onKeyDownMark } from 'mark';
+import { MARK_SUBSCRIPT } from 'marks/subscript/types';
+import { deserializeSuperscript } from 'marks/superscript/deserializeSuperscript';
+import { renderLeafSuperscript } from 'marks/superscript/renderLeafSuperscript';
+import {
+  MARK_SUPERSCRIPT,
+  SuperscriptPluginOptions,
+} from 'marks/superscript/types';
 
 export const SuperscriptPlugin = ({
+  typeSuperscript = MARK_SUPERSCRIPT,
+  typeSubscript = MARK_SUBSCRIPT,
   hotkey = 'mod+.',
 }: SuperscriptPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafSuperscript(),
+  renderLeaf: renderLeafSuperscript({ typeSuperscript }),
   onKeyDown: onKeyDownMark({
-    mark: MARK_SUPERSCRIPT,
-    clear: MARK_SUBSCRIPT,
+    type: typeSuperscript,
+    clear: typeSubscript,
     hotkey,
   }),
-  deserialize: deserializeSuperscript(),
+  deserialize: deserializeSuperscript({ typeSuperscript }),
 });

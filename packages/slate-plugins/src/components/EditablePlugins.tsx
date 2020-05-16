@@ -1,12 +1,4 @@
 import React from 'react';
-import { NodeEntry, Range } from 'slate';
-import {
-  Editable,
-  RenderElementProps,
-  RenderLeafProps,
-  useSlate,
-} from 'slate-react';
-import styled from 'styled-components';
 import {
   Decorate,
   OnDOMBeforeInput,
@@ -14,7 +6,15 @@ import {
   RenderElement,
   RenderLeaf,
   SlatePlugin,
-} from 'types';
+} from 'common/types';
+import { Editable, useSlate } from 'slate-react';
+import {
+  decoratePlugins,
+  onDOMBeforeInputPlugins,
+  onKeyDownPlugins,
+  renderElementPlugins,
+  renderLeafPlugins,
+} from 'components/utils';
 
 interface Props {
   [key: string]: any;
@@ -30,11 +30,6 @@ interface Props {
   onKeyDown?: OnKeyDown[];
 }
 
-const StyledEditable = styled(Editable)`
-  font-size: 16px;
-  line-height: 26px;
-`;
-
 export const EditablePlugins = ({
   plugins = [],
   decorate: decorateList = [],
@@ -46,85 +41,23 @@ export const EditablePlugins = ({
 }: Props) => {
   const editor = useSlate();
 
-  const decoratePlugins = (entry: NodeEntry) => {
-    let ranges: Range[] = [];
-
-    decorateList.forEach((decorate) => {
-      const newRanges = decorate(entry) || [];
-      if (newRanges.length) ranges = [...ranges, ...newRanges];
-    });
-
-    plugins.forEach((plugin) => {
-      if (!plugin.decorate) return;
-
-      const newRanges = plugin.decorate(entry) || [];
-      if (newRanges.length) ranges = [...ranges, ...newRanges];
-    });
-
-    return ranges;
-  };
-
-  const onDOMBeforeInputPlugins = (event: Event) => {
-    onDOMBeforeInputList.forEach((onDOMBeforeInput) => {
-      onDOMBeforeInput(event, editor);
-    });
-
-    plugins.forEach(({ onDOMBeforeInput }) => {
-      if (!onDOMBeforeInput) return;
-      onDOMBeforeInput(event, editor);
-    });
-  };
-
-  const renderElementPlugins = (elementProps: RenderElementProps) => {
-    let element;
-
-    renderElementList.some((renderElement) => {
-      element = renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
-
-    plugins.some(({ renderElement }) => {
-      element = renderElement && renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
-
-    return <div {...elementProps.attributes}>{elementProps.children}</div>;
-  };
-
-  const renderLeafPlugins = (leafProps: RenderLeafProps) => {
-    renderLeafList.forEach((renderLeaf) => {
-      leafProps.children = renderLeaf(leafProps);
-    });
-
-    plugins.forEach(({ renderLeaf }) => {
-      if (!renderLeaf) return;
-      leafProps.children = renderLeaf(leafProps);
-    });
-
-    return <span {...leafProps.attributes}>{leafProps.children}</span>;
-  };
-
-  const onKeyDownPlugins = (event: any) => {
-    onKeyDownList.forEach((onKeyDown) => {
-      onKeyDown(event, editor);
-    });
-
-    plugins.forEach(({ onKeyDown }) => {
-      if (!onKeyDown) return;
-      onKeyDown(event, editor);
-    });
-  };
-
   return (
-    <StyledEditable
+    <Editable
+      style={{
+        fontSize: 16,
+        lineHeight: '26px',
+      }}
+      data-testid="EditablePlugins"
+      decorate={decoratePlugins(plugins, decorateList)}
+      onDOMBeforeInput={onDOMBeforeInputPlugins(
+        editor,
+        plugins,
+        onDOMBeforeInputList
+      )}
+      renderElement={renderElementPlugins(plugins, renderElementList)}
+      renderLeaf={renderLeafPlugins(plugins, renderLeafList)}
+      onKeyDown={onKeyDownPlugins(editor, plugins, onKeyDownList)}
       {...props}
-      decorate={decoratePlugins}
-      onDOMBeforeInput={onDOMBeforeInputPlugins}
-      renderElement={renderElementPlugins}
-      renderLeaf={renderLeafPlugins}
-      onKeyDown={onKeyDownPlugins}
     />
   );
 };

@@ -1,5 +1,8 @@
+import {
+  getSelectionNodesArrayByType,
+  isNodeInSelection,
+} from 'common/queries';
 import { PARAGRAPH } from 'elements/paragraph';
-import { isBlockActive } from 'elements/queries';
 import { Editor, Transforms } from 'slate';
 import { ListType } from '../types';
 import { unwrapList } from './unwrapList';
@@ -20,17 +23,9 @@ export const toggleList = (
     typeP?: string;
   }
 ) => {
-  const options = {
-    typeList,
-    typeUl,
-    typeOl,
-    typeLi,
-    typeP,
-  };
+  const isActive = isNodeInSelection(editor, typeList);
 
-  const isActive = isBlockActive(editor, typeList);
-
-  unwrapList(editor, options);
+  unwrapList(editor, { typeUl, typeOl, typeLi });
 
   Transforms.setNodes(editor, {
     type: typeP,
@@ -40,10 +35,7 @@ export const toggleList = (
     const list = { type: typeList, children: [] };
     Transforms.wrapNodes(editor, list);
 
-    const nodesIterable = Editor.nodes(editor, {
-      match: (node) => node.type === typeP,
-    });
-    const nodes = [...nodesIterable];
+    const nodes = getSelectionNodesArrayByType(editor, typeP);
 
     const listItem = { type: typeLi, children: [] };
 

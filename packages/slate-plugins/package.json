@@ -20,7 +20,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "rollup -c=../../rollup.config.js"
+    "build": "rollup -c=../../rollup.config.js",
+    "test": "jest"
   },
   "publishConfig": {
     "access": "public"
@@ -28,19 +29,19 @@
   "dependencies": {
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
-    "is-url": "^1.2.4",
-    "marked": "^0.8.0",
-    "prismjs": "^1.17.1"
+    "lodash": "^4.17.15",
+    "marked": "^1.0.0",
+    "prismjs": "^1.20.0"
   },
   "peerDependencies": {
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "slate": "^0.57.2",
-    "slate-hyperscript": "^0.57.2",
-    "slate-react": "^0.57.2",
-    "styled-components": "^4.4.0"
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "slate": "^0.58.1",
+    "slate-hyperscript": "^0.58.1",
+    "slate-react": "^0.58.1",
+    "styled-components": "^5.1.0"
   },
   "devDependencies": {
-    "@types/marked": "^0.7.2"
+    "@types/marked": "^0.7.4"
   }
 }

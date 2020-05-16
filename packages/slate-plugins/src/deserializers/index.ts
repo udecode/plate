@@ -1,1 +1,2 @@
-export * from './htmlDeserialize';
+export * from './deserialize-html';
+export * from './deserialize-md';

@@ -7,12 +7,15 @@ const StrikethroughText = styled.span`
   text-decoration: line-through;
 `;
 
-export const renderLeafStrikethrough = () => ({
-  children,
-  leaf,
-}: RenderLeafProps) => {
-  if (leaf[MARK_STRIKETHROUGH]) {
-    return <StrikethroughText>{children}</StrikethroughText>;
+export const renderLeafStrikethrough = ({
+  typeStrikethrough = MARK_STRIKETHROUGH,
+}) => ({ children, leaf }: RenderLeafProps) => {
+  if (leaf[typeStrikethrough]) {
+    return (
+      <StrikethroughText data-slate-type={typeStrikethrough}>
+        {children}
+      </StrikethroughText>
+    );
   }
 
   return children;
