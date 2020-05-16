@@ -48,9 +48,6 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   MentionPlugin,
-  MentionSelect,
-  onChangeMention,
-  onKeyDownMention,
   ParagraphPlugin,
   SearchHighlightPlugin,
   SoftBreakPlugin,
@@ -189,23 +186,16 @@ export const Plugins = () => {
     if (boolean('decorateSearchHighlight', true))
       decorate.push(decorateSearchHighlight({ search }));
 
-    const { target, setTarget, index, setIndex, setSearch, chars } = useMention(
-      {
-        characters: CHARACTERS,
-        maxSuggestions: 10,
-      }
-    );
+    const {
+      MentionSelectComponent,
+      onChangeMention,
+      onKeyDownMention,
+    } = useMention({
+      characters: CHARACTERS,
+      maxSuggestions: 10,
+    });
 
-    if (boolean('onKeyDownMentions', true))
-      onKeyDown.push(
-        onKeyDownMention({
-          chars,
-          index,
-          target,
-          setIndex,
-          setTarget,
-        })
-      );
+    if (boolean('onKeyDownMentions', true)) onKeyDown.push(onKeyDownMention);
 
     return (
       <Slate
@@ -214,12 +204,7 @@ export const Plugins = () => {
         onChange={(newValue) => {
           setValue(newValue);
 
-          onChangeMention({
-            editor,
-            setTarget,
-            setSearch,
-            setIndex,
-          });
+          onChangeMention({ editor });
         }}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
@@ -275,9 +260,7 @@ export const Plugins = () => {
             icon={<FormatUnderlined />}
           />
         </HoveringToolbar>
-        {target && chars.length > 0 && (
-          <MentionSelect target={target} index={index} chars={chars} />
-        )}
+        <MentionSelectComponent />
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}
