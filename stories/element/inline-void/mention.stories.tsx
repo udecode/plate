@@ -33,12 +33,14 @@ export const Example = () => {
       []
     );
 
-    const { MentionSelectComponent,  onChangeMention, onKeyDownMention } = useMention(
-      {
-        characters: CHARACTERS,
-        maxSuggestions: 10,
-      }
-    );
+    const {
+      MentionSelectComponent,
+      onChangeMention,
+      onKeyDownMention,
+    } = useMention({
+      characters: CHARACTERS,
+      maxSuggestions: 10,
+    });
 
     return (
       <Slate
@@ -47,17 +49,15 @@ export const Example = () => {
         onChange={(newValue) => {
           setValue(newValue);
 
-          onChangeMention({editor});
+          onChangeMention({ editor });
         }}
       >
         <EditablePlugins
           plugins={plugins}
           placeholder="Enter some text..."
-          onKeyDown={[
-            onKeyDownMention,
-          ]}
+          onKeyDown={[onKeyDownMention]}
         />
-          <MentionSelectComponent />
+        <MentionSelectComponent />
       </Slate>
     );
   };

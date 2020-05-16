@@ -12,6 +12,8 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
     - `withPasteHtml` to `withDeserializeHtml`
     - `withPasteMd` to `withDeserializeMd`
     - `onKeyDownMark.mark` to `onKeyDownMark.type` 
+- refactored:
+    - `onKeyDownMention` and `onChangeMention` are now returned by `useMention`
 
 ###### NEW
 
