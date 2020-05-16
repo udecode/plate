@@ -14,6 +14,15 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 12
-    - run: yarn && yarn lint && yarn test && yarn build && yarn build-storybook
-      env:
-        CI: true
+    - name: Install
+      run: yarn
+    - name: Lint
+      run: yarn lint
+    - name: Test
+      run: yarn test
+    - name: Build
+      run: yarn build && yarn build-storybook
+    - name: Generate coverage report
+      run: yarn test:cov
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
