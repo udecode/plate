@@ -17,6 +17,7 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ###### NEW
 
+- new options for mark plugins: type (`typeBold`, `typeItalic`, etc.) 
 - `withDeserializeHtml`: 
     - the deserializer is now using `data-slate-type` attribute of each HTML element. So copy/pasting slate fragments should now work.
     - when pasting a value, the type of the first node will replace the type of the selected node (using `Transforms.setNodes`).
