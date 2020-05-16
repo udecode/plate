@@ -1,4 +1,7 @@
 # slate-plugins-next
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![codecov](https://codecov.io/gh/zbeyens/slate-plugins-next/branch/master/graph/badge.svg)](https://codecov.io/gh/zbeyens/slate-plugins-next)
 [<img src="https://img.shields.io/npm/v/slate-plugins-next.svg" />](https://npm.im/slate-plugins-next)&nbsp;
@@ -92,6 +95,24 @@ You will also need these peerDependencies:
 yarn add slate slate-hyperscript slate-react styled-components react react-dom
 ```
 
+## 📝 Notice
+
+### Why
+
+[Slate](https://github.com/ianstormtaylor/slate) is a powerful editor framework that helps you deal with
+difficult parts when building an editor, such as events handlers, elements, formatting, commands, rendering,
+serializing, normalizing, etc.
+
+While you are trying to build your own editors, it still need a lot of efforts to make something
+similar to [Quill](https://quilljs.com/) or [ProseMirror](https://prosemirror.net/).
+This repository allows you to build your editor right away with **minimal** slate knowledge.
+
+### Bundle size
+
+For simplicity, a single package `slate-plugins-next` has been published to share all the plugins.
+It's not a problem as [it is tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next). However, a few plugins use external dependencies.
+These should be moved into their own package in the future.
+
 ## 👏 Contributing
 
 You can use this repository to **share your own plugins**.
@@ -126,23 +147,23 @@ Useful scripts include:
 
 > Lint, test, build and push a release to git and npm will ask for version in interactive mode - using lerna.
 
-## 📝 Notice
+## Contributors ✨
 
-### Why
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/zbeyens"><img src="https://avatars3.githubusercontent.com/u/19695832?v=4" width="100px;" alt=""/><br /><sub><b>Ziad Beyens</b></sub></a><br /><a href="https://github.com/zbeyens/slate-plugins-next/commits?author=zbeyens" title="Code">💻</a> <a href="#maintenance-zbeyens" title="Maintenance">🚧</a> <a href="#plugin-zbeyens" title="Plugin/utility libraries">🔌</a> <a href="https://github.com/zbeyens/slate-plugins-next/commits?author=zbeyens" title="Tests">⚠️</a> <a href="https://github.com/zbeyens/slate-plugins-next/commits?author=zbeyens" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://horacioh.com"><img src="https://avatars3.githubusercontent.com/u/725120?v=4" width="100px;" alt=""/><br /><sub><b>Horacio Herrera</b></sub></a><br /><a href="https://github.com/zbeyens/slate-plugins-next/commits?author=horacioh" title="Code">💻</a> <a href="#plugin-horacioh" title="Plugin/utility libraries">🔌</a> <a href="#example-horacioh" title="Examples">💡</a> <a href="https://github.com/zbeyens/slate-plugins-next/issues?q=author%3Ahoracioh" title="Bug reports">🐛</a> <a href="#ideas-horacioh" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/eivindw"><img src="https://avatars2.githubusercontent.com/u/67761?v=4" width="100px;" alt=""/><br /><sub><b>Eivind Barstad Waaler</b></sub></a><br /><a href="https://github.com/zbeyens/slate-plugins-next/commits?author=eivindw" title="Code">💻</a> <a href="#plugin-eivindw" title="Plugin/utility libraries">🔌</a> <a href="#example-eivindw" title="Examples">💡</a> <a href="https://github.com/zbeyens/slate-plugins-next/issues?q=author%3Aeivindw" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://spetex.dev"><img src="https://avatars3.githubusercontent.com/u/9515499?v=4" width="100px;" alt=""/><br /><sub><b>Petr Sahula</b></sub></a><br /><a href="https://github.com/zbeyens/slate-plugins-next/commits?author=spetex" title="Code">💻</a> <a href="#plugin-spetex" title="Plugin/utility libraries">🔌</a> <a href="#example-spetex" title="Examples">💡</a></td>
+  </tr>
+</table>
 
-[Slate](https://github.com/ianstormtaylor/slate) is a powerful editor framework that helps you deal with
-difficult parts when building an editor, such as events handlers, elements, formatting, commands, rendering,
-serializing, normalizing, etc.
-
-While you are trying to build your own editors, it still need a lot of efforts to make something
-similar to [Quill](https://quilljs.com/) or [ProseMirror](https://prosemirror.net/).
-This repository allows you to build your editor right away with **minimal** slate knowledge.
-
-### Bundle size
-
-For simplicity, a single package `slate-plugins-next` has been published to share all the plugins.
-It's not a problem as [it is tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next). However, a few plugins use external dependencies.
-These should be moved into their own package in the future.
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
