@@ -1,36 +1,48 @@
 import React, { useCallback, useState } from 'react';
+import { escapeRegExp } from 'common/utils';
 import { Editor, Range, Transforms } from 'slate';
 import { MentionSelect } from './components/MentionSelect';
 import { insertMention } from './transforms';
+import { MentionableItem, MentionOptions } from './types';
+
+const AFTER_MATCH_REGEX = /^(\s|$)/;
 
 const getMentionSelect = (
   target: Range | null,
   index: number,
-  chars: string[]
+  mentionables: MentionableItem[]
 ) => {
   return () => {
-    if (target && chars.length > 0) {
-      return <MentionSelect target={target} index={index} chars={chars} />;
+    if (target && mentionables.length > 0) {
+      return (
+        <MentionSelect
+          target={target}
+          index={index}
+          mentionables={mentionables}
+        />
+      );
     }
     return null;
   };
 };
 
-export const useMention = ({
-  characters = [],
-  maxSuggestions = 10,
-}: {
-  characters: string[];
-  maxSuggestions: number;
-}) => {
+export const useMention = (
+  mentionables: MentionableItem[] = [],
+  options: Partial<MentionOptions>
+) => {
+  const { maxSuggestions = 10, trigger = '@', prefix = trigger } = options;
   const [target, setTarget] = useState<Range | null>(null);
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
-  const chars: string[] = characters
-    .filter((c) => c.toLowerCase().includes(search.toLowerCase()))
+  const matchingMentionables = mentionables
+    .filter((c) => c.value.toLowerCase().includes(search.toLowerCase()))
     .slice(0, maxSuggestions);
 
-  const MentionSelectComponent = getMentionSelect(target, index, chars);
+  const MentionSelectComponent = getMentionSelect(
+    target,
+    index,
+    matchingMentionables
+  );
 
   const onKeyDownMention = useCallback(
     (e: any, editor: Editor) => {
@@ -38,13 +50,15 @@ export const useMention = ({
         switch (e.key) {
           case 'ArrowDown': {
             e.preventDefault();
-            const prevIndex = index >= chars.length - 1 ? 0 : index + 1;
+            const prevIndex =
+              index >= matchingMentionables.length - 1 ? 0 : index + 1;
             setIndex(prevIndex);
             break;
           }
           case 'ArrowUp': {
             e.preventDefault();
-            const nextIndex = index <= 0 ? chars.length - 1 : index - 1;
+            const nextIndex =
+              index <= 0 ? matchingMentionables.length - 1 : index - 1;
             setIndex(nextIndex);
             break;
           }
@@ -52,7 +66,7 @@ export const useMention = ({
           case 'Enter':
             e.preventDefault();
             Transforms.select(editor, target);
-            insertMention(editor, chars[index]);
+            insertMention(editor, matchingMentionables[index], prefix);
             setTarget(null);
             break;
           case 'Escape':
@@ -64,19 +78,15 @@ export const useMention = ({
         }
       }
     },
-    [chars, index, setIndex, target, setTarget]
+    [matchingMentionables, index, setIndex, target, setTarget]
   );
 
   const onChangeMention = useCallback(
-    ({
-      editor,
-      beforeRegex = /^@(\w+)$/,
-    }: {
-      editor: Editor;
-      beforeRegex?: RegExp;
-    }) => {
+    ({ editor }: { editor: Editor }) => {
       const { selection } = editor;
-
+      const escapedTrigger = escapeRegExp(trigger);
+      console.log('trigger', trigger, 'escapedTrigger', escapedTrigger);
+      const beforeRegex = new RegExp(`^${escapedTrigger}(\\w+)$`);
       if (selection && Range.isCollapsed(selection)) {
         const [start] = Range.edges(selection);
         const wordBefore = Editor.before(editor, start, { unit: 'word' });
@@ -87,7 +97,7 @@ export const useMention = ({
         const after = Editor.after(editor, start);
         const afterRange = Editor.range(editor, start, after);
         const afterText = Editor.string(editor, afterRange);
-        const afterMatch = afterText.match(/^(\s|$)/);
+        const afterMatch = afterText.match(AFTER_MATCH_REGEX);
         if (beforeMatch && afterMatch) {
           setTarget(beforeRange ?? null);
           setSearch(beforeMatch[1]);
@@ -102,13 +112,6 @@ export const useMention = ({
   );
 
   return {
-    target,
-    setTarget,
-    index,
-    setIndex,
-    search,
-    setSearch,
-    chars,
     MentionSelectComponent,
     onChangeMention,
     onKeyDownMention,

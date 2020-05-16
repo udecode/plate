@@ -1,21 +1,22 @@
 import React, { useEffect, useRef } from 'react';
 import { ReactEditor, useSlate } from 'slate-react';
 import { PortalBody } from 'components';
+import { MentionableItem } from '../types';
 
 export const MentionSelect = ({
   target,
-  chars,
+  mentionables,
   index,
 }: {
   target: any;
-  chars: string[];
+  mentionables: MentionableItem[];
   index: number;
 }) => {
   const ref: any = useRef();
   const editor = useSlate();
 
   useEffect(() => {
-    if (target && chars.length > 0) {
+    if (target && mentionables.length > 0) {
       const el = ref.current;
       const domRange = ReactEditor.toDOMRange(editor, target);
       const rect = domRange.getBoundingClientRect();
@@ -24,7 +25,7 @@ export const MentionSelect = ({
         el.style.left = `${rect.left + window.pageXOffset}px`;
       }
     }
-  }, [chars.length, editor, target]);
+  }, [mentionables.length, editor, target]);
 
   return (
     <PortalBody>
@@ -41,16 +42,16 @@ export const MentionSelect = ({
           boxShadow: '0 1px 5px rgba(0,0,0,.2)',
         }}
       >
-        {chars.map((char, i) => (
+        {mentionables.map((mentionable, i) => (
           <div
-            key={char}
+            key={`${i}${mentionable.value}`}
             style={{
               padding: '1px 3px',
               borderRadius: '3px',
               background: i === index ? '#B4D5FF' : 'transparent',
             }}
           >
-            {char}
+            {mentionable.value}
           </div>
         ))}
       </div>

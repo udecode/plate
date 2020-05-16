@@ -190,8 +190,7 @@ export const Plugins = () => {
       MentionSelectComponent,
       onChangeMention,
       onKeyDownMention,
-    } = useMention({
-      characters: CHARACTERS,
+    } = useMention(CHARACTERS, {
       maxSuggestions: 10,
     });
 

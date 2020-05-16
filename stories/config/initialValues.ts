@@ -354,13 +354,15 @@ export const initialValueMentions: Node[] = [
       { text: 'Try mentioning characters, like ' },
       {
         type: nodeTypes.typeMention,
-        character: 'R2-D2',
+        prefix: '@',
+        mentionable: { value: 'R2-D2' },
         children: [{ text: '' }],
       },
       { text: ' or ' },
       {
         type: nodeTypes.typeMention,
-        character: 'Mace Windu',
+        prefix: '@',
+        mentionable: {value: 'Mace Windu' },
         children: [{ text: '' }],
       },
       { text: '!' },

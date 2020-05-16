@@ -37,9 +37,10 @@ export const Example = () => {
       MentionSelectComponent,
       onChangeMention,
       onKeyDownMention,
-    } = useMention({
-      characters: CHARACTERS,
+    } = useMention(CHARACTERS, {
       maxSuggestions: 10,
+      trigger: '@',
+      prefix: ''
     });
 
     return (
