@@ -4,6 +4,16 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.3` — May 17, 2020
+
+###### NEW
+
+- `pipe`: new helper to avoid the wrapper hell when using `withPlugins`. You can now have an array of plugins `withPlugins`.
+
+###### IMPROVEMENT
+
+- there was a big performance gap between the official slate `Editable` component and our `EditablePlugins` component. This has been resolved by using `useCallback`.
+
 ### `0.58.2` — May 17, 2020
 
 ###### BREAKING

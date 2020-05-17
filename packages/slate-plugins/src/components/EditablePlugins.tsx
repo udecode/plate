@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Decorate,
   OnDOMBeforeInput,
@@ -48,15 +48,20 @@ export const EditablePlugins = ({
         lineHeight: '26px',
       }}
       data-testid="EditablePlugins"
-      decorate={decoratePlugins(plugins, decorateList)}
-      onDOMBeforeInput={onDOMBeforeInputPlugins(
-        editor,
-        plugins,
-        onDOMBeforeInputList
+      decorate={useCallback(decoratePlugins(plugins, decorateList), [])}
+      onDOMBeforeInput={useCallback(
+        onDOMBeforeInputPlugins(editor, plugins, onDOMBeforeInputList),
+        []
       )}
-      renderElement={renderElementPlugins(plugins, renderElementList)}
-      renderLeaf={renderLeafPlugins(plugins, renderLeafList)}
-      onKeyDown={onKeyDownPlugins(editor, plugins, onKeyDownList)}
+      renderElement={useCallback(
+        renderElementPlugins(plugins, renderElementList),
+        []
+      )}
+      renderLeaf={useCallback(renderLeafPlugins(plugins, renderLeafList), [])}
+      onKeyDown={useCallback(
+        onKeyDownPlugins(editor, plugins, onKeyDownList),
+        []
+      )}
       {...props}
     />
   );
