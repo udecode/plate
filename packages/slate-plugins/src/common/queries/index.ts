@@ -6,3 +6,4 @@ export * from './isNodeInSelection';
 export * from './isPointAtRoot';
 export * from './isRangeAtRoot';
 export * from './isAncestor';
+export * from './isDescendant';

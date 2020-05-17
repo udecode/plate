@@ -6,15 +6,15 @@ import { withReact } from 'slate-react';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       test
       <element type="a" url="http://localhost:3000">
         <anchor />
         http://localhost:3000
         <focus />
       </element>
-      <text />
-    </p>
+      <htext />
+    </hp>
   </editor>
 ) as any;
 
@@ -22,13 +22,13 @@ const url = 'http://localhost:5000';
 
 const output = (
   <editor>
-    <p>
+    <hp>
       test
       <element type="a" url="http://localhost:5000">
         http://localhost:3000
       </element>
-      <text />
-    </p>
+      <htext />
+    </hp>
   </editor>
 ) as any;
 

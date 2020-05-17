@@ -5,9 +5,9 @@ import { deserializeFragment } from 'deserializers/deserialize-html/utils';
 
 const fragment = (
   <fragment>
-    <p>
+    <hp>
       <htext>test</htext>
-    </p>
+    </hp>
   </fragment>
 );
 

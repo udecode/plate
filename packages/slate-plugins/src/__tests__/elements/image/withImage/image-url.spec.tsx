@@ -6,15 +6,15 @@ import { withReact } from 'slate-react';
 
 const input = (
   <editor>
-    <p>test</p>
+    <hp>test</hp>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <p>test</p>
+    <hp>test</hp>
     <element type={IMAGE} url="https://i.imgur.com/removed.png">
-      <text />
+      <htext />
     </element>
   </editor>
 ) as any;

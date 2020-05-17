@@ -88,7 +88,7 @@ const input2 = getHtmlDocument(html).body;
 
 const output = (
   <editor>
-    <p>
+    <hp>
       <htext>span</htext>
       <htext bold>strong</htext>
       <htext bold>style</htext>
@@ -104,32 +104,32 @@ const output = (
       <htext code>kbd</htext>
       <htext SUBSCRIPT>sub</htext>
       <htext SUPERSCRIPT>sup</htext>
-    </p>
-    <p>
+    </hp>
+    <hp>
       <ha url="http://localhost:3000">a</ha>
-      <mention character="zbeyens" />
-    </p>
-    <code>
+      <hmention character="zbeyens" />
+    </hp>
+    <hcode>
       <htext>code</htext>
-    </code>
-    <ul>
-      <li>
-        <p>ul-li-p</p>
-      </li>
-    </ul>
-    <ol>
-      <li>
-        <p>ol-li-p</p>
-      </li>
-    </ol>
+    </hcode>
+    <hul>
+      <hli>
+        <hp>ul-li-p</hp>
+      </hli>
+    </hul>
+    <hol>
+      <hli>
+        <hp>ol-li-p</hp>
+      </hli>
+    </hol>
     <himg url="https://i.imgur.com/removed.png" />
-    <table>
-      <tr>
-        <td>table</td>
-      </tr>
-    </table>
-    <actionitem checked>checked</actionitem>
-    <actionitem checked={false}>unchecked</actionitem>
+    <htable>
+      <htr>
+        <htd>table</htd>
+      </htr>
+    </htable>
+    <hactionitem checked>checked</hactionitem>
+    <hactionitem checked={false}>unchecked</hactionitem>
     <hvideo url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
     </hvideo>

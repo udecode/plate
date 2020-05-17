@@ -6,11 +6,11 @@ import { MARK_BOLD } from 'marks/bold';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       tes
       <htext bold>t</htext>
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 

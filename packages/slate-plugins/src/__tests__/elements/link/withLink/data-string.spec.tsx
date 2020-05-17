@@ -6,10 +6,10 @@ import { withReact } from 'slate-react';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 
@@ -17,7 +17,7 @@ const data = { getData: () => 'test' };
 
 const output = (
   <editor>
-    <p>testtest</p>
+    <hp>testtest</hp>
   </editor>
 ) as any;
 

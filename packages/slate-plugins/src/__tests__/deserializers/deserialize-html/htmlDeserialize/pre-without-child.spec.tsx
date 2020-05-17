@@ -11,7 +11,7 @@ const input2 = getHtmlDocument(html).body;
 
 const output = (
   <editor>
-    <text>test</text>
+    <htext>test</htext>
   </editor>
 ) as any;
 

@@ -6,11 +6,11 @@ import { MARK_BOLD } from 'marks/bold';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       t<anchor />
       est
       <focus />
-    </p>
+    </hp>
   </editor>
 ) as any;
 
@@ -18,11 +18,11 @@ const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
-    <p>
+    <hp>
       t<anchor />
       est
       <focus />
-    </p>
+    </hp>
   </editor>
 ) as any;
 

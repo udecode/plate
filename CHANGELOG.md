@@ -4,6 +4,25 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.2` — May 17, 2020
+
+###### BREAKING
+
+- `withNodeID`: renamed `idGenerator` to `idCreator`
+
+###### NEW
+
+- `withNodeID`: new options:
+    - `filterText`
+    - `filter`
+    - `allow`
+    - `exclude`
+- `setPropsToNodes`: helper to set props to nodes and its children (recursively), with many options to filter the nodes that will receive the props (e.g. only Element, only Text, only nodes of type Paragraph, etc.).
+
+###### FIX
+
+- `withNodeID` should now work with history undos/redos
+
 ### `0.58.1` — May 16, 2020
 
 ###### BREAKING

@@ -5,21 +5,21 @@ import { toggleCode } from 'elements';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <code>
-      <p>
+    <hcode>
+      <hp>
         test
         <cursor />
-      </p>
-    </code>
+      </hp>
+    </hcode>
   </editor>
 ) as any;
 
