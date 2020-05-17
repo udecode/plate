@@ -59,6 +59,11 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
+export const getEmptyParagraph = (): Node => ({
+  type: nodeTypes.typeP,
+  children: [{ text: '' }],
+});
+
 export const initialValueVoids: Node[] = [
   {
     type: nodeTypes.typeP,

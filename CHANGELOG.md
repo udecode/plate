@@ -14,6 +14,10 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 - there was a big performance gap between the official slate `Editable` component and our `EditablePlugins` component. This has been resolved by using `useCallback`.
 
+###### FIX
+
+- `deserializeLink`: should work with slate fragments. 
+
 ### `0.58.2` — May 17, 2020
 
 ###### BREAKING
