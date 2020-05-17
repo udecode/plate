@@ -49,14 +49,34 @@ import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
 import { ToolbarMark } from 'mark/components';
-import { BoldPlugin, MARK_BOLD } from 'marks/bold';
+import { BoldPlugin, MARK_BOLD, renderLeafBold } from 'marks/bold';
 import { HighlightPlugin, renderLeafHighlight } from 'marks/highlight';
-import { InlineCodePlugin, MARK_CODE } from 'marks/inline-code';
-import { ItalicPlugin, MARK_ITALIC } from 'marks/italic';
-import { MARK_STRIKETHROUGH, StrikethroughPlugin } from 'marks/strikethrough';
-import { MARK_SUBSCRIPT, SubscriptPlugin } from 'marks/subscript';
-import { MARK_SUPERSCRIPT, SuperscriptPlugin } from 'marks/superscript';
-import { MARK_UNDERLINE, UnderlinePlugin } from 'marks/underline';
+import {
+  InlineCodePlugin,
+  MARK_CODE,
+  renderLeafInlineCode,
+} from 'marks/inline-code';
+import { ItalicPlugin, MARK_ITALIC, renderLeafItalic } from 'marks/italic';
+import {
+  MARK_STRIKETHROUGH,
+  renderLeafStrikethrough,
+  StrikethroughPlugin,
+} from 'marks/strikethrough';
+import {
+  MARK_SUBSCRIPT,
+  renderLeafSubscript,
+  SubscriptPlugin,
+} from 'marks/subscript';
+import {
+  MARK_SUPERSCRIPT,
+  renderLeafSuperscript,
+  SuperscriptPlugin,
+} from 'marks/superscript';
+import {
+  MARK_UNDERLINE,
+  renderLeafUnderline,
+  UnderlinePlugin,
+} from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
 import { withForcedLayout, withNodeID, withTransforms } from 'node';
 import { SearchHighlightPlugin } from 'search-highlight';
@@ -90,15 +110,15 @@ const plugins = [
   TablePlugin(nodeTypes),
   VideoPlugin(nodeTypes),
   CodePlugin(nodeTypes),
-  BoldPlugin(nodeTypes),
-  InlineCodePlugin(nodeTypes),
-  ItalicPlugin(nodeTypes),
-  StrikethroughPlugin(nodeTypes),
-  SearchHighlightPlugin(nodeTypes),
-  HighlightPlugin(nodeTypes),
-  UnderlinePlugin(nodeTypes),
-  SubscriptPlugin(nodeTypes),
-  SuperscriptPlugin(nodeTypes),
+  BoldPlugin(),
+  InlineCodePlugin(),
+  ItalicPlugin(),
+  StrikethroughPlugin(),
+  HighlightPlugin(),
+  UnderlinePlugin(),
+  SubscriptPlugin(),
+  SuperscriptPlugin(),
+  SearchHighlightPlugin(),
   SoftBreakPlugin(),
 ];
 
@@ -144,7 +164,9 @@ const Editor = () => {
     withNodeID(),
   ] as const;
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
+    withPlugins,
+  ]);
 
   return (
     <Slate
@@ -193,7 +215,16 @@ const Editor = () => {
         plugins={plugins}
         decorate={decorate}
         onKeyDown={onKeyDown}
-        renderLeaf={[renderLeafHighlight()]}
+        renderLeaf={[
+          renderLeafHighlight(),
+          renderLeafBold(),
+          renderLeafInlineCode(),
+          renderLeafItalic(),
+          renderLeafStrikethrough(),
+          renderLeafSubscript(),
+          renderLeafSuperscript(),
+          renderLeafUnderline(),
+        ]}
         placeholder="Enter some plain text..."
       />
     </Slate>
