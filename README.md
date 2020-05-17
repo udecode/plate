@@ -1,7 +1,4 @@
 # slate-plugins-next
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![codecov](https://codecov.io/gh/zbeyens/slate-plugins-next/branch/master/graph/badge.svg)](https://codecov.io/gh/zbeyens/slate-plugins-next)
 [<img src="https://img.shields.io/npm/v/slate-plugins-next.svg" />](https://npm.im/slate-plugins-next)&nbsp;
@@ -10,6 +7,10 @@
 [<img src="https://badgen.now.sh/badge/license/MIT" />](https://github.com/zbeyens/slate-plugins-next/blob/master/LICENSE)&nbsp;
 [<img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" />](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)&nbsp;
 [![Netlify Status](https://api.netlify.com/api/v1/badges/2cc9e07a-2339-48c4-a2b8-26adf0e5569d/deploy-status)](https://app.netlify.com/sites/slate-plugins-next/deploys)
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Built on top of [Slate](https://github.com/ianstormtaylor/slate#documentation) framework, `slate-plugins-next` enables you to use a list of
 customizable plugins for your Slate editor.
