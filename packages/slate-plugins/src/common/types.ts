@@ -33,6 +33,7 @@ export interface DeserializeHtml {
 }
 
 export interface SlatePlugin {
+  withPlugin?: <T extends Editor>(editor: T) => T;
   decorate?: Decorate;
   onDOMBeforeInput?: OnDOMBeforeInput;
   renderElement?: RenderElement;

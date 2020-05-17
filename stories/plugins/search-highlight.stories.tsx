@@ -9,6 +9,7 @@ import {
   EditablePlugins,
   HighlightPlugin,
   ParagraphPlugin,
+  pipe,
   renderLeafHighlight,
   SearchHighlightPlugin,
   ToolbarSearchHighlight,
@@ -28,6 +29,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('SearchHighlightPlugin', true))
@@ -43,7 +46,7 @@ export const Example = () => {
 
     const [value, setValue] = useState(initialValueSearchHighlighting);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

@@ -24,6 +24,7 @@ import {
   insertTable,
   MARK_BOLD,
   ParagraphPlugin,
+  pipe,
   renderElementTable,
   TablePlugin,
   ToolbarMark,
@@ -38,6 +39,8 @@ export default {
   subcomponents: { renderElementTable },
 };
 
+const withPlugins = [withReact, withHistory, withTable(nodeTypes)] as const;
+
 export const Example = () => {
   const plugins = [ParagraphPlugin(nodeTypes), BoldPlugin(nodeTypes)];
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
@@ -45,10 +48,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueTables);
 
-    const editor = useMemo(
-      () => withTable(nodeTypes)(withHistory(withReact(createEditor()))),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

@@ -14,6 +14,7 @@ import {
   LinkPlugin,
   ListPlugin,
   ParagraphPlugin,
+  pipe,
   StrikethroughPlugin,
   TablePlugin,
   UnderlinePlugin,
@@ -29,37 +30,36 @@ export default {
   component: withDeserializeMd,
 };
 
-export const Example = () => {
-  const plugins = [
-    ParagraphPlugin(nodeTypes),
-    BlockquotePlugin(nodeTypes),
-    CodePlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
-    ImagePlugin(nodeTypes),
-    LinkPlugin(nodeTypes),
-    ListPlugin(nodeTypes),
-    TablePlugin(nodeTypes),
-    BoldPlugin(nodeTypes),
-    InlineCodePlugin(nodeTypes),
-    ItalicPlugin(nodeTypes),
-    StrikethroughPlugin(nodeTypes),
-    UnderlinePlugin(nodeTypes),
-  ];
+const plugins = [
+  ParagraphPlugin(nodeTypes),
+  BlockquotePlugin(nodeTypes),
+  CodePlugin(nodeTypes),
+  HeadingPlugin(nodeTypes),
+  ImagePlugin(nodeTypes),
+  LinkPlugin(nodeTypes),
+  ListPlugin(nodeTypes),
+  TablePlugin(nodeTypes),
+  BoldPlugin(nodeTypes),
+  InlineCodePlugin(nodeTypes),
+  ItalicPlugin(nodeTypes),
+  StrikethroughPlugin(nodeTypes),
+  UnderlinePlugin(nodeTypes),
+];
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withLink(nodeTypes),
+  withDeserializeMd(plugins),
+  withImage(nodeTypes),
+  withTable(nodeTypes),
+] as const;
+
+export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValuePasteMd);
 
-    const editor = useMemo(
-      () =>
-        withTable(nodeTypes)(
-          withImage(nodeTypes)(
-            withDeserializeMd(plugins)(
-              withLink(nodeTypes)(withHistory(withReact(createEditor())))
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

@@ -30,10 +30,12 @@ import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  ParagraphPlugin,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
+  pipe,
 } from 'slate-plugins-next';
 
 const initialValue: Node[] = [
@@ -44,12 +46,14 @@ const initialValue: Node[] = [
   },
 ];
 
-const plugins = [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
+const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
+
+const withPlugins = [withReact, withHistory] as const;
 
 export const Editor = () => {
   const [value, setValue] = useState(initialValue);
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

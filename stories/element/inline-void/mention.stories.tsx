@@ -7,6 +7,7 @@ import {
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
+  pipe,
   useMention,
   withMention,
 } from '../../../packages/slate-plugins/src';
@@ -24,14 +25,13 @@ export default {
 
 const plugins = [ParagraphPlugin(nodeTypes), MentionPlugin(nodeTypes)];
 
+const withPlugins = [withReact, withHistory, withMention(nodeTypes)] as const;
+
 export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
 
-    const editor = useMemo(
-      () => withMention(nodeTypes)(withHistory(withReact(createEditor()))),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     const {
       MentionSelectComponent,

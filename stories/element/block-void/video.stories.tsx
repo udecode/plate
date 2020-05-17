@@ -6,6 +6,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   ParagraphPlugin,
+  pipe,
   renderElementVideo,
   VIDEO,
   VideoPlugin,
@@ -21,6 +22,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory, withVoid([VIDEO])] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
@@ -28,10 +31,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueEmbeds);
 
-    const editor = useMemo(
-      () => withVoid([VIDEO])(withHistory(withReact(createEditor()))),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

@@ -26,6 +26,7 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   ParagraphPlugin,
+  pipe,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
@@ -48,6 +49,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const All = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
@@ -68,7 +71,7 @@ export const All = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarks);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

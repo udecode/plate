@@ -8,6 +8,7 @@ import {
   EditablePlugins,
   MarkdownPreviewPlugin,
   ParagraphPlugin,
+  pipe,
   renderLeafPreview,
 } from '../../packages/slate-plugins/src';
 import {
@@ -24,6 +25,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
 
@@ -33,7 +36,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarkdownPreview);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate
