@@ -16,6 +16,7 @@ import {
   LooksTwo,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
+import { pipe } from 'common';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import {
   ToolbarBlock,
@@ -56,7 +57,7 @@ import { MARK_SUBSCRIPT, SubscriptPlugin } from 'marks/subscript';
 import { MARK_SUPERSCRIPT, SuperscriptPlugin } from 'marks/superscript';
 import { MARK_UNDERLINE, UnderlinePlugin } from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
-import { withNodeID, withTransforms } from 'node';
+import { withForcedLayout, withNodeID, withTransforms } from 'node';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -68,8 +69,10 @@ import {
   initialValueElements,
   initialValueEmbeds,
   initialValueImages,
+  initialValueLinks,
   initialValueMarks,
   initialValueMentions,
+  initialValueTables,
   initialValueVoids,
   nodeTypes,
 } from '../../../../../../stories/config/initialValues';
@@ -106,6 +109,8 @@ const initialValue = [
   ...initialValueMentions,
   ...initialValueImages,
   ...initialValueVoids,
+  ...initialValueLinks,
+  ...initialValueTables,
 ];
 
 const resetOptions = {
@@ -119,37 +124,26 @@ const Editor = () => {
 
   const [value, setValue] = useState(initialValue);
 
-  const editor = useMemo(
-    () =>
-      withVoid([nodeTypes.typeVideo])(
-        withShortcuts(nodeTypes)(
-          withList(nodeTypes)(
-            withBreakEmptyReset(resetOptions)(
-              withDeleteStartReset(resetOptions)(
-                withBlock(nodeTypes)(
-                  withMention(nodeTypes)(
-                    withImage(nodeTypes)(
-                      withDeserializeHtml(plugins)(
-                        withLink(nodeTypes)(
-                          withTable(nodeTypes)(
-                            withNodeID()(
-                              withTransforms()(
-                                withHistory(withReact(createEditor()))
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      ),
-    []
-  );
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withTable(nodeTypes),
+    withLink(nodeTypes),
+    withDeserializeHtml(plugins),
+    withImage(nodeTypes),
+    withMention(nodeTypes),
+    withBlock(nodeTypes),
+    withDeleteStartReset(resetOptions),
+    withBreakEmptyReset(resetOptions),
+    withList(nodeTypes),
+    withShortcuts(nodeTypes),
+    withVoid([nodeTypes.typeVideo]),
+    withTransforms(),
+    withForcedLayout(),
+    withNodeID(),
+  ] as const;
+
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
+import { pipe } from 'common';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -8,7 +9,9 @@ import { EditablePlugins } from 'components';
 const EditorEmpty = () => {
   const [value, setValue] = useState<Node[]>([]);
 
-  const editor = withHistory(withReact(createEditor()));
+  const withPlugins = [withReact, withHistory] as const;
+
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

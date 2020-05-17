@@ -82,13 +82,16 @@ import {
 } from '../../packages/slate-plugins/src';
 import { CHARACTERS } from '../config/data';
 import {
+  getEmptyParagraph,
   initialValueActionItem,
   initialValueElements,
   initialValueEmbeds,
   initialValueForcedLayout,
   initialValueImages,
+  initialValueLinks,
   initialValueMarks,
   initialValueMentions,
+  initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
 import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
@@ -99,12 +102,22 @@ export default {
 
 const initialValue = [
   ...initialValueForcedLayout,
+  getEmptyParagraph(),
   ...initialValueMarks,
+  getEmptyParagraph(),
   ...initialValueElements,
+  getEmptyParagraph(),
   ...initialValueActionItem,
-  ...initialValueEmbeds,
+  getEmptyParagraph(),
+  ...initialValueTables,
+  getEmptyParagraph(),
+  ...initialValueLinks,
+  getEmptyParagraph(),
   ...initialValueMentions,
+  getEmptyParagraph(),
   ...initialValueImages,
+  getEmptyParagraph(),
+  ...initialValueEmbeds,
 ];
 
 const resetOptions = {
