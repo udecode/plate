@@ -78,14 +78,13 @@ export const useMention = (
         }
       }
     },
-    [matchingMentionables, index, setIndex, target, setTarget]
+    [matchingMentionables, index, setIndex, target, setTarget, prefix]
   );
 
   const onChangeMention = useCallback(
     ({ editor }: { editor: Editor }) => {
       const { selection } = editor;
       const escapedTrigger = escapeRegExp(trigger);
-      console.log('trigger', trigger, 'escapedTrigger', escapedTrigger);
       const beforeRegex = new RegExp(`^${escapedTrigger}(\\w+)$`);
       if (selection && Range.isCollapsed(selection)) {
         const [start] = Range.edges(selection);
@@ -108,7 +107,7 @@ export const useMention = (
 
       setTarget(null);
     },
-    [setTarget, setSearch, setIndex]
+    [setTarget, setSearch, setIndex, trigger]
   );
 
   return {
