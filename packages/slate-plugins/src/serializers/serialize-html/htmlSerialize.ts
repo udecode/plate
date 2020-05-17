@@ -13,7 +13,8 @@ import {
   TableType,
 } from '../..';
 
-const escapeHtml = (a: any) => a;
+const escapeHtml = (rawHtml: string): string =>
+  rawHtml.replace(/(\r\n|\n|\r|\t)/gm, '');
 
 const getNode = ({ element, children }: { element: any; children: any }) => {
   switch (element.type) {
