@@ -1,1 +1,1 @@
-export * from './deserialize-html';
+export * from './serialize-html';
