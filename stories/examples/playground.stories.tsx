@@ -30,6 +30,7 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  createNode,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
@@ -82,7 +83,6 @@ import {
 } from '../../packages/slate-plugins/src';
 import { CHARACTERS } from '../config/data';
 import {
-  getEmptyParagraph,
   initialValueActionItem,
   initialValueElements,
   initialValueEmbeds,
@@ -102,21 +102,21 @@ export default {
 
 const initialValue = [
   ...initialValueForcedLayout,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueMarks,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueElements,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueActionItem,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueTables,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueLinks,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueMentions,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueImages,
-  getEmptyParagraph(),
+  createNode(),
   ...initialValueEmbeds,
 ];
 

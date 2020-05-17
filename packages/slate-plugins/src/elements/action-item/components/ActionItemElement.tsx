@@ -53,6 +53,7 @@ export const ActionItemElement = ({
     <Wrapper {...attributes} data-slate-checked={element.checked}>
       <CheckboxWrapper contentEditable={false}>
         <Checkbox
+          data-testid="ActionItemElementCheckbox"
           type="checkbox"
           checked={checked}
           onChange={(e) => {

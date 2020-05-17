@@ -1,15 +1,28 @@
+import { castArray } from 'lodash';
 import { Editor } from 'slate';
 import { isMarkActive } from '../queries';
 
 /**
- * Toggle a custom property to the leaf text nodes in the current selection.
+ * Add/remove marks in the selection.
+ * @param key mark to toggle
+ * @param clear marks to clear when adding mark
  */
-export const toggleMark = (editor: Editor, key: string) => {
+export const toggleMark = (
+  editor: Editor,
+  key: string,
+  clear: string | string[] = []
+) => {
   const isActive = isMarkActive(editor, key);
 
   if (isActive) {
-    Editor.removeMark(editor, key);
-  } else {
-    Editor.addMark(editor, key, true);
+    editor.removeMark(key);
+    return;
   }
+
+  const clears: string[] = castArray(clear);
+  clears.forEach((item) => {
+    editor.removeMark(item);
+  });
+
+  editor.addMark(key, true);
 };

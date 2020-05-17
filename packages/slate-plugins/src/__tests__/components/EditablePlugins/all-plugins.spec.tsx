@@ -30,6 +30,7 @@ import {
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
+  ToolbarTable,
   withImage,
   withLink,
   withList,
@@ -172,19 +173,12 @@ const Editor = () => {
           icon={<Subscript />}
         />
         <ToolbarLink {...nodeTypes} icon={<Link />} />
-        <ToolbarList
-          {...nodeTypes}
-          typeList={nodeTypes.typeUl}
-          icon={<FormatListBulleted />}
-        />
-        <ToolbarList
-          {...nodeTypes}
-          typeList={nodeTypes.typeOl}
-          icon={<FormatListNumbered />}
-        />
+        <ToolbarList {...nodeTypes} icon={<FormatListBulleted />} />
+        <ToolbarList {...nodeTypes} icon={<FormatListNumbered />} />
         <ToolbarBlock type={nodeTypes.typeBlockquote} icon={<FormatQuote />} />
-        <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
+        <ToolbarCode icon={<CodeBlock />} />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
+        <ToolbarTable action={jest.fn()} icon={null} />
       </HeadingToolbar>
       <HoveringToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />

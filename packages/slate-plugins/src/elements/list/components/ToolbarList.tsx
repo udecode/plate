@@ -1,4 +1,5 @@
 import React from 'react';
+import { createDefaultHandler } from 'common/utils/createDefaultHandler';
 import { ToolbarBlock } from 'element/components';
 import { ListType } from 'elements/list/types';
 import { useSlate } from 'slate-react';
@@ -15,10 +16,10 @@ export const ToolbarList = ({
     <ToolbarBlock
       {...props}
       type={typeList}
-      onMouseDown={(event: Event) => {
-        event.preventDefault();
-        toggleList(editor, { ...props, typeList });
-      }}
+      onMouseDown={createDefaultHandler(toggleList, editor, {
+        ...props,
+        typeList,
+      })}
     />
   );
 };
