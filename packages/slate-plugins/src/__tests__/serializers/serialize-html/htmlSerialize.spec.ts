@@ -4,7 +4,7 @@ import { BoldPlugin, htmlDeserialize, SlatePlugin } from '../../..';
 
 const plugins: SlatePlugin[] = [BoldPlugin()];
 
-const escapeHtml = (rawHtml: string): string =>
+const trimWhitespace = (rawHtml: string): string =>
   rawHtml.replace(/(\r\n|\n|\r|\t)/gm, '');
 
 const htmlStringToDOMNode = (rawHtml: string): HTMLElement => {
@@ -22,7 +22,7 @@ const exampleHTML = `
 `;
 
 it('serialize to html', () => {
-  expect(htmlSerialize(htmlToSlateFormat(exampleHTML))).toEqual(
-    escapeHtml(exampleHTML)
+  expect(htmlSerialize(plugins)(htmlToSlateFormat(exampleHTML))).toEqual(
+    trimWhitespace(exampleHTML)
   );
 });
