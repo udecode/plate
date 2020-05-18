@@ -1,7 +1,3 @@
-import { Meta } from '@storybook/addon-docs/blocks';
-
-<Meta title="Docs/Contributing" />
-
 # Contributing to slate-plugins-next
 
 Thanks for your interest in improving `slate-plugins-next`! We are a

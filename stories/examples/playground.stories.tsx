@@ -23,7 +23,6 @@ import {
 } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { pipe } from 'slate-plugins-next/src/common/pipe';
 import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
@@ -51,6 +50,7 @@ import {
   MARK_UNDERLINE,
   MentionPlugin,
   ParagraphPlugin,
+  pipe,
   SearchHighlightPlugin,
   SoftBreakPlugin,
   StrikethroughPlugin,
