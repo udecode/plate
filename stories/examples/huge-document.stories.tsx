@@ -6,6 +6,7 @@ import {
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
+  pipe,
 } from '../../packages/slate-plugins/src';
 import { initialValueHugeDocument, nodeTypes } from '../config/initialValues';
 
@@ -15,10 +16,12 @@ export default {
 
 const plugins = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const [value, setValue] = useState(initialValueHugeDocument);
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

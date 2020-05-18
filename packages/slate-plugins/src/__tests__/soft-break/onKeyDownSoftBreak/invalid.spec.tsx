@@ -5,10 +5,10 @@ import { onKeyDownSoftBreak } from 'soft-break';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 
@@ -16,10 +16,10 @@ const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 

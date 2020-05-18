@@ -6,10 +6,10 @@ import { MARK_BOLD } from 'marks/bold';
 
 const input = (
   <editor>
-    <p>
+    <hp>
       tes
       <htext bold>t</htext>
-    </p>
+    </hp>
     <selection>
       <anchor path={[0, 1]} offset={0} />
       <focus path={[0, 1]} offset={1} />
@@ -19,10 +19,10 @@ const input = (
 
 const output = (
   <editor>
-    <p>
+    <hp>
       test
       <cursor />
-    </p>
+    </hp>
   </editor>
 ) as any;
 

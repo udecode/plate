@@ -14,13 +14,14 @@ import { MENTION, MentionPlugin } from 'elements/mention';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
-import { BoldPlugin } from 'marks/bold';
-import { InlineCodePlugin } from 'marks/inline-code';
-import { ItalicPlugin } from 'marks/italic';
-import { StrikethroughPlugin } from 'marks/strikethrough';
-import { SubscriptPlugin } from 'marks/subscript';
-import { SuperscriptPlugin } from 'marks/superscript';
-import { UnderlinePlugin } from 'marks/underline';
+import { deserializeBold } from 'marks/bold/deserializeBold';
+import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
+import { deserializeInlineCode } from 'marks/inline-code/deserializeInlineCode';
+import { deserializeItalic } from 'marks/italic/deserializeItalic';
+import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
+import { deserializeSubscript } from 'marks/subscript/deserializeSubscript';
+import { deserializeSuperscript } from 'marks/superscript/deserializeSuperscript';
+import { deserializeUnderline } from 'marks/underline/deserializeUnderline';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { SoftBreakPlugin } from 'soft-break';
 
@@ -71,24 +72,25 @@ const input1 = [
   ListPlugin(),
   MentionPlugin(),
   ParagraphPlugin(),
+  CodePlugin(),
   TablePlugin(),
   VideoPlugin(),
-  CodePlugin(),
-  BoldPlugin(),
-  InlineCodePlugin(),
-  ItalicPlugin(),
-  StrikethroughPlugin(),
   SearchHighlightPlugin(),
-  UnderlinePlugin(),
   SoftBreakPlugin(),
-  SubscriptPlugin(),
-  SuperscriptPlugin(),
+  { deserialize: deserializeBold() },
+  { deserialize: deserializeHighlight() },
+  { deserialize: deserializeInlineCode() },
+  { deserialize: deserializeItalic() },
+  { deserialize: deserializeStrikethrough() },
+  { deserialize: deserializeSubscript() },
+  { deserialize: deserializeSuperscript() },
+  { deserialize: deserializeUnderline() },
 ];
 const input2 = getHtmlDocument(html).body;
 
 const output = (
   <editor>
-    <p>
+    <hp>
       <htext>span</htext>
       <htext bold>strong</htext>
       <htext bold>style</htext>
@@ -104,32 +106,32 @@ const output = (
       <htext code>kbd</htext>
       <htext SUBSCRIPT>sub</htext>
       <htext SUPERSCRIPT>sup</htext>
-    </p>
-    <p>
+    </hp>
+    <hp>
       <ha url="http://localhost:3000">a</ha>
-      <mention character="zbeyens" />
-    </p>
-    <code>
+      <hmention character="zbeyens" />
+    </hp>
+    <hcode>
       <htext>code</htext>
-    </code>
-    <ul>
-      <li>
-        <p>ul-li-p</p>
-      </li>
-    </ul>
-    <ol>
-      <li>
-        <p>ol-li-p</p>
-      </li>
-    </ol>
+    </hcode>
+    <hul>
+      <hli>
+        <hp>ul-li-p</hp>
+      </hli>
+    </hul>
+    <hol>
+      <hli>
+        <hp>ol-li-p</hp>
+      </hli>
+    </hol>
     <himg url="https://i.imgur.com/removed.png" />
-    <table>
-      <tr>
-        <td>table</td>
-      </tr>
-    </table>
-    <actionitem checked>checked</actionitem>
-    <actionitem checked={false}>unchecked</actionitem>
+    <htable>
+      <htr>
+        <htd>table</htd>
+      </htr>
+    </htable>
+    <hactionitem checked>checked</hactionitem>
+    <hactionitem checked={false}>unchecked</hactionitem>
     <hvideo url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
     </hvideo>

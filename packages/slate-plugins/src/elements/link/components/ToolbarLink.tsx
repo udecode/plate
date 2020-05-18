@@ -1,10 +1,14 @@
 import React from 'react';
 import { isNodeInSelection } from 'common/queries/isNodeInSelection';
+import { LINK } from 'elements/link/types';
 import { useSlate } from 'slate-react';
 import { ToolbarButton, ToolbarCustomProps } from 'components/Toolbar';
 import { insertLink } from '../transforms';
 
-export const ToolbarLink = ({ typeLink, ...props }: ToolbarCustomProps) => {
+export const ToolbarLink = ({
+  typeLink = LINK,
+  ...props
+}: ToolbarCustomProps) => {
   const editor = useSlate();
 
   return (

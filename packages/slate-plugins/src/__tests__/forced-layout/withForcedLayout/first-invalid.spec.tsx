@@ -6,17 +6,17 @@ import { Editor } from 'slate';
 
 const input = (
   <editor>
-    <h2>test</h2>
-    <h2>test</h2>
-    <h2>test</h2>
+    <hh2>test</hh2>
+    <hh2>test</hh2>
+    <hh2>test</hh2>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <h1>test</h1>
-    <h2>test</h2>
-    <h2>test</h2>
+    <hh1>test</hh1>
+    <hh2>test</hh2>
+    <hh2>test</hh2>
   </editor>
 ) as any;
 

@@ -16,6 +16,7 @@ import {
   LooksTwo,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
+import { pipe } from 'common';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import {
   ToolbarBlock,
@@ -29,6 +30,7 @@ import {
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
+  ToolbarTable,
   withImage,
   withLink,
   withList,
@@ -47,16 +49,36 @@ import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
 import { ToolbarMark } from 'mark/components';
-import { BoldPlugin, MARK_BOLD } from 'marks/bold';
+import { BoldPlugin, MARK_BOLD, renderLeafBold } from 'marks/bold';
 import { HighlightPlugin, renderLeafHighlight } from 'marks/highlight';
-import { InlineCodePlugin, MARK_CODE } from 'marks/inline-code';
-import { ItalicPlugin, MARK_ITALIC } from 'marks/italic';
-import { MARK_STRIKETHROUGH, StrikethroughPlugin } from 'marks/strikethrough';
-import { MARK_SUBSCRIPT, SubscriptPlugin } from 'marks/subscript';
-import { MARK_SUPERSCRIPT, SuperscriptPlugin } from 'marks/superscript';
-import { MARK_UNDERLINE, UnderlinePlugin } from 'marks/underline';
+import {
+  InlineCodePlugin,
+  MARK_CODE,
+  renderLeafInlineCode,
+} from 'marks/inline-code';
+import { ItalicPlugin, MARK_ITALIC, renderLeafItalic } from 'marks/italic';
+import {
+  MARK_STRIKETHROUGH,
+  renderLeafStrikethrough,
+  StrikethroughPlugin,
+} from 'marks/strikethrough';
+import {
+  MARK_SUBSCRIPT,
+  renderLeafSubscript,
+  SubscriptPlugin,
+} from 'marks/subscript';
+import {
+  MARK_SUPERSCRIPT,
+  renderLeafSuperscript,
+  SuperscriptPlugin,
+} from 'marks/superscript';
+import {
+  MARK_UNDERLINE,
+  renderLeafUnderline,
+  UnderlinePlugin,
+} from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
-import { withNodeID, withTransforms } from 'node';
+import { withForcedLayout, withNodeID, withTransforms } from 'node';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -68,8 +90,10 @@ import {
   initialValueElements,
   initialValueEmbeds,
   initialValueImages,
+  initialValueLinks,
   initialValueMarks,
   initialValueMentions,
+  initialValueTables,
   initialValueVoids,
   nodeTypes,
 } from '../../../../../../stories/config/initialValues';
@@ -86,15 +110,15 @@ const plugins = [
   TablePlugin(nodeTypes),
   VideoPlugin(nodeTypes),
   CodePlugin(nodeTypes),
-  BoldPlugin(nodeTypes),
-  InlineCodePlugin(nodeTypes),
-  ItalicPlugin(nodeTypes),
-  StrikethroughPlugin(nodeTypes),
-  SearchHighlightPlugin(nodeTypes),
-  HighlightPlugin(nodeTypes),
-  UnderlinePlugin(nodeTypes),
-  SubscriptPlugin(nodeTypes),
-  SuperscriptPlugin(nodeTypes),
+  BoldPlugin(),
+  InlineCodePlugin(),
+  ItalicPlugin(),
+  StrikethroughPlugin(),
+  HighlightPlugin(),
+  UnderlinePlugin(),
+  SubscriptPlugin(),
+  SuperscriptPlugin(),
+  SearchHighlightPlugin(),
   SoftBreakPlugin(),
 ];
 
@@ -106,6 +130,8 @@ const initialValue = [
   ...initialValueMentions,
   ...initialValueImages,
   ...initialValueVoids,
+  ...initialValueLinks,
+  ...initialValueTables,
 ];
 
 const resetOptions = {
@@ -119,37 +145,28 @@ const Editor = () => {
 
   const [value, setValue] = useState(initialValue);
 
-  const editor = useMemo(
-    () =>
-      withVoid([nodeTypes.typeVideo])(
-        withShortcuts(nodeTypes)(
-          withList(nodeTypes)(
-            withBreakEmptyReset(resetOptions)(
-              withDeleteStartReset(resetOptions)(
-                withBlock(nodeTypes)(
-                  withMention(nodeTypes)(
-                    withImage(nodeTypes)(
-                      withDeserializeHtml(plugins)(
-                        withLink(nodeTypes)(
-                          withTable(nodeTypes)(
-                            withNodeID()(
-                              withTransforms()(
-                                withHistory(withReact(createEditor()))
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      ),
-    []
-  );
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withTable(nodeTypes),
+    withLink(nodeTypes),
+    withDeserializeHtml(plugins),
+    withImage(nodeTypes),
+    withMention(nodeTypes),
+    withBlock(nodeTypes),
+    withDeleteStartReset(resetOptions),
+    withBreakEmptyReset(resetOptions),
+    withList(nodeTypes),
+    withShortcuts(nodeTypes),
+    withVoid([nodeTypes.typeVideo]),
+    withTransforms(),
+    withForcedLayout(),
+    withNodeID(),
+  ] as const;
+
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
+    withPlugins,
+  ]);
 
   return (
     <Slate
@@ -178,19 +195,12 @@ const Editor = () => {
           icon={<Subscript />}
         />
         <ToolbarLink {...nodeTypes} icon={<Link />} />
-        <ToolbarList
-          {...nodeTypes}
-          typeList={nodeTypes.typeUl}
-          icon={<FormatListBulleted />}
-        />
-        <ToolbarList
-          {...nodeTypes}
-          typeList={nodeTypes.typeOl}
-          icon={<FormatListNumbered />}
-        />
+        <ToolbarList {...nodeTypes} icon={<FormatListBulleted />} />
+        <ToolbarList {...nodeTypes} icon={<FormatListNumbered />} />
         <ToolbarBlock type={nodeTypes.typeBlockquote} icon={<FormatQuote />} />
-        <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
+        <ToolbarCode icon={<CodeBlock />} />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
+        <ToolbarTable action={jest.fn()} icon={null} />
       </HeadingToolbar>
       <HoveringToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
@@ -205,7 +215,16 @@ const Editor = () => {
         plugins={plugins}
         decorate={decorate}
         onKeyDown={onKeyDown}
-        renderLeaf={[renderLeafHighlight()]}
+        renderLeaf={[
+          renderLeafHighlight(),
+          renderLeafBold(),
+          renderLeafInlineCode(),
+          renderLeafItalic(),
+          renderLeafStrikethrough(),
+          renderLeafSubscript(),
+          renderLeafSuperscript(),
+          renderLeafUnderline(),
+        ]}
         placeholder="Enter some plain text..."
       />
     </Slate>

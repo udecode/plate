@@ -6,19 +6,24 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## 📦 Install
 
-Install
-
 ```bash
-yarn add slate-plugins-next@0.58.1
+yarn add slate-plugins-next@0.58.3
 ```
 
-> ⚠️ In production, you should pin the dependency until 1.0.0 is released.
+> ⚠️ In production, you should pin the dependency until 1.0.0 is
+> released.
 
 You will also need these peerDependencies:
 
 ```bash
 yarn add slate slate-hyperscript slate-react styled-components react react-dom
 ```
+
+For full documentation on using `slate-plugins-next` visit:
+[slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
+
+For additional help, join us in our
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)
 
 ## Editor
 
@@ -30,10 +35,12 @@ import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  ParagraphPlugin,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
+  pipe,
 } from 'slate-plugins-next';
 
 const initialValue: Node[] = [
@@ -44,12 +51,14 @@ const initialValue: Node[] = [
   },
 ];
 
-const plugins = [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
+const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
+
+const withPlugins = [withReact, withHistory] as const;
 
 export const Editor = () => {
   const [value, setValue] = useState(initialValue);
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

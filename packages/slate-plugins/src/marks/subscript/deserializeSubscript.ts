@@ -4,6 +4,6 @@ import { MARK_SUBSCRIPT } from 'marks/subscript/types';
 
 export const deserializeSubscript = ({
   typeSubscript = MARK_SUBSCRIPT,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: getLeafDeserializer(typeSubscript, { tagNames: ['SUB'] }),
 });

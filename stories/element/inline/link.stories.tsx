@@ -9,6 +9,7 @@ import {
   HeadingToolbar,
   LinkPlugin,
   ParagraphPlugin,
+  pipe,
   renderElementLink,
   ToolbarLink,
   withLink,
@@ -24,6 +25,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory, withLink(nodeTypes)] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
@@ -31,10 +34,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueLinks);
 
-    const editor = useMemo(
-      () => withLink(nodeTypes)(withHistory(withReact(createEditor()))),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

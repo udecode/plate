@@ -9,6 +9,7 @@ import {
   EditablePlugins,
   HighlightPlugin,
   ParagraphPlugin,
+  pipe,
   renderLeafHighlight,
   SearchHighlightPlugin,
   ToolbarSearchHighlight,
@@ -28,6 +29,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('SearchHighlightPlugin', true))
@@ -38,12 +41,13 @@ export const Example = () => {
 
     const [search, setSearch] = useState('');
 
-    if (boolean('decorateHighlight', true))
+    if (boolean('decorateHighlight', true)) {
       decorate.push(decorateSearchHighlight({ search }));
+    }
 
     const [value, setValue] = useState(initialValueSearchHighlighting);
 
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate
@@ -52,7 +56,12 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue)}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
-        <EditablePlugins plugins={plugins} decorate={decorate} />
+        <EditablePlugins
+          plugins={plugins}
+          decorate={decorate}
+          decorateDeps={[search]}
+          renderLeafDeps={[search]}
+        />
       </Slate>
     );
   };

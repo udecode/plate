@@ -1,11 +1,11 @@
 import { HeadingType, PARAGRAPH } from 'elements';
-import { EditorTransforms } from 'node/withTransforms';
+import { TransformEditor } from 'node/withTransforms';
 import { Editor, Node, Transforms } from 'slate';
 
 export const withForcedLayout = ({
   typeH1 = HeadingType.H1,
   typeP = PARAGRAPH,
-} = {}) => <T extends Editor & EditorTransforms>(editor: T) => {
+} = {}) => <T extends Editor & TransformEditor>(editor: T) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
@@ -31,9 +31,9 @@ export const withForcedLayout = ({
         };
         editor.insertNodes(paragraph, { at: path.concat(1) });
       }
-
-      return normalizeNode([node, path]);
     }
+
+    return normalizeNode([node, path]);
   };
 
   return editor;

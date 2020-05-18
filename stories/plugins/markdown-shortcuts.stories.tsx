@@ -9,6 +9,7 @@ import {
   HeadingPlugin,
   ListPlugin,
   ParagraphPlugin,
+  pipe,
   withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
@@ -29,6 +30,16 @@ const resetOptions = {
   types: [BLOCKQUOTE],
 };
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withBlock(nodeTypes),
+  withShortcuts(nodeTypes),
+  withDeleteStartReset(resetOptions),
+  withBreakEmptyReset(resetOptions),
+  withList(nodeTypes),
+] as const;
+
 export const Example = () => {
   const plugins = [
     ParagraphPlugin(nodeTypes),
@@ -40,19 +51,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMarkdownShortcuts);
 
-    const editor = useMemo(
-      () =>
-        withList(nodeTypes)(
-          withBreakEmptyReset(resetOptions)(
-            withDeleteStartReset(resetOptions)(
-              withShortcuts(nodeTypes)(
-                withBlock(nodeTypes)(withHistory(withReact(createEditor())))
-              )
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

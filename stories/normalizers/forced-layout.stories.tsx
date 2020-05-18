@@ -6,6 +6,7 @@ import {
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
+  pipe,
   withForcedLayout,
   withTransforms,
 } from '../../packages/slate-plugins/src';
@@ -17,17 +18,18 @@ export default {
 
 const plugins = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withTransforms(),
+  withForcedLayout(),
+] as const;
+
 export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueForcedLayout);
 
-    const editor = useMemo(
-      () =>
-        withForcedLayout(nodeTypes)(
-          withTransforms()(withHistory(withReact(createEditor())))
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

@@ -11,7 +11,7 @@ const input2 = getHtmlDocument(html).body;
 
 const output = (
   <editor>
-    <text>test{'\n'}</text>
+    <htext>test{'\n'}</htext>
   </editor>
 ) as any;
 

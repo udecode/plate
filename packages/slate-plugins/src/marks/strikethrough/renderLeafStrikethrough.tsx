@@ -9,7 +9,7 @@ const StrikethroughText = styled.span`
 
 export const renderLeafStrikethrough = ({
   typeStrikethrough = MARK_STRIKETHROUGH,
-}) => ({ children, leaf }: RenderLeafProps) => {
+} = {}) => ({ children, leaf }: RenderLeafProps) => {
   if (leaf[typeStrikethrough]) {
     return (
       <StrikethroughText data-slate-type={typeStrikethrough}>

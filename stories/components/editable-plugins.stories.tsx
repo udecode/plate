@@ -3,7 +3,7 @@ import { boolean, text } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { EditablePlugins } from '../../packages/slate-plugins/src';
+import { EditablePlugins, pipe } from '../../packages/slate-plugins/src';
 import { initialValuePlainText } from '../config/initialValues';
 
 export default {
@@ -11,10 +11,12 @@ export default {
   component: EditablePlugins,
 };
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const [value, setValue] = useState(initialValuePlainText);
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

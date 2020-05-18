@@ -1,4 +1,4 @@
-import { setPropsToTexts } from 'common/transforms';
+import { setPropsToNodes } from 'common/transforms';
 import { DeserializeLeafValue, SlatePlugin } from 'common/types';
 import { Node, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
@@ -31,10 +31,10 @@ export const deserializeMarks = ({
   });
 
   if (textTags[type]) {
-    const attrs = textTags[type].reduce((obj, tag) => {
-      const newAttrs = tag(el);
-      if (newAttrs) {
-        Object.assign(obj, newAttrs);
+    const props = textTags[type].reduce((obj, tag) => {
+      const newProps = tag(el);
+      if (newProps) {
+        Object.assign(obj, newProps);
       }
       return obj;
     }, {});
@@ -43,10 +43,12 @@ export const deserializeMarks = ({
       if (!child) return arr;
 
       if (child.children) {
-        setPropsToTexts(child, attrs);
+        setPropsToNodes(child, props, {
+          filter: Text.isText,
+        });
         arr.push(child);
       } else {
-        arr.push(jsx('text', attrs, child));
+        arr.push(jsx('text', props, child));
       }
 
       return arr;

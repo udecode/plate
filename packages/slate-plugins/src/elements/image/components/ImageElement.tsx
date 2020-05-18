@@ -28,6 +28,7 @@ export const ImageElement = ({
       <div contentEditable={false}>
         <Image
           data-slate-type={type}
+          data-testid="ImageElementImage"
           src={url}
           alt=""
           selected={selected}

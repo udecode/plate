@@ -6,6 +6,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   ParagraphPlugin,
+  pipe,
   withVoid,
 } from '../../../../packages/slate-plugins/src';
 import { initialValueVoids, nodeTypes } from '../../../config/initialValues';
@@ -18,13 +19,16 @@ export default {
 
 const plugins = [ParagraphPlugin(nodeTypes), EditableVoidPlugin()];
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withVoid([EDITABLE_VOID]),
+] as const;
+
 export const Example = () => {
   const [value, setValue] = useState(initialValueVoids);
 
-  const editor = useMemo(
-    () => withVoid([EDITABLE_VOID])(withHistory(withReact(createEditor()))),
-    []
-  );
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

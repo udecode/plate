@@ -4,6 +4,56 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.3` — May 18, 2020
+
+###### BREAKING
+
+- refactored:
+    - `toggleCode` to `toggleWrapNodes` (generic).
+- removed:
+    - `clearMark` in favor of `Editor.removeMark`.
+
+###### NEW
+
+- `pipe`: new helper to avoid the wrapper hell when using `withPlugins`. You can now have an array of plugins `withPlugins`.
+- `EditablePlugins`: new props for adding your dependencies to the corresponding `useCallback`.
+    - `decorateDeps`
+    - `renderElementDeps`
+    - `renderLeafDeps`
+    - `onDOMBeforeInputDeps`
+    - `onKeyDownDeps`
+- `toggleMark`: new optional parameter `clear`: marks to clear when adding mark.
+- helpers:
+    - `createDefaultHandler`
+
+###### IMPROVEMENT
+
+- there was a big performance gap between the official slate `Editable` component and our `EditablePlugins` component. This has been resolved by using `useCallback`.
+
+###### FIX
+
+- `deserializeLink`: should work with slate fragments.
+- `withForcedLayout` was normalizing on each change. 
+
+### `0.58.2` — May 17, 2020
+
+###### BREAKING
+
+- `withNodeID`: renamed `idGenerator` to `idCreator`
+
+###### NEW
+
+- `withNodeID`: new options:
+    - `filterText`
+    - `filter`
+    - `allow`
+    - `exclude`
+- `setPropsToNodes`: helper to set props to nodes and its children (recursively), with many options to filter the nodes that will receive the props (e.g. only Element, only Text, only nodes of type Paragraph, etc.).
+
+###### FIX
+
+- `withNodeID` should now work with history undos/redos
+
 ### `0.58.1` — May 16, 2020
 
 ###### BREAKING

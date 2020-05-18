@@ -4,6 +4,6 @@ import { MARK_SUPERSCRIPT } from './types';
 
 export const deserializeSuperscript = ({
   typeSuperscript = MARK_SUPERSCRIPT,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: getLeafDeserializer(typeSuperscript, { tagNames: ['SUP'] }),
 });

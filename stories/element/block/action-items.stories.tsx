@@ -7,6 +7,7 @@ import {
   ActionItemPlugin,
   EditablePlugins,
   ParagraphPlugin,
+  pipe,
   renderElementActionItem,
   withBreakEmptyReset,
   withDeleteStartReset,
@@ -24,6 +25,13 @@ const resetOptions = {
   types: [nodeTypes.typeActionItem],
 };
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withDeleteStartReset(resetOptions),
+  withBreakEmptyReset(resetOptions),
+] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('ActionItemPlugin', true))
@@ -32,15 +40,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueActionItem);
 
-    const editor = useMemo(
-      () =>
-        withBreakEmptyReset(resetOptions)(
-          withDeleteStartReset(resetOptions)(
-            withHistory(withReact(createEditor()))
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate
