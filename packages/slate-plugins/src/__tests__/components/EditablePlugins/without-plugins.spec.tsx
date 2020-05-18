@@ -11,7 +11,9 @@ const EditorEmpty = () => {
 
   const withPlugins = [withReact, withHistory] as const;
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
+    withPlugins,
+  ]);
 
   return (
     <Slate
