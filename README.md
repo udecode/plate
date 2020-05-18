@@ -44,16 +44,16 @@ and
 
 ## Table of contents
 
-- 🚀[Getting Started](#-getting-started)
-- 🔌[Plugins](#-plugins)
-- 🤔[Notice](#-notice)
+- 🚀 [Getting Started](#-getting-started)
+- 🔌 [Plugins](#-plugins)
+- 🤔 [Notice](#-notice)
   - [Why](#why)
   - [Bundle size](#bundle-size)
-- 👥[Community](#-community)
-- 👏[Contributing](#-contributing)
-  - 👨‍💻[Development scripts](#-development-scripts)
-- ✨[Contributors](#contributors-)
-- :memo:[License](#license)
+- 👥 [Community](#-community)
+- 👏 [Contributing](#-contributing)
+  - 👨‍💻 [Development scripts](#-development-scripts)
+- ✨ [Contributors](#contributors-)
+- :memo: [License](#license)
 
 ## 🚀 Getting Started
 

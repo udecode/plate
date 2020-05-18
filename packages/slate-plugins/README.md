@@ -44,16 +44,16 @@ and
 
 ## Table of contents
 
-- 🚀[Getting Started](../../README.md#-getting-started)
-- 🔌[Plugins](../../README.md#-plugins)
-- 🤔[Notice](../../README.md#-notice)
+- 🚀 [Getting Started](../../README.md#-getting-started)
+- 🔌 [Plugins](../../README.md#-plugins)
+- 🤔 [Notice](../../README.md#-notice)
   - [Why](../../README.md#why)
   - [Bundle size](../../README.md#bundle-size)
-- 👥[Community](../../README.md#-community)
-- 👏[Contributing](../../README.md#-contributing)
-  - 👨‍💻[Development scripts](../../README.md#-development-scripts)
-- ✨[Contributors](../../README.md#contributors-)
-- :memo:[License](../../README.md#license)
+- 👥 [Community](../../README.md#-community)
+- 👏 [Contributing](../../README.md#-contributing)
+  - 👨‍💻 [Development scripts](../../README.md#-development-scripts)
+- ✨ [Contributors](../../README.md#contributors-)
+- :memo: [License](../../README.md#license)
 
 ## 🚀 Getting Started
 
