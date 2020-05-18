@@ -6,6 +6,13 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ### `0.58.3` — May 18, 2020
 
+###### BREAKING
+
+- refactored:
+    - `toggleCode` to `toggleWrapNodes` (generic).
+- removed:
+    - `clearMark` in favor of `Editor.removeMark`.
+
 ###### NEW
 
 - `pipe`: new helper to avoid the wrapper hell when using `withPlugins`. You can now have an array of plugins `withPlugins`.
@@ -15,6 +22,9 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
     - `renderLeafDeps`
     - `onDOMBeforeInputDeps`
     - `onKeyDownDeps`
+- `toggleMark`: new optional parameter `clear`: marks to clear when adding mark.
+- helpers:
+    - `createDefaultHandler`
 
 ###### IMPROVEMENT
 
