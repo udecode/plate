@@ -7,5 +7,5 @@
     "declarationDir": "./dist",
     "outDir": "./dist"
   },
-  "exclude": ["**/*.stories.*", "**/*.test.*"]
+  "exclude": ["**/*.stories.*", "**/*test*", "**/*.spec*"]
 }
