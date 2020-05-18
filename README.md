@@ -22,7 +22,7 @@ customizable plugins for your Slate editor.
 - ✨ 20+ Editor Plugins.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
-- ✅ Unit tested with `slate@0.58.1`.
+- ✅ Unit tested with `slate@0.58.3`.
 - 📖 [Docs](https://slate-plugins-next.netlify.com/?path=/docs/docs-getting-started--page) and [Demos](https://slate-plugins-next.netlify.com/?path=/story/plugins-playground--plugins) on Storybook.
 
 ## 🧩 Plugins
@@ -85,7 +85,7 @@ A plugin for each type of leaf. They all use `renderLeaf`.
 ## 📦 Install
 
 ```bash
-yarn add slate-plugins-next@0.58.1
+yarn add slate-plugins-next@0.58.3
 ```
 
 > ⚠️ In production, you should pin the dependency until 1.0.0 is released.
