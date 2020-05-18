@@ -193,6 +193,9 @@ export const Plugins = () => {
 
     const {
       MentionSelectComponent,
+      index,
+      search: mentionSearch,
+      target,
       onChangeMention,
       onKeyDownMention,
     } = useMention({
@@ -269,7 +272,10 @@ export const Plugins = () => {
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}
+          decorateDeps={[search]}
+          renderLeafDeps={[search]}
           onKeyDown={onKeyDown}
+          onKeyDownDeps={[index, mentionSearch, target]}
           placeholder="Enter some plain text..."
         />
       </Slate>

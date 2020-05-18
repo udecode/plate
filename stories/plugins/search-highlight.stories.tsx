@@ -41,8 +41,9 @@ export const Example = () => {
 
     const [search, setSearch] = useState('');
 
-    if (boolean('decorateHighlight', true))
+    if (boolean('decorateHighlight', true)) {
       decorate.push(decorateSearchHighlight({ search }));
+    }
 
     const [value, setValue] = useState(initialValueSearchHighlighting);
 
@@ -55,7 +56,12 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue)}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
-        <EditablePlugins plugins={plugins} decorate={decorate} />
+        <EditablePlugins
+          plugins={plugins}
+          decorate={decorate}
+          decorateDeps={[search]}
+          renderLeafDeps={[search]}
+        />
       </Slate>
     );
   };
