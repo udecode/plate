@@ -4,6 +4,27 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.3` — May 18, 2020
+
+###### NEW
+
+- `pipe`: new helper to avoid the wrapper hell when using `withPlugins`. You can now have an array of plugins `withPlugins`.
+- `EditablePlugins`: new props for adding your dependencies to the corresponding `useCallback`.
+    - `decorateDeps`
+    - `renderElementDeps`
+    - `renderLeafDeps`
+    - `onDOMBeforeInputDeps`
+    - `onKeyDownDeps`
+
+###### IMPROVEMENT
+
+- there was a big performance gap between the official slate `Editable` component and our `EditablePlugins` component. This has been resolved by using `useCallback`.
+
+###### FIX
+
+- `deserializeLink`: should work with slate fragments.
+- `withForcedLayout` was normalizing on each change. 
+
 ### `0.58.2` — May 17, 2020
 
 ###### BREAKING

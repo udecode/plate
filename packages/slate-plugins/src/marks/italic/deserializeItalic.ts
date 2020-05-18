@@ -4,7 +4,7 @@ import { MARK_ITALIC } from './types';
 
 export const deserializeItalic = ({
   typeItalic = MARK_ITALIC,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: {
     SPAN: (el) => el.style.fontStyle === 'italic' && { [typeItalic]: true },
     ...getLeafDeserializer(typeItalic, { tagNames: ['EM', 'I'] }),

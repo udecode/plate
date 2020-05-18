@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { toggleCode } from 'elements';
+import { toggleWrapNodes } from 'common/transforms/toggleWrapNodes';
+import { CODE } from 'elements';
 
 const input = (
   <editor>
@@ -24,7 +25,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleCode(input);
+  toggleWrapNodes(input, CODE);
 
   expect(input.children).toEqual(output.children);
 });

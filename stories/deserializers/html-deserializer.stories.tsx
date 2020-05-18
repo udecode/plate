@@ -17,6 +17,7 @@ import {
   ListPlugin,
   MentionPlugin,
   ParagraphPlugin,
+  pipe,
   SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
@@ -39,50 +40,46 @@ export default {
   component: withDeserializeHtml,
 };
 
-export const Example = () => {
-  const plugins = [
-    ParagraphPlugin(nodeTypes),
-    BlockquotePlugin(nodeTypes),
-    CodePlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
-    ImagePlugin(nodeTypes),
-    LinkPlugin(nodeTypes),
-    ListPlugin(nodeTypes),
-    TablePlugin(nodeTypes),
-    ActionItemPlugin(nodeTypes),
-    MentionPlugin(nodeTypes),
-    VideoPlugin(nodeTypes),
-    BoldPlugin(nodeTypes),
-    InlineCodePlugin(nodeTypes),
-    ItalicPlugin(nodeTypes),
-    StrikethroughPlugin(nodeTypes),
-    HighlightPlugin(nodeTypes),
-    UnderlinePlugin(nodeTypes),
-    SubscriptPlugin(nodeTypes),
-    SuperscriptPlugin(nodeTypes),
-    SoftBreakPlugin(),
-  ];
+const plugins = [
+  ParagraphPlugin(nodeTypes),
+  BlockquotePlugin(nodeTypes),
+  CodePlugin(nodeTypes),
+  HeadingPlugin(nodeTypes),
+  ImagePlugin(nodeTypes),
+  LinkPlugin(nodeTypes),
+  ListPlugin(nodeTypes),
+  TablePlugin(nodeTypes),
+  ActionItemPlugin(nodeTypes),
+  MentionPlugin(nodeTypes),
+  VideoPlugin(nodeTypes),
+  BoldPlugin(nodeTypes),
+  InlineCodePlugin(nodeTypes),
+  ItalicPlugin(nodeTypes),
+  StrikethroughPlugin(nodeTypes),
+  HighlightPlugin(nodeTypes),
+  UnderlinePlugin(nodeTypes),
+  SubscriptPlugin(nodeTypes),
+  SuperscriptPlugin(nodeTypes),
+  SoftBreakPlugin(),
+];
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withTable(nodeTypes),
+  withLink(nodeTypes),
+  withDeserializeHtml(plugins),
+  withImage(nodeTypes),
+  withMention(nodeTypes),
+  withList(nodeTypes),
+  withVoid([nodeTypes.typeVideo]),
+] as const;
+
+export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValuePasteHtml);
 
-    const editor = useMemo(
-      () =>
-        withVoid([nodeTypes.typeVideo])(
-          withList(nodeTypes)(
-            withMention(nodeTypes)(
-              withImage(nodeTypes)(
-                withDeserializeHtml(plugins)(
-                  withLink(nodeTypes)(
-                    withTable(nodeTypes)(withHistory(withReact(createEditor())))
-                  )
-                )
-              )
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

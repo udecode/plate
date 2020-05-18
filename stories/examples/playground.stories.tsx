@@ -23,12 +23,14 @@ import {
 } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
+import { pipe } from 'slate-plugins-next/src/common/pipe';
 import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  createNode,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
@@ -69,12 +71,14 @@ import {
   withBreakEmptyReset,
   withDeleteStartReset,
   withDeserializeHtml,
+  withForcedLayout,
   withImage,
   withLink,
   withList,
   withMention,
   withShortcuts,
   withTable,
+  withTransforms,
   withVoid,
 } from '../../packages/slate-plugins/src';
 import { CHARACTERS } from '../config/data';
@@ -82,13 +86,14 @@ import {
   initialValueActionItem,
   initialValueElements,
   initialValueEmbeds,
+  initialValueForcedLayout,
   initialValueImages,
+  initialValueLinks,
   initialValueMarks,
   initialValueMentions,
-  initialValueVoids,
+  initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
-import { EditableVoidPlugin } from '../element/block-void/editable-voids/EditableVoidPlugin';
 import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export default {
@@ -96,13 +101,23 @@ export default {
 };
 
 const initialValue = [
+  ...initialValueForcedLayout,
+  createNode(),
   ...initialValueMarks,
+  createNode(),
   ...initialValueElements,
+  createNode(),
   ...initialValueActionItem,
-  ...initialValueEmbeds,
+  createNode(),
+  ...initialValueTables,
+  createNode(),
+  ...initialValueLinks,
+  createNode(),
   ...initialValueMentions,
+  createNode(),
   ...initialValueImages,
-  ...initialValueVoids,
+  createNode(),
+  ...initialValueEmbeds,
 ];
 
 const resetOptions = {
@@ -143,9 +158,25 @@ export const Plugins = () => {
     plugins.push(SubscriptPlugin(nodeTypes));
   if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(nodeTypes));
-  if (boolean('EditableVoidPlugin', true))
-    plugins.push(EditableVoidPlugin(nodeTypes));
   if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
+
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withTable(nodeTypes),
+    withLink(nodeTypes),
+    withDeserializeHtml(plugins),
+    withImage(nodeTypes),
+    withMention(nodeTypes),
+    withBlock(nodeTypes),
+    withDeleteStartReset(resetOptions),
+    withBreakEmptyReset(resetOptions),
+    withList(nodeTypes),
+    withShortcuts(nodeTypes),
+    withVoid([EDITABLE_VOID, nodeTypes.typeVideo]),
+    withTransforms(),
+    withForcedLayout(),
+  ] as const;
 
   const createReactEditor = () => () => {
     const decorate: any = [];
@@ -153,33 +184,7 @@ export const Plugins = () => {
 
     const [value, setValue] = useState(initialValue);
 
-    const editor = useMemo(
-      () =>
-        withVoid([EDITABLE_VOID, nodeTypes.typeVideo])(
-          withShortcuts(nodeTypes)(
-            withList(nodeTypes)(
-              withBreakEmptyReset(resetOptions)(
-                withDeleteStartReset(resetOptions)(
-                  withBlock(nodeTypes)(
-                    withMention(nodeTypes)(
-                      withImage(nodeTypes)(
-                        withDeserializeHtml(plugins)(
-                          withLink(nodeTypes)(
-                            withTable(nodeTypes)(
-                              withHistory(withReact(createEditor()))
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     const [search, setSearchHighlight] = useState('');
 
@@ -188,6 +193,9 @@ export const Plugins = () => {
 
     const {
       MentionSelectComponent,
+      index,
+      search: mentionSearch,
+      target,
       onChangeMention,
       onKeyDownMention,
     } = useMention({
@@ -264,7 +272,10 @@ export const Plugins = () => {
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}
+          decorateDeps={[search]}
+          renderLeafDeps={[search]}
           onKeyDown={onKeyDown}
+          onKeyDownDeps={[index, mentionSearch, target]}
           placeholder="Enter some plain text..."
         />
       </Slate>

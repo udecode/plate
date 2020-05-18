@@ -14,13 +14,14 @@ import { MENTION, MentionPlugin } from 'elements/mention';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
-import { BoldPlugin } from 'marks/bold';
-import { InlineCodePlugin } from 'marks/inline-code';
-import { ItalicPlugin } from 'marks/italic';
-import { StrikethroughPlugin } from 'marks/strikethrough';
-import { SubscriptPlugin } from 'marks/subscript';
-import { SuperscriptPlugin } from 'marks/superscript';
-import { UnderlinePlugin } from 'marks/underline';
+import { deserializeBold } from 'marks/bold/deserializeBold';
+import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
+import { deserializeInlineCode } from 'marks/inline-code/deserializeInlineCode';
+import { deserializeItalic } from 'marks/italic/deserializeItalic';
+import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
+import { deserializeSubscript } from 'marks/subscript/deserializeSubscript';
+import { deserializeSuperscript } from 'marks/superscript/deserializeSuperscript';
+import { deserializeUnderline } from 'marks/underline/deserializeUnderline';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { SoftBreakPlugin } from 'soft-break';
 
@@ -71,18 +72,19 @@ const input1 = [
   ListPlugin(),
   MentionPlugin(),
   ParagraphPlugin(),
+  CodePlugin(),
   TablePlugin(),
   VideoPlugin(),
-  CodePlugin(),
-  BoldPlugin(),
-  InlineCodePlugin(),
-  ItalicPlugin(),
-  StrikethroughPlugin(),
   SearchHighlightPlugin(),
-  UnderlinePlugin(),
   SoftBreakPlugin(),
-  SubscriptPlugin(),
-  SuperscriptPlugin(),
+  { deserialize: deserializeBold() },
+  { deserialize: deserializeHighlight() },
+  { deserialize: deserializeInlineCode() },
+  { deserialize: deserializeItalic() },
+  { deserialize: deserializeStrikethrough() },
+  { deserialize: deserializeSubscript() },
+  { deserialize: deserializeSuperscript() },
+  { deserialize: deserializeUnderline() },
 ];
 const input2 = getHtmlDocument(html).body;
 

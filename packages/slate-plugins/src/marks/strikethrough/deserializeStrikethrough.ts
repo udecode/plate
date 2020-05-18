@@ -4,7 +4,7 @@ import { MARK_STRIKETHROUGH } from './types';
 
 export const deserializeStrikethrough = ({
   typeStrikethrough = MARK_STRIKETHROUGH,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: {
     ...getLeafDeserializer(typeStrikethrough, { tagNames: ['DEL', 'S'] }),
     SPAN: (el) =>

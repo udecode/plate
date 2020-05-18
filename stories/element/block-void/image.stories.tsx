@@ -9,6 +9,7 @@ import {
   HeadingToolbar,
   ImagePlugin,
   ParagraphPlugin,
+  pipe,
   renderElementImage,
   ToolbarImage,
   withImage,
@@ -24,6 +25,8 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory, withImage(nodeTypes)] as const;
+
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes)];
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(nodeTypes));
@@ -31,10 +34,7 @@ export const Example = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueImages);
 
-    const editor = useMemo(
-      () => withImage(nodeTypes)(withHistory(withReact(createEditor()))),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

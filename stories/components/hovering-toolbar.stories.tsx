@@ -15,6 +15,7 @@ import {
   MARK_BOLD,
   MARK_ITALIC,
   MARK_UNDERLINE,
+  pipe,
   ToolbarMark,
   UnderlinePlugin,
 } from '../../packages/slate-plugins/src';
@@ -33,10 +34,12 @@ const plugins = [
   UnderlinePlugin(nodeTypes),
 ];
 
+const withPlugins = [withReact, withHistory] as const;
+
 export const Example = () => {
   const [value, setValue] = useState(initialValueHoveringToolbar);
 
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   return (
     <Slate

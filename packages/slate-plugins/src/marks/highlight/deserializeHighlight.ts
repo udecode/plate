@@ -4,6 +4,6 @@ import { MARK_HIGHLIGHT } from './types';
 
 export const deserializeHighlight = ({
   typeHighlight = MARK_HIGHLIGHT,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: getLeafDeserializer(typeHighlight),
 });

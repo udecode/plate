@@ -45,6 +45,7 @@ export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
         }}
       />
       <Input
+        data-testid="ToolbarSearchHighlightInput"
         type="search"
         placeholder="Search the text..."
         onChange={(e) => setSearch(e.target.value)}

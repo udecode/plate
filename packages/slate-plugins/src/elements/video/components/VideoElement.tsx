@@ -25,11 +25,19 @@ const Input = styled.input`
   margin-top: 5px;
 `;
 
-const UrlInput = ({ url, onChange }: { url: string; onChange: Function }) => {
+export const VideoUrlInput = ({
+  url,
+  onChange,
+  ...props
+}: {
+  url: string;
+  onChange: Function;
+}) => {
   const [value, setValue] = React.useState(url);
 
   return (
     <Input
+      {...props}
       value={value}
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => {
@@ -60,7 +68,8 @@ export const VideoElement = ({
           />
         </VideoWrapper>
 
-        <UrlInput
+        <VideoUrlInput
+          data-testid="VideoUrlInput"
           url={url}
           onChange={(val: string) => {
             const path = ReactEditor.findPath(editor, element);

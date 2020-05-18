@@ -12,6 +12,7 @@ import {
   HeadingToolbar,
   InlineCodePlugin,
   ParagraphPlugin,
+  pipe,
   SoftBreakPlugin,
   ToolbarBlock,
   ToolbarCode,
@@ -32,6 +33,15 @@ const resetOptions = {
   types: [BLOCKQUOTE],
 };
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withBlock(nodeTypes),
+  withDeleteStartReset(resetOptions),
+  withBreakEmptyReset(resetOptions),
+  withList(nodeTypes),
+] as const;
+
 export const BlockPlugins = () => {
   const plugins: any[] = [
     ParagraphPlugin(nodeTypes),
@@ -45,17 +55,7 @@ export const BlockPlugins = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueSoftBreak);
 
-    const editor = useMemo(
-      () =>
-        withList(nodeTypes)(
-          withBreakEmptyReset(resetOptions)(
-            withDeleteStartReset(resetOptions)(
-              withBlock(nodeTypes)(withHistory(withReact(createEditor())))
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate

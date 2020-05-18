@@ -4,7 +4,7 @@ import { MARK_CODE } from './types';
 
 export const deserializeInlineCode = ({
   typeInlineCode = MARK_CODE,
-}): DeserializeHtml => ({
+} = {}): DeserializeHtml => ({
   leaf: getLeafDeserializer(typeInlineCode, {
     tagNames: ['CODE', 'KBD'],
   }),

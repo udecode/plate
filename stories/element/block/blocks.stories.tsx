@@ -24,6 +24,7 @@ import {
   HeadingToolbar,
   ListPlugin,
   ParagraphPlugin,
+  pipe,
   ToolbarBlock,
   ToolbarCode,
   ToolbarList,
@@ -50,6 +51,15 @@ const resetOptions = {
   types: [BLOCKQUOTE],
 };
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withBlock(nodeTypes),
+  withDeleteStartReset(resetOptions),
+  withBreakEmptyReset(resetOptions),
+  withList(nodeTypes),
+] as const;
+
 export const Basic = () => {
   const plugins: any[] = [];
   if (boolean('ParagraphPlugin', true))
@@ -64,17 +74,7 @@ export const Basic = () => {
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueElements);
 
-    const editor = useMemo(
-      () =>
-        withList(nodeTypes)(
-          withBreakEmptyReset(resetOptions)(
-            withDeleteStartReset(resetOptions)(
-              withBlock(nodeTypes)(withHistory(withReact(createEditor())))
-            )
-          )
-        ),
-      []
-    );
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate
