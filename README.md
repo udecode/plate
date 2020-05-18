@@ -161,8 +161,8 @@ We welcome contributions to `slate-plugins-next`! Please feel free to
 
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
-[contributing guide](CONTRIBUTING.md) to get started. or find us on
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we're will
+[contributing guide](CONTRIBUTING.md) to get started, or find us on
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
 take the time to guide you
 
 ### 👨‍💻 Development scripts
