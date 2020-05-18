@@ -31,9 +31,9 @@ export const withForcedLayout = ({
         };
         editor.insertNodes(paragraph, { at: path.concat(1) });
       }
-
-      return normalizeNode([node, path]);
     }
+
+    return normalizeNode([node, path]);
   };
 
   return editor;
