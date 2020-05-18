@@ -33,7 +33,7 @@ and
 ## 📦 Included
 
 - ✨ 20+ Editor Plugins.
-- ✅ Unit tested with `slate@0.58.3`.
+- ✅ Unit tested with `slate@0.58.1`.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
 - 📖
@@ -58,7 +58,7 @@ and
 ## 🚀 Getting Started
 
 ```bash
-yarn add slate-plugins-next@0.58.3
+yarn add slate-plugins-next@0.58.4
 ```
 
 > ⚠️ In production, you should pin the dependency until 1.0.0 is
