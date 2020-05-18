@@ -4,6 +4,12 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.4` — May 18, 2020
+
+###### FIX
+
+- previous build was broken because of tests not being excluded
+
 ### `0.58.3` — May 18, 2020
 
 ###### BREAKING
