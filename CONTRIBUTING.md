@@ -146,6 +146,7 @@ it('should be', () => {
 ```
 
 When using `slate-hyperscript`, include this at the top of the file:
+
 ```ts
 /** @jsx jsx */
 
@@ -299,9 +300,10 @@ assumes:
 The current manual release sequence is as follows:
 
 - Generate a changelog and verify the release by hand
-- Push the changelog to master or the release branch
-- Clean, build and publish the release
-- Cut and paste the changelog to the github release page, and mark it as a (pre-) release
+- Update and commit the new version in the docs
+- Lint, test, build and publish the release
+- Copy and paste the changelog to the github release page, and mark it
+  as a (pre-) release
 
 <!--**NOTE:** The very first time you publish a scoped package (`@storybook/x`) you need to make sure that it's package.json contains the following-->
 
@@ -331,3 +333,4 @@ yarn release
 # update the release page
 open https://github.com/zbeyens/slate-plugins-next/releases
 ```
+
