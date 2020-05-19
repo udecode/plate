@@ -40,9 +40,10 @@ export const Example = () => {
       search,
       index,
       target,
-    } = useMention({
-      characters: CHARACTERS,
+    } = useMention(CHARACTERS, {
       maxSuggestions: 10,
+      trigger: '@',
+      prefix: ''
     });
 
     return (

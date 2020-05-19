@@ -198,8 +198,7 @@ export const Plugins = () => {
       target,
       onChangeMention,
       onKeyDownMention,
-    } = useMention({
-      characters: CHARACTERS,
+    } = useMention(CHARACTERS, {
       maxSuggestions: 10,
     });
 
