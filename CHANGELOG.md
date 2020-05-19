@@ -4,6 +4,44 @@ This is a list of changes to Slate with each new release. Until 1.0.0 is release
 
 ---
 
+### `0.58.5` — May 19, 2020
+
+###### BREAKING
+
+- `mention`:
+  - signature of `onChangeMention` changed
+  - signature of `useMention` changed
+
+```ts
+// from
+useMention({
+      characters: CHARACTERS,
+    }
+    
+// to   
+useMention(CHARACTERS, {
+  maxSuggestions: 10,
+  trigger: '@',
+  prefix: ''
+});
+```
+
+
+###### NEW
+
+- `mention`:
+  - changed mention representation from string to object (more useful
+    later for storing other information then just the string, like ids)
+  - added an options parameter to useMention, adding trigger and prefix
+    to maxSuggestions
+  - improved typing where seemed appropriate
+
+###### FIX
+
+- `deserializer-html`:
+  - export `withDeserializeHtml`
+
+
 ### `0.58.4` — May 18, 2020
 
 ###### FIX
