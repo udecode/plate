@@ -1,4 +1,6 @@
-export const CHARACTERS = [
+import { MentionableItem } from 'slate-plugins-next/src';
+
+export const MENTIONS: MentionableItem[] = [
   { value: 'Aayla Secura' },
   { value: 'Adi Gallia' },
   { value: 'Admiral Dodd Rancit' },

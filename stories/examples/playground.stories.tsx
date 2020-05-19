@@ -23,7 +23,6 @@ import {
 } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   BlockquotePlugin,
@@ -80,8 +79,8 @@ import {
   withTable,
   withTransforms,
   withVoid,
-} from '../../packages/slate-plugins/src';
-import { CHARACTERS } from '../config/data';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import {
   initialValueActionItem,
   initialValueElements,
@@ -94,6 +93,7 @@ import {
   initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
+import { MENTIONS } from '../config/mentions';
 import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export default {
@@ -198,7 +198,7 @@ export const Plugins = () => {
       target,
       onChangeMention,
       onKeyDownMention,
-    } = useMention(CHARACTERS, {
+    } = useMention(MENTIONS, {
       maxSuggestions: 10,
     });
 

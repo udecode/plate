@@ -11,8 +11,8 @@ import {
   useMention,
   withMention,
 } from '../../../packages/slate-plugins/src';
-import { CHARACTERS } from '../../config/data';
 import { initialValueMentions, nodeTypes } from '../../config/initialValues';
+import { MENTIONS } from '../../config/mentions';
 
 export default {
   title: 'Element/Inline Void/Mention',
@@ -40,10 +40,10 @@ export const Example = () => {
       search,
       index,
       target,
-    } = useMention(CHARACTERS, {
+    } = useMention(MENTIONS, {
       maxSuggestions: 10,
       trigger: '@',
-      prefix: ''
+      prefix: '',
     });
 
     return (
