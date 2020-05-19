@@ -33,7 +33,7 @@ and
 ## 📦 Included
 
 - ✨ 20+ Editor Plugins.
-- ✅ Unit tested with `slate@0.58.3`.
+- ✅ Unit tested with `slate@0.58.1`.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
 - 📖
@@ -44,21 +44,21 @@ and
 
 ## Table of contents
 
-- 🚀[Getting Started](../../README.md#-getting-started)
-- 🔌[Plugins](../../README.md#-plugins)
-- 🤔[Notice](../../README.md#-notice)
+- 🚀 [Getting Started](../../README.md#-getting-started)
+- 🔌 [Plugins](../../README.md#-plugins)
+- 🤔 [Notice](../../README.md#-notice)
   - [Why](../../README.md#why)
   - [Bundle size](../../README.md#bundle-size)
-- 👥[Community](../../README.md#-community)
-- 👏[Contributing](../../README.md#-contributing)
-  - 👨‍💻[Development scripts](../../README.md#-development-scripts)
-- ✨[Contributors](../../README.md#contributors-)
-- :memo:[License](../../README.md#license)
+- 👥 [Community](../../README.md#-community)
+- 👏 [Contributing](../../README.md#-contributing)
+  - 👨‍💻 [Development scripts](../../README.md#-development-scripts)
+- ✨ [Contributors](../../README.md#contributors-)
+- :memo: [License](../../README.md#license)
 
 ## 🚀 Getting Started
 
 ```bash
-yarn add slate-plugins-next@0.58.3
+yarn add slate-plugins-next@0.58.4
 ```
 
 > ⚠️ In production, you should pin the dependency until 1.0.0 is

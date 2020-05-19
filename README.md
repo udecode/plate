@@ -33,7 +33,7 @@ and
 ## 📦 Included
 
 - ✨ 20+ Editor Plugins.
-- ✅ Unit tested with `slate@0.58.3`.
+- ✅ Unit tested with `slate@0.58.1`.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
 - 📖
@@ -44,21 +44,21 @@ and
 
 ## Table of contents
 
-- 🚀[Getting Started](#-getting-started)
-- 🔌[Plugins](#-plugins)
-- 🤔[Notice](#-notice)
+- 🚀 [Getting Started](#-getting-started)
+- 🔌 [Plugins](#-plugins)
+- 🤔 [Notice](#-notice)
   - [Why](#why)
   - [Bundle size](#bundle-size)
-- 👥[Community](#-community)
-- 👏[Contributing](#-contributing)
-  - 👨‍💻[Development scripts](#-development-scripts)
-- ✨[Contributors](#contributors-)
-- :memo:[License](#license)
+- 👥 [Community](#-community)
+- 👏 [Contributing](#-contributing)
+  - 👨‍💻 [Development scripts](#-development-scripts)
+- ✨ [Contributors](#contributors-)
+- :memo: [License](#license)
 
 ## 🚀 Getting Started
 
 ```bash
-yarn add slate-plugins-next@0.58.3
+yarn add slate-plugins-next@0.58.4
 ```
 
 > ⚠️ In production, you should pin the dependency until 1.0.0 is
@@ -161,8 +161,8 @@ We welcome contributions to `slate-plugins-next`! Please feel free to
 
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
-[contributing guide](CONTRIBUTING.md) to get started. or find us on
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we're will
+[contributing guide](CONTRIBUTING.md) to get started, or find us on
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
 take the time to guide you
 
 ### 👨‍💻 Development scripts
