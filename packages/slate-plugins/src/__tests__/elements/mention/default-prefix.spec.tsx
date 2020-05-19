@@ -14,9 +14,9 @@ const input = (
 const output = (
   <editor>
     <hp>
-      {{text: ''}}
-      <element type='mention' prefix='@' mentionable={{value: "Count Duku"}}>{{ text: ''}}</element>
-      {{text: ''}}
+      <htext />
+      <element type='mention' prefix='@' mentionable={{value: "Count Duku"}}><htext /></element>
+      <htext />
     </hp>
   </editor>
 ) as any;
