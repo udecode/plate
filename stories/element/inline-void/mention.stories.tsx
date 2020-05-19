@@ -37,6 +37,9 @@ export const Example = () => {
       MentionSelectComponent,
       onChangeMention,
       onKeyDownMention,
+      search,
+      index,
+      target,
     } = useMention(CHARACTERS, {
       maxSuggestions: 10,
       trigger: '@',
@@ -57,6 +60,7 @@ export const Example = () => {
           plugins={plugins}
           placeholder="Enter some text..."
           onKeyDown={[onKeyDownMention]}
+          onKeyDownDeps={[index, search, target]}
         />
         <MentionSelectComponent />
       </Slate>

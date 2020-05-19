@@ -114,5 +114,8 @@ export const useMention = (
     MentionSelectComponent,
     onChangeMention,
     onKeyDownMention,
+    search,
+    index,
+    target,
   };
 };
