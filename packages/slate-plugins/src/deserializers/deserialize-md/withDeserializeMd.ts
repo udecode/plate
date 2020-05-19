@@ -3,10 +3,7 @@ import { htmlDeserialize } from 'deserializers/deserialize-html';
 import marked from 'marked';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-
-export function filterBreaklines(item: any): boolean {
-  return !item.text;
-}
+import { filterBreaklines } from './utils';
 
 export const withDeserializeMd = (plugins: SlatePlugin[]) => <
   T extends ReactEditor
