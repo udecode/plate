@@ -1,6 +1,7 @@
 import path from 'path';
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import includePaths from 'rollup-plugin-includepaths';
 import json from 'rollup-plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
@@ -14,7 +15,16 @@ const PKG_JSON = require(path.join(PACKAGE_ROOT_PATH, 'package.json'));
 
 const isUmd = false;
 
+const includePathOptions = {
+  include: {},
+  paths: [path.join(PACKAGE_ROOT_PATH, 'src')],
+  external: [],
+  extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+};
+
 const plugins = [
+  includePaths(includePathOptions),
+
   // Allow Rollup to resolve modules from `node_modules`, since it only
   // resolves local modules by default.
   resolve({
