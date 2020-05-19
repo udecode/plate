@@ -1,1 +1,1 @@
-export * from './filterBreakLines'
+export * from './filterBreakLines';

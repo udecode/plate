@@ -1,2 +1,2 @@
 export * from './withDeserializeMd';
-export * from './utils'
+export * from './utils';
