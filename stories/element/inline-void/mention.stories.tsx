@@ -23,7 +23,13 @@ export default {
   },
 };
 
-const plugins = [ParagraphPlugin(nodeTypes), MentionPlugin(nodeTypes)];
+const plugins = [
+  ParagraphPlugin(nodeTypes), 
+  MentionPlugin({
+    ...nodeTypes, 
+    onClick: (mentionable) => alert(`Hello, I'm ${mentionable.value}`),
+  })
+];
 
 const withPlugins = [withReact, withHistory, withMention(nodeTypes)] as const;
 

@@ -1,3 +1,4 @@
+import { RenderElementOptions } from 'element/types';
 import { Element, Node } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
@@ -31,4 +32,8 @@ export interface MentionNode extends Element {
 
 export interface MentionRenderElementProps extends RenderElementProps {
   element: MentionNode;
+}
+
+export interface MentionRenderElementOptions extends RenderElementOptions {
+  onClick: (mentionable: MentionableItem) => void;
 }

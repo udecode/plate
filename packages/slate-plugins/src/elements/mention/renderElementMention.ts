@@ -1,12 +1,16 @@
-import { getRenderElement, RenderElementOptions } from 'element';
-import { MentionElement } from './components';
-import { MENTION } from './types';
+import { getRenderElement } from 'element';
+import { getMentionElement } from './components';
+import { MENTION, MentionRenderElementOptions } from './types';
 
-export const renderElementMention = ({
-  typeMention = MENTION,
-  component = MentionElement,
-}: RenderElementOptions = {}) =>
-  getRenderElement({
+export const renderElementMention = (
+  options: Partial<MentionRenderElementOptions> = {}
+) => {
+  const {
+    typeMention = MENTION,
+    component = getMentionElement(options.onClick),
+  } = options;
+  return getRenderElement({
     type: typeMention,
     component,
   });
+};
