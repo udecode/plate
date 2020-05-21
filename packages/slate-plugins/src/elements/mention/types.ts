@@ -1,39 +1,57 @@
-import { RenderElementOptions } from 'element/types';
-import { Element, Node } from 'slate';
+import { RenderElementOptions } from 'element';
+import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
 export const MENTION = 'mention';
 
-export interface OnKeyDownMentionOptions {
-  mentionables: MentionableItem[];
-  index: number;
-  target: any;
-  setIndex: any;
-  setTarget: any;
+// useMention options
+export interface UseMentionOptions {
+  // Character triggering the mention select
+  trigger?: string;
+  // Maximum number of suggestions
+  maxSuggestions?: number;
 }
 
-export interface MentionOptions {
-  trigger: string;
-  prefix: string;
-  maxSuggestions: number;
-}
-
-export interface MentionableItem {
+// Data of Element node
+export interface MentionNodeData {
   value: string;
-  [key: string]: any;
 }
 
-export interface MentionNode extends Element {
-  type: typeof MENTION;
-  prefix: string;
-  mentionable: MentionableItem;
-  children: Node[];
+// Element node
+export interface MentionNode extends Element, MentionNodeData {}
+
+// Option type
+interface TypeOption {
+  typeMention?: string;
 }
 
-export interface MentionRenderElementProps extends RenderElementProps {
+// renderElement options given as props
+interface MentionRenderElementOptionsProps {
+  /**
+   * Prefix rendered before mention
+   */
+  prefix?: string;
+  onClick?: ({ value }: { value: string }) => void;
+}
+
+// renderElement options
+export interface MentionRenderElementOptions
+  extends RenderElementOptions,
+    MentionRenderElementOptionsProps,
+    TypeOption {}
+
+// renderElement props
+export interface MentionRenderElementProps
+  extends RenderElementProps,
+    MentionRenderElementOptionsProps {
   element: MentionNode;
 }
 
-export interface MentionRenderElementOptions extends RenderElementOptions {
-  onClick: (mentionable: MentionableItem) => void;
-}
+export interface MentionDeserializeOptions extends TypeOption {}
+
+// Plugin options
+export interface MentionPluginOptions
+  extends MentionRenderElementOptions,
+    MentionDeserializeOptions {}
+
+export interface WithMentionOptions extends TypeOption {}

@@ -98,6 +98,8 @@ import {
   nodeTypes,
 } from '../../../../../../stories/config/initialValues';
 
+const markOptions = { ...nodeTypes, hotkey: '' };
+
 const plugins = [
   BlockquotePlugin(nodeTypes),
   ActionItemPlugin(nodeTypes),
@@ -110,13 +112,21 @@ const plugins = [
   TablePlugin(nodeTypes),
   VideoPlugin(nodeTypes),
   CodePlugin(nodeTypes),
+  BoldPlugin(markOptions),
   BoldPlugin(),
+  InlineCodePlugin(markOptions),
   InlineCodePlugin(),
+  ItalicPlugin(markOptions),
   ItalicPlugin(),
+  StrikethroughPlugin(markOptions),
   StrikethroughPlugin(),
+  HighlightPlugin(markOptions),
   HighlightPlugin(),
+  UnderlinePlugin(markOptions),
   UnderlinePlugin(),
+  SubscriptPlugin(markOptions),
   SubscriptPlugin(),
+  SuperscriptPlugin(markOptions),
   SuperscriptPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),

@@ -14,6 +14,7 @@ it('should render', () => {
       element={{
         type: IMAGE,
         children: [{ text: '' }],
+        url: 'test',
       }}
     >
       test

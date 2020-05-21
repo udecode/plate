@@ -1,12 +1,46 @@
+import { MarkPluginOptions, RenderLeafOptions } from 'mark';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+
 export const MARK_HIGHLIGHT = 'highlight';
 
-export interface RenderLeafHighlightOptions {
-  typeHighlight?: string;
+// Data of Text node
+export interface HighlightNodeData {}
 
+// Text node
+export interface HighlightNode extends Text, HighlightNodeData {}
+
+// Option type
+interface TypeOption {
+  typeHighlight?: string;
+}
+
+// renderLeaf options given as props
+interface HighlightRenderLeafOptionsProps {}
+
+// renderLeaf options
+export interface HighlightRenderLeafOptions
+  extends RenderLeafOptions,
+    HighlightRenderLeafOptionsProps,
+    TypeOption {
   /**
    * Background color of the highlighted ranges
    */
   bg?: string;
 }
 
-export interface HighlightPluginOptions extends RenderLeafHighlightOptions {}
+// renderLeaf props
+export interface HighlightRenderLeafProps
+  extends RenderLeafProps,
+    HighlightRenderLeafOptionsProps {
+  leaf: HighlightNode;
+}
+
+// deserialize options
+export interface HighlightDeserializeOptions extends TypeOption {}
+
+// Plugin options
+export interface HighlightPluginOptions
+  extends MarkPluginOptions,
+    HighlightRenderLeafOptions,
+    HighlightDeserializeOptions {}

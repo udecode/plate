@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderElementProps } from 'slate-react';
+import { CodeRenderElementProps } from 'elements/code/types';
 import styled from 'styled-components';
 
 const Pre = styled.pre`
@@ -8,7 +8,10 @@ const Pre = styled.pre`
   white-space: pre-wrap;
 `;
 
-export const CodeElement = ({ attributes, children }: RenderElementProps) => (
+export const CodeElement = ({
+  attributes,
+  children,
+}: CodeRenderElementProps) => (
   <Pre>
     <code {...attributes}>{children}</code>
   </Pre>

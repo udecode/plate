@@ -1,10 +1,16 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { MARK_SUBSCRIPT } from './types';
+import {
+  MARK_SUBSCRIPT,
+  SubscriptRenderLeafOptions,
+  SubscriptRenderLeafProps,
+} from './types';
 
 export const renderLeafSubscript = ({
   typeSubscript = MARK_SUBSCRIPT,
-} = {}) => ({ children, leaf }: RenderLeafProps) => {
+}: SubscriptRenderLeafOptions = {}) => ({
+  children,
+  leaf,
+}: SubscriptRenderLeafProps) => {
   if (leaf[typeSubscript]) return <sub>{children}</sub>;
 
   return children;

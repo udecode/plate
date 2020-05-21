@@ -1,75 +1,15 @@
 import React from 'react';
 import { getElementComponent } from 'element/utils';
+import {
+  HeadingElement1,
+  HeadingElement2,
+  HeadingElement3,
+  HeadingElement4,
+  HeadingElement5,
+  HeadingElement6,
+} from 'elements/heading/components/HeadingElements';
 import { RenderElementProps } from 'slate-react';
-import styled from 'styled-components';
-import { HeadingType, RenderElementHeadingOptions } from './types';
-
-export interface HeadingProps {
-  fontSize: number;
-}
-
-const baseMargin = 4.8;
-
-const Heading = styled.div<HeadingProps>`
-  font-weight: 400;
-`;
-
-const StyledH1 = styled(Heading)`
-  :not(:first-child) {
-    margin-top: 30px;
-  }
-  margin-bottom: ${baseMargin * 2.5}px;
-  font-size: ${({ fontSize }) => (fontSize * 20) / 11}px;
-  line-height: 36px;
-`;
-
-const StyledH2 = styled(Heading)`
-  :not(:first-child) {
-    margin-top: 18px;
-  }
-  margin-bottom: ${baseMargin * 1.5}px;
-  font-size: ${({ fontSize }) => (fontSize * 16) / 11}px;
-  line-height: 28px;
-`;
-
-const StyledH3 = styled(Heading)`
-  color: #434343;
-  :not(:first-child) {
-    margin-top: 8px;
-  }
-  margin-bottom: ${baseMargin * 1.25}px;
-  font-size: ${({ fontSize }) => (fontSize * 14) / 11}px;
-`;
-
-const StyledH4 = styled(Heading)`
-  color: #666666;
-  :not(:first-child) {
-    margin-top: 8px;
-  }
-  margin-bottom: ${baseMargin}px;
-  font-size: ${({ fontSize }) => (fontSize * 12) / 11}px;
-`;
-
-const StyledH5 = styled(Heading)`
-  color: #666666;
-
-  :not(:first-child) {
-    margin-top: 8px;
-  }
-  margin-bottom: ${baseMargin}px;
-  font-size: ${({ fontSize }) => fontSize}px;
-`;
-
-const StyledH6 = styled(Heading)`
-  color: #666666;
-  font-style: italic;
-
-  :not(:first-child) {
-    margin-top: 8px;
-  }
-  margin-bottom: ${baseMargin}px;
-  font-size: ${({ fontSize }) => fontSize}px;
-`;
+import { HeadingRenderElementOptions, HeadingType } from './types';
 
 /**
  * Font sizes are relative to the base font size
@@ -87,15 +27,15 @@ export const renderElementHeading = ({
   typeH4 = HeadingType.H4,
   typeH5 = HeadingType.H5,
   typeH6 = HeadingType.H6,
-  H1 = getElementComponent(StyledH1),
-  H2 = getElementComponent(StyledH2),
-  H3 = getElementComponent(StyledH3),
-  H4 = getElementComponent(StyledH4),
-  H5 = getElementComponent(StyledH5),
-  H6 = getElementComponent(StyledH6),
+  H1 = getElementComponent(HeadingElement1),
+  H2 = getElementComponent(HeadingElement2),
+  H3 = getElementComponent(HeadingElement3),
+  H4 = getElementComponent(HeadingElement4),
+  H5 = getElementComponent(HeadingElement5),
+  H6 = getElementComponent(HeadingElement6),
   levels = 6,
   fontSize = 16,
-}: RenderElementHeadingOptions = {}) => (props: RenderElementProps) => {
+}: HeadingRenderElementOptions = {}) => (props: RenderElementProps) => {
   const {
     element: { type },
   } = props;

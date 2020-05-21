@@ -16,7 +16,7 @@ const output = (
   <editor>
     <hp>
       <htext />
-      <element type="mention" prefix="@" mentionable={{ value: 'Count Duku' }}>
+      <element type="mention" mentionable={{ value: 'Count Duku' }}>
         <htext />
       </element>
       <htext />
@@ -29,7 +29,6 @@ it('should insert mention', () => {
 
   editor.insertNode({
     type: 'mention',
-    prefix: '@',
     mentionable: { value: 'Count Duku' },
     children: [{ text: '' }],
   });

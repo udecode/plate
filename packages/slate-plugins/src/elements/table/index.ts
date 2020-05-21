@@ -6,3 +6,4 @@ export * from './TablePlugin';
 export * from './types';
 export * from './transforms';
 export * from './withTable';
+export * from './utils';

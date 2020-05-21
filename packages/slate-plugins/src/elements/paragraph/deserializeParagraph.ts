@@ -1,9 +1,9 @@
 import { DeserializeHtml } from 'common/types';
 import { getElementDeserializer } from 'element/utils';
-import { PARAGRAPH } from './types';
+import { PARAGRAPH, ParagraphDeserializeOptions } from './types';
 
 export const deserializeParagraph = ({
   typeP = PARAGRAPH,
-} = {}): DeserializeHtml => ({
+}: ParagraphDeserializeOptions = {}): DeserializeHtml => ({
   element: getElementDeserializer(typeP, { tagNames: ['P'] }),
 });

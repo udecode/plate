@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { text } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -12,7 +13,7 @@ import {
   withMention,
 } from '../../../packages/slate-plugins/src';
 import { initialValueMentions, nodeTypes } from '../../config/initialValues';
-import { MENTIONS } from '../../config/mentions';
+import { MENTIONABLES } from '../../config/mentionables';
 
 export default {
   title: 'Element/Inline Void/Mention',
@@ -23,33 +24,33 @@ export default {
   },
 };
 
-const plugins = [
-  ParagraphPlugin(nodeTypes), 
-  MentionPlugin({
-    ...nodeTypes, 
-    onClick: (mentionable) => alert(`Hello, I'm ${mentionable.value}`),
-  })
-];
-
 const withPlugins = [withReact, withHistory, withMention(nodeTypes)] as const;
 
 export const Example = () => {
+  const plugins = [
+    ParagraphPlugin(nodeTypes),
+    MentionPlugin({
+      ...nodeTypes,
+      onClick: (mentionable) => console.info(`Hello, I'm ${mentionable.value}`),
+      prefix: text('prefix', '@'),
+    }),
+  ];
+
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
 
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     const {
-      MentionSelectComponent,
       onChangeMention,
       onKeyDownMention,
       search,
       index,
       target,
-    } = useMention(MENTIONS, {
+      values,
+    } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
       trigger: '@',
-      prefix: '',
     });
 
     return (
@@ -59,7 +60,7 @@ export const Example = () => {
         onChange={(newValue) => {
           setValue(newValue);
 
-          onChangeMention({ editor });
+          onChangeMention(editor);
         }}
       >
         <EditablePlugins
@@ -68,7 +69,8 @@ export const Example = () => {
           onKeyDown={[onKeyDownMention]}
           onKeyDownDeps={[index, search, target]}
         />
-        <MentionSelectComponent />
+
+        <MentionSelect at={target} valueIndex={index} options={values} />
       </Slate>
     );
   };

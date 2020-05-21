@@ -27,7 +27,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownMark({ hotkey: 'enter', type: MARK_BOLD })(event, input);
+  onKeyDownMark(MARK_BOLD, 'enter')(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

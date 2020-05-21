@@ -1,15 +1,13 @@
 import React from 'react';
 import { isNodeInSelection } from 'common/queries';
-import { createDefaultHandler } from 'common/utils/createDefaultHandler';
-import { TableType, TableTypeOptions } from 'elements/table/types';
+import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
+import { TableType, TableTypeOption } from 'elements/table/types';
 import { Editor } from 'slate';
 import { useSlate } from 'slate-react';
 import { ToolbarButton, ToolbarButtonProps } from 'components/Toolbar';
 
-export interface ToolbarTableProps
-  extends ToolbarButtonProps,
-    TableTypeOptions {
-  action: (editor: Editor, options?: Required<TableTypeOptions>) => void;
+export interface ToolbarTableProps extends ToolbarButtonProps, TableTypeOption {
+  action: (editor: Editor, options?: Required<TableTypeOption>) => void;
 }
 
 export const ToolbarTable = ({
@@ -25,7 +23,7 @@ export const ToolbarTable = ({
     <ToolbarButton
       {...props}
       active={isNodeInSelection(editor, typeTable)}
-      onMouseDown={createDefaultHandler(action, editor, {
+      onMouseDown={getPreventDefaultHandler(action, editor, {
         typeTable,
         typeTr,
         typeTd,

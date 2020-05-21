@@ -1,16 +1,11 @@
 import { Editor, Transforms } from 'slate';
-import { MentionableItem, MentionNode } from '../types';
+import { MENTION, MentionNode, MentionNodeData } from '../types';
 
-export const insertMention = (
-  editor: Editor,
-  mentionable: MentionableItem,
-  prefix: string
-) => {
+export const insertMention = (editor: Editor, mentionable: MentionNodeData) => {
   const mention: MentionNode = {
-    type: 'mention',
-    prefix,
-    mentionable,
+    type: MENTION,
     children: [{ text: '' }],
+    ...mentionable,
   };
   Transforms.insertNodes(editor, mention);
   Transforms.move(editor);

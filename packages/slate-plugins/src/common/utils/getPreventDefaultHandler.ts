@@ -1,7 +1,7 @@
 /**
  * Prevent default and call a handler
  */
-export const createDefaultHandler = <T extends (...args: any) => any>(
+export const getPreventDefaultHandler = <T extends (...args: any) => any>(
   cb: T,
   ...args: Parameters<T>
 ) => (event: Event) => {

@@ -1,11 +1,11 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { ImageElement } from './components';
-import { IMAGE } from './types';
+import { IMAGE, ImageRenderElementOptions } from './types';
 
 export const renderElementImage = ({
   typeImg = IMAGE,
   component = ImageElement,
-}: RenderElementOptions = {}) =>
+}: ImageRenderElementOptions = {}) =>
   getRenderElement({
     type: typeImg,
     component,

@@ -1,11 +1,16 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { MARK_ITALIC } from './types';
+import {
+  ItalicRenderLeafOptions,
+  ItalicRenderLeafProps,
+  MARK_ITALIC,
+} from './types';
 
-export const renderLeafItalic = ({ typeItalic = MARK_ITALIC } = {}) => ({
+export const renderLeafItalic = ({
+  typeItalic = MARK_ITALIC,
+}: ItalicRenderLeafOptions = {}) => ({
   children,
   leaf,
-}: RenderLeafProps) => {
+}: ItalicRenderLeafProps) => {
   if (leaf[typeItalic]) return <em>{children}</em>;
 
   return children;

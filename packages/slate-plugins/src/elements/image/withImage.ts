@@ -1,15 +1,13 @@
 import { withVoid } from 'element';
+import { onImageLoad } from 'elements/image/utils/onImageLoad';
 import { ReactEditor } from 'slate-react';
 import { isImageUrl } from './utils/isImageUrl';
 import { insertImage } from './transforms';
-import { IMAGE } from './types';
+import { IMAGE, WithImageOptions } from './types';
 
-export const onImageLoad = (editor: ReactEditor, reader: FileReader) => () => {
-  const url = reader.result;
-  if (url) insertImage(editor, url);
-};
-
-export const withImage = ({ typeImg = IMAGE } = {}) => <T extends ReactEditor>(
+export const withImage = ({ typeImg = IMAGE }: WithImageOptions = {}) => <
+  T extends ReactEditor
+>(
   editor: T
 ) => {
   editor = withVoid([typeImg])(editor);

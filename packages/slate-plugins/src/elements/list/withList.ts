@@ -3,14 +3,14 @@ import { unwrapNodesByType } from 'common/transforms';
 import { withBreakEmptyReset, withDeleteStartReset } from 'element';
 import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Path, Point, Range, Transforms } from 'slate';
-import { ListType, ListTypeOptions } from './types';
+import { ListType, WithListOptions } from './types';
 
 export const withList = ({
   typeUl = ListType.UL,
   typeOl = ListType.OL,
   typeLi = ListType.LI,
   typeP = PARAGRAPH,
-}: ListTypeOptions = {}) => <T extends Editor>(editor: T) => {
+}: WithListOptions = {}) => <T extends Editor>(editor: T) => {
   const options = {
     typeUl,
     typeOl,

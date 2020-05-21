@@ -1,10 +1,10 @@
 import { DeserializeHtml } from 'common/types';
 import { getLeafDeserializer } from 'mark/utils';
-import { MARK_STRIKETHROUGH } from './types';
+import { MARK_STRIKETHROUGH, StrikethroughDeserializeOptions } from './types';
 
 export const deserializeStrikethrough = ({
   typeStrikethrough = MARK_STRIKETHROUGH,
-} = {}): DeserializeHtml => ({
+}: StrikethroughDeserializeOptions = {}): DeserializeHtml => ({
   leaf: {
     ...getLeafDeserializer(typeStrikethrough, { tagNames: ['DEL', 'S'] }),
     SPAN: (el) =>

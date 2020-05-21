@@ -4,11 +4,11 @@ import { deserializeBold } from './deserializeBold';
 import { renderLeafBold } from './renderLeafBold';
 import { BoldPluginOptions, MARK_BOLD } from './types';
 
-export const BoldPlugin = ({
-  typeBold = MARK_BOLD,
-  hotkey = 'mod+b',
-}: BoldPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafBold({ typeBold }),
-  onKeyDown: onKeyDownMark({ type: typeBold, hotkey }),
-  deserialize: deserializeBold({ typeBold }),
+export const BoldPlugin = (options: BoldPluginOptions = {}): SlatePlugin => ({
+  renderLeaf: renderLeafBold(options),
+  onKeyDown: onKeyDownMark(
+    options.typeBold ?? MARK_BOLD,
+    options.hotkey ?? 'mod+b'
+  ),
+  deserialize: deserializeBold(options),
 });

@@ -1,7 +1,8 @@
 import { isNodeInSelection } from 'common/queries';
+import { getEmptyCellNode } from 'elements/table/utils/getEmptyCellNode';
 import { Editor, Path, Transforms } from 'slate';
 import { isTable, isTableCell } from '../queries';
-import { defaultTableTypes, emptyCell } from '../types';
+import { defaultTableTypes } from '../types';
 
 export const addColumn = (editor: Editor, options = defaultTableTypes) => {
   if (isNodeInSelection(editor, options.typeTable)) {
@@ -20,7 +21,7 @@ export const addColumn = (editor: Editor, options = defaultTableTypes) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
 
-        Transforms.insertNodes(editor, emptyCell(options), {
+        Transforms.insertNodes(editor, getEmptyCellNode(options), {
           at: newCellPath,
           select: rowIdx === currentRowIdx,
         });

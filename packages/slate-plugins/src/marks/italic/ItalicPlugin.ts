@@ -4,11 +4,13 @@ import { deserializeItalic } from './deserializeItalic';
 import { renderLeafItalic } from './renderLeafItalic';
 import { ItalicPluginOptions, MARK_ITALIC } from './types';
 
-export const ItalicPlugin = ({
-  typeItalic = MARK_ITALIC,
-  hotkey = 'mod+i',
-}: ItalicPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafItalic({ typeItalic }),
-  onKeyDown: onKeyDownMark({ type: typeItalic, hotkey }),
-  deserialize: deserializeItalic({ typeItalic }),
+export const ItalicPlugin = (
+  options: ItalicPluginOptions = {}
+): SlatePlugin => ({
+  renderLeaf: renderLeafItalic(options),
+  onKeyDown: onKeyDownMark(
+    options.typeItalic ?? MARK_ITALIC,
+    options.hotkey ?? 'mod+i'
+  ),
+  deserialize: deserializeItalic(options),
 });

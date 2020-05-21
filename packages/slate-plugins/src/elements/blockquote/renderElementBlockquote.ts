@@ -1,11 +1,11 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { BlockquoteElement } from './components';
-import { BLOCKQUOTE } from './types';
+import { BLOCKQUOTE, BlockquoteRenderElementOptions } from './types';
 
 export const renderElementBlockquote = ({
   typeBlockquote = BLOCKQUOTE,
   component = BlockquoteElement,
-}: RenderElementOptions = {}) =>
+}: BlockquoteRenderElementOptions = {}) =>
   getRenderElement({
     type: typeBlockquote,
     component,

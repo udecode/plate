@@ -1,11 +1,9 @@
 import { SlatePlugin } from 'common/types';
-import { RenderElementOptions } from 'element';
+import { LinkPluginOptions } from 'elements/link/types';
 import { deserializeLink } from './deserializeLink';
 import { renderElementLink } from './renderElementLink';
 
-export const LinkPlugin = (
-  options?: RenderElementOptions & { typeLink?: string }
-): SlatePlugin => ({
+export const LinkPlugin = (options?: LinkPluginOptions): SlatePlugin => ({
   renderElement: renderElementLink(options),
   deserialize: deserializeLink(options),
 });

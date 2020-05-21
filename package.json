@@ -70,6 +70,7 @@
     "react": "^16.13.1",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-dom": "^16.13.1",
+    "react-test-renderer": "^16.13.1",
     "rollup": "^2.8.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",

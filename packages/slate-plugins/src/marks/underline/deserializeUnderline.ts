@@ -1,10 +1,10 @@
 import { DeserializeHtml } from 'common/types';
 import { getLeafDeserializer } from 'mark/utils';
-import { MARK_UNDERLINE } from './types';
+import { MARK_UNDERLINE, UnderlineDeserializeOptions } from './types';
 
 export const deserializeUnderline = ({
   typeUnderline = MARK_UNDERLINE,
-} = {}): DeserializeHtml => ({
+}: UnderlineDeserializeOptions = {}): DeserializeHtml => ({
   leaf: {
     SPAN: (el) =>
       el.style.textDecoration === 'underline' && { [typeUnderline]: true },

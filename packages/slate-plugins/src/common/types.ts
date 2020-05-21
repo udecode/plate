@@ -31,7 +31,7 @@ export type RenderElement = (
 export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
 
 // Handler when we press a key.
-export type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
+export type OnKeyDown = (e: any, editor: Editor, options?: any) => void;
 
 export type DeserializeElement = Record<
   string,
@@ -74,6 +74,6 @@ export interface SlatePlugin {
   onDOMBeforeInput?: OnDOMBeforeInput;
   renderElement?: RenderElement;
   renderLeaf?: RenderLeaf;
-  onKeyDown?: OnKeyDown;
+  onKeyDown?: OnKeyDown | null;
   deserialize?: DeserializeHtml;
 }
