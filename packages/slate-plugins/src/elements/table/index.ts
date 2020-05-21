@@ -7,4 +7,3 @@ export * from './types';
 export * from './transforms';
 export * from './withTable';
 export * from './utils';
-export { getEmptyTableNode } from 'elements/table/utils/getEmptyTableNode';

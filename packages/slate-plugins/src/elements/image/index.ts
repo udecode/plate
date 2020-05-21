@@ -5,4 +5,3 @@ export * from './transforms';
 export * from './types';
 export * from './utils';
 export * from './withImage';
-export { onImageLoad } from 'elements/image/utils/onImageLoad';
