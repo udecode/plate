@@ -8,16 +8,16 @@ import {
   SuperscriptPluginOptions,
 } from 'marks/superscript/types';
 
-export const SuperscriptPlugin = ({
-  typeSuperscript = MARK_SUPERSCRIPT,
-  typeSubscript = MARK_SUBSCRIPT,
-  hotkey = 'mod+.',
-}: SuperscriptPluginOptions = {}): SlatePlugin => ({
-  renderLeaf: renderLeafSuperscript({ typeSuperscript }),
-  onKeyDown: onKeyDownMark({
-    type: typeSuperscript,
-    clear: typeSubscript,
-    hotkey,
-  }),
-  deserialize: deserializeSuperscript({ typeSuperscript }),
+export const SuperscriptPlugin = (
+  options: SuperscriptPluginOptions = {}
+): SlatePlugin => ({
+  renderLeaf: renderLeafSuperscript(options),
+  deserialize: deserializeSuperscript(options),
+  onKeyDown: onKeyDownMark(
+    options.typeSuperscript ?? MARK_SUPERSCRIPT,
+    options.hotkey ?? 'mod+.',
+    {
+      clear: options.typeSubscript ?? MARK_SUBSCRIPT,
+    }
+  ),
 });

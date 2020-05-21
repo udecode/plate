@@ -1,7 +1,10 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
 import styled from 'styled-components';
-import { MARK_CODE } from './types';
+import {
+  InlineCodeRenderLeafOptions,
+  InlineCodeRenderLeafProps,
+  MARK_CODE,
+} from './types';
 
 const Code = styled.code`
   font-family: monospace;
@@ -10,10 +13,12 @@ const Code = styled.code`
   padding: 3px;
 `;
 
-export const renderLeafInlineCode = ({ typeInlineCode = MARK_CODE } = {}) => ({
+export const renderLeafInlineCode = ({
+  typeInlineCode = MARK_CODE,
+}: InlineCodeRenderLeafOptions = {}) => ({
   children,
   leaf,
-}: RenderLeafProps) => {
+}: InlineCodeRenderLeafProps) => {
   if (leaf[typeInlineCode]) return <Code>{children}</Code>;
 
   return children;

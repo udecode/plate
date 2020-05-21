@@ -23,7 +23,10 @@ bumps.
 - `MentionNode` interface: replaced `mentionable` by `value`. You can
   add more fields to the element interface instead of adding them to
   `mentionable`
-
+- `onKeyDownMark`:
+  - signature changed from `({ clear, type, hotkey, }:
+    MarkOnKeyDownOptions)` to `(type: string, hotkey: string, { clear }:
+    MarkOnKeyDownOptions = {})`
 
 ###### NEW
 

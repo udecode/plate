@@ -1,7 +1,41 @@
-import { MarkPluginOptions } from 'mark';
+import { MarkPluginOptions, RenderLeafOptions } from 'mark';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
 
 export const MARK_STRIKETHROUGH = 'strikethrough';
 
-export interface StrikethroughPluginOptions extends MarkPluginOptions {
+// Data of Text node
+export interface StrikethroughNodeData {}
+
+// Text node
+export interface StrikethroughNode extends Text, StrikethroughNodeData {}
+
+// Option type
+interface TypeOption {
   typeStrikethrough?: string;
 }
+
+// renderLeaf options given as props
+interface StrikethroughRenderLeafOptionsProps {}
+
+// renderLeaf options
+export interface StrikethroughRenderLeafOptions
+  extends RenderLeafOptions,
+    StrikethroughRenderLeafOptionsProps,
+    TypeOption {}
+
+// renderLeaf props
+export interface StrikethroughRenderLeafProps
+  extends RenderLeafProps,
+    StrikethroughRenderLeafOptionsProps {
+  leaf: StrikethroughNode;
+}
+
+// deserialize options
+export interface StrikethroughDeserializeOptions extends TypeOption {}
+
+// Plugin options
+export interface StrikethroughPluginOptions
+  extends MarkPluginOptions,
+    StrikethroughRenderLeafOptions,
+    StrikethroughDeserializeOptions {}

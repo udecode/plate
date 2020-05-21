@@ -1,10 +1,16 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { MARK_UNDERLINE } from './types';
+import {
+  MARK_UNDERLINE,
+  UnderlineRenderLeafOptions,
+  UnderlineRenderLeafProps,
+} from './types';
 
 export const renderLeafUnderline = ({
   typeUnderline = MARK_UNDERLINE,
-} = {}) => ({ children, leaf }: RenderLeafProps) => {
+}: UnderlineRenderLeafOptions = {}) => ({
+  children,
+  leaf,
+}: UnderlineRenderLeafProps) => {
   if (leaf[typeUnderline]) return <u>{children}</u>;
 
   return children;

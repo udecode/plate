@@ -4,12 +4,12 @@ import { RenderElementProps } from 'slate-react';
 
 export const IMAGE = 'img';
 
+// Data of Element node
 export interface ImageNodeData {
   url: string;
-  [key: string]: unknown;
 }
 
-// Node
+// Element node
 export interface ImageNode extends Element, ImageNodeData {}
 
 // Option type

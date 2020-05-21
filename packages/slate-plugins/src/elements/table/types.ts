@@ -13,11 +13,10 @@ export const defaultTableTypes: Required<TableTypeOption> = {
   typeTd: TableType.CELL,
 };
 
-export interface TableNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface TableNodeData {}
 
-// Node
+// Element node
 export interface TableNode extends Element, TableNodeData {}
 
 // Option type

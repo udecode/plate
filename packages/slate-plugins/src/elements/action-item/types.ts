@@ -1,17 +1,15 @@
-import { TemplateDeserializeOptions } from '__templates__/types-element.template';
 import { RenderElementOptions } from 'element';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
 export const ACTION_ITEM = 'action_item';
 
-// Node data
+// Data of Element node
 export interface ActionItemNodeData {
   checked: boolean;
-  [key: string]: unknown;
 }
 
-// Node
+// Element node
 export interface ActionItemNode extends Element, ActionItemNodeData {}
 
 // Option type

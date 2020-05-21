@@ -1,7 +1,41 @@
-import { MarkPluginOptions } from 'mark';
+import { MarkPluginOptions, RenderLeafOptions } from 'mark';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
 
 export const MARK_ITALIC = 'italic';
 
-export interface ItalicPluginOptions extends MarkPluginOptions {
+// Data of Text node
+export interface ItalicNodeData {}
+
+// Text node
+export interface ItalicNode extends Text, ItalicNodeData {}
+
+// Option type
+interface TypeOption {
   typeItalic?: string;
 }
+
+// renderLeaf options given as props
+interface ItalicRenderLeafOptionsProps {}
+
+// renderLeaf options
+export interface ItalicRenderLeafOptions
+  extends RenderLeafOptions,
+    ItalicRenderLeafOptionsProps,
+    TypeOption {}
+
+// renderLeaf props
+export interface ItalicRenderLeafProps
+  extends RenderLeafProps,
+    ItalicRenderLeafOptionsProps {
+  leaf: ItalicNode;
+}
+
+// deserialize options
+export interface ItalicDeserializeOptions extends TypeOption {}
+
+// Plugin options
+export interface ItalicPluginOptions
+  extends MarkPluginOptions,
+    ItalicRenderLeafOptions,
+    ItalicDeserializeOptions {}

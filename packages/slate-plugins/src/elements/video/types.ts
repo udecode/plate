@@ -4,12 +4,12 @@ import { RenderElementProps } from 'slate-react';
 
 export const VIDEO = 'video';
 
+// Data of Element node
 export interface VideoNodeData {
   url: string;
-  [key: string]: unknown;
 }
 
-// Node
+// Element node
 export interface VideoNode extends Element, VideoNodeData {}
 
 // Option type

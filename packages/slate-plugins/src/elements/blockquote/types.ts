@@ -4,11 +4,10 @@ import { RenderElementProps } from 'slate-react';
 
 export const BLOCKQUOTE = 'blockquote';
 
-export interface BlockquoteNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface BlockquoteNodeData {}
 
-// Node
+// Element node
 export interface BlockquoteNode extends Element, BlockquoteNodeData {}
 
 // Option type

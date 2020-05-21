@@ -12,13 +12,12 @@ export interface UseMentionOptions {
   maxSuggestions?: number;
 }
 
-// Node data
+// Data of Element node
 export interface MentionNodeData {
   value: string;
-  [key: string]: unknown;
 }
 
-// Node
+// Element node
 export interface MentionNode extends Element, MentionNodeData {}
 
 // Option type

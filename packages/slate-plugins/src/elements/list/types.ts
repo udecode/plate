@@ -1,4 +1,3 @@
-import { OnKeyDown } from 'common';
 import { PARAGRAPH } from 'elements/paragraph';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
@@ -22,11 +21,10 @@ export const defaultListTypes: TypeOption = {
   typeP: PARAGRAPH,
 };
 
-export interface ListNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface ListNodeData {}
 
-// Node
+// Element node
 export interface ListNode extends Element, ListNodeData {}
 
 // Option type

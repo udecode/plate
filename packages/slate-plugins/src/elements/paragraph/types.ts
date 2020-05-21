@@ -4,11 +4,10 @@ import { RenderElementProps } from 'slate-react';
 
 export const PARAGRAPH = 'p';
 
-export interface ParagraphNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface ParagraphNodeData {}
 
-// Node
+// Element node
 export interface ParagraphNode extends Element, ParagraphNodeData {}
 
 // Option type

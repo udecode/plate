@@ -1,7 +1,10 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
 import styled from 'styled-components';
-import { MARK_HIGHLIGHT, RenderLeafHighlightOptions } from './types';
+import {
+  HighlightRenderLeafOptions,
+  HighlightRenderLeafProps,
+  MARK_HIGHLIGHT,
+} from './types';
 
 const HighlightText = styled.span<{ bg: string }>`
   background-color: ${(props) => props.bg};
@@ -10,10 +13,10 @@ const HighlightText = styled.span<{ bg: string }>`
 export const renderLeafHighlight = ({
   typeHighlight = MARK_HIGHLIGHT,
   bg = '#ffeeba',
-}: RenderLeafHighlightOptions = {}) => ({
+}: HighlightRenderLeafOptions = {}) => ({
   children,
   leaf,
-}: RenderLeafProps) => {
+}: HighlightRenderLeafProps) => {
   if (leaf[typeHighlight])
     return (
       <HighlightText data-slate-type={typeHighlight} bg={bg}>

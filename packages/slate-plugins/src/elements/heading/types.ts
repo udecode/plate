@@ -11,11 +11,10 @@ export enum HeadingType {
   H6 = 'h6',
 }
 
-export interface HeadingNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface HeadingNodeData {}
 
-// Node
+// Element node
 export interface HeadingNode extends Element, HeadingNodeData {}
 
 // Option type

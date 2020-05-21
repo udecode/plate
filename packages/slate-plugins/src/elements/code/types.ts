@@ -1,15 +1,13 @@
-import { TemplateDeserializeOptions } from '__templates__/types-element.template';
 import { RenderElementOptions } from 'element';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
 export const CODE = 'code';
 
-export interface CodeNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface CodeNodeData {}
 
-// Node
+// Element node
 export interface CodeNode extends Element, CodeNodeData {}
 
 // Option type

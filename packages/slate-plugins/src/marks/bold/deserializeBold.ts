@@ -1,9 +1,9 @@
 import { DeserializeHtml } from 'common/types';
-import { MARK_BOLD } from './types';
+import { BoldDeserializeOptions, MARK_BOLD } from './types';
 
 export const deserializeBold = ({
   typeBold = MARK_BOLD,
-} = {}): DeserializeHtml => {
+}: BoldDeserializeOptions = {}): DeserializeHtml => {
   const leaf = { [typeBold]: true };
 
   return {

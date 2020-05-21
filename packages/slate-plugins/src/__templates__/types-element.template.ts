@@ -2,11 +2,10 @@ import { RenderElementOptions } from 'element';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
-export interface TemplateNodeData {
-  [key: string]: unknown;
-}
+// Data of Element node
+export interface TemplateNodeData {}
 
-// Node
+// Element node
 export interface TemplateNode extends Element, TemplateNodeData {}
 
 // Option type

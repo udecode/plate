@@ -1,10 +1,16 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { MARK_SUPERSCRIPT } from './types';
+import {
+  MARK_SUPERSCRIPT,
+  SuperscriptRenderLeafOptions,
+  SuperscriptRenderLeafProps,
+} from './types';
 
 export const renderLeafSuperscript = ({
   typeSuperscript = MARK_SUPERSCRIPT,
-} = {}) => ({ children, leaf }: RenderLeafProps) => {
+}: SuperscriptRenderLeafOptions = {}) => ({
+  children,
+  leaf,
+}: SuperscriptRenderLeafProps) => {
   if (leaf[typeSuperscript]) return <sup>{children}</sup>;
 
   return children;

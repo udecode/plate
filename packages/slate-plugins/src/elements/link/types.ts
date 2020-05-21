@@ -4,12 +4,12 @@ import { RenderElementProps } from 'slate-react';
 
 export const LINK = 'a';
 
+// Data of Element node
 export interface LinkNodeData {
   url: string;
-  [key: string]: unknown;
 }
 
-// Node
+// Element node
 export interface LinkNode extends Element, LinkNodeData {}
 
 // Option type

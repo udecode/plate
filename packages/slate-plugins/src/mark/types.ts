@@ -2,8 +2,10 @@ export interface MarkPluginOptions {
   hotkey?: string;
 }
 
-export interface OnKeyDownMarkOptions {
-  type: string;
+export interface MarkOnKeyDownOptions {
   clear?: string;
-  hotkey: string;
+}
+
+export interface RenderLeafOptions {
+  // component?: any;
 }
