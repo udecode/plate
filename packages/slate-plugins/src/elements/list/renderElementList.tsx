@@ -1,18 +1,6 @@
 import { getElementComponent, getRenderElements } from 'element/utils';
-import styled from 'styled-components';
-import { ListType, RenderElementListOptions } from './types';
-
-const UlElement = styled.ul`
-  padding-inline-start: 24px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-`;
-
-const OlElement = styled.ol`
-  padding-inline-start: 24px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-`;
+import { OlElement, UlElement } from 'elements/list/components/ListElements';
+import { ListRenderElementOptions, ListType } from './types';
 
 export const renderElementList = ({
   UL = getElementComponent(UlElement),
@@ -21,7 +9,7 @@ export const renderElementList = ({
   typeUl = ListType.UL,
   typeOl = ListType.OL,
   typeLi = ListType.LI,
-}: RenderElementListOptions = {}) =>
+}: ListRenderElementOptions = {}) =>
   getRenderElements([
     { type: typeUl, component: UL },
     { type: typeOl, component: OL },

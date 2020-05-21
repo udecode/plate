@@ -8,5 +8,5 @@
     ]
   },
   "include": ["../packages/slate-plugins/src/**/*"],
-  "exclude": ["**/node_modules/**", "**/dist/**", "**/*test*/**", "**/*spec*/**"]
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/*test*/**", "**/*spec*/**", "**/*template*"]
 }

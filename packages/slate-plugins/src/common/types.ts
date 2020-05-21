@@ -35,7 +35,7 @@ export interface TElement extends Element {
 export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
 
 // Handler when we press a key.
-export type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
+export type OnKeyDown = (e: any, editor: Editor, options?: any) => void;
 
 export type DeserializeElement = Record<
   string,

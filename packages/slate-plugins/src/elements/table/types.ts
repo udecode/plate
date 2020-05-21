@@ -1,40 +1,57 @@
+import { Element } from 'slate';
+import { RenderElementProps } from 'slate-react';
+
 export enum TableType {
   TABLE = 'table',
   ROW = 'tr',
   CELL = 'td',
 }
 
-export interface TableTypeOptions {
-  typeTable?: string;
-  typeTr?: string;
-  typeTd?: string;
-}
-
-export interface RenderElementTableOptions extends TableTypeOptions {
-  Table?: any;
-  Row?: any;
-  Cell?: any;
-}
-
-export const defaultTableTypes: Required<TableTypeOptions> = {
+export const defaultTableTypes: Required<TableTypeOption> = {
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
   typeTd: TableType.CELL,
 };
 
-export const emptyCell = (options = defaultTableTypes) => ({
-  type: options.typeTd,
-  children: [{ text: '' }],
-});
+export interface TableNodeData {
+  [key: string]: unknown;
+}
 
-export const emptyRow = (colCount: number, options = defaultTableTypes) => ({
-  type: options.typeTr,
-  children: Array(colCount)
-    .fill(colCount)
-    .map(() => emptyCell(options)),
-});
+// Node
+export interface TableNode extends Element, TableNodeData {}
 
-export const emptyTable = (options = defaultTableTypes) => ({
-  type: options.typeTable,
-  children: [emptyRow(2, options), emptyRow(2, options)],
-});
+// Option type
+export interface TableTypeOption {
+  typeTable?: string;
+  typeTr?: string;
+  typeTd?: string;
+}
+
+// deserialize options
+export interface TableDeserializeOptions extends TableTypeOption {}
+
+// renderElement options given as props
+interface TableRenderElementOptionsProps {}
+
+// renderElement options
+export interface TableRenderElementOptions
+  extends TableRenderElementOptionsProps,
+    TableTypeOption {
+  Table?: any;
+  Row?: any;
+  Cell?: any;
+}
+
+// renderElement props
+export interface TableRenderElementProps
+  extends RenderElementProps,
+    TableRenderElementOptionsProps {
+  element: TableNode;
+}
+
+// Plugin options
+export interface TablePluginOptions
+  extends TableRenderElementOptions,
+    TableDeserializeOptions {}
+
+export interface WithTableOptions extends TableTypeOption {}

@@ -1,5 +1,5 @@
 import { IStyle, IStyleFunctionOrObject } from '@uifabric/merge-styles';
-import { MentionableItem } from 'elements/mention/types';
+import { MentionNodeData } from 'elements/mention/types';
 import { Range } from 'slate';
 
 export interface MentionSelectProps {
@@ -10,7 +10,7 @@ export interface MentionSelectProps {
   /**
    * List of mentionable items
    */
-  options: MentionableItem[];
+  options: MentionNodeData[];
   /**
    * Index of the selected option
    */

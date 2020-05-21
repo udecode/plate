@@ -1,10 +1,10 @@
 import { SlatePlugin } from 'common/types';
-import { RenderElementOptions } from 'element';
+import { BlockquotePluginOptions } from 'elements/blockquote/types';
 import { deserializeBlockquote } from './deserializeBlockquote';
 import { renderElementBlockquote } from './renderElementBlockquote';
 
 export const BlockquotePlugin = (
-  options?: RenderElementOptions & { typeBlockquote?: string }
+  options?: BlockquotePluginOptions
 ): SlatePlugin => ({
   renderElement: renderElementBlockquote(options),
   deserialize: deserializeBlockquote(options),

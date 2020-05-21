@@ -1,11 +1,11 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { CodeElement } from './components';
-import { CODE } from './types';
+import { CODE, CodeRenderElementOptions } from './types';
 
 export const renderElementCode = ({
   typeCode = CODE,
   component = CodeElement,
-}: RenderElementOptions = {}) =>
+}: CodeRenderElementOptions = {}) =>
   getRenderElement({
     type: typeCode,
     component,

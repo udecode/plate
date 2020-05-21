@@ -1,11 +1,11 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { VideoElement } from './components';
-import { VIDEO } from './types';
+import { VIDEO, VideoRenderElementOptions } from './types';
 
 export const renderElementVideo = ({
   typeVideo = VIDEO,
   component = VideoElement,
-}: RenderElementOptions = {}) =>
+}: VideoRenderElementOptions = {}) =>
   getRenderElement({
     type: typeVideo,
     component,

@@ -1,10 +1,10 @@
 import { Editor, Point, Range } from 'slate';
-import { TableType } from './types';
+import { TableType, WithTableOptions } from './types';
 
 export const withTable = ({
   typeTable = TableType.TABLE,
   typeTd = TableType.CELL,
-} = {}) => <T extends Editor>(editor: T) => {
+}: WithTableOptions = {}) => <T extends Editor>(editor: T) => {
   const { deleteBackward, deleteForward, insertBreak } = editor;
 
   const preventDeleteCell = (operation: any, pointCallback: any) => (

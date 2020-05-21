@@ -1,11 +1,11 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { LinkElement } from './components';
-import { LINK } from './types';
+import { LINK, LinkRenderElementOptions } from './types';
 
 export const renderElementLink = ({
   typeLink = LINK,
   component = LinkElement,
-}: RenderElementOptions = {}) =>
+}: LinkRenderElementOptions = {}) =>
   getRenderElement({
     type: typeLink,
     component,

@@ -1,8 +1,10 @@
 import { DeserializeHtml } from 'common/types';
 import { getElementDeserializer } from 'element/utils';
-import { LINK } from './types';
+import { LINK, LinkDeserializeOptions } from './types';
 
-export const deserializeLink = ({ typeLink = LINK } = {}): DeserializeHtml => ({
+export const deserializeLink = ({
+  typeLink = LINK,
+}: LinkDeserializeOptions = {}): DeserializeHtml => ({
   element: {
     ...getElementDeserializer(typeLink, {
       tagNames: ['A'],

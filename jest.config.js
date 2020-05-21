@@ -3,6 +3,7 @@ module.exports = {
     'src/**/*',
     '!**/*test*/**',
     '!**/*fixture*/**',
+    '!**/*template*/**',
     '!**/*stories*',
     '!**/*.development.*',
   ],

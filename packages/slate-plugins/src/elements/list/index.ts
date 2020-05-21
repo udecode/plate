@@ -7,3 +7,5 @@ export * from './renderElementList';
 export * from './transforms';
 export * from './types';
 export * from './withList';
+export { OlElement } from 'elements/list/components/ListElements';
+export { UlElement } from 'elements/list/components/ListElements';

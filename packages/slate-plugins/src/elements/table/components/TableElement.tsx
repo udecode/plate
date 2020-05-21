@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderElementProps } from 'slate-react';
+import { TableRenderElementProps } from 'elements/table/types';
 import styled from 'styled-components';
 
 export const StyledTable = styled.table`
@@ -8,7 +8,10 @@ export const StyledTable = styled.table`
   width: 100%;
 `;
 
-export const TableElement = ({ attributes, children }: RenderElementProps) => (
+export const TableElement = ({
+  attributes,
+  children,
+}: TableRenderElementProps) => (
   <StyledTable {...attributes}>
     <tbody>{children}</tbody>
   </StyledTable>

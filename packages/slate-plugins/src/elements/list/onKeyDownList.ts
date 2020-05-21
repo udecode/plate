@@ -10,8 +10,8 @@ import { isList } from './queries';
 import {
   defaultListTypes,
   ListHotkey,
+  ListOnKeyDownOptions,
   ListType,
-  ListTypeOptions,
 } from './types';
 
 /**
@@ -123,7 +123,7 @@ export const onKeyDownList = ({
   typeOl = ListType.OL,
   typeLi = ListType.LI,
   typeP = PARAGRAPH,
-}: ListTypeOptions = {}) => (e: KeyboardEvent, editor: Editor) => {
+}: ListOnKeyDownOptions = {}) => (e: KeyboardEvent, editor: Editor) => {
   const options = { typeUl, typeOl, typeLi, typeP };
 
   if (Object.values(ListHotkey).includes(e.key)) {

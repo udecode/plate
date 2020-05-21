@@ -1,6 +1,6 @@
-import { MentionableItem } from 'slate-plugins-next/src';
+import { MentionNodeData } from 'slate-plugins-next/src';
 
-export const MENTIONABLES: MentionableItem[] = [
+export const MENTIONABLES: MentionNodeData[] = [
   { value: 'Aayla Secura' },
   { value: 'Adi Gallia' },
   { value: 'Admiral Dodd Rancit' },

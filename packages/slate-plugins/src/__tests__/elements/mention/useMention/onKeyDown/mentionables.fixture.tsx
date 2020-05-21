@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '__test-utils__/jsx';
-import { MentionableItem } from 'elements/mention';
+import { MentionNodeData } from 'elements/mention';
 import { Editor } from 'slate';
 
 export const editorWithMentionable = ((
@@ -12,7 +12,7 @@ export const editorWithMentionable = ((
   </editor>
 ) as any) as Editor;
 
-export const mentionables: MentionableItem[] = [
+export const mentionables: MentionNodeData[] = [
   { value: 't2' },
   { value: 't22' },
   { value: 't222' },

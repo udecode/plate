@@ -1,6 +1,6 @@
 import { DeserializeHtml } from 'common/types';
 import { getElementDeserializer } from 'element/utils';
-import { DeserializeHeadingOptions, HeadingType } from './types';
+import { HeadingDeserializeOptions, HeadingType } from './types';
 
 export const deserializeHeading = ({
   levels = 6,
@@ -10,7 +10,7 @@ export const deserializeHeading = ({
   typeH4 = HeadingType.H4,
   typeH5 = HeadingType.H5,
   typeH6 = HeadingType.H6,
-}: DeserializeHeadingOptions = {}): DeserializeHtml => {
+}: HeadingDeserializeOptions = {}): DeserializeHtml => {
   let headingTags = getElementDeserializer(typeH1, { tagNames: ['H1'] });
 
   if (levels >= 2)

@@ -1,6 +1,7 @@
 import React from 'react';
+import { VideoRenderElementProps } from 'elements/video/types';
 import { Transforms } from 'slate';
-import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
+import { ReactEditor, useEditor } from 'slate-react';
 import styled from 'styled-components';
 
 const VideoWrapper = styled.div`
@@ -53,9 +54,9 @@ export const VideoElement = ({
   attributes,
   children,
   element,
-}: RenderElementProps) => {
+}: VideoRenderElementProps) => {
   const editor = useEditor();
-  const url = element.url as string;
+  const { url } = element;
 
   return (
     <div {...attributes}>

@@ -4,10 +4,10 @@ import { getNextIndex } from 'elements/mention/utils/getNextIndex';
 import { getPreviousIndex } from 'elements/mention/utils/getPreviousIndex';
 import { Editor, Range, Transforms } from 'slate';
 import { insertMention } from './transforms';
-import { MentionableItem, UseMentionOptions } from './types';
+import { MentionNodeData, UseMentionOptions } from './types';
 
 export const useMention = (
-  mentionables: MentionableItem[] = [],
+  mentionables: MentionNodeData[] = [],
   { maxSuggestions = 10, trigger = '@' }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);

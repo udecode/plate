@@ -1,4 +1,7 @@
+import { OnKeyDown } from 'common';
 import { PARAGRAPH } from 'elements/paragraph';
+import { Element } from 'slate';
+import { RenderElementProps } from 'slate-react';
 
 export const ListHotkey = {
   TAB: 'Tab',
@@ -12,22 +15,56 @@ export enum ListType {
   LI = 'li',
 }
 
-export interface ListTypeOptions {
+export const defaultListTypes: TypeOption = {
+  typeUl: ListType.UL,
+  typeOl: ListType.OL,
+  typeLi: ListType.LI,
+  typeP: PARAGRAPH,
+};
+
+export interface ListNodeData {
+  [key: string]: unknown;
+}
+
+// Node
+export interface ListNode extends Element, ListNodeData {}
+
+// Option type
+interface TypeOption {
   typeUl?: string;
   typeOl?: string;
   typeLi?: string;
   typeP?: string;
 }
 
-export interface RenderElementListOptions extends ListTypeOptions {
+// deserialize options
+export interface ListDeserializeOptions extends TypeOption {}
+
+// renderElement options given as props
+interface ListRenderElementOptionsProps {}
+
+// renderElement options
+export interface ListRenderElementOptions
+  extends ListRenderElementOptionsProps,
+    TypeOption {
   UL?: any;
   OL?: any;
   LI?: any;
 }
 
-export const defaultListTypes: ListTypeOptions = {
-  typeUl: ListType.UL,
-  typeOl: ListType.OL,
-  typeLi: ListType.LI,
-  typeP: PARAGRAPH,
-};
+// renderElement props
+export interface ListRenderElementProps
+  extends RenderElementProps,
+    ListRenderElementOptionsProps {
+  element: ListNode;
+}
+
+export interface ListOnKeyDownOptions extends TypeOption {}
+
+// Plugin options
+export interface ListPluginOptions
+  extends ListRenderElementOptions,
+    ListDeserializeOptions,
+    ListOnKeyDownOptions {}
+
+export interface WithListOptions extends TypeOption {}
