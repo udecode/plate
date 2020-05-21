@@ -1,6 +1,7 @@
 module.exports = {
   extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
   rules: {
+    '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
     'no-alert': 'off',
     'import/extensions': [

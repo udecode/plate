@@ -48,6 +48,7 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   MentionPlugin,
+  MentionSelect,
   ParagraphPlugin,
   pipe,
   SearchHighlightPlugin,
@@ -93,7 +94,7 @@ import {
   initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
-import { MENTIONS } from '../config/mentions';
+import { MENTIONABLES } from '../config/mentionables';
 import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export default {
@@ -192,13 +193,12 @@ export const Plugins = () => {
       decorate.push(decorateSearchHighlight({ search }));
 
     const {
-      MentionSelectComponent,
       index,
       search: mentionSearch,
       target,
       onChangeMention,
       onKeyDownMention,
-    } = useMention(MENTIONS, {
+    } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
     });
 
@@ -211,7 +211,7 @@ export const Plugins = () => {
         onChange={(newValue) => {
           setValue(newValue);
 
-          onChangeMention({ editor });
+          onChangeMention(editor);
         }}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
@@ -267,7 +267,7 @@ export const Plugins = () => {
             icon={<FormatUnderlined />}
           />
         </HoveringToolbar>
-        <MentionSelectComponent />
+        <MentionSelect at={target} valueIndex={index} options={MENTIONABLES} />
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}

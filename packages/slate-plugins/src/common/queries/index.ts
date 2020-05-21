@@ -7,3 +7,5 @@ export * from './isPointAtRoot';
 export * from './isRangeAtRoot';
 export * from './isAncestor';
 export * from './isDescendant';
+export * from './isPointAtWordEnd';
+export * from './isWordAfterTrigger';

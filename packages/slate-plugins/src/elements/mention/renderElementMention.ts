@@ -1,12 +1,14 @@
-import { getRenderElement, RenderElementOptions } from 'element';
+import { getRenderElement } from 'element';
 import { MentionElement } from './components';
-import { MENTION } from './types';
+import { MENTION, MentionRenderElementOptions } from './types';
 
 export const renderElementMention = ({
   typeMention = MENTION,
   component = MentionElement,
-}: RenderElementOptions = {}) =>
+  prefix = '@',
+}: MentionRenderElementOptions = {}) =>
   getRenderElement({
     type: typeMention,
     component,
+    prefix,
   });

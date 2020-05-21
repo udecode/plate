@@ -8,6 +8,7 @@ import { GetRenderElementOptions } from '../types';
 export const getRenderElement = ({
   type,
   component: Component,
+  ...options
 }: GetRenderElementOptions) => ({
   attributes,
   ...props
@@ -17,6 +18,7 @@ export const getRenderElement = ({
       <Component
         attributes={{ 'data-slate-type': type, ...attributes }}
         {...props}
+        {...options}
       />
     );
   }

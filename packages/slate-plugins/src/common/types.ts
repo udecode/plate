@@ -1,4 +1,4 @@
-import { Editor, NodeEntry, Range } from 'slate';
+import { Editor, Element, NodeEntry, Range } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 
 /**
@@ -21,6 +21,10 @@ export type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
 export type RenderElement = (
   props: RenderElementProps
 ) => JSX.Element | undefined;
+
+export interface TElement extends Element {
+  type: string;
+}
 
 /**
  * To customize the rendering of each leaf.
