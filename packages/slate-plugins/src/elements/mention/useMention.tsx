@@ -22,22 +22,22 @@ export const useMention = (
       if (targetRange) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();
-          setValueIndex(getNextIndex(valueIndex, values.length - 1));
+          return setValueIndex(getNextIndex(valueIndex, values.length - 1));
         }
         if (e.key === 'ArrowUp') {
           e.preventDefault();
-          setValueIndex(getPreviousIndex(valueIndex, values.length - 1));
+          return setValueIndex(getPreviousIndex(valueIndex, values.length - 1));
         }
         if (e.key === 'Escape') {
           e.preventDefault();
-          setTargetRange(null);
+          return setTargetRange(null);
         }
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
           Transforms.select(editor, targetRange);
           insertMention(editor, values[valueIndex]);
-          setTargetRange(null);
+          return setTargetRange(null);
         }
       }
     },
