@@ -18,9 +18,7 @@ it('should render', () => {
       element={{
         type: MENTION,
         children: [{ text: 'test' }],
-        mentionable: {
-          value: 't2',
-        },
+        value: 't2',
       }}
     >
       @t2

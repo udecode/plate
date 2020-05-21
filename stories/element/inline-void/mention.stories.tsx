@@ -31,6 +31,7 @@ export const Example = () => {
     ParagraphPlugin(nodeTypes),
     MentionPlugin({
       ...nodeTypes,
+      onClick: (mentionable) => console.info(`Hello, I'm ${mentionable.value}`),
       prefix: text('prefix', '@'),
     }),
   ];
@@ -50,7 +51,6 @@ export const Example = () => {
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
       trigger: '@',
-      // prefix: text('prefix'),
     });
 
     return (

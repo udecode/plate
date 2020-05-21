@@ -6,7 +6,7 @@ bumps.
 
 ---
 
-### `0.58.6` — May 20, 2020
+### `0.58.6` — May 21, 2020
 
 ###### BREAKING CHANGE
 
@@ -35,16 +35,17 @@ bumps.
   - `isWordAfterTrigger`
 - `useMention`:
   - `options` is now optional
-- `renderElementMention`:
+- `MentionPlugin`, `renderElementMention`:
   - added `prefix` option
+  - added `onClick` option
 - `MentionSelect`:
   - added props:
     - `styles`, see
       [Component Styling](https://github.com/microsoft/fluentui/wiki/Component-Styling)
 - `getRenderElement`
   - added a 3rd argument: `options` that will be passed to the component
-    as props. You should use that for "static" props (same value for all
-    instances). And you should mutate the element when it's variable.
+    as props. You should use that for static props (same value for all
+    instances). And you should mutate the element when it's dynamic.
 - `MentionElement`:
   - attribute `data-slate-character` renamed to `data-slate-value`
 

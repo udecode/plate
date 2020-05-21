@@ -1,6 +1,6 @@
 import React from 'react';
 import { isNodeInSelection } from 'common/queries';
-import { createDefaultHandler } from 'common/utils/createDefaultHandler';
+import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
 import { TableType, TableTypeOptions } from 'elements/table/types';
 import { Editor } from 'slate';
 import { useSlate } from 'slate-react';
@@ -25,7 +25,7 @@ export const ToolbarTable = ({
     <ToolbarButton
       {...props}
       active={isNodeInSelection(editor, typeTable)}
-      onMouseDown={createDefaultHandler(action, editor, {
+      onMouseDown={getPreventDefaultHandler(action, editor, {
         typeTable,
         typeTr,
         typeTd,

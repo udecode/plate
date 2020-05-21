@@ -11,16 +11,6 @@ export interface UseMentionOptions {
   maxSuggestions?: number;
 }
 
-export interface MentionPluginOptions extends MentionRenderElementOptions {}
-
-export interface MentionRenderElementOptions extends RenderElementOptions {
-  typeMention?: string;
-  /**
-   * Prefix rendered before mention
-   */
-  prefix?: string;
-}
-
 export interface MentionableItem {
   value: string;
   [key: string]: unknown;
@@ -28,10 +18,24 @@ export interface MentionableItem {
 
 export interface MentionNode extends Element, MentionableItem {}
 
-export interface MentionRenderElementProps extends RenderElementProps {
-  element: MentionNode;
+export interface MentionPluginOptions extends MentionRenderElementOptions {}
+
+export interface MentionRenderElementOptions
+  extends RenderElementOptions,
+    MentionRenderElementOptionsProps {
+  typeMention?: string;
+}
+
+interface MentionRenderElementOptionsProps {
   /**
    * Prefix rendered before mention
    */
   prefix?: string;
+  onClick?: ({ value }: { value: string }) => void;
+}
+
+export interface MentionRenderElementProps
+  extends RenderElementProps,
+    MentionRenderElementOptionsProps {
+  element: MentionNode;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { createDefaultHandler } from 'common/utils/createDefaultHandler';
+import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
 import { useSlate } from 'slate-react';
 import { ToolbarBlockProps, ToolbarButton } from 'components/Toolbar';
 import { isMarkActive } from '../queries';
@@ -15,7 +15,7 @@ export const ToolbarMark = ({ type, clear, ...props }: ToolbarBlockProps) => {
     <ToolbarButton
       {...props}
       active={isMarkActive(editor, type)}
-      onMouseDown={createDefaultHandler(toggleMark, editor, type, clear)}
+      onMouseDown={getPreventDefaultHandler(toggleMark, editor, type, clear)}
     />
   );
 };
