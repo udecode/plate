@@ -1,4 +1,4 @@
-export * from 'elements/code-block/CodeBlockPlugin';
+export * from './CodeBlockPlugin';
 export * from './components';
-export * from 'elements/code-block/renderElementCodeBlock';
+export * from './renderElementCodeBlock';
 export * from './types';
