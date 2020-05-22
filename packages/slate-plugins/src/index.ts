@@ -8,5 +8,6 @@ export * from './marks';
 export * from './md-preview';
 export * from './md-shortcuts';
 export * from './node';
+export * from './normalizers';
 export * from './search-highlight';
 export * from './soft-break';

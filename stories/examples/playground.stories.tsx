@@ -71,13 +71,14 @@ import {
   withBreakEmptyReset,
   withDeleteStartReset,
   withDeserializeHtml,
-  withForcedLayout,
   withImage,
   withLink,
   withList,
   withMention,
+  withNormalizeTypes,
   withShortcuts,
   withTable,
+  withTrailingNode,
   withTransforms,
   withVoid,
 } from 'slate-plugins-next/src';
@@ -176,7 +177,10 @@ export const Plugins = () => {
     withShortcuts(nodeTypes),
     withVoid([EDITABLE_VOID, nodeTypes.typeVideo]),
     withTransforms(),
-    withForcedLayout(),
+    withNormalizeTypes({
+      rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+    }),
+    withTrailingNode({ type: nodeTypes.typeP, level: 1 }),
   ] as const;
 
   const createReactEditor = () => () => {

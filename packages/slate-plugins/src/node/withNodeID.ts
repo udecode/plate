@@ -1,9 +1,10 @@
+import { QueryOptions } from 'common';
 import { isDescendant } from 'common/queries';
-import { QueryProps, setPropsToNodes } from 'common/transforms';
+import { setPropsToNodes } from 'common/transforms';
 import { Element, Node } from 'slate';
 import { HistoryEditor } from 'slate-history';
 
-export interface WithNodeIDProps extends QueryProps {
+export interface WithNodeIDProps extends QueryOptions {
   // Key used for the id. Default is `id`.
   idKey?: string;
   // ID factory, e.g. `uuid`
@@ -18,8 +19,8 @@ export interface WithNodeIDProps extends QueryProps {
 export const withNodeID = ({
   idKey = 'id',
   idCreator = () => Date.now(),
-  filter = () => true,
   filterText = true,
+  filter = () => true,
   allow,
   exclude,
 }: WithNodeIDProps = {}) => <T extends HistoryEditor>(editor: T) => {

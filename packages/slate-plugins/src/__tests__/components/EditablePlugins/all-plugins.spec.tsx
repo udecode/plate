@@ -78,7 +78,8 @@ import {
   UnderlinePlugin,
 } from 'marks/underline';
 import { withShortcuts } from 'md-shortcuts';
-import { withForcedLayout, withNodeID, withTransforms } from 'node';
+import { withNodeID, withTransforms } from 'node';
+import { withNormalizeTypes } from 'normalizers';
 import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -170,7 +171,9 @@ const Editor = () => {
     withShortcuts(nodeTypes),
     withVoid([nodeTypes.typeVideo]),
     withTransforms(),
-    withForcedLayout(),
+    withNormalizeTypes({
+      rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+    }),
     withNodeID(),
   ] as const;
 

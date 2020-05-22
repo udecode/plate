@@ -27,15 +27,22 @@ bumps.
   - signature changed from `({ clear, type, hotkey, }:
     MarkOnKeyDownOptions)` to `(type: string, hotkey: string, { clear }:
     MarkOnKeyDownOptions = {})`
+- removed `withForcedLayout` in favor of `withTypeRules` (more generic)
 
 ###### NEW
 
+- `getLastNode(editor: Editor, level: number)`: new query to get the
+  last node at a specific level/depth
+- `withTypeRules`: new normalizer plugin to force any node to have a
+  specific type
 - `utils`:
   - `getPreviousIndex`
   - `getNextIndex`
 - `queries`:
   - `isPointAtWordEnd`
   - `isWordAfterTrigger`
+  - `getNode`: same than `Node.get` but returns null if not the node is
+    not found at the given path.
 - `useMention`:
   - `options` is now optional
 - `MentionPlugin`, `renderElementMention`:

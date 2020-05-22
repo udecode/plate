@@ -1,13 +1,13 @@
 import {
-  DecorateSearchHighlightOptions,
   MARK_SEARCH_HIGHLIGHT,
+  SearchHighlightDecorateOptions,
 } from 'search-highlight/types';
 import { NodeEntry, Range, Text } from 'slate';
 
 export const decorateSearchHighlight = ({
-  typeSearchHighlight = MARK_SEARCH_HIGHLIGHT,
   search,
-}: DecorateSearchHighlightOptions) => ([node, path]: NodeEntry) => {
+  typeSearchHighlight = MARK_SEARCH_HIGHLIGHT,
+}: SearchHighlightDecorateOptions) => ([node, path]: NodeEntry) => {
   const ranges: Range[] = [];
 
   if (search && Text.isText(node)) {
