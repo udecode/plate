@@ -1,6 +1,6 @@
 export * from './action-item';
 export * from './blockquote';
-export * from './code';
+export * from './code-block';
 export * from './heading';
 export * from './image';
 export * from './link';

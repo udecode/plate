@@ -14,7 +14,7 @@ export enum ListType {
   LI = 'li',
 }
 
-export const defaultListTypes: TypeOption = {
+export const defaultListTypes: ListTypeOption = {
   typeUl: ListType.UL,
   typeOl: ListType.OL,
   typeLi: ListType.LI,
@@ -28,7 +28,7 @@ export interface ListNodeData {}
 export interface ListNode extends Element, ListNodeData {}
 
 // Option type
-interface TypeOption {
+export interface ListTypeOption {
   typeUl?: string;
   typeOl?: string;
   typeLi?: string;
@@ -36,7 +36,7 @@ interface TypeOption {
 }
 
 // deserialize options
-export interface ListDeserializeOptions extends TypeOption {}
+export interface ListDeserializeOptions extends ListTypeOption {}
 
 // renderElement options given as props
 interface ListRenderElementOptionsProps {}
@@ -44,7 +44,7 @@ interface ListRenderElementOptionsProps {}
 // renderElement options
 export interface ListRenderElementOptions
   extends ListRenderElementOptionsProps,
-    TypeOption {
+    ListTypeOption {
   UL?: any;
   OL?: any;
   LI?: any;
@@ -57,7 +57,7 @@ export interface ListRenderElementProps
   element: ListNode;
 }
 
-export interface ListOnKeyDownOptions extends TypeOption {}
+export interface ListOnKeyDownOptions extends ListTypeOption {}
 
 // Plugin options
 export interface ListPluginOptions
@@ -65,4 +65,4 @@ export interface ListPluginOptions
     ListDeserializeOptions,
     ListOnKeyDownOptions {}
 
-export interface WithListOptions extends TypeOption {}
+export interface WithListOptions extends ListTypeOption {}

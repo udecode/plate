@@ -18,7 +18,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
-  CodePlugin,
+  CodeBlockPlugin,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
@@ -26,7 +26,7 @@ import {
   ParagraphPlugin,
   pipe,
   ToolbarBlock,
-  ToolbarCode,
+  ToolbarCodeBlock,
   ToolbarList,
   withBlock,
   withBreakEmptyReset,
@@ -42,7 +42,7 @@ export default {
     BlockquotePlugin,
     ListPlugin,
     ParagraphPlugin,
-    CodePlugin,
+    CodePlugin: CodeBlockPlugin,
   },
 };
 
@@ -69,7 +69,7 @@ export const Basic = () => {
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(nodeTypes));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
+  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueElements);
@@ -103,7 +103,7 @@ export const Basic = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
+          <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

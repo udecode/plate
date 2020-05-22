@@ -26,7 +26,7 @@ import {
   withVoid,
 } from 'element';
 import {
-  ToolbarCode,
+  ToolbarCodeBlock,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -39,7 +39,7 @@ import {
 } from 'elements';
 import { ActionItemPlugin } from 'elements/action-item';
 import { BlockquotePlugin } from 'elements/blockquote';
-import { CodePlugin } from 'elements/code';
+import { CodeBlockPlugin } from 'elements/code-block';
 import { HeadingPlugin } from 'elements/heading';
 import { ImagePlugin } from 'elements/image';
 import { LinkPlugin } from 'elements/link';
@@ -50,12 +50,8 @@ import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
 import { ToolbarMark } from 'mark/components';
 import { BoldPlugin, MARK_BOLD, renderLeafBold } from 'marks/bold';
+import { CodePlugin, MARK_CODE, renderLeafCode } from 'marks/code';
 import { HighlightPlugin, renderLeafHighlight } from 'marks/highlight';
-import {
-  InlineCodePlugin,
-  MARK_CODE,
-  renderLeafInlineCode,
-} from 'marks/inline-code';
 import { ItalicPlugin, MARK_ITALIC, renderLeafItalic } from 'marks/italic';
 import {
   MARK_STRIKETHROUGH,
@@ -112,11 +108,11 @@ const plugins = [
   ParagraphPlugin(nodeTypes),
   TablePlugin(nodeTypes),
   VideoPlugin(nodeTypes),
-  CodePlugin(nodeTypes),
+  CodeBlockPlugin(nodeTypes),
   BoldPlugin(markOptions),
   BoldPlugin(),
-  InlineCodePlugin(markOptions),
-  InlineCodePlugin(),
+  CodePlugin(markOptions),
+  CodePlugin(),
   ItalicPlugin(markOptions),
   ItalicPlugin(),
   StrikethroughPlugin(markOptions),
@@ -211,7 +207,7 @@ const Editor = () => {
         <ToolbarList {...nodeTypes} icon={<FormatListBulleted />} />
         <ToolbarList {...nodeTypes} icon={<FormatListNumbered />} />
         <ToolbarBlock type={nodeTypes.typeBlockquote} icon={<FormatQuote />} />
-        <ToolbarCode icon={<CodeBlock />} />
+        <ToolbarCodeBlock icon={<CodeBlock />} />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
         <ToolbarTable action={jest.fn()} icon={null} />
       </HeadingToolbar>
@@ -231,7 +227,7 @@ const Editor = () => {
         renderLeaf={[
           renderLeafHighlight(),
           renderLeafBold(),
-          renderLeafInlineCode(),
+          renderLeafCode(),
           renderLeafItalic(),
           renderLeafStrikethrough(),
           renderLeafSubscript(),

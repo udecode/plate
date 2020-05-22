@@ -28,6 +28,9 @@ bumps.
     MarkOnKeyDownOptions)` to `(type: string, hotkey: string, { clear }:
     MarkOnKeyDownOptions = {})`
 - removed `withForcedLayout` in favor of `withTypeRules` (more generic)
+- changed `CODE` type value from `code` to `code_block`
+- renamed `CodePlugin` to `CodeBlockPlugin` and `InlineCodePlugin` to
+  `CodePlugin`
 
 ###### NEW
 
@@ -236,12 +239,13 @@ useMention(CHARACTERS, {
     ones:
 
 ```js
+```js
 // you can add nodeTypes to any element plugin
 export const nodeTypes = {
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
-  typeCode: CODE,
+  typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
   typeVideo: VIDEO,

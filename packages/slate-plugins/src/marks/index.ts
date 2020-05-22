@@ -1,6 +1,6 @@
 export * from './bold';
 export * from './highlight';
-export * from './inline-code';
+export * from './code';
 export * from './italic';
 export * from './strikethrough';
 export * from './subscript';

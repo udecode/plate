@@ -5,7 +5,7 @@ import { jsx } from '__test-utils__/jsx';
 import { htmlDeserialize } from 'deserializers';
 import { ACTION_ITEM, ActionItemPlugin } from 'elements/action-item';
 import { BlockquotePlugin } from 'elements/blockquote';
-import { CodePlugin } from 'elements/code';
+import { CodeBlockPlugin } from 'elements/code-block';
 import { HeadingPlugin } from 'elements/heading';
 import { ImagePlugin } from 'elements/image';
 import { LinkPlugin } from 'elements/link';
@@ -15,8 +15,8 @@ import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
 import { VideoPlugin } from 'elements/video';
 import { deserializeBold } from 'marks/bold/deserializeBold';
+import { deserializeCode } from 'marks/code/deserializeCode';
 import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
-import { deserializeInlineCode } from 'marks/inline-code/deserializeInlineCode';
 import { deserializeItalic } from 'marks/italic/deserializeItalic';
 import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
 import { deserializeSubscript } from 'marks/subscript/deserializeSubscript';
@@ -72,14 +72,14 @@ const input1 = [
   ListPlugin(),
   MentionPlugin(),
   ParagraphPlugin(),
-  CodePlugin(),
+  CodeBlockPlugin(),
   TablePlugin(),
   VideoPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
   { deserialize: deserializeBold() },
   { deserialize: deserializeHighlight() },
-  { deserialize: deserializeInlineCode() },
+  { deserialize: deserializeCode() },
   { deserialize: deserializeItalic() },
   { deserialize: deserializeStrikethrough() },
   { deserialize: deserializeSubscript() },

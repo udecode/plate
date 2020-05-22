@@ -82,7 +82,7 @@ For additional help, join us in our
 |:----------------------------------------------------------------|:----------------------------|
 | [action item](packages/slate-plugins/src/elements/action-item/) | List of action items        |
 | [blockquote](packages/slate-plugins/src/elements/blockquote/)   | Blockquote                  |
-| [code](packages/slate-plugins/src/elements/code/)               | `Code block`                |
+| [code](packages/slate-plugins/src/elements/code-block)               | `Code block`                |
 | [heading](packages/slate-plugins/src/elements/heading/)         | Heading (from 1 to 6)       |
 | [image](packages/slate-plugins/src/elements/image/)             | Image                       |
 | [link](packages/slate-plugins/src/elements/link/)               | Inline link                 |
@@ -99,7 +99,7 @@ For additional help, join us in our
 |:-----------------------------------------------------------------|:------------------|
 | [bold](packages/slate-plugins/src/marks/bold/)                   | **Bold**          |
 | [highlight](packages/slate-plugins/src/marks/highlight/)         | Blockquote        |
-| [inline-code](packages/slate-plugins/src/marks/inline-code/)     | `Code`            |
+| [inline-code](packages/slate-plugins/src/marks/code)     | `Code`            |
 | [italic](packages/slate-plugins/src/marks/italic)                | *Italic*          |
 | [strikethrough](packages/slate-plugins/src/marks/strikethrough/) | ~~Strikethrough~~ |
 | [subscript](packages/slate-plugins/src/marks/subscript/)         | Subscript         |

@@ -1,7 +1,7 @@
 import { createText } from '__test-utils__/hyperscript/creators';
 import { ACTION_ITEM } from 'elements/action-item';
 import { BLOCKQUOTE } from 'elements/blockquote';
-import { CODE } from 'elements/code';
+import { CODE_BLOCK } from 'elements/code-block';
 import { HeadingType } from 'elements/heading';
 import { IMAGE } from 'elements/image';
 import { LINK } from 'elements/link';
@@ -29,7 +29,7 @@ const nodeTypes = {
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
-  typeCode: CODE,
+  typeCodeBlock: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
   typeVideo: VIDEO,
@@ -53,7 +53,7 @@ export const jsx = createHyperscript({
     hp: { type: nodeTypes.typeP },
     hmention: { type: nodeTypes.typeMention },
     hblockquote: { type: nodeTypes.typeBlockquote },
-    hcode: { type: nodeTypes.typeCode },
+    hcode: { type: nodeTypes.typeCodeBlock },
     ha: { type: nodeTypes.typeLink },
     himg: { type: nodeTypes.typeImg },
     hvideo: { type: nodeTypes.typeVideo },

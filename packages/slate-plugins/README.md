@@ -82,7 +82,7 @@ For additional help, join us in our
 |:----------------------------------------|:----------------------------|
 | [action item](src/elements/action-item) | List of action items        |
 | [blockquote](src/elements/blockquote)   | Blockquote                  |
-| [code](src/elements/code)               | `Code block`                |
+| [code](src/elements/code-block)               | `Code block`                |
 | [heading](src/elements/heading)         | Heading (from 1 to 6)       |
 | [image](src/elements/image)             | Image                       |
 | [link](src/elements/link)               | Inline link                 |
@@ -99,7 +99,7 @@ For additional help, join us in our
 |:-----------------------------------------|:------------------|
 | [bold](src/marks/bold)                   | **Bold**          |
 | [highlight](src/marks/highlight)         | Blockquote        |
-| [inline-code](src/marks/inline-code)     | `Code`            |
+| [inline-code](src/marks/code)     | `Code`            |
 | [italic](src/marks/italic)               | *Italic*          |
 | [strikethrough](src/marks/strikethrough) | ~~Strikethrough~~ |
 | [subscript](src/marks/subscript)         | Subscript         |

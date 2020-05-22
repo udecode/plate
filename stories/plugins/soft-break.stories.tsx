@@ -6,16 +6,16 @@ import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
+  CodeBlockPlugin,
   CodePlugin,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
-  InlineCodePlugin,
   ParagraphPlugin,
   pipe,
   SoftBreakPlugin,
   ToolbarBlock,
-  ToolbarCode,
+  ToolbarCodeBlock,
   withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
@@ -47,8 +47,8 @@ export const BlockPlugins = () => {
     ParagraphPlugin(nodeTypes),
     HeadingPlugin(nodeTypes),
     BlockquotePlugin(nodeTypes),
+    CodeBlockPlugin(nodeTypes),
     CodePlugin(nodeTypes),
-    InlineCodePlugin(nodeTypes),
     SoftBreakPlugin(),
   ];
 
@@ -70,7 +70,7 @@ export const BlockPlugins = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCode {...nodeTypes} icon={<Code />} />
+          <ToolbarCodeBlock {...nodeTypes} icon={<Code />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
