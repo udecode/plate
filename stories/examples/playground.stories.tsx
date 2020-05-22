@@ -200,6 +200,7 @@ export const Plugins = () => {
       index,
       search: mentionSearch,
       target,
+      values,
       onChangeMention,
       onKeyDownMention,
     } = useMention(MENTIONABLES, {
@@ -271,7 +272,7 @@ export const Plugins = () => {
             icon={<FormatUnderlined />}
           />
         </HoveringToolbar>
-        <MentionSelect at={target} valueIndex={index} options={MENTIONABLES} />
+        <MentionSelect at={target} valueIndex={index} options={values} />
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}
