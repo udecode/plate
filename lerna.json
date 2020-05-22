@@ -3,5 +3,5 @@
   "useWorkspaces": true,
   "packages": ["packages/*"],
   "version": "independent",
-  "ignoreChanges": ["**test**", "**.spec**", "**/*.md", "**/*stories*", "**/*template*"]
+  "ignoreChanges": ["**test**", "**.spec**", "**/*.md", "**/*stories*", "**template**", "**fixture**"]
 }
