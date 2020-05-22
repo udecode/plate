@@ -27,6 +27,7 @@ import {
   ActionItemPlugin,
   BlockquotePlugin,
   BoldPlugin,
+  CodeBlockPlugin,
   CodePlugin,
   createNode,
   decorateSearchHighlight,
@@ -36,7 +37,6 @@ import {
   HighlightPlugin,
   HoveringToolbar,
   ImagePlugin,
-  InlineCodePlugin,
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
@@ -58,7 +58,7 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   ToolbarBlock,
-  ToolbarCode,
+  ToolbarCodeBlock,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -71,13 +71,14 @@ import {
   withBreakEmptyReset,
   withDeleteStartReset,
   withDeserializeHtml,
-  withForcedLayout,
   withImage,
   withLink,
   withList,
   withMention,
+  withNormalizeTypes,
   withShortcuts,
   withTable,
+  withTrailingNode,
   withTransforms,
   withVoid,
 } from 'slate-plugins-next/src';
@@ -142,10 +143,10 @@ export const Plugins = () => {
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(nodeTypes));
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
   if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
+  if (boolean('CodeBlockPlugin', true))
+    plugins.push(CodeBlockPlugin(nodeTypes));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
-  if (boolean('InlineCodePlugin', true))
-    plugins.push(InlineCodePlugin(nodeTypes));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
   if (boolean('HighlightPlugin', true))
     plugins.push(HighlightPlugin(nodeTypes));
@@ -176,7 +177,10 @@ export const Plugins = () => {
     withShortcuts(nodeTypes),
     withVoid([EDITABLE_VOID, nodeTypes.typeVideo]),
     withTransforms(),
-    withForcedLayout(),
+    withNormalizeTypes({
+      rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+    }),
+    withTrailingNode({ type: nodeTypes.typeP, level: 1 }),
   ] as const;
 
   const createReactEditor = () => () => {
@@ -255,7 +259,7 @@ export const Plugins = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCode {...nodeTypes} icon={<CodeBlock />} />
+          <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
         <HoveringToolbar>

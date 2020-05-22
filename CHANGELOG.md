@@ -27,15 +27,25 @@ bumps.
   - signature changed from `({ clear, type, hotkey, }:
     MarkOnKeyDownOptions)` to `(type: string, hotkey: string, { clear }:
     MarkOnKeyDownOptions = {})`
+- removed `withForcedLayout` in favor of `withTypeRules` (more generic)
+- changed `CODE` type value from `code` to `code_block`
+- renamed `CodePlugin` to `CodeBlockPlugin` and `InlineCodePlugin` to
+  `CodePlugin`
 
 ###### NEW
 
+- `getLastNode(editor: Editor, level: number)`: new query to get the
+  last node at a specific level/depth
+- `withTypeRules`: new normalizer plugin to force any node to have a
+  specific type
 - `utils`:
   - `getPreviousIndex`
   - `getNextIndex`
 - `queries`:
   - `isPointAtWordEnd`
   - `isWordAfterTrigger`
+  - `getNode`: same than `Node.get` but returns null if not the node is
+    not found at the given path.
 - `useMention`:
   - `options` is now optional
 - `MentionPlugin`, `renderElementMention`:
@@ -229,12 +239,13 @@ useMention(CHARACTERS, {
     ones:
 
 ```js
+```js
 // you can add nodeTypes to any element plugin
 export const nodeTypes = {
   typeP: PARAGRAPH,
   typeMention: MENTION,
   typeBlockquote: BLOCKQUOTE,
-  typeCode: CODE,
+  typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
   typeVideo: VIDEO,

@@ -1,5 +1,6 @@
 export * from './getSelectionNodesArrayByType';
 export * from './getSelectionNodesByType';
+export * from './getLastNode';
 export * from './isBlockTextEmpty';
 export * from './isFirstChild';
 export * from './isNodeInSelection';
@@ -9,3 +10,4 @@ export * from './isAncestor';
 export * from './isDescendant';
 export * from './isPointAtWordEnd';
 export * from './isWordAfterTrigger';
+export * from './isNodeType';

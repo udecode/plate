@@ -13,10 +13,10 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   BoldPlugin,
+  CodePlugin,
   EditablePlugins,
   HeadingToolbar,
   HighlightPlugin,
-  InlineCodePlugin,
   ItalicPlugin,
   MARK_BOLD,
   MARK_CODE,
@@ -44,8 +44,8 @@ export default {
     StrikethroughPlugin,
     SubscriptPlugin,
     SuperscriptPlugin,
-    InlineCodePlugin,
-    MarkButton: ToolbarMark,
+    CodePlugin,
+    ToolbarMark,
   },
 };
 
@@ -63,8 +63,7 @@ export const All = () => {
     plugins.push(SubscriptPlugin(nodeTypes));
   if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(nodeTypes));
-  if (boolean('InlineCodePlugin', true))
-    plugins.push(InlineCodePlugin(nodeTypes));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
   if (boolean('HighlightPlugin', true))
     plugins.push(HighlightPlugin(nodeTypes));
 

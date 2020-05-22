@@ -3,6 +3,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
+    '@typescript-eslint/camelcase': 'off',
     'no-alert': 'off',
     'import/extensions': [
       'error',

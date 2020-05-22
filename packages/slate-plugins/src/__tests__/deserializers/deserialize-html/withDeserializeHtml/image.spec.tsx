@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
+import { initialValueImages } from '__fixtures__/initialValues.fixtures';
 import { jsx } from '__test-utils__/jsx';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import { ImagePlugin, withImage } from 'elements/image';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { initialValueImages } from '../../../../../../../stories/config/initialValues';
 
 const input = ((
   <editor>
@@ -30,5 +30,5 @@ it('should be', () => {
 
   editor.insertData(data as any);
 
-  expect(input.children).toEqual(initialValueImages);
+  expect(input.children).toEqual(initialValueImages[0].children);
 });

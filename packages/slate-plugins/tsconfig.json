@@ -18,7 +18,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "baseUrl": "src"
   },
-  "include": ["src", "typings", "../../stories"],
+  "include": ["src", "typings"],
   "exclude": ["node_modules", "dist", "scripts"],
   "awesomeTypescriptLoaderOptions": {
     "ignoreDiagnostics": [7005]

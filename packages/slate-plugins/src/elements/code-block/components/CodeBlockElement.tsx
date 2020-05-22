@@ -1,5 +1,5 @@
 import React from 'react';
-import { CodeRenderElementProps } from 'elements/code/types';
+import { CodeBlockRenderElementProps } from 'elements/code-block/types';
 import styled from 'styled-components';
 
 const Pre = styled.pre`
@@ -8,10 +8,10 @@ const Pre = styled.pre`
   white-space: pre-wrap;
 `;
 
-export const CodeElement = ({
+export const CodeBlockElement = ({
   attributes,
   children,
-}: CodeRenderElementProps) => (
+}: CodeBlockRenderElementProps) => (
   <Pre>
     <code {...attributes}>{children}</code>
   </Pre>

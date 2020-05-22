@@ -1,4 +1,4 @@
-import { Editor, NodeEntry, Range } from 'slate';
+import { Editor, Node, NodeEntry, Range } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 
 /**
@@ -76,4 +76,13 @@ export interface SlatePlugin {
   renderLeaf?: RenderLeaf;
   onKeyDown?: OnKeyDown | null;
   deserialize?: DeserializeHtml;
+}
+
+export interface QueryOptions {
+  // Condition on the node to be valid.
+  filter?: (node: Node) => boolean;
+  // List of types that are valid. If empty or undefined - allow all.
+  allow?: string[];
+  // List of types that are invalid.
+  exclude?: string[];
 }

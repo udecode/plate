@@ -14,7 +14,9 @@ export const withTransforms = () => <T extends Editor>(editor: T) => {
   const e = editor as T & TransformEditor;
 
   e.insertNodes = (nodes, options) => {
-    Transforms.insertNodes(editor, nodes, options);
+    try {
+      Transforms.insertNodes(editor, nodes, options);
+    } catch (err) {}
   };
 
   return e;

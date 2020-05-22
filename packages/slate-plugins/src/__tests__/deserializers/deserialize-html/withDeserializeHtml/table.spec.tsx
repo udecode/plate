@@ -34,5 +34,5 @@ it('should be', () => {
 
   editor.insertData(data as any);
 
-  expect(input.children).toEqual(initialValueTables);
+  expect(input.children).toEqual(initialValueTables[0].children);
 });
