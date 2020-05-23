@@ -104,8 +104,8 @@ const output = (
       <htext strikethrough>style</htext>
       <htext code>code</htext>
       <htext code>kbd</htext>
-      <htext SUBSCRIPT>sub</htext>
-      <htext SUPERSCRIPT>sup</htext>
+      <htext subscript>sub</htext>
+      <htext superscript>sup</htext>
     </hp>
     <hp>
       <ha url="http://localhost:3000">a</ha>
