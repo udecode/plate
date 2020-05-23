@@ -10,10 +10,10 @@ import { HeadingPlugin } from 'elements/heading';
 import { ImagePlugin } from 'elements/image';
 import { LinkPlugin } from 'elements/link';
 import { ListPlugin } from 'elements/list';
+import { MediaEmbedPlugin } from 'elements/media-embed';
 import { MENTION, MentionPlugin } from 'elements/mention';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
-import { VideoPlugin } from 'elements/video';
 import { deserializeBold } from 'marks/bold/deserializeBold';
 import { deserializeCode } from 'marks/code/deserializeCode';
 import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
@@ -74,7 +74,7 @@ const input1 = [
   ParagraphPlugin(),
   CodeBlockPlugin(),
   TablePlugin(),
-  VideoPlugin(),
+  MediaEmbedPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
   { deserialize: deserializeBold() },
@@ -132,9 +132,9 @@ const output = (
     </htable>
     <hactionitem checked>checked</hactionitem>
     <hactionitem checked={false}>unchecked</hactionitem>
-    <hvideo url="https://player.vimeo.com/video/26689853">
+    <hembed url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
-    </hvideo>
+    </hembed>
   </editor>
 ) as any;
 

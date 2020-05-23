@@ -90,7 +90,7 @@ For additional help, join us in our
 | [mention](src/elements/mention)         | Inline mention              |
 | [paragraph](src/elements/paragraph)     | Paragraph                   |
 | [table](src/elements/table)             | Table                       |
-| [video](src/elements/video)             | Video                       |
+| [video](src/elements/media-embed)             | Video                       |
 
 <img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
@@ -122,7 +122,7 @@ For additional help, join us in our
 | [element](src/element)                   | Common helpers for `Element` plugins              |
 | [mark](src/mark)                         | Common helpers for `Mark` plugins                 |
 | [md preview](src/md-preview)             | Markdown preview                                  |
-| [md shortcuts](src/md-shortcuts)         | Markdown shortcuts                                |
+| [md shortcuts](src/autoformat)         | Markdown shortcuts                                |
 | [node](src/node)                         | Common helpers and `withPlugins` for `Node` nodes |
 | [search highlight](src/search-highlight) | Highlight search text                             |
 | [soft break](src/soft-break)             | Soft break                                        |

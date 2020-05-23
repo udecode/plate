@@ -6,6 +6,23 @@ bumps.
 
 ---
 
+### `0.58.8` — May 23, 2020
+
+###### BREAKING CHANGE
+
+- renamed `withBlock` to `withToggleType` as it just toggles the type of
+  an element (inline or not).
+- renamed `withImage` to `withImageUpload`
+- renamed `VideoPlugin` and its atoms to `MediaEmbedPlugin`
+- renamed `VIDEO` type to `MEDIA_EMBED` and changed its value from
+  `video` to `media_embed`
+- renamed `withShortcuts` to `withElementAutoformat`
+- renamed `HoveringToolbar` to `BalloonToolbar`
+
+###### NEW
+
+- `BasicElementPlugins`
+
 ### `0.58.7` — May 22, 2020
 
 ###### BREAKING CHANGE
@@ -239,7 +256,6 @@ useMention(CHARACTERS, {
     ones:
 
 ```js
-```js
 // you can add nodeTypes to any element plugin
 export const nodeTypes = {
   typeP: PARAGRAPH,
@@ -248,7 +264,7 @@ export const nodeTypes = {
   typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
-  typeVideo: VIDEO,
+  typeVideo: MEDIA_EMBED,
   typeActionItem: ACTION_ITEM,
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,

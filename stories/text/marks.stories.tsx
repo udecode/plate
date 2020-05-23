@@ -10,7 +10,6 @@ import {
 } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -32,7 +31,8 @@ import {
   SuperscriptPlugin,
   ToolbarMark,
   UnderlinePlugin,
-} from '../../packages/slate-plugins/src';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import { initialValueMarks, nodeTypes } from '../config/initialValues';
 
 export default {

@@ -5,6 +5,10 @@ import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { filterBreaklines } from './utils';
 
+/**
+ * Enables support for deserializing content
+ * from Markdown format to Slate format.
+ */
 export const withDeserializeMd = (plugins: SlatePlugin[]) => <
   T extends ReactEditor
 >(

@@ -6,7 +6,7 @@ export * from './elements';
 export * from './mark';
 export * from './marks';
 export * from './md-preview';
-export * from './md-shortcuts';
+export * from './autoformat';
 export * from './node';
 export * from './normalizers';
 export * from './search-highlight';

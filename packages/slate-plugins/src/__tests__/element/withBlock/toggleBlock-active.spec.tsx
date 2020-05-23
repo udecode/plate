@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withBlock } from 'element';
+import { withToggleType } from 'element';
 import { BLOCKQUOTE } from 'elements';
 import { Editor } from 'slate';
 
@@ -24,9 +24,9 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = withBlock()(input as Editor);
+  const editor = withToggleType()(input as Editor);
 
-  editor.toggleBlock(BLOCKQUOTE);
+  editor.toggleType(BLOCKQUOTE);
 
   expect(editor.children).toEqual(output.children);
 });

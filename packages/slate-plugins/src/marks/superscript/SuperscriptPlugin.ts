@@ -8,6 +8,9 @@ import {
   SuperscriptPluginOptions,
 } from 'marks/superscript/types';
 
+/**
+ * Enables support for superscript formatting.
+ */
 export const SuperscriptPlugin = (
   options: SuperscriptPluginOptions = {}
 ): SlatePlugin => ({

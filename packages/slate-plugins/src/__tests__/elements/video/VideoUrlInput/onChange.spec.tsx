@@ -1,15 +1,19 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { VideoUrlInput } from 'elements/video/components';
+import { MediaEmbedUrlInput } from 'elements/media-embed/components';
 
 it('should render', () => {
   const onChange = jest.fn();
 
   const { getByTestId } = render(
-    <VideoUrlInput data-testid="VideoUrlInput" url="test" onChange={onChange} />
+    <MediaEmbedUrlInput
+      data-testid="MediaEmbedUrlInput"
+      url="test"
+      onChange={onChange}
+    />
   );
 
-  const element = getByTestId('VideoUrlInput');
+  const element = getByTestId('MediaEmbedUrlInput');
 
   fireEvent.change(element, {
     target: { value: 'testt' },

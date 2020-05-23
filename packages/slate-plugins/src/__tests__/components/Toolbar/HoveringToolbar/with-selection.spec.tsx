@@ -4,7 +4,7 @@ import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import * as isSelecting from 'components/queries';
-import { HoveringToolbar } from 'components/Toolbar';
+import { BalloonToolbar } from 'components/Toolbar';
 
 const Editor = () => {
   const [value, setValue] = useState<Node[]>([
@@ -21,7 +21,7 @@ const Editor = () => {
         setValue(newValue);
       }}
     >
-      <HoveringToolbar data-testid="Toolbar">test</HoveringToolbar>
+      <BalloonToolbar data-testid="Toolbar">test</BalloonToolbar>
     </Slate>
   );
 };

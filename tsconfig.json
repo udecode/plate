@@ -18,7 +18,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "baseUrl": "packages/slate-plugins/src"
   },
-  "exclude": ["node_modules", "dist", "scripts", "**/*template*"],
+  "exclude": ["node_modules", "dist", "scripts", "**/*test*", "**/*.spec*", "**/*template*", "**/*fixture*"],
   "awesomeTypescriptLoaderOptions": {
     "ignoreDiagnostics": [7005]
   }

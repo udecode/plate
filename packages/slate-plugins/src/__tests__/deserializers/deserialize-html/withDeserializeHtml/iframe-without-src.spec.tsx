@@ -2,7 +2,7 @@
 
 import { jsx } from '__test-utils__/jsx';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
-import { VideoPlugin } from 'elements/video';
+import { MediaEmbedPlugin } from 'elements/media-embed';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHtml([VideoPlugin()])(withReact(input));
+  const editor = withDeserializeHtml([MediaEmbedPlugin()])(withReact(input));
 
   editor.insertData(data as any);
 

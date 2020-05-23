@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   BlockquotePlugin,
@@ -15,6 +14,7 @@ import {
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
+  MediaEmbedPlugin,
   MentionPlugin,
   ParagraphPlugin,
   pipe,
@@ -24,15 +24,15 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   UnderlinePlugin,
-  VideoPlugin,
   withDeserializeHtml,
-  withImage,
+  withImageUpload,
   withLink,
   withList,
   withMention,
   withTable,
   withVoid,
-} from '../../packages/slate-plugins/src';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
 
 export default {
@@ -51,7 +51,7 @@ const plugins = [
   TablePlugin(nodeTypes),
   ActionItemPlugin(nodeTypes),
   MentionPlugin(nodeTypes),
-  VideoPlugin(nodeTypes),
+  MediaEmbedPlugin(nodeTypes),
   BoldPlugin(nodeTypes),
   CodePlugin(nodeTypes),
   ItalicPlugin(nodeTypes),
@@ -69,10 +69,10 @@ const withPlugins = [
   withTable(nodeTypes),
   withLink(nodeTypes),
   withDeserializeHtml(plugins),
-  withImage(nodeTypes),
+  withImageUpload(nodeTypes),
   withMention(nodeTypes),
   withList(nodeTypes),
-  withVoid([nodeTypes.typeVideo]),
+  withVoid([nodeTypes.typeMediaEmbed]),
 ] as const;
 
 export const Example = () => {

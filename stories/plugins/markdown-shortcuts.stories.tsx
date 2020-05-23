@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
@@ -10,12 +9,13 @@ import {
   ListPlugin,
   ParagraphPlugin,
   pipe,
-  withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
+  withElementAutoformat,
   withList,
-  withShortcuts,
-} from '../../packages/slate-plugins/src';
+  withToggleType,
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import {
   initialValueMarkdownShortcuts,
   nodeTypes,
@@ -33,8 +33,8 @@ const resetOptions = {
 const withPlugins = [
   withReact,
   withHistory,
-  withBlock(nodeTypes),
-  withShortcuts(nodeTypes),
+  withToggleType(nodeTypes),
+  withElementAutoformat(nodeTypes),
   withDeleteStartReset(resetOptions),
   withBreakEmptyReset(resetOptions),
   withList(nodeTypes),

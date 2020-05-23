@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   HeadingPlugin,
@@ -10,7 +9,8 @@ import {
   withNormalizeTypes,
   withTrailingNode,
   withTransforms,
-} from '../../packages/slate-plugins/src';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import { initialValueForcedLayout, nodeTypes } from '../config/initialValues';
 
 export default {

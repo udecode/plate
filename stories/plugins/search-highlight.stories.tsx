@@ -3,7 +3,6 @@ import { boolean } from '@storybook/addon-knobs';
 import { Search } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   decorateSearchHighlight,
   EditablePlugins,
@@ -13,7 +12,8 @@ import {
   renderLeafHighlight,
   SearchHighlightPlugin,
   ToolbarSearchHighlight,
-} from '../../packages/slate-plugins/src';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import {
   initialValueSearchHighlighting,
   nodeTypes,

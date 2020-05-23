@@ -10,7 +10,7 @@ export interface CodeBlockNodeData {}
 // Element node
 export interface CodeBlockNode extends Element, CodeBlockNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeCodeBlock?: string;
 }

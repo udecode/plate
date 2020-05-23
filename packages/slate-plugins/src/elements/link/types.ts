@@ -12,7 +12,7 @@ export interface LinkNodeData {
 // Element node
 export interface LinkNode extends Element, LinkNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeLink?: string;
 }

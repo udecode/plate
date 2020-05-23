@@ -10,7 +10,7 @@ export interface ItalicNodeData {}
 // Text node
 export interface ItalicNode extends Text, ItalicNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeItalic?: string;
 }

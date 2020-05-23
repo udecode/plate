@@ -17,7 +17,7 @@ export interface HeadingNodeData {}
 // Element node
 export interface HeadingNode extends Element, HeadingNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeH1?: string;
   typeH2?: string;
@@ -27,12 +27,15 @@ interface TypeOption {
   typeH6?: string;
 }
 
-interface OptionLevels {
+interface LevelsOption {
+  /**
+   * Heading levels supported from 1 to `levels`
+   */
   levels?: number;
 }
 
 // deserialize options
-export interface HeadingDeserializeOptions extends TypeOption, OptionLevels {}
+export interface HeadingDeserializeOptions extends TypeOption, LevelsOption {}
 
 // renderElement options given as props
 interface HeadingRenderElementOptionsProps {}
@@ -42,7 +45,7 @@ export interface HeadingRenderElementOptions
   extends RenderElementOptions,
     HeadingRenderElementOptionsProps,
     TypeOption,
-    OptionLevels {
+    LevelsOption {
   H1?: any;
   H2?: any;
   H3?: any;

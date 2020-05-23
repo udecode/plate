@@ -4,6 +4,10 @@ import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions, MARK_HIGHLIGHT } from './types';
 
+/**
+ * Enables support for highlights, useful when reviewing
+ * content or highlighting it for future reference.
+ */
 export const HighlightPlugin = (
   options: HighlightPluginOptions = {}
 ): SlatePlugin => ({

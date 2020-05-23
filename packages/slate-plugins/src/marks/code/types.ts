@@ -10,7 +10,7 @@ export interface CodeNodeData {}
 // Text node
 export interface CodeNode extends Text, CodeNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeCode?: string;
 }

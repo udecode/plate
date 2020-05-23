@@ -17,10 +17,10 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
   TableType,
-  VIDEO,
 } from '..';
 
 export const nodeTypes = {
@@ -31,7 +31,7 @@ export const nodeTypes = {
   typeCodeBlock: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
-  typeVideo: VIDEO,
+  typeMediaEmbed: MEDIA_EMBED,
   typeActionItem: ACTION_ITEM,
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
@@ -120,7 +120,7 @@ export const initialValueEmbeds: Node[] = [
         ],
       },
       {
-        type: nodeTypes.typeVideo,
+        type: nodeTypes.typeMediaEmbed,
         url: 'https://player.vimeo.com/video/26689853',
         children: [{ text: '' }],
       },
@@ -149,7 +149,7 @@ export const initialValueForcedLayout: Node[] = [
         children: [
           {
             text:
-              'This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and at least one block element in the body. Try deleting them and see what happens!',
+              'This example shows how to enforce your layout with domain-specific constraints. This document will always have a title block at the top and a trailing paragraph. Try deleting them and see what happens!',
           },
         ],
       },
@@ -167,7 +167,7 @@ export const initialValueForcedLayout: Node[] = [
   },
 ];
 
-export const initialValueHoveringToolbar: Node[] = [
+export const initialValueBalloonToolbar: Node[] = [
   {
     children: [
       {
@@ -499,7 +499,7 @@ export const initialValueMarks: Node[] = [
   },
 ];
 
-export const initialValueElements: Node[] = [
+export const initialValueBasicElements: Node[] = [
   {
     children: [
       {
@@ -539,6 +539,21 @@ export const initialValueElements: Node[] = [
         children: [{ text: 'Heading 6' }],
       },
       {
+        type: nodeTypes.typeBlockquote,
+        children: [{ text: 'Blockquote' }],
+      },
+      {
+        type: nodeTypes.typeCodeBlock,
+        children: [{ text: 'Code block' }],
+      },
+    ],
+  },
+];
+
+export const initialValueList: Node[] = [
+  {
+    children: [
+      {
         type: nodeTypes.typeUl,
         children: [
           {
@@ -559,14 +574,6 @@ export const initialValueElements: Node[] = [
             ],
           },
         ],
-      },
-      {
-        type: nodeTypes.typeBlockquote,
-        children: [{ text: 'Blockquote' }],
-      },
-      {
-        type: nodeTypes.typeCodeBlock,
-        children: [{ text: 'Code block' }],
       },
     ],
   },

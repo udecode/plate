@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -19,10 +18,11 @@ import {
   TablePlugin,
   UnderlinePlugin,
   withDeserializeMd,
-  withImage,
+  withImageUpload,
   withLink,
   withTable,
-} from '../../packages/slate-plugins/src';
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import { initialValuePasteMd, nodeTypes } from '../config/initialValues';
 
 export default {
@@ -51,7 +51,7 @@ const withPlugins = [
   withHistory,
   withLink(nodeTypes),
   withDeserializeMd(plugins),
-  withImage(nodeTypes),
+  withImageUpload(nodeTypes),
   withTable(nodeTypes),
 ] as const;
 

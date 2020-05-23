@@ -90,7 +90,7 @@ For additional help, join us in our
 | [mention](packages/slate-plugins/src/elements/mention/)         | Inline mention              |
 | [paragraph](packages/slate-plugins/src/elements/paragraph/)     | Paragraph                   |
 | [table](packages/slate-plugins/src/elements/table/)             | Table                       |
-| [video](packages/slate-plugins/src/elements/video/)             | Video                       |
+| [video](packages/slate-plugins/src/elements/media-embed)             | Video                       |
 
 <img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
@@ -122,7 +122,7 @@ For additional help, join us in our
 | [element](packages/slate-plugins/src/element)                    | Common helpers for `Element` plugins              |
 | [mark](packages/slate-plugins/src/mark)                          | Common helpers for `Mark` plugins                 |
 | [md preview](packages/slate-plugins/src/md-preview)              | Markdown preview                                  |
-| [md shortcuts](packages/slate-plugins/src/md-shortcuts/)         | Markdown shortcuts                                |
+| [md shortcuts](packages/slate-plugins/src/autoformat)         | Markdown shortcuts                                |
 | [node](packages/slate-plugins/src/node/)                         | Common helpers and `withPlugins` for `Node` nodes |
 | [search highlight](packages/slate-plugins/src/search-highlight/) | Highlight search text                             |
 | [soft break](packages/slate-plugins/src/soft-break/)             | Soft break                                        |

@@ -4,6 +4,9 @@ import { deserializeItalic } from './deserializeItalic';
 import { renderLeafItalic } from './renderLeafItalic';
 import { ItalicPluginOptions, MARK_ITALIC } from './types';
 
+/**
+ * Enables support for italic formatting.
+ */
 export const ItalicPlugin = (
   options: ItalicPluginOptions = {}
 ): SlatePlugin => ({

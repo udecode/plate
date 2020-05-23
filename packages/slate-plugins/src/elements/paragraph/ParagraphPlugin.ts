@@ -3,6 +3,9 @@ import { renderElementParagraph } from 'elements/paragraph/renderElementParagrap
 import { ParagraphPluginOptions } from 'elements/paragraph/types';
 import { deserializeParagraph } from './deserializeParagraph';
 
+/**
+ * Enables support for paragraphs.
+ */
 export const ParagraphPlugin = (
   options?: ParagraphPluginOptions
 ): SlatePlugin => ({

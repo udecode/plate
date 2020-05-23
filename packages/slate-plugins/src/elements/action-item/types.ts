@@ -12,7 +12,7 @@ export interface ActionItemNodeData {
 // Element node
 export interface ActionItemNode extends Element, ActionItemNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeActionItem?: string;
 }

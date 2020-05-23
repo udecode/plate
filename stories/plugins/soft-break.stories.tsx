@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Code, FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
@@ -16,11 +15,12 @@ import {
   SoftBreakPlugin,
   ToolbarBlock,
   ToolbarCodeBlock,
-  withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
   withList,
-} from '../../packages/slate-plugins/src';
+  withToggleType,
+} from 'slate-plugins-next/src';
+import { Slate, withReact } from 'slate-react';
 import { initialValueSoftBreak, nodeTypes } from '../config/initialValues';
 
 export default {
@@ -36,7 +36,7 @@ const resetOptions = {
 const withPlugins = [
   withReact,
   withHistory,
-  withBlock(nodeTypes),
+  withToggleType(nodeTypes),
   withDeleteStartReset(resetOptions),
   withBreakEmptyReset(resetOptions),
   withList(nodeTypes),

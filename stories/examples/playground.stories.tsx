@@ -21,10 +21,11 @@ import {
   LooksTwo,
   Search,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
+import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
+  BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
@@ -35,7 +36,6 @@ import {
   HeadingPlugin,
   HeadingToolbar,
   HighlightPlugin,
-  HoveringToolbar,
   ImagePlugin,
   ItalicPlugin,
   LinkPlugin,
@@ -47,6 +47,7 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  MediaEmbedPlugin,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
@@ -66,50 +67,48 @@ import {
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
-  VideoPlugin,
-  withBlock,
   withBreakEmptyReset,
   withDeleteStartReset,
   withDeserializeHtml,
-  withImage,
+  withElementAutoformat,
+  withImageUpload,
   withLink,
   withList,
   withMention,
   withNormalizeTypes,
-  withShortcuts,
   withTable,
+  withToggleType,
   withTrailingNode,
   withTransforms,
   withVoid,
 } from 'slate-plugins-next/src';
 import { Slate, withReact } from 'slate-react';
 import {
-  initialValueActionItem,
-  initialValueElements,
+  initialValueBasicElements,
   initialValueEmbeds,
   initialValueForcedLayout,
   initialValueImages,
   initialValueLinks,
+  initialValueList,
   initialValueMarks,
   initialValueMentions,
   initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
-import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export default {
   title: 'Examples/Playground',
 };
 
-const initialValue = [
+const initialValue: Node[] = [
   ...initialValueForcedLayout,
   createNode(),
   ...initialValueMarks,
   createNode(),
-  ...initialValueElements,
+  ...initialValueBasicElements,
   createNode(),
-  ...initialValueActionItem,
+  ...initialValueList,
   createNode(),
   ...initialValueTables,
   createNode(),
@@ -142,7 +141,8 @@ export const Plugins = () => {
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(nodeTypes));
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
-  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
+  if (boolean('MediaEmbedPlugin', true))
+    plugins.push(MediaEmbedPlugin(nodeTypes));
   if (boolean('CodeBlockPlugin', true))
     plugins.push(CodeBlockPlugin(nodeTypes));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
@@ -168,14 +168,14 @@ export const Plugins = () => {
     withTable(nodeTypes),
     withLink(nodeTypes),
     withDeserializeHtml(plugins),
-    withImage(nodeTypes),
+    withImageUpload(nodeTypes),
     withMention(nodeTypes),
-    withBlock(nodeTypes),
+    withToggleType(nodeTypes),
     withDeleteStartReset(resetOptions),
     withBreakEmptyReset(resetOptions),
     withList(nodeTypes),
-    withShortcuts(nodeTypes),
-    withVoid([EDITABLE_VOID, nodeTypes.typeVideo]),
+    withElementAutoformat(nodeTypes),
+    withVoid([nodeTypes.typeMediaEmbed]),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -263,7 +263,7 @@ export const Plugins = () => {
           <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
-        <HoveringToolbar>
+        <BalloonToolbar>
           <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark
@@ -271,7 +271,7 @@ export const Plugins = () => {
             type={MARK_UNDERLINE}
             icon={<FormatUnderlined />}
           />
-        </HoveringToolbar>
+        </BalloonToolbar>
         <MentionSelect at={target} valueIndex={index} options={values} />
         <EditablePlugins
           plugins={plugins}

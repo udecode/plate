@@ -10,7 +10,7 @@ export interface UnderlineNodeData {}
 // Text node
 export interface UnderlineNode extends Text, UnderlineNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeUnderline?: string;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { isNodeInSelection } from 'common/queries';
-import { ToggleBlockEditor } from 'element/types';
+import { ToggleTypeEditor } from 'element/types';
 import { ReactEditor, useSlate } from 'slate-react';
 import { ToolbarBlockProps, ToolbarButton } from 'components/Toolbar';
 
@@ -9,12 +9,12 @@ export const ToolbarBlock = ({
   onMouseDown,
   ...props
 }: ToolbarBlockProps) => {
-  const editor = useSlate() as ReactEditor & ToggleBlockEditor;
+  const editor = useSlate() as ReactEditor & ToggleTypeEditor;
 
   if (!onMouseDown) {
     onMouseDown = (event: Event) => {
       event.preventDefault();
-      editor.toggleBlock(type);
+      editor.toggleType(type);
     };
   }
 
