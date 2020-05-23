@@ -2,7 +2,7 @@ import { MarkPluginOptions, RenderLeafOptions } from 'mark';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 
-export const MARK_SUPERSCRIPT = 'SUPERSCRIPT';
+export const MARK_SUPERSCRIPT = 'superscript';
 
 // Data of Text node
 export interface SuperscriptNodeData {}
