@@ -42,8 +42,6 @@ it('serialize highlight to html', () => {
     ])
   ).toEqual(
     'Some paragraph of text with <span class="sc-fznWqX jhjZFC">highlighted</span> part.'
-    // THIS SHOULD LOOK LIKE THIS:
-    // 'Some paragraph of text with <mark>highlighted</mark> part.'
   );
 });
 
@@ -113,7 +111,6 @@ it('serialize list to html', () => {
     ])
   ).toEqual(
     '<ul class="sc-fzqNJr hcIsGR"><li>Item one</li><li>Item two</li></ul>'
-    // ARBITRARY CLASS HERE
   );
 });
 
@@ -143,6 +140,5 @@ it('serialize blockquote to html', () => {
     ])
   ).toEqual(
     '<blockquote class="sc-AxmLO jtdIXC">Blockquoted text here...</blockquote>'
-    // ARBITRARY CLASS HERE
   );
 });
