@@ -1,16 +1,16 @@
 import { htmlSerialize } from 'serializers/serialize-html';
 import {
+  BlockquotePlugin,
   BoldPlugin,
+  CodePlugin,
   HighlightPlugin,
   ItalicPlugin,
+  LinkPlugin,
+  ListPlugin,
   StrikethroughPlugin,
-  CodePlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-  LinkPlugin,
-  ListPlugin,
-  BlockquotePlugin,
 } from '../../..';
 
 it('serialize bold to html', () => {
@@ -67,9 +67,7 @@ it.skip('serialize code to html', () => {
       { text: 'code', code: true },
       { text: ' part.' },
     ])
-  ).toEqual(
-    'Some paragraph of text with <code>code</code> part.'
-  );
+  ).toEqual('Some paragraph of text with <code>code</code> part.');
 });
 
 it('serialize subscript to html', () => {
@@ -79,9 +77,7 @@ it('serialize subscript to html', () => {
       { text: 'subscripted', SUBSCRIPT: true },
       { text: ' part.' },
     ])
-  ).toEqual(
-    'Some paragraph of text with <sub>subscripted</sub> part.'
-  );
+  ).toEqual('Some paragraph of text with <sub>subscripted</sub> part.');
 });
 
 it('serialize superscript to html', () => {
@@ -91,9 +87,7 @@ it('serialize superscript to html', () => {
       { text: 'superscripted', SUPERSCRIPT: true },
       { text: ' part.' },
     ])
-  ).toEqual(
-    'Some paragraph of text with <sup>superscripted</sup> part.'
-  );
+  ).toEqual('Some paragraph of text with <sup>superscripted</sup> part.');
 });
 
 it('serialize underline to html', () => {
@@ -103,9 +97,7 @@ it('serialize underline to html', () => {
       { text: 'underlined', underline: true },
       { text: ' part.' },
     ])
-  ).toEqual(
-    'Some paragraph of text with <u>underlined</u> part.'
-  );
+  ).toEqual('Some paragraph of text with <u>underlined</u> part.');
 });
 
 it('serialize list to html', () => {
