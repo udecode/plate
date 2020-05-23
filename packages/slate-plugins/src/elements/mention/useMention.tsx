@@ -3,7 +3,6 @@ import { isPointAtWordEnd, isWordAfterTrigger } from 'common/queries';
 import { getNextIndex } from 'elements/mention/utils/getNextIndex';
 import { getPreviousIndex } from 'elements/mention/utils/getPreviousIndex';
 import { Editor, Range, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { insertMention } from './transforms';
 import { MentionNodeData, UseMentionOptions } from './types';
 
