@@ -17,6 +17,17 @@ export const useMention = (
     .filter((c) => c.value.toLowerCase().includes(search.toLowerCase()))
     .slice(0, maxSuggestions);
 
+  const onAddMention = useCallback(
+    (editor: Editor, option: MentionNodeData) => {
+      if (targetRange != null) {
+        Transforms.select(editor, targetRange);
+        insertMention(editor, option);
+        return setTargetRange(null);
+      }
+    },
+    [targetRange]
+  );
+
   const onKeyDownMention = useCallback(
     (e: any, editor: Editor) => {
       if (targetRange) {
@@ -35,9 +46,7 @@ export const useMention = (
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
-          Transforms.select(editor, targetRange);
-          insertMention(editor, values[valueIndex]);
-          return setTargetRange(null);
+          return onAddMention(editor, values[valueIndex]);
         }
       }
     },
@@ -77,5 +86,6 @@ export const useMention = (
     values,
     onChangeMention,
     onKeyDownMention,
+    onAddMention,
   };
 };

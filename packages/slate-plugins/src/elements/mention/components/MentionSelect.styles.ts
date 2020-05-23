@@ -7,6 +7,7 @@ export const getStyles = (): MentionSelectStyles => {
       padding: '1px 3px',
       borderRadius: '3px',
       background: 'transparent',
+      cursor: 'pointer',
     },
   ];
 

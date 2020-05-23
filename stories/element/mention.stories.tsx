@@ -42,6 +42,7 @@ export const Example = () => {
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     const {
+      onAddMention,
       onChangeMention,
       onKeyDownMention,
       search,
@@ -70,7 +71,12 @@ export const Example = () => {
           onKeyDownDeps={[index, search, target]}
         />
 
-        <MentionSelect at={target} valueIndex={index} options={values} />
+        <MentionSelect
+          at={target}
+          valueIndex={index}
+          options={values}
+          onClickMention={onAddMention}
+        />
       </Slate>
     );
   };
