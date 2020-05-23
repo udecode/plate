@@ -1,4 +1,4 @@
-import { isBlockTextEmpty } from 'common/queries';
+import { getBlockAboveSelection, isBlockTextEmpty } from 'common/queries';
 import { DEFAULT_ELEMENT } from 'element/types';
 import { Editor, Transforms } from 'slate';
 
@@ -18,14 +18,12 @@ export const withBreakEmptyReset = ({
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {
-    const currentNodeEntry = Editor.above(editor, {
-      match: (n) => Editor.isBlock(editor, n),
-    });
+    const blockEntry = getBlockAboveSelection(editor);
 
-    if (currentNodeEntry) {
-      const [currentNode] = currentNodeEntry;
+    if (blockEntry) {
+      const [block] = blockEntry;
 
-      if (isBlockTextEmpty(currentNode)) {
+      if (isBlockTextEmpty(block)) {
         const parent = Editor.above(editor, {
           match: (n) => types.includes(n.type as string),
         });

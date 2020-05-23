@@ -9,10 +9,6 @@ export interface MentionSelectProps {
    */
   at: Range | null;
   /**
-   * Called when clicking on a mention option
-   */
-  onClickMention: (editor: ReactEditor, option: MentionNodeData) => void;
-  /**
    * List of mentionable items
    */
   options: MentionNodeData[];
@@ -24,6 +20,10 @@ export interface MentionSelectProps {
    * Call to provide customized styling that will layer on top of the variant rules.
    */
   styles?: IStyleFunctionOrObject<{}, MentionSelectStyles>;
+  /**
+   * Called when clicking on a mention option
+   */
+  onClickMention?: (editor: ReactEditor, option: MentionNodeData) => void;
 }
 
 export interface MentionSelectStyleProps {}

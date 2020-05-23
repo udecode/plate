@@ -19,7 +19,6 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] `typeX` – Type of the element node where `X` represents the
         element.
   - [x] `component` – React component to render the element.
-
 - [ ] Alignment – Enables support for text alignment, useful to align
       your content to left, right and center or to justify it.
 - [x] BasicElements – Enables support for basic elements.
@@ -30,7 +29,9 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] Heading – Enables support for headings with configurable levels
         (from 1 to 6).
   - [x] Paragraph – Enables support for paragraphs.
-- [ ] Emoji – Enables support for emojis.
+- [ ] Emoji – Enables support for inserting emoji characters by typing
+      identifiers based on Unicode Short Names preceded by a colon (`:`)
+      and selecting the suggestion.
   - [ ] Insert via a dropdown
 - [ ] HorizontalLine – Enables support for dividers, useful for
       separating and grouping document sections.
@@ -45,7 +46,8 @@ Here is our roadmap to have a complete rich-text editor.
         contain buttons for features such as the text alternative or
         image styles.
   - [x] ImageUpload – Allows for pasting images from clipboard, dragging
-       and dropping images, selecting them through a file system dialog.
+        and dropping images, selecting them through a file system
+        dialog.
     - [x] Pasting images from clipboard.
     - [ ] Drag and drop.
     - [ ] File system dialog.
@@ -59,6 +61,7 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] Override links from clipboard.
   - [ ] [Balloon](https://github.com/zbeyens/slate-plugins-next/issues/103)
         to edit and delete.
+  - [ ] Hotkey
 - [x] List – Enables support for bulleted, numbered and to-do lists.
   - [ ] TodoList – Enables support for lists of interactive checkboxes
         with labels. It supports all features of regular lists so you
@@ -113,35 +116,35 @@ Here is our roadmap to have a complete rich-text editor.
         color palette panel.
   - [ ] FontSize – Enables support for font sizes.
   - [ ] FontFamily – Enables support for font families.
-- [ ] Highlight – Enables support for highlights, useful when reviewing
+- [x] Highlight – Enables support for highlights, useful when reviewing
       content or highlighting it for future reference.
-  - [x] Highlight leaf
   - [ ] Insert highlight
   - [ ] Remove highlight
   - [ ] Configurable color palette panel
+- [ ] RemoveMark – Enables support for removing all the marks in the
+      selection.
 
 ### Deserializers
 
-- [x] DeserializerHtml – Enables support for deserializing content from
+- [x] DeserializeHtml – Enables support for deserializing content from
       HTML format to Slate format.
-- [x] DeserializerMarkdown – Enables support for deserializing content
+- [x] DeserializeMarkdown – Enables support for deserializing content
       from Markdown format to Slate format.
-- [ ] DeserializerOffice – Enables support for deserializing content
-      from Microsoft Office or Google Docs format to Slate format.
+- [ ] DeserializeOffice – Enables support for deserializing content from
+      Microsoft Office or Google Docs format to Slate format.
 
-### Normalizers & Handlers
+### Serializers
 
-- [ ] Autoformat – Enables support for autoformatting actions.
-  - [x] AutoFormatElement – Enables support for autoformatting texts to
-        elements.
-    - [ ] rename `withShortcuts` to `withElementAutoformat`
-    - [ ] Code block: start a line with ```
-  - [x] AutoFormatMark – Enables support for autoformatting texts to
-        marks.
-    - [ ] Strikethrough – Type `~~text~~`
-    - [ ] Remove the special characters when inline formatting. E.g.
-          `**text**` would be replaced by `text` in bold
-  - [ ] Combine `withBlockAutoformat` with MarkdownPreviewPlugin
+- [ ] SerializeHtml – Enables support for serializing content from Slate
+      format to HTML format.
+- [ ] SerializeMarkdown – Enables support for serializing content from
+      Slate format to Markdown format.
+- [ ] SerializeOffice – Enables support for serializing content from
+      Slate format to Microsoft Office or Google Docs format.
+
+
+### Normalizers
+
 - [x] NormalizeTypes – Enables support for defining type rules for
       specific locations in the document. For example, it can help to
       ensure that there will always be a single title field at the
@@ -157,11 +160,25 @@ Here is our roadmap to have a complete rich-text editor.
       configurable type when the type of the last node is not matching
       at a configurable depth.
 
+### Handlers
+
+- [x] Autoformat – Enables support for autoformatting actions.
+  - [ ] Code block: start a line with ```
+  - [ ] Marks: autoformat text to marks
+- [x] SoftBreak – Enables support for inserting soft breaks.
+
+### Decorators
+
+- [x] Preview – Enables support for previewing.
+  - [ ] Markdown
+  - [ ] Configurable styles
+
 ### Toolbar
 
 - [x] BalloonToolbar – Provides a toolbar, pointing at a particular
       element or range.
   - [ ] Option `location` – `top | bottom`.
+  - [ ] Option `arrow` – `boolean`.
 - [ ] BlockToolbar – Provides an additional configurable toolbar on the
       left-hand side of the content area (the gutter). The toolbar is
       represented by a button with an icon. It is positioned next to the
@@ -170,14 +187,27 @@ Here is our roadmap to have a complete rich-text editor.
       document.
 - [x] Toolbar – Provides a toolbar with buttons.
 
-### Transforms
+### Utilities
 
-- [ ] RemoveFormat – Enables support for removing all the marks in the
-      selection.
+- [x] NodeID – Enables support for inserting nodes with an id key.
+
+### Widgets
+
+- [x] SearchHighlight – Enables support for highlighting searching text.
 - [ ] SpecialCharacter – Enables support for inserting special
       characters via a dropdown. Add plugins like special characters
       essentials or special characters currency to fill it with some
       signs.
+  - [ ] SpecialCharacterEssential – Adds a basic set with the most
+        popular signs to the special characters feature.
+  - [ ] SpecialCharacterArrow – Adds the arrows category and signs to
+        the special characters feature.
+  - [ ] SpecialCharacterCurrency – Adds the currency category and signs
+        to the special characters feature.
+  - [ ] SpecialCharacterLa - [] SpecialCharacter – Enables support for
+        inserting special characters via a dropdown. Add plugins like
+        special characters essentials or special characters currency to
+        fill it with some signs.
   - [ ] SpecialCharacterEssential – Adds a basic set with the most
         popular signs to the special characters feature.
   - [ ] SpecialCharacterArrow – Adds the arrows category and signs to
@@ -189,10 +219,12 @@ Here is our roadmap to have a complete rich-text editor.
   - [ ] SpecialCharacterMath – Adds the mathematical category and signs
         to the special characters feature.
   - [ ] SpecialCharacterText – Adds the text category and signs to the
+        special characters feature.tin – Adds the Latin category and
+        signs to the special characters feature.
+  - [ ] SpecialCharacterMath – Adds the mathematical category and signs
+        to the special characters feature.
+  - [ ] SpecialCharacterText – Adds the text category and signs to the
         special characters feature.
-
-### Queries
-
 - [ ] WordCount – Provides the number of words and characters written in
       the editor.
 
@@ -207,9 +239,9 @@ Here is our roadmap to have a complete rich-text editor.
 - [ ] Comments – Enables support for commenting element and text nodes.
   - [ ] Text comments
   - [ ] Element comments
-- [ ] RTC – Enables support for real-time collaboration. It
-      allows for editing the same document by multiple users at the same
-      time. It also shows the selection of other users in real time and
+- [ ] RTC – Enables support for real-time collaboration. It allows for
+      editing the same document by multiple users at the same time. It
+      also shows the selection of other users in real time and
       automatically solves all conflicts.
   - [ ] RTCPresenceList – Enables support for displaying all users that
         are currently connected to the edited document in real-time
@@ -222,3 +254,4 @@ Here is our roadmap to have a complete rich-text editor.
 - [ ] TrackChanges – Enables the track changes mode (aka “suggestion
       mode”). In this mode, changes are marked in the content and shown
       as suggestions that can be accepted or discarded by the users.
+

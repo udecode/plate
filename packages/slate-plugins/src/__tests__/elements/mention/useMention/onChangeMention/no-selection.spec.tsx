@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '__test-utils__/jsx';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { pipe } from 'common/pipe';
+import { pipe } from 'common/utils/pipe';
 import { useMention, withMention } from 'elements/mention';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';

@@ -16,8 +16,10 @@ bumps.
 - renamed `VideoPlugin` and its atoms to `MediaEmbedPlugin`
 - renamed `VIDEO` type to `MEDIA_EMBED` and changed its value from
   `video` to `media_embed`
-- renamed `withShortcuts` to `withElementAutoformat`
+- renamed `withShortcuts` to `withAutoformat`
 - renamed `HoveringToolbar` to `BalloonToolbar`
+- renamed `MarkdownPreviewPlugin` to `PreviewPlugin` as it will be
+  configurable to support other languages.
 
 ###### NEW
 

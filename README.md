@@ -32,7 +32,7 @@ and
 
 ## 📦 Included
 
-- ✨ 20+ Editor Plugins.
+- ✨ 30+ Editor Plugins.
 - ✅ Unit tested with `slate@0.58.1`.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
@@ -78,54 +78,69 @@ For additional help, join us in our
 
 ## 🔌 Plugins
 
-| Element Plugins                                                 |                             |
-|:----------------------------------------------------------------|:----------------------------|
-| [action item](packages/slate-plugins/src/elements/action-item/) | List of action items        |
-| [blockquote](packages/slate-plugins/src/elements/blockquote/)   | Blockquote                  |
-| [code](packages/slate-plugins/src/elements/code-block)               | `Code block`                |
-| [heading](packages/slate-plugins/src/elements/heading/)         | Heading (from 1 to 6)       |
-| [image](packages/slate-plugins/src/elements/image/)             | Image                       |
-| [link](packages/slate-plugins/src/elements/link/)               | Inline link                 |
-| [list](packages/slate-plugins/src/elements/list)                | Bulleted and numbered lists |
-| [mention](packages/slate-plugins/src/elements/mention/)         | Inline mention              |
-| [paragraph](packages/slate-plugins/src/elements/paragraph/)     | Paragraph                   |
-| [table](packages/slate-plugins/src/elements/table/)             | Table                       |
-| [video](packages/slate-plugins/src/elements/media-embed)             | Video                       |
-
 <img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
-
-| Mark Plugins                                                     |                   |
-|:-----------------------------------------------------------------|:------------------|
-| [bold](packages/slate-plugins/src/marks/bold/)                   | **Bold**          |
-| [highlight](packages/slate-plugins/src/marks/highlight/)         | Blockquote        |
-| [inline-code](packages/slate-plugins/src/marks/code)     | `Code`            |
-| [italic](packages/slate-plugins/src/marks/italic)                | *Italic*          |
-| [strikethrough](packages/slate-plugins/src/marks/strikethrough/) | ~~Strikethrough~~ |
-| [subscript](packages/slate-plugins/src/marks/subscript/)         | Subscript         |
-| [superscript](packages/slate-plugins/src/marks/superscript/)     | Superscript       |
-| [underline](packages/slate-plugins/src/marks/underline)          | Underline         |
+| Element Plugins                                                     |                                                                       |
+|:--------------------------------------------------------------------|:----------------------------------------------------------------------|
+| [BasicElements](packages/slate-plugins/src/elements/basic-elements) | Enables support for basic elements.                                   |
+| [Blockquote](packages/slate-plugins/src/elements/blockquote/)       | Enables support for block quotes.                                     |
+| [CodeBlock](packages/slate-plugins/src/elements/code-block)         | Enables support for pre-formatted code blocks.                        |
+| [Heading](packages/slate-plugins/src/elements/heading/)             | Enables support for headings (from 1 to 6).                           |
+| [Image](packages/slate-plugins/src/elements/image/)                 | Enables support for images.                                           |
+| [ImageUpload](packages/slate-plugins/src/elements/image/)           | Allows for pasting images from clipboard.                             |
+| [Link](packages/slate-plugins/src/elements/link/)                   | Enables support for hyperlinks.                                       |
+| [List](packages/slate-plugins/src/elements/list)                    | Enables support for bulleted, numbered and to-do lists.               |
+| [MediaEmbed](packages/slate-plugins/src/elements/media-embed)       | Enables support for embeddable media such as YouTube or Vimeo videos. |
+| [Mention](packages/slate-plugins/src/elements/mention/)             | Enables support for autocompleting @mentions and #tags.               |
+| [Paragraph](packages/slate-plugins/src/elements/paragraph/)         | Enables support for paragraphs.                                       |
+| [Table](packages/slate-plugins/src/elements/table/)                 | Enables support for tables.                                           |
 
 <img src="https://imgur.com/NQJgC5b.png" alt="marks" width="650"/>
 
+| Mark Plugins                                                     |                                               |
+|:-----------------------------------------------------------------|:----------------------------------------------|
+| [BasicMarks](packages/slate-plugins/src/marks/basic-marks)       | Enables support for basic text formatting.    |
+| [Bold](packages/slate-plugins/src/marks/bold/)                   | Enables support for bold formatting.          |
+| [Code](packages/slate-plugins/src/marks/code)                    | Enables support for inline code formatting.   |
+| [Highlight](packages/slate-plugins/src/marks/highlight/)         | Enables support for highlights.               |
+| [Italic](packages/slate-plugins/src/marks/italic)                | Enables support for italic formatting.        |
+| [Strikethrough](packages/slate-plugins/src/marks/strikethrough/) | Enables support for strikethrough formatting. |
+| [Subscript](packages/slate-plugins/src/marks/subscript/)         | Enables support for subscript formatting.     |
+| [Superscript](packages/slate-plugins/src/marks/superscript/)     | Enables support for superscript formatting.   |
+| [Underline](packages/slate-plugins/src/marks/underline)          | Enables support for underline formatting.     |
 
-| Deserializer Plugins                                                           |                       |
-|:-------------------------------------------------------------------------------|:----------------------|
-| [deserialize-html](packages/slate-plugins/src/deserializers/deserialize-html/) | HTML Deserializer     |
-| [deserialize-md](packages/slate-plugins/src/deserializers/deserialize-md/)     | Markdown Deserializer |
+| Deserializer Plugins                                                            |                                                                                 |
+|:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
+| [DeserializeHtml](packages/slate-plugins/src/deserializers/deserialize-html/)   | Enables support for deserializing content from HTML format to Slate format.     |
+| [DeserializeMarkdown](packages/slate-plugins/src/deserializers/deserialize-md/) | Enables support for deserializing content from Markdown format to Slate format. |
 
-| Plugins                                                          |                                                   |
-|:-----------------------------------------------------------------|:--------------------------------------------------|
-| [common](packages/slate-plugins/src/common/)                     | Common helpers for all plugins                    |
-| [components](packages/slate-plugins/src/components/)             | Common UI components                              |
-| [deserializers](packages/slate-plugins/src/deserializers/)       | Common helpers for deserializers                  |
-| [element](packages/slate-plugins/src/element)                    | Common helpers for `Element` plugins              |
-| [mark](packages/slate-plugins/src/mark)                          | Common helpers for `Mark` plugins                 |
-| [md preview](packages/slate-plugins/src/md-preview)              | Markdown preview                                  |
-| [md shortcuts](packages/slate-plugins/src/autoformat)         | Markdown shortcuts                                |
-| [node](packages/slate-plugins/src/node/)                         | Common helpers and `withPlugins` for `Node` nodes |
-| [search highlight](packages/slate-plugins/src/search-highlight/) | Highlight search text                             |
-| [soft break](packages/slate-plugins/src/soft-break/)             | Soft break                                        |
+| Normalizer Plugins                                        |                                                                                                                      |
+|:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
+| [NormalizeTypes](packages/slate-plugins/src/normalizers/) | Enables support for defining type rules for specific locations in the document.                                      |
+| [TrailingNode](packages/slate-plugins/src/normalizers/)   | Enables support for inserting a trailing node of a configurable type when the type of the last node is not matching. |
+
+| Handler Plugins                                               |                                                     |
+|:--------------------------------------------------------------|:----------------------------------------------------|
+| [Autoformat](packages/slate-plugins/src/handlers/autoformat/) | Enables support for autoformatting actions.         |
+| [SoftBreak](packages/slate-plugins/src/handlers/soft-break/)  | Enables support for inserting soft breaks.          |
+
+| Decorator Plugins                                         |                                 |
+|:----------------------------------------------------------|:--------------------------------|
+| [Preview](packages/slate-plugins/src/decorators/preview/) | Enables support for previewing. |
+
+| Toolbar                                                          |                                                                |
+|:-----------------------------------------------------------------|:---------------------------------------------------------------|
+| [BalloonToolbar](packages/slate-plugins/src/components/Toolbar/) | Provides a toolbar, pointing at a particular element or range. |
+| [Toolbar](packages/slate-plugins/src/components/Toolbar/)        | Provides a toolbar with buttons.                               |
+
+| Utility Plugins                                                |                                                     |
+|:---------------------------------------------------------------|:----------------------------------------------------|
+| [NodeID](packages/slate-plugins/src/common/transforms/node-id) | Enables support for inserting nodes with an id key. |
+
+
+| Widget Plugins                                                          |                                                  |
+|:------------------------------------------------------------------------|:-------------------------------------------------|
+| [SearchHighlight](packages/slate-plugins/src/widgets/search-highlight/) | Enables support for highlighting searching text. |
 
 ## 🤔 Notice
 

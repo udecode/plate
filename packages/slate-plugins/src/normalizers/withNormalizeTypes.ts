@@ -1,5 +1,5 @@
 import { getNode } from 'common/queries/getNode';
-import { TransformEditor } from 'node/withTransforms';
+import { TransformEditor } from 'common/transforms';
 import { Editor, Path, Transforms } from 'slate';
 
 interface Rule {

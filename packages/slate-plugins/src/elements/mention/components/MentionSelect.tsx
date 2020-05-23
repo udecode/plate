@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
+import { getPreventDefaultHandler } from 'common/utils';
 import { getStyles } from 'elements/mention/components/MentionSelect.styles';
 import {
   MentionSelectProps,
@@ -54,10 +55,11 @@ export const MentionSelectBase = ({
                 ? classNames.mentionItemSelected
                 : classNames.mentionItem
             }
-            onMouseDown={(e) => {
-              e.preventDefault();
-              onClickMention(editor, option);
-            }}
+            onMouseDown={getPreventDefaultHandler(
+              onClickMention,
+              editor,
+              option
+            )}
           >
             {option.value}
           </div>

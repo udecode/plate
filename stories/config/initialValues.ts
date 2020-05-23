@@ -229,7 +229,7 @@ export const initialValueLinks: Node[] = [
   },
 ];
 
-export const initialValueMarkdownPreview: Node[] = [
+export const initialValuePreview: Node[] = [
   {
     children: [
       {
@@ -414,7 +414,7 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueMarks: Node[] = [
+export const initialValueBasicMarks: Node[] = [
   {
     children: [
       {
@@ -422,7 +422,7 @@ export const initialValueMarks: Node[] = [
         children: [
           {
             text:
-              'These are all the available marks. You can customize the type and component for each of these.',
+              'These are the basic marks. You can customize the type and component for each of these.',
           },
         ],
       },
@@ -442,7 +442,29 @@ export const initialValueMarks: Node[] = [
           { text: 'code, ', [nodeTypes.typeCode]: true },
           { text: 'sub, ', [nodeTypes.typeSubscript]: true },
           { text: 'sup, ', [nodeTypes.typeSuperscript]: true },
-          { text: 'highlight', [nodeTypes.typeHighlight]: true },
+        ],
+      },
+    ],
+  },
+];
+
+export const initialValueHighlight: Node[] = [
+  {
+    children: [
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text: 'The Highlight plugin enables support for ',
+          },
+          {
+            text: 'highlights',
+            [nodeTypes.typeHighlight]: true,
+          },
+          {
+            text:
+              ', useful when reviewing content or highlighting it for future reference.',
+          },
         ],
       },
     ],

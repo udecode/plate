@@ -2,7 +2,7 @@
 
 import { nodeTypes } from '__fixtures__/initialValues.fixtures';
 import { jsx } from '__test-utils__/jsx';
-import { withTransforms } from 'node';
+import { withTransforms } from 'common/transforms';
 import { withNormalizeTypes } from 'normalizers';
 import { Editor } from 'slate';
 

@@ -14,6 +14,7 @@ import { MediaEmbedPlugin } from 'elements/media-embed';
 import { MENTION, MentionPlugin } from 'elements/mention';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
+import { SoftBreakPlugin } from 'handlers/soft-break';
 import { deserializeBold } from 'marks/bold/deserializeBold';
 import { deserializeCode } from 'marks/code/deserializeCode';
 import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
@@ -22,8 +23,7 @@ import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStriket
 import { deserializeSubscript } from 'marks/subscript/deserializeSubscript';
 import { deserializeSuperscript } from 'marks/superscript/deserializeSuperscript';
 import { deserializeUnderline } from 'marks/underline/deserializeUnderline';
-import { SearchHighlightPlugin } from 'search-highlight';
-import { SoftBreakPlugin } from 'soft-break';
+import { SearchHighlightPlugin } from 'widgets/search-highlight';
 
 const textTags = [
   '<span>span</span>',
@@ -109,7 +109,7 @@ const output = (
     </hp>
     <hp>
       <ha url="http://localhost:3000">a</ha>
-      <hmention character="zbeyens" />
+      <hmention value="zbeyens" />
     </hp>
     <hcode>
       <htext>code</htext>

@@ -78,54 +78,69 @@ For additional help, join us in our
 
 ## 🔌 Plugins
 
-| Element Plugins                         |                             |
-|:----------------------------------------|:----------------------------|
-| [action item](src/elements/action-item) | List of action items        |
-| [blockquote](src/elements/blockquote)   | Blockquote                  |
-| [code](src/elements/code-block)               | `Code block`                |
-| [heading](src/elements/heading)         | Heading (from 1 to 6)       |
-| [image](src/elements/image)             | Image                       |
-| [link](src/elements/link)               | Inline link                 |
-| [list](src/elements/list)               | Bulleted and numbered lists |
-| [mention](src/elements/mention)         | Inline mention              |
-| [paragraph](src/elements/paragraph)     | Paragraph                   |
-| [table](src/elements/table)             | Table                       |
-| [video](src/elements/media-embed)             | Video                       |
-
 <img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
-
-| Mark Plugins                             |                   |
-|:-----------------------------------------|:------------------|
-| [bold](src/marks/bold)                   | **Bold**          |
-| [highlight](src/marks/highlight)         | Blockquote        |
-| [inline-code](src/marks/code)     | `Code`            |
-| [italic](src/marks/italic)               | *Italic*          |
-| [strikethrough](src/marks/strikethrough) | ~~Strikethrough~~ |
-| [subscript](src/marks/subscript)         | Subscript         |
-| [superscript](src/marks/superscript)     | Superscript       |
-| [underline](src/marks/underline)         | Underline         |
+| Element Plugins                                                     |                                                                       |
+|:--------------------------------------------------------------------|:----------------------------------------------------------------------|
+| [BasicElements](src/elements/basic-elements) | Enables support for basic elements.                                   |
+| [Blockquote](src/elements/blockquote)       | Enables support for block quotes.                                     |
+| [CodeBlock](src/elements/code-block)         | Enables support for pre-formatted code blocks.                        |
+| [Heading](src/elements/heading)             | Enables support for headings (from 1 to 6).                           |
+| [Image](src/elements/image)                 | Enables support for images.                                           |
+| [ImageUpload](src/elements/image)           | Allows for pasting images from clipboard.                             |
+| [Link](src/elements/link)                   | Enables support for hyperlinks.                                       |
+| [List](src/elements/list)                    | Enables support for bulleted, numbered and to-do lists.               |
+| [MediaEmbed](src/elements/media-embed)       | Enables support for embeddable media such as YouTube or Vimeo videos. |
+| [Mention](src/elements/mention)             | Enables support for autocompleting @mentions and #tags.               |
+| [Paragraph](src/elements/paragraph)         | Enables support for paragraphs.                                       |
+| [Table](src/elements/table)                 | Enables support for tables.                                           |
 
 <img src="https://imgur.com/NQJgC5b.png" alt="marks" width="650"/>
 
+| Mark Plugins                                                     |                                               |
+|:-----------------------------------------------------------------|:----------------------------------------------|
+| [BasicMarks](src/marks/basic-marks)       | Enables support for basic text formatting.    |
+| [Bold](src/marks/bold)                   | Enables support for bold formatting.          |
+| [Code](src/marks/code)                    | Enables support for inline code formatting.   |
+| [Highlight](src/marks/highlight)         | Enables support for highlights.               |
+| [Italic](src/marks/italic)                | Enables support for italic formatting.        |
+| [Strikethrough](src/marks/strikethrough) | Enables support for strikethrough formatting. |
+| [Subscript](src/marks/subscript)         | Enables support for subscript formatting.     |
+| [Superscript](src/marks/superscript)     | Enables support for superscript formatting.   |
+| [Underline](src/marks/underline)          | Enables support for underline formatting.     |
 
-| Deserializer Plugins                                   |                       |
-|:-------------------------------------------------------|:----------------------|
-| [deserialize-html](src/deserializers/deserialize-html) | HTML Deserializer     |
-| [deserialize-md](src/deserializers/deserialize-md)     | Markdown Deserializer |
+| Deserializer Plugins                                                            |                                                                                 |
+|:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
+| [DeserializeHtml](src/deserializers/deserialize-html)   | Enables support for deserializing content from HTML format to Slate format.     |
+| [DeserializeMarkdown](src/deserializers/deserialize-md) | Enables support for deserializing content from Markdown format to Slate format. |
 
-| Plugins                                  |                                                   |
-|:-----------------------------------------|:--------------------------------------------------|
-| [common](src/common)                     | Common helpers for all plugins                    |
-| [components](src/components)             | Common UI components                              |
-| [deserializers](src/deserializers)       | Common helpers for deserializers                  |
-| [element](src/element)                   | Common helpers for `Element` plugins              |
-| [mark](src/mark)                         | Common helpers for `Mark` plugins                 |
-| [md preview](src/md-preview)             | Markdown preview                                  |
-| [md shortcuts](src/autoformat)         | Markdown shortcuts                                |
-| [node](src/node)                         | Common helpers and `withPlugins` for `Node` nodes |
-| [search highlight](src/search-highlight) | Highlight search text                             |
-| [soft break](src/soft-break)             | Soft break                                        |
+| Normalizer Plugins                                        |                                                                                                                      |
+|:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
+| [NormalizeTypes](src/normalizers) | Enables support for defining type rules for specific locations in the document.                                      |
+| [TrailingNode](src/normalizers)   | Enables support for inserting a trailing node of a configurable type when the type of the last node is not matching. |
+
+| Handler Plugins                                               |                                                     |
+|:--------------------------------------------------------------|:----------------------------------------------------|
+| [Autoformat](src/handlers/autoformat) | Enables support for autoformatting actions.         |
+| [SoftBreak](src/handlers/soft-break)  | Enables support for inserting soft breaks.          |
+
+| Decorator Plugins                                         |                                 |
+|:----------------------------------------------------------|:--------------------------------|
+| [Preview](src/decorators/preview) | Enables support for previewing. |
+
+| Toolbar                                                          |                                                                |
+|:-----------------------------------------------------------------|:---------------------------------------------------------------|
+| [BalloonToolbar](src/components/Toolbar) | Provides a toolbar, pointing at a particular element or range. |
+| [Toolbar](src/components/Toolbar)        | Provides a toolbar with buttons.                               |
+
+| Utility Plugins                                                |                                                     |
+|:---------------------------------------------------------------|:----------------------------------------------------|
+| [NodeID](src/common/transforms/node-id) | Enables support for inserting nodes with an id key. |
+
+
+| Widget Plugins                                                          |                                                  |
+|:------------------------------------------------------------------------|:-------------------------------------------------|
+| [SearchHighlight](src/widgets/search-highlight) | Enables support for highlighting searching text. |
 
 ## 🤔 Notice
 
@@ -161,9 +176,9 @@ We welcome contributions to `slate-plugins-next`! Please feel free to
 
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
-[contributing guide](../../CONTRIBUTING.md) to get started. or find us
-on [Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we're
-will take the time to guide you
+[contributing guide](../../CONTRIBUTING.md) to get started, or find us on
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
+take the time to guide you
 
 ### 👨‍💻 Development scripts
 

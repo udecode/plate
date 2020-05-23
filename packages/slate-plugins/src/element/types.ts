@@ -6,7 +6,7 @@ export interface ToggleTypeEditor extends Editor {
   /**
    * Toggle the type of the selected nodes.
    */
-  toggleType: (activeType: string, inactiveType?: string) => void;
+  toggleType: (activeType: string, defaultType?: string) => void;
 }
 
 export interface GetRenderElementOptions {

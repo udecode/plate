@@ -279,7 +279,7 @@ export const initialValueLinks: Node[] = [
   },
 ];
 
-export const initialValueMarkdownPreview: Node[] = [
+export const initialValuePreview: Node[] = [
   {
     children: [
       {

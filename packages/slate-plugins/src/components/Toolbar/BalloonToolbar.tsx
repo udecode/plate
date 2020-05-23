@@ -20,6 +20,7 @@ const StyledToolbar = styled(Toolbar)`
 `;
 
 interface Props extends ToolbarProps {
+  direction: 'top' | 'bottom';
   children: any;
 }
 

@@ -28,8 +28,8 @@ import {
   LooksTwo,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
-import { withElementAutoformat } from 'autoformat';
-import { pipe } from 'common';
+import { pipe, withTransforms } from 'common';
+import { withNodeID } from 'common/transforms/node-id';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import {
   ToolbarBlock,
@@ -39,6 +39,7 @@ import {
   withVoid,
 } from 'element';
 import {
+  BasicElementPlugins,
   ToolbarCodeBlock,
   ToolbarImage,
   ToolbarLink,
@@ -61,7 +62,10 @@ import { MediaEmbedPlugin } from 'elements/media-embed';
 import { MentionPlugin } from 'elements/mention';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin } from 'elements/table';
+import { withAutoformat } from 'handlers/autoformat';
+import { SoftBreakPlugin } from 'handlers/soft-break';
 import { ToolbarMark } from 'mark/components';
+import { BasicMarkPlugins } from 'marks/basic-marks';
 import { BoldPlugin, MARK_BOLD, renderLeafBold } from 'marks/bold';
 import { CodePlugin, MARK_CODE, renderLeafCode } from 'marks/code';
 import { HighlightPlugin, renderLeafHighlight } from 'marks/highlight';
@@ -86,18 +90,18 @@ import {
   renderLeafUnderline,
   UnderlinePlugin,
 } from 'marks/underline';
-import { withNodeID, withTransforms } from 'node';
 import { withNormalizeTypes } from 'normalizers';
-import { SearchHighlightPlugin } from 'search-highlight';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { SoftBreakPlugin } from 'soft-break';
+import { SearchHighlightPlugin } from 'widgets/search-highlight';
 import { BalloonToolbar, EditablePlugins, HeadingToolbar } from 'components';
 
 const markOptions = { ...nodeTypes, hotkey: '' };
 
 const plugins = [
+  ...BasicElementPlugins(),
+  ...BasicMarkPlugins(),
   BlockquotePlugin(nodeTypes),
   ActionItemPlugin(nodeTypes),
   HeadingPlugin(nodeTypes),
@@ -164,7 +168,7 @@ const Editor = () => {
     withDeleteStartReset(resetOptions),
     withBreakEmptyReset(resetOptions),
     withList(nodeTypes),
-    withElementAutoformat(nodeTypes),
+    withAutoformat(nodeTypes),
     withVoid([nodeTypes.typeMediaEmbed]),
     withTransforms(),
     withNormalizeTypes({

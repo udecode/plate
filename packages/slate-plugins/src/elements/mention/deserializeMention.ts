@@ -8,7 +8,7 @@ export const deserializeMention = ({
   element: getElementDeserializer(typeMention, {
     createElement: (el) => ({
       type: typeMention,
-      character: el.getAttribute('data-slate-value'),
+      value: el.getAttribute('data-slate-value'),
     }),
   }),
 });

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withTransforms } from 'node';
+import { withTransforms } from 'common/transforms';
 import { withTrailingNode } from 'normalizers/withTrailingNode';
 import { Editor } from 'slate';
 

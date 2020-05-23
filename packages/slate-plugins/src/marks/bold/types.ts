@@ -10,7 +10,7 @@ export interface BoldNodeData {}
 // Text node
 export interface BoldNode extends Text, BoldNodeData {}
 
-//
+// Type option
 interface TypeOption {
   typeBold?: string;
 }
