@@ -10,6 +10,7 @@ import {
   UnderlinePlugin,
   LinkPlugin,
   ListPlugin,
+  BlockquotePlugin,
 } from '../../..';
 
 it('serialize bold to html', () => {
@@ -137,5 +138,19 @@ it('serialize link to html', () => {
     ])
   ).toEqual(
     'Some paragraph of text with <a href="https://theuselessweb.com/">link</a> part.'
+  );
+});
+
+it('serialize blockquote to html', () => {
+  expect(
+    htmlSerialize([BlockquotePlugin()])([
+      {
+        type: 'blockquote',
+        children: [{ text: 'Blockquoted text here...' }],
+      },
+    ])
+  ).toEqual(
+    '<blockquote class="sc-AxmLO jtdIXC">Blockquoted text here...</blockquote>'
+    // ARBITRARY CLASS HERE
   );
 });
