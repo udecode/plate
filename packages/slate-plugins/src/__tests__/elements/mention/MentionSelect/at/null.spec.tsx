@@ -13,6 +13,7 @@ it('should render null', () => {
       at={null}
       options={mentionables}
       valueIndex={0}
+      onClickMention={() => {}}
     />
   );
 

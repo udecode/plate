@@ -40,6 +40,7 @@ it('should render null', () => {
       at={editor.selection}
       options={mentionables}
       valueIndex={0}
+      onClickMention={() => {}}
     />
   );
 

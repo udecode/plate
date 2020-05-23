@@ -19,6 +19,7 @@ export const MentionSelectBase = ({
   options,
   valueIndex,
   styles,
+  onClickMention,
   ...props
 }: MentionSelectProps) => {
   const classNames = getClassNames(styles);
@@ -53,6 +54,10 @@ export const MentionSelectBase = ({
                 ? classNames.mentionItemSelected
                 : classNames.mentionItem
             }
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onClickMention(editor, option);
+            }}
           >
             {option.value}
           </div>
