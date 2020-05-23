@@ -6,7 +6,7 @@ import {
   MARK_HIGHLIGHT,
 } from './types';
 
-const HighlightText = styled.span<{ bg: string }>`
+const HighlightText = styled.mark<{ bg: string }>`
   background-color: ${(props) => props.bg};
 `;
 
