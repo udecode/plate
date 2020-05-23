@@ -1,8 +1,14 @@
 import { ReactElement } from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { Node as SlateNode, Text } from 'slate';
+import { Node as SlateNode, Text as SlateText } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 import { SlatePlugin } from '../..';
+
+const trimWhitespace = (rawHtml: string): string =>
+  rawHtml.replace(/(\r\n|\n|\r|\t)/gm, '');
+
+const stripSlateDataAttributes = (rawHtml: string): string =>
+  rawHtml.replace(/( data-slate)(-node|-type)="[^"]+"/gm, '');
 
 const getNode = (element: RenderElementProps, plugins: SlatePlugin[]) => {
   const { children } = element;
@@ -38,11 +44,11 @@ export const htmlSerialize = (plugins: SlatePlugin[]) => (
 ): string => {
   const result = nodes
     .map((node: SlateNode) => {
-      if (Text.isText(node)) {
+      if (SlateText.isText(node)) {
         return getLeaf(
           {
-            leaf: node as Text,
-            text: node as Text,
+            leaf: node as SlateText,
+            text: node as SlateText,
             children: node.text,
             attributes: { 'data-slate-leaf': true },
           },
@@ -59,5 +65,5 @@ export const htmlSerialize = (plugins: SlatePlugin[]) => (
       );
     })
     .join('');
-  return decodeURIComponent(result);
+  return stripSlateDataAttributes(trimWhitespace(decodeURIComponent(result)));
 };
