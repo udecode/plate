@@ -3,6 +3,11 @@ import {
   BoldPlugin,
   HighlightPlugin,
   ItalicPlugin,
+  StrikethroughPlugin,
+  CodePlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
   LinkPlugin,
   ListPlugin,
 } from '../../..';
@@ -38,6 +43,67 @@ it('serialize highlight to html', () => {
     'Some paragraph of text with <span class="sc-fznWqX jhjZFC">highlighted</span> part.'
     // THIS SHOULD LOOK LIKE THIS:
     // 'Some paragraph of text with <mark>highlighted</mark> part.'
+  );
+});
+
+it('serialize strikethrough to html', () => {
+  expect(
+    htmlSerialize([StrikethroughPlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'strikethrough', strikethrough: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <span class="sc-fzqARJ jiBykp">strikethrough</span> part.'
+    // We need to add explicit class to this span 'strikethrough'
+  );
+});
+
+it.skip('serialize code to html', () => {
+  expect(
+    htmlSerialize([CodePlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'code', code: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <code>code</code> part.'
+  );
+});
+
+it('serialize subscript to html', () => {
+  expect(
+    htmlSerialize([SubscriptPlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'subscripted', SUBSCRIPT: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <sub>subscripted</sub> part.'
+  );
+});
+
+it('serialize superscript to html', () => {
+  expect(
+    htmlSerialize([SuperscriptPlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'superscripted', SUPERSCRIPT: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <sup>superscripted</sup> part.'
+  );
+});
+
+it('serialize underline to html', () => {
+  expect(
+    htmlSerialize([UnderlinePlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'underlined', underline: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <u>underlined</u> part.'
   );
 });
 
