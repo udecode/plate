@@ -74,7 +74,7 @@ it('serialize subscript to html', () => {
   expect(
     htmlSerialize([SubscriptPlugin()])([
       { text: 'Some paragraph of text with ' },
-      { text: 'subscripted', SUBSCRIPT: true },
+      { text: 'subscripted', subscript: true },
       { text: ' part.' },
     ])
   ).toEqual('Some paragraph of text with <sub>subscripted</sub> part.');
@@ -84,7 +84,7 @@ it('serialize superscript to html', () => {
   expect(
     htmlSerialize([SuperscriptPlugin()])([
       { text: 'Some paragraph of text with ' },
-      { text: 'superscripted', SUPERSCRIPT: true },
+      { text: 'superscripted', superscript: true },
       { text: ' part.' },
     ])
   ).toEqual('Some paragraph of text with <sup>superscripted</sup> part.');
