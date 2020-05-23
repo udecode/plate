@@ -1,51 +1,22 @@
+import { ReactElement } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { Node as SlateNode, Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
-import {
-  BLOCKQUOTE,
-  HeadingType,
-  IMAGE,
-  LINK,
-  ListType,
-  PARAGRAPH,
-  SlatePlugin,
-  TableType,
-} from '../..';
+import { RenderElementProps, RenderLeafProps } from 'slate-react';
+import { SlatePlugin } from '../..';
 
-const escapeHtml = (a: string): string => a;
+const getNode = (element: RenderElementProps, plugins: SlatePlugin[]) => {
+  const { children } = element;
+  const elementPlugin = plugins
+    .filter((plugin) => plugin.renderElement)
+    .find(
+      ({ renderElement }) =>
+        renderElement && renderElement(element) !== children
+    );
 
-const getNode = ({
-  element,
-  children,
-}: {
-  element: SlateNode;
-  children: string;
-}) => {
-  switch (element.type) {
-    case BLOCKQUOTE:
-      return `<blockquote>${children}</blockquote>`;
-    case PARAGRAPH:
-      return `<p>${children}</p>`;
-    case LINK:
-      return `<a href="${escapeHtml(element.url as string)}">${children}</a>`;
-    case HeadingType.H1:
-      return `<h1>${children}</h1>`;
-    case HeadingType.H2:
-      return `<h2>${children}</h2>`;
-    case ListType.OL:
-      return `<ol>${children}</ol>`;
-    case ListType.UL:
-      return `<ul>${children}</ul>`;
-    case ListType.LI:
-      return `<li>${children}</li>`;
-    case TableType.TABLE:
-      return `<table>${children}</table>`;
-    case IMAGE:
-      return `<img src="${escapeHtml(
-        element.url as string
-      )}">${children}</img>`;
-    default:
-      return children;
+  if (elementPlugin && elementPlugin.renderElement) {
+    return ReactDOMServer.renderToStaticMarkup(
+      elementPlugin.renderElement(element) as ReactElement
+    );
   }
 };
 
@@ -65,7 +36,7 @@ const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
 export const htmlSerialize = (plugins: SlatePlugin[]) => (
   nodes: SlateNode[]
 ): string => {
-  return nodes
+  const result = nodes
     .map((node: SlateNode) => {
       if (Text.isText(node)) {
         return getLeaf(
@@ -78,10 +49,15 @@ export const htmlSerialize = (plugins: SlatePlugin[]) => (
           plugins
         );
       }
-      return getNode({
-        element: node,
-        children: htmlSerialize(plugins)(node.children),
-      });
+      return getNode(
+        {
+          element: node,
+          children: encodeURIComponent(htmlSerialize(plugins)(node.children)),
+          attributes: { 'data-slate-node': 'element', ref: null },
+        },
+        plugins
+      );
     })
     .join('');
+  return decodeURIComponent(result);
 };
