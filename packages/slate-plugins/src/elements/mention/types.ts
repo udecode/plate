@@ -15,6 +15,7 @@ export interface UseMentionOptions {
 // Data of Element node
 export interface MentionNodeData {
   value: string;
+  [key: string]: any;
 }
 
 // Element node
