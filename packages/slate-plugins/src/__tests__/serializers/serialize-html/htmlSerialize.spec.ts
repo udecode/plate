@@ -58,14 +58,16 @@ it('serialize strikethrough to html', () => {
   );
 });
 
-it.skip('serialize code to html', () => {
+it('serialize code to html', () => {
   expect(
     htmlSerialize([CodePlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'code', code: true },
       { text: ' part.' },
     ])
-  ).toEqual('Some paragraph of text with <code>code</code> part.');
+  ).toEqual(
+    'Some paragraph of text with <code class="sc-fzoiQi kXSQAL">code</code> part.'
+  );
 });
 
 it('serialize subscript to html', () => {
