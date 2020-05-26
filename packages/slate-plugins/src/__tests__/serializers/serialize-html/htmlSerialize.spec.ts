@@ -3,11 +3,13 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  HeadingPlugin,
   HighlightPlugin,
   ImagePlugin,
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
+  ParagraphPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
@@ -144,6 +146,36 @@ it('serialize blockquote to html', () => {
   ).toEqual(
     '<blockquote class="sc-AxmLO jtdIXC">Blockquoted text here...</blockquote>'
   );
+});
+
+it('serialize headings to html', () => {
+  expect(
+    htmlSerialize([HeadingPlugin()])([
+      {
+        type: 'h1',
+        children: [{ text: 'Heading 1' }],
+      },
+      {
+        type: 'h2',
+        children: [{ text: 'Heading 2' }],
+      },
+      {
+        type: 'h3',
+        children: [{ text: 'Heading 3' }],
+      },
+    ])
+  ).toEqual('<h1>Heading 1</h1><h2>Heading 2<h2><h3>Heading 3</h3>');
+});
+
+it('serialize paragraph to html', () => {
+  expect(
+    htmlSerialize([ParagraphPlugin()])([
+      {
+        type: 'p',
+        children: [{ text: 'Some random paragraph here...' }],
+      },
+    ])
+  ).toEqual('<p>Some random paragraph here...</p>');
 });
 
 it('serialize image to html', () => {
