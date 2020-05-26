@@ -41,7 +41,7 @@ it('serialize highlight to html', () => {
       { text: ' part.' },
     ])
   ).toEqual(
-    'Some paragraph of text with <span class="sc-fznWqX jhjZFC">highlighted</span> part.'
+    'Some paragraph of text with <mark class="sc-fznWqX jhjZFC">highlighted</mark> part.'
   );
 });
 
