@@ -57,7 +57,7 @@ it('serialize strikethrough to html', () => {
       { text: ' part.' },
     ])
   ).toEqual(
-    'Some paragraph of text with <span class="sc-fzqARJ jiBykp">strikethrough</span> part.'
+    'Some paragraph of text with <span class="sc-fzqARJ jiBykp strikethrough">strikethrough</span> part.'
     // We need to add explicit class to this span 'strikethrough'
   );
 });
