@@ -19,7 +19,7 @@ export const renderLeafStrikethrough = ({
   if (leaf[typeStrikethrough]) {
     return (
       <StrikethroughText
-        className="strikethrough"
+        className={typeStrikethrough}
         data-slate-type={typeStrikethrough}
       >
         {children}
