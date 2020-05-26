@@ -1,4 +1,5 @@
 import { getTextFromBlockStartToAnchor } from 'common/queries';
+import { isCollapsed } from 'common/queries/isCollapsed';
 import {
   BLOCKQUOTE,
   HeadingType,
@@ -49,7 +50,7 @@ export const withAutoformat = ({
 
     const SPACE = ' ';
 
-    if (text === SPACE && selection && Range.isCollapsed(selection)) {
+    if (text === SPACE && isCollapsed(selection)) {
       const beforeTextEntry = getTextFromBlockStartToAnchor(editor);
 
       const SHORTCUTS: { [key: string]: string } = {

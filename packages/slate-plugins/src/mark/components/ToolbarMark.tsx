@@ -1,7 +1,7 @@
 import React from 'react';
 import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
 import { useSlate } from 'slate-react';
-import { ToolbarBlockProps, ToolbarButton } from 'components/Toolbar';
+import { ToolbarBlockProps, ToolbarButton } from 'components/ToolbarButton';
 import { isMarkActive } from '../queries';
 import { toggleMark } from '../transforms';
 

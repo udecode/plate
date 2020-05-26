@@ -14,7 +14,7 @@ import {
   onKeyDownPlugins,
   renderElementPlugins,
   renderLeafPlugins,
-} from 'components/utils';
+} from 'components/EditablePlugins/utils';
 
 export interface EditablePluginsProps {
   [key: string]: any;

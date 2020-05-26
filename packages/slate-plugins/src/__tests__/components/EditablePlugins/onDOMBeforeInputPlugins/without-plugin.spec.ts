@@ -1,5 +1,5 @@
 import { createEditor } from 'slate';
-import { onDOMBeforeInputPlugins } from 'components/utils';
+import { onDOMBeforeInputPlugins } from 'components/EditablePlugins/utils';
 
 const event = {} as Event;
 

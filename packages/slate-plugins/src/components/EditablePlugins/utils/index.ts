@@ -1,4 +1,3 @@
-export * from './setPositionAtSelection';
 export * from './onKeyDownPlugins';
 export * from './decoratePlugins';
 export * from './onDOMBeforeInputPlugins';

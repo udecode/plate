@@ -8,6 +8,7 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   BalloonToolbar,
+  BalloonToolbarBase,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
@@ -23,6 +24,7 @@ import { initialValueBalloonToolbar, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Components/Balloon Toolbar',
+  component: BalloonToolbarBase,
 };
 
 const plugins = [
@@ -44,7 +46,7 @@ export const Example = () => {
       value={value}
       onChange={(newValue) => setValue(newValue)}
     >
-      <BalloonToolbar>
+      <BalloonToolbar hiddenDelay={0}>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
         <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
         <ToolbarMark

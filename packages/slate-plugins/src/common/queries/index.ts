@@ -13,5 +13,6 @@ export * from './isNodeType';
 export * from './isPointAtRoot';
 export * from './isPointAtWordEnd';
 export * from './isRangeAtRoot';
+export * from './isSelectionExpanded';
 export * from './isTextByPath';
 export * from './isWordAfterTrigger';

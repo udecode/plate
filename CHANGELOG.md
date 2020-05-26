@@ -20,10 +20,23 @@ bumps.
 - renamed `HoveringToolbar` to `BalloonToolbar`
 - renamed `MarkdownPreviewPlugin` to `PreviewPlugin` as it will be
   configurable to support other languages.
+- removed `height` props in `Toolbar`, use `styles` instead.
 
 ###### NEW
 
-- `BasicElementPlugins`
+- New plugin `BasicElementPlugins`
+- New option `styles` in `Toolbar`
+- New option `styles` in `HeadingToolbar`
+- New options in `BalloonToolbar`:
+  - `styles`
+  - `direction`
+  - `hiddenDelay`
+- New queries:
+  - `getSelectionText`
+  - `getText`
+  - `isCollapsed`
+  - `isExpanded`
+  - `isSelectionExpanded`
 
 ### `0.58.7` — May 22, 2020
 

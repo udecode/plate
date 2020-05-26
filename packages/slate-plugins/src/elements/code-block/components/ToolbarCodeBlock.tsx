@@ -3,7 +3,7 @@ import { isNodeInSelection } from 'common/queries';
 import { toggleWrapNodes } from 'common/transforms/toggleWrapNodes';
 import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarElementProps } from 'components/Toolbar';
+import { ToolbarButton, ToolbarElementProps } from 'components/ToolbarButton';
 import { CODE_BLOCK } from '../types';
 
 export const ToolbarCodeBlock = ({

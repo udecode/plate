@@ -3,7 +3,6 @@ import { render } from '@testing-library/react';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import * as isSelecting from 'components/queries';
 import { BalloonToolbar } from 'components/Toolbar';
 
 const Editor = () => {
@@ -21,14 +20,12 @@ const Editor = () => {
         setValue(newValue);
       }}
     >
-      <BalloonToolbar data-testid="Toolbar">test</BalloonToolbar>
+      <BalloonToolbar>test</BalloonToolbar>
     </Slate>
   );
 };
 
-it('should render', () => {
-  jest.spyOn(isSelecting, 'isSelecting').mockReturnValue(true);
-
+it('should not be visible', () => {
   const { getByTestId } = render(<Editor />);
 
   expect(getByTestId('Toolbar')).not.toBeVisible();

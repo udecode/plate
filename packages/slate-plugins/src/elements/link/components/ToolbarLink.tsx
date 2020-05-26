@@ -2,7 +2,7 @@ import React from 'react';
 import { isNodeInSelection } from 'common/queries/isNodeInSelection';
 import { LINK } from 'elements/link/types';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarCustomProps } from 'components/Toolbar';
+import { ToolbarButton, ToolbarCustomProps } from 'components/ToolbarButton';
 import { insertLink } from '../transforms';
 
 export const ToolbarLink = ({

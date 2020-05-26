@@ -1,5 +1,6 @@
+import { isCollapsed } from 'common/queries/isCollapsed';
 import { DEFAULT_ELEMENT } from 'element/types';
-import { Editor, Point, Range, Transforms } from 'slate';
+import { Editor, Point, Transforms } from 'slate';
 
 /**
  * On delete at the start of an empty block in types,
@@ -19,7 +20,7 @@ export const withDeleteStartReset = ({
   editor.deleteBackward = (...args) => {
     const { selection } = editor;
 
-    if (selection && Range.isCollapsed(selection)) {
+    if (isCollapsed(selection)) {
       const parent = Editor.above(editor, {
         match: (n) => types.includes(n.type as string),
       });
@@ -28,7 +29,7 @@ export const withDeleteStartReset = ({
         const [, parentPath] = parent;
         const parentStart = Editor.start(editor, parentPath);
 
-        if (Point.equals(selection.anchor, parentStart)) {
+        if (selection && Point.equals(selection.anchor, parentStart)) {
           Transforms.setNodes(editor, { type: typeP });
 
           onUnwrap?.();

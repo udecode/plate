@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { getPreventDefaultHandler } from 'common/utils';
-import { getStyles } from 'elements/mention/components/MentionSelect.styles';
 import {
   MentionSelectProps,
   MentionSelectStyleProps,
@@ -9,6 +8,7 @@ import {
 } from 'elements/mention/components/MentionSelect.types';
 import { ReactEditor, useSlate } from 'slate-react';
 import { PortalBody } from 'components';
+import { getMentionSelectStyles } from './MentionSelect.styles';
 
 const getClassNames = classNamesFunction<
   MentionSelectStyleProps,
@@ -16,14 +16,17 @@ const getClassNames = classNamesFunction<
 >();
 
 export const MentionSelectBase = ({
+  className,
+  styles,
   at,
   options,
   valueIndex,
-  styles,
   onClickMention,
   ...props
 }: MentionSelectProps) => {
-  const classNames = getClassNames(styles);
+  const classNames = getClassNames(styles, {
+    className,
+  });
 
   const ref: any = useRef();
   const editor = useSlate();
@@ -69,10 +72,10 @@ export const MentionSelectBase = ({
   );
 };
 
-export const MentionSelect: React.FC<MentionSelectProps> = styled<
+export const MentionSelect = styled<
   MentionSelectProps,
   MentionSelectStyleProps,
   MentionSelectStyles
->(MentionSelectBase, getStyles, undefined, {
+>(MentionSelectBase, getMentionSelectStyles, undefined, {
   scope: 'MentionSelect',
 });

@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { ReactEditor } from 'slate-react';
-import { isSelecting } from 'components/queries';
+import { isSelectionExpanded } from 'common/queries';
 
 const input = (
   <editor>
@@ -17,6 +16,5 @@ const input = (
 const output = true;
 
 it('should be', () => {
-  jest.spyOn(ReactEditor, 'isFocused').mockImplementation(() => true);
-  expect(isSelecting(input)).toEqual(output);
+  expect(isSelectionExpanded(input)).toEqual(output);
 });

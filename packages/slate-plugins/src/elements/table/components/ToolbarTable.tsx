@@ -4,7 +4,7 @@ import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler'
 import { TableType, TableTypeOption } from 'elements/table/types';
 import { Editor } from 'slate';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarButtonProps } from 'components/Toolbar';
+import { ToolbarButton, ToolbarButtonProps } from 'components/ToolbarButton';
 
 export interface ToolbarTableProps extends ToolbarButtonProps, TableTypeOption {
   action: (editor: Editor, options?: Required<TableTypeOption>) => void;

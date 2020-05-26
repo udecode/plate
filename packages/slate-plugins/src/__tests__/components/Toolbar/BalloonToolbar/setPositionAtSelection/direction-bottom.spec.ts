@@ -1,8 +1,8 @@
-import { setPositionAtSelection } from 'components/utils';
+import { setPositionAtSelection } from 'components/Toolbar/BalloonToolbar';
 
 const input = document.createElement('div');
 
-const output = '1';
+const output = '1px';
 
 it('should be', () => {
   window.getSelection = () =>
@@ -17,6 +17,6 @@ it('should be', () => {
       }),
     } as any);
 
-  setPositionAtSelection(input);
-  expect(input.style.opacity).toEqual(output);
+  setPositionAtSelection(input, 'bottom');
+  expect(input.style.top).toEqual(output);
 });

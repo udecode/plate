@@ -33,7 +33,17 @@ module.exports = {
       } ,
       use: [
         {
-          loader: require.resolve('awesome-typescript-loader'),
+          loader: require.resolve('babel-loader'),
+          options: {
+            rootMode: 'upward',
+          },
+        },
+        {
+          loader: require.resolve('ts-loader'),
+          options: {
+            configFile: path.resolve(__dirname, 'tsconfig.json'),
+            transpileOnly: true,
+          },
         },
         {
           loader: require.resolve('react-docgen-typescript-loader'),

@@ -1,6 +1,6 @@
 import { Decorate } from 'common/types';
 import { NodeEntry } from 'slate';
-import { decoratePlugins } from 'components/utils';
+import { decoratePlugins } from 'components/EditablePlugins/utils';
 
 const nodeEntry: NodeEntry = [{ text: 'test' }, [0, 0]];
 const decorateEmpty: Decorate = () => [];

@@ -3,7 +3,7 @@ import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler'
 import { ToolbarBlock } from 'element/components';
 import { ListType } from 'elements/list/types';
 import { useSlate } from 'slate-react';
-import { ToolbarCustomProps } from 'components/Toolbar';
+import { ToolbarCustomProps } from 'components/ToolbarButton';
 import { toggleList } from '../transforms';
 
 export const ToolbarList = ({

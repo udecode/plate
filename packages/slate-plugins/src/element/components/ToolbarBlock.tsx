@@ -2,7 +2,7 @@ import React from 'react';
 import { isNodeInSelection } from 'common/queries';
 import { ToggleTypeEditor } from 'element/types';
 import { ReactEditor, useSlate } from 'slate-react';
-import { ToolbarBlockProps, ToolbarButton } from 'components/Toolbar';
+import { ToolbarBlockProps, ToolbarButton } from 'components/ToolbarButton';
 
 export const ToolbarBlock = ({
   type,

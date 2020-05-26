@@ -153,13 +153,13 @@ const PARAGRAPHS = 7;
 export const initialValueHugeDocument: Node[] = [{ children: [] }];
 
 for (let h = 0; h < HEADINGS; h++) {
-  initialValueHugeDocument.push({
+  (initialValueHugeDocument[0] as any).children.push({
     type: nodeTypes.typeH1,
     children: [{ text: faker.lorem.sentence() }],
   });
 
   for (let p = 0; p < PARAGRAPHS; p++) {
-    initialValueHugeDocument.push({
+    (initialValueHugeDocument[0] as any).children.push({
       type: nodeTypes.typeP,
       children: [{ text: faker.lorem.paragraph() }],
     });

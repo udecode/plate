@@ -185,7 +185,8 @@ Here is our roadmap to have a complete rich-text editor.
       block element (e.g. a paragraph) where the anchor is, following
       the caret as the user edits the content and navigates the
       document.
-- [x] Toolbar – Provides a toolbar with buttons.
+- [x] HeadingToolbar – Provides a heading toolbar.
+- [x] Toolbar – Provides a toolbar.
 
 ### Utilities
 

@@ -1,26 +1,35 @@
-import styled from 'styled-components';
+import React, { forwardRef } from 'react';
+import { concatStyleSets } from '@uifabric/styling';
+import { classNamesFunction } from '@uifabric/utilities';
+import { getToolbarStyles } from './Toolbar.styles';
+import {
+  ToolbarProps,
+  ToolbarStyleProps,
+  ToolbarStyles,
+} from './Toolbar.types';
 
-export interface ToolbarProps {
-  height?: string;
-  [key: string]: any;
-}
+const getClassNames = classNamesFunction<ToolbarStyleProps, ToolbarStyles>();
 
-export const Toolbar = styled.div<ToolbarProps>`
-  & > * {
-    display: inline-block;
+export const ToolbarBase = forwardRef<HTMLDivElement, ToolbarProps>(
+  ({ className, styles, children }, ref) => {
+    const classNames = getClassNames(styles, {
+      className,
+    });
+
+    return (
+      <div data-testid="Toolbar" className={classNames.root} ref={ref}>
+        {children}
+      </div>
+    );
   }
-  & > * + * {
-    margin-left: 15px;
-  }
+);
 
-  box-sizing: content-box;
-  user-select: none;
-
-  min-height: ${(props) => props.height || '18px'};
-
-  > span,
-  svg {
-    width: ${(props) => props.height || '18px'};
-    height: ${(props) => props.height || '18px'};
-  }
-`;
+export const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(
+  ({ styles, ...props }: ToolbarProps, ref) => (
+    <ToolbarBase
+      {...props}
+      ref={ref}
+      styles={concatStyleSets(getToolbarStyles(styles))}
+    />
+  )
+);

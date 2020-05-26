@@ -1,4 +1,5 @@
 import { getBlockAboveSelection } from 'common/queries/getBlockAboveSelection';
+import { getText } from 'common/queries/getText';
 import { Editor } from 'slate';
 
 /**
@@ -17,7 +18,7 @@ export const getTextFromBlockStartToAnchor = (editor: Editor) => {
   const range = { anchor: start, focus: selection.anchor };
 
   return {
-    text: Editor.string(editor, range),
+    text: getText(editor, range),
     range,
   };
 };

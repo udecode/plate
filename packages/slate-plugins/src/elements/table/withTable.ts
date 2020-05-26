@@ -1,4 +1,5 @@
-import { Editor, Point, Range } from 'slate';
+import { isCollapsed } from 'common/queries/isCollapsed';
+import { Editor, Point } from 'slate';
 import { TableType, WithTableOptions } from './types';
 
 export const withTable = ({
@@ -12,7 +13,7 @@ export const withTable = ({
   ) => {
     const { selection } = editor;
 
-    if (selection && Range.isCollapsed(selection)) {
+    if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
         match: (n) => n.type === typeTd,
       });
@@ -21,7 +22,7 @@ export const withTable = ({
         const [, cellPath] = cell;
         const start = pointCallback(editor, cellPath);
 
-        if (Point.equals(selection.anchor, start)) {
+        if (selection && Point.equals(selection.anchor, start)) {
           return;
         }
       }

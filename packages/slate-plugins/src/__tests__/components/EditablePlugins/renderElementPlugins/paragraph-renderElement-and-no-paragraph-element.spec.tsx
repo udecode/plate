@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { HeadingType } from 'elements/heading';
 import { renderElementParagraph } from 'elements/paragraph';
-import { renderElementPlugins } from 'components/utils';
+import { renderElementPlugins } from 'components/EditablePlugins/utils';
 
 const elementAttributes = {
   'data-testid': 'Element',

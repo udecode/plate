@@ -1,3 +1,4 @@
+import { getText } from 'common/queries/getText';
 import { escapeRegExp } from 'common/utils';
 import { Editor, Point } from 'slate';
 
@@ -20,14 +21,14 @@ export const isWordAfterTrigger = (
   const beforeRange = before && Editor.range(editor, before, at);
 
   // Before text
-  const beforeText = beforeRange && Editor.string(editor, beforeRange);
+  const beforeText = getText(editor, beforeRange);
 
   // Starts with char and ends with word characters
   const escapedTrigger = escapeRegExp(trigger);
   const beforeRegex = new RegExp(`^${escapedTrigger}(\\w+)$`);
 
   // Match regex on before text
-  const match = beforeText && beforeText.match(beforeRegex);
+  const match = !!beforeText && beforeText.match(beforeRegex);
 
   return {
     range: beforeRange,

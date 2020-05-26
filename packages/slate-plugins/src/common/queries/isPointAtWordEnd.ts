@@ -1,3 +1,4 @@
+import { getText } from 'common/queries/getText';
 import { Editor, Point } from 'slate';
 
 // Starts with whitespace char or nothing
@@ -12,7 +13,7 @@ export const isPointAtWordEnd = (editor: Editor, { at }: { at: Point }) => {
 
   // From at to after
   const afterRange = Editor.range(editor, at, after);
-  const afterText = Editor.string(editor, afterRange);
+  const afterText = getText(editor, afterRange);
 
   // Match regex on after text
   return !!afterText.match(AFTER_MATCH_REGEX);

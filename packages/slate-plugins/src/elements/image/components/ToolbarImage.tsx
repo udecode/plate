@@ -1,7 +1,7 @@
 import React from 'react';
 import { IMAGE } from 'elements/image/types';
 import { useEditor } from 'slate-react';
-import { ToolbarButton, ToolbarElementProps } from 'components/Toolbar';
+import { ToolbarButton, ToolbarElementProps } from 'components/ToolbarButton';
 import { insertImage } from '../transforms';
 
 export const ToolbarImage = ({

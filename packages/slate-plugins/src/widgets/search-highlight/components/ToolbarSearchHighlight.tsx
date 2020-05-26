@@ -1,10 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { HeadingToolbar } from 'components/Toolbar';
-
-const StyledHeadingToolbar = styled(HeadingToolbar)`
-  height: 38px;
-`;
+import { HeadingToolbar } from 'components/Toolbar/HeadingToolbar/HeadingToolbar';
 
 const Wrapper = styled.div`
   position: relative;
@@ -33,7 +29,7 @@ interface Props {
 }
 
 export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
-  <StyledHeadingToolbar>
+  <HeadingToolbar styles={{ root: { height: 38 } }}>
     <Wrapper>
       <Icon
         style={{
@@ -51,5 +47,5 @@ export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
         onChange={(e) => setSearch(e.target.value)}
       />
     </Wrapper>
-  </StyledHeadingToolbar>
+  </HeadingToolbar>
 );
