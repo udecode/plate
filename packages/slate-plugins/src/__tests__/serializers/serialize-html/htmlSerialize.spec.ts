@@ -4,6 +4,7 @@ import {
   BoldPlugin,
   CodePlugin,
   HighlightPlugin,
+  ImagePlugin,
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
@@ -142,5 +143,19 @@ it('serialize blockquote to html', () => {
     ])
   ).toEqual(
     '<blockquote class="sc-AxmLO jtdIXC">Blockquoted text here...</blockquote>'
+  );
+});
+
+it('serialize image to html', () => {
+  expect(
+    htmlSerialize([ImagePlugin()])([
+      {
+        type: 'img',
+        url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+        children: [],
+      },
+    ])
+  ).toEqual(
+    '<div><div contenteditable="false"><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" class="sc-fzqBZW jjoDYi"/></div></div>'
   );
 });

@@ -8,7 +8,9 @@ const trimWhitespace = (rawHtml: string): string =>
   rawHtml.replace(/(\r\n|\n|\r|\t)/gm, '');
 
 const stripSlateDataAttributes = (rawHtml: string): string =>
-  rawHtml.replace(/( data-slate)(-node|-type)="[^"]+"/gm, '');
+  rawHtml
+    .replace(/( data-slate)(-node|-type)="[^"]+"/gm, '')
+    .replace(/( data-testid)="[^"]+"/gm, '');
 
 const getNode = (element: RenderElementProps, plugins: SlatePlugin[]) => {
   const { children } = element;
