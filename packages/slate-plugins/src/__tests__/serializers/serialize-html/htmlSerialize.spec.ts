@@ -13,6 +13,7 @@ import {
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
+  TablePlugin,
   UnderlinePlugin,
 } from '../../..';
 
@@ -189,5 +190,26 @@ it('serialize image to html', () => {
     ])
   ).toEqual(
     '<div><div contenteditable="false"><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" class="sc-fzqBZW jjoDYi"/></div></div>'
+  );
+});
+
+it('serialize table to html', () => {
+  expect(
+    htmlSerialize([TablePlugin()])([
+      {
+        type: 'table',
+        children: [
+          {
+            type: 'tr',
+            children: [
+              { type: 'td', children: [{ text: 'Foo' }] },
+              { type: 'td', children: [{ text: 'Bar' }] },
+            ],
+          },
+        ],
+      },
+    ])
+  ).toEqual(
+    '<table class="sc-fzoXzr csUgEM"><tbody><tr><td class="sc-fzoLag xLIBZ">Foo</td><td class="sc-fzoLag xLIBZ">Bar</td></tr></tbody></table>'
   );
 });
