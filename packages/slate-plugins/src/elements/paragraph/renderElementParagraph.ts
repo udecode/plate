@@ -3,7 +3,7 @@ import { PARAGRAPH, ParagraphRenderElementOptions } from './types';
 
 export const renderElementParagraph = ({
   typeP = PARAGRAPH,
-  component = getElementComponent('div'),
+  component = getElementComponent('p'),
 }: ParagraphRenderElementOptions = {}) =>
   getRenderElement({
     type: typeP,
