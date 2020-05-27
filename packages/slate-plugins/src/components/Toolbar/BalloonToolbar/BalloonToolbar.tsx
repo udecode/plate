@@ -13,6 +13,8 @@ export const BalloonToolbar = ({
   children,
   hiddenDelay = 0,
   direction = 'top',
+  theme = 'dark',
+  arrow = false,
 }: BalloonToolbarProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const editor = useSlate();
@@ -27,9 +29,11 @@ export const BalloonToolbar = ({
         styles={getBalloonToolbarStyles(
           className,
           styles,
+          theme,
           hidden,
           hiddenDelay,
-          direction
+          direction,
+          arrow
         )}
       >
         {children}

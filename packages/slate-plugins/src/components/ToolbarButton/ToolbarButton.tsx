@@ -11,17 +11,11 @@ const Button = styled.span<ButtonStyleProps>`
   justify-content: center;
   align-items: center;
 
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 24px;
   user-select: none;
   cursor: pointer;
   vertical-align: middle;
-  color: ${({ active, reversed }) => {
-    if (active) {
-      if (reversed) return 'white';
-      return 'black';
-    }
-  }};
 
   svg {
     display: block;
@@ -32,22 +26,26 @@ const Button = styled.span<ButtonStyleProps>`
 
 export const ToolbarButton = ({
   icon,
-  reversed = false,
-  tooltip = {},
+  theme = 'dark',
+  tooltip,
+  active,
   ...props
 }: ToolbarButtonProps) => {
   const tooltipProps: TippyProps = {
     content: '',
     arrow: true,
-    offset: [0, 10],
+    offset: [0, 17],
     delay: 0,
     duration: [200, 0],
     hideOnClick: false,
     ...tooltip,
   };
 
+  let className = 'slate-ToolbarButton';
+  if (active) className += ' slate-ToolbarButton-active';
+
   const button = (
-    <Button {...props} reversed={reversed}>
+    <Button {...props} theme={theme} className={className}>
       {icon}
     </Button>
   );

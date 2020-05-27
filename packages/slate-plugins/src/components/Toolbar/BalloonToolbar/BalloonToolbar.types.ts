@@ -27,12 +27,18 @@ export interface BalloonToolbarProps extends ToolbarProps {
    * Below of above the selection.
    */
   direction?: 'top' | 'bottom';
+
+  theme?: 'dark' | 'light';
+
+  arrow?: boolean;
 }
 
 export interface BalloonToolbarStyleProps extends ToolbarStyleProps {
   hidden?: boolean;
-  hiddenDelay?: number;
-  direction?: 'top' | 'bottom';
+  hiddenDelay?: BalloonToolbarProps['hiddenDelay'];
+  direction?: BalloonToolbarProps['direction'];
+  theme?: BalloonToolbarProps['theme'];
+  arrow?: BalloonToolbarProps['arrow'];
 }
 
 export interface BalloonToolbarStyles extends ToolbarStyles {}

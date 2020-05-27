@@ -2,7 +2,7 @@ import { TippyProps } from '@tippyjs/react';
 
 export interface ButtonStyleProps {
   active?: boolean;
-  reversed?: boolean;
+  theme?: 'dark' | 'light';
   onMouseDown?: (event: any) => void;
   [key: string]: any;
 }
@@ -15,7 +15,6 @@ export interface ToolbarButtonProps extends ButtonStyleProps {
 export interface ToolbarElementProps extends ToolbarButtonProps {
   icon: any;
   height?: string;
-  reversed?: boolean;
   type?: string;
   [key: string]: any;
 }

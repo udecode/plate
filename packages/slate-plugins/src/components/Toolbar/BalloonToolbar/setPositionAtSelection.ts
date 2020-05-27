@@ -11,7 +11,7 @@ export const setPositionAtSelection = (
   if (direction === 'top') {
     el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`;
   } else {
-    el.style.top = `${rect.top + window.pageYOffset + el.offsetHeight}px`;
+    el.style.top = `${rect.bottom + window.pageYOffset}px`;
   }
   el.style.left = `${
     rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2

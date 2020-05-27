@@ -12,6 +12,8 @@ const classNames = {
 export const getHeadingToolbarStyles = ({
   className,
 }: ToolbarStyleProps = {}): ToolbarStyles => {
+  const color = '#06c';
+
   const styles: ToolbarStyles = {
     root: [
       classNames.root,
@@ -21,6 +23,12 @@ export const getHeadingToolbarStyles = ({
         margin: '0 -20px',
         borderBottom: '2px solid #eee',
         marginBottom: '20px',
+
+        selectors: {
+          '.slate-ToolbarButton-active, .slate-ToolbarButton:hover': {
+            color,
+          },
+        },
       },
       className,
     ],

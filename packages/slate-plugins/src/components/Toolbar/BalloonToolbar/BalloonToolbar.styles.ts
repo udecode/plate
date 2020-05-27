@@ -16,48 +16,78 @@ export const getBalloonToolbarStyles = memoizeFunction(
       BalloonToolbarStyleProps,
       BalloonToolbarStyles
     >,
-    hidden?: boolean,
-    hiddenDelay?: number,
-    direction?: 'top' | 'bottom',
-    arrow?: boolean
+    theme?: BalloonToolbarStyleProps['theme'],
+    hidden?: BalloonToolbarStyleProps['hidden'],
+    hiddenDelay?: BalloonToolbarStyleProps['hiddenDelay'],
+    direction?: BalloonToolbarStyleProps['direction'],
+    arrow?: BalloonToolbarStyleProps['arrow']
   ): BalloonToolbarStyles => {
-    const background = 'rgb(36, 42, 49)';
+    let color = 'rgb(157, 170, 182)';
+    let colorActive = 'white';
+    let background = 'rgb(36, 42, 49)';
+    let borderColor = 'transparent';
 
+    if (theme === 'light') {
+      color = 'rgba(0, 0, 0, 0.50)';
+      colorActive = 'black';
+      background = 'rgb(250, 250, 250)';
+      borderColor = 'rgb(196, 196, 196)';
+    }
+
+    let marginTop;
     let arrowStyle: IStyle = {};
+    let arrowBorderStyle: IStyle = {};
 
     if (arrow) {
       arrowStyle = {
         left: '50%',
         content: '" "',
         position: 'absolute',
-        transform: 'translateX(-50%)',
         marginTop: '-1px',
+        transform: 'translateX(-50%)',
         borderColor: `${background} transparent`,
-        borderTopColor: background,
-        borderRightColor: 'transparent',
-        borderBottomColor: background,
-        borderLeftColor: 'transparent',
         borderStyle: 'solid',
       };
+
+      if (direction === 'top') {
+        arrowStyle = {
+          ...arrowStyle,
+          top: '100%',
+          bottom: 'auto',
+          borderWidth: '8px 8px 0px',
+        };
+
+        if (theme === 'light') {
+          arrowBorderStyle = {
+            ...arrowStyle,
+            marginTop: 0,
+            borderWidth: '9px 9px 0px',
+            borderColor: `${borderColor} transparent`,
+          };
+        }
+      } else {
+        arrowStyle = {
+          ...arrowStyle,
+          top: 'auto',
+          bottom: '100%',
+          borderWidth: '0px 8px 8px',
+        };
+
+        if (theme === 'light') {
+          arrowBorderStyle = {
+            ...arrowStyle,
+            marginTop: 0,
+            borderWidth: '0px 9px 9px',
+            borderColor: `${borderColor} transparent`,
+          };
+        }
+      }
     }
 
-    let marginTop;
     if (direction === 'top') {
-      arrowStyle = {
-        ...arrowStyle,
-        top: '100%',
-        bottom: 'auto',
-        borderWidth: '8px 8px 0px',
-      };
-      marginTop = -12;
+      marginTop = -9;
     } else {
-      arrowStyle = {
-        ...arrowStyle,
-        top: 'auto',
-        bottom: '100%',
-        borderWidth: '0px 8px 8px',
-      };
-      marginTop = -16;
+      marginTop = 9;
     }
 
     return concatStyleSets(
@@ -69,11 +99,14 @@ export const getBalloonToolbarStyles = memoizeFunction(
             zIndex: 500,
 
             background,
-            color: 'rgb(157, 170, 182)',
+            color,
 
             whiteSpace: 'nowrap',
             visibility: 'hidden',
+            border: 'solid #000',
             borderRadius: 4,
+            borderWidth: 1,
+            borderColor,
             padding: '0 4px',
             marginTop,
             transition: hiddenDelay
@@ -81,7 +114,11 @@ export const getBalloonToolbarStyles = memoizeFunction(
               : 'top 75ms ease-out,left 75ms ease-out',
 
             selectors: {
+              '::before': arrowBorderStyle,
               '::after': arrowStyle,
+              '.slate-ToolbarButton-active, .slate-ToolbarButton:hover': {
+                color: colorActive,
+              },
             },
           },
           !hidden && {

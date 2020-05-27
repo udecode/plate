@@ -30,7 +30,6 @@ import {
   BoldPlugin,
   CodeBlockPlugin,
   CodePlugin,
-  createNode,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
@@ -104,23 +103,14 @@ export default {
 
 const initialValue: Node[] = [
   ...initialValueForcedLayout,
-  createNode(),
   ...initialValueBasicMarks,
-  createNode(),
   ...initialValueHighlight,
-  createNode(),
   ...initialValueBasicElements,
-  createNode(),
   ...initialValueList,
-  createNode(),
   ...initialValueTables,
-  createNode(),
   ...initialValueLinks,
-  createNode(),
   ...initialValueMentions,
-  createNode(),
   ...initialValueImages,
-  createNode(),
   ...initialValueEmbeds,
 ];
 
@@ -266,13 +256,24 @@ export const Plugins = () => {
           <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
-        <BalloonToolbar>
-          <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
+        <BalloonToolbar arrow>
+          <ToolbarMark
+            reversed
+            type={MARK_BOLD}
+            icon={<FormatBold />}
+            tooltip={{ content: 'Bold (⌘B)' }}
+          />
+          <ToolbarMark
+            reversed
+            type={MARK_ITALIC}
+            icon={<FormatItalic />}
+            tooltip={{ content: 'Italic (⌘I)' }}
+          />
           <ToolbarMark
             reversed
             type={MARK_UNDERLINE}
             icon={<FormatUnderlined />}
+            tooltip={{ content: 'Underline (⌘U)' }}
           />
         </BalloonToolbar>
         <MentionSelect at={target} valueIndex={index} options={values} />

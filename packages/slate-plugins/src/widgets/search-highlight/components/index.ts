@@ -1,1 +1,1 @@
-export * from 'widgets/search-highlight/components/ToolbarSearchHighlight';
+export * from './ToolbarSearchHighlight';

@@ -20,14 +20,12 @@ export const getToolbarStyles = memoizeFunction(
             alignItems: 'center',
             boxSizing: 'content-box',
             userSelect: 'none',
-            minHeight: 38,
+            minHeight: 40,
+            color: 'rgb(68, 68, 68)',
 
             selectors: {
               '& > *': {
                 display: 'inline-block',
-              },
-              '& > * + *': {
-                marginLeft: 4,
               },
             },
           },
