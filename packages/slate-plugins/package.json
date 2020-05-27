@@ -27,6 +27,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@tippyjs/react": "^4.0.2",
     "@uifabric/styling": "^7.12.11",
     "@uifabric/utilities": "^7.19.0",
     "image-extensions": "^1.1.0",

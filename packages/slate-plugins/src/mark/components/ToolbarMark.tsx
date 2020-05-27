@@ -13,9 +13,10 @@ export const ToolbarMark = ({ type, clear, ...props }: ToolbarBlockProps) => {
 
   return (
     <ToolbarButton
-      {...props}
+      tooltip={{ content: type }}
       active={isMarkActive(editor, type)}
       onMouseDown={getPreventDefaultHandler(toggleMark, editor, type, clear)}
+      {...props}
     />
   );
 };

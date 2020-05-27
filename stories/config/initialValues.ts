@@ -57,6 +57,25 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
+export const createList = (items: string[]): Node[] => [
+  {
+    children: [
+      {
+        type: ListType.UL,
+        children: items.map((item) => ({
+          type: ListType.LI,
+          children: [
+            {
+              type: PARAGRAPH,
+              text: item,
+            },
+          ],
+        })),
+      },
+    ],
+  },
+];
+
 export const initialValueEmbeds: Node[] = [
   {
     children: [
@@ -125,7 +144,8 @@ export const initialValueBalloonToolbar: Node[] = [
         children: [
           {
             text:
-              'This example shows how you can make a hovering menu appear above your content, which you can use to make text ',
+              'This example shows how you can make a hovering menu appear above ' +
+              'your content, which you can use to make text ',
           },
           { text: 'bold', [nodeTypes.typeBold]: true },
           { text: ', ' },
@@ -142,6 +162,16 @@ export const initialValueBalloonToolbar: Node[] = [
             [nodeTypes.typeBold]: true,
           },
           { text: '.' },
+        ],
+      },
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text:
+              'You can enable and customize the tooltip on each toolbar button. ' +
+              'Check Tippy.js documentation for more info!',
+          },
         ],
       },
     ],

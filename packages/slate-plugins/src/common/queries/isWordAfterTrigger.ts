@@ -11,7 +11,6 @@ export const isWordAfterTrigger = (
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   // Point at the start of previous word (excluding punctuation)
-  // https://github.com/ianstormtaylor/slate/blob/master/packages/slate/src/utils/string.ts#L6
   const wordBefore = Editor.before(editor, at, { unit: 'word' });
 
   // Point before wordBefore

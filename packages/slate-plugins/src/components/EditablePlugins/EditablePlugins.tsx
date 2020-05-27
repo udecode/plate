@@ -94,7 +94,7 @@ export const EditablePlugins = ({
     <Editable
       style={{
         fontSize: 16,
-        lineHeight: '26px',
+        lineHeight: 1.5,
       }}
       data-testid="EditablePlugins"
       decorate={useCallback(

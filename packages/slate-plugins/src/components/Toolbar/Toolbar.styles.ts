@@ -16,20 +16,18 @@ export const getToolbarStyles = memoizeFunction(
         root: [
           classNames.root,
           {
+            display: 'flex',
+            alignItems: 'center',
             boxSizing: 'content-box',
             userSelect: 'none',
-            minHeight: 18,
+            minHeight: 38,
 
             selectors: {
               '& > *': {
                 display: 'inline-block',
               },
               '& > * + *': {
-                marginLeft: 15,
-              },
-              '> span, svg': {
-                width: 18,
-                height: 18,
+                marginLeft: 4,
               },
             },
           },

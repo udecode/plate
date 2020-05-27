@@ -1,30 +1,56 @@
 import React from 'react';
+import Tippy, { TippyProps } from '@tippyjs/react'; // optional
 import styled from 'styled-components';
+import {
+  ButtonStyleProps,
+  ToolbarButtonProps,
+} from 'components/ToolbarButton/types';
 
-interface ButtonProps {
-  active?: boolean;
-  reversed?: boolean;
-  onMouseDown?: (event: any) => void;
-  [key: string]: any;
-}
+const Button = styled.span<ButtonStyleProps>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-const Button = styled.span<ButtonProps>`
+  width: 30px;
+  height: 30px;
   user-select: none;
   cursor: pointer;
-  color: ${({ active, reversed }) =>
-    reversed ? (active ? 'white' : '#aaa') : active ? 'black' : '#ccc'};
-`;
+  vertical-align: middle;
+  color: ${({ active, reversed }) => {
+    if (active) {
+      if (reversed) return 'white';
+      return 'black';
+    }
+  }};
 
-export interface ToolbarButtonProps extends ButtonProps {
-  icon: any;
-}
+  svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+`;
 
 export const ToolbarButton = ({
   icon,
   reversed = false,
+  tooltip = {},
   ...props
-}: ToolbarButtonProps) => (
-  <Button {...props} reversed={reversed}>
-    {icon}
-  </Button>
-);
+}: ToolbarButtonProps) => {
+  const tooltipProps: TippyProps = {
+    content: '',
+    arrow: true,
+    offset: [0, 10],
+    delay: 0,
+    duration: [200, 0],
+    hideOnClick: false,
+    ...tooltip,
+  };
+
+  const button = (
+    <Button {...props} reversed={reversed}>
+      {icon}
+    </Button>
+  );
+
+  return tooltip ? <Tippy {...tooltipProps}>{button}</Tippy> : button;
+};
