@@ -2,7 +2,7 @@ import { MarkPluginOptions, RenderLeafOptions } from 'mark';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 
-export const MARK_SUBSCRIPT = 'SUBSCRIPT';
+export const MARK_SUBSCRIPT = 'subscript';
 
 // Data of Text node
 export interface SubscriptNodeData {}

@@ -6,11 +6,8 @@ export interface HeadingElementProps {
 
 const baseMargin = 4.8;
 
-const HeadingElement = styled.div<HeadingElementProps>`
+export const HeadingElement1 = styled.h1<HeadingElementProps>`
   font-weight: 400;
-`;
-
-export const HeadingElement1 = styled(HeadingElement)`
   :not(:first-child) {
     margin-top: 30px;
   }
@@ -19,7 +16,8 @@ export const HeadingElement1 = styled(HeadingElement)`
   line-height: 36px;
 `;
 
-export const HeadingElement2 = styled(HeadingElement)`
+export const HeadingElement2 = styled.h2<HeadingElementProps>`
+  font-weight: 400;
   :not(:first-child) {
     margin-top: 18px;
   }
@@ -28,7 +26,8 @@ export const HeadingElement2 = styled(HeadingElement)`
   line-height: 28px;
 `;
 
-export const HeadingElement3 = styled(HeadingElement)`
+export const HeadingElement3 = styled.h3<HeadingElementProps>`
+  font-weight: 400;
   color: #434343;
   :not(:first-child) {
     margin-top: 8px;
@@ -37,7 +36,8 @@ export const HeadingElement3 = styled(HeadingElement)`
   font-size: ${({ fontSize }) => (fontSize * 14) / 11}px;
 `;
 
-export const HeadingElement4 = styled(HeadingElement)`
+export const HeadingElement4 = styled.h4<HeadingElementProps>`
+  font-weight: 400;
   color: #666666;
   :not(:first-child) {
     margin-top: 8px;
@@ -46,7 +46,8 @@ export const HeadingElement4 = styled(HeadingElement)`
   font-size: ${({ fontSize }) => (fontSize * 12) / 11}px;
 `;
 
-export const HeadingElement5 = styled(HeadingElement)`
+export const HeadingElement5 = styled.h5<HeadingElementProps>`
+  font-weight: 400;
   color: #666666;
 
   :not(:first-child) {
@@ -56,7 +57,8 @@ export const HeadingElement5 = styled(HeadingElement)`
   font-size: ${({ fontSize }) => fontSize}px;
 `;
 
-export const HeadingElement6 = styled(HeadingElement)`
+export const HeadingElement6 = styled.h6<HeadingElementProps>`
+  font-weight: 400;
   color: #666666;
   font-style: italic;
 
