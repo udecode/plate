@@ -57,51 +57,20 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
-export const initialValueActionItem: Node[] = [
+export const createList = (items: string[]): Node[] => [
   {
     children: [
       {
-        type: nodeTypes.typeP,
-        children: [
-          {
-            text:
-              'With Slate you can build complex block types that have their own embedded content and behaviors, like rendering checkboxes inside check list items!',
-          },
-        ],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: true,
-        children: [{ text: 'Slide to the left.' }],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: true,
-        children: [{ text: 'Slide to the right.' }],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: false,
-        children: [{ text: 'Criss-cross.' }],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: true,
-        children: [{ text: 'Criss-cross!' }],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: false,
-        children: [{ text: 'Cha cha real smooth…' }],
-      },
-      {
-        type: nodeTypes.typeActionItem,
-        checked: false,
-        children: [{ text: "Let's go to work!" }],
-      },
-      {
-        type: nodeTypes.typeP,
-        children: [{ text: 'Try it out for yourself!' }],
+        type: ListType.UL,
+        children: items.map((item) => ({
+          type: ListType.LI,
+          children: [
+            {
+              type: PARAGRAPH,
+              text: item,
+            },
+          ],
+        })),
       },
     ],
   },
@@ -175,7 +144,8 @@ export const initialValueBalloonToolbar: Node[] = [
         children: [
           {
             text:
-              'This example shows how you can make a hovering menu appear above your content, which you can use to make text ',
+              'This example shows how you can make a hovering menu appear above ' +
+              'your content, which you can use to make text ',
           },
           { text: 'bold', [nodeTypes.typeBold]: true },
           { text: ', ' },
@@ -194,6 +164,16 @@ export const initialValueBalloonToolbar: Node[] = [
           { text: '.' },
         ],
       },
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text:
+              'You can enable and customize the tooltip on each toolbar button. ' +
+              'Check Tippy.js documentation for more info!',
+          },
+        ],
+      },
     ],
   },
 ];
@@ -203,13 +183,13 @@ const PARAGRAPHS = 7;
 export const initialValueHugeDocument: Node[] = [{ children: [] }];
 
 for (let h = 0; h < HEADINGS; h++) {
-  initialValueHugeDocument.push({
+  (initialValueHugeDocument[0] as any).children.push({
     type: nodeTypes.typeH1,
     children: [{ text: faker.lorem.sentence() }],
   });
 
   for (let p = 0; p < PARAGRAPHS; p++) {
-    initialValueHugeDocument.push({
+    (initialValueHugeDocument[0] as any).children.push({
       type: nodeTypes.typeP,
       children: [{ text: faker.lorem.paragraph() }],
     });
@@ -464,7 +444,7 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueMarks: Node[] = [
+export const initialValueBasicMarks: Node[] = [
   {
     children: [
       {
@@ -472,7 +452,7 @@ export const initialValueMarks: Node[] = [
         children: [
           {
             text:
-              'These are all the available marks. You can customize the type and component for each of these.',
+              'These are the basic marks. You can customize the type and component for each of these.',
           },
         ],
       },
@@ -492,7 +472,29 @@ export const initialValueMarks: Node[] = [
           { text: 'code, ', [nodeTypes.typeCode]: true },
           { text: 'sub, ', [nodeTypes.typeSubscript]: true },
           { text: 'sup, ', [nodeTypes.typeSuperscript]: true },
-          { text: 'highlight', [nodeTypes.typeHighlight]: true },
+        ],
+      },
+    ],
+  },
+];
+
+export const initialValueHighlight: Node[] = [
+  {
+    children: [
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text: 'The Highlight plugin enables support for ',
+          },
+          {
+            text: 'highlights',
+            [nodeTypes.typeHighlight]: true,
+          },
+          {
+            text:
+              ', useful when reviewing content or highlighting it for future reference.',
+          },
         ],
       },
     ],
@@ -574,6 +576,49 @@ export const initialValueList: Node[] = [
             ],
           },
         ],
+      },
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text:
+              'With Slate you can build complex block types that have their own embedded content and behaviors, like rendering checkboxes inside check list items!',
+          },
+        ],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: true,
+        children: [{ text: 'Slide to the left.' }],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: true,
+        children: [{ text: 'Slide to the right.' }],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: false,
+        children: [{ text: 'Criss-cross.' }],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: true,
+        children: [{ text: 'Criss-cross!' }],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: false,
+        children: [{ text: 'Cha cha real smooth…' }],
+      },
+      {
+        type: nodeTypes.typeActionItem,
+        checked: false,
+        children: [{ text: "Let's go to work!" }],
+      },
+      {
+        type: nodeTypes.typeP,
+        children: [{ text: 'Try it out for yourself!' }],
       },
     ],
   },

@@ -1,3 +1,4 @@
+import 'tippy.js/dist/tippy.css';
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';

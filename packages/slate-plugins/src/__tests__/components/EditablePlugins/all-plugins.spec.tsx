@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import {
-  initialValueActionItem,
   initialValueBasicElements,
+  initialValueBasicMarks,
   initialValueEmbeds,
+  initialValueHighlight,
   initialValueImages,
   initialValueLinks,
   initialValueList,
-  initialValueMarks,
   initialValueMentions,
   initialValueTables,
   nodeTypes,
@@ -134,15 +134,15 @@ const plugins = [
 ];
 
 const initialValue = [
-  ...initialValueMarks,
+  ...initialValueBasicMarks,
+  ...initialValueHighlight,
   ...initialValueBasicElements,
   ...initialValueList,
-  ...initialValueActionItem,
-  ...initialValueEmbeds,
+  ...initialValueTables,
+  ...initialValueLinks,
   ...initialValueMentions,
   ...initialValueImages,
-  ...initialValueLinks,
-  ...initialValueTables,
+  ...initialValueEmbeds,
 ];
 
 const resetOptions = {
