@@ -20,8 +20,8 @@ import {
   HeadingToolbar,
   ParagraphPlugin,
   pipe,
-  ToolbarBlock,
   ToolbarCodeBlock,
+  ToolbarElement,
   withBreakEmptyReset,
   withDeleteStartReset,
   withToggleType,
@@ -73,13 +73,13 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarBlock type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarBlock type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarBlock type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarBlock type={nodeTypes.typeH6} icon={<Looks6 />} />
-          <ToolbarBlock
+          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
+          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
+          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
+          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarElement
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />

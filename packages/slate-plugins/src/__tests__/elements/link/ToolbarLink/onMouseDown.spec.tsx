@@ -14,11 +14,9 @@ it('should render', () => {
     .spyOn(window, 'prompt')
     .mockReturnValue('https://i.imgur.com/removed.png');
 
-  const { getByTestId } = render(
-    <ToolbarLink data-testid="ToolbarLink" icon={null} />
-  );
+  const { getByTestId } = render(<ToolbarLink icon={null} />);
 
-  const element = getByTestId('ToolbarLink');
+  const element = getByTestId('ToolbarButton');
   fireEvent.mouseDown(element);
 
   expect(editor.children).toEqual(output.children);

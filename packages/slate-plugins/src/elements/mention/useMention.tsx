@@ -20,7 +20,7 @@ export const useMention = (
 
   const onAddMention = useCallback(
     (editor: Editor, option: MentionNodeData) => {
-      if (targetRange != null) {
+      if (targetRange !== null) {
         Transforms.select(editor, targetRange);
         insertMention(editor, option);
         return setTargetRange(null);

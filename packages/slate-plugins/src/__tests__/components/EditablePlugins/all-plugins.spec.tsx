@@ -32,7 +32,7 @@ import { pipe, withTransforms } from 'common';
 import { withNodeID } from 'common/transforms/node-id';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import {
-  ToolbarBlock,
+  ToolbarElement,
   withBreakEmptyReset,
   withDeleteStartReset,
   withToggleType,
@@ -190,8 +190,8 @@ const Editor = () => {
       }}
     >
       <HeadingToolbar>
-        <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
-        <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
+        <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
+        <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
         <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
         <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
         <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
@@ -210,10 +210,13 @@ const Editor = () => {
         <ToolbarLink {...nodeTypes} icon={<Link />} />
         <ToolbarList {...nodeTypes} icon={<FormatListBulleted />} />
         <ToolbarList {...nodeTypes} icon={<FormatListNumbered />} />
-        <ToolbarBlock type={nodeTypes.typeBlockquote} icon={<FormatQuote />} />
+        <ToolbarElement
+          type={nodeTypes.typeBlockquote}
+          icon={<FormatQuote />}
+        />
         <ToolbarCodeBlock icon={<CodeBlock />} />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
-        <ToolbarTable action={jest.fn()} icon={null} />
+        <ToolbarTable transform={jest.fn()} icon={null} />
       </HeadingToolbar>
       <BalloonToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />

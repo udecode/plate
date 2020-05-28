@@ -16,14 +16,10 @@ it('should render', () => {
     .mockReturnValue('https://i.imgur.com/removed.png');
 
   const { getByTestId } = render(
-    <ToolbarImage
-      data-testid="ToolbarImage"
-      type={HeadingType.H1}
-      icon={null}
-    />
+    <ToolbarImage type={HeadingType.H1} icon={null} />
   );
 
-  const element = getByTestId('ToolbarImage');
+  const element = getByTestId('ToolbarButton');
   fireEvent.mouseDown(element);
 
   expect(editor.children).toEqual(output.children);

@@ -14,10 +14,10 @@ it('should render', () => {
   jest.spyOn(window, 'prompt').mockReturnValue('');
 
   const { getByTestId } = render(
-    <ToolbarLink data-testid="ToolbarLink" type={HeadingType.H1} icon={null} />
+    <ToolbarLink type={HeadingType.H1} icon={null} />
   );
 
-  const element = getByTestId('ToolbarLink');
+  const element = getByTestId('ToolbarButton');
   fireEvent.mouseDown(element);
 
   expect(editor.children).toEqual(output.children);

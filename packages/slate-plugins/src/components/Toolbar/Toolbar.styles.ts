@@ -22,12 +22,6 @@ export const getToolbarStyles = memoizeFunction(
             userSelect: 'none',
             minHeight: 40,
             color: 'rgb(68, 68, 68)',
-
-            selectors: {
-              '& > *': {
-                display: 'inline-block',
-              },
-            },
           },
         ],
       },

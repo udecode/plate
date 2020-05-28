@@ -1,26 +1,26 @@
 import React from 'react';
-import { isNodeInSelection } from 'common/queries';
 import { toggleWrapNodes } from 'common/transforms/toggleWrapNodes';
 import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
+import { ToolbarElement } from 'element/components';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarElementProps } from 'components/ToolbarButton';
+import { ToolbarButtonProps } from 'components/ToolbarButton';
 import { CODE_BLOCK } from '../types';
 
 export const ToolbarCodeBlock = ({
   typeCodeBlock = CODE_BLOCK,
   ...props
-}: ToolbarElementProps) => {
+}: ToolbarButtonProps) => {
   const editor = useSlate();
 
   return (
-    <ToolbarButton
-      {...props}
-      active={isNodeInSelection(editor, typeCodeBlock)}
+    <ToolbarElement
+      type={typeCodeBlock}
       onMouseDown={getPreventDefaultHandler(
         toggleWrapNodes,
         editor,
         typeCodeBlock
       )}
+      {...props}
     />
   );
 };

@@ -57,8 +57,8 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
-  ToolbarBlock,
   ToolbarCodeBlock,
+  ToolbarElement,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -214,12 +214,12 @@ export const Plugins = () => {
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar>
-          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarBlock type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarBlock type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarBlock type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarBlock type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
+          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
+          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
+          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
@@ -249,7 +249,7 @@ export const Plugins = () => {
             typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
-          <ToolbarBlock
+          <ToolbarElement
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />

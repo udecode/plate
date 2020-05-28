@@ -4,6 +4,7 @@ import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
+  MentionNodeData,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
@@ -31,7 +32,8 @@ export const Example = () => {
     ParagraphPlugin(nodeTypes),
     MentionPlugin({
       ...nodeTypes,
-      onClick: (mentionable) => console.info(`Hello, I'm ${mentionable.value}`),
+      onClick: (mentionable: MentionNodeData) =>
+        console.info(`Hello, I'm ${mentionable.value}`),
       prefix: text('prefix', '@'),
     }),
   ];

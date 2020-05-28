@@ -4,13 +4,13 @@ Here is our roadmap to have a complete rich-text editor.
 
 ### Editors
 
-- [ ] Classic Editor – Editor with a toolbar placed in a specific
+- [x] Classic Editor – Editor with a toolbar placed at a specific
       position on the page.
 - [ ] Inline Editor – Editor with a floating toolbar that appears when
       the editable text is focused.
 - [ ] Balloon Block Editor – Editor with a balloon toolbar for the marks
       and inline elements, and a block toolbar for the block elements.
-- [ ] Balloon Editor – Editor with a balloon toolbar appearing when
+- [x] Balloon Editor – Editor with a balloon toolbar appearing when
       selecting.
 
 ### Elements
@@ -177,8 +177,6 @@ Here is our roadmap to have a complete rich-text editor.
 
 - [x] BalloonToolbar – Provides a toolbar, pointing at a particular
       element or range.
-  - [ ] Option `location` – `top | bottom`.
-  - [ ] Option `arrow` – `boolean`.
 - [ ] BlockToolbar – Provides an additional configurable toolbar on the
       left-hand side of the content area (the gutter). The toolbar is
       represented by a button with an icon. It is positioned next to the

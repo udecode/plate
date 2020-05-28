@@ -28,8 +28,14 @@ export interface BalloonToolbarProps extends ToolbarProps {
    */
   direction?: 'top' | 'bottom';
 
+  /**
+   * Color theme for the background/foreground.
+   */
   theme?: 'dark' | 'light';
 
+  /**
+   * Show an arrow pointing to up or down depending on the direction.
+   */
   arrow?: boolean;
 }
 

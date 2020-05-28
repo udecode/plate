@@ -10,7 +10,7 @@ it('should be', () => {
       rangeCount: 1,
       getRangeAt: () => ({
         getBoundingClientRect: () => ({
-          top: 1,
+          bottom: 1,
           left: 1,
           width: 100,
         }),

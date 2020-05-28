@@ -13,8 +13,8 @@ import {
   ParagraphPlugin,
   pipe,
   SoftBreakPlugin,
-  ToolbarBlock,
   ToolbarCodeBlock,
+  ToolbarElement,
   withBreakEmptyReset,
   withDeleteStartReset,
   withList,
@@ -64,9 +64,9 @@ export const BlockPlugins = () => {
         onChange={(newValue) => setValue(newValue)}
       >
         <HeadingToolbar>
-          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarBlock
+          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarElement
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />

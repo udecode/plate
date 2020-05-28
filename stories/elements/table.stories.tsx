@@ -60,33 +60,33 @@ export const Example = () => {
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarTable
             {...nodeTypes}
-            action={insertTable}
             icon={<BorderAll />}
+            transform={insertTable}
           />
           <ToolbarTable
             {...nodeTypes}
-            action={deleteTable}
             icon={<BorderClear />}
+            transform={deleteTable}
           />
           <ToolbarTable
             {...nodeTypes}
-            action={addRow}
             icon={<BorderBottom />}
+            transform={addRow}
           />
           <ToolbarTable
             {...nodeTypes}
-            action={deleteRow}
             icon={<BorderTop />}
+            transform={deleteRow}
           />
           <ToolbarTable
             {...nodeTypes}
-            action={addColumn}
             icon={<BorderLeft />}
+            transform={addColumn}
           />
           <ToolbarTable
             {...nodeTypes}
-            action={deleteColumn}
             icon={<BorderRight />}
+            transform={deleteColumn}
           />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} />

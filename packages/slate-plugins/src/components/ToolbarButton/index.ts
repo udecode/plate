@@ -1,2 +1,3 @@
 export * from './ToolbarButton';
-export * from './types';
+export * from './ToolbarButton.styles';
+export * from './ToolbarButton.types';

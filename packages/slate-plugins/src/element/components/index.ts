@@ -1,1 +1,2 @@
-export * from './ToolbarBlock';
+export * from './ToolbarElement';
+export * from './ToolbarElement.types';

@@ -74,25 +74,19 @@ export const Example = () => {
         arrow={arrow}
       >
         <ToolbarMark
-          reversed
           type={MARK_BOLD}
           icon={<FormatBold />}
           tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
-          theme={theme}
         />
         <ToolbarMark
-          reversed
           type={MARK_ITALIC}
           icon={<FormatItalic />}
           tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
-          theme={theme}
         />
         <ToolbarMark
-          reversed
           type={MARK_UNDERLINE}
           icon={<FormatUnderlined />}
           tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
-          theme={theme}
         />
       </BalloonToolbar>
       <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
