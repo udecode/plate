@@ -1,15 +1,16 @@
 ## Issue
 
-
+Fixes:
 
 ## What I did
 
 
 
-## How to test
+## Checklist
 
-- Is this testable with Jest?
-- Does this need an update to stories?
+- [ ] The new code matches the existing patterns and styles.
+- [ ] The stories still work (run `yarn storybook`).
+- [ ] The stories are updated when relevant: `stories` for plugins, `knobs` for options.
 
 
 <!--
