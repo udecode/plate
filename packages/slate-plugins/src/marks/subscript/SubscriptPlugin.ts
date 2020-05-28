@@ -5,6 +5,9 @@ import { deserializeSubscript } from './deserializeSubscript';
 import { renderLeafSubscript } from './renderLeafSubscript';
 import { MARK_SUBSCRIPT, SubscriptPluginOptions } from './types';
 
+/**
+ * Enables support for subscript formatting.
+ */
 export const SubscriptPlugin = (
   options: SubscriptPluginOptions = {}
 ): SlatePlugin => ({

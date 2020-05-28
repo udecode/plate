@@ -10,7 +10,7 @@ export interface StrikethroughNodeData {}
 // Text node
 export interface StrikethroughNode extends Text, StrikethroughNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeStrikethrough?: string;
 }

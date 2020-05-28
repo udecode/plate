@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { isPointAtWordEnd, isWordAfterTrigger } from 'common/queries';
+import { isCollapsed } from 'common/queries/isCollapsed';
 import { getNextIndex } from 'elements/mention/utils/getNextIndex';
 import { getPreviousIndex } from 'elements/mention/utils/getPreviousIndex';
 import { Editor, Range, Transforms } from 'slate';
@@ -19,7 +20,7 @@ export const useMention = (
 
   const onAddMention = useCallback(
     (editor: Editor, option: MentionNodeData) => {
-      if (targetRange != null) {
+      if (targetRange !== null) {
         Transforms.select(editor, targetRange);
         insertMention(editor, option);
         return setTargetRange(null);
@@ -50,14 +51,21 @@ export const useMention = (
         }
       }
     },
-    [values, valueIndex, setValueIndex, targetRange, setTargetRange]
+    [
+      values,
+      valueIndex,
+      setValueIndex,
+      targetRange,
+      setTargetRange,
+      onAddMention,
+    ]
   );
 
   const onChangeMention = useCallback(
     (editor: Editor) => {
       const { selection } = editor;
 
-      if (selection && Range.isCollapsed(selection)) {
+      if (selection && isCollapsed(selection)) {
         const cursor = Range.start(selection);
 
         const { range, match: beforeMatch } = isWordAfterTrigger(editor, {

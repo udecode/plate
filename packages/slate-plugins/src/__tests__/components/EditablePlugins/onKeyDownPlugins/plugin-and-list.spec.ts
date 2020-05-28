@@ -1,5 +1,5 @@
 import { createEditor } from 'slate';
-import { onKeyDownPlugins } from 'components/utils';
+import { onKeyDownPlugins } from 'components/EditablePlugins/utils';
 
 const event = {} as Event;
 

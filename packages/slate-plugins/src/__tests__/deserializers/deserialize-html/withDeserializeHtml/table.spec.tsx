@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { initialValueTables } from '__fixtures__/initialValues.fixtures';
 import { jsx } from '__test-utils__/jsx';
 import { withDeserializeHtml } from 'deserializers/deserialize-html';
 import { ParagraphPlugin } from 'elements/paragraph';
@@ -7,7 +8,6 @@ import { TablePlugin, withTable } from 'elements/table';
 import { BoldPlugin } from 'marks/bold';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { initialValueTables } from '../../../../../../../stories/config/initialValues';
 
 const input = ((
   <editor>

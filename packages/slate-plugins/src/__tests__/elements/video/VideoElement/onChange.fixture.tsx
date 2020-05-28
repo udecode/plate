@@ -5,14 +5,14 @@ import { Editor } from 'slate';
 
 export const input = ((
   <editor>
-    <hvideo url="test" />
+    <hembed url="test" />
   </editor>
 ) as any) as Editor;
 
 export const output = (
   <editor>
-    <hvideo url="change">
+    <hembed url="change">
       <cursor />
-    </hvideo>
+    </hembed>
   </editor>
 ) as any;

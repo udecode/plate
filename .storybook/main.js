@@ -9,17 +9,14 @@ module.exports = {
     '../stories/docs/**/*.stories.(tsx|mdx)',
     '../stories/examples/playground.stories.tsx',
     '../stories/examples/**/*.stories.(tsx|mdx)',
-    '../stories/element/block/blocks.stories.tsx',
-    '../stories/element/block/**/*.stories.(tsx|mdx)',
-    '../stories/element/block-void/**/*.stories.(tsx|mdx)',
-    '../stories/element/inline/**/*.stories.(tsx|mdx)',
-    '../stories/element/inline-void/**/*.stories.(tsx|mdx)',
-    '../stories/text/marks.stories.tsx',
-    '../stories/text/**/*.stories.(tsx|mdx)',
-    '../stories/deserializers/**/*.stories.(tsx|mdx)',
+    '../stories/elements/**/*.stories.(tsx|mdx)',
+    '../stories/marks/**/*.stories.(tsx|mdx)',
+    '../stories/handlers/**/*.stories.(tsx|mdx)',
+    '../stories/decorators/**/*.stories.(tsx|mdx)',
     '../stories/normalizers/**/*.stories.(tsx|mdx)',
-    '../stories/plugins/**/*.stories.(tsx|mdx)',
+    '../stories/deserializers/**/*.stories.(tsx|mdx)',
     '../stories/components/**/*.stories.(tsx|mdx)',
+    '../stories/widgets/**/*.stories.(tsx|mdx)',
     '../stories/**/*.stories.(tsx|mdx)',
   ],
   addons: [
@@ -36,7 +33,17 @@ module.exports = {
       } ,
       use: [
         {
-          loader: require.resolve('awesome-typescript-loader'),
+          loader: require.resolve('babel-loader'),
+          options: {
+            rootMode: 'upward',
+          },
+        },
+        {
+          loader: require.resolve('ts-loader'),
+          options: {
+            configFile: path.resolve(__dirname, 'tsconfig.json'),
+            transpileOnly: true,
+          },
         },
         {
           loader: require.resolve('react-docgen-typescript-loader'),

@@ -17,6 +17,11 @@ export const bodyStyles = css`
   .MuiSvgIcon-root {
     font-size: 18px !important;
   }
+
+  .tippy-box[data-theme~='tomato'] {
+    background-color: tomato;
+    color: yellow;
+  }
 `;
 
 export const GlobalStyle = createGlobalStyle`

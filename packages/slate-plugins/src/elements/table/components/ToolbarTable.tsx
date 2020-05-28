@@ -1,33 +1,29 @@
 import React from 'react';
 import { isNodeInSelection } from 'common/queries';
 import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
-import { TableType, TableTypeOption } from 'elements/table/types';
-import { Editor } from 'slate';
+import { ToolbarTableProps } from 'elements/table/components/ToolbarTable.types';
+import { TableType } from 'elements/table/types';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarButtonProps } from 'components/Toolbar';
-
-export interface ToolbarTableProps extends ToolbarButtonProps, TableTypeOption {
-  action: (editor: Editor, options?: Required<TableTypeOption>) => void;
-}
+import { ToolbarButton } from 'components/ToolbarButton';
 
 export const ToolbarTable = ({
-  action,
   typeTable = TableType.TABLE,
   typeTr = TableType.ROW,
   typeTd = TableType.CELL,
+  transform,
   ...props
 }: ToolbarTableProps) => {
   const editor = useSlate();
 
   return (
     <ToolbarButton
-      {...props}
       active={isNodeInSelection(editor, typeTable)}
-      onMouseDown={getPreventDefaultHandler(action, editor, {
+      onMouseDown={getPreventDefaultHandler(transform, editor, {
         typeTable,
         typeTr,
         typeTd,
       })}
+      {...props}
     />
   );
 };

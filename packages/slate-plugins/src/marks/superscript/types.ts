@@ -10,7 +10,7 @@ export interface SuperscriptNodeData {}
 // Text node
 export interface SuperscriptNode extends Text, SuperscriptNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeSubscript?: string;
   typeSuperscript?: string;

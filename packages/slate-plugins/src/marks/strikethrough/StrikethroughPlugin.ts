@@ -4,6 +4,9 @@ import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStriket
 import { renderLeafStrikethrough } from './renderLeafStrikethrough';
 import { MARK_STRIKETHROUGH, StrikethroughPluginOptions } from './types';
 
+/**
+ * Enables support for strikethrough formatting.
+ */
 export const StrikethroughPlugin = (
   options: StrikethroughPluginOptions = {}
 ): SlatePlugin => ({

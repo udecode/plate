@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { renderLeafPlugins } from 'components/utils';
+import { renderLeafPlugins } from 'components/EditablePlugins/utils';
 
 const attributes = {
   'data-testid': 'Leaf',

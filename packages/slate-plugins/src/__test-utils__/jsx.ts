@@ -6,10 +6,10 @@ import { HeadingType } from 'elements/heading';
 import { IMAGE } from 'elements/image';
 import { LINK } from 'elements/link';
 import { ListType } from 'elements/list';
+import { MEDIA_EMBED } from 'elements/media-embed';
 import { MENTION } from 'elements/mention';
 import { PARAGRAPH } from 'elements/paragraph';
 import { TableType } from 'elements/table';
-import { VIDEO } from 'elements/video';
 import { createHyperscript } from 'slate-hyperscript';
 
 declare global {
@@ -32,7 +32,7 @@ const nodeTypes = {
   typeCodeBlock: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
-  typeVideo: VIDEO,
+  typeMediaEmbed: MEDIA_EMBED,
   typeActionItem: ACTION_ITEM,
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
@@ -56,7 +56,7 @@ export const jsx = createHyperscript({
     hcode: { type: nodeTypes.typeCodeBlock },
     ha: { type: nodeTypes.typeLink },
     himg: { type: nodeTypes.typeImg },
-    hvideo: { type: nodeTypes.typeVideo },
+    hembed: { type: nodeTypes.typeMediaEmbed },
     hactionitem: { type: nodeTypes.typeActionItem },
     htable: { type: nodeTypes.typeTable },
     htr: { type: nodeTypes.typeTr },

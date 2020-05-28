@@ -19,7 +19,7 @@ export interface TableNodeData {}
 // Element node
 export interface TableNode extends Element, TableNodeData {}
 
-// Option type
+// Type option
 export interface TableTypeOption {
   typeTable?: string;
   typeTr?: string;

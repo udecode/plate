@@ -15,10 +15,13 @@
     "noEmit": true,
     "jsx": "react",
     "downlevelIteration": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "baseUrl": "packages/slate-plugins/src"
+    "suppressImplicitAnyIndexErrors": true
   },
-  "exclude": ["node_modules", "dist", "scripts", "**/*template*"],
+  "include": [
+    "packages/slate-plugins/src",
+    "packages/slate-plugins/typings"
+  ],
+  "exclude": ["node_modules", "dist", "scripts", "**/*test*", "**/*.spec*", "**/*template*", "**/*fixture*"],
   "awesomeTypescriptLoaderOptions": {
     "ignoreDiagnostics": [7005]
   }

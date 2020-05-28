@@ -3,6 +3,10 @@ import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { htmlDeserialize } from './htmlDeserialize';
 
+/**
+ * Enables support for deserializing content from
+ * HTML format to Slate format.
+ */
 export const withDeserializeHtml = (plugins: SlatePlugin[]) => <
   T extends ReactEditor
 >(

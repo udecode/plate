@@ -21,21 +21,20 @@ import {
   LooksTwo,
   Search,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
+import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
+  BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
   CodePlugin,
-  createNode,
   decorateSearchHighlight,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
   HighlightPlugin,
-  HoveringToolbar,
   ImagePlugin,
   ItalicPlugin,
   LinkPlugin,
@@ -47,6 +46,7 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  MediaEmbedPlugin,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
@@ -57,8 +57,8 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
-  ToolbarBlock,
   ToolbarCodeBlock,
+  ToolbarElement,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -66,59 +66,51 @@ import {
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
-  VideoPlugin,
-  withBlock,
+  withAutoformat,
   withBreakEmptyReset,
   withDeleteStartReset,
   withDeserializeHtml,
-  withImage,
+  withImageUpload,
   withLink,
   withList,
   withMention,
   withNormalizeTypes,
-  withShortcuts,
   withTable,
+  withToggleType,
   withTrailingNode,
   withTransforms,
   withVoid,
 } from 'slate-plugins-next/src';
 import { Slate, withReact } from 'slate-react';
 import {
-  initialValueActionItem,
-  initialValueElements,
+  initialValueBasicElements,
+  initialValueBasicMarks,
   initialValueEmbeds,
   initialValueForcedLayout,
+  initialValueHighlight,
   initialValueImages,
   initialValueLinks,
-  initialValueMarks,
+  initialValueList,
   initialValueMentions,
   initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
-import { EDITABLE_VOID } from '../element/block-void/editable-voids/types';
 
 export default {
   title: 'Examples/Playground',
 };
 
-const initialValue = [
+const initialValue: Node[] = [
   ...initialValueForcedLayout,
-  createNode(),
-  ...initialValueMarks,
-  createNode(),
-  ...initialValueElements,
-  createNode(),
-  ...initialValueActionItem,
-  createNode(),
+  ...initialValueBasicMarks,
+  ...initialValueHighlight,
+  ...initialValueBasicElements,
+  ...initialValueList,
   ...initialValueTables,
-  createNode(),
   ...initialValueLinks,
-  createNode(),
   ...initialValueMentions,
-  createNode(),
   ...initialValueImages,
-  createNode(),
   ...initialValueEmbeds,
 ];
 
@@ -142,7 +134,8 @@ export const Plugins = () => {
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
   if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(nodeTypes));
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
-  if (boolean('VideoPlugin', true)) plugins.push(VideoPlugin(nodeTypes));
+  if (boolean('MediaEmbedPlugin', true))
+    plugins.push(MediaEmbedPlugin(nodeTypes));
   if (boolean('CodeBlockPlugin', true))
     plugins.push(CodeBlockPlugin(nodeTypes));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
@@ -168,14 +161,14 @@ export const Plugins = () => {
     withTable(nodeTypes),
     withLink(nodeTypes),
     withDeserializeHtml(plugins),
-    withImage(nodeTypes),
+    withImageUpload(nodeTypes),
     withMention(nodeTypes),
-    withBlock(nodeTypes),
+    withToggleType(nodeTypes),
     withDeleteStartReset(resetOptions),
     withBreakEmptyReset(resetOptions),
     withList(nodeTypes),
-    withShortcuts(nodeTypes),
-    withVoid([EDITABLE_VOID, nodeTypes.typeVideo]),
+    withAutoformat(nodeTypes),
+    withVoid([nodeTypes.typeMediaEmbed]),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -221,12 +214,12 @@ export const Plugins = () => {
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar>
-          <ToolbarBlock type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarBlock type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarBlock type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarBlock type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarBlock type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarBlock type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
+          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
+          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
+          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
+          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
@@ -256,22 +249,33 @@ export const Plugins = () => {
             typeList={nodeTypes.typeOl}
             icon={<FormatListNumbered />}
           />
-          <ToolbarBlock
+          <ToolbarElement
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
           <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
-        <HoveringToolbar>
-          <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
+        <BalloonToolbar arrow>
+          <ToolbarMark
+            reversed
+            type={MARK_BOLD}
+            icon={<FormatBold />}
+            tooltip={{ content: 'Bold (⌘B)' }}
+          />
+          <ToolbarMark
+            reversed
+            type={MARK_ITALIC}
+            icon={<FormatItalic />}
+            tooltip={{ content: 'Italic (⌘I)' }}
+          />
           <ToolbarMark
             reversed
             type={MARK_UNDERLINE}
             icon={<FormatUnderlined />}
+            tooltip={{ content: 'Underline (⌘U)' }}
           />
-        </HoveringToolbar>
+        </BalloonToolbar>
         <MentionSelect at={target} valueIndex={index} options={values} />
         <EditablePlugins
           plugins={plugins}

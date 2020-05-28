@@ -10,7 +10,7 @@ export interface ParagraphNodeData {}
 // Element node
 export interface ParagraphNode extends Element, ParagraphNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeP?: string;
 }

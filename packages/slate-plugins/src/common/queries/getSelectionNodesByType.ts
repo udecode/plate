@@ -1,6 +1,9 @@
 import { castArray } from 'lodash';
 import { Editor } from 'slate';
 
+/**
+ * Get the nodes with a type included in `types` in the selection (from root to leaf).
+ */
 export const getSelectionNodesByType = (
   editor: Editor,
   types: string[] | string,

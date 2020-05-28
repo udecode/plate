@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { pipe } from 'common';
-import { withBlock } from 'element';
+import { withToggleType } from 'element';
 import { ACTION_ITEM } from 'elements/action-item';
 import { ActionItemElement } from 'elements/action-item/components';
 import { ReactEditor } from 'slate-react';
@@ -9,7 +9,7 @@ import * as SlateReact from 'slate-react';
 import { input, output } from './onChange.fixture';
 
 it('should render', () => {
-  const editor = pipe(input, withBlock());
+  const editor = pipe(input, withToggleType());
 
   jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0]);

@@ -10,7 +10,7 @@ export interface BlockquoteNodeData {}
 // Element node
 export interface BlockquoteNode extends Element, BlockquoteNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeBlockquote?: string;
 }

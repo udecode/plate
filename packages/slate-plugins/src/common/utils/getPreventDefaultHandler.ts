@@ -1,10 +1,10 @@
 /**
- * Prevent default and call a handler
+ * Prevent default and call a handler if defined
  */
 export const getPreventDefaultHandler = <T extends (...args: any) => any>(
-  cb: T,
+  cb?: T,
   ...args: Parameters<T>
-) => (event: Event) => {
+) => (event: any) => {
   event.preventDefault();
-  cb(...(args as any));
+  cb?.(...(args as any));
 };

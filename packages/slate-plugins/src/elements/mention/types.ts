@@ -21,7 +21,7 @@ export interface MentionNodeData {
 // Element node
 export interface MentionNode extends Element, MentionNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeMention?: string;
 }

@@ -27,7 +27,7 @@ export interface ListNodeData {}
 // Element node
 export interface ListNode extends Element, ListNodeData {}
 
-// Option type
+// Type option
 export interface ListTypeOption {
   typeUl?: string;
   typeOl?: string;

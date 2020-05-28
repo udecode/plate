@@ -6,6 +6,46 @@ bumps.
 
 ---
 
+### `0.58.8` — May 23, 2020
+
+###### BREAKING CHANGE
+
+- renamed `withBlock` to `withToggleType` as it just toggles the type of
+  an element (inline or not).
+- renamed `withImage` to `withImageUpload`.
+- renamed `VideoPlugin` and its atoms to `MediaEmbedPlugin`.
+- renamed `VIDEO` type to `MEDIA_EMBED` and changed its value from
+  `video` to `media_embed`.
+- renamed `withShortcuts` to `withAutoformat`.
+- renamed `HoveringToolbar` to `BalloonToolbar`.
+- renamed `MarkdownPreviewPlugin` to `PreviewPlugin` as it will be
+  configurable to support other languages.
+- removed `height` props in `Toolbar`, use `styles` instead.
+- renamed `ToolbarBlock` to `ToolbarElement`.
+- renamed `ToolbarTableProps.action` to `ToolbarTableProps.transform`.
+
+###### NEW
+
+- New plugin `BasicElementPlugins`
+- New props `styles` in `Toolbar`
+- New props `styles` in `HeadingToolbar`
+- New props in `ToolbarButton`:
+  - `styles`
+  - `tooltip`
+- New props in `BalloonToolbar`:
+  - `styles`
+  - `direction`
+  - `hiddenDelay`
+  - `theme`
+  - `arrow`
+- `Toolbar`, `HeadingToolbar` and `BalloonToolbar` restyled.
+- New queries:
+  - `getSelectionText`
+  - `getText`
+  - `isCollapsed`
+  - `isExpanded`
+  - `isSelectionExpanded`
+
 ### `0.58.7` — May 22, 2020
 
 ###### BREAKING CHANGE
@@ -239,7 +279,6 @@ useMention(CHARACTERS, {
     ones:
 
 ```js
-```js
 // you can add nodeTypes to any element plugin
 export const nodeTypes = {
   typeP: PARAGRAPH,
@@ -248,7 +287,7 @@ export const nodeTypes = {
   typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
-  typeVideo: VIDEO,
+  typeVideo: MEDIA_EMBED,
   typeActionItem: ACTION_ITEM,
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,

@@ -8,7 +8,7 @@ export interface TemplateNodeData {}
 // Text node
 export interface TemplateNode extends Text, TemplateNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeTemplate?: string;
 }

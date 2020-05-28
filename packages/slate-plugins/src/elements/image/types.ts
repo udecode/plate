@@ -12,13 +12,13 @@ export interface ImageNodeData {
 // Element node
 export interface ImageNode extends Element, ImageNodeData {}
 
-// Option type
-interface TypeOption {
+// Type option
+export interface ImageTypeOption {
   typeImg?: string;
 }
 
 // deserialize options
-export interface ImageDeserializeOptions extends TypeOption {}
+export interface ImageDeserializeOptions extends ImageTypeOption {}
 
 // renderElement options given as props
 interface ImageRenderElementOptionsProps {}
@@ -27,7 +27,7 @@ interface ImageRenderElementOptionsProps {}
 export interface ImageRenderElementOptions
   extends RenderElementOptions,
     ImageRenderElementOptionsProps,
-    TypeOption {}
+    ImageTypeOption {}
 
 // renderElement props
 export interface ImageRenderElementProps
@@ -40,5 +40,3 @@ export interface ImageRenderElementProps
 export interface ImagePluginOptions
   extends ImageRenderElementOptions,
     ImageDeserializeOptions {}
-
-export interface WithImageOptions extends TypeOption {}

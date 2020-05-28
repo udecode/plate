@@ -10,7 +10,7 @@ export interface HighlightNodeData {}
 // Text node
 export interface HighlightNode extends Text, HighlightNodeData {}
 
-// Option type
+// Type option
 interface TypeOption {
   typeHighlight?: string;
 }

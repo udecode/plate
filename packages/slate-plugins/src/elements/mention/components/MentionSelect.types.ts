@@ -1,35 +1,47 @@
-import { IStyle, IStyleFunctionOrObject } from '@uifabric/merge-styles';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { MentionNodeData } from 'elements/mention/types';
 import { Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 
 export interface MentionSelectProps {
   /**
+   * Additional class name to provide on the root element, in addition to the slate-MentionSelect class.
+   */
+  className?: string;
+
+  /**
+   * Call to provide customized styling that will layer on top of the variant rules.
+   */
+  styles?: IStyleFunctionOrObject<MentionSelectStyleProps, MentionSelectStyles>;
+
+  /**
    * Range from the mention trigger to the cursor
    */
   at: Range | null;
-  /**
-   * Called when clicking on a mention option
-   */
-  onClickMention: (editor: ReactEditor, option: MentionNodeData) => void;
+
   /**
    * List of mentionable items
    */
   options: MentionNodeData[];
+
   /**
    * Index of the selected option
    */
   valueIndex: number;
+
   /**
-   * Call to provide customized styling that will layer on top of the variant rules.
+   * Callback called when clicking on a mention option
    */
-  styles?: IStyleFunctionOrObject<{}, MentionSelectStyles>;
+  onClickMention?: (editor: ReactEditor, option: MentionNodeData) => void;
 }
 
-export interface MentionSelectStyleProps {}
+export interface MentionSelectStyleProps {
+  className?: string;
+}
 
 export interface MentionSelectStyles {
-  root: IStyle;
-  mentionItem: IStyle;
-  mentionItemSelected: IStyle;
+  root?: IStyle;
+  mentionItem?: IStyle;
+  mentionItemSelected?: IStyle;
 }

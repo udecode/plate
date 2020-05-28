@@ -15,7 +15,10 @@ const input = ((
 
 const at = Range.start(input.selection as Range);
 
-const output = {};
+const output = {
+  match: false,
+  range: undefined,
+};
 
 it('should be', () => {
   expect(isWordAfterTrigger(input, { at, trigger: '@' })).toEqual(output);

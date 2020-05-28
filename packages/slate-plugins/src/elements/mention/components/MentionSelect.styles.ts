@@ -1,8 +1,20 @@
 import { IStyle } from '@uifabric/styling';
-import { MentionSelectStyles } from 'elements/mention/components/MentionSelect.types';
+import {
+  MentionSelectStyleProps,
+  MentionSelectStyles,
+} from 'elements/mention/components/MentionSelect.types';
 
-export const getStyles = (): MentionSelectStyles => {
+const classNames = {
+  root: 'slate-MentionSelect',
+  mentionItem: 'slate-MentionSelect-mentionItem',
+  mentionItemSelected: 'slate-MentionSelect-mentionItemSelected',
+};
+
+export const getMentionSelectStyles = ({
+  className,
+}: MentionSelectStyleProps = {}): MentionSelectStyles => {
   const mentionItem: IStyle = [
+    classNames.mentionItem,
     {
       padding: '1px 3px',
       borderRadius: '3px',
@@ -12,6 +24,7 @@ export const getStyles = (): MentionSelectStyles => {
   ];
 
   const mentionItemSelected: IStyle = [
+    classNames.mentionItemSelected,
     ...mentionItem,
     {
       background: '#B4D5FF',
@@ -20,6 +33,7 @@ export const getStyles = (): MentionSelectStyles => {
 
   return {
     root: [
+      classNames.root,
       {
         top: '-9999px',
         left: '-9999px',
@@ -30,6 +44,7 @@ export const getStyles = (): MentionSelectStyles => {
         borderRadius: '4px',
         boxShadow: '0 1px 5px rgba(0,0,0,.2)',
       },
+      className,
     ],
     mentionItem,
     mentionItemSelected,
