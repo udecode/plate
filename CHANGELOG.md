@@ -6,6 +6,12 @@ bumps.
 
 ---
 
+### `0.58.9` — May 30, 2020
+
+##### FIX
+
+- export `withNodeID`.
+
 ### `0.58.8` — May 28, 2020
 
 ###### BREAKING CHANGE

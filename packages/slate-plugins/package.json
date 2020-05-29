@@ -42,7 +42,7 @@
     "react-dom": "^16.13.1",
     "slate": "^0.58.1",
     "slate-hyperscript": "^0.58.1",
-    "slate-react": "^0.58.1",
+    "slate-react": "^0.58.2",
     "styled-components": "^5.1.0"
   },
   "devDependencies": {

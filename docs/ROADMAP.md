@@ -19,8 +19,9 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] `typeX` – Type of the element node where `X` represents the
         element.
   - [x] `component` – React component to render the element.
-- [ ] Alignment – Enables support for text alignment, useful to align
-      your content to left, right and center or to justify it.
+- [ ] [Alignment](https://github.com/zbeyens/slate-plugins-next/issues/104)
+      – Enables support for text alignment, useful to align your content
+      to left, right and center or to justify it.
 - [x] BasicElements – Enables support for basic elements.
   - [x] Blockquote – Enables support for block quotes, useful for
         quotations and passages.
@@ -94,7 +95,7 @@ Here is our roadmap to have a complete rich-text editor.
 - [x] Table – Enables support for tables.
   - [ ] TableCellProperties – Allows for styling individual table cells.
   - [ ] TableProperties – Allows for styling entire tables.
-  - [ ] TableToolbar – Provides a configurable toolbar showing up when
+  - [ ] [TableToolbar](https://github.com/zbeyens/slate-plugins-next/issues/69) – Provides a configurable toolbar showing up when
         the table element is selected.
   - [x] Insert table
   - [x] Add/delete rows and columns
@@ -135,10 +136,12 @@ Here is our roadmap to have a complete rich-text editor.
 
 ### Serializers
 
-- [ ] SerializeHtml – Enables support for serializing content from Slate
-      format to HTML format.
-- [ ] SerializeMarkdown – Enables support for serializing content from
-      Slate format to Markdown format.
+- [ ] [SerializeHtml](https://github.com/zbeyens/slate-plugins-next/issues/61)
+      – Enables support for serializing content from Slate format to
+      HTML format.
+- [ ] [SerializeMarkdown](https://github.com/zbeyens/slate-plugins-next/issues/149)
+      – Enables support for serializing content from Slate format to
+      Markdown format.
 - [ ] SerializeOffice – Enables support for serializing content from
       Slate format to Microsoft Office or Google Docs format.
 
