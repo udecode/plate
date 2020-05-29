@@ -1,6 +1,6 @@
-import { getText } from 'common/queries/getText';
-import { escapeRegExp } from 'common/utils';
 import { Editor, Point } from 'slate';
+import { escapeRegExp } from '../utils';
+import { getText } from './getText';
 
 /**
  * Is the word at the point after a trigger (punctuation character)

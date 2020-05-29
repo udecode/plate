@@ -1,5 +1,5 @@
-import { OnKeyDown, SlatePlugin } from 'common/types';
 import { Editor } from 'slate';
+import { OnKeyDown, SlatePlugin } from '../../../common';
 
 export const onKeyDownPlugins = (
   editor: Editor,

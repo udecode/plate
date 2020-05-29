@@ -1,4 +1,4 @@
-import { getRenderElement } from 'element';
+import { getRenderElement } from '../../element/utils';
 import { MentionElement } from './components';
 import { MENTION, MentionRenderElementOptions } from './types';
 

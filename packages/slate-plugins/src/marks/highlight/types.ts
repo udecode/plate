@@ -1,6 +1,6 @@
-import { MarkPluginOptions, RenderLeafOptions } from 'mark';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
+import { MarkPluginOptions, RenderLeafOptions } from '../../mark';
 
 export const MARK_HIGHLIGHT = 'highlight';
 

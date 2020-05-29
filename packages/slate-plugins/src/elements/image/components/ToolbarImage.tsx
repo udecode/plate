@@ -1,8 +1,11 @@
 import React from 'react';
-import { IMAGE } from 'elements/image/types';
 import { useEditor } from 'slate-react';
-import { ToolbarButton, ToolbarButtonProps } from 'components/ToolbarButton';
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+} from '../../../components/ToolbarButton';
 import { insertImage } from '../transforms';
+import { IMAGE } from '../types';
 
 export const ToolbarImage = ({
   typeImg = IMAGE,

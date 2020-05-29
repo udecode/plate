@@ -1,5 +1,5 @@
-import { SlatePlugin } from 'common/types';
-import { deserializeIframe } from 'elements/media-embed/deserializeIframe';
+import { SlatePlugin } from '../../common';
+import { deserializeIframe } from './deserializeIframe';
 import { renderElementMediaEmbed } from './renderElementMediaEmbed';
 import { MediaEmbedPluginOptions } from './types';
 

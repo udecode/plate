@@ -1,5 +1,5 @@
-import { getText } from 'common/queries/getText';
 import { Editor } from 'slate';
+import { getText } from './getText';
 
 /**
  * Get the selected text.

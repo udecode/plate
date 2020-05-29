@@ -1,5 +1,5 @@
-import { isCollapsed } from 'common/queries/isCollapsed';
 import { Editor, Point } from 'slate';
+import { isCollapsed } from '../../common/queries/isCollapsed';
 import { TableType, WithTableOptions } from './types';
 
 export const withTable = ({

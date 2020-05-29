@@ -1,6 +1,6 @@
-import { getNode } from 'common/queries/getNode';
-import { TransformEditor } from 'common/transforms';
 import { Editor, Path, Transforms } from 'slate';
+import { getNode } from '../common/queries';
+import { TransformEditor } from '../common/transforms';
 
 interface Rule {
   /**

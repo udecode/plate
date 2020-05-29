@@ -1,5 +1,5 @@
-import { withInline, withVoid } from 'element';
 import { Editor } from 'slate';
+import { withInline, withVoid } from '../../element';
 import { MENTION, WithMentionOptions } from './types';
 
 export const withMention = ({

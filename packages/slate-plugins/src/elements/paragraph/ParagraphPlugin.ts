@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { renderElementParagraph } from 'elements/paragraph/renderElementParagraph';
-import { ParagraphPluginOptions } from 'elements/paragraph/types';
+import { SlatePlugin } from '../../common';
 import { deserializeParagraph } from './deserializeParagraph';
+import { renderElementParagraph } from './renderElementParagraph';
+import { ParagraphPluginOptions } from './types';
 
 /**
  * Enables support for paragraphs.

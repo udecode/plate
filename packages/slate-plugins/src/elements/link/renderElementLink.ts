@@ -1,4 +1,4 @@
-import { getRenderElement } from 'element';
+import { getRenderElement } from '../../element/utils';
 import { LinkElement } from './components';
 import { LINK, LinkRenderElementOptions } from './types';
 

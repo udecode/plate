@@ -1,6 +1,6 @@
-import { unwrapNodesByType } from 'common/transforms';
-import { ListType } from 'elements/list/types';
 import { Editor } from 'slate';
+import { unwrapNodesByType } from '../../../common/transforms';
+import { ListType } from '../types';
 
 export const unwrapList = (
   editor: Editor,

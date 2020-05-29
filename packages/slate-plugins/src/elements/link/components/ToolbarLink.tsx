@@ -1,9 +1,12 @@
 import React from 'react';
-import { isNodeInSelection } from 'common/queries/isNodeInSelection';
-import { LINK } from 'elements/link/types';
 import { useSlate } from 'slate-react';
-import { ToolbarButton, ToolbarButtonProps } from 'components/ToolbarButton';
+import { isNodeInSelection } from '../../../common/queries';
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+} from '../../../components/ToolbarButton';
 import { insertLink } from '../transforms';
+import { LINK } from '../types';
 
 export const ToolbarLink = ({
   typeLink = LINK,

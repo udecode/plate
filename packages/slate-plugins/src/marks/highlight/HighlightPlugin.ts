@@ -1,6 +1,6 @@
-import { SlatePlugin } from 'common/types';
-import { onKeyDownMark } from 'mark';
-import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
+import { SlatePlugin } from '../../common';
+import { onKeyDownMark } from '../../mark';
+import { deserializeHighlight } from './deserializeHighlight';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions, MARK_HIGHLIGHT } from './types';
 

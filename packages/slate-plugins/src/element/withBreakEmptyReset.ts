@@ -1,6 +1,6 @@
-import { getBlockAboveSelection, isBlockTextEmpty } from 'common/queries';
-import { DEFAULT_ELEMENT } from 'element/types';
 import { Editor, Transforms } from 'slate';
+import { getBlockAboveSelection, isBlockTextEmpty } from '../common/queries';
+import { DEFAULT_ELEMENT } from './types';
 
 /**
  * On insert break at the start of an empty block in types,

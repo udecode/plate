@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react';
-import { isPointAtWordEnd, isWordAfterTrigger } from 'common/queries';
-import { isCollapsed } from 'common/queries/isCollapsed';
-import { getNextIndex } from 'elements/mention/utils/getNextIndex';
-import { getPreviousIndex } from 'elements/mention/utils/getPreviousIndex';
 import { Editor, Range, Transforms } from 'slate';
+import { isPointAtWordEnd, isWordAfterTrigger } from '../../common/queries';
+import { isCollapsed } from '../../common/queries/isCollapsed';
 import { insertMention } from './transforms';
 import { MentionNodeData, UseMentionOptions } from './types';
+import { getNextIndex, getPreviousIndex } from './utils';
 
 export const useMention = (
   mentionables: MentionNodeData[] = [],

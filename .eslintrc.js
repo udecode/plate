@@ -4,7 +4,6 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/camelcase': 'off',
-    'no-alert': 'off',
     'import/extensions': [
       'error',
       'never',
@@ -15,9 +14,11 @@ module.exports = {
         jsx: 'never',
       },
     ],
+    'import/no-cycle': 'off',
     'import/no-named-as-default-member': 'off',
     'jest/no-export': 'off',
     'jest/no-standalone-expect': 'off',
+    'no-alert': 'off',
     'react/jsx-filename-extension': [
       'error',
       { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },

@@ -1,5 +1,5 @@
-import { getText } from 'common/queries/getText';
 import { Editor, Point } from 'slate';
+import { getText } from './getText';
 
 // Starts with whitespace char or nothing
 const AFTER_MATCH_REGEX = /^(\s|$)/;

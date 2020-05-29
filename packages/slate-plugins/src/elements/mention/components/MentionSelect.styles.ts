@@ -2,7 +2,7 @@ import { IStyle } from '@uifabric/styling';
 import {
   MentionSelectStyleProps,
   MentionSelectStyles,
-} from 'elements/mention/components/MentionSelect.types';
+} from './MentionSelect.types';
 
 const classNames = {
   root: 'slate-MentionSelect',

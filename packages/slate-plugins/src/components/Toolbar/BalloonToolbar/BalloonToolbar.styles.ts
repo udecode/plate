@@ -3,7 +3,7 @@ import { IStyleFunctionOrObject, memoizeFunction } from '@uifabric/utilities';
 import {
   BalloonToolbarStyleProps,
   BalloonToolbarStyles,
-} from 'components/Toolbar/BalloonToolbar/BalloonToolbar.types';
+} from './BalloonToolbar.types';
 
 const classNames = {
   root: 'slate-BalloonToolbar',

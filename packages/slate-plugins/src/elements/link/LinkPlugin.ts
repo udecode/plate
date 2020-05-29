@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { LinkPluginOptions } from 'elements/link/types';
+import { SlatePlugin } from '../../common';
 import { deserializeLink } from './deserializeLink';
 import { renderElementLink } from './renderElementLink';
+import { LinkPluginOptions } from './types';
 
 /**
  * Enables support for hyperlinks.

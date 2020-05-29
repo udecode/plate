@@ -1,6 +1,6 @@
 import React from 'react';
-import { RenderElement, SlatePlugin } from 'common/types';
 import { RenderElementProps } from 'slate-react';
+import { RenderElement, SlatePlugin } from '../../../common';
 
 export const renderElementPlugins = (
   plugins: SlatePlugin[],

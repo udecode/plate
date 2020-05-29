@@ -1,5 +1,5 @@
-import { SlatePlugin } from 'common/types';
-import { onKeyDownSoftBreak } from 'handlers/soft-break/onKeyDownSoftBreak';
+import { SlatePlugin } from '../../common';
+import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 
 export const SoftBreakPlugin = (): SlatePlugin => ({
   onKeyDown: onKeyDownSoftBreak(),

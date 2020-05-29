@@ -1,6 +1,6 @@
-import { DeserializeElement, SlatePlugin } from 'common/types';
 import { Element, Node } from 'slate';
 import { jsx } from 'slate-hyperscript';
+import { DeserializeElement, SlatePlugin } from '../../../common';
 
 export const deserializeElement = ({
   plugins,

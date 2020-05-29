@@ -1,7 +1,7 @@
-import { BlockquotePluginOptions } from 'elements/blockquote';
-import { CodeBlockPluginOptions } from 'elements/code-block';
-import { HeadingPluginOptions } from 'elements/heading';
-import { ParagraphPluginOptions } from 'elements/paragraph';
+import { BlockquotePluginOptions } from '../blockquote';
+import { CodeBlockPluginOptions } from '../code-block';
+import { HeadingPluginOptions } from '../heading';
+import { ParagraphPluginOptions } from '../paragraph';
 
 // Plugin options
 export interface BasicElementPluginsOptions

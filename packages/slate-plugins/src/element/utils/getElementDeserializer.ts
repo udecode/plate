@@ -1,4 +1,4 @@
-import { getNodeDeserializer } from 'common/utils/getNodeDeserializer';
+import { getNodeDeserializer } from '../../common/utils/getNodeDeserializer';
 
 export type CreateElement = (
   el: HTMLElement

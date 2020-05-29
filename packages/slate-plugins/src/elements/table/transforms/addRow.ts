@@ -1,8 +1,8 @@
-import { isNodeInSelection } from 'common/queries';
-import { getEmptyRowNode } from 'elements/table/utils/getEmptyRowNode';
 import { Editor, Path, Transforms } from 'slate';
+import { isNodeInSelection } from '../../../common/queries';
 import { isTableRow } from '../queries';
 import { defaultTableTypes } from '../types';
+import { getEmptyRowNode } from '../utils';
 
 export const addRow = (editor: Editor, options = defaultTableTypes) => {
   if (isNodeInSelection(editor, options.typeTable)) {

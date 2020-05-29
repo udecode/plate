@@ -1,9 +1,6 @@
 import { concatStyleSets } from '@uifabric/styling';
 import { IStyleFunctionOrObject, memoizeFunction } from '@uifabric/utilities';
-import {
-  ToolbarStyleProps,
-  ToolbarStyles,
-} from 'components/Toolbar/Toolbar.types';
+import { ToolbarStyleProps, ToolbarStyles } from './Toolbar.types';
 
 const classNames = {
   root: 'slate-Toolbar',

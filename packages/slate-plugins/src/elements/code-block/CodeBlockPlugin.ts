@@ -1,11 +1,11 @@
-import { SlatePlugin } from 'common/types';
-import { deserializeCodeBlock } from 'elements/code-block/deserializeCodeBlock';
-import { renderElementCodeBlock } from 'elements/code-block/renderElementCodeBlock';
-import { CodeBlockPluginOptions } from 'elements/code-block/types';
-
 /**
  * Enables support for pre-formatted code blocks.
  */
+import { SlatePlugin } from '../../common';
+import { deserializeCodeBlock } from './deserializeCodeBlock';
+import { renderElementCodeBlock } from './renderElementCodeBlock';
+import { CodeBlockPluginOptions } from './types';
+
 export const CodeBlockPlugin = (
   options?: CodeBlockPluginOptions
 ): SlatePlugin => ({

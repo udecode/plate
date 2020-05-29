@@ -1,5 +1,5 @@
-import { getElementComponent, getRenderElements } from 'element/utils';
-import { OlElement, UlElement } from 'elements/list/components/ListElements';
+import { getElementComponent, getRenderElements } from '../../element/utils';
+import { OlElement, UlElement } from './components';
 import { ListRenderElementOptions, ListType } from './types';
 
 export const renderElementList = ({

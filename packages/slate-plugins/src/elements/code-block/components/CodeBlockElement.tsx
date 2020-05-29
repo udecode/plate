@@ -1,6 +1,6 @@
 import React from 'react';
-import { CodeBlockRenderElementProps } from 'elements/code-block/types';
 import styled from 'styled-components';
+import { CodeBlockRenderElementProps } from '../types';
 
 const Pre = styled.pre`
   padding: 10px;

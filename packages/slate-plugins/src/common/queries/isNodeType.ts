@@ -1,5 +1,5 @@
-import { QueryOptions } from 'common/types';
 import { Node } from 'slate';
+import { QueryOptions } from '../types';
 
 export const isNodeType = (
   node: Node,

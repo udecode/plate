@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { isSelectionExpanded } from 'common/queries';
-import { getSelectionText } from 'common/queries/getSelectionText';
 import { Editor } from 'slate';
-import { setPositionAtSelection } from 'components/Toolbar/BalloonToolbar/setPositionAtSelection';
+import { isSelectionExpanded } from '../../../common/queries';
+import { getSelectionText } from '../../../common/queries/getSelectionText';
+import { setPositionAtSelection } from './setPositionAtSelection';
 
 /**
  * Move when the selection changes.

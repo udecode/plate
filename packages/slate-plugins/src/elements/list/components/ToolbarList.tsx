@@ -1,10 +1,10 @@
 import React from 'react';
-import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
-import { ToolbarElement } from 'element/components';
-import { ListType } from 'elements/list/types';
 import { useSlate } from 'slate-react';
-import { ToolbarButtonProps } from 'components/ToolbarButton';
+import { getPreventDefaultHandler } from '../../../common/utils';
+import { ToolbarButtonProps } from '../../../components/ToolbarButton';
+import { ToolbarElement } from '../../../element/components';
 import { toggleList } from '../transforms';
+import { ListType } from '../types';
 
 export const ToolbarList = ({
   typeList = ListType.UL,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LinkRenderElementProps } from 'elements/link/types';
+import { LinkRenderElementProps } from '../types';
 
 export const LinkElement = ({
   attributes,

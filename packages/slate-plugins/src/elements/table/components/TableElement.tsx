@@ -1,6 +1,6 @@
 import React from 'react';
-import { TableRenderElementProps } from 'elements/table/types';
 import styled from 'styled-components';
+import { TableRenderElementProps } from '../types';
 
 export const StyledTable = styled.table`
   margin: 10px 0;

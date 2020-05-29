@@ -1,5 +1,6 @@
 import React from 'react';
-import { getElementComponent } from 'element/utils';
+import { RenderElementProps } from 'slate-react';
+import { getElementComponent } from '../../element/utils';
 import {
   HeadingElement1,
   HeadingElement2,
@@ -7,8 +8,7 @@ import {
   HeadingElement4,
   HeadingElement5,
   HeadingElement6,
-} from 'elements/heading/components/HeadingElements';
-import { RenderElementProps } from 'slate-react';
+} from './components';
 import { HeadingRenderElementOptions, HeadingType } from './types';
 
 /**

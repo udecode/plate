@@ -1,4 +1,4 @@
-import { getRenderElement } from 'element';
+import { getRenderElement } from '../../element/utils';
 import { CodeBlockElement } from './components';
 import { CODE_BLOCK, CodeBlockRenderElementOptions } from './types';
 

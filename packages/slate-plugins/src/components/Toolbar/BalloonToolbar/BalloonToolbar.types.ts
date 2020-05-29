@@ -4,7 +4,7 @@ import {
   ToolbarProps,
   ToolbarStyleProps,
   ToolbarStyles,
-} from 'components/Toolbar/Toolbar.types';
+} from '../Toolbar.types';
 
 export interface BalloonToolbarProps extends ToolbarProps {
   /**

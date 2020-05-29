@@ -1,6 +1,6 @@
-import { isCollapsed } from 'common/queries/isCollapsed';
-import { DEFAULT_ELEMENT } from 'element/types';
 import { Editor, Point, Transforms } from 'slate';
+import { isCollapsed } from '../common/queries/isCollapsed';
+import { DEFAULT_ELEMENT } from './types';
 
 /**
  * On delete at the start of an empty block in types,

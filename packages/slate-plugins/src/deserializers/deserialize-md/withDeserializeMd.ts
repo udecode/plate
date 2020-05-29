@@ -1,8 +1,8 @@
-import { SlatePlugin } from 'common/types';
-import { htmlDeserialize } from 'deserializers/deserialize-html';
 import marked from 'marked';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { SlatePlugin } from '../../common';
+import { htmlDeserialize } from '../deserialize-html';
 import { filterBreaklines } from './utils';
 
 /**

@@ -1,5 +1,5 @@
-import { LINK } from 'elements/link/types';
 import { Editor } from 'slate';
+import { LINK } from '../types';
 import { wrapLink } from './wrapLink';
 
 export const insertLink = (

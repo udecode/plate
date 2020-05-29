@@ -1,6 +1,6 @@
-import { RenderElementOptions } from 'element';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
+import { RenderElementOptions } from '../../element';
 
 export const MENTION = 'mention';
 

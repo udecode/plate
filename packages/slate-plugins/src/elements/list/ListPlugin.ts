@@ -1,4 +1,4 @@
-import { SlatePlugin } from 'common/types';
+import { SlatePlugin } from '../../common';
 import { deserializeList } from './deserializeList';
 import { onKeyDownList } from './onKeyDownList';
 import { renderElementList } from './renderElementList';

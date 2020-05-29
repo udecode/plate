@@ -1,10 +1,9 @@
-import { withVoid } from 'element';
-import { WithImageUploadOptions } from 'elements/image/image-upload/types';
-import { insertImage } from 'elements/image/transforms';
-import { IMAGE } from 'elements/image/types';
-import { isImageUrl } from 'elements/image/utils/isImageUrl';
-import { onImageLoad } from 'elements/image/utils/onImageLoad';
 import { ReactEditor } from 'slate-react';
+import { withVoid } from '../../../element';
+import { insertImage } from '../transforms';
+import { IMAGE } from '../types';
+import { isImageUrl, onImageLoad } from '../utils';
+import { WithImageUploadOptions } from './types';
 
 /**
  * Allows for pasting images from clipboard.
