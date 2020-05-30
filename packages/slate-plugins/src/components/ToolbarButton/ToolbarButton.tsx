@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react'; // optional
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';

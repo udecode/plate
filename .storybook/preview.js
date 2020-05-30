@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { DocsPage } from '@storybook/addon-docs/blocks';
 import { withKnobs } from '@storybook/addon-knobs';
 import { addDecorator, addParameters } from '@storybook/react';

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useFocused, useSelected } from 'slate-react';
 import { getHandler } from '../../../common/utils';
 import { MentionRenderElementProps } from '../types';

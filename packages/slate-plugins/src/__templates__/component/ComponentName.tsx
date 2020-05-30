@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { getComponentNameStyles } from './ComponentName.styles';
 import {

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { render } from '@testing-library/react';
 import { PARAGRAPH, ParagraphPlugin } from 'elements/paragraph';
 import { renderElementPlugins } from 'components/EditablePlugins/utils';

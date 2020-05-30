@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import * as React from 'react';
+import { useEffect, useRef } from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
 import { getPreventDefaultHandler } from '../../../common/utils';

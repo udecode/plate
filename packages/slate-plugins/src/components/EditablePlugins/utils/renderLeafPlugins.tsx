@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { RenderLeafProps } from 'slate-react';
 import { RenderLeaf, SlatePlugin } from '../../../common';
 

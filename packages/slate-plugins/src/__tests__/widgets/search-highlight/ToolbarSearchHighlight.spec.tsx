@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Search } from '@styled-icons/material';
 import { fireEvent, render } from '@testing-library/react';
 import { ToolbarSearchHighlight } from 'widgets/search-highlight/components';

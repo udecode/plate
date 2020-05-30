@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import * as ReactDOM from 'react-dom';
 
 export const PortalBody: ({ children }: any) => React.ReactPortal = ({
   children,

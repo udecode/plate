@@ -1,26 +1,38 @@
 {
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [
+      7005
+    ]
+  },
   "compilerOptions": {
-    "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "baseUrl": "src",
+    "downlevelIteration": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "baseUrl": "src"
+    "target": "es2017"
   },
-  "include": ["src", "typings"],
-  "exclude": ["node_modules", "dist", "scripts"],
-  "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [7005]
-  }
+  "exclude": [
+    "node_modules",
+    "dist",
+    "scripts"
+  ],
+  "include": [
+    "src",
+    "typings"
+  ]
 }

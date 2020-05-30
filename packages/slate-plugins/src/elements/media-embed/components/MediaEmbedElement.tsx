@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor } from 'slate-react';
 import styled from 'styled-components';

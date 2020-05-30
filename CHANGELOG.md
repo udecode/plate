@@ -6,11 +6,11 @@ bumps.
 
 ---
 
-### `0.58.10` — May 30, 2020
+### `0.58.11` — May 30, 2020
 
 ##### FIX
 
-- fix all the types exports.
+- fix the React component types exports.
 
 ### `0.58.9` — May 30, 2020
 

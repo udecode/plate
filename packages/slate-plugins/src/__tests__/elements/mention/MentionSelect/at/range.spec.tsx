@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { mentionables } from '__tests__/elements/mention/useMention/onKeyDown/mentionables.fixture';
 import { render } from '@testing-library/react';
 import { MentionSelect } from 'elements/mention/components';
