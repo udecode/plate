@@ -136,7 +136,7 @@ Here is our roadmap to have a complete rich-text editor.
 
 ### Serializers
 
-- [ ] [SerializeHtml](https://github.com/zbeyens/slate-plugins-next/issues/61)
+- [x] [SerializeHtml](https://github.com/zbeyens/slate-plugins-next/issues/61)
       – Enables support for serializing content from Slate format to
       HTML format.
 - [ ] [SerializeMarkdown](https://github.com/zbeyens/slate-plugins-next/issues/149)

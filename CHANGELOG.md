@@ -6,6 +6,13 @@ bumps.
 
 ---
 
+### `0.58.12` — May 30, 2020
+
+##### NEW
+
+- `htmlSerialize` – function for serializing content from Slate format
+  to HTML format.
+
 ### `0.58.11` — May 30, 2020
 
 ##### FIX
