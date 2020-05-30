@@ -1,6 +1,7 @@
 export * from './common';
 export * from './components';
 export * from './decorators';
+export * from './serializers';
 export * from './deserializers';
 export * from './element';
 export * from './elements';
