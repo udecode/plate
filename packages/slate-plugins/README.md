@@ -58,7 +58,7 @@ and
 ## 🚀 Getting Started
 
 ```bash
-yarn add slate-plugins-next@0.58.12
+yarn add slate-plugins-next@0.58.13
 ```
 
 > ⚠️ In production, you should pin the dependency until 1.0.0 is
