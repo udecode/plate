@@ -17,7 +17,7 @@ bumps.
 
 ##### FIX
 
-- fix the React component types exports.
+- correctly export the React component types.
 
 ### `0.58.9` — May 30, 2020
 
