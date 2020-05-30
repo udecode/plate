@@ -6,6 +6,7 @@ import json from 'rollup-plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 import resolve from 'rollup-plugin-node-resolve';
+import external from 'rollup-plugin-peer-deps-external';
 import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
 
@@ -23,6 +24,10 @@ const includePathOptions = {
 };
 
 const plugins = [
+  // Automatically externalize peerDependencies
+  external(),
+
+  // Let you use relative paths in your import directives
   includePaths(includePathOptions),
 
   // Allow Rollup to resolve modules from `node_modules`, since it only
@@ -38,23 +43,7 @@ const plugins = [
 
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015
   // modules by default.
-  commonjs({
-    include: 'node_modules/**',
-    namedExports: {
-      'node_modules/react/index.js': [
-        'cloneElement',
-        'createContext',
-        'Component',
-        'createElement',
-      ],
-      'node_modules/react-dom/index.js': ['render', 'hydrate'],
-      'node_modules/react-is/index.js': [
-        'isElement',
-        'isValidElementType',
-        'ForwardRef',
-      ],
-    },
-  }),
+  commonjs(),
 
   // Convert JSON imports to ES6 modules.
   json(),
@@ -117,17 +106,15 @@ export default [
       {
         file: PKG_JSON.main,
         format: 'cjs',
-        exports: 'named',
-        sourcemap: true,
         name: PKG_JSON.name,
+        sourcemap: true,
       },
       // ES module (for bundlers)
       {
         file: PKG_JSON.module,
         format: 'es',
-        exports: 'named',
-        sourcemap: true,
         name: PKG_JSON.name,
+        sourcemap: true,
       },
     ],
     plugins,

@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import ReactDOMServer from 'react-dom/server';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { Node as SlateNode, Text as SlateText } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 import { SlatePlugin } from '../../common';
@@ -26,7 +26,7 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
     );
 
   if (elementPlugin && elementPlugin.renderElement) {
-    return ReactDOMServer.renderToStaticMarkup(
+    return renderToStaticMarkup(
       elementPlugin.renderElement(elementProps) as ReactElement
     );
   }
@@ -38,9 +38,7 @@ const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
     .filter((plugin) => plugin.renderLeaf)
     .find(({ renderLeaf }) => renderLeaf && renderLeaf(leafProps) !== children);
   if (leafPlugin && leafPlugin.renderLeaf) {
-    return ReactDOMServer.renderToStaticMarkup(
-      leafPlugin.renderLeaf(leafProps)
-    );
+    return renderToStaticMarkup(leafPlugin.renderLeaf(leafProps));
   }
   return children;
 };
