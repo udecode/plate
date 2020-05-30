@@ -1,9 +1,9 @@
+import { Editor, Transforms } from 'slate';
 import {
   getSelectionNodesArrayByType,
   isNodeInSelection,
-} from 'common/queries';
-import { PARAGRAPH } from 'elements/paragraph';
-import { Editor, Transforms } from 'slate';
+} from '../../../common/queries';
+import { PARAGRAPH } from '../../paragraph';
 import { ListType } from '../types';
 import { unwrapList } from './unwrapList';
 

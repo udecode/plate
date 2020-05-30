@@ -1,6 +1,6 @@
-import { SlatePlugin } from 'common/types';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { SlatePlugin } from '../../common';
 import { htmlDeserialize } from './htmlDeserialize';
 
 /**

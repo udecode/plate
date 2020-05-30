@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { deserializeMention } from 'elements/mention/deserializeMention';
-import { renderElementMention } from 'elements/mention/renderElementMention';
-import { MentionPluginOptions } from 'elements/mention/types';
+import { SlatePlugin } from '../../common';
+import { deserializeMention } from './deserializeMention';
+import { renderElementMention } from './renderElementMention';
+import { MentionPluginOptions } from './types';
 
 /**
  * Enables support for autocompleting @mentions and #tags.

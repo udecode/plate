@@ -1,7 +1,7 @@
-import { isAncestor, isNodeType } from 'common/queries';
-import { QueryOptions } from 'common/types';
 import { merge } from 'lodash';
 import { Descendant, Node } from 'slate';
+import { isAncestor, isNodeType } from '../queries';
+import { QueryOptions } from '../types';
 
 /**
  * Recursively set properties to children nodes

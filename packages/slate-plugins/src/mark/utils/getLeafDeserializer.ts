@@ -1,7 +1,4 @@
-/**
- * Get a deserializer by type and/or tag names with a common Leaf creator.
- */
-import { getNodeDeserializer } from 'common/utils/getNodeDeserializer';
+import { getNodeDeserializer } from '../../common/utils/getNodeDeserializer';
 
 export type CreateLeaf = (
   el: HTMLElement

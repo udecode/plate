@@ -1,13 +1,10 @@
-import { getTextFromBlockStartToAnchor } from 'common/queries';
-import { isCollapsed } from 'common/queries/isCollapsed';
-import {
-  BLOCKQUOTE,
-  HeadingType,
-  ListType,
-  PARAGRAPH,
-  toggleList,
-} from 'elements';
 import { Editor, Range, Transforms } from 'slate';
+import { getTextFromBlockStartToAnchor } from '../../common/queries';
+import { isCollapsed } from '../../common/queries/isCollapsed';
+import { BLOCKQUOTE } from '../../elements/blockquote';
+import { HeadingType } from '../../elements/heading';
+import { ListType, toggleList } from '../../elements/list';
+import { PARAGRAPH } from '../../elements/paragraph';
 
 /**
  * Enables support for autoformatting actions.

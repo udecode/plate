@@ -1,8 +1,7 @@
-import { isNodeType, QueryOptions } from 'common';
-import { getLastNode } from 'common/queries/getLastNode';
-import { TransformEditor } from 'common/transforms/withTransforms';
-import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Path } from 'slate';
+import { isNodeType, QueryOptions, TransformEditor } from '../common';
+import { getLastNode } from '../common/queries';
+import { PARAGRAPH } from '../elements/paragraph';
 
 export interface WithTrailingNode extends QueryOptions {
   /**

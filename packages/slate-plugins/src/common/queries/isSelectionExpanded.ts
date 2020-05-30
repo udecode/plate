@@ -1,5 +1,5 @@
-import { isExpanded } from 'common/queries/isExpanded';
 import { Editor } from 'slate';
+import { isExpanded } from './isExpanded';
 
 /**
  * Is the selection expanded.

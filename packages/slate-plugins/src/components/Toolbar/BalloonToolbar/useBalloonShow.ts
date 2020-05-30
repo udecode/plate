@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTimeoutFn } from 'react-use';
-import { isSelectionExpanded } from 'common/queries';
-import { getSelectionText } from 'common/queries/getSelectionText';
 import { Editor } from 'slate';
+import { isSelectionExpanded } from '../../../common/queries';
+import { getSelectionText } from '../../../common/queries/getSelectionText';
 
 /**
  * Hide if not selecting.

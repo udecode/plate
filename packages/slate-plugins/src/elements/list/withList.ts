@@ -1,8 +1,8 @@
-import { isRangeAtRoot } from 'common/queries';
-import { unwrapNodesByType } from 'common/transforms';
-import { withBreakEmptyReset, withDeleteStartReset } from 'element';
-import { PARAGRAPH } from 'elements/paragraph';
 import { Editor, Path, Point, Range, Transforms } from 'slate';
+import { isRangeAtRoot } from '../../common/queries';
+import { unwrapNodesByType } from '../../common/transforms';
+import { withBreakEmptyReset, withDeleteStartReset } from '../../element';
+import { PARAGRAPH } from '../paragraph';
 import { ListType, WithListOptions } from './types';
 
 export const withList = ({

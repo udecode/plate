@@ -1,8 +1,8 @@
 import React from 'react';
-import { ActionItemRenderElementProps } from 'elements/action-item/types';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor, useReadOnly } from 'slate-react';
 import styled from 'styled-components';
+import { ActionItemRenderElementProps } from '../types';
 
 const Wrapper = styled.div`
   display: flex;

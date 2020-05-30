@@ -1,7 +1,7 @@
-import { isNodeInSelection } from 'common/queries';
-import { isCollapsed } from 'common/queries/isCollapsed';
-import { unwrapNodesByType } from 'common/transforms';
 import { Editor, Transforms } from 'slate';
+import { isNodeInSelection } from '../../../common/queries';
+import { isCollapsed } from '../../../common/queries/isCollapsed';
+import { unwrapNodesByType } from '../../../common/transforms';
 import { LINK } from '../types';
 
 export const wrapLink = (

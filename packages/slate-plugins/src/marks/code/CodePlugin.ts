@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { onKeyDownMark } from 'mark';
-import { deserializeCode } from 'marks/code/deserializeCode';
-import { renderLeafCode } from 'marks/code/renderLeafCode';
+import { SlatePlugin } from '../../common';
+import { onKeyDownMark } from '../../mark';
+import { deserializeCode } from './deserializeCode';
+import { renderLeafCode } from './renderLeafCode';
 import { CodePluginOptions, MARK_CODE } from './types';
 
 /**

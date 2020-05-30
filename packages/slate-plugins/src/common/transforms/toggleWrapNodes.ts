@@ -1,6 +1,6 @@
-import { isNodeInSelection } from 'common/queries';
-import { unwrapNodesByType } from 'common/transforms/unwrapNodesByType';
 import { Editor, Transforms } from 'slate';
+import { isNodeInSelection } from '../queries';
+import { unwrapNodesByType } from './unwrapNodesByType';
 
 /**
  * Unwrap if the node type is in selection.

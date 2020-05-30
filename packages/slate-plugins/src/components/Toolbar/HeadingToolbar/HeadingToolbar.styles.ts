@@ -1,9 +1,6 @@
 import { concatStyleSets } from '@uifabric/styling';
-import { getToolbarStyles } from 'components/Toolbar/Toolbar.styles';
-import {
-  ToolbarStyleProps,
-  ToolbarStyles,
-} from 'components/Toolbar/Toolbar.types';
+import { getToolbarStyles } from '../Toolbar.styles';
+import { ToolbarStyleProps, ToolbarStyles } from '../Toolbar.types';
 
 const classNames = {
   root: 'slate-HeadingToolbar',

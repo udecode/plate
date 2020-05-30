@@ -1,10 +1,10 @@
 import React from 'react';
-import { isNodeInSelection } from 'common/queries';
-import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
-import { ToolbarTableProps } from 'elements/table/components/ToolbarTable.types';
-import { TableType } from 'elements/table/types';
 import { useSlate } from 'slate-react';
-import { ToolbarButton } from 'components/ToolbarButton';
+import { isNodeInSelection } from '../../../common/queries';
+import { getPreventDefaultHandler } from '../../../common/utils';
+import { ToolbarButton } from '../../../components/ToolbarButton';
+import { TableType } from '../types';
+import { ToolbarTableProps } from './ToolbarTable.types';
 
 export const ToolbarTable = ({
   typeTable = TableType.TABLE,

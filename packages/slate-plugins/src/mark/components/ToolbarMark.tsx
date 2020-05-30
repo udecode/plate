@@ -1,10 +1,10 @@
 import React from 'react';
-import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
-import { ToolbarMarkProps } from 'mark/components/ToolbarMark.types';
 import { useSlate } from 'slate-react';
-import { ToolbarButton } from 'components/ToolbarButton';
+import { getPreventDefaultHandler } from '../../common/utils';
+import { ToolbarButton } from '../../components/ToolbarButton';
 import { isMarkActive } from '../queries';
 import { toggleMark } from '../transforms';
+import { ToolbarMarkProps } from './ToolbarMark.types';
 
 /**
  * Toolbar button to toggle the mark of the leaves in selection.

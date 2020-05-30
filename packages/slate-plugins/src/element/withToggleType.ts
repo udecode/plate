@@ -1,5 +1,5 @@
-import { isNodeInSelection } from 'common/queries';
 import { Editor, Transforms } from 'slate';
+import { isNodeInSelection } from '../common/queries';
 import { DEFAULT_ELEMENT, ToggleTypeEditor } from './types';
 
 export interface WithToggleTypeOptions {

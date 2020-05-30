@@ -1,4 +1,4 @@
-import { getElementComponent, getRenderElement } from 'element';
+import { getElementComponent, getRenderElement } from '../../element/utils';
 import { PARAGRAPH, ParagraphRenderElementOptions } from './types';
 
 export const renderElementParagraph = ({

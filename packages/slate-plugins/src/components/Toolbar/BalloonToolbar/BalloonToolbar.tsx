@@ -1,11 +1,11 @@
 import React from 'react';
 import { useSlate } from 'slate-react';
-import { PortalBody } from 'components/PortalBody/PortalBody';
-import { getBalloonToolbarStyles } from 'components/Toolbar/BalloonToolbar/BalloonToolbar.styles';
-import { BalloonToolbarProps } from 'components/Toolbar/BalloonToolbar/BalloonToolbar.types';
-import { useBalloonMove } from 'components/Toolbar/BalloonToolbar/useBalloonMove';
-import { useBalloonShow } from 'components/Toolbar/BalloonToolbar/useBalloonShow';
-import { Toolbar } from 'components/Toolbar/Toolbar';
+import { PortalBody } from '../../PortalBody';
+import { Toolbar } from '../Toolbar';
+import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
+import { BalloonToolbarProps } from './BalloonToolbar.types';
+import { useBalloonMove } from './useBalloonMove';
+import { useBalloonShow } from './useBalloonShow';
 
 export const BalloonToolbar = ({
   className,

@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
-import { getPreventDefaultHandler } from 'common/utils';
+import { ReactEditor, useSlate } from 'slate-react';
+import { getPreventDefaultHandler } from '../../../common/utils';
+import { PortalBody } from '../../../components/PortalBody';
+import { getMentionSelectStyles } from './MentionSelect.styles';
 import {
   MentionSelectProps,
   MentionSelectStyleProps,
   MentionSelectStyles,
-} from 'elements/mention/components/MentionSelect.types';
-import { ReactEditor, useSlate } from 'slate-react';
-import { PortalBody } from 'components';
-import { getMentionSelectStyles } from './MentionSelect.styles';
+} from './MentionSelect.types';
 
 const getClassNames = classNamesFunction<
   MentionSelectStyleProps,

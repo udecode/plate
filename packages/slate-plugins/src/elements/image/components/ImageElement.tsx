@@ -1,7 +1,7 @@
 import React from 'react';
-import { ImageRenderElementProps } from 'elements/image/types';
 import { useFocused, useSelected } from 'slate-react';
 import styled from 'styled-components';
+import { ImageRenderElementProps } from '../types';
 
 const Image = styled.img<{ selected: boolean; focused: boolean }>`
   display: block;

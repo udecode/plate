@@ -1,10 +1,3 @@
-import { SlatePlugin } from 'common/types';
-import { BasicElementPluginsOptions } from 'elements/basic-elements/types';
-import { BlockquotePlugin } from 'elements/blockquote';
-import { CodeBlockPlugin } from 'elements/code-block';
-import { HeadingPlugin } from 'elements/heading';
-import { ParagraphPlugin } from 'elements/paragraph';
-
 /**
  * Enables support for basic elements:
  * - Block quote
@@ -12,6 +5,13 @@ import { ParagraphPlugin } from 'elements/paragraph';
  * - Heading
  * - Paragraph
  */
+import { SlatePlugin } from '../../common';
+import { BlockquotePlugin } from '../blockquote';
+import { CodeBlockPlugin } from '../code-block';
+import { HeadingPlugin } from '../heading';
+import { ParagraphPlugin } from '../paragraph';
+import { BasicElementPluginsOptions } from './types';
+
 export const BasicElementPlugins = (
   options?: BasicElementPluginsOptions
 ): SlatePlugin[] => [

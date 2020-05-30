@@ -1,13 +1,9 @@
-import {
-  ComponentNameStyleProps,
-  ComponentNameStyles,
-} from '__templates__/component/ComponentName.types';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 
 export interface ToolbarProps {
   /**
-   * Additional class name to provide on the root element, in addition to the slate-ComponentName class.
+   * Additional class name to provide on the root element, in addition to the slate-Toolbar class.
    */
   className?: string;
 
@@ -15,7 +11,7 @@ export interface ToolbarProps {
    * Call to provide customized styling that will layer on top of the variant rules.
    */
 
-  styles?: IStyleFunctionOrObject<ComponentNameStyleProps, ComponentNameStyles>;
+  styles?: IStyleFunctionOrObject<ToolbarStyleProps, ToolbarStyles>;
 
   children?: any;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
-import { RenderLeaf, SlatePlugin } from 'common/types';
 import { RenderLeafProps } from 'slate-react';
+import { RenderLeaf, SlatePlugin } from '../../../common';
 
 export const renderLeafPlugins = (
   plugins: SlatePlugin[],

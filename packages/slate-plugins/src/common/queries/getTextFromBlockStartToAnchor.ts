@@ -1,6 +1,6 @@
-import { getBlockAboveSelection } from 'common/queries/getBlockAboveSelection';
-import { getText } from 'common/queries/getText';
 import { Editor } from 'slate';
+import { getBlockAboveSelection } from './getBlockAboveSelection';
+import { getText } from './getText';
 
 /**
  * Get the block text before the selection: from the start of the block to the anchor.

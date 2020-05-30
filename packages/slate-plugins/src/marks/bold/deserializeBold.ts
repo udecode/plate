@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'common/types';
+import { DeserializeHtml } from '../../common';
 import { BoldDeserializeOptions, MARK_BOLD } from './types';
 
 export const deserializeBold = ({

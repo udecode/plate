@@ -1,9 +1,9 @@
 import React from 'react';
-import { toggleWrapNodes } from 'common/transforms/toggleWrapNodes';
-import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
-import { ToolbarElement } from 'element/components';
 import { useSlate } from 'slate-react';
-import { ToolbarButtonProps } from 'components/ToolbarButton';
+import { toggleWrapNodes } from '../../../common/transforms';
+import { getPreventDefaultHandler } from '../../../common/utils';
+import { ToolbarButtonProps } from '../../../components/ToolbarButton';
+import { ToolbarElement } from '../../../element/components';
 import { CODE_BLOCK } from '../types';
 
 export const ToolbarCodeBlock = ({

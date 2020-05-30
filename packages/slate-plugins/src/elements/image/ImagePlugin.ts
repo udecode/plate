@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { renderElementImage } from 'elements/image/renderElementImage';
-import { ImagePluginOptions } from 'elements/image/types';
+import { SlatePlugin } from '../../common';
 import { deserializeImage } from './deserializeImage';
+import { renderElementImage } from './renderElementImage';
+import { ImagePluginOptions } from './types';
 
 /**
  * Enables support for images.

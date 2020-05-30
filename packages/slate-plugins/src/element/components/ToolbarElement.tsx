@@ -1,10 +1,10 @@
 import React from 'react';
-import { isNodeInSelection } from 'common/queries';
-import { getPreventDefaultHandler } from 'common/utils';
-import { ToolbarElementProps } from 'element/components/ToolbarElement.types';
-import { ToggleTypeEditor } from 'element/types';
 import { ReactEditor, useSlate } from 'slate-react';
-import { ToolbarButton } from 'components/ToolbarButton';
+import { isNodeInSelection } from '../../common/queries';
+import { getPreventDefaultHandler } from '../../common/utils';
+import { ToolbarButton } from '../../components/ToolbarButton';
+import { ToggleTypeEditor } from '../types';
+import { ToolbarElementProps } from './ToolbarElement.types';
 
 /**
  * Toolbar button to toggle the type of elements in selection.

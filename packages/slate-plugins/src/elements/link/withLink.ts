@@ -1,6 +1,6 @@
-import { isUrl } from 'common/utils';
-import { withInline } from 'element';
 import { ReactEditor } from 'slate-react';
+import { isUrl } from '../../common/utils';
+import { withInline } from '../../element';
 import { wrapLink } from './transforms';
 import { LINK, WithLinkOptions } from './types';
 

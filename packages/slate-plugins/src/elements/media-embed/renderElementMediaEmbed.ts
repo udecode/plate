@@ -1,4 +1,4 @@
-import { getRenderElement } from 'element';
+import { getRenderElement } from '../../element/utils';
 import { MediaEmbedElement } from './components';
 import { MEDIA_EMBED, MediaEmbedRenderElementOptions } from './types';
 

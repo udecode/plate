@@ -1,5 +1,5 @@
-import { isAncestor } from 'common/queries/isAncestor';
 import { Editor, Node, NodeEntry } from 'slate';
+import { isAncestor } from './isAncestor';
 
 const getLastChild = (node: Node, level: number): Node => {
   if (!(level + 1) || !isAncestor(node)) return node;

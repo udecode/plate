@@ -1,10 +1,10 @@
-import { ComponentNameBase } from '__templates__/component/ComponentName';
+import { styled } from '@uifabric/utilities';
+import { ComponentNameBase } from './ComponentName';
 import {
   ComponentNameProps,
   ComponentNameStyleProps,
   ComponentNameStyles,
-} from '__templates__/component/ComponentName.types';
-import { styled } from '@uifabric/utilities';
+} from './ComponentName.types';
 import { getComposedStyles } from './Composed.styles';
 
 export const Composed = styled<

@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { deserializeActionItem } from 'elements/action-item/deserializeActionItem';
-import { ActionItemPluginOptions } from 'elements/action-item/types';
+import { SlatePlugin } from '../../common';
+import { deserializeActionItem } from './deserializeActionItem';
 import { renderElementActionItem } from './renderElementActionItem';
+import { ActionItemPluginOptions } from './types';
 
 export const ActionItemPlugin = (
   options?: ActionItemPluginOptions

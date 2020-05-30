@@ -1,5 +1,5 @@
-import { DeserializeHtml } from 'common/types';
-import { getElementDeserializer } from 'element/utils';
+import { DeserializeHtml } from '../../common';
+import { getElementDeserializer } from '../../element/utils';
 import { ListDeserializeOptions, ListType } from './types';
 
 export const deserializeList = ({

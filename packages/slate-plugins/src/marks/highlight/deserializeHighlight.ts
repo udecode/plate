@@ -1,5 +1,5 @@
-import { DeserializeHtml } from 'common/types';
-import { getLeafDeserializer } from 'mark/utils';
+import { DeserializeHtml } from '../../common';
+import { getLeafDeserializer } from '../../mark/utils';
 import { HighlightDeserializeOptions, MARK_HIGHLIGHT } from './types';
 
 export const deserializeHighlight = ({

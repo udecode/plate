@@ -1,6 +1,6 @@
 import React from 'react';
-import { BlockquoteRenderElementProps } from 'elements/blockquote/types';
 import styled from 'styled-components';
+import { BlockquoteRenderElementProps } from '../types';
 
 const StyledBlockquoteElement = styled.blockquote`
   border-left: 2px solid #ddd;

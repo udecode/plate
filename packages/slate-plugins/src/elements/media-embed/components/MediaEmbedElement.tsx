@@ -1,8 +1,8 @@
 import React from 'react';
-import { MediaEmbedRenderElementProps } from 'elements/media-embed/types';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor } from 'slate-react';
 import styled from 'styled-components';
+import { MediaEmbedRenderElementProps } from '../types';
 
 const MediaEmbedWrapper = styled.div`
   padding: 75% 0 0 0;

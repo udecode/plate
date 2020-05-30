@@ -1,8 +1,5 @@
 import { NodeEntry, Range, Text } from 'slate';
-import {
-  MARK_SEARCH_HIGHLIGHT,
-  SearchHighlightDecorateOptions,
-} from 'widgets/search-highlight/types';
+import { MARK_SEARCH_HIGHLIGHT, SearchHighlightDecorateOptions } from './types';
 
 export const decorateSearchHighlight = ({
   search,

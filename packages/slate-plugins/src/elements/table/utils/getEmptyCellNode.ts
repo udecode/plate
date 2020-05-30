@@ -1,4 +1,4 @@
-import { defaultTableTypes } from 'elements/table/types';
+import { defaultTableTypes } from '../types';
 
 export const getEmptyCellNode = (options = defaultTableTypes) => ({
   type: options.typeTd,

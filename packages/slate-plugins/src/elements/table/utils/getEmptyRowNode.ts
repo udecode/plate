@@ -1,5 +1,5 @@
-import { defaultTableTypes } from 'elements/table/types';
-import { getEmptyCellNode } from 'elements/table/utils/getEmptyCellNode';
+import { defaultTableTypes } from '../types';
+import { getEmptyCellNode } from './getEmptyCellNode';
 
 export const getEmptyRowNode = (
   colCount: number,

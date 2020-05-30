@@ -1,11 +1,11 @@
+import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import {
   isBlockTextEmpty,
   isFirstChild,
   isNodeInSelection,
   isRangeAtRoot,
-} from 'common/queries';
-import { PARAGRAPH } from 'elements/paragraph';
-import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
+} from '../../common/queries';
+import { PARAGRAPH } from '../paragraph';
 import { isList } from './queries';
 import {
   defaultListTypes,

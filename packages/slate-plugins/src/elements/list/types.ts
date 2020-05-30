@@ -1,6 +1,6 @@
-import { PARAGRAPH } from 'elements/paragraph';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
+import { PARAGRAPH } from '../paragraph';
 
 export const ListHotkey = {
   TAB: 'Tab',

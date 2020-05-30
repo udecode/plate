@@ -1,5 +1,5 @@
-import { getSelectionNodesByType } from 'common/queries/getSelectionNodesByType';
 import { Editor } from 'slate';
+import { getSelectionNodesByType } from './getSelectionNodesByType';
 
 export const getSelectionNodesArrayByType = (
   editor: Editor,

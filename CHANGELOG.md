@@ -6,6 +6,12 @@ bumps.
 
 ---
 
+### `0.58.10` — May 30, 2020
+
+##### FIX
+
+- fix all the types exports.
+
 ### `0.58.9` — May 30, 2020
 
 ##### FIX

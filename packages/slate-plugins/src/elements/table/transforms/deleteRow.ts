@@ -1,7 +1,7 @@
-import { isNodeInSelection } from 'common/queries';
-import { defaultTableTypes } from 'elements/table/types';
 import { Editor, Transforms } from 'slate';
+import { isNodeInSelection } from '../../../common/queries';
 import { isTable, isTableRow } from '../queries';
+import { defaultTableTypes } from '../types';
 
 export const deleteRow = (editor: Editor, options = defaultTableTypes) => {
   if (isNodeInSelection(editor, options.typeTable)) {

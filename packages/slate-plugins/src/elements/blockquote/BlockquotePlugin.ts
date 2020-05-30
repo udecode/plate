@@ -1,7 +1,7 @@
-import { SlatePlugin } from 'common/types';
-import { BlockquotePluginOptions } from 'elements/blockquote/types';
+import { SlatePlugin } from '../../common';
 import { deserializeBlockquote } from './deserializeBlockquote';
 import { renderElementBlockquote } from './renderElementBlockquote';
+import { BlockquotePluginOptions } from './types';
 
 /**
  * Enables support for block quotes, useful for

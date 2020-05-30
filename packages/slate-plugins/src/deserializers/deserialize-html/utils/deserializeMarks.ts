@@ -1,7 +1,10 @@
-import { setPropsToNodes } from 'common/transforms';
-import { DeserializeLeafValue, SlatePlugin } from 'common/types';
 import { Node, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
+import {
+  DeserializeLeafValue,
+  setPropsToNodes,
+  SlatePlugin,
+} from '../../../common';
 
 export interface DeserializeMarksProps {
   plugins: SlatePlugin[];

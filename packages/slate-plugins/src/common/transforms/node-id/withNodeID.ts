@@ -1,8 +1,8 @@
-import { isDescendant } from 'common/queries';
-import { setPropsToNodes } from 'common/transforms/setPropsToNodes';
-import { QueryOptions } from 'common/types';
 import { Element, Node } from 'slate';
 import { HistoryEditor } from 'slate-history';
+import { isDescendant } from '../../queries';
+import { QueryOptions } from '../../types';
+import { setPropsToNodes } from '../setPropsToNodes';
 
 export interface WithNodeIDProps extends QueryOptions {
   // Key used for the id. Default is `id`.

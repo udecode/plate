@@ -1,6 +1,6 @@
-import { isCollapsed } from 'common/queries/isCollapsed';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
+import { isCollapsed } from '../../common/queries/isCollapsed';
 
 export const onKeyDownSoftBreak = () => (
   event: KeyboardEvent,

@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Editable, useSlate } from 'slate-react';
 import {
   Decorate,
   OnDOMBeforeInput,
@@ -6,15 +7,14 @@ import {
   RenderElement,
   RenderLeaf,
   SlatePlugin,
-} from 'common/types';
-import { Editable, useSlate } from 'slate-react';
+} from '../../common';
 import {
   decoratePlugins,
   onDOMBeforeInputPlugins,
   onKeyDownPlugins,
   renderElementPlugins,
   renderLeafPlugins,
-} from 'components/EditablePlugins/utils';
+} from './utils';
 
 export interface EditablePluginsProps {
   [key: string]: any;

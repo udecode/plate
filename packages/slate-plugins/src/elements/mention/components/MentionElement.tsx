@@ -1,6 +1,6 @@
 import React from 'react';
-import { getHandler } from 'common/utils';
 import { useFocused, useSelected } from 'slate-react';
+import { getHandler } from '../../../common/utils';
 import { MentionRenderElementProps } from '../types';
 
 export const MentionElement = ({

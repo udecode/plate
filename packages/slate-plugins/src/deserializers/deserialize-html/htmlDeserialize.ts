@@ -1,12 +1,12 @@
-import { SlatePlugin } from 'common/types';
+import { Node as SlateNode } from 'slate';
+import { SlatePlugin } from '../../common';
 import {
   deserializeBreak,
   deserializeElement,
   deserializeFragment,
   deserializeMarks,
   deserializeTextNode,
-} from 'deserializers/deserialize-html/utils';
-import { Node as SlateNode } from 'slate';
+} from './utils';
 
 export const htmlDeserialize = (plugins: SlatePlugin[]) => (
   node: HTMLElement | ChildNode

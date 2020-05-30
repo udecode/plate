@@ -1,6 +1,6 @@
-import { SlatePlugin } from 'common/types';
-import { onKeyDownMark } from 'mark';
-import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
+import { SlatePlugin } from '../../common';
+import { onKeyDownMark } from '../../mark';
+import { deserializeStrikethrough } from './deserializeStrikethrough';
 import { renderLeafStrikethrough } from './renderLeafStrikethrough';
 import { MARK_STRIKETHROUGH, StrikethroughPluginOptions } from './types';
 

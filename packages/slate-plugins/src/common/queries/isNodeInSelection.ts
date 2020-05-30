@@ -1,5 +1,5 @@
-import { getSelectionNodesByType } from 'common/queries/getSelectionNodesByType';
 import { Editor } from 'slate';
+import { getSelectionNodesByType } from './getSelectionNodesByType';
 
 /**
  * Is there a node with a type included in `types` in the selection (from root to leaf).

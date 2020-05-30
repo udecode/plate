@@ -1,5 +1,5 @@
-import { isUrl } from 'common/utils';
 import imageExtensions from 'image-extensions';
+import { isUrl } from '../../../common/utils';
 
 export const isImageUrl = (url: string) => {
   if (!isUrl(url)) return false;

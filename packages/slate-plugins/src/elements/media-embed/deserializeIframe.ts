@@ -1,4 +1,4 @@
-import { DeserializeHtml } from 'common/types';
+import { DeserializeHtml } from '../../common';
 import { MEDIA_EMBED, MediaEmbedDeserializeOptions } from './types';
 
 export const deserializeIframe = ({

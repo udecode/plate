@@ -1,5 +1,5 @@
-import { getComponentNameStyles } from '__templates__/component/ComponentName.styles';
 import { concatStyleSets } from '@uifabric/styling';
+import { getComponentNameStyles } from './ComponentName.styles';
 import {
   ComponentNameStyleProps,
   ComponentNameStyles,

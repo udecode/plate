@@ -1,6 +1,5 @@
-import { getElementComponent, getRenderElements } from 'element/utils';
-import { TableCell } from 'elements/table/components/TableCell';
-import { TableElement } from 'elements/table/components/TableElement';
+import { getElementComponent, getRenderElements } from '../../element/utils';
+import { TableCell, TableElement } from './components';
 import { TableRenderElementOptions, TableType } from './types';
 
 export const renderElementTable = ({

@@ -1,5 +1,5 @@
-import { Decorate, SlatePlugin } from 'common/types';
 import { NodeEntry, Range } from 'slate';
+import { Decorate, SlatePlugin } from '../../../common';
 
 export const decoratePlugins = (
   plugins: SlatePlugin[],

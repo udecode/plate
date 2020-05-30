@@ -1,5 +1,5 @@
-import { defaultTableTypes } from 'elements/table/types';
-import { getEmptyRowNode } from 'elements/table/utils/getEmptyRowNode';
+import { defaultTableTypes } from '../types';
+import { getEmptyRowNode } from './getEmptyRowNode';
 
 export const getEmptyTableNode = (options = defaultTableTypes) => ({
   type: options.typeTable,
