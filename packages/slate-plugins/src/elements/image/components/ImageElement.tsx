@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useFocused, useSelected } from 'slate-react';
 import styled from 'styled-components';
 import { ImageRenderElementProps } from '../types';

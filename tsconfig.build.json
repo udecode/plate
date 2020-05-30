@@ -1,11 +1,17 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
     "declarationDir": "./dist",
-    "outDir": "./dist"
+    "declarationMap": true,
+    "outDir": "./dist",
+    "sourceMap": true
   },
-  "exclude": ["**/*.stories.*", "**/*test*", "**/*.spec*", "**/*template*", "**/*fixture*"]
+  "exclude": [
+    "**/*.stories.*",
+    "**/*test*",
+    "**/*.spec*",
+    "**/*template*",
+    "**/*fixture*"
+  ],
+  "extends": "./tsconfig.json"
 }

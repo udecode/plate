@@ -14,7 +14,6 @@ module.exports = {
         jsx: 'never',
       },
     ],
-    'import/no-cycle': 'off',
     'import/no-named-as-default-member': 'off',
     'jest/no-export': 'off',
     'jest/no-standalone-expect': 'off',

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useSlate } from 'slate-react';
 import { PortalBody } from '../../PortalBody';
 import { Toolbar } from '../Toolbar';

@@ -1,28 +1,49 @@
 {
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [
+      7005
+    ]
+  },
   "compilerOptions": {
-    "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "baseUrl": "./",
+    "downlevelIteration": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "downlevelIteration": true,
-    "suppressImplicitAnyIndexErrors": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es2017"
   },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "scripts",
+    "**/*test*",
+    "**/*.spec*",
+    "**/*template*",
+    "**/*fixture*"
+  ],
   "include": [
     "packages/slate-plugins/src",
     "packages/slate-plugins/typings"
   ],
-  "exclude": ["node_modules", "dist", "scripts", "**/*test*", "**/*.spec*", "**/*template*", "**/*fixture*"],
-  "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [7005]
+  "paths": {
+    "~/*": ["./src/*"],
+    "slate-plugins-next": [
+      "./packages/slate-plugins/src"
+    ]
   }
 }

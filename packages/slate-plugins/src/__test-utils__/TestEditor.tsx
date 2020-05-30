@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { pipe, SlatePlugin } from 'common';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';

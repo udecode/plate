@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useSlate } from 'slate-react';
 import { isNodeInSelection } from '../../../common/queries';
 import { getPreventDefaultHandler } from '../../../common/utils';
