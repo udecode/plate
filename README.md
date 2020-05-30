@@ -114,6 +114,10 @@ For additional help, join us in our
 | [DeserializeHtml](packages/slate-plugins/src/deserializers/deserialize-html/)   | Enables support for deserializing content from HTML format to Slate format.     |
 | [DeserializeMarkdown](packages/slate-plugins/src/deserializers/deserialize-md/) | Enables support for deserializing content from Markdown format to Slate format. |
 
+| Serializer Plugins                                                            |                                                                                 |
+|:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
+| SerializeHtml](packages/slate-plugins/src/serializers/serialize-html/)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
+
 | Normalizer Plugins                                        |                                                                                                                      |
 |:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
 | [NormalizeTypes](packages/slate-plugins/src/normalizers/) | Enables support for defining type rules for specific locations in the document.                                      |
