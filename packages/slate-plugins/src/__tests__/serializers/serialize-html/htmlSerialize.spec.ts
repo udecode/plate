@@ -17,6 +17,12 @@ import {
   UnderlinePlugin,
 } from '../../..';
 
+const htmlStringToDOMNode = (rawHtml: string) => {
+  const node = document.createElement('body');
+  node.innerHTML = rawHtml.replace(/(\r\n|\n|\r|\t)/gm, '');
+  return node;
+};
+
 it('serialize bold to html', () => {
   expect(
     htmlSerialize([BoldPlugin()])([
@@ -39,39 +45,38 @@ it('serialize italic to html', () => {
 
 it('serialize highlight to html', () => {
   expect(
-    htmlSerialize([HighlightPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'highlighted', highlight: true },
-      { text: ' part.' },
-    ])
-  ).toEqual(
-    'Some paragraph of text with <mark class="sc-fznWqX jhjZFC">highlighted</mark> part.'
-  );
+    htmlStringToDOMNode(
+      htmlSerialize([HighlightPlugin()])([
+        { text: 'Some paragraph of text with ' },
+        { text: 'highlighted', highlight: true },
+        { text: ' part.' },
+      ])
+    ).getElementsByTagName('mark')[0].textContent
+  ).toEqual('highlighted');
 });
 
 it('serialize strikethrough to html', () => {
   expect(
-    htmlSerialize([StrikethroughPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'strikethrough', strikethrough: true },
-      { text: ' part.' },
-    ])
-  ).toEqual(
-    'Some paragraph of text with <span class="sc-fzqARJ jiBykp strikethrough">strikethrough</span> part.'
-    // We need to add explicit class to this span 'strikethrough'
-  );
+    htmlStringToDOMNode(
+      htmlSerialize([StrikethroughPlugin()])([
+        { text: 'Some paragraph of text with ' },
+        { text: 'strikethrough', strikethrough: true },
+        { text: ' part.' },
+      ])
+    ).getElementsByClassName('strikethrough')[0].textContent
+  ).toEqual('strikethrough');
 });
 
 it('serialize code to html', () => {
   expect(
-    htmlSerialize([CodePlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'code', code: true },
-      { text: ' part.' },
-    ])
-  ).toEqual(
-    'Some paragraph of text with <code class="sc-fzoiQi kXSQAL">code</code> part.'
-  );
+    htmlStringToDOMNode(
+      htmlSerialize([CodePlugin()])([
+        { text: 'Some paragraph of text with ' },
+        { text: 'code', code: true },
+        { text: ' part.' },
+      ])
+    ).getElementsByTagName('code')[0].textContent
+  ).toEqual('code');
 });
 
 it('serialize subscript to html', () => {
@@ -105,7 +110,7 @@ it('serialize underline to html', () => {
 });
 
 it('serialize list to html', () => {
-  expect(
+  const render = htmlStringToDOMNode(
     htmlSerialize([ListPlugin()])([
       {
         type: 'ul',
@@ -115,9 +120,10 @@ it('serialize list to html', () => {
         ],
       },
     ])
-  ).toEqual(
-    '<ul class="sc-fzqNJr hcIsGR"><li>Item one</li><li>Item two</li></ul>'
-  );
+  ).getElementsByTagName('ul')[0];
+  expect(render.children.length).toEqual(2);
+  expect(render.children[0].outerHTML).toEqual('<li>Item one</li>');
+  expect(render.children[1].outerHTML).toEqual('<li>Item two</li>');
 });
 
 it('serialize link to html', () => {
@@ -138,19 +144,19 @@ it('serialize link to html', () => {
 
 it('serialize blockquote to html', () => {
   expect(
-    htmlSerialize([BlockquotePlugin()])([
-      {
-        type: 'blockquote',
-        children: [{ text: 'Blockquoted text here...' }],
-      },
-    ])
-  ).toEqual(
-    '<blockquote class="sc-AxmLO jtdIXC">Blockquoted text here...</blockquote>'
-  );
+    htmlStringToDOMNode(
+      htmlSerialize([BlockquotePlugin()])([
+        {
+          type: 'blockquote',
+          children: [{ text: 'Blockquoted text here...' }],
+        },
+      ])
+    ).getElementsByTagName('blockquote')[0].textContent
+  ).toEqual('Blockquoted text here...');
 });
 
 it('serialize headings to html', () => {
-  expect(
+  const render = htmlStringToDOMNode(
     htmlSerialize([HeadingPlugin()])([
       {
         type: 'h1',
@@ -165,7 +171,10 @@ it('serialize headings to html', () => {
         children: [{ text: 'Heading 3' }],
       },
     ])
-  ).toEqual('<h1>Heading 1</h1><h2>Heading 2<h2><h3>Heading 3</h3>');
+  );
+  expect(render.getElementsByTagName('h1')[0].textContent).toEqual('Heading 1');
+  expect(render.getElementsByTagName('h2')[0].textContent).toEqual('Heading 2');
+  expect(render.getElementsByTagName('h3')[0].textContent).toEqual('Heading 3');
 });
 
 it('serialize paragraph to html', () => {
@@ -181,20 +190,21 @@ it('serialize paragraph to html', () => {
 
 it('serialize image to html', () => {
   expect(
-    htmlSerialize([ImagePlugin()])([
-      {
-        type: 'img',
-        url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-        children: [],
-      },
-    ])
-  ).toEqual(
-    '<div><div contenteditable="false"><img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="" class="sc-fzqBZW jjoDYi"/></div></div>'
-  );
+    htmlStringToDOMNode(
+      htmlSerialize([ImagePlugin()])([
+        {
+          type: 'img',
+          url:
+            'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+          children: [],
+        },
+      ])
+    ).getElementsByTagName('img')[0].src
+  ).toEqual('https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg');
 });
 
 it('serialize table to html', () => {
-  expect(
+  const render = htmlStringToDOMNode(
     htmlSerialize([TablePlugin()])([
       {
         type: 'table',
@@ -209,7 +219,11 @@ it('serialize table to html', () => {
         ],
       },
     ])
-  ).toEqual(
-    '<table class="sc-fzoXzr csUgEM"><tbody><tr><td class="sc-fzoLag xLIBZ">Foo</td><td class="sc-fzoLag xLIBZ">Bar</td></tr></tbody></table>'
-  );
+  ).getElementsByTagName('table');
+  expect(
+    render.item(0)?.children[0].children[0].children[0].textContent
+  ).toEqual('Foo');
+  expect(
+    render.item(0)?.children[0].children[0].children[1].textContent
+  ).toEqual('Bar');
 });
