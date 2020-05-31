@@ -17,13 +17,13 @@ const stripSlateDataAttributes = (rawHtml: string): string =>
 // TODO: We might also want to remove generated classes in the future.
 
 const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
-  const { children } = elementProps;
   const elementPlugin = plugins
     .filter((plugin) => plugin.renderElement)
-    .find(
-      ({ renderElement }) =>
-        renderElement && renderElement(elementProps) !== children
-    );
+    .find((plugin) => {
+      return Object.keys(plugin.deserialize?.element as object).includes(
+        String(elementProps.element.type)
+      );
+    });
 
   if (elementPlugin && elementPlugin.renderElement) {
     return ReactDOMServer.renderToStaticMarkup(
