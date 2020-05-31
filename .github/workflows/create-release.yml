@@ -10,7 +10,7 @@ jobs:
     if: |
       github.event_name == 'issue_comment' &&
       (github.event.comment.author_association == 'OWNER') &&
-      startsWith(github.event.comment.body, '/create release')
+      startsWith(github.event.comment.body, '/create release patch')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Versionup commit
         run: |
-          yarn versionup --yes ${{ join(github.event.comment.body, ' ')[2] }}
+          yarn versionup --yes patch
       - name: Set current CHANGELOG to output
         id: changelog
         shell: bash -ex {0}
