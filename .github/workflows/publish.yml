@@ -29,6 +29,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install
         run: yarn install
+      - name: Build
+        run: yarn build
       # Define ${CURRENT_VERSION}
       - name: Set Current Version
         shell: bash -ex {0}
@@ -72,10 +74,6 @@ jobs:
             ${{ github.event.pull_request.body }}
           draft: false
           prerelease: false
-      - name: Test
-        run: yarn test
-      - name: Build
-        run: yarn build
       - name: Publish
         if: steps.tag_check.outputs.exists_tag == 'false'
         run: |
