@@ -39,22 +39,15 @@ jobs:
           echo "::set-output name=version::${version}"
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v2
+        uses: repo-sync/pull-request@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Update v${{ steps.changelog.outputs.version }}"
-          committer: GitHub <noreply@github.com>
-          author: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-          title: 'v${{ steps.changelog.outputs.version }}'
-          body: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: "next"
+          destination_branch: "master"
+          pr_title: 'v${{ steps.changelog.outputs.version }}'
+          pr_body: |
             ## v${{ steps.changelog.outputs.version }}
             ### Breaking Changes
             ### Features
             ### Bug Fixes
-          labels: "release"
-          branch: "next"
-          request-to-parent: false
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ env.PULL_REQUEST_NUMBER }}"
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pr_number }}"
+          pr_label: "release"
