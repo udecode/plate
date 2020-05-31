@@ -116,7 +116,7 @@ For additional help, join us in our
 
 | Serializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| SerializeHtml](packages/slate-plugins/src/serializers/serialize-html/)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
+| [SerializeHtml](packages/slate-plugins/src/serializers/serialize-html/)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
 
 | Normalizer Plugins                                        |                                                                                                                      |
 |:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
