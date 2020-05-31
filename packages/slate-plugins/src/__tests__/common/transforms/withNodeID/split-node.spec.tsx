@@ -8,7 +8,7 @@ import { withHistory } from 'slate-history';
 
 const input = ((
   <editor>
-    <hp>
+    <hp id={10}>
       tes
       <cursor />t
     </hp>
@@ -17,7 +17,7 @@ const input = ((
 
 const output = (
   <editor>
-    <hp>tes</hp>
+    <hp id={10}>tes</hp>
     <hp id={1}>t</hp>
   </editor>
 ) as any;
@@ -29,6 +29,8 @@ it('should add an id to the new element', () => {
 
   Transforms.splitNodes(editor);
 
+  editor.undo();
+  editor.redo();
   editor.undo();
   editor.redo();
 

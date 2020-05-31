@@ -6,7 +6,7 @@ import { Editor, Transforms } from 'slate';
 
 const input = (
   <editor>
-    <hp>
+    <hp id={10}>
       tes
       <cursor />t
     </hp>

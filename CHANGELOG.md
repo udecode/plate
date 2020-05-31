@@ -6,6 +6,20 @@ bumps.
 
 ---
 
+
+### `0.58.14` — May 31, 2020
+
+##### NEW
+
+- `htmlSerialize` – function for serializing content from Slate format
+  to HTML format.
+
+##### FIX
+
+- `htmlSerialize` – improved the plugin identification and also added a
+  branch for missing types in top levels.
+- `withNodeID` – `insertNode` operation was not creating new ids.
+
 ### `0.58.13` — May 30, 2020
 
 ##### NEW

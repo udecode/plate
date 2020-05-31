@@ -23,18 +23,24 @@ export const withNodeID = ({
   filter = () => true,
   allow,
   exclude,
-}: WithNodeIDProps = {}) => <T extends HistoryEditor>(editor: T) => {
+}: WithNodeIDProps = {}) => <T extends HistoryEditor>(e: T) => {
+  const editor = e as T & { removedIDs: Set<any> };
+
   const { apply } = editor;
 
   const idPropsCreator = () => ({ [idKey]: idCreator() });
+
+  editor.removedIDs = new Set();
 
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
       const newFilter = (n: Node) =>
         filter(n) && filterText ? Element.isElement(n) : isDescendant(n);
 
+      const { node } = operation;
+
       // it will not overwrite ids once it's set as it's read-only
-      setPropsToNodes(operation.node, idPropsCreator, {
+      setPropsToNodes(node, idPropsCreator, {
         filter: newFilter,
         allow,
         exclude,
@@ -42,7 +48,7 @@ export const withNodeID = ({
 
       return apply({
         ...operation,
-        node: operation.node,
+        node,
       });
     }
 
@@ -50,13 +56,27 @@ export const withNodeID = ({
       operation.type === 'split_node' &&
       (!filterText || operation.properties.type)
     ) {
+      let id = operation.properties[idKey];
+      if (editor.removedIDs.has(id)) {
+        editor.removedIDs.delete(id);
+      } else {
+        id = idCreator();
+      }
+
       return apply({
         ...operation,
         properties: {
           ...operation.properties,
-          [idKey]: operation.properties.id || idCreator(),
+          [idKey]: id,
         },
       });
+    }
+
+    if (
+      operation.type === 'merge_node' &&
+      (!filterText || operation.properties.type)
+    ) {
+      editor.removedIDs.add(operation.properties.id);
     }
 
     return apply(operation);
