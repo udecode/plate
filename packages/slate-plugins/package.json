@@ -24,7 +24,7 @@
     "test": "jest"
   },
   "publishConfig": {
-    "access": "public"
+    "registry":"https://npm.pkg.github.com/zbeyens"
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
