@@ -1,3 +1,4 @@
+import { htmlDeserialize } from 'deserializers/deserialize-html';
 import { htmlSerialize } from 'serializers/serialize-html';
 import {
   BlockquotePlugin,
@@ -226,4 +227,171 @@ it('serialize table to html', () => {
   expect(
     render.item(0)?.children[0].children[0].children[1].textContent
   ).toEqual('Bar');
+});
+
+it('serialize complex example list with paragraphs to html', () => {
+  const render = htmlStringToDOMNode(
+    htmlSerialize([
+      ItalicPlugin(),
+      BoldPlugin(),
+      ParagraphPlugin(),
+      ListPlugin(),
+    ])([
+      {
+        type: 'p',
+        children: [
+          {
+            text: 'Some paragraph that contains, ',
+          },
+          {
+            text: 'italicized text',
+            italic: true,
+          },
+          {
+            text: ' and ',
+          },
+          {
+            text: 'bolded text',
+            bold: true,
+          },
+          {
+            text: ' is first.',
+          },
+        ],
+      },
+      {
+        type: 'ul',
+        children: [
+          {
+            type: 'li',
+            children: [
+              {
+                type: 'p',
+                children: [
+                  {
+                    text: 'Item one in list',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'li',
+            children: [
+              {
+                type: 'p',
+                children: [
+                  {
+                    text: 'Item two in list',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ])
+  );
+  expect(render.getElementsByTagName('p').length).toEqual(3);
+  expect(render.getElementsByTagName('p')[0].outerHTML).toEqual(
+    '<p>Some paragraph that contains, <em>italicized text</em> and <strong>bolded text</strong> is first.</p>'
+  );
+  expect(render.getElementsByTagName('ul').length).toEqual(1);
+  expect(render.getElementsByTagName('li').length).toEqual(2);
+  expect(render.getElementsByTagName('ul')[0].innerHTML).toEqual(
+    '<li><p>Item one in list</p></li><li><p>Item two in list</p></li>'
+  );
+});
+
+it('serialize complex example with no type on top level node to html', () => {
+  const render = htmlSerialize([
+    ItalicPlugin(),
+    BoldPlugin(),
+    ParagraphPlugin(),
+    ListPlugin(),
+  ])([
+    {
+      children: [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'Some paragraph that contains, ',
+            },
+            {
+              text: 'italicized text',
+              italic: true,
+            },
+            {
+              text: ' and ',
+            },
+            {
+              text: 'bolded text',
+              bold: true,
+            },
+            {
+              text: ' is first.',
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+  expect(render).toEqual(
+    '<div><p>Some paragraph that contains, <em>italicized text</em> and <strong>bolded text</strong> is first.</p></div>'
+  );
+});
+
+it('serialize complex example with multiple no types on top level node to html', () => {
+  const render = htmlSerialize([
+    ItalicPlugin(),
+    BoldPlugin(),
+    ParagraphPlugin(),
+    ListPlugin(),
+  ])([
+    {
+      children: [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'Some paragraph that contains, ',
+            },
+            {
+              text: 'italicized text',
+              italic: true,
+            },
+            {
+              text: ' and ',
+            },
+            {
+              text: 'bolded text',
+              bold: true,
+            },
+            {
+              text: ' is first.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      children: [{ text: 'FOO', bold: true }],
+    },
+  ]);
+  expect(render).toEqual(
+    '<div><p>Some paragraph that contains, <em>italicized text</em> and <strong>bolded text</strong> is first.</p></div><div><strong>FOO</strong></div>'
+  );
+});
+
+it('serializes with edge case where input is non-rich text', () => {
+  const input = htmlStringToDOMNode('Some non-rich text here.');
+  const output = 'Some non-rich text here.';
+  expect(htmlSerialize([])(htmlDeserialize([])(input))).toEqual(output);
+});
+
+it('serializes with edge case where input is text element', () => {
+  const input = [{ text: 'Test just text.' }];
+  const output = 'Test just text.';
+  expect(htmlSerialize([])(input)).toEqual(output);
 });
