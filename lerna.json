@@ -1,7 +1,13 @@
 {
+  "packages": ["packages/*"],
+  "version": "0.58.13",
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "packages": ["packages/*"],
-  "version": "independent",
-  "ignoreChanges": ["**test**", "**.spec**", "**/*.md", "**/*stories*", "**template**", "**fixture**"]
+  "includeMergedTags": true,
+  "ignoreChanges": ["**test**", "**.spec**", "**/*.md", "**/*stories*", "**template**", "**fixture**"],
+  "command": {
+    "publish": {
+      "registry": "https://npm.pkg.github.com"
+    }
+  }
 }
