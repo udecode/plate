@@ -8,19 +8,28 @@
     "packages/*"
   ],
   "scripts": {
-    "prebuild": "yarn clean",
     "build": "lerna run build --parallel --since",
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",
+    "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "lint": "eslint \"packages/*/src/**/*.{js,jsx,ts,tsx}\"",
+    "postversionup": "yarn commit-version",
+    "postversionup:major": "yarn commit-version",
+    "postversionup:minor": "yarn commit-version",
+    "postversionup:patch": "yarn commit-version",
     "pre-release": "yarn release --conventional-prerelease",
-    "release": "yarn lint && CI=true yarn test && yarn build && lerna publish && yarn release:open",
+    "prebuild": "yarn clean",
+    "release": "lerna publish from-package",
     "release:open": "open https://github.com/zbeyens/slate-plugins-next/releases",
     "storybook": "start-storybook -p 6006",
     "test": "yarn workspace slate-plugins-next jest",
     "test:cov": "yarn test --coverage",
     "test:covw": "yarn test:cov --watch",
-    "test:covwa": "yarn test:cov --watchAll"
+    "test:covwa": "yarn test:cov --watchAll",
+    "versionup": "lerna version --no-git-tag-version",
+    "versionup:major": "lerna version major --no-git-tag-version",
+    "versionup:minor": "lerna version minor --no-git-tag-version",
+    "versionup:patch": "lerna version patch --no-git-tag-version"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

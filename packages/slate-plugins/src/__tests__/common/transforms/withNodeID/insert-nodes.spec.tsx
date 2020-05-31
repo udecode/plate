@@ -9,7 +9,7 @@ import { withHistory } from 'slate-history';
 
 const input = ((
   <editor>
-    <hp>
+    <hp id={10}>
       test
       <cursor />
     </hp>
@@ -18,7 +18,7 @@ const input = ((
 
 const output = (
   <editor>
-    <hp>test</hp>
+    <hp id={10}>test</hp>
     <hp id={1}>inserted</hp>
     <hp id={2}>inserted</hp>
   </editor>

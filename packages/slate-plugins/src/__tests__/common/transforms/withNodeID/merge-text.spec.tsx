@@ -9,7 +9,7 @@ import { HistoryEditor } from 'slate-history/dist/history-editor';
 
 const input = ((
   <editor>
-    <hp>
+    <hp id={10}>
       <htext id={1}>tes</htext>
       <htext id={2}>t</htext>
     </hp>
@@ -18,7 +18,7 @@ const input = ((
 
 const output = (
   <editor>
-    <hp>
+    <hp id={10}>
       <htext id={1}>tes</htext>
       <htext id={2}>t</htext>
     </hp>
