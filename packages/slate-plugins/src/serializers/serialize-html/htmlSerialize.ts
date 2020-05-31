@@ -17,6 +17,12 @@ const stripSlateDataAttributes = (rawHtml: string): string =>
 // TODO: We might also want to remove generated classes in the future.
 
 const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
+  // If no type provided we wrap children with div tag
+  if (!elementProps.element.type) {
+    return `<div>${elementProps.children}</div>`;
+  }
+
+  // Search for matching plugin based on element type
   const elementPlugin = plugins
     .filter((plugin) => plugin.renderElement)
     .find((plugin) => {
@@ -25,6 +31,7 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
       );
     });
 
+  // Render element using picked plugins renderElement function and ReactDOM
   if (elementPlugin && elementPlugin.renderElement) {
     return ReactDOMServer.renderToStaticMarkup(
       elementPlugin.renderElement(elementProps) as ReactElement
