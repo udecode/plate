@@ -51,7 +51,3 @@ jobs:
             ### Features
             ### Bug Fixes
           pr_label: "release"
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ env.PULL_REQUEST_NUMBER }}"
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pr_number }}"
