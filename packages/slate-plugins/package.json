@@ -49,8 +49,7 @@
   },
   "devDependencies": {
     "@types/marked": "^0.7.4",
-    "snyk": "^1.333.0"
   },
-  "gitHead": "31d1384c1afc17aaa702a5293b980b347bd69c9e",
-  "snyk": true
+  "gitHead": "cb918832ae523b970349fd00e5e32378d02c23d7",
+
 }
