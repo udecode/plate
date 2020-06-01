@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
+import { createEditor, Node } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   ParagraphPlugin,
   pipe,
   withVoid,
-} from '@udecode/slate-plugins/src';
-import { createEditor, Node } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+} from '../../../packages/slate-plugins/src';
 import { nodeTypes } from '../../config/initialValues';
 import { EditableVoidPlugin } from './EditableVoidPlugin';
 import { EDITABLE_VOID } from './types';

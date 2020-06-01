@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
   pipe,
-} from '@udecode/slate-plugins/src';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueHugeDocument, nodeTypes } from '../config/initialValues';
 
 export default {

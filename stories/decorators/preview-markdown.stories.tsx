@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   decoratePreview,
   EditablePlugins,
@@ -7,10 +10,7 @@ import {
   pipe,
   PreviewPlugin,
   renderLeafPreview,
-} from '@udecode/slate-plugins/src';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValuePreview, nodeTypes } from '../config/initialValues';
 
 export default {

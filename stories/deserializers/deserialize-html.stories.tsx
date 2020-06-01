@@ -1,4 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   BlockquotePlugin,
@@ -29,10 +32,7 @@ import {
   withMention,
   withTable,
   withVoid,
-} from '@udecode/slate-plugins/src';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
 
 export default {

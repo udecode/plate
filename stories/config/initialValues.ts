@@ -1,3 +1,5 @@
+import faker from 'faker';
+import { Node } from 'slate';
 import {
   ACTION_ITEM,
   BLOCKQUOTE,
@@ -19,9 +21,7 @@ import {
   MENTION,
   PARAGRAPH,
   TableType,
-} from '@udecode/slate-plugins/src';
-import faker from 'faker';
-import { Node } from 'slate';
+} from '../../packages/slate-plugins/src';
 
 export const nodeTypes = {
   // elements

@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { text } from '@storybook/addon-knobs';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   MentionNodeData,
@@ -9,10 +12,7 @@ import {
   pipe,
   useMention,
   withMention,
-} from '@udecode/slate-plugins/src';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+} from '../../packages/slate-plugins/src';
 import { initialValueMentions, nodeTypes } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
