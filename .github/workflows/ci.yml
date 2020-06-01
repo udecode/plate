@@ -2,12 +2,14 @@ name: actions
 on:
   push:
     branches:
+    - master
     - next
     paths:
     - '**.jsx?'
     - '**.tsx?'
   pull_request:
     branches:
+    - master
     - next
     paths:
     - '**.jsx?'
