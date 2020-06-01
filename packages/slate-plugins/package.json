@@ -12,18 +12,18 @@
     "url": "https://github.com/udecode/slate-plugins.git"
   },
   "license": "MIT",
-  "files": [
-    "dist"
-  ],
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rollup -c=../../rollup.config.js",
-    "test": "jest",
+    "prepublish": "npm run snyk-protect",
     "snyk-protect": "snyk protect",
-    "prepublish": "npm run snyk-protect"
+    "test": "jest"
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
@@ -36,6 +36,9 @@
     "prismjs": "^1.20.0",
     "react-use": "^15.1.0"
   },
+  "devDependencies": {
+    "@types/marked": "^0.7.4"
+  },
   "peerDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -44,8 +47,8 @@
     "slate-react": "^0.58.2",
     "styled-components": "^5.1.0"
   },
-  "devDependencies": {
-    "@types/marked": "^0.7.4"
+  "publishConfig": {
+    "access": "public"
   },
-  "gitHead": "216eb05068f8602eaa6afd1a0c9db73192c7eebd"
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
 }
