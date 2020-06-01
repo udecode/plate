@@ -13,6 +13,9 @@ jobs:
     name: Publish
     runs-on: ubuntu-18.04
     steps:
+      - name: Pull Request Merged
+        if: github.event.pull_request.merged == true
+        run: echo Pull request merged
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Node ${{ matrix.node_version }}
@@ -62,7 +65,7 @@ jobs:
           git_tag_prefix: "v"
       - name: Create Release
         id: create_release
-        if: steps.tag_check.outputs.exists_tag == 'false' && github.event.pull_request.merged == true
+        if: steps.tag_check.outputs.exists_tag == 'false'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
