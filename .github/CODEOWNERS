@@ -12,4 +12,4 @@
 # This should make it easy to add new rules without breaking existing ones.
 
 # Global rule:
-*           zbeyens
+*           @zbeyens
