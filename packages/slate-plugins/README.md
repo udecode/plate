@@ -1,9 +1,9 @@
 # slate-plugins
 
-[![codecov](https://codecov.io/gh/udecode/slate-plugins/branch/master/graph/badge.svg)](https://codecov.io/gh/udecode/slate-plugins)
-[<img src="https://img.shields.io/npm/v/slate-plugins-next.svg" />](https://npm.im/slate-plugins-next)&nbsp;
-[<img src="https://badgen.net/npm/dw/slate-plugins-next" />](https://npm.im/slate-plugins-next)&nbsp;
-[<img src="https://badgen.net/bundlephobia/minzip/slate-plugins-next" />](https://bundlephobia.com/result?p=slate-plugins-next)&nbsp;
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/udecode/slate-plugins)
+[![CodeFactor](https://www.codefactor.io/repository/github/udecode/slate-plugins/badge)](https://www.codefactor.io/repository/github/udecode/slate-plugins)
+![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/udecode/slate-plugins)
+[![codecov](https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg)](https://codecov.io/gh/udecode/slate-plugins)
 [<img src="https://badgen.now.sh/badge/license/MIT" />](https://github.com/udecode/slate-plugins/blob/master/LICENSE)&nbsp;
 [<img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" />](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)&nbsp;
 
