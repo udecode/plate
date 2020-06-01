@@ -1,17 +1,11 @@
 # slate-plugins
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/udecode/slate-plugins)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/udecode/slate-plugins)](https://github.com/udecode/slate-plugins/releases/latest)
 [![CodeFactor](https://www.codefactor.io/repository/github/udecode/slate-plugins/badge)](https://www.codefactor.io/repository/github/udecode/slate-plugins)
-![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/udecode/slate-plugins)
+[![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/udecode/slate-plugins)](https://snyk.io/test/github/udecode/slate-plugins)
 [![codecov](https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg)](https://codecov.io/gh/udecode/slate-plugins)
 [<img src="https://badgen.now.sh/badge/license/MIT" />](https://github.com/udecode/slate-plugins/blob/master/LICENSE)&nbsp;
 [<img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" />](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)&nbsp;
-
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](../../README.md#contributors-)
-
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [Slate](https://github.com/ianstormtaylor/slate/) is a completely
 customizable framework for building rich text editors. However, your
@@ -19,7 +13,6 @@ codebase can quickly get complex when implementing tens of features.
 Built on top of Slate, `slate-plugins` enables you to use a list of
 configurable and extendable plugins to keep your codebase clean and easy
 to debug.
-
 
 This library comes with a lot of plugins for the elements, marks,
 deserialization, normalization, and so on. We also provide a bunch of
