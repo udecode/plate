@@ -21,7 +21,9 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rollup -c=../../rollup.config.js",
-    "test": "jest"
+    "test": "jest",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/udecode"
@@ -46,7 +48,9 @@
     "styled-components": "^5.1.0"
   },
   "devDependencies": {
-    "@types/marked": "^0.7.4"
+    "@types/marked": "^0.7.4",
+    "snyk": "^1.333.0"
   },
-  "gitHead": "31d1384c1afc17aaa702a5293b980b347bd69c9e"
+  "gitHead": "31d1384c1afc17aaa702a5293b980b347bd69c9e",
+  "snyk": true
 }
