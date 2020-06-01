@@ -48,8 +48,7 @@
     "styled-components": "^5.1.0"
   },
   "devDependencies": {
-    "@types/marked": "^0.7.4",
+    "@types/marked": "^0.7.4"
   },
-  "gitHead": "cb918832ae523b970349fd00e5e32378d02c23d7",
-
+  "gitHead": "cb918832ae523b970349fd00e5e32378d02c23d7"
 }
