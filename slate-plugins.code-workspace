@@ -5,11 +5,11 @@
       "path": "."
     },
     {
-      "name": "slate-plugins-next",
+      "name": "slate-plugins",
       "path": "./packages/slate-plugins"
     }
   ],
   "settings": {
-    "jest.disabledWorkspaceFolders": ["root", "slate-plugins-next"]
+    "jest.disabledWorkspaceFolders": ["root", "slate-plugins"]
   }
 }

@@ -42,7 +42,7 @@
   ],
   "paths": {
     "~/*": ["./src/*"],
-    "slate-plugins-next": [
+    "@udecode/slate-plugins": [
       "./packages/slate-plugins/src"
     ]
   }

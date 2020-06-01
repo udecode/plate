@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   EditablePlugins,
   MEDIA_EMBED,
@@ -10,7 +8,9 @@ import {
   pipe,
   renderElementMediaEmbed,
   withVoid,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { initialValueEmbeds, nodeTypes } from '../config/initialValues';
 

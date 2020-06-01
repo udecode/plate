@@ -1,4 +1,4 @@
-import { getRenderElement, RenderElementOptions } from 'slate-plugins-next/src';
+import { getRenderElement, RenderElementOptions } from 'slate-plugins/src';
 import { EditableVoidElement } from './EditableVoidElement';
 import { EDITABLE_VOID } from './types';
 

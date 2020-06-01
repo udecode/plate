@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
   EditablePlugins,
@@ -15,7 +13,9 @@ import {
   withDeleteStartReset,
   withList,
   withToggleType,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { initialValueList, nodeTypes } from '../config/initialValues';
 

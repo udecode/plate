@@ -1,15 +1,15 @@
 {
-  "name": "slate-plugins-next",
+  "name": "@udecode/slate-plugins",
   "version": "0.58.14",
   "description": "Slate Plugins",
   "keywords": [],
-  "homepage": "https://github.com/zbeyens/slate-plugins-next/tree/master/packages/slate-plugins#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
   "bugs": {
-    "url": "https://github.com/zbeyens/slate-plugins-next/issues"
+    "url": "https://github.com/udecode/slate-plugins/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zbeyens/slate-plugins-next/tree/master/packages/slate-plugins"
+    "url": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins"
   },
   "license": "MIT",
   "files": [
@@ -24,7 +24,7 @@
     "test": "jest"
   },
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com/zbeyens"
+    "registry": "https://npm.pkg.github.com/udecode"
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
@@ -47,5 +47,6 @@
   },
   "devDependencies": {
     "@types/marked": "^0.7.4"
-  }
+  },
+  "gitHead": "31d1384c1afc17aaa702a5293b980b347bd69c9e"
 }

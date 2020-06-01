@@ -65,8 +65,8 @@
     }
   ],
   "contributorsPerLine": 7,
-  "projectName": "slate-plugins-next",
-  "projectOwner": "zbeyens",
+  "projectName": "slate-plugins",
+  "projectOwner": "udecode",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true

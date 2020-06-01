@@ -45,7 +45,7 @@ const textTags = [
 
 const inlineTags = [
   '<a href="http://localhost:3000">a</a>',
-  `<span data-slate-type=${MENTION} data-slate-value="zbeyens" />`,
+  `<span data-slate-type=${MENTION} data-slate-value="mention" />`,
 ];
 
 const elementTags = [
@@ -109,7 +109,7 @@ const output = (
     </hp>
     <hp>
       <ha url="http://localhost:3000">a</ha>
-      <hmention value="zbeyens" />
+      <hmention value="mention" />
     </hp>
     <hcode>
       <htext>code</htext>

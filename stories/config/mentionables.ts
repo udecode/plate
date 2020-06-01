@@ -1,4 +1,4 @@
-import { MentionNodeData } from 'slate-plugins-next/src';
+import { MentionNodeData } from '@udecode/slate-plugins/src';
 
 export const MENTIONABLES: MentionNodeData[] = [
   { value: 'Aayla Secura' },

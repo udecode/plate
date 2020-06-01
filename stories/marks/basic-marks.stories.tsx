@@ -8,8 +8,6 @@ import {
   FormatStrikethrough,
   FormatUnderlined,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   BoldPlugin,
   CodePlugin,
@@ -30,7 +28,9 @@ import {
   SuperscriptPlugin,
   ToolbarMark,
   UnderlinePlugin,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { initialValueBasicMarks, nodeTypes } from '../config/initialValues';
 

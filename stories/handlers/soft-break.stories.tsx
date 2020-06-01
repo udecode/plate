@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Code, FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   BLOCKQUOTE,
   BlockquotePlugin,
@@ -19,7 +17,9 @@ import {
   withDeleteStartReset,
   withList,
   withToggleType,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { initialValueSoftBreak, nodeTypes } from '../config/initialValues';
 

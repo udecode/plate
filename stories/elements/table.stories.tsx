@@ -9,8 +9,6 @@ import {
   BorderTop,
   FormatBold,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   addColumn,
   addRow,
@@ -29,7 +27,9 @@ import {
   ToolbarMark,
   ToolbarTable,
   withTable,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { initialValueTables, nodeTypes } from '../config/initialValues';
 

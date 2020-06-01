@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
+import { EditablePlugins, pipe } from '@udecode/slate-plugins/src';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { EditablePlugins, pipe } from 'slate-plugins-next/src';
 import { Slate, withReact } from 'slate-react';
 import { initialValuePlainText } from '../config/initialValues';
 

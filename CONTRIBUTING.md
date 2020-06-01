@@ -1,6 +1,6 @@
-# Contributing to slate-plugins-next
+# Contributing to slate-plugins
 
-Thanks for your interest in improving `slate-plugins-next`! We are a
+Thanks for your interest in improving `slate-plugins`! We are a
 community-driven project and welcome contributions of all kinds: from
 discussion to documentation to bugfixes to feature improvements.
 
@@ -18,7 +18,7 @@ package manager. See
 No software is bug-free. So, if you got an issue, follow these steps:
 
 - Search the
-  [issue list](https://github.com/zbeyens/slate-plugins-next/issues?utf8=%E2%9C%93&q=)
+  [issue list](https://github.com/udecode/slate-plugins/issues?utf8=%E2%9C%93&q=)
   for current and old issues.
   - If you find an existing issue, please UPVOTE the issue by adding a
     "thumbs-up reaction". We use this to help prioritize issues!
@@ -33,14 +33,14 @@ No software is bug-free. So, if you got an issue, follow these steps:
 ### Testing against `master`
 
 To test your project against the current latest version of
-`slate-plugins-next`, you can clone the repository and link it with
+`slate-plugins`, you can clone the repository and link it with
 `yarn`. Try following these steps:
 
 #### 1. Download the latest version of this project, and build it:
 
 ```sh
-git clone https://github.com/zbeyens/slate-plugins-next.git
-cd slate-plugins-next
+git clone https://github.com/udecode/slate-plugins.git
+cd slate-plugins
 yarn
 ```
 
@@ -177,7 +177,7 @@ is few of those ways:
 
 Before you submit a new PR, make sure you run `yarn test`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `slate-plugins-next` channel](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
+[join slate's Slack and ask in the `slate-plugins` channel](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
 
 ### Reviewing PRs
 
@@ -185,7 +185,7 @@ a PR if tests are failing. If you need any help, the best way is to
 include a short description of what you contributed and, if it is a code
 change, instructions for how to manually test out the change. This is
 informally enforced by our
-[PR template](https://github.com/zbeyens/slate-plugins-next/blob/master/.github/PULL_REQUEST_TEMPLATE.md).
+[PR template](https://github.com/udecode/slate-plugins/blob/master/.github/PULL_REQUEST_TEMPLATE.md).
 If your PR is reviewed as only needing trivial changes (e.g. small typos
 etc), and you have commit access then you can merge the PR after making
 those changes.
@@ -212,7 +212,7 @@ asker as well as anyone who has a similar question. Also in the future
 if anyone has that same question they can easily find it by searching.
 If an issue needs reproduction, you may be able to guide the reporter
 toward one, or even reproduce it yourself using
-[this technique](https://github.com/zbeyens/slate-plugins-next/blob/master/CONTRIBUTING.md#reproductions).
+[this technique](https://github.com/udecode/slate-plugins/blob/master/CONTRIBUTING.md#reproductions).
 
 ### Triaging issues
 
@@ -236,7 +236,7 @@ labels to filter issues down so we can see all of the issues for a
 particular area, and keep the total number of open issues under control.
 
 For example, here is the list of
-[open, untyped issues](https://github.com/zbeyens/slate-plugins-next/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
+[open, untyped issues](https://github.com/udecode/slate-plugins/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
 For more info see
 [searching issues](https://help.github.com/articles/searching-issues/)
 in the Github docs.
@@ -275,9 +275,9 @@ If you run into trouble here, make sure your node, npm, and **_yarn_**
 are on the latest versions (yarn at least v1.3.2).
 
 1. `cd ~` (optional)
-2. `git clone https://github.com/zbeyens/slate-plugins-next.git`
+2. `git clone https://github.com/udecode/slate-plugins.git`
    _bonus_: use your own fork for this step
-3. `cd slate-plugins-next`
+3. `cd slate-plugins`
 4. `yarn`
 5. `yarn test`
 6. `yarn storybook`
@@ -331,6 +331,6 @@ git commit -m "x.y.z"
 yarn release
 
 # update the release page
-open https://github.com/zbeyens/slate-plugins-next/releases
+open https://github.com/udecode/slate-plugins/releases
 ```
 

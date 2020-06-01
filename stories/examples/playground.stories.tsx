@@ -22,8 +22,6 @@ import {
   LooksTwo,
   Search,
 } from '@styled-icons/material';
-import { createEditor, Node } from 'slate';
-import { withHistory } from 'slate-history';
 import {
   ActionItemPlugin,
   BalloonToolbar,
@@ -81,7 +79,9 @@ import {
   withTrailingNode,
   withTransforms,
   withVoid,
-} from 'slate-plugins-next/src';
+} from '@udecode/slate-plugins/src';
+import { createEditor, Node } from 'slate';
+import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   initialValueBasicElements,
