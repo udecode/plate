@@ -25,9 +25,6 @@
     "snyk-protect": "snyk protect",
     "prepublish": "npm run snyk-protect"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/udecode"
-  },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
     "@uifabric/styling": "^7.12.11",
@@ -50,5 +47,5 @@
   "devDependencies": {
     "@types/marked": "^0.7.4"
   },
-  "gitHead": "5c6a6b8fbb367751bf947ffaf6c9979bf209c91e"
+  "gitHead": "216eb05068f8602eaa6afd1a0c9db73192c7eebd"
 }
