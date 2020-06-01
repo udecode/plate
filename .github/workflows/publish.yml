@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: Pull Request Merged
-        if: github.event.pull_request.merged == true
-        run: echo Pull request merged
+        if: github.event.pull_request.merged == false
+        run: exit 1
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Node ${{ matrix.node_version }}
