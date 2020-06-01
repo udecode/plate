@@ -13,16 +13,21 @@ jobs:
     name: Publish
     runs-on: ubuntu-18.04
     steps:
+      # Check that the pull request has been merged
       - name: Pull Request Merged
         if: github.event.pull_request.merged == false
         run: exit 1
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Node ${{ matrix.node_version }}
+
+      # Setup .npmrc file to publish to npm
+      - name: Setup npm registry
         uses: actions/setup-node@v1
         with:
-          node_version: 12
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: '12'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Check
       - name: Git Identity
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -40,6 +45,8 @@ jobs:
         run: |
           CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo "::set-env name=CURRENT_VERSION::${CURRENT_VERSION}"
+
+      # Git Tag
       - name: Tag Check
         id: tag_check
         shell: bash -ex {0}
@@ -63,6 +70,33 @@ jobs:
           github_repo: ${{ github.repository }}
           git_commit_sha: ${{ github.sha }}
           git_tag_prefix: "v"
+
+      # Publish to npm
+      - name: Publish to npm
+        if: steps.tag_check.outputs.exists_tag == 'false'
+        run: |
+          yarn lerna publish from-package --yes --registry https://registry.npmjs.org/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Setup .npmrc file to publish to GitHub Packages
+      - name: Setup GitHub registry
+        uses: actions/setup-node@v1
+        with:
+          node_version: 12
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@udecode'
+
+      # Publish to GitHub Packages
+      - name: Publish to GitHub Packages
+        if: steps.tag_check.outputs.exists_tag == 'false'
+        run: |
+          yarn lerna publish from-package --yes --registry https://npm.pkg.github.com
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Release
       - name: Create Release
         id: create_release
         if: steps.tag_check.outputs.exists_tag == 'false'
@@ -77,14 +111,10 @@ jobs:
             ${{ github.event.pull_request.body }}
           draft: false
           prerelease: false
-      - name: Publish
-        if: steps.tag_check.outputs.exists_tag == 'false'
-        run: |
-          yarn lerna publish from-package --yes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create comment
       - uses: actions/github-script@0.8.0
+        if: steps.tag_check.outputs.exists_tag == 'false'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
