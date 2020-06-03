@@ -17,12 +17,13 @@ module.exports = {
     'import/no-named-as-default-member': 'off',
     'jest/no-export': 'off',
     'jest/no-standalone-expect': 'off',
+    'mdx/no-unescaped-entities': 'off',
+    'mdx/no-unused-expressions': 'off',
     'no-alert': 'off',
     'react/jsx-filename-extension': [
       'error',
       { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },
     ],
-    'mdx/no-unused-expressions': 'off',
   },
   overrides: [
     {

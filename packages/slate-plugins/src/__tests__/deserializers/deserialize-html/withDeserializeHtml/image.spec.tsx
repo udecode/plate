@@ -2,7 +2,7 @@
 
 import { initialValueImages } from '__fixtures__/initialValues.fixtures';
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHtml } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { ImagePlugin, withImageUpload } from 'elements/image';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { Editor } from 'slate';
@@ -24,7 +24,7 @@ const data = {
 };
 
 it('should be', () => {
-  const editor = withDeserializeHtml([ParagraphPlugin(), ImagePlugin()])(
+  const editor = withDeserializeHTML([ParagraphPlugin(), ImagePlugin()])(
     withImageUpload()(withReact(input))
   );
 

@@ -6,42 +6,59 @@ bumps.
 
 ---
 
+## v0.58.15 — June 3, 2020
 
-### `0.58.14` — May 31, 2020
+### Breaking Changes
 
-##### NEW
+- renamed most of utils in `deserialize-html`, including
+  `htmlDeserialize` to `deserializeHTMLToDocumentFragment`
+
+### Features
+
+- new types, including `SlateDocument` to enforce a valid structure to
+  be used in `<Slate>`
+
+### Bug Fixes
+
+- `deserializeHTMLToDocumentFragment` could return a fragment with empty `children`,
+  crashing the editor. It has been fixed so all elements have at least
+  one children (empty text) by using `SlateDocument` type.
+
+## v0.58.14 — May 31, 2020
+
+### Features
 
 - `htmlSerialize` – function for serializing content from Slate format
   to HTML format.
 
-##### FIX
+### Bug Fixes
 
 - `htmlSerialize` – improved the plugin identification and also added a
   branch for missing types in top levels.
 - `withNodeID` – `insertNode` operation was not creating new ids.
 
-### `0.58.13` — May 30, 2020
+## v0.58.13 — May 30, 2020
 
-##### NEW
+### Features
 
 - `htmlSerialize` – function for serializing content from Slate format
   to HTML format.
 
-### `0.58.11` — May 30, 2020
+## v0.58.11 — May 30, 2020
 
-##### FIX
+### Bug Fixes
 
 - correctly export the React component types.
 
-### `0.58.9` — May 30, 2020
+## v0.58.9 — May 30, 2020
 
-##### FIX
+### Bug Fixes
 
 - export `withNodeID`.
 
-### `0.58.8` — May 28, 2020
+## v0.58.8 — May 28, 2020
 
-###### BREAKING CHANGE
+### Breaking Changes
 
 - renamed `withBlock` to `withToggleType` as it just toggles the type of
   an element (inline or not).
@@ -57,7 +74,7 @@ bumps.
 - renamed `ToolbarBlock` to `ToolbarElement`.
 - renamed `ToolbarTableProps.action` to `ToolbarTableProps.transform`.
 
-###### NEW
+### Features
 
 - New plugin `BasicElementPlugins`
 - New props `styles` in `Toolbar`
@@ -79,9 +96,9 @@ bumps.
   - `isExpanded`
   - `isSelectionExpanded`
 
-### `0.58.7` — May 22, 2020
+## v0.58.7 — May 22, 2020
 
-###### BREAKING CHANGE
+### Breaking Changes
 
 - `useMention`:
   - removed `MentionSelectComponent` from return
@@ -105,7 +122,7 @@ bumps.
 - renamed `CodePlugin` to `CodeBlockPlugin` and `InlineCodePlugin` to
   `CodePlugin`
 
-###### NEW
+### Features
 
 - `getLastNode(editor: Editor, level: number)`: new query to get the
   last node at a specific level/depth
@@ -135,9 +152,9 @@ bumps.
 - `MentionElement`:
   - attribute `data-slate-character` renamed to `data-slate-value`
 
-### `0.58.5` — May 19, 2020
+## v0.58.5 — May 19, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - `mention`:
   - signature of `onChangeMention` changed
@@ -158,7 +175,7 @@ useMention(CHARACTERS, {
 ```
 
 
-###### NEW
+### Features
 
 - `mention`:
   - changed mention representation from string to object (more useful
@@ -167,28 +184,28 @@ useMention(CHARACTERS, {
     to maxSuggestions
   - improved typing where seemed appropriate
 
-###### FIX
+### Bug Fixes
 
 - `deserializer-html`:
   - export `withDeserializeHtml`
 
 
-### `0.58.4` — May 18, 2020
+## v0.58.4 — May 18, 2020
 
-###### FIX
+### Bug Fixes
 
 - previous build was broken because of tests not being excluded
 
-### `0.58.3` — May 18, 2020
+## v0.58.3 — May 18, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - refactored:
   - `toggleCode` to `toggleWrapNodes` (generic).
 - removed:
   - `clearMark` in favor of `Editor.removeMark`.
 
-###### NEW
+### Features
 
 - `pipe`: new helper to avoid the wrapper hell when using `withPlugins`.
   You can now have an array of plugins `withPlugins`.
@@ -203,25 +220,22 @@ useMention(CHARACTERS, {
   adding mark.
 - helpers:
   - `createDefaultHandler`
-
-###### IMPROVEMENT
-
 - there was a big performance gap between the official slate `Editable`
   component and our `EditablePlugins` component. This has been resolved
   by using `useCallback`.
 
-###### FIX
+### Bug Fixes
 
 - `deserializeLink`: should work with slate fragments.
 - `withForcedLayout` was normalizing on each change.
 
-### `0.58.2` — May 17, 2020
+## v0.58.2 — May 17, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - `withNodeID`: renamed `idGenerator` to `idCreator`
 
-###### NEW
+### Features
 
 - `withNodeID`: new options:
   - `filterText`
@@ -233,13 +247,13 @@ useMention(CHARACTERS, {
   the props (e.g. only Element, only Text, only nodes of type Paragraph,
   etc.).
 
-###### FIX
+### Bug Fixes
 
 - `withNodeID` should now work with history undos/redos
 
-### `0.58.1` — May 16, 2020
+## v0.58.1 — May 16, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - renamed:
   - `withPasteHtml` to `withDeserializeHtml`
@@ -251,7 +265,7 @@ useMention(CHARACTERS, {
   - `isBlockActive` and `isLinkActive` have been removed in favor of
     `isNodeInSelection`
 
-###### NEW
+### Features
 
 - new options for mark plugins: type (`typeBold`, `typeItalic`, etc.) .
 - `withDeserializeHtml`:
@@ -271,8 +285,14 @@ useMention(CHARACTERS, {
 - `getSelectionNodesByType`
 - `isAncestor`
 - `unwrapNodesByType`
+- unit testing
+- a lot of refactoring
+- `HeadingPlugin`:
+  - styling change (from h1 to h6)
+- `EditablePlugins`:
+  - `style` props is now overridable
 
-###### FIX
+### Bug Fixes
 
 - `withDeserializeHtml`: fix `Cannot read property 'children' of null`
 - `withForcedLayout`: the previous behavior was forcing to have
@@ -282,18 +302,9 @@ useMention(CHARACTERS, {
   plugin in a future release.
 - `Toolbar`: change `height` to `min-height` for dynamic height.
 
-###### IMPROVEMENTS
+## v0.58.0 — April 29, 2020
 
-- unit testing
-- a lot of refactoring
-- `HeadingPlugin`:
-  - styling change (from h1 to h6)
-- `EditablePlugins`:
-  - `style` props is now overridable
-
-### `0.58.0` — April 29, 2020
-
-###### BREAKING
+### Breaking Changes
 
 - refactor `getElement` to `getElementComponent`
 - refactor elements types to reflect the html tags. Also avoiding `-` as
@@ -338,29 +349,29 @@ export const nodeTypes = {
 };
 ```
 
-###### NEW
+### Features
 
 - Ordered lists supported in `withShortcuts` (Markdown Shortcuts) by
   typing `1.`.
 - Option type to all elements. Not yet for the marks.
 - `getRenderElements`
 
-### `0.57.15` — April 29, 2020
+## v0.57.15 — April 29, 2020
 
-###### NEW
+### Features
 
 - queries:
   - `isRangeAtRoot(point: Point)` to check if anchor or focus of a range
     is at the root.
 
-###### FIX
+### Bug Fixes
 
 - use `isRangeAtRoot(point: Point)` before each `Editor.parent` call.
 
 
-### `0.57.14` — April 26, 2020
+## v0.57.14 — April 26, 2020
 
-###### NEW
+### Features
 
 - queries:
   - `isPointAtRoot(point: Point)` to check if a point is at the root.
@@ -368,53 +379,53 @@ export const nodeTypes = {
   - `withVoid` to set a list of element types to void.
   - `withInline` to set a list of element types to inline.
 
-###### FIX
+### Bug Fixes
 
 - `plugin-list`: fixed a bug where toggling the list throws an error
   when a paragraph has few leafs
 
-### `0.57.13` — April 25, 2020
+## v0.57.13 — April 25, 2020
 
-###### NEW
+### Features
 
 - `plugin-marks`: New plugins for HTML `<sub>` and `<sup>` tags:
   superscript and subscript plugins. Included in the "Marks" story.
 
-### `0.57.12` — April 14, 2020
+## v0.57.12 — April 14, 2020
 
-###### FIX
+### Bug Fixes
 
 - Deserializer: pasting html or markdown with Elements inside Text tags
   works correctly now.
 
-### `0.57.11` — March 3, 2020
+## v0.57.11 — March 3, 2020
 
-###### NEW
+### Features
 
 - `paste-md`:
   - markdown can be pasted into the editor
 
-### `0.57.10` — February 25, 2020
+## v0.57.10 — February 25, 2020
 
-###### FIX
+### Bug Fixes
 
 - `plugin-list`:
   - make sure list item is removed when unwrapping.
   - if multiple paragraphs are selected when pressing toggle - they
     should end up as separate list items.
 
-### `0.57.9` — February 25, 2020
+## v0.57.9 — February 25, 2020
 
-###### FIX
+### Bug Fixes
 
 - The default toggleBlock function creates several code blocks if there
   are multiple paragraphs selected. This fix creates a toggleCode
   function that just wraps the whole selection in a code block - or
   unwraps if it is already in a block.
 
-### `0.57.8` — February 5, 2020
+## v0.57.8 — February 5, 2020
 
-###### NEW
+### Features
 
 - `plugin-table`:
   - Insert table
@@ -422,14 +433,14 @@ export const nodeTypes = {
   - Add/delete row
   - Add/delete cell
 
-### `0.57.7` — February 2, 2020
+## v0.57.7 — February 2, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - `plugin-list`:
   - Each list item now has a paragraph child.
 
-###### NEW
+### Features
 
 - `plugin-list`:
   - Supports nested lists:
@@ -438,16 +449,16 @@ export const nodeTypes = {
     - Press `Shift+Tab`, `Enter` or `Backspace` to unindent the current
       list.
 
-### `0.57.6` — January 8, 2020
+## v0.57.6 — January 8, 2020
 
-###### FIX
+### Bug Fixes
 
 - styles:
   - `line-height` of heading
 
-### `0.57.5` — January 7, 2020
+## v0.57.5 — January 7, 2020
 
-###### BREAKING
+### Breaking Changes
 
 - plugins:
   - `withList` has been removed and its logic is now inside `withBlock`
@@ -457,7 +468,7 @@ export const nodeTypes = {
 - `p` tag was the default if no `type` was provided. The new default is
   `div`.
 
-###### NEW
+### Features
 
 - plugins:
   - `withDeleteStartReset`: on delete at the start of an empty block in

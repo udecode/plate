@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHtml } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { HeadingPlugin } from 'elements/heading';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHtml([HeadingPlugin()])(withReact(input));
+  const editor = withDeserializeHTML([HeadingPlugin()])(withReact(input));
 
   editor.insertData(data as any);
 

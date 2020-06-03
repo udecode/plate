@@ -30,7 +30,7 @@ import {
 import { render } from '@testing-library/react';
 import { pipe, withTransforms } from 'common';
 import { withNodeID } from 'common/transforms/node-id';
-import { withDeserializeHtml } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import {
   ToolbarElement,
   withBreakEmptyReset,
@@ -161,7 +161,7 @@ const Editor = () => {
     withHistory,
     withTable(nodeTypes),
     withLink(nodeTypes),
-    withDeserializeHtml(plugins),
+    withDeserializeHTML(plugins),
     withImageUpload(nodeTypes),
     withMention(nodeTypes),
     withToggleType(nodeTypes),

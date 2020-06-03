@@ -1,13 +1,12 @@
-import { Node, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { SlatePlugin } from '../../common';
-import { htmlDeserialize } from './htmlDeserialize';
+import { deserializeHTMLToDocumentFragment } from './utils';
 
 /**
- * Enables support for deserializing content from
- * HTML format to Slate format.
+ * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHtml = (plugins: SlatePlugin[]) => <
+export const withDeserializeHTML = (plugins: SlatePlugin[]) => <
   T extends ReactEditor
 >(
   editor: T
@@ -19,9 +18,7 @@ export const withDeserializeHtml = (plugins: SlatePlugin[]) => <
 
     if (html) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
-      const fragment: Node[] = htmlDeserialize(plugins)(body);
-
-      if (!fragment.length) return;
+      const fragment = deserializeHTMLToDocumentFragment(plugins)(body);
 
       // replace the selected node type by the first node type
       if (fragment[0].type) {

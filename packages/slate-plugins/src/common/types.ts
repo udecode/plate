@@ -1,4 +1,4 @@
-import { Editor, Node, NodeEntry, Range } from 'slate';
+import { Editor, Element, Node, NodeEntry, Range, Text } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 
 /**

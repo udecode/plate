@@ -2,7 +2,7 @@
 
 import { initialValueTables } from '__fixtures__/initialValues.fixtures';
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHtml } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { ParagraphPlugin } from 'elements/paragraph';
 import { TablePlugin, withTable } from 'elements/table';
 import { BoldPlugin } from 'marks/bold';
@@ -26,7 +26,7 @@ const data = {
 };
 
 it('should be', () => {
-  const editor = withDeserializeHtml([
+  const editor = withDeserializeHTML([
     ParagraphPlugin(),
     TablePlugin(),
     BoldPlugin(),
