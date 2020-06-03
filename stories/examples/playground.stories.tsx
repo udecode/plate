@@ -117,7 +117,11 @@ const initialValue: Node[] = [
 
 const resetOptions = {
   ...nodeTypes,
-  types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
+  types: [
+    nodeTypes.typeActionItem,
+    nodeTypes.typeBlockquote,
+    nodeTypes.typeCodeBlock,
+  ],
 };
 
 export const Plugins = () => {
