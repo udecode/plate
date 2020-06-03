@@ -1,8 +1,7 @@
 import faker from 'faker';
-import { Descendant, Node } from 'slate';
+import { Descendant } from 'slate';
 import {
   ACTION_ITEM,
-  ArrayOneOrMore,
   BLOCKQUOTE,
   CODE_BLOCK,
   HeadingType,
@@ -22,8 +21,8 @@ import {
   MENTION,
   PARAGRAPH,
   SlateDocument,
-  SlateDocumentChildren,
   SlateDocumentDescendant,
+  SlateDocumentFragment,
   TableType,
 } from '../../packages/slate-plugins/src';
 
@@ -72,7 +71,7 @@ export const createList = (items: string[]): SlateDocument => {
         },
       ],
     })
-  ) as SlateDocumentChildren;
+  ) as SlateDocumentFragment;
 
   return [
     {
