@@ -1,7 +1,8 @@
 import faker from 'faker';
-import { Node } from 'slate';
+import { Descendant, Node } from 'slate';
 import {
   ACTION_ITEM,
+  ArrayOneOrMore,
   BLOCKQUOTE,
   CODE_BLOCK,
   HeadingType,
@@ -20,6 +21,9 @@ import {
   MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
+  SlateDocument,
+  SlateDocumentChildren,
+  SlateDocumentDescendant,
   TableType,
 } from '../../packages/slate-plugins/src';
 
@@ -57,26 +61,27 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
-export const createList = (items: string[]): Node[] => [
-  {
-    children: [
-      {
-        type: ListType.UL,
-        children: items.map((item) => ({
-          type: ListType.LI,
-          children: [
-            {
-              type: PARAGRAPH,
-              text: item,
-            },
-          ],
-        })),
-      },
-    ],
-  },
-];
+export const createList = (items: string[]): SlateDocument => {
+  const children = items.map(
+    (item): SlateDocumentDescendant => ({
+      type: ListType.LI,
+      children: [
+        {
+          type: PARAGRAPH,
+          text: item,
+        },
+      ],
+    })
+  ) as SlateDocumentChildren;
 
-export const initialValueEmbeds: Node[] = [
+  return [
+    {
+      children,
+    },
+  ];
+};
+
+export const initialValueEmbeds: SlateDocument = [
   {
     children: [
       {
@@ -106,7 +111,7 @@ export const initialValueEmbeds: Node[] = [
   },
 ];
 
-export const initialValueForcedLayout: Node[] = [
+export const initialValueForcedLayout: SlateDocument = [
   {
     children: [
       {
@@ -136,7 +141,7 @@ export const initialValueForcedLayout: Node[] = [
   },
 ];
 
-export const initialValueBalloonToolbar: Node[] = [
+export const initialValueBalloonToolbar: SlateDocument = [
   {
     children: [
       {
@@ -180,7 +185,7 @@ export const initialValueBalloonToolbar: Node[] = [
 
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
-export const initialValueHugeDocument: Node[] = [{ children: [] }];
+export const initialValueHugeDocument: Descendant[] = [{ children: [] }];
 
 for (let h = 0; h < HEADINGS; h++) {
   (initialValueHugeDocument[0] as any).children.push({
@@ -196,7 +201,7 @@ for (let h = 0; h < HEADINGS; h++) {
   }
 }
 
-export const initialValueImages: Node[] = [
+export const initialValueImages: SlateDocument = [
   {
     children: [
       {
@@ -226,7 +231,7 @@ export const initialValueImages: Node[] = [
   },
 ];
 
-export const initialValueLinks: Node[] = [
+export const initialValueLinks: SlateDocument = [
   {
     children: [
       {
@@ -259,7 +264,7 @@ export const initialValueLinks: Node[] = [
   },
 ];
 
-export const initialValuePreview: Node[] = [
+export const initialValuePreview: SlateDocument = [
   {
     children: [
       {
@@ -283,7 +288,7 @@ export const initialValuePreview: Node[] = [
   },
 ];
 
-export const initialValueMarkdownShortcuts: Node[] = [
+export const initialValueMarkdownShortcuts: SlateDocument = [
   {
     children: [
       {
@@ -325,7 +330,7 @@ export const initialValueMarkdownShortcuts: Node[] = [
   },
 ];
 
-export const initialValueMentions: Node[] = [
+export const initialValueMentions: SlateDocument = [
   {
     children: [
       {
@@ -359,7 +364,7 @@ export const initialValueMentions: Node[] = [
   },
 ];
 
-export const initialValuePasteHtml: Node[] = [
+export const initialValuePasteHtml: SlateDocument = [
   {
     children: [
       {
@@ -395,7 +400,7 @@ export const initialValuePasteHtml: Node[] = [
   },
 ];
 
-export const initialValuePasteMd: Node[] = [
+export const initialValuePasteMd: SlateDocument = [
   {
     children: [
       {
@@ -431,7 +436,7 @@ export const initialValuePasteMd: Node[] = [
   },
 ];
 
-export const initialValuePlainText: Node[] = [
+export const initialValuePlainText: SlateDocument = [
   {
     children: [
       {
@@ -444,7 +449,7 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueBasicMarks: Node[] = [
+export const initialValueBasicMarks: SlateDocument = [
   {
     children: [
       {
@@ -478,7 +483,7 @@ export const initialValueBasicMarks: Node[] = [
   },
 ];
 
-export const initialValueHighlight: Node[] = [
+export const initialValueHighlight: SlateDocument = [
   {
     children: [
       {
@@ -501,7 +506,7 @@ export const initialValueHighlight: Node[] = [
   },
 ];
 
-export const initialValueBasicElements: Node[] = [
+export const initialValueBasicElements: SlateDocument = [
   {
     children: [
       {
@@ -552,7 +557,7 @@ export const initialValueBasicElements: Node[] = [
   },
 ];
 
-export const initialValueList: Node[] = [
+export const initialValueList: SlateDocument = [
   {
     children: [
       {
@@ -624,7 +629,7 @@ export const initialValueList: Node[] = [
   },
 ];
 
-export const initialValueRichText: Node[] = [
+export const initialValueRichText: SlateDocument = [
   {
     children: [
       {
@@ -665,7 +670,7 @@ export const initialValueRichText: Node[] = [
   },
 ];
 
-export const initialValueSearchHighlighting: Node[] = [
+export const initialValueSearchHighlighting: SlateDocument = [
   {
     children: [
       {
@@ -691,7 +696,7 @@ export const initialValueSearchHighlighting: Node[] = [
   },
 ];
 
-export const initialValueTables: Node[] = [
+export const initialValueTables: SlateDocument = [
   {
     children: [
       {
@@ -784,7 +789,7 @@ export const initialValueTables: Node[] = [
   },
 ];
 
-export const initialValueSoftBreak: Node[] = [
+export const initialValueSoftBreak: SlateDocument = [
   {
     children: [
       {
