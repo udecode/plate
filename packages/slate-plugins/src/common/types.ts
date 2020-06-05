@@ -71,16 +71,18 @@ export interface DeserializeHtml {
  */
 export interface SlatePlugin {
   decorate?: Decorate;
-  onDOMBeforeInput?: OnDOMBeforeInput;
+  deserialize?: DeserializeHtml;
+  inlineTypes?: string[];
   renderElement?: RenderElement;
   renderLeaf?: RenderLeaf;
+  voidTypes?: string[];
+  onDOMBeforeInput?: OnDOMBeforeInput;
   onKeyDown?: OnKeyDown | null;
-  deserialize?: DeserializeHtml;
 }
 
 export interface QueryOptions {
   // Condition on the node to be valid.
-  filter?: (node: Node) => boolean;
+  filter?: (entry: NodeEntry<Node>) => boolean;
   // List of types that are valid. If empty or undefined - allow all.
   allow?: string[];
   // List of types that are invalid.

@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { render } from '@testing-library/react';
-import { createEditor, Node } from 'slate';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { BalloonToolbar } from 'components/Toolbar';
+import { SlateDocument } from '../../../../common';
 
 const Editor = () => {
-  const [value, setValue] = useState<Node[]>([
+  const [value, setValue] = useState<SlateDocument>([
     { children: [{ text: 'test' }] },
   ]);
 
@@ -18,7 +19,7 @@ const Editor = () => {
       editor={editor}
       value={value}
       onChange={(newValue) => {
-        setValue(newValue);
+        setValue(newValue as SlateDocument);
       }}
     >
       <BalloonToolbar>test</BalloonToolbar>

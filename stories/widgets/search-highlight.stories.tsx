@@ -12,6 +12,7 @@ import {
   pipe,
   renderLeafHighlight,
   SearchHighlightPlugin,
+  SlateDocument,
   ToolbarSearchHighlight,
 } from '../../packages/slate-plugins/src';
 import {
@@ -53,7 +54,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <EditablePlugins

@@ -15,6 +15,7 @@ import {
   BoldPlugin,
   CodePlugin,
   EditablePlugins,
+  HeadingPlugin,
   HeadingToolbar,
   ItalicPlugin,
   MARK_BOLD,
@@ -26,6 +27,7 @@ import {
   MARK_UNDERLINE,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
@@ -51,7 +53,7 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const All = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
   if (boolean('UnderlinePlugin', true))
@@ -73,7 +75,7 @@ export const All = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />

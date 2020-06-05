@@ -28,9 +28,10 @@ export const withTrailingNode = ({
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
-      const [lastNode, lastPath] = getLastNode(editor, level);
+      const entry = getLastNode(editor, level);
+      const [lastNode, lastPath] = entry;
 
-      if (lastNode.type !== type && isNodeType(lastNode, query)) {
+      if (lastNode.type !== type && isNodeType(entry, query)) {
         editor.insertNodes(
           {
             type,

@@ -54,5 +54,3 @@ export interface MentionDeserializeOptions extends TypeOption {}
 export interface MentionPluginOptions
   extends MentionRenderElementOptions,
     MentionDeserializeOptions {}
-
-export interface WithMentionOptions extends TypeOption {}

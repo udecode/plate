@@ -1,7 +1,7 @@
 import { SlatePlugin } from '../../common';
 import { deserializeMention } from './deserializeMention';
 import { renderElementMention } from './renderElementMention';
-import { MentionPluginOptions } from './types';
+import { MENTION, MentionPluginOptions } from './types';
 
 /**
  * Enables support for autocompleting @mentions and #tags.
@@ -11,4 +11,6 @@ import { MentionPluginOptions } from './types';
 export const MentionPlugin = (options?: MentionPluginOptions): SlatePlugin => ({
   renderElement: renderElementMention(options),
   deserialize: deserializeMention(options),
+  inlineTypes: [options?.typeMention || MENTION],
+  voidTypes: [options?.typeMention || MENTION],
 });

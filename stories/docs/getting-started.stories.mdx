@@ -64,7 +64,7 @@ export const Editor = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={newValue => setValue(newValue)}
+      onChange={newValue => setValue(newValue as SlateDocument)}
     >
       <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>

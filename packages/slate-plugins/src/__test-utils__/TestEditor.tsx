@@ -26,7 +26,7 @@ export const TestEditor = ({
       editor={editorWithPlugins}
       value={value}
       onChange={(newValue) => {
-        setValue(newValue);
+        setValue(newValue as SlateDocument);
       }}
     >
       {children}

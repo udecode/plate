@@ -39,4 +39,6 @@ export interface MediaEmbedRenderElementProps
 // Plugin options
 export interface MediaEmbedPluginOptions
   extends MediaEmbedRenderElementOptions,
-    MediaEmbedDeserializeOptions {}
+    MediaEmbedDeserializeOptions {
+  inlineTypes?: string[];
+}

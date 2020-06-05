@@ -7,7 +7,7 @@ import {
   EditablePlugins,
   ParagraphPlugin,
   pipe,
-  withVoid,
+  SlateDocument,
 } from '../../../packages/slate-plugins/src';
 import { nodeTypes } from '../../config/initialValues';
 import { EditableVoidPlugin } from './EditableVoidPlugin';
@@ -47,11 +47,7 @@ const initialValueVoids: Node[] = [
 
 const plugins = [ParagraphPlugin(nodeTypes), EditableVoidPlugin()];
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withVoid([EDITABLE_VOID]),
-] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueVoids);
@@ -62,7 +58,7 @@ export const Example = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={(newValue) => setValue(newValue)}
+      onChange={(newValue) => setValue(newValue as SlateDocument)}
     >
       <EditablePlugins
         readOnly={boolean('readOnly', false)}

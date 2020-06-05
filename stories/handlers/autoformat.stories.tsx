@@ -1,23 +1,26 @@
 import React, { useMemo, useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
-  BLOCKQUOTE,
   BlockquotePlugin,
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
+  SoftBreakPlugin,
   withAutoformat,
-  withBreakEmptyReset,
-  withDeleteStartReset,
   withList,
+  withResetBlockType,
   withToggleType,
 } from '../../packages/slate-plugins/src';
 import {
-  initialValueMarkdownShortcuts,
+  headingTypes,
+  initialValueAutoformat,
   nodeTypes,
 } from '../config/initialValues';
 
@@ -26,18 +29,19 @@ export default {
   component: withAutoformat,
 };
 
-const resetOptions = {
-  ...nodeTypes,
-  types: [BLOCKQUOTE],
-};
-
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType(nodeTypes),
+  withToggleType({ defaultType: nodeTypes.typeP }),
   withAutoformat(nodeTypes),
-  withDeleteStartReset(resetOptions),
-  withBreakEmptyReset(resetOptions),
+  withResetBlockType({
+    types: [
+      nodeTypes.typeActionItem,
+      nodeTypes.typeBlockquote,
+      nodeTypes.typeCodeBlock,
+    ],
+    defaultType: nodeTypes.typeP,
+  }),
   withList(nodeTypes),
 ] as const;
 
@@ -47,10 +51,40 @@ export const Example = () => {
     BlockquotePlugin(nodeTypes),
     ListPlugin(nodeTypes),
     HeadingPlugin(nodeTypes),
+    SoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: headingTypes,
+          },
+        },
+      ],
+    }),
   ];
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueMarkdownShortcuts);
+    const [value, setValue] = useState(initialValueAutoformat);
 
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
@@ -58,7 +92,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins
           plugins={plugins}

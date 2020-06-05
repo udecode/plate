@@ -20,6 +20,7 @@ import {
   MARK_ITALIC,
   MARK_UNDERLINE,
   pipe,
+  SlateDocument,
   ToolbarMark,
   UnderlinePlugin,
 } from '../../packages/slate-plugins/src';
@@ -65,7 +66,7 @@ export const Example = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={(newValue) => setValue(newValue)}
+      onChange={(newValue) => setValue(newValue as SlateDocument)}
     >
       <BalloonToolbar
         direction={direction}

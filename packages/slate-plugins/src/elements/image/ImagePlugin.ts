@@ -1,7 +1,7 @@
 import { SlatePlugin } from '../../common';
 import { deserializeImage } from './deserializeImage';
 import { renderElementImage } from './renderElementImage';
-import { ImagePluginOptions } from './types';
+import { IMAGE, ImagePluginOptions } from './types';
 
 /**
  * Enables support for images.
@@ -9,4 +9,6 @@ import { ImagePluginOptions } from './types';
 export const ImagePlugin = (options?: ImagePluginOptions): SlatePlugin => ({
   renderElement: renderElementImage(options),
   deserialize: deserializeImage(options),
+  inlineTypes: options?.inlineTypes || [],
+  voidTypes: [options?.typeImg || IMAGE],
 });

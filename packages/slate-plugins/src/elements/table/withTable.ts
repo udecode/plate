@@ -3,10 +3,9 @@ import { isCollapsed } from '../../common/queries/isCollapsed';
 import { TableType, WithTableOptions } from './types';
 
 export const withTable = ({
-  typeTable = TableType.TABLE,
   typeTd = TableType.CELL,
 }: WithTableOptions = {}) => <T extends Editor>(editor: T) => {
-  const { deleteBackward, deleteForward, insertBreak } = editor;
+  const { deleteBackward, deleteForward } = editor;
 
   const preventDeleteCell = (operation: any, pointCallback: any) => (
     unit: any
@@ -36,20 +35,6 @@ export const withTable = ({
 
   // prevent deleting cells with deleteForward
   editor.deleteForward = preventDeleteCell(deleteForward, Editor.end);
-
-  editor.insertBreak = () => {
-    const { selection } = editor;
-
-    if (selection) {
-      const [table] = Editor.nodes(editor, {
-        match: (n) => n.type === typeTable,
-      });
-
-      if (table) return;
-    }
-
-    insertBreak();
-  };
 
   return editor;
 };

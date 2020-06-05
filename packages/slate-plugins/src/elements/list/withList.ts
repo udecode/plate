@@ -1,7 +1,7 @@
 import { Editor, Path, Point, Range, Transforms } from 'slate';
 import { isRangeAtRoot } from '../../common/queries';
 import { unwrapNodesByType } from '../../common/transforms';
-import { withBreakEmptyReset, withDeleteStartReset } from '../../element';
+import { withResetBlockType } from '../../handlers/reset-block-type';
 import { PARAGRAPH } from '../paragraph';
 import { ListType, WithListOptions } from './types';
 
@@ -11,13 +11,6 @@ export const withList = ({
   typeLi = ListType.LI,
   typeP = PARAGRAPH,
 }: WithListOptions = {}) => <T extends Editor>(editor: T) => {
-  const options = {
-    typeUl,
-    typeOl,
-    typeLi,
-    typeP,
-  };
-
   const { insertBreak } = editor;
 
   /**
@@ -114,22 +107,16 @@ export const withList = ({
     insertBreak();
   };
 
-  const withBreakEmptyList = () => {
+  const onResetListType = () => {
     unwrapNodesByType(editor, typeLi, { split: true });
     unwrapNodesByType(editor, [typeUl, typeOl], { split: true });
   };
 
-  let e = withBreakEmptyReset({
-    ...options,
+  editor = withResetBlockType({
     types: [typeLi],
-    onUnwrap: withBreakEmptyList,
+    defaultType: typeP,
+    onUnwrap: onResetListType,
   })(editor);
 
-  e = withDeleteStartReset({
-    ...options,
-    types: [typeLi],
-    onUnwrap: withBreakEmptyList,
-  })(e);
-
-  return e;
+  return editor;
 };
