@@ -34,7 +34,7 @@ import {
 import { render } from '@testing-library/react';
 import { pipe, SlateDocument, withTransforms } from 'common';
 import { withNodeID } from 'common/transforms/node-id';
-import { withDeserializerHTML } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { ToolbarElement, withToggleType } from 'element';
 import {
   BasicElementPlugins,
@@ -160,7 +160,7 @@ const Editor = () => {
     withHistory,
     withTable(nodeTypes),
     withLink(),
-    withDeserializerHTML({ plugins }),
+    withDeserializeHTML({ plugins }),
     withImageUpload(),
     withToggleType({ defaultType: nodeTypes.typeP }),
     withResetBlockType({

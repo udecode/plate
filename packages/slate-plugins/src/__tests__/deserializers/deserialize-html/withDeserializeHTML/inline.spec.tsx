@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializerHTML } from 'deserializers/deserialize-html';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { pipe } from '../../../../common/utils';
@@ -41,7 +41,7 @@ it('should do nothing', () => {
     input,
     withReact,
     withInlineVoid({ inlineTypes: [MENTION], voidTypes: [MENTION] }),
-    withDeserializerHTML({ plugins: [ParagraphPlugin(), MentionPlugin()] })
+    withDeserializeHTML({ plugins: [ParagraphPlugin(), MentionPlugin()] })
   );
 
   editor.insertData(data as any);

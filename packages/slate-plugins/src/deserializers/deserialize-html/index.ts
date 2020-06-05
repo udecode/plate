@@ -1,3 +1,3 @@
 export * from './utils';
 export * from './types';
-export * from './withDeserializerHTML';
+export * from './withDeserializeHTML';
