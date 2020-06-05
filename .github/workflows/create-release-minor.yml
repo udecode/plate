@@ -7,6 +7,10 @@ on:
 # private member is treated as CONTRIBUTOR
 jobs:
   createPullRequest:
+    if: |
+      github.event_name == 'issue_comment' &&
+      (github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
+      contains(github.event.comment.body, '/create release minor')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
