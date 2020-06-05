@@ -13,7 +13,7 @@
     "clean": "rimraf dist",
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "lint": "eslint \"packages/*/src/**/*.{js,jsx,ts,tsx}\"",
-    "postversionup": "yarn commit-version",
+    "postversionup": "yarn commit-version && git push",
     "pre-release": "yarn release --conventional-prerelease",
     "prebuild": "yarn clean",
     "release": "lerna publish from-package",
