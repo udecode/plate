@@ -1,4 +1,4 @@
-name: Create Pull Request
+name: Create Release Minor
 on:
   issue_comment:
     types: [created]
