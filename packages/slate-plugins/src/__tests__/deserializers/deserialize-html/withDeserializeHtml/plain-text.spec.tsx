@@ -2,7 +2,6 @@
 
 import { jsx } from '__test-utils__/jsx';
 import { withDeserializeHTML } from 'deserializers/deserialize-html';
-import { BoldPlugin } from 'marks/bold';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 
@@ -31,7 +30,7 @@ const output = (
 it('should do nothing', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-  const editor = withDeserializeHTML([BoldPlugin()])(withReact(input));
+  const editor = withDeserializeHTML()(withReact(input));
 
   editor.insertData(data as any);
 

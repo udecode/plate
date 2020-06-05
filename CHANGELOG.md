@@ -6,23 +6,43 @@ bumps.
 
 ---
 
-## v0.58.15 — June 3, 2020
+## v0.59.0 — June 3, 2020
 
 ### Breaking Changes
 
+- renamed `withDeserializeHtml` to `withDeserializeHTML`.
+- changed signature of `withDeserializeHTML` to `({ plugins })`
 - renamed most of utils in `deserialize-html`, including
   `htmlDeserialize` to `deserializeHTMLToDocumentFragment`
+- renamed `htmlSerialize` to `serializeHTMLFromNodes`.
+- removed `ToolbarCodeBlock` in favor of `ToolbarElement` instead.
+- `withBreakEmptyReset` and `withDeleteStartReset` – renamed option
+  `typeP` to `defaultType`.
+- `withToggleType` – renamed option `typeP` to `defaultType`
+- `withTable` – removed `insertBreak` handler that prevented to insert
+  break inside table cells, you should now use `SoftBreakPlugin` to
+  allow inserting soft breaks instead.
 
 ### Features
 
 - new types, including `SlateDocument` to enforce a valid structure to
   be used in `<Slate>`
+- added `inlineTypes` and `voidTypes` properties to the `SlatePlugin`
+  interface. `EditablePlugins` will set `isInline` and `isVoid` to each
+  provided type.
+- `withVoid` and `withInline` have been replaced by `withInlineVoid`.
+- `withResetBlockType` – combines `withBreakEmptyReset` and
+  `withDeleteStartReset`.
+- `SoftBreakPlugin` – configurable rules.
+- `ExitBreakPlugin`.
 
 ### Bug Fixes
 
 - `deserializeHTMLToDocumentFragment` could return a fragment with empty `children`,
   crashing the editor. It has been fixed so all elements have at least
   one children (empty text) by using `SlateDocument` type.
+- `withDeserializeHTML` was buggy when the first inserted node is an
+  inline element (e.g. mention element).
 
 ## v0.58.14 — May 31, 2020
 

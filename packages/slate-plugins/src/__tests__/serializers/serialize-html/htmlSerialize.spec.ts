@@ -1,4 +1,4 @@
-import { deserializeHTMLElement } from 'deserializers/deserialize-html';
+import { deserializeHTMLToDocumentFragment } from 'deserializers/deserialize-html';
 import { serializeHTMLFromNodes } from 'serializers/serialize-html';
 import {
   BlockquotePlugin,
@@ -387,9 +387,9 @@ it('serialize complex example with multiple no types on top level node to html',
 it('serializes with edge case where input is non-rich text', () => {
   const input = htmlStringToDOMNode('Some non-rich text here.');
   const output = 'Some non-rich text here.';
-  expect(serializeHTMLFromNodes([])(deserializeHTMLElement([])(input))).toEqual(
-    output
-  );
+  expect(
+    serializeHTMLFromNodes([])(deserializeHTMLToDocumentFragment([])(input))
+  ).toEqual(output);
 });
 
 it('serializes with edge case where input is text element', () => {

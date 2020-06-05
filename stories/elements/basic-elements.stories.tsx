@@ -17,17 +17,23 @@ import {
   BlockquotePlugin,
   CodeBlockPlugin,
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
   ParagraphPlugin,
   pipe,
-  ToolbarCodeBlock,
+  SlateDocument,
+  SlatePlugin,
+  SoftBreakPlugin,
   ToolbarElement,
-  withBreakEmptyReset,
-  withDeleteStartReset,
+  withResetBlockType,
   withToggleType,
 } from '../../packages/slate-plugins/src';
-import { initialValueBasicElements, nodeTypes } from '../config/initialValues';
+import {
+  headingTypes,
+  initialValueBasicElements,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Elements/Basic Elements',
@@ -39,27 +45,60 @@ export default {
   },
 };
 
-const resetOptions = {
-  ...nodeTypes,
-  types: [nodeTypes.typeBlockquote],
-};
-
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType(nodeTypes),
-  withDeleteStartReset(resetOptions),
-  withBreakEmptyReset(resetOptions),
+  withToggleType({ defaultType: nodeTypes.typeP }),
+  withResetBlockType({
+    types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
+    defaultType: nodeTypes.typeP,
+  }),
 ] as const;
 
 export const Example = () => {
-  const plugins: any[] = [];
+  const plugins: SlatePlugin[] = [];
   if (boolean('ParagraphPlugin', true))
     plugins.push(ParagraphPlugin(nodeTypes));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(nodeTypes));
   if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+  if (boolean('SoftBreakPlugin', true))
+    plugins.push(
+      SoftBreakPlugin({
+        rules: [
+          { hotkey: 'shift+enter' },
+          {
+            hotkey: 'enter',
+            query: {
+              allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+            },
+          },
+        ],
+      })
+    );
+  if (boolean('ExitBreakPlugin', true))
+    plugins.push(
+      ExitBreakPlugin({
+        rules: [
+          {
+            hotkey: 'mod+enter',
+          },
+          {
+            hotkey: 'mod+shift+enter',
+            before: true,
+          },
+          {
+            hotkey: 'enter',
+            query: {
+              start: true,
+              end: true,
+              allow: headingTypes,
+            },
+          },
+        ],
+      })
+    );
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueBasicElements);
@@ -70,7 +109,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
           <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
@@ -83,7 +122,7 @@ export const Example = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
+          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

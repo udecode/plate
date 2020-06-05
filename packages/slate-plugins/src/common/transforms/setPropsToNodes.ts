@@ -1,5 +1,5 @@
 import { merge } from 'lodash';
-import { Descendant, Node } from 'slate';
+import { Descendant, Node, NodeEntry } from 'slate';
 import { isAncestor, isNodeType } from '../queries';
 import { QueryOptions } from '../types';
 
@@ -12,7 +12,9 @@ export const setPropsToNodes = (
   props: Record<string, any> | (() => Record<string, any>),
   query?: QueryOptions
 ) => {
-  if (isNodeType(node, query)) {
+  const entry: NodeEntry<Node> = [node, []];
+
+  if (isNodeType(entry, query)) {
     if (props instanceof Function) {
       merge(node, props());
     } else {

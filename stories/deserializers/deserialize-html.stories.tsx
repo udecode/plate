@@ -19,6 +19,7 @@ import {
   MentionPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
@@ -29,9 +30,7 @@ import {
   withImageUpload,
   withLink,
   withList,
-  withMention,
   withTable,
-  withVoid,
 } from '../../packages/slate-plugins/src';
 import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
 
@@ -67,12 +66,10 @@ const withPlugins = [
   withReact,
   withHistory,
   withTable(nodeTypes),
-  withLink(nodeTypes),
-  withDeserializeHTML(plugins),
-  withImageUpload(nodeTypes),
-  withMention(nodeTypes),
+  withLink(),
+  withDeserializeHTML({ plugins }),
+  withImageUpload(),
   withList(nodeTypes),
-  withVoid([nodeTypes.typeMediaEmbed]),
 ] as const;
 
 export const Example = () => {
@@ -85,7 +82,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins
           plugins={plugins}

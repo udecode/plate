@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withLink } from 'elements';
+import { LINK, withLink } from 'elements';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../../../element';
 
 const input = (
   <editor>
@@ -28,7 +29,9 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(withReact(input));
+  const editor = withLink()(
+    withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
+  );
 
   editor.insertData(data);
 

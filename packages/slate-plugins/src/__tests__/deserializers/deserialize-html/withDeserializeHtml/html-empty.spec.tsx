@@ -30,7 +30,9 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHTML([BoldPlugin()])(withReact(input));
+  const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
+    withReact(input)
+  );
 
   editor.insertData(data as any);
 

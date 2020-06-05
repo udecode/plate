@@ -35,6 +35,6 @@ export const deserializeHTMLToElement = ({
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', attrs, descendants);
+    return jsx('element', { ...attrs }, descendants);
   }
 };

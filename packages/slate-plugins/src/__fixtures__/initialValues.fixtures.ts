@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { Node } from 'slate';
+import { Descendant } from 'slate';
 import {
   ACTION_ITEM,
   BLOCKQUOTE,
@@ -20,6 +20,9 @@ import {
   MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
+  SlateDocument,
+  SlateDocumentDescendant,
+  SlateDocumentFragment,
   TableType,
 } from '..';
 
@@ -57,28 +60,42 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
-export const createList = (items: string[]): Node[] => [
-  {
-    children: [
-      {
-        type: ListType.UL,
-        children: items.map((item) => ({
-          type: ListType.LI,
+export const createList = (items: string[]): SlateDocumentFragment => {
+  const children = items.map(
+    (item): SlateDocumentDescendant => ({
+      type: nodeTypes.typeLi,
+      children: [
+        {
+          type: nodeTypes.typeP,
           children: [
             {
-              type: PARAGRAPH,
               text: item,
             },
           ],
-        })),
-      },
-    ],
-  },
-];
+        },
+      ],
+    })
+  ) as SlateDocumentFragment;
 
-export const initialValueEmbeds: Node[] = [
+  return [
+    {
+      type: nodeTypes.typeUl,
+      children,
+    },
+  ];
+};
+
+export const initialValueEmbeds: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '🎥 Media Embed',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -106,12 +123,12 @@ export const initialValueEmbeds: Node[] = [
   },
 ];
 
-export const initialValueForcedLayout: Node[] = [
+export const initialValueForcedLayout: SlateDocument = [
   {
     children: [
       {
         type: nodeTypes.typeH1,
-        children: [{ text: 'Enforce Your Layout!' }],
+        children: [{ text: '👮 Title' }],
       },
       {
         type: nodeTypes.typeP,
@@ -136,7 +153,7 @@ export const initialValueForcedLayout: Node[] = [
   },
 ];
 
-export const initialValueBalloonToolbar: Node[] = [
+export const initialValueBalloonToolbar: SlateDocument = [
   {
     children: [
       {
@@ -180,7 +197,7 @@ export const initialValueBalloonToolbar: Node[] = [
 
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
-export const initialValueHugeDocument: Node[] = [{ children: [] }];
+export const initialValueHugeDocument: Descendant[] = [{ children: [] }];
 
 for (let h = 0; h < HEADINGS; h++) {
   (initialValueHugeDocument[0] as any).children.push({
@@ -196,9 +213,17 @@ for (let h = 0; h < HEADINGS; h++) {
   }
 }
 
-export const initialValueImages: Node[] = [
+export const initialValueImages: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '📷 Image',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -226,9 +251,17 @@ export const initialValueImages: Node[] = [
   },
 ];
 
-export const initialValueLinks: Node[] = [
+export const initialValueLinks: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '🔗 Link',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -259,9 +292,17 @@ export const initialValueLinks: Node[] = [
   },
 ];
 
-export const initialValuePreview: Node[] = [
+export const initialValuePreview: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [
+          {
+            text: '👀 Preview Markdown',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -283,9 +324,17 @@ export const initialValuePreview: Node[] = [
   },
 ];
 
-export const initialValueMarkdownShortcuts: Node[] = [
+export const initialValueAutoformat: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [
+          {
+            text: '🏃‍♀️ Autoformat',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -309,10 +358,6 @@ export const initialValueMarkdownShortcuts: Node[] = [
         ],
       },
       {
-        type: nodeTypes.typeH2,
-        children: [{ text: 'Try it out!' }],
-      },
-      {
         type: nodeTypes.typeP,
         children: [
           {
@@ -325,9 +370,17 @@ export const initialValueMarkdownShortcuts: Node[] = [
   },
 ];
 
-export const initialValueMentions: Node[] = [
+export const initialValueMentions: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '💬 Mention',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -359,9 +412,17 @@ export const initialValueMentions: Node[] = [
   },
 ];
 
-export const initialValuePasteHtml: Node[] = [
+export const initialValuePasteHtml: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [
+          {
+            text: '🍪 Deserialize HTML',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -395,9 +456,17 @@ export const initialValuePasteHtml: Node[] = [
   },
 ];
 
-export const initialValuePasteMd: Node[] = [
+export const initialValuePasteMd: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [
+          {
+            text: '🍩 Deserialize Markdown',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -431,7 +500,7 @@ export const initialValuePasteMd: Node[] = [
   },
 ];
 
-export const initialValuePlainText: Node[] = [
+export const initialValuePlainText: SlateDocument = [
   {
     children: [
       {
@@ -444,9 +513,25 @@ export const initialValuePlainText: Node[] = [
   },
 ];
 
-export const initialValueBasicMarks: Node[] = [
+export const initialValueBasicMarks: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [
+          {
+            text: '💅 Marks',
+          },
+        ],
+      },
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '💧 Basic Marks',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -478,9 +563,17 @@ export const initialValueBasicMarks: Node[] = [
   },
 ];
 
-export const initialValueHighlight: Node[] = [
+export const initialValueHighlight: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '🌈 Highlight',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -501,12 +594,16 @@ export const initialValueHighlight: Node[] = [
   },
 ];
 
-export const initialValueBasicElements: Node[] = [
+export const initialValueBasicElements: SlateDocument = [
   {
     children: [
       {
         type: nodeTypes.typeH1,
-        children: [{ text: 'Elements' }],
+        children: [{ text: '🧱 Elements' }],
+      },
+      {
+        type: nodeTypes.typeH2,
+        children: [{ text: '🔥 Basic Elements' }],
       },
       {
         type: nodeTypes.typeP,
@@ -552,9 +649,13 @@ export const initialValueBasicElements: Node[] = [
   },
 ];
 
-export const initialValueList: Node[] = [
+export const initialValueList: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [{ text: '✍️ List' }],
+      },
       {
         type: nodeTypes.typeUl,
         children: [
@@ -624,48 +725,7 @@ export const initialValueList: Node[] = [
   },
 ];
 
-export const initialValueRichText: Node[] = [
-  {
-    children: [
-      {
-        type: nodeTypes.typeH1,
-        children: [{ text: 'Welcome' }],
-      },
-      {
-        type: nodeTypes.typeP,
-        children: [
-          { text: 'This is editable ' },
-          { text: 'rich', [nodeTypes.typeBold]: true },
-          { text: ' text, ' },
-          { text: 'much', [nodeTypes.typeItalic]: true },
-          { text: ' better than a ' },
-          { text: '<textarea>', [nodeTypes.typeCode]: true },
-          { text: '!' },
-        ],
-      },
-      {
-        type: nodeTypes.typeP,
-        children: [
-          {
-            text:
-              "Since it's rich text, you can do things like turn a selection of text ",
-          },
-          { text: 'bold', [nodeTypes.typeBold]: true },
-          {
-            text:
-              ', or add a semantically rendered block quote in the middle of the page, like this:',
-          },
-        ],
-      },
-      {
-        type: BLOCKQUOTE,
-        children: [{ text: 'A wise quote.' }],
-      },
-    ],
-  },
-];
-
-export const initialValueSearchHighlighting: Node[] = [
+export const initialValueSearchHighlighting: SlateDocument = [
   {
     children: [
       {
@@ -691,9 +751,86 @@ export const initialValueSearchHighlighting: Node[] = [
   },
 ];
 
-export const initialValueTables: Node[] = [
+const table = {
+  type: nodeTypes.typeTable,
+  children: [
+    {
+      type: nodeTypes.typeTr,
+      children: [
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '' }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
+        },
+      ],
+    },
+    {
+      type: nodeTypes.typeTr,
+      children: [
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '# of Feet', [nodeTypes.typeBold]: true }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '2' }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '4' }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '4' }],
+        },
+      ],
+    },
+    {
+      type: nodeTypes.typeTr,
+      children: [
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '# of Lives', [nodeTypes.typeBold]: true }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '1' }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '1' }],
+        },
+        {
+          type: nodeTypes.typeTd,
+          children: [{ text: '9' }],
+        },
+      ],
+    },
+  ],
+};
+
+export const initialValueTables: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH2,
+        children: [
+          {
+            text: '🏓 Table',
+          },
+        ],
+      },
       {
         type: nodeTypes.typeP,
         children: [
@@ -703,74 +840,7 @@ export const initialValueTables: Node[] = [
           },
         ],
       },
-      {
-        type: nodeTypes.typeTable,
-        children: [
-          {
-            type: nodeTypes.typeTr,
-            children: [
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '' }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
-              },
-            ],
-          },
-          {
-            type: nodeTypes.typeTr,
-            children: [
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '# of Feet', [nodeTypes.typeBold]: true }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '2' }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '4' }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '4' }],
-              },
-            ],
-          },
-          {
-            type: nodeTypes.typeTr,
-            children: [
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '# of Lives', [nodeTypes.typeBold]: true }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '1' }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '1' }],
-              },
-              {
-                type: nodeTypes.typeTd,
-                children: [{ text: '9' }],
-              },
-            ],
-          },
-        ],
-      },
+      table,
       {
         type: nodeTypes.typeP,
         children: [
@@ -780,45 +850,71 @@ export const initialValueTables: Node[] = [
           },
         ],
       },
-    ],
+    ] as SlateDocumentFragment,
   },
 ];
 
-export const initialValueSoftBreak: Node[] = [
+export const initialValueSoftBreak: SlateDocument = [
   {
     children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [{ text: '🍦 Soft Break' }],
+      },
       {
         type: nodeTypes.typeP,
         children: [
           {
-            text:
-              'Basic example of using the SoftBreakPlugin. go and edit any node and by typing ',
-          },
-          {
-            text: 'shift + Enter',
-            code: true,
-          },
-          {
-            text: ', you will be able to add an extra line to the same node.',
+            text: 'You can define a set of rules with:',
           },
         ],
+      },
+      ...createList([
+        'hotkey – e.g. press ⇧⏎ to insert a soft break 👇',
+        'query – filter the block types where the rule applies, e.g. pressing ⏎ will insert a soft break only inside block quotes and code blocks.',
+      ]),
+      {
+        type: nodeTypes.typeBlockquote,
+        children: [{ text: 'Try here 🎯' }],
       },
       {
-        type: nodeTypes.typeH2,
-        children: [
-          {
-            text: 'This is a normal Heading 2',
-          },
-        ],
+        type: nodeTypes.typeCodeBlock,
+        children: [{ text: 'And here 🎯' }],
+      },
+    ] as SlateDocumentFragment,
+  },
+];
+
+export const initialValueExitBreak: SlateDocument = [
+  {
+    children: [
+      {
+        type: nodeTypes.typeH1,
+        children: [{ text: '🚪 Exit Break' }],
       },
       {
-        type: nodeTypes.typeH2,
+        type: nodeTypes.typeP,
         children: [
           {
-            text: 'This is a Heading 2\nwith a soft break',
+            text: 'You can define a set of rules with:',
           },
         ],
       },
-    ],
+      ...createList([
+        'hotkey – e.g. press ⌘⏎ to exit after the selected block 👇',
+        'query – Filter the block types where the rule applies.',
+        'level – Path level where to exit.',
+        'before – Exit before the selected block if true. e.g. press ⇧⌘⏎ to exit before the selected block 👆',
+      ]),
+      {
+        type: nodeTypes.typeBlockquote,
+        children: [{ text: 'Try here 🎯' }],
+      },
+      {
+        type: nodeTypes.typeCodeBlock,
+        children: [{ text: 'And here 🎯' }],
+      },
+      table,
+    ] as SlateDocumentFragment,
   },
 ];

@@ -3,10 +3,11 @@ import { jsx } from '__test-utils__/jsx';
 import { mentionables } from '__tests__/elements/mention/useMention/onKeyDown/mentionables.fixture';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { pipe } from 'common/utils/pipe';
-import { useMention, withMention } from 'elements/mention';
+import { MENTION, useMention } from 'elements/mention';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../../../../../element';
 
 const input = ((
   <editor>
@@ -29,7 +30,11 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-const withPlugins = [withReact, withHistory, withMention()] as const;
+const withPlugins = [
+  withReact,
+  withHistory,
+  withInlineVoid({ inlineTypes: [MENTION], voidTypes: [MENTION] }),
+] as const;
 
 it('should go down', () => {
   const editor = pipe(input, ...withPlugins);

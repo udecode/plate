@@ -6,19 +6,19 @@ export interface WithToggleTypeOptions {
   /**
    * Default type
    */
-  typeP?: string;
+  defaultType?: string;
 }
 
 /**
  * Toggle the type of the selected node with a configurable default type.
- * @param typeP
+ * @param defaultType
  */
 export const withToggleType = ({
-  typeP = DEFAULT_ELEMENT,
+  defaultType: type = DEFAULT_ELEMENT,
 }: WithToggleTypeOptions = {}) => <T extends Editor>(e: T) => {
   const editor = e as T & ToggleTypeEditor;
 
-  editor.toggleType = (activeType: string, defaultType = typeP) => {
+  editor.toggleType = (activeType: string, defaultType = type) => {
     const isActive = isNodeInSelection(editor, activeType);
 
     Transforms.setNodes(editor, {

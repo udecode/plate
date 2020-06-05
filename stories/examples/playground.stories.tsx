@@ -34,6 +34,7 @@ import {
   CodePlugin,
   decorateSearchHighlight,
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
   HighlightPlugin,
@@ -54,12 +55,12 @@ import {
   ParagraphPlugin,
   pipe,
   SearchHighlightPlugin,
+  SlateDocument,
   SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
-  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -69,30 +70,32 @@ import {
   UnderlinePlugin,
   useMention,
   withAutoformat,
-  withBreakEmptyReset,
-  withDeleteStartReset,
   withDeserializeHTML,
   withImageUpload,
   withLink,
   withList,
-  withMention,
   withNormalizeTypes,
+  withResetBlockType,
   withTable,
   withToggleType,
   withTrailingNode,
   withTransforms,
-  withVoid,
 } from '../../packages/slate-plugins/src';
 import {
+  headingTypes,
+  initialValueAutoformat,
   initialValueBasicElements,
   initialValueBasicMarks,
   initialValueEmbeds,
+  initialValueExitBreak,
   initialValueForcedLayout,
   initialValueHighlight,
   initialValueImages,
   initialValueLinks,
   initialValueList,
   initialValueMentions,
+  initialValuePasteHtml,
+  initialValueSoftBreak,
   initialValueTables,
   nodeTypes,
 } from '../config/initialValues';
@@ -113,16 +116,11 @@ const initialValue: Node[] = [
   ...initialValueMentions,
   ...initialValueImages,
   ...initialValueEmbeds,
+  ...initialValueAutoformat,
+  ...initialValueSoftBreak,
+  ...initialValueExitBreak,
+  ...initialValuePasteHtml,
 ];
-
-const resetOptions = {
-  ...nodeTypes,
-  types: [
-    nodeTypes.typeActionItem,
-    nodeTypes.typeBlockquote,
-    nodeTypes.typeCodeBlock,
-  ],
-};
 
 export const Plugins = () => {
   const plugins: any[] = [];
@@ -158,22 +156,65 @@ export const Plugins = () => {
     plugins.push(SubscriptPlugin(nodeTypes));
   if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(nodeTypes));
-  if (boolean('SoftBreakPlugin', true)) plugins.push(SoftBreakPlugin());
+  if (boolean('SoftBreakPlugin', true))
+    plugins.push(
+      SoftBreakPlugin({
+        rules: [
+          { hotkey: 'shift+enter' },
+          {
+            hotkey: 'enter',
+            query: {
+              allow: [
+                nodeTypes.typeCodeBlock,
+                nodeTypes.typeBlockquote,
+                nodeTypes.typeTd,
+              ],
+            },
+          },
+        ],
+      })
+    );
+  if (boolean('ExitBreakPlugin', true))
+    plugins.push(
+      ExitBreakPlugin({
+        rules: [
+          {
+            hotkey: 'mod+enter',
+          },
+          {
+            hotkey: 'mod+shift+enter',
+            before: true,
+          },
+          {
+            hotkey: 'enter',
+            query: {
+              start: true,
+              end: true,
+              allow: headingTypes,
+            },
+          },
+        ],
+      })
+    );
 
   const withPlugins = [
     withReact,
     withHistory,
     withTable(nodeTypes),
-    withLink(nodeTypes),
-    withDeserializeHTML(plugins),
-    withImageUpload(nodeTypes),
-    withMention(nodeTypes),
-    withToggleType(nodeTypes),
-    withDeleteStartReset(resetOptions),
-    withBreakEmptyReset(resetOptions),
+    withLink(),
+    withDeserializeHTML({ plugins }),
+    withImageUpload(),
+    withToggleType({ defaultType: nodeTypes.typeP }),
+    withResetBlockType({
+      types: [
+        nodeTypes.typeActionItem,
+        nodeTypes.typeBlockquote,
+        nodeTypes.typeCodeBlock,
+      ],
+      defaultType: nodeTypes.typeP,
+    }),
     withList(nodeTypes),
     withAutoformat(nodeTypes),
-    withVoid([nodeTypes.typeMediaEmbed]),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -212,7 +253,7 @@ export const Plugins = () => {
         editor={editor}
         value={value}
         onChange={(newValue) => {
-          setValue(newValue);
+          setValue(newValue as SlateDocument);
 
           onChangeMention(editor);
         }}
@@ -258,7 +299,7 @@ export const Plugins = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCodeBlock {...nodeTypes} icon={<CodeBlock />} />
+          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
         <BalloonToolbar arrow>

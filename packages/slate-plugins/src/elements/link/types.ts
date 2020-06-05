@@ -40,5 +40,3 @@ export interface LinkRenderElementProps
 export interface LinkPluginOptions
   extends LinkRenderElementOptions,
     LinkDeserializeOptions {}
-
-export interface WithLinkOptions extends TypeOption {}

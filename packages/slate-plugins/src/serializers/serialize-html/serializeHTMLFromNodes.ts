@@ -32,7 +32,7 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
     });
 
   // Render element using picked plugins renderElement function and ReactDOM
-  if (elementPlugin && elementPlugin.renderElement) {
+  if (elementPlugin?.renderElement) {
     return renderToStaticMarkup(
       elementPlugin.renderElement(elementProps) as ReactElement
     );
@@ -43,8 +43,8 @@ const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
   const { children } = leafProps;
   const leafPlugin = plugins
     .filter((plugin) => plugin.renderLeaf)
-    .find(({ renderLeaf }) => renderLeaf && renderLeaf(leafProps) !== children);
-  if (leafPlugin && leafPlugin.renderLeaf) {
+    .find(({ renderLeaf }) => renderLeaf?.(leafProps) !== children);
+  if (leafPlugin?.renderLeaf) {
     return renderToStaticMarkup(leafPlugin.renderLeaf(leafProps));
   }
   return children;

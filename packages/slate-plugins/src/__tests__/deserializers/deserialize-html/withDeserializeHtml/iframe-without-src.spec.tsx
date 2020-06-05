@@ -5,6 +5,7 @@ import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { MediaEmbedPlugin } from 'elements/media-embed';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../../../element';
 
 const input = ((
   <editor>
@@ -30,7 +31,9 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHTML([MediaEmbedPlugin()])(withReact(input));
+  const editor = withInlineVoid({})(
+    withDeserializeHTML({ plugins: [MediaEmbedPlugin()] })(withReact(input))
+  );
 
   editor.insertData(data as any);
 

@@ -26,6 +26,6 @@ const output = (
 ) as any;
 
 it('should set props to all elements', () => {
-  setPropsToNodes(node, props, { filter: Element.isElement });
+  setPropsToNodes(node, props, { filter: ([n]) => Element.isElement(n) });
   expect(node).toEqual(output);
 });

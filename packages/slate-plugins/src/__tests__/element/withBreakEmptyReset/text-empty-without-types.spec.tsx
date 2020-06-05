@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withBreakEmptyReset } from 'element';
 import { Editor } from 'slate';
+import { withBreakEmptyReset } from '../../../handlers/reset-block-type';
 
 const input = (
   <editor>

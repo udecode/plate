@@ -30,7 +30,9 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHTML([HeadingPlugin()])(withReact(input));
+  const editor = withDeserializeHTML({ plugins: [HeadingPlugin()] })(
+    withReact(input)
+  );
 
   editor.insertData(data as any);
 

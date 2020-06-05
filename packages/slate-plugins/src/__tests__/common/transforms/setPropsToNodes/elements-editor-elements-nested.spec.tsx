@@ -31,7 +31,7 @@ const output = (
 
 it('should set props to all elements', () => {
   setPropsToNodes(node, props, {
-    filter: Element.isElement,
+    filter: ([n]) => Element.isElement(n),
   });
   expect(node.children).toEqual(output.children);
 });

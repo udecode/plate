@@ -1,20 +1,31 @@
 import { Editor, Point, Transforms } from 'slate';
-import { isCollapsed } from '../common/queries/isCollapsed';
-import { DEFAULT_ELEMENT } from './types';
+import { isCollapsed } from '../../common/queries/isCollapsed';
+import { DEFAULT_ELEMENT } from '../../element';
+import { WithResetBlockTypeOptions } from './types';
+
+export interface WithDeleteStartResetOptions {
+  /**
+   * Node types where the plugin applies.
+   */
+  types: string[];
+  /**
+   * Default type to set when resetting.
+   */
+  defaultType?: string;
+  /**
+   * Callback called when unwrapping.
+   */
+  onUnwrap?: any;
+}
 
 /**
- * On delete at the start of an empty block in types,
- * replace it with a new paragraph.
+ * When deleting backward at the start of an empty block, reset the block type to a default type.
  */
 export const withDeleteStartReset = ({
-  typeP = DEFAULT_ELEMENT,
+  defaultType = DEFAULT_ELEMENT,
   types,
   onUnwrap,
-}: {
-  typeP?: string;
-  types: string[];
-  onUnwrap?: any;
-}) => <T extends Editor>(editor: T) => {
+}: WithResetBlockTypeOptions) => <T extends Editor>(editor: T) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (...args) => {
@@ -30,7 +41,7 @@ export const withDeleteStartReset = ({
         const parentStart = Editor.start(editor, parentPath);
 
         if (selection && Point.equals(selection.anchor, parentStart)) {
-          Transforms.setNodes(editor, { type: typeP });
+          Transforms.setNodes(editor, { type: defaultType });
 
           onUnwrap?.();
 

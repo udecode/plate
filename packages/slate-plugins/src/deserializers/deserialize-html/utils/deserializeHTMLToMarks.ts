@@ -51,7 +51,7 @@ export const deserializeHTMLToMarks = ({
 
       if (Element.isElement(child)) {
         setPropsToNodes(child, props, {
-          filter: Text.isText,
+          filter: ([n]) => Text.isText(n),
         });
         arr.push(child);
       } else {

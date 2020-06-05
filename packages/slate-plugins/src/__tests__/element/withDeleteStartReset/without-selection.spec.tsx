@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withDeleteStartReset } from 'element';
 import { BLOCKQUOTE } from 'elements/blockquote';
 import { Editor } from 'slate';
+import { withDeleteStartReset } from '../../../handlers/reset-block-type';
 
 const input = (
   <editor>

@@ -3,6 +3,7 @@
 import { jsx } from '__test-utils__/jsx';
 import { withImageUpload } from 'elements';
 import { withReact } from 'slate-react';
+import { pipe } from '../../../../common/utils';
 
 const input = (
   <editor>
@@ -17,7 +18,7 @@ const output = (
 ) as any;
 
 it('should insert image from the file(s)', () => {
-  const editor = withImageUpload()(withReact(input));
+  const editor = pipe(input, withReact, withImageUpload());
 
   const data = {
     getData: () => 'test',
