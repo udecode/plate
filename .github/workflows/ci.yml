@@ -1,4 +1,4 @@
-name: Lint, Build, Test
+name: ci
 on:
   push:
     branches:
