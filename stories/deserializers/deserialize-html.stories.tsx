@@ -26,7 +26,7 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   UnderlinePlugin,
-  withDeserializeHTML,
+  withDeserializerHTML,
   withImageUpload,
   withLink,
   withList,
@@ -36,7 +36,7 @@ import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
 
 export default {
   title: 'Deserializers/HTML',
-  component: withDeserializeHTML,
+  component: withDeserializerHTML,
 };
 
 const plugins = [
@@ -67,7 +67,7 @@ const withPlugins = [
   withHistory,
   withTable(nodeTypes),
   withLink(),
-  withDeserializeHTML({ plugins }),
+  withDeserializerHTML({ plugins }),
   withImageUpload(),
   withList(nodeTypes),
 ] as const;

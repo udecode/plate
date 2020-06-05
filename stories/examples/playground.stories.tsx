@@ -70,7 +70,7 @@ import {
   UnderlinePlugin,
   useMention,
   withAutoformat,
-  withDeserializeHTML,
+  withDeserializerHTML,
   withImageUpload,
   withLink,
   withList,
@@ -202,7 +202,7 @@ export const Plugins = () => {
     withHistory,
     withTable(nodeTypes),
     withLink(),
-    withDeserializeHTML({ plugins }),
+    withDeserializerHTML({ plugins }),
     withImageUpload(),
     withToggleType({ defaultType: nodeTypes.typeP }),
     withResetBlockType({

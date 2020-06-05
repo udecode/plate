@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHTML } from 'deserializers/deserialize-html';
+import { withDeserializerHTML } from 'deserializers/deserialize-html';
 import { BoldPlugin } from 'marks/bold';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
+  const editor = withDeserializerHTML({ plugins: [BoldPlugin()] })(
     withReact(input)
   );
 

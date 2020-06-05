@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHTML } from 'deserializers/deserialize-html';
+import { withDeserializerHTML } from 'deserializers/deserialize-html';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 
@@ -30,7 +30,7 @@ const output = (
 it('should do nothing', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-  const editor = withDeserializeHTML()(withReact(input));
+  const editor = withDeserializerHTML()(withReact(input));
 
   editor.insertData(data as any);
 

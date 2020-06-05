@@ -10,7 +10,7 @@ export interface WithDeserializeHTMLOptions {
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHTML = ({
+export const withDeserializerHTML = ({
   plugins = [],
 }: WithDeserializeHTMLOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const { insertData } = editor;
