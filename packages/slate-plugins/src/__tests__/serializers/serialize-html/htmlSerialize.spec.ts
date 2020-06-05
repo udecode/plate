@@ -1,5 +1,5 @@
-import { htmlDeserialize } from 'deserializers/deserialize-html';
-import { htmlSerialize } from 'serializers/serialize-html';
+import { deserializeHTMLToDocumentFragment } from 'deserializers/deserialize-html';
+import { serializeHTMLFromNodes } from 'serializers/serialize-html';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -26,7 +26,7 @@ const htmlStringToDOMNode = (rawHtml: string) => {
 
 it('serialize bold to html', () => {
   expect(
-    htmlSerialize([BoldPlugin()])([
+    serializeHTMLFromNodes([BoldPlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'bold', bold: true },
       { text: ' part.' },
@@ -36,7 +36,7 @@ it('serialize bold to html', () => {
 
 it('serialize italic to html', () => {
   expect(
-    htmlSerialize([ItalicPlugin()])([
+    serializeHTMLFromNodes([ItalicPlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'italic', italic: true },
       { text: ' part.' },
@@ -47,7 +47,7 @@ it('serialize italic to html', () => {
 it('serialize highlight to html', () => {
   expect(
     htmlStringToDOMNode(
-      htmlSerialize([HighlightPlugin()])([
+      serializeHTMLFromNodes([HighlightPlugin()])([
         { text: 'Some paragraph of text with ' },
         { text: 'highlighted', highlight: true },
         { text: ' part.' },
@@ -59,7 +59,7 @@ it('serialize highlight to html', () => {
 it('serialize strikethrough to html', () => {
   expect(
     htmlStringToDOMNode(
-      htmlSerialize([StrikethroughPlugin()])([
+      serializeHTMLFromNodes([StrikethroughPlugin()])([
         { text: 'Some paragraph of text with ' },
         { text: 'strikethrough', strikethrough: true },
         { text: ' part.' },
@@ -71,7 +71,7 @@ it('serialize strikethrough to html', () => {
 it('serialize code to html', () => {
   expect(
     htmlStringToDOMNode(
-      htmlSerialize([CodePlugin()])([
+      serializeHTMLFromNodes([CodePlugin()])([
         { text: 'Some paragraph of text with ' },
         { text: 'code', code: true },
         { text: ' part.' },
@@ -82,7 +82,7 @@ it('serialize code to html', () => {
 
 it('serialize subscript to html', () => {
   expect(
-    htmlSerialize([SubscriptPlugin()])([
+    serializeHTMLFromNodes([SubscriptPlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'subscripted', subscript: true },
       { text: ' part.' },
@@ -92,7 +92,7 @@ it('serialize subscript to html', () => {
 
 it('serialize superscript to html', () => {
   expect(
-    htmlSerialize([SuperscriptPlugin()])([
+    serializeHTMLFromNodes([SuperscriptPlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'superscripted', superscript: true },
       { text: ' part.' },
@@ -102,7 +102,7 @@ it('serialize superscript to html', () => {
 
 it('serialize underline to html', () => {
   expect(
-    htmlSerialize([UnderlinePlugin()])([
+    serializeHTMLFromNodes([UnderlinePlugin()])([
       { text: 'Some paragraph of text with ' },
       { text: 'underlined', underline: true },
       { text: ' part.' },
@@ -112,7 +112,7 @@ it('serialize underline to html', () => {
 
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
-    htmlSerialize([ListPlugin()])([
+    serializeHTMLFromNodes([ListPlugin()])([
       {
         type: 'ul',
         children: [
@@ -129,7 +129,7 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   expect(
-    htmlSerialize([LinkPlugin()])([
+    serializeHTMLFromNodes([LinkPlugin()])([
       { text: 'Some paragraph of text with ' },
       {
         type: 'a',
@@ -146,7 +146,7 @@ it('serialize link to html', () => {
 it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
-      htmlSerialize([BlockquotePlugin()])([
+      serializeHTMLFromNodes([BlockquotePlugin()])([
         {
           type: 'blockquote',
           children: [{ text: 'Blockquoted text here...' }],
@@ -158,7 +158,7 @@ it('serialize blockquote to html', () => {
 
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
-    htmlSerialize([HeadingPlugin()])([
+    serializeHTMLFromNodes([HeadingPlugin()])([
       {
         type: 'h1',
         children: [{ text: 'Heading 1' }],
@@ -180,7 +180,7 @@ it('serialize headings to html', () => {
 
 it('serialize paragraph to html', () => {
   expect(
-    htmlSerialize([ParagraphPlugin()])([
+    serializeHTMLFromNodes([ParagraphPlugin()])([
       {
         type: 'p',
         children: [{ text: 'Some random paragraph here...' }],
@@ -192,7 +192,7 @@ it('serialize paragraph to html', () => {
 it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      htmlSerialize([ImagePlugin()])([
+      serializeHTMLFromNodes([ImagePlugin()])([
         {
           type: 'img',
           url:
@@ -206,7 +206,7 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
-    htmlSerialize([TablePlugin()])([
+    serializeHTMLFromNodes([TablePlugin()])([
       {
         type: 'table',
         children: [
@@ -231,7 +231,7 @@ it('serialize table to html', () => {
 
 it('serialize complex example list with paragraphs to html', () => {
   const render = htmlStringToDOMNode(
-    htmlSerialize([
+    serializeHTMLFromNodes([
       ItalicPlugin(),
       BoldPlugin(),
       ParagraphPlugin(),
@@ -304,7 +304,7 @@ it('serialize complex example list with paragraphs to html', () => {
 });
 
 it('serialize complex example with no type on top level node to html', () => {
-  const render = htmlSerialize([
+  const render = serializeHTMLFromNodes([
     ItalicPlugin(),
     BoldPlugin(),
     ParagraphPlugin(),
@@ -343,7 +343,7 @@ it('serialize complex example with no type on top level node to html', () => {
 });
 
 it('serialize complex example with multiple no types on top level node to html', () => {
-  const render = htmlSerialize([
+  const render = serializeHTMLFromNodes([
     ItalicPlugin(),
     BoldPlugin(),
     ParagraphPlugin(),
@@ -387,11 +387,13 @@ it('serialize complex example with multiple no types on top level node to html',
 it('serializes with edge case where input is non-rich text', () => {
   const input = htmlStringToDOMNode('Some non-rich text here.');
   const output = 'Some non-rich text here.';
-  expect(htmlSerialize([])(htmlDeserialize([])(input))).toEqual(output);
+  expect(
+    serializeHTMLFromNodes([])(deserializeHTMLToDocumentFragment([])(input))
+  ).toEqual(output);
 });
 
 it('serializes with edge case where input is text element', () => {
   const input = [{ text: 'Test just text.' }];
   const output = 'Test just text.';
-  expect(htmlSerialize([])(input)).toEqual(output);
+  expect(serializeHTMLFromNodes([])(input)).toEqual(output);
 });

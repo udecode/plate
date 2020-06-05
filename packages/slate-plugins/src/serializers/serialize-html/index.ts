@@ -1,1 +1,1 @@
-export * from './htmlSerialize';
+export * from './serializeHTMLFromNodes';

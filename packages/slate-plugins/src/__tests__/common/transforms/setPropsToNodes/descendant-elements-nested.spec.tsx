@@ -26,6 +26,6 @@ const output = (
 ) as any;
 
 it('should set props to all descendants', () => {
-  setPropsToNodes(node, props, { filter: isDescendant });
+  setPropsToNodes(node, props, { filter: ([n]) => isDescendant(n) });
   expect(node).toEqual(output);
 });

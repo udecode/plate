@@ -11,10 +11,9 @@ export const getTextFromBlockStartToAnchor = (editor: Editor) => {
 
   if (!selection) return { text: '' };
 
-  const blockEntry = getBlockAboveSelection(editor);
+  const [, path] = getBlockAboveSelection(editor);
 
-  const blockPath = blockEntry ? blockEntry[1] : [];
-  const start = Editor.start(editor, blockPath);
+  const start = Editor.start(editor, path);
   const range = { anchor: start, focus: selection.anchor };
 
   return {

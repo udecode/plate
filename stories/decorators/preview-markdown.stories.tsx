@@ -6,10 +6,12 @@ import { Slate, withReact } from 'slate-react';
 import {
   decoratePreview,
   EditablePlugins,
+  HeadingPlugin,
   ParagraphPlugin,
   pipe,
   PreviewPlugin,
   renderLeafPreview,
+  SlateDocument,
 } from '../../packages/slate-plugins/src';
 import { initialValuePreview, nodeTypes } from '../config/initialValues';
 
@@ -25,7 +27,7 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
 
   if (boolean('PreviewPlugin', true)) plugins.push(PreviewPlugin());
 
@@ -38,7 +40,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins
           plugins={plugins}

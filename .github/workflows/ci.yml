@@ -1,4 +1,4 @@
-name: actions
+name: ci
 on:
   push:
     branches:

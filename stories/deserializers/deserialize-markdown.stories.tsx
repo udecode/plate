@@ -15,6 +15,7 @@ import {
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   StrikethroughPlugin,
   TablePlugin,
   UnderlinePlugin,
@@ -49,9 +50,9 @@ const plugins = [
 const withPlugins = [
   withReact,
   withHistory,
-  withLink(nodeTypes),
+  withLink(),
   withDeserializeMd(plugins),
-  withImageUpload(nodeTypes),
+  withImageUpload(),
   withTable(nodeTypes),
 ] as const;
 
@@ -65,7 +66,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins
           plugins={plugins}

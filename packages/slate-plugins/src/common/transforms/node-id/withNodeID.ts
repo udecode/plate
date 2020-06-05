@@ -1,4 +1,4 @@
-import { Element, Node } from 'slate';
+import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries';
 import { QueryOptions } from '../../types';
@@ -34,8 +34,12 @@ export const withNodeID = ({
 
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
-      const newFilter = (n: Node) =>
-        filter(n) && filterText ? Element.isElement(n) : isDescendant(n);
+      const newFilter = (entry: NodeEntry<Node>) => {
+        const [node] = entry;
+        return filter(entry) && filterText
+          ? Element.isElement(node)
+          : isDescendant(node);
+      };
 
       const { node } = operation;
 

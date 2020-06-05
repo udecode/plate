@@ -5,13 +5,14 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
+  HeadingPlugin,
   MentionNodeData,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   useMention,
-  withMention,
 } from '../../packages/slate-plugins/src';
 import { initialValueMentions, nodeTypes } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
@@ -25,11 +26,12 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory, withMention(nodeTypes)] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins = [
     ParagraphPlugin(nodeTypes),
+    HeadingPlugin(nodeTypes),
     MentionPlugin({
       ...nodeTypes,
       onClick: (mentionable: MentionNodeData) =>
@@ -61,7 +63,7 @@ export const Example = () => {
         editor={editor}
         value={value}
         onChange={(newValue) => {
-          setValue(newValue);
+          setValue(newValue as SlateDocument);
 
           onChangeMention(editor);
         }}

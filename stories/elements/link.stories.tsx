@@ -6,11 +6,13 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
+  HeadingPlugin,
   HeadingToolbar,
   LinkPlugin,
   ParagraphPlugin,
   pipe,
   renderElementLink,
+  SlateDocument,
   ToolbarLink,
   withLink,
 } from '../../packages/slate-plugins/src';
@@ -25,10 +27,10 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory, withLink(nodeTypes)] as const;
+const withPlugins = [withReact, withHistory, withLink()] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
 
   const createReactEditor = () => () => {
@@ -40,7 +42,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
           <ToolbarLink {...nodeTypes} icon={<Link />} />

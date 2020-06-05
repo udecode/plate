@@ -86,6 +86,7 @@
     "slate-history": "0.58.1",
     "slate-hyperscript": "0.58.1",
     "slate-react": "0.58.2",
+    "snyk": "^1.333.0",
     "styled-components": "^5.1.0",
     "ts-jest": "^26.0.0",
     "ts-loader": "^7.0.5",
@@ -93,5 +94,6 @@
   },
   "dependencies": {
     "styled-icons": "^10.2.1"
-  }
+  },
+  "snyk": true
 }

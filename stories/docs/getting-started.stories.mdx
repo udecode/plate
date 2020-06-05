@@ -41,7 +41,7 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
   pipe,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
 
 const initialValue: Node[] = [
   {
@@ -64,7 +64,7 @@ export const Editor = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={newValue => setValue(newValue)}
+      onChange={newValue => setValue(newValue as SlateDocument)}
     >
       <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>

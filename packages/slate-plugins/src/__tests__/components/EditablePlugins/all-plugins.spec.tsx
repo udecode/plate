@@ -1,18 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import {
+  initialValueAutoformat,
   initialValueBasicElements,
   initialValueBasicMarks,
   initialValueEmbeds,
+  initialValueExitBreak,
+  initialValueForcedLayout,
   initialValueHighlight,
   initialValueImages,
   initialValueLinks,
   initialValueList,
   initialValueMentions,
+  initialValuePasteHtml,
+  initialValueSoftBreak,
   initialValueTables,
   nodeTypes,
 } from '__fixtures__/initialValues.fixtures';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
-import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatBold,
@@ -28,19 +32,12 @@ import {
   LooksTwo,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
-import { pipe, withTransforms } from 'common';
+import { pipe, SlateDocument, withTransforms } from 'common';
 import { withNodeID } from 'common/transforms/node-id';
-import { withDeserializeHtml } from 'deserializers/deserialize-html';
-import {
-  ToolbarElement,
-  withBreakEmptyReset,
-  withDeleteStartReset,
-  withToggleType,
-  withVoid,
-} from 'element';
+import { withDeserializeHTML } from 'deserializers/deserialize-html';
+import { ToolbarElement, withToggleType } from 'element';
 import {
   BasicElementPlugins,
-  ToolbarCodeBlock,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -48,7 +45,6 @@ import {
   withImageUpload,
   withLink,
   withList,
-  withMention,
   withTable,
 } from 'elements';
 import { ActionItemPlugin } from 'elements/action-item';
@@ -96,6 +92,8 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { SearchHighlightPlugin } from 'widgets/search-highlight';
 import { BalloonToolbar, EditablePlugins, HeadingToolbar } from 'components';
+import { ExitBreakPlugin } from '../../../handlers/exit-break';
+import { withResetBlockType } from '../../../handlers/reset-block-type';
 
 const markOptions = { ...nodeTypes, hotkey: '' };
 
@@ -131,9 +129,11 @@ const plugins = [
   SuperscriptPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
+  ExitBreakPlugin(),
 ];
 
 const initialValue = [
+  ...initialValueForcedLayout,
   ...initialValueBasicMarks,
   ...initialValueHighlight,
   ...initialValueBasicElements,
@@ -143,12 +143,11 @@ const initialValue = [
   ...initialValueMentions,
   ...initialValueImages,
   ...initialValueEmbeds,
+  ...initialValueAutoformat,
+  ...initialValueSoftBreak,
+  ...initialValueExitBreak,
+  ...initialValuePasteHtml,
 ];
-
-const resetOptions = {
-  ...nodeTypes,
-  types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
-};
 
 const Editor = () => {
   const decorate: any = [];
@@ -160,16 +159,16 @@ const Editor = () => {
     withReact,
     withHistory,
     withTable(nodeTypes),
-    withLink(nodeTypes),
-    withDeserializeHtml(plugins),
-    withImageUpload(nodeTypes),
-    withMention(nodeTypes),
-    withToggleType(nodeTypes),
-    withDeleteStartReset(resetOptions),
-    withBreakEmptyReset(resetOptions),
+    withLink(),
+    withDeserializeHTML({ plugins }),
+    withImageUpload(),
+    withToggleType({ defaultType: nodeTypes.typeP }),
+    withResetBlockType({
+      types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
+      defaultType: nodeTypes.typeP,
+    }),
     withList(nodeTypes),
     withAutoformat(nodeTypes),
-    withVoid([nodeTypes.typeMediaEmbed]),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -186,7 +185,7 @@ const Editor = () => {
       editor={editor}
       value={value}
       onChange={(newValue) => {
-        setValue(newValue);
+        setValue(newValue as SlateDocument);
       }}
     >
       <HeadingToolbar>
@@ -214,7 +213,6 @@ const Editor = () => {
           type={nodeTypes.typeBlockquote}
           icon={<FormatQuote />}
         />
-        <ToolbarCodeBlock icon={<CodeBlock />} />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
         <ToolbarTable transform={jest.fn()} icon={null} />
       </HeadingToolbar>

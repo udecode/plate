@@ -1,7 +1,7 @@
 import { SlatePlugin } from '../../common';
 import { deserializeIframe } from './deserializeIframe';
 import { renderElementMediaEmbed } from './renderElementMediaEmbed';
-import { MediaEmbedPluginOptions } from './types';
+import { MEDIA_EMBED, MediaEmbedPluginOptions } from './types';
 
 /**
  * Enables support for embeddable media such as YouTube
@@ -12,4 +12,6 @@ export const MediaEmbedPlugin = (
 ): SlatePlugin => ({
   renderElement: renderElementMediaEmbed(options),
   deserialize: deserializeIframe(options),
+  inlineTypes: options?.inlineTypes || [],
+  voidTypes: [options?.typeMediaEmbed || MEDIA_EMBED],
 });

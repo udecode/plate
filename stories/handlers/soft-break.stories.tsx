@@ -1,56 +1,104 @@
 import React, { useMemo, useState } from 'react';
-import { Code, FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
+import { boolean } from '@storybook/addon-knobs';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
-  BLOCKQUOTE,
   BlockquotePlugin,
   CodeBlockPlugin,
   CodePlugin,
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
+  ListPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
+  SlatePlugin,
   SoftBreakPlugin,
-  ToolbarCodeBlock,
   ToolbarElement,
-  withBreakEmptyReset,
-  withDeleteStartReset,
   withList,
+  withResetBlockType,
   withToggleType,
+  withTrailingNode,
+  withTransforms,
 } from '../../packages/slate-plugins/src';
-import { initialValueSoftBreak, nodeTypes } from '../config/initialValues';
+import {
+  headingTypes,
+  initialValueSoftBreak,
+  nodeTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Handlers/Soft Break',
   component: SoftBreakPlugin,
 };
 
-const resetOptions = {
-  ...nodeTypes,
-  types: [BLOCKQUOTE],
-};
-
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType(nodeTypes),
-  withDeleteStartReset(resetOptions),
-  withBreakEmptyReset(resetOptions),
+  withToggleType({ defaultType: nodeTypes.typeP }),
+  withResetBlockType({
+    types: [
+      nodeTypes.typeActionItem,
+      nodeTypes.typeBlockquote,
+      nodeTypes.typeCodeBlock,
+    ],
+    defaultType: nodeTypes.typeP,
+  }),
   withList(nodeTypes),
+  withTransforms(),
+  withTrailingNode({ type: nodeTypes.typeP }),
 ] as const;
 
 export const BlockPlugins = () => {
-  const plugins: any[] = [
+  const plugins: SlatePlugin[] = [
     ParagraphPlugin(nodeTypes),
     HeadingPlugin(nodeTypes),
-    BlockquotePlugin(nodeTypes),
     CodeBlockPlugin(nodeTypes),
+    BlockquotePlugin(nodeTypes),
     CodePlugin(nodeTypes),
-    SoftBreakPlugin(),
+    ListPlugin(nodeTypes),
   ];
+  if (boolean('SoftBreakPlugin', true))
+    plugins.push(
+      SoftBreakPlugin({
+        rules: [
+          { hotkey: 'shift+enter' },
+          {
+            hotkey: 'enter',
+            query: {
+              allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+            },
+          },
+        ],
+      })
+    );
+  if (boolean('ExitBreakPlugin', true))
+    plugins.push(
+      ExitBreakPlugin({
+        rules: [
+          {
+            hotkey: 'mod+enter',
+          },
+          {
+            hotkey: 'mod+shift+enter',
+            before: true,
+          },
+          {
+            hotkey: 'enter',
+            query: {
+              start: true,
+              end: true,
+              allow: headingTypes,
+            },
+          },
+        ],
+      })
+    );
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueSoftBreak);
@@ -61,7 +109,7 @@ export const BlockPlugins = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
           <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
@@ -70,7 +118,7 @@ export const BlockPlugins = () => {
             type={nodeTypes.typeBlockquote}
             icon={<FormatQuote />}
           />
-          <ToolbarCodeBlock {...nodeTypes} icon={<Code />} />
+          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

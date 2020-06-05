@@ -5,12 +5,12 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
-  MEDIA_EMBED,
+  HeadingPlugin,
   MediaEmbedPlugin,
   ParagraphPlugin,
   pipe,
   renderElementMediaEmbed,
-  withVoid,
+  SlateDocument,
 } from '../../packages/slate-plugins/src';
 import { initialValueEmbeds, nodeTypes } from '../config/initialValues';
 
@@ -22,10 +22,10 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory, withVoid([MEDIA_EMBED])] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
   if (boolean('MediaEmbedPlugin', true))
     plugins.push(MediaEmbedPlugin(nodeTypes));
 
@@ -38,7 +38,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

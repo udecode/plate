@@ -1,3 +1,3 @@
 export * from './utils';
-export * from './htmlDeserialize';
-export * from './withDeserializeHtml';
+export * from './types';
+export * from './withDeserializeHTML';

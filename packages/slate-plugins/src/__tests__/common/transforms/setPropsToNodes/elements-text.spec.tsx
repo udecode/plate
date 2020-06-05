@@ -11,6 +11,6 @@ const props = { a: 1 };
 const output = (<htext>test</htext>) as any;
 
 it('should do nothing', () => {
-  setPropsToNodes(node, props, { filter: Element.isElement });
+  setPropsToNodes(node, props, { filter: ([n]) => Element.isElement(n) });
   expect(node).toEqual(output);
 });

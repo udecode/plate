@@ -39,4 +39,6 @@ export interface ImageRenderElementProps
 // Plugin options
 export interface ImagePluginOptions
   extends ImageRenderElementOptions,
-    ImageDeserializeOptions {}
+    ImageDeserializeOptions {
+  inlineTypes?: string[];
+}

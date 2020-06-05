@@ -7,6 +7,7 @@ import {
   HeadingPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   withNormalizeTypes,
   withTrailingNode,
   withTransforms,
@@ -41,7 +42,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <EditablePlugins
           plugins={plugins}

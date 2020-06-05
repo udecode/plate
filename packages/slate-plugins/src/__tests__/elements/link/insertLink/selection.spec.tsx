@@ -2,6 +2,7 @@
 
 import { jsx } from '__test-utils__/jsx';
 import { insertLink, LINK, withLink } from 'elements';
+import { withInlineVoid } from '../../../../element';
 
 const input = (
   <editor>
@@ -28,7 +29,7 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(input);
+  const editor = withLink()(withInlineVoid({ inlineTypes: [LINK] })(input));
   insertLink(editor, url);
 
   expect(input.children).toEqual(output.children);

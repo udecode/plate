@@ -1,0 +1,53 @@
+name: Create Release Patch
+on:
+  issue_comment:
+    types: [created]
+
+# require public member
+# private member is treated as CONTRIBUTOR
+jobs:
+  createPullRequest:
+    if: |
+      github.event_name == 'issue_comment' &&
+      (github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'OWNER') &&
+      contains(github.event.comment.body, '/create release patch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node_version: 12
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Install
+        run: yarn install
+      - name: Git Identity
+        run: |
+          git config --global user.name 'zbeyens'
+          git config --global user.email 'zbeyens@users.noreply.github.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Versionup commit
+        run: |
+          yarn versionup --yes patch
+      - name: Set current CHANGELOG to output
+        id: changelog
+        shell: bash -ex {0}
+        run: |
+          version=$(node -p 'require("./lerna.json").version')
+          echo "::set-output name=version::${version}"
+      - name: Create Pull Request
+        id: cpr
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: "next"
+          destination_branch: "master"
+          pr_title: 'v${{ steps.changelog.outputs.version }}'
+          pr_body: |
+            ## v${{ steps.changelog.outputs.version }}
+            ### Breaking Changes
+            ### Features
+            ### Bug Fixes
+          pr_label: "release"

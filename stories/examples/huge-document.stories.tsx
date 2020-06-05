@@ -7,6 +7,7 @@ import {
   HeadingPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
 } from '../../packages/slate-plugins/src';
 import { initialValueHugeDocument, nodeTypes } from '../config/initialValues';
 
@@ -27,7 +28,7 @@ export const Example = () => {
     <Slate
       editor={editor}
       value={value}
-      onChange={(newValue) => setValue(newValue)}
+      onChange={(newValue) => setValue(newValue as SlateDocument)}
     >
       <EditablePlugins plugins={plugins} spellCheck autoFocus />
     </Slate>

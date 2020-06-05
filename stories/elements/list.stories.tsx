@@ -7,14 +7,15 @@ import { Slate, withReact } from 'slate-react';
 import {
   ActionItemPlugin,
   EditablePlugins,
+  HeadingPlugin,
   HeadingToolbar,
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  SlateDocument,
   ToolbarList,
-  withBreakEmptyReset,
-  withDeleteStartReset,
   withList,
+  withResetBlockType,
   withToggleType,
 } from '../../packages/slate-plugins/src';
 import { initialValueList, nodeTypes } from '../config/initialValues';
@@ -27,24 +28,19 @@ export default {
   },
 };
 
-const resetOptions = {
-  ...nodeTypes,
-  types: [nodeTypes.typeActionItem],
-};
-
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType(nodeTypes),
-  withDeleteStartReset(resetOptions),
-  withBreakEmptyReset(resetOptions),
+  withToggleType({ defaultType: nodeTypes.typeP }),
+  withResetBlockType({
+    types: [nodeTypes.typeActionItem],
+    defaultType: nodeTypes.typeP,
+  }),
   withList(nodeTypes),
 ] as const;
 
 export const Example = () => {
-  const plugins: any[] = [];
-  if (boolean('ParagraphPlugin', true))
-    plugins.push(ParagraphPlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
   if (boolean('ActionItemPlugin', true))
     plugins.push(ActionItemPlugin(nodeTypes));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
@@ -58,7 +54,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
           <ToolbarList

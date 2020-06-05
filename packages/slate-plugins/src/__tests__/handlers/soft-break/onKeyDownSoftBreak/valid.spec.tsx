@@ -26,6 +26,6 @@ const output = (
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
-  onKeyDownSoftBreak()(event, input);
+  onKeyDownSoftBreak({ rules: [{ hotkey: 'shift+enter' }] })(event, input);
   expect(input.children).toEqual(output.children);
 });
