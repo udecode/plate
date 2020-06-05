@@ -1,3 +1,16 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 0.59.0 (2020-06-05)
+
+**Note:** Version bump only for package slate-plugins
+
+
+
+
+
 # Changelog
 
 This is a list of changes to Slate with each new release. Until 1.0.0 is
@@ -502,4 +515,3 @@ export const nodeTypes = {
   - removed the element styling from `globalStyle` as it is not
     exported.
   - a lot of spacing changes.
-
