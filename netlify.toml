@@ -13,9 +13,6 @@
   # Default build command.
   command = "yarn build-storybook"
 
-  ignore = "git diff --quiet HEAD^ HEAD packages/slate-plugins/src .storybook stories"
-
-
   # Directory with the serverless Lambda functions to deploy to AWS.
 #  functions = "project/functions/"
 
