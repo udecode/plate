@@ -9,9 +9,11 @@ export const renderElementTable = ({
   typeTable = TableType.TABLE,
   typeTr = TableType.ROW,
   typeTd = TableType.CELL,
+  typeTh = TableType.HEAD,
 }: TableRenderElementOptions = {}) =>
   getRenderElements([
     { component: Table, type: typeTable },
     { component: Row, type: typeTr },
     { component: Cell, type: typeTd },
+    { component: Cell, type: typeTh },
   ]);
