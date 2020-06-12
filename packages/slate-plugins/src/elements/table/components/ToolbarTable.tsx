@@ -10,6 +10,7 @@ export const ToolbarTable = ({
   typeTable = TableType.TABLE,
   typeTr = TableType.ROW,
   typeTd = TableType.CELL,
+  typeTh = TableType.HEAD,
   transform,
   ...props
 }: ToolbarTableProps) => {
@@ -22,6 +23,7 @@ export const ToolbarTable = ({
         typeTable,
         typeTr,
         typeTd,
+        typeTh,
       })}
       {...props}
     />
