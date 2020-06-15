@@ -48,6 +48,7 @@ export const nodeTypes = {
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
   typeTd: TableType.CELL,
+  typeTh: TableType.HEAD,
   typeUl: ListType.UL,
   typeOl: ListType.OL,
   typeLi: ListType.LI,
@@ -767,19 +768,19 @@ const createTable = () => ({
       type: nodeTypes.typeTr,
       children: [
         {
-          type: nodeTypes.typeTd,
+          type: nodeTypes.typeTh,
           children: [{ text: '' }],
         },
         {
-          type: nodeTypes.typeTd,
+          type: nodeTypes.typeTh,
           children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
         },
         {
-          type: nodeTypes.typeTd,
+          type: nodeTypes.typeTh,
           children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
         },
         {
-          type: nodeTypes.typeTd,
+          type: nodeTypes.typeTh,
           children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
         },
       ],

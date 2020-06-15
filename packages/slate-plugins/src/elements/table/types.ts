@@ -5,12 +5,14 @@ export enum TableType {
   TABLE = 'table',
   ROW = 'tr',
   CELL = 'td',
+  HEAD = 'th',
 }
 
 export const defaultTableTypes: Required<TableTypeOption> = {
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
   typeTd: TableType.CELL,
+  typeTh: TableType.HEAD,
 };
 
 // Data of Element node
@@ -24,6 +26,7 @@ export interface TableTypeOption {
   typeTable?: string;
   typeTr?: string;
   typeTd?: string;
+  typeTh?: string;
 }
 
 // deserialize options

@@ -41,13 +41,21 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
 
 const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
   const { children } = leafProps;
-  const leafPlugin = plugins
+  return plugins
     .filter((plugin) => plugin.renderLeaf)
-    .find(({ renderLeaf }) => renderLeaf?.(leafProps) !== children);
-  if (leafPlugin?.renderLeaf) {
-    return renderToStaticMarkup(leafPlugin.renderLeaf(leafProps));
-  }
-  return children;
+    .filter(({ renderLeaf }) => renderLeaf?.(leafProps) !== children)
+    .reduce((result, plugin) => {
+      const newLeafProps = {
+        ...leafProps,
+        children: encodeURIComponent(result),
+      };
+      if (plugin?.renderLeaf) {
+        return decodeURIComponent(
+          renderToStaticMarkup(plugin.renderLeaf(newLeafProps))
+        );
+      }
+      return result;
+    }, children);
 };
 
 /**

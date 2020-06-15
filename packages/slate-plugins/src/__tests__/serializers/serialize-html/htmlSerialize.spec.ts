@@ -397,3 +397,37 @@ it('serializes with edge case where input is text element', () => {
   const output = 'Test just text.';
   expect(serializeHTMLFromNodes([])(input)).toEqual(output);
 });
+
+it('serialize bold and italic together to html', () => {
+  expect(
+    serializeHTMLFromNodes([BoldPlugin(), ItalicPlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'bold', bold: true, italic: true },
+      { text: ' part.' },
+    ])
+  ).toEqual('Some paragraph of text with <em><strong>bold</strong></em> part.');
+});
+
+it('serialize bold and superscript together to html', () => {
+  expect(
+    serializeHTMLFromNodes([BoldPlugin(), SuperscriptPlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'bold', bold: true, superscript: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <sup><strong>bold</strong></sup> part.'
+  );
+});
+
+it('serialize bold italic and underline together to html', () => {
+  expect(
+    serializeHTMLFromNodes([BoldPlugin(), ItalicPlugin(), UnderlinePlugin()])([
+      { text: 'Some paragraph of text with ' },
+      { text: 'bold', bold: true, italic: true, underline: true },
+      { text: ' part.' },
+    ])
+  ).toEqual(
+    'Some paragraph of text with <u><em><strong>bold</strong></em></u> part.'
+  );
+});
