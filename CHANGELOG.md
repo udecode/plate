@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+Until 1.0.0 is released, breaking changes will be added as minor or
+patch version bumps.
+
 ## 0.59.2 (2020-06-12)
 
 **Note:** Version bump only for package slate-plugins
@@ -23,17 +26,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package slate-plugins
 
-
-
-
-
-# Changelog
-
-This is a list of changes to Slate with each new release. Until 1.0.0 is
-released, breaking changes will be added as minor or patch version
-bumps.
-
----
 
 ## v0.59.0 — June 3, 2020
 
