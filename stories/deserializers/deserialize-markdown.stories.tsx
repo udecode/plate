@@ -21,6 +21,7 @@ import {
   UnderlinePlugin,
   withDeserializeMd,
   withImageUpload,
+  withInlineVoid,
   withLink,
   withTable,
 } from '../../packages/slate-plugins/src';
@@ -54,6 +55,7 @@ const withPlugins = [
   withDeserializeMd(plugins),
   withImageUpload(),
   withTable(nodeTypes),
+  withInlineVoid({ plugins }),
 ] as const;
 
 export const Example = () => {

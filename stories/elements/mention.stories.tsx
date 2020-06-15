@@ -13,6 +13,7 @@ import {
   pipe,
   SlateDocument,
   useMention,
+  withInlineVoid,
 } from '../../packages/slate-plugins/src';
 import { initialValueMentions, nodeTypes } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
@@ -26,8 +27,6 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory] as const;
-
 export const Example = () => {
   const plugins = [
     ParagraphPlugin(nodeTypes),
@@ -39,6 +38,12 @@ export const Example = () => {
       prefix: text('prefix', '@'),
     }),
   ];
+
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withInlineVoid({ plugins }),
+  ] as const;
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);

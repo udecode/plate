@@ -8,6 +8,7 @@ import {
   ParagraphPlugin,
   pipe,
   SlateDocument,
+  withInlineVoid,
 } from '../../../packages/slate-plugins/src';
 import { nodeTypes } from '../../config/initialValues';
 import { EditableVoidPlugin } from './EditableVoidPlugin';
@@ -47,7 +48,11 @@ const initialValueVoids: Node[] = [
 
 const plugins = [ParagraphPlugin(nodeTypes), EditableVoidPlugin()];
 
-const withPlugins = [withReact, withHistory] as const;
+const withPlugins = [
+  withReact,
+  withHistory,
+  withInlineVoid({ plugins }),
+] as const;
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueVoids);

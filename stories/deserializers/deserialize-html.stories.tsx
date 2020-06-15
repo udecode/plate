@@ -28,6 +28,7 @@ import {
   UnderlinePlugin,
   withDeserializeHTML,
   withImageUpload,
+  withInlineVoid,
   withLink,
   withList,
   withTable,
@@ -70,6 +71,7 @@ const withPlugins = [
   withDeserializeHTML({ plugins }),
   withImageUpload(),
   withList(nodeTypes),
+  withInlineVoid({ plugins }),
 ] as const;
 
 export const Example = () => {
