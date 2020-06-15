@@ -11,6 +11,7 @@ import {
   pipe,
   renderElementMediaEmbed,
   SlateDocument,
+  withInlineVoid,
 } from '../../packages/slate-plugins/src';
 import { initialValueEmbeds, nodeTypes } from '../config/initialValues';
 
@@ -22,12 +23,16 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory] as const;
-
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
   if (boolean('MediaEmbedPlugin', true))
     plugins.push(MediaEmbedPlugin(nodeTypes));
+
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withInlineVoid({ plugins }),
+  ] as const;
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueEmbeds);

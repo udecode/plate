@@ -72,6 +72,7 @@ import {
   withAutoformat,
   withDeserializeHTML,
   withImageUpload,
+  withInlineVoid,
   withLink,
   withList,
   withNormalizeTypes,
@@ -220,6 +221,7 @@ export const Plugins = () => {
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
     }),
     withTrailingNode({ type: nodeTypes.typeP, level: 1 }),
+    withInlineVoid({ plugins }),
   ] as const;
 
   const createReactEditor = () => () => {

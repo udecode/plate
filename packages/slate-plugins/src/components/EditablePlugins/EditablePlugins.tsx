@@ -9,7 +9,6 @@ import {
   RenderLeaf,
   SlatePlugin,
 } from '../../common';
-import { withInlineVoid } from '../../element';
 import {
   decoratePlugins,
   onDOMBeforeInputPlugins,
@@ -93,11 +92,7 @@ export const EditablePlugins = ({
   onKeyDownDeps = [],
   ...props
 }: EditablePluginsProps) => {
-  let editor = useSlate();
-
-  plugins.forEach(({ inlineTypes = [], voidTypes = [] }) => {
-    editor = withInlineVoid({ inlineTypes, voidTypes })(editor);
-  });
+  const editor = useSlate();
 
   return (
     <Editable
