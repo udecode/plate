@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.59.2",
+  "version": "0.60.0",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -42,9 +42,9 @@
   "peerDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "slate": "^0.58.1",
-    "slate-hyperscript": "^0.58.1",
-    "slate-react": "^0.58.2",
+    "slate": "^0.58.3",
+    "slate-hyperscript": "^0.58.3",
+    "slate-react": "^0.58.3",
     "styled-components": "^5.1.0"
   },
   "publishConfig": {

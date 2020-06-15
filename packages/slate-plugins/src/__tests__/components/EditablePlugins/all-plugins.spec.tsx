@@ -35,7 +35,7 @@ import { render } from '@testing-library/react';
 import { pipe, SlateDocument, withTransforms } from 'common';
 import { withNodeID } from 'common/transforms/node-id';
 import { withDeserializeHTML } from 'deserializers/deserialize-html';
-import { ToolbarElement, withToggleType } from 'element';
+import { ToolbarElement, withInlineVoid, withToggleType } from 'element';
 import {
   BasicElementPlugins,
   ToolbarImage,
@@ -149,32 +149,33 @@ const initialValue = [
   ...initialValuePasteHtml,
 ];
 
+const withPlugins = [
+  withReact,
+  withHistory,
+  withTable(nodeTypes),
+  withLink(),
+  withDeserializeHTML({ plugins }),
+  withImageUpload(),
+  withToggleType({ defaultType: nodeTypes.typeP }),
+  withResetBlockType({
+    types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
+    defaultType: nodeTypes.typeP,
+  }),
+  withList(nodeTypes),
+  withAutoformat(nodeTypes),
+  withTransforms(),
+  withNormalizeTypes({
+    rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+  }),
+  withNodeID(),
+  withInlineVoid({ plugins }),
+] as const;
+
 const Editor = () => {
   const decorate: any = [];
   const onKeyDown: any = [];
 
   const [value, setValue] = useState(initialValue);
-
-  const withPlugins = [
-    withReact,
-    withHistory,
-    withTable(nodeTypes),
-    withLink(),
-    withDeserializeHTML({ plugins }),
-    withImageUpload(),
-    withToggleType({ defaultType: nodeTypes.typeP }),
-    withResetBlockType({
-      types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
-      defaultType: nodeTypes.typeP,
-    }),
-    withList(nodeTypes),
-    withAutoformat(nodeTypes),
-    withTransforms(),
-    withNormalizeTypes({
-      rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
-    }),
-    withNodeID(),
-  ] as const;
 
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
     withPlugins,
