@@ -1,4 +1,5 @@
 import {
+  AlignPlugin,
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
@@ -437,4 +438,12 @@ it('serialize bold italic and underline together to html', () => {
   ).toEqual(
     'Some paragraph of text with <u><em><strong>bold</strong></em></u> part.'
   );
+});
+
+it('serialize alignments to html', () => {
+  expect(
+    serializeHTMLFromNodes([AlignPlugin()])([
+      { type: 'center', children: [{ text: 'I am centered text!' }] },
+    ])
+  ).toEqual(`<div style="text-align:center">I am centered text!</div>`);
 });
