@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
 import { unwrapNodesByType } from '../../../common/transforms';
-import { CENTER, LEFT, RIGHT } from '..';
+import { CENTER, LEFT, RIGHT } from '../types';
 
 export const wrapAlign = (editor: Editor, { typeAlign }: any) => {
   unwrapNodesByType(editor, LEFT);

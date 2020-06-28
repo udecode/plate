@@ -1,5 +1,5 @@
 import { getRenderElements } from '../../element/utils';
-import { AlignElement } from './components/AlignElement';
+import { AlignElement } from './components';
 import { CENTER, LEFT, RIGHT } from './types';
 
 export const renderElementAlign = () =>
