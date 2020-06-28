@@ -4,4 +4,3 @@ export * from './AlignPlugin';
 export * from './deserializeAlign';
 export * from './renderElementAlign';
 export * from './types';
-export * from './withAlign';

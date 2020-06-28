@@ -30,7 +30,6 @@ import {
   ToolbarAlign,
   withResetBlockType,
   withToggleType,
-  withAlign,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -55,7 +54,6 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withAlign(),
   withToggleType({ defaultType: nodeTypes.typeP }),
   withResetBlockType({
     types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
