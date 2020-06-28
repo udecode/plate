@@ -2,11 +2,11 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import { RenderElementOptions } from '../../element';
 
-const LEFT = 'left';
-const CENTER = 'center';
-const RIGHT = 'right';
+const ALIGN_LEFT = 'left';
+const ALIGN_CENTER = 'center';
+const ALIGN_RIGHT = 'right';
 
-export { LEFT, CENTER, RIGHT };
+export { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
 
 // Element node
 export interface AlignNode extends Element {}

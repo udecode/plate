@@ -18,9 +18,9 @@ import {
   MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
-  LEFT,
-  RIGHT,
-  CENTER,
+  ALIGN_LEFT,
+  ALIGN_RIGHT,
+  ALIGN_CENTER,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
@@ -71,9 +71,9 @@ export const nodeTypes = {
   typeSuperscript: MARK_SUPERSCRIPT,
   typeHighlight: MARK_HIGHLIGHT,
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
-  typeAlignLeft: LEFT,
-  typeAlignRight: RIGHT,
-  typeAlignCenter: CENTER,
+  typeAlignLeft: ALIGN_LEFT,
+  typeAlignRight: ALIGN_RIGHT,
+  typeAlignCenter: ALIGN_CENTER,
 };
 
 export const createList = (items: string[]): SlateDocumentFragment => {

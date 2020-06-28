@@ -1,5 +1,5 @@
 import { DeserializeHtml } from '../../common';
-import { AlignDeserializeOptions, CENTER, LEFT, RIGHT } from './types';
+import { AlignDeserializeOptions, ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT } from './types';
 
 const getNodeDeserializer = (
   type: string,
@@ -23,9 +23,9 @@ const getElementDeserializer = (
 ) => getNodeDeserializer(type, { createNode: createElement, tagNames });
 
 export const deserializeAlign = ({
-  typeAlignLeft = LEFT,
-  typeAlignCenter = CENTER,
-  typeAlignRight = RIGHT,
+  typeAlignLeft = ALIGN_LEFT,
+  typeAlignCenter = ALIGN_CENTER,
+  typeAlignRight = ALIGN_RIGHT,
 }: AlignDeserializeOptions = {}): DeserializeHtml => ({
   element: {
     ...getElementDeserializer(typeAlignLeft, { tagNames: ['DIV'] }),
