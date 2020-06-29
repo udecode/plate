@@ -1,5 +1,6 @@
-import { Decorate, decoratePlugins } from '@udecode/core';
 import { NodeEntry, Point } from 'slate';
+import { Decorate } from '../../types';
+import { decoratePlugins } from '../../utils/decoratePlugins';
 
 const nodeEntry: NodeEntry = [{ text: 'test' }, [0, 0]];
 const point: Point = { path: [0, 0], offset: 0 };
