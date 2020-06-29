@@ -1,4 +1,4 @@
-import { getRenderElement } from '@udecode/core';
+import { getRenderElement } from '../../common/utils/getRenderElement';
 import { ActionItemElement } from './components';
 import { ACTION_ITEM, ActionItemRenderElementOptions } from './types';
 

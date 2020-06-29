@@ -1,18 +1,19 @@
 {
   "private": true,
   "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/src/slate-plugins/index.d.ts",
   "workspaces": [
     "packages/core",
     "packages/slate-plugins"
   ],
   "scripts": {
     "build": "lerna run build --since",
+    "build:w": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
+    "build:core": "lerna exec --scope @udecode/core -- yarn build",
+    "build:plugins": "lerna exec --ignore @udecode/core --parallel -- yarn build",
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
+    "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"packages/*/src/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",
     "pre-release": "yarn release --conventional-prerelease",
@@ -24,6 +25,9 @@
     "test:cov": "yarn test --coverage",
     "test:covw": "yarn test:cov --watch",
     "test:covwa": "yarn test:cov --watchAll",
+    "test:w": "yarn test --watch",
+    "test:wa": "yarn test --watchAll",
+    "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --conventional-commits --no-git-tag-version"
   },
   "devDependencies": {
@@ -61,6 +65,7 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-inline-json-import": "^0.3.2",
     "babel-plugin-styled-components": "^1.10.7",
+    "concurrently": "^5.2.0",
     "eslint": "^6.8.0",
     "eslint-import-resolver-typescript": "^2.0.0",
     "eslint-plugin-mdx": "^1.6.9",
@@ -92,7 +97,8 @@
     "styled-components": "^5.1.0",
     "ts-jest": "^26.0.0",
     "ts-loader": "^7.0.5",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.3",
+    "yarn-workspace-tools": "^1.0.11"
   },
   "dependencies": {
     "styled-icons": "^10.2.1"

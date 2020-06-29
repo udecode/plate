@@ -1,10 +1,7 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "declaration": false,
-    "declarationMap": false,
-    "sourceMap": false
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",
@@ -12,5 +9,8 @@
     "**/dist",
     "**/*.stories.*",
     "**/*template*"
+  ],
+  "include": [
+    "packages/*/src"
   ]
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { RenderElementProps } from 'slate-react';
-import { GetRenderElementOptions } from '../types';
+import { GetRenderElementOptions } from '../../../../core/src/types';
 
 /**
  * Get generic renderElement from a possible type + component

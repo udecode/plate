@@ -1,4 +1,4 @@
-import { getRenderElement } from '@udecode/core';
+import { getRenderElement } from '../../common/utils/getRenderElement';
 import { ImageElement } from './components';
 import { IMAGE, ImageRenderElementOptions } from './types';
 

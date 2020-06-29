@@ -1,15 +1,15 @@
 module.exports = {
   collectCoverageFrom: [
     'packages/*/src/**/*',
+    '!**/index.ts',
     '!**/*test*/**',
     '!**/*fixture*/**',
     '!**/*template*/**',
     '!**/*stories*',
     '!**/*.development.*',
   ],
-  moduleDirectories: ['node_modules', 'src'],
+  moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
-  rootDir: '.',
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
   transform: {

@@ -1,4 +1,5 @@
-import { DeserializeHtml, getElementDeserializer } from '@udecode/core';
+import { DeserializeHtml } from '@udecode/core';
+import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
 import { MENTION, MentionDeserializeOptions } from './types';
 
 export const deserializeMention = ({

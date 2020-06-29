@@ -1,4 +1,4 @@
-import { getNodeDeserializer } from '@udecode/core';
+import { getNodeDeserializer } from '../../common/utils/getNodeDeserializer';
 
 export type CreateLeaf = (
   el: HTMLElement

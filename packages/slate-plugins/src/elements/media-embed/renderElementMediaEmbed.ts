@@ -1,4 +1,4 @@
-import { getRenderElement } from '@udecode/core';
+import { getRenderElement } from '../../common/utils/getRenderElement';
 import { MediaEmbedElement } from './components';
 import { MEDIA_EMBED, MediaEmbedRenderElementOptions } from './types';
 

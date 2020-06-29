@@ -1,4 +1,4 @@
-import { getRenderElement } from '@udecode/core';
+import { getRenderElement } from '../../common/utils/getRenderElement';
 import { MentionElement } from './components';
 import { MENTION, MentionRenderElementOptions } from './types';
 

@@ -1,4 +1,4 @@
-import { getRenderElement } from '@udecode/core';
+import { getRenderElement } from '../../common/utils/getRenderElement';
 import { LinkElement } from './components';
 import { LINK, LinkRenderElementOptions } from './types';
 
