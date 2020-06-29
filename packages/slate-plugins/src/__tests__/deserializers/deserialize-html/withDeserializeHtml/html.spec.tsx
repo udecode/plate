@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHTML } from 'deserializers/deserialize-html';
-import { HeadingPlugin } from 'elements/heading';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { withDeserializeHTML } from '../../../../deserializers/deserialize-html';
+import { HeadingPlugin } from '../../../../elements/heading';
 
 const input = ((
   <editor>

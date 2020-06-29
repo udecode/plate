@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { PARAGRAPH, renderElementParagraph } from '@udecode/slate-plugins/src';
-import { renderElementPlugins } from '../../utils';
+import { renderElementParagraph } from '../../../../slate-plugins/src/elements/paragraph/renderElementParagraph';
+import { PARAGRAPH } from '../../../../slate-plugins/src/elements/paragraph/types';
+import { renderElementPlugins } from '../../utils/renderElementPlugins';
 
 const elementAttributes = {
   'data-testid': 'Element',
