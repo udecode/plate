@@ -26,9 +26,9 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
   const elementPlugin = plugins
     .filter((plugin) => plugin.renderElement)
     .find((plugin) => {
-      return Object.keys(plugin.deserialize?.element as object).includes(
-        String(elementProps.element.type)
-      );
+      return Object.keys(
+        plugin.deserialize?.element as Record<string, unknown>
+      ).includes(String(elementProps.element.type));
     });
 
   // Render element using picked plugins renderElement function and ReactDOM

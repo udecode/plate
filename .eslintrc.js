@@ -1,19 +1,18 @@
 module.exports = {
-  extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended', "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript"],
+  extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
   plugins: ['import'],
   settings: {
-    "import/resolver": {
-      "typescript": {
-        "alwaysTryTypes": true
-      }
-    }
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+      },
+    },
   },
   rules: {
+    '@typescript-eslint/ban-types': 'off',
+    '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
-    '@typescript-eslint/camelcase': 'off',
     'import/extensions': [
       'error',
       'never',
@@ -26,7 +25,7 @@ module.exports = {
     ],
     'import/no-named-as-default-member': 'off',
     // turn on errors for missing imports
-    "import/no-unresolved": "error",
+    'import/no-unresolved': 'error',
     'jest/no-export': 'off',
     'jest/no-standalone-expect': 'off',
     'mdx/no-unescaped-entities': 'off',
@@ -42,7 +41,7 @@ module.exports = {
       files: '**/*.stories.tsx',
       rules: {
         // just for showing the code in addon-docs
-        'react-hooks/rules-of-hooks': 'off'
+        'react-hooks/rules-of-hooks': 'off',
       },
     },
     {
@@ -53,5 +52,5 @@ module.exports = {
         'import/order': ['error', { 'newlines-between': 'never' }],
       },
     },
-  ]
+  ],
 };
