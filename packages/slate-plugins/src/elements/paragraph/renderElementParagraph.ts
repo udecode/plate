@@ -1,4 +1,4 @@
-import { getElementComponent, getRenderElement } from '../../element/utils';
+import { getElementComponent, getRenderElement } from '@udecode/core';
 import { PARAGRAPH, ParagraphRenderElementOptions } from './types';
 
 export const renderElementParagraph = ({

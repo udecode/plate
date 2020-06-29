@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { getElementComponent } from '@udecode/core';
 import { RenderElementProps } from 'slate-react';
-import { getElementComponent } from '../../element/utils';
 import {
   HeadingElement1,
   HeadingElement2,

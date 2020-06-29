@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 import { SoftBreakPluginOptions } from './types';
 

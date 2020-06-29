@@ -1,4 +1,4 @@
-import { pipe } from 'common/utils/pipe';
+import { pipe } from '../../../../common/utils/pipe';
 
 const input = 1;
 

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { onImageLoad } from 'elements';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { onImageLoad } from '../../../../elements';
 
 const input = (
   <editor>

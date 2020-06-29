@@ -1,8 +1,7 @@
 /** @jsx jsx */
-
-import { jsx } from '__test-utils__/jsx';
-import { toggleWrapNodes } from 'common/transforms/toggleWrapNodes';
-import { CODE_BLOCK } from 'elements';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { toggleWrapNodes } from '../../../../common/transforms';
+import { CODE_BLOCK } from '../../../../elements/code-block';
 
 const input = (
   <editor>

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { getHtmlDocument } from '__test-utils__/getHtmlDocument';
-import { jsx } from '__test-utils__/jsx';
-import { SlatePlugin } from 'common/types';
-import { deserializeHTMLElement } from 'deserializers';
+import { SlatePlugin } from '@udecode/core/src';
+import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { deserializeHTMLElement } from '../../../../deserializers';
 
 const html = `<html><body>test<!-- You will not be able to see this text. --></body></html>`;
 const input1: SlatePlugin[] = [];

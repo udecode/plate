@@ -1,5 +1,15 @@
 module.exports = {
-  extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
+  extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended', "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"],
+  plugins: ['import'],
+  settings: {
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
+  },
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
@@ -15,6 +25,8 @@ module.exports = {
       },
     ],
     'import/no-named-as-default-member': 'off',
+    // turn on errors for missing imports
+    "import/no-unresolved": "error",
     'jest/no-export': 'off',
     'jest/no-standalone-expect': 'off',
     'mdx/no-unescaped-entities': 'off',

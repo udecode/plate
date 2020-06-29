@@ -1,8 +1,8 @@
 /** @jsx jsx */
-import { jsx } from '__test-utils__/jsx';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { useMention } from 'elements/mention';
 import { Editor } from 'slate';
+import { jsx } from '../../../../../../__test-utils__/jsx';
+import { useMention } from '../../../../../../elements/mention';
 
 const input = ((
   <editor>

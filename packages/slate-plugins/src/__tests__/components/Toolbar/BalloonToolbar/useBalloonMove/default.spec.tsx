@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
 import { renderHook } from '@testing-library/react-hooks';
 import { Editor } from 'slate';
-import { useBalloonMove } from 'components/Toolbar/BalloonToolbar/useBalloonMove';
+import { jsx } from '../../../../../__test-utils__/jsx';
+import { useBalloonMove } from '../../../../../components/Toolbar/BalloonToolbar/useBalloonMove';
 
 const input1 = ((
   <editor>

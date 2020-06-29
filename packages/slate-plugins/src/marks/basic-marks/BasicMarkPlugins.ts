@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { BoldPlugin } from '../bold';
 import { CodePlugin } from '../code';
 import { ItalicPlugin } from '../italic';

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { withLink } from 'elements';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { withLink } from '../../../../elements';
 
 const input = (
   <editor>

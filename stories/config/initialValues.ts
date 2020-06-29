@@ -1,5 +1,3 @@
-import faker from 'faker';
-import { Descendant } from 'slate';
 import {
   ACTION_ITEM,
   BLOCKQUOTE,
@@ -24,7 +22,9 @@ import {
   SlateDocumentDescendant,
   SlateDocumentFragment,
   TableType,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import faker from 'faker';
+import { Descendant } from 'slate';
 
 export const headingTypes = [
   HeadingType.H1,

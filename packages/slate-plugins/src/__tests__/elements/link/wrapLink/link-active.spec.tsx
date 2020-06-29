@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { LINK, withLink, wrapLink } from 'elements';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { withInlineVoid } from '../../../../element';
+import { LINK, withLink, wrapLink } from '../../../../elements';
 
 const input = (
   <editor>

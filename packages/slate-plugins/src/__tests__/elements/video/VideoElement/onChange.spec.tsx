@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { pipe } from 'common';
-import { withToggleType } from 'element';
-import { MEDIA_EMBED } from 'elements/media-embed';
-import { MediaEmbedElement } from 'elements/media-embed/components';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
+import { pipe } from '../../../../common';
+import { withToggleType } from '../../../../element';
+import { MEDIA_EMBED } from '../../../../elements/media-embed';
+import { MediaEmbedElement } from '../../../../elements/media-embed/components';
 import { input, output } from './onChange.fixture';
 
 it('should render', () => {

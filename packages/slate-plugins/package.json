@@ -22,11 +22,11 @@
     "prebuild": "rimraf dist",
     "build": "rollup -c=../../rollup.config.js",
     "prepublish": "npm run snyk-protect",
-    "snyk-protect": "snyk protect",
-    "test": "jest"
+    "snyk-protect": "snyk protect"
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
+    "@udecode/core": "^0.60.0",
     "@uifabric/styling": "^7.12.11",
     "@uifabric/utilities": "^7.19.0",
     "image-extensions": "^1.1.0",
@@ -40,11 +40,11 @@
     "@types/marked": "^0.7.4"
   },
   "peerDependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "slate": "^0.58.3",
-    "slate-hyperscript": "^0.58.3",
-    "slate-react": "^0.58.3",
+    "react": "*",
+    "react-dom": "*",
+    "slate": ">=0.58.3",
+    "slate-hyperscript": ">=0.58.3",
+    "slate-react": ">=0.58.3",
     "styled-components": "^5.1.0"
   },
   "publishConfig": {

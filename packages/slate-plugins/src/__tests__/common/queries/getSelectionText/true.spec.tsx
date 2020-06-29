@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { getSelectionText } from 'common/queries/getSelectionText';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { getSelectionText } from '../../../../common/queries/getSelectionText';
 
 const input = ((
   <editor>

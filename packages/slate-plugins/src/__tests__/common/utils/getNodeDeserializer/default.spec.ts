@@ -1,5 +1,5 @@
-import { getNodeDeserializer } from 'common/utils/getNodeDeserializer';
-import { PARAGRAPH } from 'elements/paragraph';
+import { getNodeDeserializer } from '@udecode/core/src';
+import { PARAGRAPH } from '../../../../elements/paragraph';
 
 const createNode = () => ({ type: PARAGRAPH });
 

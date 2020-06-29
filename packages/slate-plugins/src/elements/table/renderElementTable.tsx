@@ -1,4 +1,4 @@
-import { getElementComponent, getRenderElements } from '../../element/utils';
+import { getElementComponent, getRenderElements } from '@udecode/core';
 import { TableCell, TableElement } from './components';
 import { TableRenderElementOptions, TableType } from './types';
 

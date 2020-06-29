@@ -1,6 +1,6 @@
 module.exports = {
   collectCoverageFrom: [
-    'src/**/*',
+    'packages/*/src/**/*',
     '!**/*test*/**',
     '!**/*fixture*/**',
     '!**/*template*/**',
@@ -9,9 +9,11 @@ module.exports = {
   ],
   moduleDirectories: ['node_modules', 'src'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
+  rootDir: '.',
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
   transform: {
     '^.+\\.(t|j)sx?$': 'ts-jest',
   },
+  setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
 };

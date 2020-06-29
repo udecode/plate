@@ -1,4 +1,4 @@
-import { getRenderElement } from '../../element/utils';
+import { getRenderElement } from '@udecode/core';
 import { BlockquoteElement } from './components';
 import { BLOCKQUOTE, BlockquoteRenderElementOptions } from './types';
 

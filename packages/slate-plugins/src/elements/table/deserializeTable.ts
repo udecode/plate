@@ -1,5 +1,4 @@
-import { DeserializeHtml } from '../../common';
-import { getElementDeserializer } from '../../element/utils';
+import { DeserializeHtml, getElementDeserializer } from '@udecode/core';
 import { TableDeserializeOptions, TableType } from './types';
 
 export const deserializeTable = ({

@@ -1,10 +1,7 @@
+import { DeserializeLeafValue, SlatePlugin } from '@udecode/core';
 import { Descendant, Element, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
-import {
-  DeserializeLeafValue,
-  setPropsToNodes,
-  SlatePlugin,
-} from '../../../common';
+import { setPropsToNodes } from '../../../common';
 import { DeserializeHTMLChildren } from '../types';
 
 export interface DeserializeMarksProps {

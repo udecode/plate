@@ -5,7 +5,7 @@
  * - Heading
  * - Paragraph
  */
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { BlockquotePlugin } from '../blockquote';
 import { CodeBlockPlugin } from '../code-block';
 import { HeadingPlugin } from '../heading';

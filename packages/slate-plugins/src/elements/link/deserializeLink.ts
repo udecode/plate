@@ -1,5 +1,4 @@
-import { DeserializeHtml } from '../../common';
-import { getElementDeserializer } from '../../element/utils';
+import { DeserializeHtml, getElementDeserializer } from '@udecode/core';
 import { LINK, LinkDeserializeOptions } from './types';
 
 export const deserializeLink = ({

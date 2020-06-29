@@ -1,29 +1,32 @@
 /** @jsx jsx */
 
-import { getHtmlDocument } from '__test-utils__/getHtmlDocument';
-import { jsx } from '__test-utils__/jsx';
-import { deserializeHTMLElement } from 'deserializers';
-import { ACTION_ITEM, ActionItemPlugin } from 'elements/action-item';
-import { BlockquotePlugin } from 'elements/blockquote';
-import { CodeBlockPlugin } from 'elements/code-block';
-import { HeadingPlugin } from 'elements/heading';
-import { ImagePlugin } from 'elements/image';
-import { LinkPlugin } from 'elements/link';
-import { ListPlugin } from 'elements/list';
-import { MediaEmbedPlugin } from 'elements/media-embed';
-import { MENTION, MentionPlugin } from 'elements/mention';
-import { ParagraphPlugin } from 'elements/paragraph';
-import { TablePlugin } from 'elements/table';
-import { SoftBreakPlugin } from 'handlers/soft-break';
-import { deserializeBold } from 'marks/bold/deserializeBold';
-import { deserializeCode } from 'marks/code/deserializeCode';
-import { deserializeHighlight } from 'marks/highlight/deserializeHighlight';
-import { deserializeItalic } from 'marks/italic/deserializeItalic';
-import { deserializeStrikethrough } from 'marks/strikethrough/deserializeStrikethrough';
-import { deserializeSubscript } from 'marks/subscript/deserializeSubscript';
-import { deserializeSuperscript } from 'marks/superscript/deserializeSuperscript';
-import { deserializeUnderline } from 'marks/underline/deserializeUnderline';
-import { SearchHighlightPlugin } from 'widgets/search-highlight';
+import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { deserializeHTMLElement } from '../../../../deserializers';
+import {
+  ACTION_ITEM,
+  ActionItemPlugin,
+} from '../../../../elements/action-item';
+import { BlockquotePlugin } from '../../../../elements/blockquote';
+import { CodeBlockPlugin } from '../../../../elements/code-block';
+import { HeadingPlugin } from '../../../../elements/heading';
+import { ImagePlugin } from '../../../../elements/image';
+import { LinkPlugin } from '../../../../elements/link';
+import { ListPlugin } from '../../../../elements/list';
+import { MediaEmbedPlugin } from '../../../../elements/media-embed';
+import { MENTION, MentionPlugin } from '../../../../elements/mention';
+import { ParagraphPlugin } from '../../../../elements/paragraph';
+import { TablePlugin } from '../../../../elements/table';
+import { SoftBreakPlugin } from '../../../../handlers/soft-break';
+import { deserializeBold } from '../../../../marks/bold/deserializeBold';
+import { deserializeCode } from '../../../../marks/code';
+import { deserializeHighlight } from '../../../../marks/highlight/deserializeHighlight';
+import { deserializeItalic } from '../../../../marks/italic/deserializeItalic';
+import { deserializeStrikethrough } from '../../../../marks/strikethrough/deserializeStrikethrough';
+import { deserializeSubscript } from '../../../../marks/subscript/deserializeSubscript';
+import { deserializeSuperscript } from '../../../../marks/superscript/deserializeSuperscript';
+import { deserializeUnderline } from '../../../../marks/underline/deserializeUnderline';
+import { SearchHighlightPlugin } from '../../../../widgets/search-highlight';
 
 const textTags = [
   '<span>span</span>',

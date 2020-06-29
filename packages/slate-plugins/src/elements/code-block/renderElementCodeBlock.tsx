@@ -1,4 +1,4 @@
-import { getRenderElement } from '../../element/utils';
+import { getRenderElement } from '@udecode/core';
 import { CodeBlockElement } from './components';
 import { CODE_BLOCK, CodeBlockRenderElementOptions } from './types';
 

@@ -1,5 +1,6 @@
+import { SlatePlugin } from '@udecode/core';
 import { Descendant } from 'slate';
-import { SlateDocumentFragment, SlatePlugin } from '../../../common';
+import { SlateDocumentFragment } from '../../../common';
 import { normalizeDescendantsToDocumentFragment } from '../../../common/utils';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 

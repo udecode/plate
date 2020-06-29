@@ -1,4 +1,4 @@
-import { getElementComponent, getRenderElements } from '../../element/utils';
+import { getElementComponent, getRenderElements } from '@udecode/core';
 import { OlElement, UlElement } from './components';
 import { ListRenderElementOptions, ListType } from './types';
 

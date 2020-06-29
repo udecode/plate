@@ -1,4 +1,4 @@
-import { getElementDeserializer } from 'element/utils';
+import { getElementDeserializer } from '@udecode/core';
 
 const createElement = () => ({ type: 'p' });
 

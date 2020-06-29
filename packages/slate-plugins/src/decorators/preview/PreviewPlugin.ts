@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { decoratePreview } from './decoratePreview';
 import { renderLeafPreview } from './renderLeafPreview';
 

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { getLastNode } from 'common/queries';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { getLastNode } from '../../../../common/queries';
 
 const input = (
   <editor>

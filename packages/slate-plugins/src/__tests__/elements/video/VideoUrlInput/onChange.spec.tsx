@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { MediaEmbedUrlInput } from 'elements/media-embed/components';
+import { MediaEmbedUrlInput } from '../../../../elements/media-embed/components';
 
 it('should render', () => {
   const onChange = jest.fn();

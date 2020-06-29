@@ -1,49 +1,16 @@
 {
-  "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [
-      7005
-    ]
-  },
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "jsx": "react",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017"
+    "baseUrl": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
   },
   "exclude": [
     "node_modules",
-    "dist",
-    "scripts",
-    "**/*test*",
-    "**/*.spec*",
-    "**/*template*",
-    "**/*fixture*"
-  ],
-  "include": [
-    "packages/slate-plugins/src",
-    "packages/slate-plugins/typings"
-  ],
-  "paths": {
-    "~/*": ["./src/*"],
-    "@udecode/slate-plugins": [
-      "./packages/slate-plugins/src"
-    ]
-  }
+    "**/node_modules",
+    "**/dist",
+    "**/*.stories.*",
+    "**/*template*"
+  ]
 }

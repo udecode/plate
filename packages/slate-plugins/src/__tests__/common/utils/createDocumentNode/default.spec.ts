@@ -1,6 +1,6 @@
-import { createDocumentNode } from 'common/utils';
-import { PARAGRAPH } from 'elements/paragraph';
 import { Node } from 'slate';
+import { createDocumentNode } from '../../../../common/utils';
+import { PARAGRAPH } from '../../../../elements/paragraph';
 
 const output: Node[] = [
   {

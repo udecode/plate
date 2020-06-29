@@ -1,17 +1,42 @@
 {
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [
+      7005
+    ]
+  },
   "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es2017",
     "declaration": true,
-    "declarationDir": "./dist",
     "declarationMap": true,
-    "outDir": "./dist",
     "sourceMap": true
   },
   "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist",
     "**/*.stories.*",
     "**/*test*",
     "**/*.spec*",
-    "**/*template*",
-    "**/*fixture*"
-  ],
-  "extends": "./tsconfig.json"
+    "**/*fixture*",
+    "**/*template*"
+  ]
 }

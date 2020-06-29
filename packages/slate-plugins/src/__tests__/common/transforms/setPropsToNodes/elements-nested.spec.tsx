@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { setPropsToNodes } from 'common/transforms';
-import { ListType } from 'elements/list';
-import { PARAGRAPH } from 'elements/paragraph';
 import { Element } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { setPropsToNodes } from '../../../../common/transforms';
+import { ListType } from '../../../../elements/list';
+import { PARAGRAPH } from '../../../../elements/paragraph';
 
 const node = (
   <hli>

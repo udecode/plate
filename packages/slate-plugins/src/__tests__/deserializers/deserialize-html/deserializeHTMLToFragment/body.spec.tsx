@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { deserializeHTMLToFragment } from 'deserializers/deserialize-html/utils';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { deserializeHTMLToFragment } from '../../../../deserializers/deserialize-html/utils';
 
 const fragment = (
   <fragment>

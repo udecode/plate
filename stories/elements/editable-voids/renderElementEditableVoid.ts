@@ -1,7 +1,4 @@
-import {
-  getRenderElement,
-  RenderElementOptions,
-} from '../../../packages/slate-plugins/src';
+import { getRenderElement, RenderElementOptions } from '@udecode/slate-plugins';
 import { EditableVoidElement } from './EditableVoidElement';
 import { EDITABLE_VOID } from './types';
 

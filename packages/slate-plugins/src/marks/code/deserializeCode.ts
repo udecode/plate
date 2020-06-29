@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '../../common';
+import { DeserializeHtml } from '@udecode/core';
 import { getLeafDeserializer } from '../../mark/utils';
 import { CodeDeserializeOptions, MARK_CODE } from './types';
 

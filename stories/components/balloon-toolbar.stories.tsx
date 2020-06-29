@@ -7,9 +7,6 @@ import {
   FormatItalic,
   FormatUnderlined,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BalloonToolbar,
   BoldPlugin,
@@ -23,7 +20,10 @@ import {
   SlateDocument,
   ToolbarMark,
   UnderlinePlugin,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import { initialValueBalloonToolbar, nodeTypes } from '../config/initialValues';
 
 export default {

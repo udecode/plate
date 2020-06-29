@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { getHtmlDocument } from '__test-utils__/getHtmlDocument';
-import { jsx } from '__test-utils__/jsx';
-import { SlatePlugin } from 'common/types';
+import { SlatePlugin } from '@udecode/core';
+import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { deserializeHTMLToDocumentFragment } from '../../../../deserializers/deserialize-html/utils';
 
 const html = 'test';

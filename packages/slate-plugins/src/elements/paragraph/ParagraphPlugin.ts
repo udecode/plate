@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { deserializeParagraph } from './deserializeParagraph';
 import { renderElementParagraph } from './renderElementParagraph';
 import { ParagraphPluginOptions } from './types';

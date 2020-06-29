@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { pipe, SlatePlugin } from 'common';
+import { EditablePlugins, SlatePlugin } from '@udecode/core';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { EditablePlugins } from 'components';
+import { SlateDocument } from '../common';
+import { pipe } from '../common/utils';
 
 export const TestEditor = ({
   children,
