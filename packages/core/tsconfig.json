@@ -1,6 +1,4 @@
 {
   "extends": "../../tsconfig",
-  "compilerOptions": {
-  },
   "include": ["src"]
 }

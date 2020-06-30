@@ -9,8 +9,5 @@
     "**/dist",
     "**/*.stories.*",
     "**/*template*"
-  ],
-  "include": [
-    "packages/*/src"
   ]
 }

@@ -4,8 +4,5 @@
     "declarationDir": "./dist",
     "outDir": "./dist"
   },
-  "references": [{
-    "path": "../core/tsconfig.build.json"
-  }],
-  "include": ["src", "typings"]
+  "include": ["src"]
 }

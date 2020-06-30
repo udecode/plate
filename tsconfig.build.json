@@ -21,7 +21,6 @@
     "moduleResolution": "node",
     "noEmit": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "es2017",
@@ -33,6 +32,7 @@
   "exclude": [
     "node_modules",
     "**/node_modules",
+    "dist",
     "**/dist",
     "**/*.stories.*",
     "**/*test*",

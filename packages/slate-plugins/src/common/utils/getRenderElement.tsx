@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { GetRenderElementOptions } from '@udecode/core';
 import { RenderElementProps } from 'slate-react';
-import { GetRenderElementOptions } from '../../../../core/src/types';
 
 /**
  * Get generic renderElement from a possible type + component

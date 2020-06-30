@@ -8,6 +8,11 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
+  globals: {
+    'ts-jest': {
+      tsConfig: 'tsconfig.test.json',
+    },
+  },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   testEnvironment: 'jsdom',
