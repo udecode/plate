@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import Prism from 'prismjs';
 import { NodeEntry, Text } from 'slate'; // noinspection CommaExpressionJS
 

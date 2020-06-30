@@ -1,4 +1,4 @@
-import { isUrl } from 'common/utils';
+import { isUrl } from '../../../../common/utils';
 
 const input = 'test';
 

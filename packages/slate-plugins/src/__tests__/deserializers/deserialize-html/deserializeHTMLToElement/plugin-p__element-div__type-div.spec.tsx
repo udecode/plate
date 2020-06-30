@@ -1,5 +1,5 @@
-import { deserializeHTMLToElement } from 'deserializers/deserialize-html/utils';
-import { ParagraphPlugin } from 'elements/paragraph';
+import { deserializeHTMLToElement } from '../../../../deserializers/deserialize-html/utils';
+import { ParagraphPlugin } from '../../../../elements/paragraph';
 
 const el = document.createElement('div');
 el.setAttribute('data-slate-type', 'div');

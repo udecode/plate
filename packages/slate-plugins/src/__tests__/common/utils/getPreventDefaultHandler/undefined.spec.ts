@@ -1,4 +1,4 @@
-import { getPreventDefaultHandler } from 'common/utils/getPreventDefaultHandler';
+import { getPreventDefaultHandler } from '../../../../common/utils/getPreventDefaultHandler';
 
 it('should be', () => {
   const cb = jest.fn();

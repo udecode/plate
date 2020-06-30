@@ -1,9 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { Image } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   EditablePlugins,
   HeadingPlugin,
@@ -16,7 +13,10 @@ import {
   ToolbarImage,
   withImageUpload,
   withInlineVoid,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import { initialValueImages, nodeTypes } from '../config/initialValues';
 
 export default {

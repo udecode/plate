@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { HighlightPlugin } from '../../marks/highlight';
 import { MARK_SEARCH_HIGHLIGHT, SearchHighlightPluginOptions } from './types';
 

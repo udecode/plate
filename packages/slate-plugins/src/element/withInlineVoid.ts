@@ -1,6 +1,6 @@
+import { SlatePlugin } from '@udecode/core';
 import { castArray } from 'lodash';
 import { Editor } from 'slate';
-import { SlatePlugin } from '../common';
 
 export interface WithInlineVoidOptions {
   plugins?: SlatePlugin[];

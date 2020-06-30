@@ -1,12 +1,12 @@
 /** @jsx jsx */
-import { jsx } from '__test-utils__/jsx';
-import { mentionables } from '__tests__/elements/mention/useMention/onKeyDown/mentionables.fixture';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { pipe } from 'common/utils/pipe';
-import { useMention } from 'elements/mention';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../../../__test-utils__/jsx';
+import { pipe } from '../../../../../../common/utils';
+import { useMention } from '../../../../../../elements/mention';
+import { mentionables } from '../mentionables.fixture';
 
 const input = ((
   <editor>

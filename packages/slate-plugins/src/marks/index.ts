@@ -1,3 +1,4 @@
+export * from './basic-marks';
 export * from './bold';
 export * from './highlight';
 export * from './code';

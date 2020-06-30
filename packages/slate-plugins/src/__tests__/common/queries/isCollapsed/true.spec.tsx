@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { isCollapsed } from 'common/queries/isCollapsed';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { isCollapsed } from '../../../../common/queries/isCollapsed';
 
 const input = ((
   <editor>

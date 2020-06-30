@@ -4,8 +4,8 @@ import { render } from '@testing-library/react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { BalloonToolbar } from 'components/Toolbar';
 import { SlateDocument } from '../../../../common';
+import { BalloonToolbar } from '../../../../components/Toolbar';
 
 const Editor = () => {
   const [value, setValue] = useState<SlateDocument>([

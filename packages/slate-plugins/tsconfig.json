@@ -1,36 +1,10 @@
 {
-  "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [
-      7005
-    ]
-  },
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": "src",
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "jsx": "react",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "target": "es2017"
+    "paths": {
+      "@udecode/core": ["./packages/core/src"]
+    }
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "scripts"
-  ],
   "include": [
     "src",
     "typings"

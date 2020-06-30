@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { deserializeTable } from './deserializeTable';
 import { renderElementTable } from './renderElementTable';
 import { TablePluginOptions } from './types';

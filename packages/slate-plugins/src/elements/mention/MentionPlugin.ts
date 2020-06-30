@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { deserializeMention } from './deserializeMention';
 import { renderElementMention } from './renderElementMention';
 import { MENTION, MentionPluginOptions } from './types';

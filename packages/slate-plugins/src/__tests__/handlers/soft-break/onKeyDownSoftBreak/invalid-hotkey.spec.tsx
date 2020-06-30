@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { onKeyDownSoftBreak } from 'handlers/soft-break';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { onKeyDownSoftBreak } from '../../../../handlers/soft-break';
 
 const input = (
   <editor>

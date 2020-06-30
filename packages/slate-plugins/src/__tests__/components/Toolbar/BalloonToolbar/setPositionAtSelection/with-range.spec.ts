@@ -1,4 +1,4 @@
-import { setPositionAtSelection } from 'components/Toolbar/BalloonToolbar';
+import { setPositionAtSelection } from '../../../../../components/Toolbar/BalloonToolbar';
 
 const input = document.createElement('div');
 

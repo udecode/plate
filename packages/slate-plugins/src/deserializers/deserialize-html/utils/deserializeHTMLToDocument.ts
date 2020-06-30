@@ -1,4 +1,5 @@
-import { SlateDocument, SlatePlugin } from '../../../common';
+import { SlatePlugin } from '@udecode/core';
+import { SlateDocument } from '../../../common';
 import { deserializeHTMLToDocumentFragment } from './deserializeHTMLToDocumentFragment';
 
 /**

@@ -10,9 +10,6 @@ import {
   LooksOne,
   LooksTwo,
 } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BlockquotePlugin,
   CodeBlockPlugin,
@@ -28,7 +25,10 @@ import {
   ToolbarElement,
   withResetBlockType,
   withToggleType,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,

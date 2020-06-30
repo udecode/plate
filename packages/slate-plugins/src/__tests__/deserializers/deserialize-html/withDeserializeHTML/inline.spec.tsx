@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHTML } from 'deserializers/deserialize-html';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { pipe } from '../../../../common/utils';
+import { withDeserializeHTML } from '../../../../deserializers/deserialize-html';
 import { withInlineVoid } from '../../../../element';
 import { MENTION, MentionPlugin } from '../../../../elements/mention';
 import { ParagraphPlugin } from '../../../../elements/paragraph';

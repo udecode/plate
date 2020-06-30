@@ -1,6 +1,6 @@
+import { DeserializeElement, SlatePlugin } from '@udecode/core';
 import { Descendant, Element } from 'slate';
 import { jsx } from 'slate-hyperscript';
-import { DeserializeElement, SlatePlugin } from '../../../common';
 import { DeserializeHTMLChildren } from '../types';
 
 /**

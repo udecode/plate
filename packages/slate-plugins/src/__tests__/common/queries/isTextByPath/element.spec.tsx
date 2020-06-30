@@ -1,7 +1,7 @@
 /** @jsx jsx */
-import { jsx } from '__test-utils__/jsx';
-import { isTextByPath } from 'common/queries/isTextByPath';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { isTextByPath } from '../../../../common/queries/isTextByPath';
 
 const editor = ((
   <editor>

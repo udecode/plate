@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { mentionables } from '__tests__/elements/mention/useMention/onKeyDown/mentionables.fixture';
 import { render } from '@testing-library/react';
-import { MentionSelect } from 'elements/mention/components';
-import { PARAGRAPH } from 'elements/paragraph';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
+import { MentionSelect } from '../../../../../elements/mention/components';
+import { PARAGRAPH } from '../../../../../elements/paragraph';
+import { mentionables } from '../../useMention/onKeyDown/mentionables.fixture';
 
 it('should render null', () => {
   const editor = createEditor();

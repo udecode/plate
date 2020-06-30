@@ -1,14 +1,11 @@
 import * as React from 'react';
-import {
-  input,
-  output,
-} from '__tests__/element/ToolbarElement/onMouseDown.fixture';
 import { fireEvent, render } from '@testing-library/react';
-import { pipe } from 'common';
-import { withToggleType } from 'element';
-import { ToolbarElement } from 'element/components';
-import { HeadingType } from 'elements/heading';
 import * as SlateReact from 'slate-react';
+import { pipe } from '../../../common';
+import { withToggleType } from '../../../element';
+import { ToolbarElement } from '../../../element/components';
+import { HeadingType } from '../../../elements/heading';
+import { input, output } from './onMouseDown.fixture';
 
 it('should render', () => {
   const editor = pipe(input, withToggleType());

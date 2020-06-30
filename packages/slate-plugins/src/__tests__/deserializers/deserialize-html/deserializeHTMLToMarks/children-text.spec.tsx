@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
+import { jsx } from '../../../../__test-utils__/jsx';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
-} from 'deserializers/deserialize-html/utils';
-import { BoldPlugin } from 'marks/bold';
+} from '../../../../deserializers/deserialize-html/utils';
+import { BoldPlugin } from '../../../../marks/bold';
 
 const input: DeserializeMarksProps = {
   plugins: [BoldPlugin()],

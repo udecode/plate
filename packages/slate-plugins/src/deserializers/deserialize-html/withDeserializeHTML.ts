@@ -1,6 +1,6 @@
+import { SlatePlugin } from '@udecode/core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { SlatePlugin } from '../../common';
 import { deserializeHTMLToDocumentFragment } from './utils';
 
 export interface WithDeserializeHTMLOptions {

@@ -1,5 +1,5 @@
-import { SlatePlugin } from '../../common';
-import { onKeyDownMark } from '../../mark';
+import { SlatePlugin } from '@udecode/core';
+import { onKeyDownMark } from '../../mark/onKeyDownMark';
 import { deserializeBold } from './deserializeBold';
 import { renderLeafBold } from './renderLeafBold';
 import { BoldPluginOptions, MARK_BOLD } from './types';

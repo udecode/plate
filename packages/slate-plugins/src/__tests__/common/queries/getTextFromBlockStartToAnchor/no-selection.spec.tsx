@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { getTextFromBlockStartToAnchor } from 'common/queries';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { getTextFromBlockStartToAnchor } from '../../../../common/queries';
 
 const input = ((
   <editor>

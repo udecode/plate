@@ -1,5 +1,3 @@
-import { deserializeHTMLToDocumentFragment } from 'deserializers/deserialize-html';
-import { serializeHTMLFromNodes } from 'serializers/serialize-html';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -17,6 +15,8 @@ import {
   TablePlugin,
   UnderlinePlugin,
 } from '../../..';
+import { deserializeHTMLToDocumentFragment } from '../../../deserializers/deserialize-html';
+import { serializeHTMLFromNodes } from '../../../serializers/serialize-html';
 
 const htmlStringToDOMNode = (rawHtml: string) => {
   const node = document.createElement('body');

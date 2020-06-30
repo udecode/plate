@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { pipe } from 'common';
-import { LINK, ToolbarLink, withLink } from 'elements/link';
 import * as SlateReact from 'slate-react';
 import { withReact } from 'slate-react';
+import { pipe } from '../../../../common';
 import { withInlineVoid } from '../../../../element';
+import { LINK, ToolbarLink, withLink } from '../../../../elements/link';
 import { input, output } from './onMouseDown.fixture';
 
 it('should render', () => {

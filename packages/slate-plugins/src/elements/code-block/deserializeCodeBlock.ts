@@ -1,5 +1,5 @@
-import { DeserializeHtml } from '../../common';
-import { getElementDeserializer } from '../../element/utils';
+import { DeserializeHtml } from '@udecode/core';
+import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
 import { CODE_BLOCK, CodeBlockDeserializeOptions } from './types';
 
 export const deserializeCodeBlock = ({

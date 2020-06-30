@@ -1,10 +1,9 @@
 /** @jsx jsx */
-
-import { jsx } from '__test-utils__/jsx';
-import { idCreatorFixture } from '__tests__/common/transforms/withNodeID/fixtures';
-import { withNodeID } from 'common/transforms/node-id';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { withNodeID } from '../../../../common/transforms/node-id';
+import { idCreatorFixture } from './fixtures';
 
 const input = ((
   <editor>

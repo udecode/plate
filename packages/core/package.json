@@ -1,0 +1,36 @@
+{
+  "name": "@udecode/core",
+  "version": "0.60.1",
+  "description": "Slate plugins core",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "rollup -c=../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "slate": ">=0.58.3",
+    "slate-hyperscript": ">=0.58.3",
+    "slate-react": ">=0.58.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

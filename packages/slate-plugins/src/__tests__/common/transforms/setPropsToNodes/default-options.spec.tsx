@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { setPropsToNodes } from 'common/transforms';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { setPropsToNodes } from '../../../../common/transforms';
 
 const editor = ((
   <editor>

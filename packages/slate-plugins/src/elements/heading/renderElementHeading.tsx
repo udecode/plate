@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { RenderElementProps } from 'slate-react';
-import { getElementComponent } from '../../element/utils';
+import { getElementComponent } from '../../common/utils/getElementComponent';
 import {
   HeadingElement1,
   HeadingElement2,

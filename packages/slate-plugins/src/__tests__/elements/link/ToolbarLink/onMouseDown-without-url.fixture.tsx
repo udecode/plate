@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
 
 export const input = ((
   <editor>

@@ -2,9 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BlockquotePlugin,
   CodeBlockPlugin,
@@ -25,7 +22,10 @@ import {
   withToggleType,
   withTrailingNode,
   withTransforms,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueSoftBreak,

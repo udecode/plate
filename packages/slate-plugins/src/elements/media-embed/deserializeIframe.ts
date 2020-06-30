@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '../../common';
+import { DeserializeHtml } from '@udecode/core';
 import { MEDIA_EMBED, MediaEmbedDeserializeOptions } from './types';
 
 export const deserializeIframe = ({

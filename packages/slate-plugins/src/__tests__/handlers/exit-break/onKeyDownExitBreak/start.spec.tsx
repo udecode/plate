@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
 import * as isHotkey from 'is-hotkey';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { onKeyDownExitBreak } from '../../../../handlers/exit-break';
 
 const input = (

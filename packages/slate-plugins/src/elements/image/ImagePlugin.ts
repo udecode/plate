@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { deserializeImage } from './deserializeImage';
 import { renderElementImage } from './renderElementImage';
 import { IMAGE, ImagePluginOptions } from './types';

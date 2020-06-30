@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
+import { jsx } from '../../../../__test-utils__/jsx';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
-} from 'deserializers/deserialize-html/utils';
+} from '../../../../deserializers/deserialize-html/utils';
 
 const input: DeserializeMarksProps = {
   plugins: [{ deserialize: { leaf: { STRONG: () => false } } }, {}],
