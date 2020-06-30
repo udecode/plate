@@ -1,4 +1,4 @@
-import { getHandler } from 'common/utils';
+import { getHandler } from '../../../../common/utils';
 
 it('should be', () => {
   getHandler(undefined)();

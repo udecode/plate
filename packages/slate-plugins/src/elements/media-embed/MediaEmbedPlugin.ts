@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { deserializeIframe } from './deserializeIframe';
 import { renderElementMediaEmbed } from './renderElementMediaEmbed';
 import { MEDIA_EMBED, MediaEmbedPluginOptions } from './types';

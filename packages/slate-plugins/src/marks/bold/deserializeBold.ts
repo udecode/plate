@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '../../common';
+import { DeserializeHtml } from '@udecode/core';
 import { BoldDeserializeOptions, MARK_BOLD } from './types';
 
 export const deserializeBold = ({

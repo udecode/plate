@@ -1,6 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false
-  }
+    "noEmit": false,
+    "paths": {
+      "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
+    }
+  },
+  "exclude": ["**/node_modules"]
 }

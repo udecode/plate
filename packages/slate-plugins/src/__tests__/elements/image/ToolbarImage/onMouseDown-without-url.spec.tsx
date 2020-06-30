@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { pipe } from 'common';
-import { withToggleType } from 'element';
-import { HeadingType } from 'elements/heading';
-import { ToolbarImage } from 'elements/image/components';
 import * as SlateReact from 'slate-react';
+import { pipe } from '../../../../common';
+import { withToggleType } from '../../../../element';
+import { HeadingType } from '../../../../elements/heading';
+import { ToolbarImage } from '../../../../elements/image/components';
 import { input, output } from './onMouseDown-without-url.fixture';
 
 it('should render', () => {

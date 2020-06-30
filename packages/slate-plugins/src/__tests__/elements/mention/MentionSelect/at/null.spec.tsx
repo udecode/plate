@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { mentionables } from '__tests__/elements/mention/useMention/onKeyDown/mentionables.fixture';
 import { render } from '@testing-library/react';
-import { MentionSelect } from 'elements/mention/components';
 import * as SlateReact from 'slate-react';
+import { MentionSelect } from '../../../../../elements/mention/components';
+import { mentionables } from '../../useMention/onKeyDown/mentionables.fixture';
 
 it('should render null', () => {
   jest.spyOn(SlateReact, 'useSlate').mockReturnValue(null as any);

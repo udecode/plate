@@ -1,16 +1,18 @@
-import { createText } from '__test-utils__/hyperscript/creators';
-import { ACTION_ITEM } from 'elements/action-item';
-import { BLOCKQUOTE } from 'elements/blockquote';
-import { CODE_BLOCK } from 'elements/code-block';
-import { HeadingType } from 'elements/heading';
-import { IMAGE } from 'elements/image';
-import { LINK } from 'elements/link';
-import { ListType } from 'elements/list';
-import { MEDIA_EMBED } from 'elements/media-embed';
-import { MENTION } from 'elements/mention';
-import { PARAGRAPH } from 'elements/paragraph';
-import { TableType } from 'elements/table';
+import {
+  ACTION_ITEM,
+  BLOCKQUOTE,
+  CODE_BLOCK,
+  HeadingType,
+  IMAGE,
+  LINK,
+  ListType,
+  MEDIA_EMBED,
+  MENTION,
+  PARAGRAPH,
+  TableType,
+} from '@udecode/slate-plugins';
 import { createHyperscript } from 'slate-hyperscript';
+import { createText } from './hyperscript/creators';
 
 declare global {
   namespace JSX {

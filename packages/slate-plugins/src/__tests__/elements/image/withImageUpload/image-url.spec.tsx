@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { IMAGE, withImageUpload } from 'elements';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { IMAGE, withImageUpload } from '../../../../elements';
 
 const input = (
   <editor>

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { deserializeHTMLToElement } from 'deserializers/deserialize-html/utils';
-import { ParagraphPlugin } from 'elements/paragraph';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { deserializeHTMLToElement } from '../../../../deserializers/deserialize-html/utils';
+import { ParagraphPlugin } from '../../../../elements/paragraph';
 
 const el = document.createElement('div');
 el.setAttribute('data-slate-type', 'p');

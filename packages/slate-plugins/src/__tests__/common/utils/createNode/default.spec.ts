@@ -1,6 +1,6 @@
-import { createNode } from 'common/utils';
-import { PARAGRAPH } from 'elements/paragraph';
 import { Node } from 'slate';
+import { createNode } from '../../../../common/utils';
+import { PARAGRAPH } from '../../../../elements/paragraph';
 
 const output: Node = { type: PARAGRAPH, children: [{ text: '' }] };
 

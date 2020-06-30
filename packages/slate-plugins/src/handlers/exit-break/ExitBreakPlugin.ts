@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { onKeyDownExitBreak } from './onKeyDownExitBreak';
 import { ExitBreakPluginOptions } from './types';
 

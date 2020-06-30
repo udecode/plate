@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { withTransforms } from 'common/transforms';
-import { HeadingType } from 'elements/heading';
-import { PARAGRAPH } from 'elements/paragraph';
-import { withTrailingNode } from 'normalizers/withTrailingNode';
 import { Editor } from 'slate';
+import { jsx } from '../../../__test-utils__/jsx';
+import { withTransforms } from '../../../common/transforms';
+import { HeadingType } from '../../../elements/heading';
+import { PARAGRAPH } from '../../../elements/paragraph';
+import { withTrailingNode } from '../../../normalizers';
 
 const input = (
   <editor>

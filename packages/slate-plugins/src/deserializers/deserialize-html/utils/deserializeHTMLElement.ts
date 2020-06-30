@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../../common';
+import { SlatePlugin } from '@udecode/core';
 import { DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLNode } from './deserializeHTMLNode';
 

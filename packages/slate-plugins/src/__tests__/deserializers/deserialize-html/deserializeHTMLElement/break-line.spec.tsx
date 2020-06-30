@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { getHtmlDocument } from '__test-utils__/getHtmlDocument';
-import { jsx } from '__test-utils__/jsx';
-import { SlatePlugin } from 'common/types';
-import { deserializeHTMLElement } from 'deserializers';
+import { SlatePlugin } from '@udecode/core';
+import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { deserializeHTMLElement } from '../../../../deserializers';
 
 const html = `<html><body>test<br /></body></html>`;
 const input1: SlatePlugin[] = [];

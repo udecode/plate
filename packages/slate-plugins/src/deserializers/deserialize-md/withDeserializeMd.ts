@@ -1,7 +1,7 @@
+import { SlatePlugin } from '@udecode/core';
 import marked from 'marked';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { SlatePlugin } from '../../common';
 import { deserializeHTMLToDocument } from '../deserialize-html';
 import { filterBreaklines } from './utils';
 

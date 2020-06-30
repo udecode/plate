@@ -1,4 +1,5 @@
-import { getElementComponent, getRenderElements } from '../../element/utils';
+import { getElementComponent } from '../../common/utils/getElementComponent';
+import { getRenderElements } from '../../common/utils/getRenderElement';
 import { TableCell, TableElement } from './components';
 import { TableRenderElementOptions, TableType } from './types';
 

@@ -1,5 +1,5 @@
-import { isRangeAtRoot } from 'common/queries';
 import { Range } from 'slate';
+import { isRangeAtRoot } from '../../../../common/queries';
 
 const input: Range = {
   anchor: { path: [0, 0, 0], offset: 0 },

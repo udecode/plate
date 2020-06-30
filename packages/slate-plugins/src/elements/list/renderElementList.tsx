@@ -1,4 +1,5 @@
-import { getElementComponent, getRenderElements } from '../../element/utils';
+import { getElementComponent } from '../../common/utils/getElementComponent';
+import { getRenderElements } from '../../common/utils/getRenderElement';
 import { OlElement, UlElement } from './components';
 import { ListRenderElementOptions, ListType } from './types';
 

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { onKeyDownSoftBreak } from 'handlers/soft-break';
 import * as isHotkey from 'is-hotkey';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { onKeyDownSoftBreak } from '../../../../handlers/soft-break';
 
 const input = (
   <editor>

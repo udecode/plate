@@ -38,7 +38,7 @@ const plugins = [
 
   typescript({
     clean: true,
-    tsconfig: 'tsconfig.build.json',
+    tsconfig: path.join(PACKAGE_ROOT_PATH, 'tsconfig.build.json'),
   }),
 
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015
@@ -76,8 +76,8 @@ const plugins = [
     env: {
       test: {
         presets: [
-          ['@babel/preset-react', { modules: 'commonjs' }],
-          ['@babel/preset-env', { modules: 'commonjs' }],
+          ['@babel/preset-react', { modules: '../../../../commonjs' }],
+          ['@babel/preset-env', { modules: '../../../../commonjs' }],
         ],
       },
     },

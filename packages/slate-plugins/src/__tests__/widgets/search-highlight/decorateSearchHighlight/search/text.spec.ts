@@ -2,7 +2,7 @@ import { Range } from 'slate';
 import {
   decorateSearchHighlight,
   SearchHighlightDecorateOptions,
-} from 'widgets/search-highlight';
+} from '../../../../..';
 
 const input: SearchHighlightDecorateOptions = { search: 'test' };
 

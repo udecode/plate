@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { isDescendant } from 'common/queries';
-import { setPropsToNodes } from 'common/transforms';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { isDescendant } from '../../../../common/queries';
+import { setPropsToNodes } from '../../../../common/transforms';
 
 const node = (<htext>test</htext>) as any;
 

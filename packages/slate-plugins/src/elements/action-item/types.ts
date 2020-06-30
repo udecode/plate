@@ -1,6 +1,6 @@
+import { RenderElementOptions } from '@udecode/core';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import { RenderElementOptions } from '../../element';
 
 export const ACTION_ITEM = 'action_item';
 

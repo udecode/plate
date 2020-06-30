@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { onKeyDownMark } from 'mark';
-import { MARK_BOLD } from 'marks/bold';
+import { jsx } from '../../../__test-utils__/jsx';
+import { onKeyDownMark } from '../../../mark';
+import { MARK_BOLD } from '../../../marks/bold';
 
 const input = (
   <editor>

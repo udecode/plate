@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { insertLink, LINK, withLink } from 'elements';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { withInlineVoid } from '../../../../element';
+import { insertLink, LINK, withLink } from '../../../../elements';
 
 const input = (
   <editor>

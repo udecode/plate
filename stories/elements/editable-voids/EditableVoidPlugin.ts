@@ -1,5 +1,4 @@
-import { SlatePlugin } from '../../../packages/slate-plugins/src/common';
-import { RenderElementOptions } from '../../../packages/slate-plugins/src/element';
+import { RenderElementOptions, SlatePlugin } from '@udecode/slate-plugins';
 import { renderElementEditableVoid } from './renderElementEditableVoid';
 import { EDITABLE_VOID } from './types';
 

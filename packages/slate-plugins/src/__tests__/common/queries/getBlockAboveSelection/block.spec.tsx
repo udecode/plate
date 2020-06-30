@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { getBlockAboveSelection } from 'common/queries';
 import { Editor } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { getBlockAboveSelection } from '../../../../common/queries';
 
 const input = ((
   <editor>

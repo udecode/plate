@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { isWordAfterTrigger } from 'common/queries';
 import { Editor, Range } from 'slate';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { isWordAfterTrigger } from '../../../../common/queries';
 
 const input = ((
   <editor>

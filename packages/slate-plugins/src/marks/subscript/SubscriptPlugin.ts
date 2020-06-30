@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../../common';
+import { SlatePlugin } from '@udecode/core';
 import { onKeyDownMark } from '../../mark';
 import { MARK_SUPERSCRIPT } from '../superscript/types';
 import { deserializeSubscript } from './deserializeSubscript';

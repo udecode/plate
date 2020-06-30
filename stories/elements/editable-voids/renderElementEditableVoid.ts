@@ -1,7 +1,5 @@
-import {
-  getRenderElement,
-  RenderElementOptions,
-} from '../../../packages/slate-plugins/src';
+import { RenderElementOptions } from '../../../packages/core/src/types';
+import { getRenderElement } from '../../../packages/slate-plugins/src/common/utils/getRenderElement';
 import { EditableVoidElement } from './EditableVoidElement';
 import { EDITABLE_VOID } from './types';
 

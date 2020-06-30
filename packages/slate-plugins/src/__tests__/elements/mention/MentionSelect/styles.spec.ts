@@ -1,4 +1,4 @@
-import { getMentionSelectStyles } from 'elements/mention/components/MentionSelect.styles';
+import { getMentionSelectStyles } from '../../../../elements/mention/components/MentionSelect.styles';
 
 it('should be', () => {
   getMentionSelectStyles();

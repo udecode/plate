@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { SlatePlugin } from '../../../../common';
+import { SlatePlugin } from '@udecode/core/src';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { deserializeHTMLToDocument } from '../../../../deserializers/deserialize-html';
 
 const plugins: SlatePlugin[] = [];

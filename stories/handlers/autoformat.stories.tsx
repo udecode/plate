@@ -1,8 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   BlockquotePlugin,
   EditablePlugins,
@@ -17,7 +13,10 @@ import {
   withList,
   withResetBlockType,
   withToggleType,
-} from '../../packages/slate-plugins/src';
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueAutoformat,

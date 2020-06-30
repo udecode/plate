@@ -1,4 +1,4 @@
-import { getElementDeserializer } from 'element/utils';
+import { getElementDeserializer } from '../../../../common/utils/getElementDeserializer';
 
 const createElement = () => ({ type: 'p' });
 

@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '__test-utils__/jsx';
-import { withDeserializeHTML } from 'deserializers/deserialize-html';
-import { BoldPlugin } from 'marks/bold';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
+import { jsx } from '../../../../__test-utils__/jsx';
+import { withDeserializeHTML } from '../../../../deserializers/deserialize-html';
+import { BoldPlugin } from '../../../../marks/bold';
 
 const input = ((
   <editor>

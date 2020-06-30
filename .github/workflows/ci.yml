@@ -24,10 +24,10 @@ jobs:
         node-version: 12
     - name: Install
       run: yarn
-    - name: Lint
-      run: yarn lint
     - name: Build
       run: yarn build
+    - name: Lint
+      run: yarn lint
     - name: Generate coverage report
       run: yarn test:cov
     - name: Upload coverage to Codecov
