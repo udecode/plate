@@ -1,4 +1,4 @@
-import { Editor, Range, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getPointBefore } from '../../common/queries/getPointBefore';
 import { getText } from '../../common/queries/getText';
