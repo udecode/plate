@@ -17,7 +17,7 @@ export const renderLeafHighlight = ({
   children,
   leaf,
 }: HighlightRenderLeafProps) => {
-  if (leaf[typeHighlight])
+  if (leaf[typeHighlight] && !!leaf.text)
     return (
       <HighlightText data-slate-type={typeHighlight} bg={bg}>
         {children}

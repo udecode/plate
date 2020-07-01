@@ -11,7 +11,7 @@ export const renderLeafSubscript = ({
   children,
   leaf,
 }: SubscriptRenderLeafProps) => {
-  if (leaf[typeSubscript]) return <sub>{children}</sub>;
+  if (leaf[typeSubscript] && !!leaf.text) return <sub>{children}</sub>;
 
   return children;
 };

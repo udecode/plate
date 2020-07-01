@@ -547,7 +547,15 @@ export const initialValueBasicMarks: SlateDocument = [
         children: [
           {
             text:
-              'These are the basic marks. You can customize the type and component for each of these.',
+              'These are the basic marks. You can customize the type and component for each of these',
+          },
+        ],
+      },
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text: 'Marks with empty text are ignored by default',
           },
         ],
       },

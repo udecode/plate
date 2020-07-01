@@ -11,7 +11,7 @@ export const renderLeafSuperscript = ({
   children,
   leaf,
 }: SuperscriptRenderLeafProps) => {
-  if (leaf[typeSuperscript]) return <sup>{children}</sup>;
+  if (leaf[typeSuperscript] && !!leaf.text) return <sup>{children}</sup>;
 
   return children;
 };
