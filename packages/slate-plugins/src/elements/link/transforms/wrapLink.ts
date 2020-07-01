@@ -4,6 +4,12 @@ import { isCollapsed } from '../../../common/queries/isCollapsed';
 import { unwrapNodesByType } from '../../../common/transforms';
 import { LINK } from '../types';
 
+/**
+ * If there is a link node in selection, unwrap it.
+ * If the selection is collapsed: insert the link.
+ * If the selection is expanded: wrap selected nodes with a link
+ * and collapse at the end.
+ */
 export const wrapLink = (
   editor: Editor,
   url: string,

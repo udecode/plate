@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+Until 1.0.0 is released, breaking changes will be added as minor or
+patch version bumps.
+
 ## 0.60.1 (2020-06-30)
 
 **Note:** Version bump only for package slate-plugins
@@ -19,8 +22,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-Until 1.0.0 is released, breaking changes will be added as minor or
-patch version bumps.
+
 
 ## 0.59.2 (2020-06-12)
 
