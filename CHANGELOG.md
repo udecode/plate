@@ -6,39 +6,35 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## 0.60.2 (2020-07-01)
+
+### Features
+
+- `getPointBefore` – Editor.before with additional options,
+useful to look for a point before a location using match options.
+- `withLink` – Insert space after a url to wrap a link.
+There should be a space before the url.
+TODO: it's not working when the url is at the start of the block.
+
+### Bug Fixes
+
+- when using `withLink`, inserting '#' was adding a link element.
+
 ## 0.60.1 (2020-06-30)
 
-**Note:** Version bump only for package slate-plugins
-
-
-
-
+- Split the core functionality to `@udecode/core`
 
 # 0.60.0 (2020-06-15)
 
 **Note:** Version bump only for package slate-plugins
 
-
-
-
-
-
-
 ## 0.59.2 (2020-06-12)
 
 **Note:** Version bump only for package slate-plugins
 
-
-
-
-
 ## 0.59.1 (2020-06-06)
 
 **Note:** Version bump only for package slate-plugins
-
-
-
-
 
 # 0.59.0 (2020-06-05)
 
