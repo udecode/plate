@@ -2,10 +2,13 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  getRenderElement,
   HeadingPlugin,
   HighlightPlugin,
   ImagePlugin,
   ItalicPlugin,
+  LINK,
+  LinkElementBase,
   LinkPlugin,
   ListPlugin,
   ParagraphPlugin,
@@ -129,7 +132,11 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   expect(
-    serializeHTMLFromNodes([LinkPlugin()])([
+    serializeHTMLFromNodes([
+      LinkPlugin({
+        component: getRenderElement({ type: LINK, component: LinkElementBase }),
+      }),
+    ])([
       { text: 'Some paragraph of text with ' },
       {
         type: 'a',

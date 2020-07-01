@@ -56,6 +56,10 @@ module.exports = {
       path.resolve(__dirname, '../packages/slate-plugins/src'),
     ];
 
+    config.resolve.alias = {
+      "@udecode/slate-plugins": path.resolve(__dirname, "..", "packages/slate-plugins/src"),
+    };
+
     config.resolve.extensions.push('.ts', '.tsx');
 
     return config;
