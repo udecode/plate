@@ -17,7 +17,7 @@ const output = { offset: 4, path: [0, 0] };
 
 it('should be', () => {
   expect(
-    getPointBefore(input, input.selection, {
+    getPointBefore(input, input.selection as any, {
       matchString: ' ',
       skipInvalid: true,
     })

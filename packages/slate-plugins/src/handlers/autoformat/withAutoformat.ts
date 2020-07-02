@@ -1,88 +1,134 @@
-import { Editor, Range, Transforms } from 'slate';
+import { castArray } from 'lodash';
+import { Editor, Location, Range, Transforms } from 'slate';
 import { getTextFromBlockStartToAnchor } from '../../common/queries';
+import { getPointBefore } from '../../common/queries/getPointBefore';
+import { getRangeBefore } from '../../common/queries/getRangeBefore';
+import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { BLOCKQUOTE } from '../../elements/blockquote';
-import { HeadingType } from '../../elements/heading';
-import { ListType, toggleList } from '../../elements/list';
-import { PARAGRAPH } from '../../elements/paragraph';
+import { WithAutoformatOptions } from './types';
+
+export const autoformat = (
+  editor: Editor,
+  type: string,
+  at: Location,
+  {
+    preFormat,
+    format,
+  }: {
+    preFormat?: (editor: Editor) => void;
+    format?: (editor: Editor) => void;
+  }
+) => {
+  Transforms.delete(editor, { at });
+
+  preFormat?.(editor);
+
+  if (!format) {
+    Transforms.setNodes(
+      editor,
+      { type },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  } else {
+    format(editor);
+  }
+};
 
 /**
  * Enables support for autoformatting actions.
  */
-export const withAutoformat = ({
-  typeUl = ListType.UL,
-  typeOl = ListType.OL,
-  typeLi = ListType.LI,
-  typeH1 = HeadingType.H1,
-  typeH2 = HeadingType.H2,
-  typeH3 = HeadingType.H3,
-  typeH4 = HeadingType.H4,
-  typeH5 = HeadingType.H5,
-  typeH6 = HeadingType.H6,
-  typeBlockquote = BLOCKQUOTE,
-  typeP = PARAGRAPH,
-} = {}) => <T extends Editor>(editor: T) => {
-  const options = {
-    typeUl,
-    typeOl,
-    typeLi,
-    typeBlockquote,
-    typeH1,
-    typeH2,
-    typeH3,
-    typeH4,
-    typeH5,
-    typeH6,
-    typeP,
-  };
-
-  // const options = {
-  //   shortcuts: [{}],
-  // };
-
+export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
+  T extends Editor
+>(
+  editor: T
+) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
-    const { selection } = editor;
+    if (!isCollapsed(editor.selection)) return insertText(text);
 
-    const SPACE = ' ';
+    const selection = editor.selection as Range;
 
-    if (text === SPACE && isCollapsed(selection)) {
+    let found = false;
+    rules.some(({ trigger = ' ', markupRules, preFormat }) => {
+      const triggers: string[] = castArray(trigger);
+
+      // Check trigger
+      if (!triggers.includes(text)) return false;
+
       const beforeTextEntry = getTextFromBlockStartToAnchor(editor);
 
-      const SHORTCUTS: { [key: string]: string } = {
-        '*': typeLi,
-        '-': typeLi,
-        '+': typeLi,
-        '1.': typeLi,
-        '>': typeBlockquote,
-        '#': typeH1,
-        '##': typeH2,
-        '###': typeH3,
-        '####': typeH4,
-        '#####': typeH5,
-        '######': typeH6,
-      };
+      found = markupRules.some(({ type, markup, format, insert, inline }) => {
+        const markups: string[] = castArray(markup);
 
-      const type = SHORTCUTS[beforeTextEntry.text];
-      if (type) {
-        Transforms.select(editor, beforeTextEntry.range as Range);
-        Transforms.delete(editor);
-
-        if (type !== typeLi) {
-          Transforms.setNodes(
-            editor,
-            { type },
-            { match: (n) => Editor.isBlock(editor, n) }
-          );
-        } else {
-          const typeList = beforeTextEntry.text === '1.' ? typeOl : typeUl;
-
-          toggleList(editor, { ...options, typeList });
+        if (beforeTextEntry.range && markups.includes(beforeTextEntry.text)) {
+          // Start of the block
+          autoformat(editor, type, beforeTextEntry.range, {
+            preFormat,
+            format,
+          });
+          return true;
         }
-        return;
-      }
-    }
+
+        if (insert) {
+          // Middle of the block
+          const markupRange = getRangeBefore(editor, selection, {
+            matchString: markup,
+            unit: 'word',
+          });
+
+          if (markupRange) {
+            autoformat(editor, type, markupRange, {
+              preFormat: () => {
+                preFormat?.(editor);
+                editor.insertBreak();
+              },
+              format,
+            });
+
+            return true;
+          }
+        }
+
+        if (inline) {
+          const markupPoint = getPointBefore(editor, selection, {
+            matchString: markup,
+            skipInvalid: true,
+          });
+
+          const textRange = getRangeBefore(editor, selection, {
+            matchString: markup,
+            skipInvalid: true,
+            afterMatch: true,
+          });
+
+          const markupText = getText(editor, textRange);
+
+          if (!markupPoint || !textRange || !markupText) return false;
+
+          Transforms.select(editor, textRange);
+
+          editor.addMark(type, true);
+          Transforms.collapse(editor, { edge: 'end' });
+          editor.removeMark(type);
+          // Editor.next(editor, { at})
+          Transforms.delete(editor, {
+            at: {
+              anchor: markupPoint,
+              focus: textRange.anchor,
+            },
+          });
+
+          return true;
+        }
+
+        return false;
+      });
+
+      return true;
+    });
+
+    if (found) return;
 
     insertText(text);
   };

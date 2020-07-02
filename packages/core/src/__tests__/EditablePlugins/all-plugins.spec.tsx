@@ -35,9 +35,9 @@ import {
   initialValueTables,
   nodeTypes,
 } from '../../../../slate-plugins/src/__fixtures__/initialValues.fixtures';
-import { SlateDocument } from '../../../../slate-plugins/src/common/SlateDocument.types';
 import { withNodeID } from '../../../../slate-plugins/src/common/transforms/node-id/withNodeID';
 import { withTransforms } from '../../../../slate-plugins/src/common/transforms/withTransforms';
+import { SlateDocument } from '../../../../slate-plugins/src/common/types/SlateDocument.types';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar/HeadingToolbar/HeadingToolbar';

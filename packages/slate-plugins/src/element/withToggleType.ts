@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { isNodeInSelection } from '../common/queries';
+import { isNodeTypeIn } from '../common/queries';
 import { DEFAULT_ELEMENT, ToggleTypeEditor } from './types';
 
 export interface WithToggleTypeOptions {
@@ -19,7 +19,7 @@ export const withToggleType = ({
   const editor = e as T & ToggleTypeEditor;
 
   editor.toggleType = (activeType: string, defaultType = type) => {
-    const isActive = isNodeInSelection(editor, activeType);
+    const isActive = isNodeTypeIn(editor, activeType);
 
     Transforms.setNodes(editor, {
       type: isActive ? defaultType : activeType,

@@ -58,8 +58,8 @@ Here is our roadmap to have a complete rich-text editor.
   - [ ] IndentBlock – Enables support for indenting block elements
         excluding lists.
 - [x] Link – Enables support for hyperlinks.
-  - [x] Insert links from clipboard.
-  - [x] Override links from clipboard.
+  - [x] Insert/update links from text.
+  - [x] Insert/update links from clipboard.
   - [ ] [Balloon](https://github.com/udecode/slate-plugins/issues/103)
         to edit and delete.
   - [ ] Hotkey
@@ -166,8 +166,12 @@ Here is our roadmap to have a complete rich-text editor.
 ### Handlers
 
 - [x] Autoformat – Enables support for autoformatting actions.
-  - [ ] Code block: start a line with ```
-  - [ ] Marks: autoformat text to marks
+  - [x] Block formatting.
+    - [x] Configurable markup to trigger the autoformatting.
+    - [x] Configurable character to trigger the autoformatting.
+    - [x] Configurable option to enable autoformatting in the middle of a block by inserting a block instead of updating.
+  - [x] Inline formatting.
+    - [x] Configurable option to enable inline formatting.
 - [x] SoftBreak – Enables support for inserting soft breaks.
 
 ### Decorators

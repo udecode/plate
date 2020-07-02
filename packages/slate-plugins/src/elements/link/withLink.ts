@@ -1,35 +1,81 @@
-import { Transforms } from 'slate';
+import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getPointBefore } from '../../common/queries/getPointBefore';
+import { getRangeBefore } from '../../common/queries/getRangeBefore';
 import { getText } from '../../common/queries/getText';
+import { getTextFromBlockStartToAnchor } from '../../common/queries/getTextFromBlockStartToAnchor';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { isUrl } from '../../common/utils';
+import { unwrapNodesByType } from '../../common/transforms/unwrapNodesByType';
+import { isUrl as isUrlProtocol } from '../../common/utils';
 import { wrapLink } from './transforms';
+import { LINK } from './types';
 
 /**
- * Insert space after a url to wrap a link. There should be a space before the url.
- * TODO: it's not working when the url is at the start of the block.
+ * Unwrap link at a location (default: selection).
+ * Then, the focus of the location is set to selection focus.
+ * Then, wrap the link at the location.
  */
-export const withLink = () => <T extends ReactEditor>(editor: T) => {
+export const wrapLinkToSelection = (
+  editor: Editor,
+  url: string,
+  {
+    typeLink = LINK,
+    at,
+  }: {
+    typeLink?: string;
+    at?: Range;
+  }
+) => {
+  if (!isCollapsed(editor.selection)) return;
+
+  unwrapNodesByType(editor, typeLink, { at });
+  if (at) {
+    at.focus = (editor.selection as Range).focus;
+  }
+  wrapLink(editor, url, {
+    typeLink,
+    at,
+  });
+};
+
+/**
+ * Insert space after a url to wrap a link.
+ * Lookup from the block start to the cursor to check if there is an url.
+ * If not found, lookup before the cursor for a space character to check the url.
+ */
+export const withLink = ({ typeLink = LINK, isUrl = isUrlProtocol } = {}) => <
+  T extends ReactEditor
+>(
+  editor: T
+) => {
   const { insertData, insertText } = editor;
 
   editor.insertText = (text) => {
     if (text === ' ' && editor.selection && isCollapsed(editor.selection)) {
-      const beforeWordStart = getPointBefore(editor, editor.selection, {
+      const blockStartToAnchor = getTextFromBlockStartToAnchor(editor);
+
+      if (blockStartToAnchor.range && isUrl(blockStartToAnchor.text)) {
+        wrapLinkToSelection(editor, blockStartToAnchor.text, {
+          typeLink,
+          at: blockStartToAnchor.range,
+        });
+        return insertText(text);
+      }
+
+      const beforeWordRange = getRangeBefore(editor, editor.selection, {
         matchString: ' ',
+        skipInvalid: true,
+        afterMatch: true,
+        multiPaths: true,
       });
 
-      if (beforeWordStart) {
-        const beforeWordRange = {
-          anchor: beforeWordStart,
-          focus: editor.selection.focus,
-        };
+      if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
 
         if (isUrl(beforeWordText)) {
-          Transforms.select(editor, beforeWordRange);
-          // editor.
-          wrapLink(editor, beforeWordText);
+          wrapLinkToSelection(editor, beforeWordText, {
+            typeLink,
+            at: beforeWordRange,
+          });
         }
       }
     }

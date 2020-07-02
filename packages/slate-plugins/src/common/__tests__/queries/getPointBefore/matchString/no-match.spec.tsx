@@ -16,7 +16,10 @@ const input = ((
 const output = undefined;
 
 it('should be', () => {
-  expect(getPointBefore(input, input.selection, { matchString: 'a' })).toEqual(
-    output
-  );
+  expect(
+    getPointBefore(input, input.selection as any, {
+      matchString: 'a',
+      skipInvalid: true,
+    })
+  ).toEqual(output);
 });

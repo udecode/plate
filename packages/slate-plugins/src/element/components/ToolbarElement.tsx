@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ReactEditor, useSlate } from 'slate-react';
-import { isNodeInSelection } from '../../common/queries';
+import { isNodeTypeIn } from '../../common/queries';
 import { getPreventDefaultHandler } from '../../common/utils';
 import { ToolbarButton } from '../../components/ToolbarButton';
 import { ToggleTypeEditor } from '../types';
@@ -14,7 +14,7 @@ export const ToolbarElement = ({ type, ...props }: ToolbarElementProps) => {
 
   return (
     <ToolbarButton
-      active={isNodeInSelection(editor, type)}
+      active={isNodeTypeIn(editor, type)}
       onMouseDown={getPreventDefaultHandler(editor.toggleType, type)}
       {...props}
     />

@@ -1,5 +1,5 @@
 import { Node, NodeEntry } from 'slate';
-import { QueryOptions } from '../types';
+import { QueryOptions } from '../types/QueryOptions.types';
 
 /**
  * Is the node entry filling a condition.

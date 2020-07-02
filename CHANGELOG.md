@@ -14,6 +14,37 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+
+## 0.61.0 (2020-07-02)
+
+### Breaking Changes
+
+- `getSelectionNodesByType`:
+    - renamed to `getNodesByType`
+    - new option: `at`
+- `isNodeInSelection`:
+    - renamed to `isNodeTypeIn`
+    - new option: `at`
+- removed `getSelectionNodesArrayByType`:
+
+### Features
+
+- `getPointBefore` – new options:
+  - `multiPaths`
+  - `afterMatch`
+  - `skipInvalid`,
+- `getRangeBefore` – Get range from `getPointBefore` to the end point of `at`.
+- `withAutoformat`:
+  - new option type: `WithAutoformatOptions`
+  - Configurable markup to trigger the autoformatting.
+  - Configurable character to trigger the autoformatting.
+  - Configurable option to enable autoformatting in the middle of a block by inserting a block instead of updating.
+  - Configurable option to enable inline formatting.
+
+### Bug Fixes
+
+- `withLink` – space key should wrap the previous url with a link at the start of a block.
+
 ## 0.60.2 (2020-07-01)
 
 ### Features
@@ -23,6 +54,9 @@ useful to look for a point before a location using match options.
 - `withLink` – Insert space after a url to wrap a link.
 There should be a space before the url.
 TODO: it's not working when the url is at the start of the block.
+- `LinkElement`:
+    - styles updated.
+    - supports `styles`.
 
 ### Bug Fixes
 

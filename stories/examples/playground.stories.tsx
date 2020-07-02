@@ -82,6 +82,7 @@ import {
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
   initialValueAutoformat,
@@ -215,7 +216,7 @@ export const Plugins = () => {
       defaultType: nodeTypes.typeP,
     }),
     withList(nodeTypes),
-    withAutoformat(nodeTypes),
+    withAutoformat({ rules: autoformatRules }),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],

@@ -24,7 +24,7 @@ import {
   TableType,
 } from '@udecode/slate-plugins';
 import faker from 'faker';
-import { Descendant } from 'slate';
+import { Descendant, Text } from 'slate';
 
 export const headingTypes = [
   HeadingType.H1,
@@ -70,21 +70,31 @@ export const nodeTypes = {
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
 };
 
-export const createList = (items: string[]): SlateDocumentFragment => {
+export const createList = (
+  items: string[],
+  { splitSeparator = '`' }: { splitSeparator?: string } = {}
+): SlateDocumentFragment => {
   const children = items.map(
-    (item): SlateDocumentDescendant => ({
-      type: nodeTypes.typeLi,
-      children: [
-        {
-          type: nodeTypes.typeP,
-          children: [
-            {
-              text: item,
-            },
-          ],
-        },
-      ],
-    })
+    (item): SlateDocumentDescendant => {
+      const texts = item.split(splitSeparator);
+      const marks: Text[] = texts.map((text, index) => {
+        const res: any = { text };
+        if (index % 2 === 1) {
+          res.code = true;
+        }
+        return res;
+      });
+
+      return {
+        type: nodeTypes.typeLi,
+        children: [
+          {
+            type: nodeTypes.typeP,
+            children: marks,
+          },
+        ],
+      } as any;
+    }
   ) as SlateDocumentFragment;
 
   return [
@@ -334,7 +344,7 @@ export const initialValuePreview: SlateDocument = [
   },
 ];
 
-export const initialValueAutoformat: SlateDocument = [
+export const initialValueAutoformat: any[] = [
   {
     children: [
       {
@@ -350,20 +360,7 @@ export const initialValueAutoformat: SlateDocument = [
         children: [
           {
             text:
-              'The editor gives you full control over the logic you can add. For example, it\'s fairly common to want to add markdown-like shortcuts to editors. So that, when you start a line with "> " you get a blockquote that looks like this:',
-          },
-        ],
-      },
-      {
-        type: BLOCKQUOTE,
-        children: [{ text: 'A wise quote.' }],
-      },
-      {
-        type: nodeTypes.typeP,
-        children: [
-          {
-            text:
-              'Order when you start a line with "## " you get a level-two heading, like this:',
+              "The editor gives you full control over the logic you can add. For example, it's fairly common to want to add markdown-like shortcuts to editors.",
           },
         ],
       },
@@ -371,11 +368,47 @@ export const initialValueAutoformat: SlateDocument = [
         type: nodeTypes.typeP,
         children: [
           {
-            text:
-              'Try it out for yourself! Try starting a new line with ">", "-", "1." or "#"s.',
+            text: 'While typing:',
           },
         ],
       },
+      ...createList(
+        [
+          'Type /**/ or /__/ on either side of your text to **bold**.',
+          'Type /*/ or /_/ on either side of your text to *italicize*.',
+          'Type /`/ on either side of your text to create `inline code`.',
+          'Type /~~/ on either side of your text to ~~strikethrough~~.',
+          'Type /```/ to create a code block in a new block.',
+        ],
+        {
+          splitSeparator: '/',
+        }
+      ),
+      {
+        type: nodeTypes.typeP,
+        children: [
+          {
+            text:
+              'At the beginning of any new block or existing block, try these:',
+          },
+        ],
+      },
+      ...createList(
+        [
+          'Type /*/, /-/ or /+/ followed by /space/ to create a bulleted list.',
+          // "Type /[]/ to create a to-do checkbox. (There's no /space/ in between.)",
+          'Type /1./ or /1)/ followed by /space/ to create a numbered list.',
+          'Type />/ followed by /space/ to create a block quote.',
+          'Type /```/ to create a code block.',
+          'Type /#/ followed by /space/ to create an H1 heading.',
+          'Type /##/ followed by /space/ to create an H2 sub-heading.',
+          'Type /###/ followed by /space/ to create an H3 sub-heading.',
+          'Type /####/ followed by /space/ to create an H4 sub-heading.',
+          'Type /#####/ followed by /space/ to create an H5 sub-heading.',
+          'Type /######/ followed by /space/ to create an H6 sub-heading.',
+        ],
+        { splitSeparator: '/' }
+      ),
     ],
   },
 ];

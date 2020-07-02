@@ -2,7 +2,7 @@ import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import {
   isBlockTextEmpty,
   isFirstChild,
-  isNodeInSelection,
+  isNodeTypeIn,
   isRangeAtRoot,
 } from '../../common/queries';
 import { PARAGRAPH } from '../paragraph';
@@ -129,7 +129,7 @@ export const onKeyDownList = ({
   if (Object.values(ListHotkey).includes(e.key)) {
     if (
       editor.selection &&
-      isNodeInSelection(editor, typeLi) &&
+      isNodeTypeIn(editor, typeLi) &&
       !isRangeAtRoot(editor.selection)
     ) {
       if (e.key === ListHotkey.TAB) {

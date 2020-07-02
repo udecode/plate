@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { isNodeInSelection } from '../../../common/queries';
+import { isNodeTypeIn } from '../../../common/queries';
 import {
   ToolbarButton,
   ToolbarButtonProps,
@@ -16,7 +16,7 @@ export const ToolbarLink = ({
 
   return (
     <ToolbarButton
-      active={isNodeInSelection(editor, typeLink)}
+      active={isNodeTypeIn(editor, typeLink)}
       onMouseDown={(event) => {
         event.preventDefault();
 

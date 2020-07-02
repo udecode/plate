@@ -13,12 +13,13 @@ const input = ((
   </editor>
 ) as any) as Editor;
 
-const output = { offset: 4, path: [0, 0] };
+const output = { offset: 5, path: [0, 0] };
 
 it('should be', () => {
   expect(
     getPointBefore(input, input.selection, {
       matchString: ' ',
+      afterMatch: true,
       skipInvalid: true,
     })
   ).toEqual(output);

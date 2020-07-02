@@ -1,7 +1,5 @@
-import { Editor, Transforms } from 'slate';
-import { isNodeInSelection } from '../../../common/queries';
+import { Editor, Location, Transforms } from 'slate';
 import { isCollapsed } from '../../../common/queries/isCollapsed';
-import { unwrapNodesByType } from '../../../common/transforms';
 import { LINK } from '../types';
 
 /**
@@ -13,24 +11,29 @@ import { LINK } from '../types';
 export const wrapLink = (
   editor: Editor,
   url: string,
-  { typeLink = LINK } = {}
+  {
+    typeLink = LINK,
+    at,
+  }: {
+    typeLink?: string;
+    at?: Location;
+  } = {}
 ) => {
-  if (isNodeInSelection(editor, typeLink)) {
-    unwrapNodesByType(editor, typeLink);
-  }
-
   const { selection } = editor;
   const collapsed = isCollapsed(selection);
+
+  const wrap = !collapsed || !!at;
+
   const link = {
     type: typeLink,
     url,
-    children: collapsed ? [{ text: url }] : [],
+    children: wrap ? [] : [{ text: url }],
   };
 
-  if (collapsed) {
-    Transforms.insertNodes(editor, link);
-  } else {
-    Transforms.wrapNodes(editor, link, { split: true });
+  if (wrap) {
+    Transforms.wrapNodes(editor, link, { at, split: true });
     Transforms.collapse(editor, { edge: 'end' });
+  } else {
+    Transforms.insertNodes(editor, link);
   }
 };

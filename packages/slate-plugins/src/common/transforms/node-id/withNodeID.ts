@@ -1,7 +1,7 @@
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries';
-import { QueryOptions } from '../../types';
+import { QueryOptions } from '../../types/QueryOptions.types';
 import { setPropsToNodes } from '../setPropsToNodes';
 
 export interface WithNodeIDProps extends QueryOptions {

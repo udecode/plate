@@ -1,8 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import {
-  getSelectionNodesArrayByType,
-  isNodeInSelection,
-} from '../../../common/queries';
+import { getNodesByType, isNodeTypeIn } from '../../../common/queries';
 import { PARAGRAPH } from '../../paragraph';
 import { ListType } from '../types';
 import { unwrapList } from './unwrapList';
@@ -23,7 +20,7 @@ export const toggleList = (
     typeP?: string;
   }
 ) => {
-  const isActive = isNodeInSelection(editor, typeList);
+  const isActive = isNodeTypeIn(editor, typeList);
 
   unwrapList(editor, { typeUl, typeOl, typeLi });
 
@@ -35,7 +32,7 @@ export const toggleList = (
     const list = { type: typeList, children: [] };
     Transforms.wrapNodes(editor, list);
 
-    const nodes = getSelectionNodesArrayByType(editor, typeP);
+    const nodes = [...getNodesByType(editor, typeP)];
 
     const listItem = { type: typeLi, children: [] };
 
