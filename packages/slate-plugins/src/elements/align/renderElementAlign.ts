@@ -1,4 +1,4 @@
-import { getRenderElements } from '../../element/utils';
+import { getRenderElements } from '../../common/utils/getRenderElement';
 import { AlignElement } from './components';
 import { ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT } from './types';
 

@@ -1,6 +1,6 @@
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import { RenderElementOptions } from '../../element';
+import { RenderElementOptions } from '@udecode/core';
 
 const ALIGN_LEFT = 'left';
 const ALIGN_CENTER = 'center';
