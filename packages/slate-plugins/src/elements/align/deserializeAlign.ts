@@ -1,6 +1,11 @@
 import { DeserializeHtml } from '@udecode/core';
 import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { AlignDeserializeOptions, ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT } from './types';
+import {
+  ALIGN_CENTER,
+  ALIGN_LEFT,
+  ALIGN_RIGHT,
+  AlignDeserializeOptions,
+} from './types';
 
 export const deserializeAlign = ({
   typeAlignLeft = ALIGN_LEFT,
