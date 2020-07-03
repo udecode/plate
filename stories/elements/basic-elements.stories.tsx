@@ -9,6 +9,9 @@ import {
   Looks6,
   LooksOne,
   LooksTwo,
+  FormatAlignLeft,
+  FormatAlignRight,
+  FormatAlignCenter,
 } from '@styled-icons/material';
 import {
   BlockquotePlugin,
@@ -18,11 +21,13 @@ import {
   HeadingPlugin,
   HeadingToolbar,
   ParagraphPlugin,
+  AlignPlugin,
   pipe,
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
   ToolbarElement,
+  ToolbarAlign,
   withResetBlockType,
   withToggleType,
 } from '@udecode/slate-plugins';
@@ -38,6 +43,7 @@ import {
 export default {
   title: 'Elements/Basic Elements',
   subcomponents: {
+    AlignPlugin,
     BlockquotePlugin,
     CodeBlockPlugin,
     HeadingPlugin,
@@ -59,6 +65,8 @@ export const Example = () => {
   const plugins: SlatePlugin[] = [];
   if (boolean('ParagraphPlugin', true))
     plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('AlignPlugin', true))
+    plugins.push(AlignPlugin(nodeTypes));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(nodeTypes));
   if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
@@ -109,7 +117,7 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+        onChange={(newValue) => {setValue(newValue as SlateDocument)}}
       >
         <HeadingToolbar>
           <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
@@ -123,6 +131,9 @@ export const Example = () => {
             icon={<FormatQuote />}
           />
           <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+          <ToolbarAlign type={nodeTypes.typeAlignCenter} icon={<FormatAlignCenter />} />
+          <ToolbarAlign type={nodeTypes.typeAlignLeft} icon={<FormatAlignLeft />} />
+          <ToolbarAlign type={nodeTypes.typeAlignRight} icon={<FormatAlignRight />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
