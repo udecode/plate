@@ -1,17 +1,5 @@
-import {
-  ACTION_ITEM,
-  BLOCKQUOTE,
-  CODE_BLOCK,
-  HeadingType,
-  IMAGE,
-  LINK,
-  ListType,
-  MEDIA_EMBED,
-  MENTION,
-  PARAGRAPH,
-  TableType,
-} from '@udecode/slate-plugins';
 import { createHyperscript } from 'slate-hyperscript';
+import { nodeTypes } from '../__fixtures__/initialValues.fixtures';
 import { createText } from './hyperscript/creators';
 
 declare global {
@@ -26,29 +14,6 @@ declare global {
     }
   }
 }
-
-const nodeTypes = {
-  typeP: PARAGRAPH,
-  typeMention: MENTION,
-  typeBlockquote: BLOCKQUOTE,
-  typeCodeBlock: CODE_BLOCK,
-  typeLink: LINK,
-  typeImg: IMAGE,
-  typeMediaEmbed: MEDIA_EMBED,
-  typeActionItem: ACTION_ITEM,
-  typeTable: TableType.TABLE,
-  typeTr: TableType.ROW,
-  typeTd: TableType.CELL,
-  typeUl: ListType.UL,
-  typeOl: ListType.OL,
-  typeLi: ListType.LI,
-  typeH1: HeadingType.H1,
-  typeH2: HeadingType.H2,
-  typeH3: HeadingType.H3,
-  typeH4: HeadingType.H4,
-  typeH5: HeadingType.H5,
-  typeH6: HeadingType.H6,
-};
 
 export const jsx = createHyperscript({
   elements: {
@@ -72,6 +37,7 @@ export const jsx = createHyperscript({
     hh4: { type: nodeTypes.typeH4 },
     hh5: { type: nodeTypes.typeH5 },
     hh6: { type: nodeTypes.typeH6 },
+    hcenter: { type: nodeTypes.typeAlignCenter },
     inline: { inline: true },
     block: {},
   },

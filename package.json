@@ -28,7 +28,7 @@
     "test:w": "yarn test --watch",
     "test:wa": "yarn test --watchAll",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
-    "versionup": "lerna version --conventional-commits --no-git-tag-version"
+    "versionup": "lerna version --no-git-tag-version"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.3",

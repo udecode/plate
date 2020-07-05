@@ -3,14 +3,6 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## 0.60.2 (2020-07-01)
-
-**Note:** Version bump only for package slate-plugins
-
-
-
-
-
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
@@ -33,6 +25,7 @@ patch version bumps.
 
 ### Features
 
+- `AlignPlugin` – new plugin for alignment.
 - `getPointBefore`
   - new options:
     - `multiPaths`

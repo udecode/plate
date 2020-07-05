@@ -19,8 +19,8 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] `typeX` – Type of the element node where `X` represents the
         element.
   - [x] `component` – React component to render the element.
-- [ ] [Alignment](https://github.com/udecode/slate-plugins/issues/104)
-      – Enables support for text alignment, useful to align your content
+- [x] [Alignment](https://github.com/udecode/slate-plugins/issues/104)
+      – [ ] Enables support for text alignment, useful to align your content
       to left, right and center or to justify it.
 - [x] BasicElements – Enables support for basic elements.
   - [x] Blockquote – Enables support for block quotes, useful for
@@ -192,6 +192,7 @@ Here is our roadmap to have a complete rich-text editor.
       document.
 - [x] HeadingToolbar – Provides a heading toolbar.
 - [x] Toolbar – Provides a toolbar.
+- [ ] ToolbarMenu – Provides a toolbar button that opens a menu of other toolbar buttons.
 
 ### Utilities
 

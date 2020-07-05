@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
+  FormatAlignCenter,
+  FormatAlignLeft,
+  FormatAlignRight,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -47,6 +50,8 @@ import { ToolbarElement } from '../../../../slate-plugins/src/element/components
 import { withInlineVoid } from '../../../../slate-plugins/src/element/withInlineVoid';
 import { withToggleType } from '../../../../slate-plugins/src/element/withToggleType';
 import { ActionItemPlugin } from '../../../../slate-plugins/src/elements/action-item/ActionItemPlugin';
+import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignPlugin';
+import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/components/ToolbarAlign';
 import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
 import { BlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/BlockquotePlugin';
 import { CodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockPlugin';
@@ -115,6 +120,7 @@ const plugins = [
   TablePlugin(nodeTypes),
   MediaEmbedPlugin(nodeTypes),
   CodeBlockPlugin(nodeTypes),
+  AlignPlugin(nodeTypes),
   BoldPlugin(markOptions),
   BoldPlugin(),
   CodePlugin(markOptions),
@@ -218,6 +224,15 @@ const Editor = () => {
         />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
         <ToolbarTable transform={jest.fn()} icon={null} />
+        <ToolbarAlign icon={<FormatAlignLeft />} />
+        <ToolbarAlign
+          type={nodeTypes.typeAlignCenter}
+          icon={<FormatAlignCenter />}
+        />
+        <ToolbarAlign
+          type={nodeTypes.typeAlignRight}
+          icon={<FormatAlignRight />}
+        />
       </HeadingToolbar>
       <BalloonToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />

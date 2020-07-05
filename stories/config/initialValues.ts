@@ -1,5 +1,8 @@
 import {
   ACTION_ITEM,
+  ALIGN_CENTER,
+  ALIGN_LEFT,
+  ALIGN_RIGHT,
   BLOCKQUOTE,
   CODE_BLOCK,
   HeadingType,
@@ -18,9 +21,6 @@ import {
   MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
-  ALIGN_LEFT,
-  ALIGN_RIGHT,
-  ALIGN_CENTER,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,

@@ -7,6 +7,8 @@ import {
   ACTION_ITEM,
   ActionItemPlugin,
 } from '../../../../elements/action-item';
+import { AlignPlugin } from '../../../../elements/align/AlignPlugin';
+import { ALIGN_CENTER } from '../../../../elements/align/types';
 import { BlockquotePlugin } from '../../../../elements/blockquote';
 import { CodeBlockPlugin } from '../../../../elements/code-block';
 import { HeadingPlugin } from '../../../../elements/heading';
@@ -59,6 +61,7 @@ const elementTags = [
   '<table><tr><td>table</td></tr></table>',
   `<div data-slate-type=${ACTION_ITEM} data-slate-checked="true">checked</div>`,
   `<div data-slate-type=${ACTION_ITEM} data-slate-checked="false">unchecked</div>`,
+  `<div data-slate-type=${ALIGN_CENTER}>center</div>`,
   `<iframe src="https://player.vimeo.com/video/26689853" />`,
 ];
 
@@ -80,6 +83,7 @@ const input1 = [
   MediaEmbedPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
+  AlignPlugin(),
   { deserialize: deserializeBold() },
   { deserialize: deserializeHighlight() },
   { deserialize: deserializeCode() },
@@ -139,6 +143,7 @@ const output = (
     </htable>
     <hactionitem checked>checked</hactionitem>
     <hactionitem checked={false}>unchecked</hactionitem>
+    <hcenter>center</hcenter>
     <hembed url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
     </hembed>

@@ -1,16 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
-import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import {
-  FormatQuote,
-  Looks3,
-  Looks4,
-  Looks5,
-  Looks6,
-  LooksOne,
-  LooksTwo,
+  FormatAlignCenter,
+  FormatAlignLeft,
+  FormatAlignRight,
 } from '@styled-icons/material';
 import {
+  AlignPlugin,
   BlockquotePlugin,
   CodeBlockPlugin,
   EditablePlugins,
@@ -22,7 +18,7 @@ import {
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
-  ToolbarElement,
+  ToolbarAlign,
   withResetBlockType,
   withToggleType,
 } from '@udecode/slate-plugins';
@@ -36,8 +32,9 @@ import {
 } from '../config/initialValues';
 
 export default {
-  title: 'Elements/Basic Elements',
+  title: 'Elements/Alignment',
   subcomponents: {
+    AlignPlugin,
     BlockquotePlugin,
     CodeBlockPlugin,
     HeadingPlugin,
@@ -59,6 +56,7 @@ export const Example = () => {
   const plugins: SlatePlugin[] = [];
   if (boolean('ParagraphPlugin', true))
     plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(nodeTypes));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(nodeTypes));
   if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
@@ -114,17 +112,15 @@ export const Example = () => {
         }}
       >
         <HeadingToolbar>
-          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
-          <ToolbarElement
-            type={nodeTypes.typeBlockquote}
-            icon={<FormatQuote />}
+          <ToolbarAlign icon={<FormatAlignLeft />} />
+          <ToolbarAlign
+            type={nodeTypes.typeAlignCenter}
+            icon={<FormatAlignCenter />}
           />
-          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+          <ToolbarAlign
+            type={nodeTypes.typeAlignRight}
+            icon={<FormatAlignRight />}
+          />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
