@@ -18,6 +18,9 @@ import {
   MEDIA_EMBED,
   MENTION,
   PARAGRAPH,
+  ALIGN_LEFT,
+  ALIGN_RIGHT,
+  ALIGN_CENTER,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
@@ -68,6 +71,9 @@ export const nodeTypes = {
   typeSuperscript: MARK_SUPERSCRIPT,
   typeHighlight: MARK_HIGHLIGHT,
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
+  typeAlignLeft: ALIGN_LEFT,
+  typeAlignRight: ALIGN_RIGHT,
+  typeAlignCenter: ALIGN_CENTER,
 };
 
 export const createList = (
