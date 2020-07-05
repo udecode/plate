@@ -5,7 +5,7 @@ import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '../../../components/ToolbarButton';
-import { insertLink } from '../transforms';
+import { upsertLinkAtSelection } from '../transforms';
 import { LINK } from '../types';
 
 export const ToolbarLink = ({
@@ -22,7 +22,7 @@ export const ToolbarLink = ({
 
         const url = window.prompt('Enter the URL of the link:');
         if (!url) return;
-        insertLink(editor, url, { typeLink });
+        upsertLinkAtSelection(editor, url, { typeLink });
       }}
       {...props}
     />

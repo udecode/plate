@@ -1,39 +1,36 @@
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getRangeBefore } from '../../common/queries/getRangeBefore';
+import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
 import { getText } from '../../common/queries/getText';
-import { getTextFromBlockStartToAnchor } from '../../common/queries/getTextFromBlockStartToAnchor';
 import { isCollapsed } from '../../common/queries/isCollapsed';
+import { isNodeTypeIn } from '../../common/queries/isNodeTypeIn';
 import { unwrapNodesByType } from '../../common/transforms/unwrapNodesByType';
 import { isUrl as isUrlProtocol } from '../../common/utils';
-import { wrapLink } from './transforms';
+import { upsertLinkAtSelection, wrapLink } from './transforms';
 import { LINK } from './types';
 
-/**
- * Unwrap link at a location (default: selection).
- * Then, the focus of the location is set to selection focus.
- * Then, wrap the link at the location.
- */
-export const wrapLinkToSelection = (
+const upsertLink = (
   editor: Editor,
   url: string,
   {
-    typeLink = LINK,
     at,
+    typeLink,
   }: {
-    typeLink?: string;
-    at?: Range;
+    at: Range;
+    typeLink: string;
   }
 ) => {
-  if (!isCollapsed(editor.selection)) return;
-
   unwrapNodesByType(editor, typeLink, { at });
-  if (at) {
-    at.focus = (editor.selection as Range).focus;
-  }
+
+  const newSelection = editor.selection as Range;
+
   wrapLink(editor, url, {
     typeLink,
-    at,
+    at: {
+      ...at,
+      focus: newSelection.focus,
+    },
   });
 };
 
@@ -50,18 +47,21 @@ export const withLink = ({ typeLink = LINK, isUrl = isUrlProtocol } = {}) => <
   const { insertData, insertText } = editor;
 
   editor.insertText = (text) => {
-    if (text === ' ' && editor.selection && isCollapsed(editor.selection)) {
-      const blockStartToAnchor = getTextFromBlockStartToAnchor(editor);
+    if (text === ' ' && isCollapsed(editor.selection)) {
+      const selection = editor.selection as Range;
 
-      if (blockStartToAnchor.range && isUrl(blockStartToAnchor.text)) {
-        wrapLinkToSelection(editor, blockStartToAnchor.text, {
+      const rangeFromBlockStart = getRangeFromBlockStart(editor);
+      const textFromBlockStart = getText(editor, rangeFromBlockStart);
+
+      if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
+        upsertLink(editor, textFromBlockStart, {
+          at: rangeFromBlockStart,
           typeLink,
-          at: blockStartToAnchor.range,
         });
         return insertText(text);
       }
 
-      const beforeWordRange = getRangeBefore(editor, editor.selection, {
+      const beforeWordRange = getRangeBefore(editor, selection, {
         matchString: ' ',
         skipInvalid: true,
         afterMatch: true,
@@ -72,9 +72,9 @@ export const withLink = ({ typeLink = LINK, isUrl = isUrlProtocol } = {}) => <
         const beforeWordText = getText(editor, beforeWordRange);
 
         if (isUrl(beforeWordText)) {
-          wrapLinkToSelection(editor, beforeWordText, {
-            typeLink,
+          upsertLink(editor, beforeWordText, {
             at: beforeWordRange,
+            typeLink,
           });
         }
       }
@@ -86,8 +86,10 @@ export const withLink = ({ typeLink = LINK, isUrl = isUrlProtocol } = {}) => <
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
 
-    if (text && isUrl(text)) {
-      wrapLink(editor, text);
+    if (text && isUrl(text) && !isNodeTypeIn(editor, typeLink)) {
+      upsertLinkAtSelection(editor, text, {
+        typeLink,
+      });
     } else {
       insertData(data);
     }

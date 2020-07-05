@@ -7,7 +7,7 @@ import { getPointBefore } from '../../../../queries/getPointBefore';
 const input = ((
   <editor>
     <hp>
-      test http://localhost:3000
+      test http://google.com
       <cursor />
     </hp>
   </editor>

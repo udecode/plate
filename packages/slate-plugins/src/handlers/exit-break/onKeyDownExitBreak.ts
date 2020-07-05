@@ -1,7 +1,7 @@
 import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
 import {
-  getBlockAboveSelection,
+  getBlockAbove,
   isNodeType,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
@@ -60,7 +60,7 @@ export const onKeyDownExitBreak = ({
   event: KeyboardEvent,
   editor: Editor
 ) => {
-  const entry = getBlockAboveSelection(editor);
+  const entry = getBlockAbove(editor);
 
   rules.forEach(
     ({

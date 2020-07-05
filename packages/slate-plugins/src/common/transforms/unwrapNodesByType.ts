@@ -2,6 +2,9 @@ import { castArray } from 'lodash';
 import { Editor, Transforms } from 'slate';
 import { WrapOptions } from '../types/Transforms.types';
 
+/**
+ * Unwrap nodes by type
+ */
 export const unwrapNodesByType = (
   editor: Editor,
   types: string[] | string,

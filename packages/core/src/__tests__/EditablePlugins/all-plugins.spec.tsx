@@ -18,6 +18,7 @@ import { render } from '@testing-library/react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import {
   initialValueAutoformat,
   initialValueBasicElements,
@@ -165,7 +166,7 @@ const withPlugins = [
     defaultType: nodeTypes.typeP,
   }),
   withList(nodeTypes),
-  withAutoformat(nodeTypes),
+  withAutoformat({ rules: autoformatRulesFixtures }),
   withTransforms(),
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],

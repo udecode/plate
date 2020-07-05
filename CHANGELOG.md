@@ -19,20 +19,26 @@ patch version bumps.
 
 ### Breaking Changes
 
-- `getSelectionNodesByType`:
-    - renamed to `getNodesByType`
-    - new option: `at`
-- `isNodeInSelection`:
-    - renamed to `isNodeTypeIn`
-    - new option: `at`
-- removed `getSelectionNodesArrayByType`:
+- `getSelectionNodesByType` renamed to `getNodesByType`
+  - new option: `at`
+- `isNodeInSelection` renamed to `isNodeTypeIn`
+  - new option: `at`
+- `getBlockAboveSelection` renamed to `getBlockAbove`
+  - new option: `at`
+- `getTextFromBlockStartToAnchor` renamed to `getRangeFromBlockStart`
+  - new option: `at`
+- removed `getSelectionNodesArrayByType`
+- replaced `insertLink` by `upsertLinkAtSelection`
+- `wrapLink` is now only wrapping the link (without unwrapping).
 
 ### Features
 
-- `getPointBefore` – new options:
-  - `multiPaths`
-  - `afterMatch`
-  - `skipInvalid`,
+- `getPointBefore`
+  - new options:
+    - `multiPaths`
+    - `afterMatch` (replacing `beforeMatch`)
+    - `skipInvalid`
+  - support for multiple characters lookup.
 - `getRangeBefore` – Get range from `getPointBefore` to the end point of `at`.
 - `withAutoformat`:
   - new option type: `WithAutoformatOptions`

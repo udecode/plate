@@ -8,7 +8,7 @@ import { LINK, withLink } from '../../../../index';
 const input = (
   <editor>
     <hp>
-      link: http://localhost:3000
+      link: http://google.com
       <cursor />
     </hp>
   </editor>
@@ -20,19 +20,21 @@ const output = (
   <editor>
     <hp>
       link:{' '}
-      <element type="a" url="http://localhost:3000">
-        http://localhost:3000
+      <element type="a" url="http://google.com">
+        http://google.com
       </element>{' '}
     </hp>
   </editor>
 ) as any;
 
-it('should run default insertText', () => {
-  const editor = withLink()(
-    withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
-  );
+describe('when inserting a space after a url text (without link element)', () => {
+  it('should wrap the url with a link', () => {
+    const editor = withLink()(
+      withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
+    );
 
-  editor.insertText(text);
+    editor.insertText(text);
 
-  expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(output.children);
+  });
 });

@@ -374,11 +374,11 @@ export const initialValueAutoformat: any[] = [
       },
       ...createList(
         [
-          'Type /**/ or /__/ on either side of your text to **bold**.',
-          'Type /*/ or /_/ on either side of your text to *italicize*.',
-          'Type /`/ on either side of your text to create `inline code`.',
-          'Type /~~/ on either side of your text to ~~strikethrough~~.',
-          'Type /```/ to create a code block in a new block.',
+          'Type /**/ or /__/ on either side of your text followed by /space/ to **bold**.',
+          'Type /*/ or /_/ on either side of your text followed by /space/ to *italicize*.',
+          'Type /`/ on either side of your text followed by /space/ to create `inline code`.',
+          'Type /~~/ on either side of your text followed by /space/ to ~~strikethrough~~.',
+          'Type /```/ to create a code block below.',
         ],
         {
           splitSeparator: '/',

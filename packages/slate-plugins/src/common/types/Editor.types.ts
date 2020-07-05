@@ -8,3 +8,10 @@ export interface EditorNodesOptions {
   reverse?: boolean;
   voids?: boolean;
 }
+
+export interface EditorAboveOptions {
+  at?: Range | Path | Point;
+  match?: (node: Node) => boolean;
+  mode?: 'highest' | 'lowest';
+  voids?: boolean;
+}

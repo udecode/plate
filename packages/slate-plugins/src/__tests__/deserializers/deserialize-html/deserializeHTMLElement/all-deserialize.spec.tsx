@@ -47,7 +47,7 @@ const textTags = [
 ];
 
 const inlineTags = [
-  '<a href="http://localhost:3000">a</a>',
+  '<a href="http://google.com">a</a>',
   `<span data-slate-type=${MENTION} data-slate-value="mention" />`,
 ];
 
@@ -111,7 +111,7 @@ const output = (
       <htext superscript>sup</htext>
     </hp>
     <hp>
-      <ha url="http://localhost:3000">a</ha>
+      <ha url="http://google.com">a</ha>
       <hmention value="mention">
         <htext />
       </hmention>

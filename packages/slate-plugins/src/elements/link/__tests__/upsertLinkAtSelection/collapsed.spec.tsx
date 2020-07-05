@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../../__test-utils__/jsx';
-import { insertLink, withLink } from '../../../index';
+import { upsertLinkAtSelection, withLink } from '../../../index';
 
 const input = (
   <editor>
@@ -9,7 +9,7 @@ const input = (
   </editor>
 ) as any;
 
-const url = 'http://localhost';
+const url = 'http://google.com';
 
 const output = (
   <editor>
@@ -19,7 +19,7 @@ const output = (
 
 it('should run default insertText', () => {
   const editor = withLink()(input);
-  insertLink(editor, url);
+  upsertLinkAtSelection(editor, url);
 
   expect(input.children).toEqual(output.children);
 });

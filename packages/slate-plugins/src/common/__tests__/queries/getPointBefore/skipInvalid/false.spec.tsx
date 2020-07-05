@@ -7,7 +7,7 @@ import { getPointBefore } from '../../../../queries/getPointBefore';
 const input = ((
   <editor>
     <hp>
-      test http://localhost:3000
+      test http://google.com
       <cursor />
     </hp>
   </editor>
@@ -17,7 +17,7 @@ const output = undefined;
 
 it('should be', () => {
   expect(
-    getPointBefore(input, input.selection, {
+    getPointBefore(input, input.selection as any, {
       matchString: '3',
       skipInvalid: false,
     })

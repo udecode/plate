@@ -19,7 +19,7 @@ const output = {
 };
 
 it('should be', () => {
-  expect(getPointBefore(input, input.selection, { skipInvalid: true })).toEqual(
-    output
-  );
+  expect(
+    getPointBefore(input, input.selection as any, { skipInvalid: true })
+  ).toEqual(output);
 });

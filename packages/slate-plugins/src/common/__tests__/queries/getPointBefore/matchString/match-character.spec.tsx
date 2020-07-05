@@ -6,12 +6,20 @@ import { getPointBefore } from '../../../../queries/getPointBefore';
 
 const input = ((
   <editor>
-    <hp>test</hp>
+    <hp>
+      test http://google.com
+      <cursor />
+    </hp>
   </editor>
 ) as any) as Editor;
 
-const output = undefined;
+const output = { offset: 4, path: [0, 0] };
 
 it('should be', () => {
-  expect(getPointBefore(input, input.selection)).toEqual(output);
+  expect(
+    getPointBefore(input, input.selection as any, {
+      matchString: ' ',
+      skipInvalid: true,
+    })
+  ).toEqual(output);
 });

@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { getBlockAboveSelection, isBlockTextEmpty } from '../../common/queries';
+import { getBlockAbove, isBlockTextEmpty } from '../../common/queries';
 import { DEFAULT_ELEMENT } from '../../element';
 import { WithResetBlockTypeOptions } from './types';
 
@@ -14,7 +14,7 @@ export const withBreakEmptyReset = ({
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {
-    const blockEntry = getBlockAboveSelection(editor);
+    const blockEntry = getBlockAbove(editor);
 
     const [block] = blockEntry;
 

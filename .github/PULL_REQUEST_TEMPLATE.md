@@ -1,6 +1,6 @@
 ## Issue
 
-Fixes:
+
 
 ## What I did
 
@@ -8,9 +8,9 @@ Fixes:
 
 ## Checklist
 
-- [ ] The new code matches the existing patterns and styles.
-- [ ] The stories still work (run `yarn storybook`).
-- [ ] The stories are updated when relevant: `stories` for plugins, `knobs` for options.
+- [x] The new code matches the existing patterns and styles.
+- [x] The stories still work (run `yarn storybook`).
+- [x] The stories are updated when relevant: `stories` for plugins, `knobs` for options.
 
 
 <!--

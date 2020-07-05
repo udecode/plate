@@ -1,5 +1,5 @@
 /* eslint-disable no-constant-condition */
-import { castArray } from 'lodash';
+import { castArray, map } from 'lodash';
 import { Editor, Location, Path, Point } from 'slate';
 
 export interface BeforeOptions {
@@ -38,16 +38,6 @@ export interface PointBeforeOptions extends BeforeOptions {
    * Allow lookup across multiple node paths.
    */
   multiPaths?: boolean;
-
-  /**
-   * Minimum times to lookup before.
-   */
-  // min?: number;
-
-  /**
-   * Maximum times to lookup before.
-   */
-  // max?: number;
 }
 
 /**
@@ -66,8 +56,12 @@ export const getPointBefore = (
   let beforeAt = at;
   let previousBeforePoint = Editor.point(editor, at, { edge: 'end' });
 
-  // let count = 0;
-  // const isDistanceValid = distanceMax ||
+  const stackLength = (options.matchString?.length || 0) + 1;
+  const stack = Array(stackLength);
+
+  const unitOffset = !options.unit || options.unit === 'offset';
+
+  let count = 0;
   while (true) {
     const beforePoint = Editor.before(editor, beforeAt, options);
 
@@ -89,11 +83,26 @@ export const getPointBefore = (
 
     const matchString: string[] = castArray(options.matchString);
 
+    let beforeStringToMatch = beforeString;
+
+    if (unitOffset && stackLength) {
+      stack.unshift({
+        point: beforePoint,
+        text: beforeString,
+      });
+      stack.pop();
+
+      beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
+    }
+
     if (
-      matchString.includes(beforeString) ||
-      options.match?.({ beforeString, beforePoint, at })
+      matchString.includes(beforeStringToMatch) ||
+      options.match?.({ beforeString: beforeStringToMatch, beforePoint, at })
     ) {
       if (options.afterMatch) {
+        if (stackLength && unitOffset) {
+          return stack[stack.length - 1]?.point;
+        }
         return previousBeforePoint;
       }
       return beforePoint;
@@ -102,6 +111,10 @@ export const getPointBefore = (
     previousBeforePoint = beforePoint;
     beforeAt = beforePoint;
 
-    if (!options.skipInvalid) return;
+    count += 1;
+
+    if (!options.skipInvalid) {
+      if (!matchString || count > matchString.length) return;
+    }
   }
 };

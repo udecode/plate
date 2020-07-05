@@ -21,10 +21,12 @@ const output = (
   </editor>
 ) as any;
 
-it('should run default insertText', () => {
-  const editor = withLink()(withReact(input));
+describe('when inserting a character that is not a space', () => {
+  it('should run default insertText', () => {
+    const editor = withLink()(withReact(input));
 
-  editor.insertText(text);
+    editor.insertText(text);
 
-  expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(output.children);
+  });
 });

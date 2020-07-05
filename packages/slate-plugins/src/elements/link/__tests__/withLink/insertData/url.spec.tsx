@@ -14,14 +14,14 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'http://localhost:3000' };
+const data = { getData: () => 'http://google.com' };
 
 const output = (
   <editor>
     <hp>
       test
-      <element type="a" url="http://localhost:3000">
-        http://localhost:3000
+      <element type="a" url="http://google.com">
+        http://google.com
       </element>
       <htext />
     </hp>

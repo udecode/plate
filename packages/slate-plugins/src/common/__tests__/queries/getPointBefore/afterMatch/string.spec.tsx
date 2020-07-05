@@ -7,19 +7,23 @@ import { getPointBefore } from '../../../../queries/getPointBefore';
 const input = ((
   <editor>
     <hp>
-      test http://localhost:3000
+      find **test
       <cursor />
     </hp>
   </editor>
 ) as any) as Editor;
 
-const output = { offset: 4, path: [0, 0] };
+const output = {
+  offset: 7,
+  path: [0, 0],
+};
 
 it('should be', () => {
   expect(
-    getPointBefore(input, input.selection, {
-      matchString: ' ',
+    getPointBefore(input, input.selection as any, {
       skipInvalid: true,
+      afterMatch: true,
+      matchString: '**',
     })
   ).toEqual(output);
 });

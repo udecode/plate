@@ -2,18 +2,22 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { getTextFromBlockStartToAnchor } from '../../../queries/index';
+import { getPointFromLocation } from '../../../queries/getPointFromLocation';
 
 const input = ((
   <editor>
-    <hp>test</hp>
+    <hp>
+      test
+      <cursor />
+    </hp>
   </editor>
 ) as any) as Editor;
 
 const output = {
-  text: '',
+  offset: 4,
+  path: [0, 0],
 };
 
 it('should be', () => {
-  expect(getTextFromBlockStartToAnchor(input)).toEqual(output);
+  expect(getPointFromLocation(input)).toEqual(output);
 });

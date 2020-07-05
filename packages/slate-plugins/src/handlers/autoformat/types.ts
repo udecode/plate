@@ -1,6 +1,11 @@
 import { Editor } from 'slate';
 
-export interface AutoformatMarkupRule {
+export interface AutoformatRule {
+  /**
+   * Triggering character to autoformat. Default is space.
+   */
+  trigger?: string | string[];
+
   /**
    * Block type to autoformat.
    */
@@ -9,26 +14,12 @@ export interface AutoformatMarkupRule {
   /**
    * One or more markup that should be before the triggering character to autoformat.
    */
-  markup: string | string[];
+  markup?: string | string[];
 
   /**
-   * Custom formatting function.
+   * Lookup for a range between two strings before a location.
    */
-  format?: (editor: Editor) => void;
-
-  /**
-   * Insert a block instead of updating the selected block.
-   */
-  insert?: boolean;
-
-  inline?: boolean;
-}
-
-export interface AutoformatRule {
-  /**
-   * Triggering character to autoformat.
-   */
-  trigger?: string | string[];
+  between?: string[];
 
   /**
    * Function called before formatting.
@@ -37,9 +28,28 @@ export interface AutoformatRule {
   preFormat?: (editor: Editor) => void;
 
   /**
-   * A list of markup rules for each trigger.
+   * Custom formatting function.
    */
-  markupRules: AutoformatMarkupRule[];
+  format?: (editor: Editor) => void;
+
+  /**
+   * block (default) – update the selected block. Should be used with `markup`.
+   *
+   * inline-block – insert a block below the cursor. Should be used with `markup`.
+   *
+   * inline – add a mark between markups. Should be used with `between`.
+   */
+  mode?: 'block' | 'inline-block' | 'inline';
+
+  /**
+   * When using `inline` mode – if false, do not format when the string can be trimmed.
+   */
+  ignoreTrim?: boolean;
+
+  /**
+   * If true, insert the triggering character after autoformatting.
+   */
+  insertTrigger?: boolean;
 }
 
 export interface WithAutoformatOptions {

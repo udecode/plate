@@ -6,20 +6,20 @@ import { getPointBefore } from '../../../../queries/getPointBefore';
 
 const input = ((
   <editor>
+    <hp>find z</hp>
     <hp>
-      test http://localhost:3000
+      test http://google.com
       <cursor />
     </hp>
   </editor>
 ) as any) as Editor;
 
-const output = { offset: 5, path: [0, 0] };
+const output = undefined;
 
 it('should be', () => {
   expect(
-    getPointBefore(input, input.selection, {
-      matchString: ' ',
-      afterMatch: true,
+    getPointBefore(input, input.selection as any, {
+      matchString: 'z',
       skipInvalid: true,
     })
   ).toEqual(output);
