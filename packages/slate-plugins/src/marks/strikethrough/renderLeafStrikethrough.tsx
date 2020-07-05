@@ -16,7 +16,7 @@ export const renderLeafStrikethrough = ({
   children,
   leaf,
 }: StrikethroughRenderLeafProps) => {
-  if (leaf[typeStrikethrough]) {
+  if (leaf[typeStrikethrough] && !!leaf.text) {
     return (
       <StrikethroughText
         className={typeStrikethrough}

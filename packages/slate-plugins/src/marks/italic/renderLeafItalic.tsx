@@ -11,7 +11,7 @@ export const renderLeafItalic = ({
   children,
   leaf,
 }: ItalicRenderLeafProps) => {
-  if (leaf[typeItalic]) return <em>{children}</em>;
+  if (leaf[typeItalic] && leaf.text) return <em>{children}</em>;
 
   return children;
 };
