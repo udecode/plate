@@ -11,7 +11,7 @@ export const renderLeafUnderline = ({
   children,
   leaf,
 }: UnderlineRenderLeafProps) => {
-  if (leaf[typeUnderline]) return <u>{children}</u>;
+  if (leaf[typeUnderline] && !!leaf.text) return <u>{children}</u>;
 
   return children;
 };

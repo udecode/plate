@@ -12,7 +12,7 @@ const Code = styled.code`
 export const renderLeafCode = ({
   typeCode = MARK_CODE,
 }: CodeRenderLeafOptions = {}) => ({ children, leaf }: CodeRenderLeafProps) => {
-  if (leaf[typeCode]) return <Code>{children}</Code>;
+  if (leaf[typeCode] && !!leaf.text) return <Code>{children}</Code>;
 
   return children;
 };

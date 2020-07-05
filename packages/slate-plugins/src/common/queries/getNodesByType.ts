@@ -16,6 +16,7 @@ export const getNodesByType = (
     match: (n) => {
       return types.includes(n.type as string);
     },
+    at: editor.selection ? Editor.unhangRange(editor, editor.selection) : undefined,
     ...options,
   });
 };

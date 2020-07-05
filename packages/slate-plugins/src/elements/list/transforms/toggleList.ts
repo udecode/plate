@@ -30,7 +30,9 @@ export const toggleList = (
 
   if (!isActive) {
     const list = { type: typeList, children: [] };
-    Transforms.wrapNodes(editor, list);
+    Transforms.wrapNodes(editor, list, {
+      at: editor.selection ? Editor.unhangRange(editor, editor.selection) : undefined,
+    });
 
     const nodes = [...getNodesByType(editor, typeP)];
 
