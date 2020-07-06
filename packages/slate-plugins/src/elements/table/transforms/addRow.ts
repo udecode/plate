@@ -1,11 +1,11 @@
 import { Editor, Path, Transforms } from 'slate';
-import { isNodeInSelection } from '../../../common/queries';
+import { isNodeTypeIn } from '../../../common/queries';
 import { isTableRow } from '../queries';
 import { defaultTableTypes } from '../types';
 import { getEmptyRowNode } from '../utils';
 
 export const addRow = (editor: Editor, options = defaultTableTypes) => {
-  if (isNodeInSelection(editor, options.typeTable)) {
+  if (isNodeTypeIn(editor, options.typeTable)) {
     const currentRowItem = Editor.above(editor, {
       match: isTableRow(options),
     });

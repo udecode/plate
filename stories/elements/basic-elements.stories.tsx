@@ -109,7 +109,9 @@ export const Example = () => {
       <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+        onChange={(newValue) => {
+          setValue(newValue as SlateDocument);
+        }}
       >
         <HeadingToolbar>
           <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />

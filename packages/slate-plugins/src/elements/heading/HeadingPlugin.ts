@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { deserializeHeading } from './deserializeHeading';
 import { renderElementHeading } from './renderElementHeading';
 import { HeadingPluginOptions } from './types';

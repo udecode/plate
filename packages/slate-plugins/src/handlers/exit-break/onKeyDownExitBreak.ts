@@ -1,13 +1,13 @@
 import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
 import {
-  getBlockAboveSelection,
+  getBlockAbove,
   isNodeType,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
 } from '../../common/queries';
 import { isExpanded } from '../../common/queries/isExpanded';
-import { DEFAULT_ELEMENT } from '../../element';
+import { DEFAULT_ELEMENT } from '../../common/types/node.types';
 import { ExitBreakOnKeyDownOptions } from './types';
 
 /**
@@ -60,7 +60,7 @@ export const onKeyDownExitBreak = ({
   event: KeyboardEvent,
   editor: Editor
 ) => {
-  const entry = getBlockAboveSelection(editor);
+  const entry = getBlockAbove(editor);
 
   rules.forEach(
     ({

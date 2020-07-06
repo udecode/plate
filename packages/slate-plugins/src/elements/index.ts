@@ -10,3 +10,4 @@ export * from './mention';
 export * from './paragraph';
 export * from './table';
 export * from './media-embed';
+export * from './align';

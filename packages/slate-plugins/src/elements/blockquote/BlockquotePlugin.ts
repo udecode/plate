@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { deserializeBlockquote } from './deserializeBlockquote';
 import { renderElementBlockquote } from './renderElementBlockquote';
 import { BlockquotePluginOptions } from './types';

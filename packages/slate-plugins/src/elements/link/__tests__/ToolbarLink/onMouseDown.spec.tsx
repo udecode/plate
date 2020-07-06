@@ -2,9 +2,11 @@ import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
 import { withReact } from 'slate-react';
-import { pipe } from '../../../../common/index';
-import { withInlineVoid } from '../../../../element/index';
-import { LINK, ToolbarLink, withLink } from '../../index';
+import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
+import { pipe } from '../../../../common/utils/pipe';
+import { ToolbarLink } from '../../components/ToolbarLink';
+import { LINK } from '../../types';
+import { withLink } from '../../withLink';
 import { input, output } from './onMouseDown.fixture';
 
 it('should render', () => {

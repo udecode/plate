@@ -3,11 +3,12 @@
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { pipe } from '../../../../common/utils';
-import { withDeserializeHTML } from '../../../../deserializers/deserialize-html';
-import { withInlineVoid } from '../../../../element';
-import { MENTION, MentionPlugin } from '../../../../elements/mention';
-import { ParagraphPlugin } from '../../../../elements/paragraph';
+import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
+import { pipe } from '../../../../common/utils/pipe';
+import { withDeserializeHTML } from '../../../../deserializers/deserialize-html/withDeserializeHTML';
+import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
+import { MENTION } from '../../../../elements/mention/types';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
 
 const input = ((
   <editor>

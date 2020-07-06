@@ -1,14 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import {
   BlockquotePlugin,
+  BoldPlugin,
+  CodeBlockPlugin,
+  CodePlugin,
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
+  ItalicPlugin,
   ListPlugin,
   ParagraphPlugin,
   pipe,
   SlateDocument,
   SoftBreakPlugin,
+  StrikethroughPlugin,
   withAutoformat,
   withList,
   withResetBlockType,
@@ -17,6 +22,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
   initialValueAutoformat,
@@ -32,7 +38,9 @@ const withPlugins = [
   withReact,
   withHistory,
   withToggleType({ defaultType: nodeTypes.typeP }),
-  withAutoformat(nodeTypes),
+  withAutoformat({
+    rules: autoformatRules,
+  }),
   withResetBlockType({
     types: [
       nodeTypes.typeActionItem,
@@ -47,9 +55,14 @@ const withPlugins = [
 export const Example = () => {
   const plugins = [
     ParagraphPlugin(nodeTypes),
+    BoldPlugin(),
+    ItalicPlugin(),
+    CodePlugin(),
+    StrikethroughPlugin(),
     BlockquotePlugin(nodeTypes),
     ListPlugin(nodeTypes),
     HeadingPlugin(nodeTypes),
+    CodeBlockPlugin(nodeTypes),
     SoftBreakPlugin({
       rules: [
         { hotkey: 'shift+enter' },

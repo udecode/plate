@@ -4,7 +4,7 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { PARAGRAPH } from '../../../../elements/paragraph/index';
-import { withNodeID } from '../../../transforms/node-id/index';
+import { withNodeID } from '../../../plugins/node-id/index';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((

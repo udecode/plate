@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { deserializeList } from './deserializeList';
 import { onKeyDownList } from './onKeyDownList';
 import { renderElementList } from './renderElementList';

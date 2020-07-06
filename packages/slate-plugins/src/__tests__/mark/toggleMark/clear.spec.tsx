@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../__test-utils__/jsx';
-import { toggleMark } from '../../../mark/transforms';
+import { toggleMark } from '../../../common/transforms/toggleMark';
 import { MARK_BOLD } from '../../../marks/bold';
 import { MARK_ITALIC } from '../../../marks/italic';
 

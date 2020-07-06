@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { deserializeActionItem } from './deserializeActionItem';
 import { renderElementActionItem } from './renderElementActionItem';
 import { ActionItemPluginOptions } from './types';

@@ -2,7 +2,7 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { getBlockAboveSelection } from '../../../queries/index';
+import { getBlockAbove } from '../../../queries/index';
 
 const input = ((
   <editor>
@@ -18,5 +18,5 @@ const input = ((
 const output = <hp>test</hp>;
 
 it('should be', () => {
-  expect(getBlockAboveSelection(input)).toEqual([output, [0, 0]]);
+  expect(getBlockAbove(input)).toEqual([output, [0, 0]]);
 });

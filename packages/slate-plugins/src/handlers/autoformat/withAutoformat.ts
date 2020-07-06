@@ -1,86 +1,78 @@
-import { Editor, Range, Transforms } from 'slate';
-import { getTextFromBlockStartToAnchor } from '../../common/queries';
+import { castArray } from 'lodash';
+import { Editor, Range } from 'slate';
+import { getRangeFromBlockStart } from '../../common/queries';
+import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { BLOCKQUOTE } from '../../elements/blockquote';
-import { HeadingType } from '../../elements/heading';
-import { ListType, toggleList } from '../../elements/list';
-import { PARAGRAPH } from '../../elements/paragraph';
+import { autoformatBlock } from './transforms/autoformatBlock';
+import { autoformatInline } from './transforms/autoformatInline';
+import { autoformatInlineBlock } from './transforms/autoformatInlineBlock';
+import { WithAutoformatOptions } from './types';
 
 /**
  * Enables support for autoformatting actions.
+ * Once a markup rule is validated, it does not check the following rules.
  */
-export const withAutoformat = ({
-  typeUl = ListType.UL,
-  typeOl = ListType.OL,
-  typeLi = ListType.LI,
-  typeH1 = HeadingType.H1,
-  typeH2 = HeadingType.H2,
-  typeH3 = HeadingType.H3,
-  typeH4 = HeadingType.H4,
-  typeH5 = HeadingType.H5,
-  typeH6 = HeadingType.H6,
-  typeBlockquote = BLOCKQUOTE,
-  typeP = PARAGRAPH,
-} = {}) => <T extends Editor>(editor: T) => {
-  const options = {
-    typeUl,
-    typeOl,
-    typeLi,
-    typeBlockquote,
-    typeH1,
-    typeH2,
-    typeH3,
-    typeH4,
-    typeH5,
-    typeH6,
-    typeP,
-  };
-
-  // const options = {
-  //   shortcuts: [{}],
-  // };
-
+export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
+  T extends Editor
+>(
+  editor: T
+) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
-    const { selection } = editor;
+    if (!isCollapsed(editor.selection)) return insertText(text);
 
-    const SPACE = ' ';
+    for (const {
+      trigger = ' ',
+      type,
+      markup,
+      preFormat,
+      format,
+      mode,
+      between,
+      ignoreTrim,
+      insertTrigger,
+    } of rules) {
+      const triggers: string[] = castArray(trigger);
 
-    if (text === SPACE && isCollapsed(selection)) {
-      const beforeTextEntry = getTextFromBlockStartToAnchor(editor);
+      // Check trigger
+      if (!triggers.includes(text)) continue;
 
-      const SHORTCUTS: { [key: string]: string } = {
-        '*': typeLi,
-        '-': typeLi,
-        '+': typeLi,
-        '1.': typeLi,
-        '>': typeBlockquote,
-        '#': typeH1,
-        '##': typeH2,
-        '###': typeH3,
-        '####': typeH4,
-        '#####': typeH5,
-        '######': typeH6,
-      };
+      const markups: string[] = castArray(markup);
 
-      const type = SHORTCUTS[beforeTextEntry.text];
-      if (type) {
-        Transforms.select(editor, beforeTextEntry.range as Range);
-        Transforms.delete(editor);
+      const rangeFromBlockStart = getRangeFromBlockStart(editor) as Range;
+      const textFromBlockStart = getText(editor, rangeFromBlockStart);
 
-        if (type !== typeLi) {
-          Transforms.setNodes(
-            editor,
-            { type },
-            { match: (n) => Editor.isBlock(editor, n) }
-          );
-        } else {
-          const typeList = beforeTextEntry.text === '1.' ? typeOl : typeUl;
+      const valid = () => insertTrigger && insertText(text);
 
-          toggleList(editor, { ...options, typeList });
+      if (markups.includes(textFromBlockStart)) {
+        // Start of the block
+        autoformatBlock(editor, type, rangeFromBlockStart, {
+          preFormat,
+          format,
+        });
+        return valid();
+      }
+
+      if (mode === 'inline-block') {
+        if (
+          autoformatInlineBlock(editor, { preFormat, markup, format, type })
+        ) {
+          return valid();
         }
-        return;
+      }
+
+      if (mode === 'inline') {
+        if (
+          autoformatInline(editor, {
+            type,
+            between,
+            ignoreTrim,
+            markup: Array.isArray(markup) ? markup[0] : markup,
+          })
+        ) {
+          return valid();
+        }
       }
     }
 

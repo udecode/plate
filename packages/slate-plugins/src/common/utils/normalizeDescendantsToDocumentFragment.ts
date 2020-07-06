@@ -1,5 +1,5 @@
 import { Descendant, Element } from 'slate';
-import { SlateDocumentFragment } from '../SlateDocument.types';
+import { SlateDocumentFragment } from '../types/SlateDocument.types';
 
 /**
  * Normalize the descendants to a valid document fragment.

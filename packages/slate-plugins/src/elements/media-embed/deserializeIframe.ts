@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '@udecode/core';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { MEDIA_EMBED, MediaEmbedDeserializeOptions } from './types';
 
 export const deserializeIframe = ({

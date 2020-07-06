@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { EditablePlugins, SlatePlugin } from '@udecode/core';
+import { EditablePlugins, SlatePlugin } from '@udecode/slate-plugins-core';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';

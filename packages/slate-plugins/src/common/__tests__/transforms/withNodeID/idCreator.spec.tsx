@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Editor, Transforms } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { withNodeID } from '../../../transforms/node-id/index';
+import { withNodeID } from '../../../plugins/node-id/index';
 
 const input = (
   <editor>

@@ -1,15 +1,14 @@
 import { castArray } from 'lodash';
-import { Editor, Path, Point, Range, Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
+import { WrapOptions } from '../types/Transforms.types';
 
+/**
+ * Unwrap nodes by type
+ */
 export const unwrapNodesByType = (
   editor: Editor,
   types: string[] | string,
-  options: {
-    at?: Path | Point | Range;
-    mode?: 'highest' | 'lowest' | 'all';
-    split?: boolean;
-    voids?: boolean;
-  } = {}
+  options: Omit<WrapOptions, 'match'> = {}
 ) => {
   types = castArray<string>(types);
 

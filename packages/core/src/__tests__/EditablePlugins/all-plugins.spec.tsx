@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
+  FormatAlignCenter,
+  FormatAlignLeft,
+  FormatAlignRight,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -18,6 +21,7 @@ import { render } from '@testing-library/react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import {
   initialValueAutoformat,
   initialValueBasicElements,
@@ -35,17 +39,20 @@ import {
   initialValueTables,
   nodeTypes,
 } from '../../../../slate-plugins/src/__fixtures__/initialValues.fixtures';
-import { SlateDocument } from '../../../../slate-plugins/src/common/SlateDocument.types';
-import { withNodeID } from '../../../../slate-plugins/src/common/transforms/node-id/withNodeID';
+import { withInlineVoid } from '../../../../slate-plugins/src/common/plugins/inline-void/withInlineVoid';
+import { withNodeID } from '../../../../slate-plugins/src/common/plugins/node-id/withNodeID';
+import { withToggleType } from '../../../../slate-plugins/src/common/plugins/withToggleType';
 import { withTransforms } from '../../../../slate-plugins/src/common/transforms/withTransforms';
+import { SlateDocument } from '../../../../slate-plugins/src/common/types/SlateDocument.types';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
+import { ToolbarElement } from '../../../../slate-plugins/src/components/ToolbarElement/ToolbarElement';
+import { ToolbarMark } from '../../../../slate-plugins/src/components/ToolbarMark/ToolbarMark';
 import { withDeserializeHTML } from '../../../../slate-plugins/src/deserializers/deserialize-html/withDeserializeHTML';
-import { ToolbarElement } from '../../../../slate-plugins/src/element/components/ToolbarElement';
-import { withInlineVoid } from '../../../../slate-plugins/src/element/withInlineVoid';
-import { withToggleType } from '../../../../slate-plugins/src/element/withToggleType';
 import { ActionItemPlugin } from '../../../../slate-plugins/src/elements/action-item/ActionItemPlugin';
+import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignPlugin';
+import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/components/ToolbarAlign';
 import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
 import { BlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/BlockquotePlugin';
 import { CodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockPlugin';
@@ -69,7 +76,6 @@ import { withAutoformat } from '../../../../slate-plugins/src/handlers/autoforma
 import { ExitBreakPlugin } from '../../../../slate-plugins/src/handlers/exit-break/ExitBreakPlugin';
 import { withResetBlockType } from '../../../../slate-plugins/src/handlers/reset-block-type/withResetBlockType';
 import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-break/SoftBreakPlugin';
-import { ToolbarMark } from '../../../../slate-plugins/src/mark/components/ToolbarMark';
 import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
 import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
 import { renderLeafBold } from '../../../../slate-plugins/src/marks/bold/renderLeafBold';
@@ -114,6 +120,7 @@ const plugins = [
   TablePlugin(nodeTypes),
   MediaEmbedPlugin(nodeTypes),
   CodeBlockPlugin(nodeTypes),
+  AlignPlugin(nodeTypes),
   BoldPlugin(markOptions),
   BoldPlugin(),
   CodePlugin(markOptions),
@@ -165,7 +172,7 @@ const withPlugins = [
     defaultType: nodeTypes.typeP,
   }),
   withList(nodeTypes),
-  withAutoformat(nodeTypes),
+  withAutoformat({ rules: autoformatRulesFixtures }),
   withTransforms(),
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -217,6 +224,15 @@ const Editor = () => {
         />
         <ToolbarImage {...nodeTypes} icon={<Image />} />
         <ToolbarTable transform={jest.fn()} icon={null} />
+        <ToolbarAlign icon={<FormatAlignLeft />} />
+        <ToolbarAlign
+          type={nodeTypes.typeAlignCenter}
+          icon={<FormatAlignCenter />}
+        />
+        <ToolbarAlign
+          type={nodeTypes.typeAlignRight}
+          icon={<FormatAlignRight />}
+        />
       </HeadingToolbar>
       <BalloonToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />

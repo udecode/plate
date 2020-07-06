@@ -3,16 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## 0.60.2 (2020-07-01)
-
-**Note:** Version bump only for package slate-plugins
-
-
-
-
-
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
+
+
+## 0.61.0 (2020-07-02)
+
+### Breaking Changes
+
+- `getSelectionNodesByType` renamed to `getNodesByType`
+  - new option: `at`
+- `isNodeInSelection` renamed to `isNodeTypeIn`
+  - new option: `at`
+- `getBlockAboveSelection` renamed to `getBlockAbove`
+  - new option: `at`
+- `getTextFromBlockStartToAnchor` renamed to `getRangeFromBlockStart`
+  - new option: `at`
+- removed `getSelectionNodesArrayByType`
+- replaced `insertLink` by `upsertLinkAtSelection`
+- `wrapLink` is now only wrapping the link (without unwrapping).
+- `@udecode/core` package renamed to `@udecode/slate-plugins-core`.
+
+### Features
+
+- `AlignPlugin` – new plugin for alignment.
+- `getPointBefore`
+  - new options:
+    - `multiPaths`
+    - `afterMatch` (replacing `beforeMatch`)
+    - `skipInvalid`
+  - support for multiple characters lookup.
+- `getRangeBefore` – Get range from `getPointBefore` to the end point of `at`.
+- `withAutoformat`:
+  - new option type: `WithAutoformatOptions`
+  - Configurable markup to trigger the autoformatting.
+  - Configurable character to trigger the autoformatting.
+  - Configurable option to enable autoformatting in the middle of a block by inserting a block instead of updating.
+  - Configurable option to enable inline formatting.
+- `wrapNodes` – new transform extending `Transforms.wrapNodes`. Options:
+  - `unhang` – to unhang range before wrapping.
+- `getNodes` – same for `Editor.nodes`
+
+### Bug Fixes
+
+- `withLink` – space key should wrap the previous url with a link at the start of a block.
+- `wrapNodes` – fixed a bug where selecting an entire node then calling `wrapNodes` was wrapping also the next node.
 
 ## 0.60.2 (2020-07-01)
 
@@ -23,6 +58,9 @@ useful to look for a point before a location using match options.
 - `withLink` – Insert space after a url to wrap a link.
 There should be a space before the url.
 TODO: it's not working when the url is at the start of the block.
+- `LinkElement`:
+    - styles updated.
+    - supports `styles`.
 
 ### Bug Fixes
 
@@ -30,7 +68,7 @@ TODO: it's not working when the url is at the start of the block.
 
 ## 0.60.1 (2020-06-30)
 
-- Split the core functionality to `@udecode/core`
+- Split the core functionality to `@udecode/slate-plugins-core`
 
 # 0.60.0 (2020-06-15)
 

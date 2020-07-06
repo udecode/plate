@@ -3,8 +3,8 @@
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../__test-utils__/jsx';
+import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
 import { withDeserializeHTML } from '../../../../deserializers/deserialize-html';
-import { withInlineVoid } from '../../../../element';
 import { MediaEmbedPlugin } from '../../../../elements/media-embed';
 
 const input = ((

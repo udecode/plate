@@ -1,5 +1,5 @@
-import { DeserializeHtml } from '@udecode/core';
-import { getLeafDeserializer } from '../../mark/utils';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
 import { MARK_SUPERSCRIPT, SuperscriptDeserializeOptions } from './types';
 
 export const deserializeSuperscript = ({
