@@ -1,4 +1,4 @@
-export * from '@udecode/core';
+export * from '@udecode/slate-plugins-core';
 export * from './common';
 export * from './components';
 export * from './decorators';

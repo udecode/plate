@@ -1,4 +1,4 @@
-import { DeserializeLeafValue, SlatePlugin } from '@udecode/core';
+import { DeserializeLeafValue, SlatePlugin } from '@udecode/slate-plugins-core';
 import { Descendant, Element, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { setPropsToNodes } from '../../../common';

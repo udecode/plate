@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '@udecode/core';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
 import { MARK_UNDERLINE, UnderlineDeserializeOptions } from './types';
 

@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeStrikethrough } from './deserializeStrikethrough';
 import { renderLeafStrikethrough } from './renderLeafStrikethrough';

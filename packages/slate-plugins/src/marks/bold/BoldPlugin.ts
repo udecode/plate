@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeBold } from './deserializeBold';
 import { renderLeafBold } from './renderLeafBold';

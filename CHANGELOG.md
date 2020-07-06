@@ -67,7 +67,7 @@ TODO: it's not working when the url is at the start of the block.
 
 ## 0.60.1 (2020-06-30)
 
-- Split the core functionality to `@udecode/core`
+- Split the core functionality to `@udecode/slate-plugins-core`
 
 # 0.60.0 (2020-06-15)
 

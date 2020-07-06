@@ -1,4 +1,4 @@
-import { RenderElementOptions } from '@udecode/core';
+import { RenderElementOptions } from '@udecode/slate-plugins-core';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 

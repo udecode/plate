@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GetRenderElementOptions } from '@udecode/core';
+import { GetRenderElementOptions } from '@udecode/slate-plugins-core';
 import { RenderLeafProps } from 'slate-react';
 
 /**

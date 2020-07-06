@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '@udecode/core';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
 import { LINK, LinkDeserializeOptions } from './types';
 

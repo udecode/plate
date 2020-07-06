@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { deserializeLink } from './deserializeLink';
 import { renderElementLink } from './renderElementLink';
 import { LINK, LinkPluginOptions } from './types';

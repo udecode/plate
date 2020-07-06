@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeUnderline } from './deserializeUnderline';
 import { renderLeafUnderline } from './renderLeafUnderline';

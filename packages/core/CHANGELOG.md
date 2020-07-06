@@ -5,7 +5,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 0.60.2 (2020-07-01)
 
-**Note:** Version bump only for package @udecode/core
+**Note:** Version bump only for package @udecode/slate-plugins-core
 
 
 
@@ -13,4 +13,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## 0.60.1 (2020-06-30)
 
-**Note:** Version bump only for package @udecode/core
+**Note:** Version bump only for package @udecode/slate-plugins-core
