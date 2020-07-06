@@ -32,8 +32,8 @@ export type RenderElement = (
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
 export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
-// Handler when we press a key.
 
+// Handler when we press a key.
 export type OnKeyDown = (e: any, editor: Editor, options?: any) => void;
 
 export type DeserializeElement = Record<

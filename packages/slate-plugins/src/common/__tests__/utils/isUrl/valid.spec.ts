@@ -1,6 +1,6 @@
 import { isUrl } from '../../../utils/index';
 
-const input = 'http://localhost';
+const input = 'http://google.com';
 
 const output = true;
 

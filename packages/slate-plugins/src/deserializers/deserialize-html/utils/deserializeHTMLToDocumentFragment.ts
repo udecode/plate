@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { Descendant } from 'slate';
 import { SlateDocumentFragment } from '../../../common';
 import { normalizeDescendantsToDocumentFragment } from '../../../common/utils';

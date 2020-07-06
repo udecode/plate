@@ -1,4 +1,4 @@
-import { DeserializeHtml } from '@udecode/core';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { BoldDeserializeOptions, MARK_BOLD } from './types';
 
 export const deserializeBold = ({

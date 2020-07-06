@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { deserializeHTMLToDocument } from '../../../../deserializers/deserialize-html';

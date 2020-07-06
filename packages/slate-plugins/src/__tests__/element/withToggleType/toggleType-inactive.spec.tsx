@@ -2,8 +2,8 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
-import { withToggleType } from '../../../element';
-import { BLOCKQUOTE } from '../../../elements';
+import { withToggleType } from '../../../common/plugins/withToggleType';
+import { BLOCKQUOTE } from '../../../elements/blockquote/types';
 
 const input = (
   <editor>

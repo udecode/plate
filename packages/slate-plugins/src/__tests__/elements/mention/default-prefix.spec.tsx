@@ -2,9 +2,9 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../__test-utils__/jsx';
-import { pipe } from '../../../common/utils';
-import { withInlineVoid } from '../../../element';
-import { MENTION } from '../../../elements';
+import { withInlineVoid } from '../../../common/plugins/inline-void/withInlineVoid';
+import { pipe } from '../../../common/utils/pipe';
+import { MENTION } from '../../../elements/mention/types';
 
 const input = (
   <editor>

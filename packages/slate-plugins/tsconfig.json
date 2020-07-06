@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@udecode/core": ["./packages/core/src"]
+      "@udecode/slate-plugins-core": ["./packages/core/src"]
     }
   },
   "include": [

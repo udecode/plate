@@ -2,8 +2,9 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../element/index';
-import { LINK, withLink } from '../../../../index';
+import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
+import { LINK } from '../../../types';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>
@@ -14,14 +15,14 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'http://localhost:3000' };
+const data = { getData: () => 'http://google.com' };
 
 const output = (
   <editor>
     <hp>
       test
-      <element type="a" url="http://localhost:3000">
-        http://localhost:3000
+      <element type="a" url="http://google.com">
+        http://google.com
       </element>
       <htext />
     </hp>

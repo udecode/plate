@@ -443,7 +443,7 @@ it('serialize bold italic and underline together to html', () => {
 it('serialize alignments to html', () => {
   expect(
     serializeHTMLFromNodes([AlignPlugin()])([
-      { type: 'center', children: [{ text: 'I am centered text!' }] },
+      { type: 'align_center', children: [{ text: 'I am centered text!' }] },
     ])
   ).toEqual(`<div style="text-align:center">I am centered text!</div>`);
 });

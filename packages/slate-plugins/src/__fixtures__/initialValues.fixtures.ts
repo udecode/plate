@@ -2,6 +2,9 @@ import faker from 'faker';
 import { Descendant } from 'slate';
 import {
   ACTION_ITEM,
+  ALIGN_CENTER,
+  ALIGN_LEFT,
+  ALIGN_RIGHT,
   BLOCKQUOTE,
   CODE_BLOCK,
   HeadingType,
@@ -58,6 +61,9 @@ export const nodeTypes = {
   typeSuperscript: MARK_SUPERSCRIPT,
   typeHighlight: MARK_HIGHLIGHT,
   typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
+  typeAlignLeft: ALIGN_LEFT,
+  typeAlignRight: ALIGN_RIGHT,
+  typeAlignCenter: ALIGN_CENTER,
 };
 
 export const createList = (items: string[]): SlateDocumentFragment => {

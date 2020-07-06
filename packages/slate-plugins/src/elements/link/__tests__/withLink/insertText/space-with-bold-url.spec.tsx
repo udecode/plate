@@ -2,13 +2,14 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../element/index';
-import { LINK, withLink } from '../../../../index';
+import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
+import { LINK } from '../../../types';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>
     <hp>
-      link: http://<htext bold>localhost</htext>:3000
+      link: http://<htext bold>google</htext>.com
       <cursor />
     </hp>
   </editor>
@@ -20,19 +21,21 @@ const output = (
   <editor>
     <hp>
       link:{' '}
-      <element type="a" url="http://localhost:3000">
-        http://<htext bold>localhost</htext>:3000
+      <element type="a" url="http://google.com">
+        http://<htext bold>google</htext>.com
       </element>{' '}
     </hp>
   </editor>
 ) as any;
 
-it('should run default insertText', () => {
-  const editor = withLink()(
-    withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
-  );
+describe('when inserting a space after a url text containing bold mark', () => {
+  it('should wrap the url with a link', () => {
+    const editor = withLink()(
+      withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
+    );
 
-  editor.insertText(text);
+    editor.insertText(text);
 
-  expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(output.children);
+  });
 });

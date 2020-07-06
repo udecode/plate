@@ -2,10 +2,10 @@ import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { pipe } from '../../../../common';
-import { withToggleType } from '../../../../element';
-import { ACTION_ITEM } from '../../../../elements/action-item';
-import { ActionItemElement } from '../../../../elements/action-item/components';
+import { withToggleType } from '../../../../common/plugins/withToggleType';
+import { pipe } from '../../../../common/utils/pipe';
+import { ActionItemElement } from '../../../../elements/action-item/components/ActionItemElement';
+import { ACTION_ITEM } from '../../../../elements/action-item/types';
 import { input, output } from './onChange.fixture';
 
 it('should render', () => {

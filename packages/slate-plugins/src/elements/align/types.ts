@@ -1,34 +1,32 @@
-import { RenderElementOptions } from '@udecode/core';
+import { RenderElementOptions } from '@udecode/slate-plugins-core';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
-const ALIGN_LEFT = 'left';
-const ALIGN_CENTER = 'center';
-const ALIGN_RIGHT = 'right';
-
-export { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
+export const ALIGN_LEFT = 'align_left';
+export const ALIGN_CENTER = 'align_center';
+export const ALIGN_RIGHT = 'align_right';
 
 // Element node
 export interface AlignNode extends Element {}
 
 // Type option
-interface TypeOption {
+export interface AlignTypeOption {
   typeAlignLeft?: string;
   typeAlignRight?: string;
   typeAlignCenter?: string;
 }
 
 // deserialize options
-export interface AlignDeserializeOptions extends TypeOption {}
+export interface AlignDeserializeOptions extends AlignTypeOption {}
 
 // renderElement options given as props
-interface AlignRenderElementOptionsProps {}
+interface AlignRenderElementOptionsProps extends AlignTypeOption {}
 
 // renderElement options
 export interface AlignRenderElementOptions
   extends RenderElementOptions,
     AlignRenderElementOptionsProps,
-    TypeOption {}
+    AlignTypeOption {}
 
 // renderElement props
 export interface AlignRenderElementProps

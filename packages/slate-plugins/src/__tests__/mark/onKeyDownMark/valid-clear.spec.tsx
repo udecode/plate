@@ -2,9 +2,9 @@
 
 import * as isHotkey from 'is-hotkey';
 import { jsx } from '../../../__test-utils__/jsx';
-import { onKeyDownMark } from '../../../mark';
-import { MARK_BOLD } from '../../../marks/bold';
-import { MARK_ITALIC } from '../../../marks/italic';
+import { onKeyDownMark } from '../../../common/utils/onKeyDownMark';
+import { MARK_BOLD } from '../../../marks/bold/types';
+import { MARK_ITALIC } from '../../../marks/italic/types';
 
 const input = (
   <editor>

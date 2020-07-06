@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { getPreventDefaultHandler } from '../../../common/utils';
-import { ToolbarButtonProps } from '../../../components/ToolbarButton';
-import { ToolbarElement } from '../../../element/components';
-import { toggleList } from '../transforms';
+import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
+import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
+import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
+import { toggleList } from '../transforms/toggleList';
 import { ListType } from '../types';
 
 export const ToolbarList = ({

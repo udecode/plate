@@ -2,7 +2,8 @@
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { withNodeID, withTransforms } from '../../../transforms/index';
+import { withNodeID } from '../../../plugins/node-id/withNodeID';
+import { withTransforms } from '../../../transforms/withTransforms';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((

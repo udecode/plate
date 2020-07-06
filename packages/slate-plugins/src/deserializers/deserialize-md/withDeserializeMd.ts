@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import marked from 'marked';
 import { Node, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';

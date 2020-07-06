@@ -5,6 +5,9 @@ import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
+  FormatAlignCenter,
+  FormatAlignLeft,
+  FormatAlignRight,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -24,6 +27,7 @@ import {
 } from '@styled-icons/material';
 import {
   ActionItemPlugin,
+  AlignPlugin,
   BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
@@ -58,6 +62,7 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
+  ToolbarAlign,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -82,6 +87,7 @@ import {
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
+import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
   initialValueAutoformat,
@@ -142,6 +148,7 @@ export const Plugins = () => {
     plugins.push(MediaEmbedPlugin(nodeTypes));
   if (boolean('CodeBlockPlugin', true))
     plugins.push(CodeBlockPlugin(nodeTypes));
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(nodeTypes));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
   if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
   if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
@@ -215,7 +222,7 @@ export const Plugins = () => {
       defaultType: nodeTypes.typeP,
     }),
     withList(nodeTypes),
-    withAutoformat(nodeTypes),
+    withAutoformat({ rules: autoformatRules }),
     withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
@@ -261,13 +268,31 @@ export const Plugins = () => {
         }}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
-        <HeadingToolbar>
+        <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
+          {/* Elements */}
           <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
           <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
           <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
           <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
           <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
           <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarList
+            {...nodeTypes}
+            typeList={nodeTypes.typeUl}
+            icon={<FormatListBulleted />}
+          />
+          <ToolbarList
+            {...nodeTypes}
+            typeList={nodeTypes.typeOl}
+            icon={<FormatListNumbered />}
+          />
+          <ToolbarElement
+            type={nodeTypes.typeBlockquote}
+            icon={<FormatQuote />}
+          />
+          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+
+          {/* Marks */}
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
           <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
@@ -286,22 +311,17 @@ export const Plugins = () => {
             clear={MARK_SUPERSCRIPT}
             icon={<Subscript />}
           />
+
+          <ToolbarAlign icon={<FormatAlignLeft />} />
+          <ToolbarAlign
+            type={nodeTypes.typeAlignCenter}
+            icon={<FormatAlignCenter />}
+          />
+          <ToolbarAlign
+            type={nodeTypes.typeAlignRight}
+            icon={<FormatAlignRight />}
+          />
           <ToolbarLink {...nodeTypes} icon={<Link />} />
-          <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeUl}
-            icon={<FormatListBulleted />}
-          />
-          <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeOl}
-            icon={<FormatListNumbered />}
-          />
-          <ToolbarElement
-            type={nodeTypes.typeBlockquote}
-            icon={<FormatQuote />}
-          />
-          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
           <ToolbarImage {...nodeTypes} icon={<Image />} />
         </HeadingToolbar>
         <BalloonToolbar arrow>

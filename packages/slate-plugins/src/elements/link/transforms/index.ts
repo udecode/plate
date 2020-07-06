@@ -1,2 +1,2 @@
-export * from './insertLink';
+export * from './upsertLinkAtSelection';
 export * from './wrapLink';

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { isNodeInSelection } from '../../../common/queries';
+import { isNodeTypeIn } from '../../../common/queries';
 import {
   ToolbarButton,
   ToolbarButtonProps,
 } from '../../../components/ToolbarButton';
-import { insertLink } from '../transforms';
+import { upsertLinkAtSelection } from '../transforms';
 import { LINK } from '../types';
 
 export const ToolbarLink = ({
@@ -16,13 +16,13 @@ export const ToolbarLink = ({
 
   return (
     <ToolbarButton
-      active={isNodeInSelection(editor, typeLink)}
+      active={isNodeTypeIn(editor, typeLink)}
       onMouseDown={(event) => {
         event.preventDefault();
 
         const url = window.prompt('Enter the URL of the link:');
         if (!url) return;
-        insertLink(editor, url, { typeLink });
+        upsertLinkAtSelection(editor, url, { typeLink });
       }}
       {...props}
     />
