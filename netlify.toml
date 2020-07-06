@@ -11,7 +11,7 @@
   publish = "storybook-static"
 
   # Default build command.
-  command = "yarn build-storybook"
+  command = "yarn build && build-storybook"
 
   # Directory with the serverless Lambda functions to deploy to AWS.
 #  functions = "project/functions/"
