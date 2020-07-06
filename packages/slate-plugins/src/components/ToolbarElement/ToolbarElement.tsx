@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { ReactEditor, useSlate } from 'slate-react';
-import { isNodeTypeIn } from '../../common/queries';
-import { getPreventDefaultHandler } from '../../common/utils';
-import { ToolbarButton } from '../../components/ToolbarButton';
-import { ToggleTypeEditor } from '../types';
+import { ToggleTypeEditor } from '../../common/plugins/withToggleType';
+import { isNodeTypeIn } from '../../common/queries/index';
+import { getPreventDefaultHandler } from '../../common/utils/index';
+import { ToolbarButton } from '../ToolbarButton/index';
 import { ToolbarElementProps } from './ToolbarElement.types';
 
 /**

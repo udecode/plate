@@ -7,7 +7,7 @@ import {
   isSelectionAtBlockStart,
 } from '../../common/queries';
 import { isExpanded } from '../../common/queries/isExpanded';
-import { DEFAULT_ELEMENT } from '../../element';
+import { DEFAULT_ELEMENT } from '../../common/types/node.types';
 import { ExitBreakOnKeyDownOptions } from './types';
 
 /**

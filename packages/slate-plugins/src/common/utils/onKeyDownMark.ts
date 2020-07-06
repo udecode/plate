@@ -1,8 +1,11 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { toggleMark } from './transforms';
-import { MarkOnKeyDownOptions } from './types';
+import { toggleMark } from '../transforms/toggleMark';
+import { MarkOnKeyDownOptions } from '../types/Mark.types';
 
+/**
+ * `onKeyDown` handler for a type.
+ */
 export function onKeyDownMark(
   type: string,
   hotkey: undefined,

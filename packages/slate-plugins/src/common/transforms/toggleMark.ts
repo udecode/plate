@@ -1,6 +1,6 @@
 import { castArray } from 'lodash';
 import { Editor } from 'slate';
-import { isMarkActive } from '../queries';
+import { isMarkActive } from '../queries/isMarkActive';
 
 /**
  * Add/remove marks in the selection.

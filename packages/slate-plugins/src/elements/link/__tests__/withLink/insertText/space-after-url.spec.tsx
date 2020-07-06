@@ -2,8 +2,9 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../element/index';
-import { LINK, withLink } from '../../../../index';
+import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
+import { LINK } from '../../../types';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>

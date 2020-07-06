@@ -1,6 +1,7 @@
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { isNodeTypeIn } from '../queries';
 import { unwrapNodesByType } from './unwrapNodesByType';
+import { wrapNodes } from './wrapNodes';
 
 /**
  * Unwrap if the node type is in selection.
@@ -10,7 +11,7 @@ export const toggleWrapNodes = (editor: Editor, type: string) => {
   if (isNodeTypeIn(editor, type)) {
     unwrapNodesByType(editor, type);
   } else {
-    Transforms.wrapNodes(editor, {
+    wrapNodes(editor, {
       type,
       children: [],
     });

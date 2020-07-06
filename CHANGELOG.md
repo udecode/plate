@@ -39,10 +39,14 @@ patch version bumps.
   - Configurable character to trigger the autoformatting.
   - Configurable option to enable autoformatting in the middle of a block by inserting a block instead of updating.
   - Configurable option to enable inline formatting.
+- `wrapNodes` – new transform extending `Transforms.wrapNodes`. Options:
+  - `unhang` – to unhang range before wrapping.
+- `getNodes` – same for `Editor.nodes`
 
 ### Bug Fixes
 
 - `withLink` – space key should wrap the previous url with a link at the start of a block.
+- `wrapNodes` – fixed a bug where selecting an entire node then calling `wrapNodes` was wrapping also the next node.
 
 ## 0.60.2 (2020-07-01)
 

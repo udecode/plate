@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../../__test-utils__/jsx';
-import { upsertLinkAtSelection, withLink } from '../../../index';
+import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
+import { withLink } from '../../withLink';
 
 const input = (
   <editor>

@@ -3,7 +3,7 @@ import { GetRenderElementOptions } from '@udecode/core';
 import { RenderElementProps } from 'slate-react';
 
 /**
- * Get a renderElement function for a type
+ * Get a renderElement handler for a type
  */
 export const getRenderElement = ({
   type,
@@ -25,7 +25,7 @@ export const getRenderElement = ({
 };
 
 /**
- * Get multiple renderElement functions for multiple types
+ * Get multiple renderElement handlers for multiple types
  */
 export const getRenderElements = (options: GetRenderElementOptions[]) => ({
   attributes,

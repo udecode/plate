@@ -1,5 +1,5 @@
 import { DeserializeHtml } from '@udecode/core';
-import { getLeafDeserializer } from '../../mark/utils';
+import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
 import { ItalicDeserializeOptions, MARK_ITALIC } from './types';
 
 export const deserializeItalic = ({

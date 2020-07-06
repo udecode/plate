@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/core';
-import { onKeyDownMark } from '../../mark';
+import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { MARK_SUBSCRIPT } from '../subscript/types';
 import { deserializeSuperscript } from './deserializeSuperscript';
 import { renderLeafSuperscript } from './renderLeafSuperscript';

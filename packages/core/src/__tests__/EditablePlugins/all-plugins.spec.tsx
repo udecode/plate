@@ -39,16 +39,17 @@ import {
   initialValueTables,
   nodeTypes,
 } from '../../../../slate-plugins/src/__fixtures__/initialValues.fixtures';
-import { withNodeID } from '../../../../slate-plugins/src/common/transforms/node-id/withNodeID';
+import { withInlineVoid } from '../../../../slate-plugins/src/common/plugins/inline-void/withInlineVoid';
+import { withNodeID } from '../../../../slate-plugins/src/common/plugins/node-id/withNodeID';
+import { withToggleType } from '../../../../slate-plugins/src/common/plugins/withToggleType';
 import { withTransforms } from '../../../../slate-plugins/src/common/transforms/withTransforms';
 import { SlateDocument } from '../../../../slate-plugins/src/common/types/SlateDocument.types';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
+import { ToolbarElement } from '../../../../slate-plugins/src/components/ToolbarElement/ToolbarElement';
+import { ToolbarMark } from '../../../../slate-plugins/src/components/ToolbarMark/ToolbarMark';
 import { withDeserializeHTML } from '../../../../slate-plugins/src/deserializers/deserialize-html/withDeserializeHTML';
-import { ToolbarElement } from '../../../../slate-plugins/src/element/components/ToolbarElement';
-import { withInlineVoid } from '../../../../slate-plugins/src/element/withInlineVoid';
-import { withToggleType } from '../../../../slate-plugins/src/element/withToggleType';
 import { ActionItemPlugin } from '../../../../slate-plugins/src/elements/action-item/ActionItemPlugin';
 import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignPlugin';
 import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/components/ToolbarAlign';
@@ -75,7 +76,6 @@ import { withAutoformat } from '../../../../slate-plugins/src/handlers/autoforma
 import { ExitBreakPlugin } from '../../../../slate-plugins/src/handlers/exit-break/ExitBreakPlugin';
 import { withResetBlockType } from '../../../../slate-plugins/src/handlers/reset-block-type/withResetBlockType';
 import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-break/SoftBreakPlugin';
-import { ToolbarMark } from '../../../../slate-plugins/src/mark/components/ToolbarMark';
 import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
 import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
 import { renderLeafBold } from '../../../../slate-plugins/src/marks/bold/renderLeafBold';

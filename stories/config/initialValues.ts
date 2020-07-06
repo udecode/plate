@@ -76,6 +76,18 @@ export const nodeTypes = {
   typeAlignCenter: ALIGN_CENTER,
 };
 
+const createParagraph = (text: string, mark?: string) => {
+  const leaf = { text };
+  if (mark) {
+    leaf[mark] = true;
+  }
+
+  return {
+    type: nodeTypes.typeP,
+    children: [leaf],
+  };
+};
+
 export const createList = (
   items: string[],
   { splitSeparator = '`' }: { splitSeparator?: string } = {}
@@ -816,19 +828,19 @@ const createTable = () => ({
       children: [
         {
           type: nodeTypes.typeTh,
-          children: [{ text: '' }],
+          children: [createParagraph('')],
         },
         {
           type: nodeTypes.typeTh,
-          children: [{ text: 'Human', [nodeTypes.typeBold]: true }],
+          children: [createParagraph('Human', nodeTypes.typeBold)],
         },
         {
           type: nodeTypes.typeTh,
-          children: [{ text: 'Dog', [nodeTypes.typeBold]: true }],
+          children: [createParagraph('Dog', nodeTypes.typeBold)],
         },
         {
           type: nodeTypes.typeTh,
-          children: [{ text: 'Cat', [nodeTypes.typeBold]: true }],
+          children: [createParagraph('Cat', nodeTypes.typeBold)],
         },
       ],
     },
@@ -837,19 +849,19 @@ const createTable = () => ({
       children: [
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '# of Feet', [nodeTypes.typeBold]: true }],
+          children: [createParagraph('# of Feet', nodeTypes.typeBold)],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '2' }],
+          children: [createParagraph('2')],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '4' }],
+          children: [createParagraph('4')],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '4' }],
+          children: [createParagraph('4')],
         },
       ],
     },
@@ -858,19 +870,19 @@ const createTable = () => ({
       children: [
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '# of Lives', [nodeTypes.typeBold]: true }],
+          children: [createParagraph('# of Lives', nodeTypes.typeBold)],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '1' }],
+          children: [createParagraph('1')],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '1' }],
+          children: [createParagraph('1')],
         },
         {
           type: nodeTypes.typeTd,
-          children: [{ text: '9' }],
+          children: [createParagraph('9')],
         },
       ],
     },

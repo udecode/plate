@@ -1,31 +1,26 @@
 import * as React from 'react';
-import styled from 'styled-components';
+import { getRenderLeaf } from '../../common/utils/getRenderLeaf';
 import {
   MARK_STRIKETHROUGH,
   StrikethroughRenderLeafOptions,
   StrikethroughRenderLeafProps,
 } from './types';
 
-const StrikethroughText = styled.span`
-  text-decoration: line-through;
-`;
+const StrikethroughText = ({
+  children,
+  ...props
+}: StrikethroughRenderLeafProps) => (
+  <span style={{ textDecoration: 'line-through' }} {...props}>
+    {children}
+  </span>
+);
 
 export const renderLeafStrikethrough = ({
   typeStrikethrough = MARK_STRIKETHROUGH,
-}: StrikethroughRenderLeafOptions = {}) => ({
-  children,
-  leaf,
-}: StrikethroughRenderLeafProps) => {
-  if (leaf[typeStrikethrough] && !!leaf.text) {
-    return (
-      <StrikethroughText
-        className={typeStrikethrough}
-        data-slate-type={typeStrikethrough}
-      >
-        {children}
-      </StrikethroughText>
-    );
-  }
-
-  return children;
-};
+}: StrikethroughRenderLeafOptions = {}) =>
+  getRenderLeaf({
+    type: typeStrikethrough,
+    component: StrikethroughText,
+    className: typeStrikethrough,
+    'data-slate-type': typeStrikethrough,
+  });

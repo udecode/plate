@@ -4,9 +4,10 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../../__test-utils__/jsx';
-import { pipe } from '../../../../../../common/utils';
-import { withInlineVoid } from '../../../../../../element';
-import { MENTION, useMention } from '../../../../../../elements/mention';
+import { withInlineVoid } from '../../../../../../common/plugins/inline-void/withInlineVoid';
+import { pipe } from '../../../../../../common/utils/pipe';
+import { MENTION } from '../../../../../../elements/mention/types';
+import { useMention } from '../../../../../../elements/mention/useMention';
 import { mentionables } from '../mentionables.fixture';
 
 const input = ((

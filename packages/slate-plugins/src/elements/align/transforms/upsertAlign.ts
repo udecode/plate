@@ -1,5 +1,6 @@
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
+import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import { ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT } from '../types';
 
 export const upsertAlign = (
@@ -15,7 +16,7 @@ export const upsertAlign = (
 
   if (!type) return;
 
-  Transforms.wrapNodes(
+  wrapNodes(
     editor,
     {
       type,

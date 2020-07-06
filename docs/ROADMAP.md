@@ -21,7 +21,7 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] `component` – React component to render the element.
 - [x] [Alignment](https://github.com/udecode/slate-plugins/issues/104)
       – [ ] Enables support for text alignment, useful to align your content
-      to left, right and center or to justify it.
+      to left, right and center it.
 - [x] BasicElements – Enables support for basic elements.
   - [x] Blockquote – Enables support for block quotes, useful for
         quotations and passages.

@@ -1,6 +1,6 @@
 import { Editor, Point, Transforms } from 'slate';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { DEFAULT_ELEMENT } from '../../element';
+import { DEFAULT_ELEMENT } from '../../common/types/node.types';
 import { WithResetBlockTypeOptions } from './types';
 
 export interface WithDeleteStartResetOptions {

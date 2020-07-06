@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/core';
-import { onKeyDownMark } from '../../mark';
+import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeHighlight } from './deserializeHighlight';
 import { renderLeafHighlight } from './renderLeafHighlight';
 import { HighlightPluginOptions, MARK_HIGHLIGHT } from './types';

@@ -2,7 +2,7 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
-import { withLink } from '../../../../index';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>

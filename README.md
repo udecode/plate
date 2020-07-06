@@ -75,6 +75,7 @@ For additional help, join us in our
 
 | Element Plugins                                                     |                                                                       |
 |:--------------------------------------------------------------------|:----------------------------------------------------------------------|
+| [Align](packages/slate-plugins/src/elements/align)                  | Enables support for text alignment.                                   |
 | [BasicElements](packages/slate-plugins/src/elements/basic-elements) | Enables support for basic elements.                                   |
 | [Blockquote](packages/slate-plugins/src/elements/blockquote/)       | Enables support for block quotes.                                     |
 | [CodeBlock](packages/slate-plugins/src/elements/code-block)         | Enables support for pre-formatted code blocks.                        |
@@ -132,7 +133,7 @@ For additional help, join us in our
 
 | Utility Plugins                                                |                                                     |
 |:---------------------------------------------------------------|:----------------------------------------------------|
-| [NodeID](packages/slate-plugins/src/common/transforms/node-id) | Enables support for inserting nodes with an id key. |
+| [NodeID](packages/slate-plugins/src/common/plugins/node-id)    | Enables support for inserting nodes with an id key. |
 
 
 | Widget Plugins                                                          |                                                  |

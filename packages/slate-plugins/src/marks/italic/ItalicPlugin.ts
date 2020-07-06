@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/core';
-import { onKeyDownMark } from '../../mark';
+import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeItalic } from './deserializeItalic';
 import { renderLeafItalic } from './renderLeafItalic';
 import { ItalicPluginOptions, MARK_ITALIC } from './types';

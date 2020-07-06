@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { getPreventDefaultHandler } from '../../common/utils';
-import { ToolbarButton } from '../../components/ToolbarButton';
-import { isMarkActive } from '../queries';
-import { toggleMark } from '../transforms';
+import { isMarkActive } from '../../common/queries/isMarkActive';
+import { toggleMark } from '../../common/transforms/toggleMark';
+import { getPreventDefaultHandler } from '../../common/utils/index';
+import { ToolbarButton } from '../ToolbarButton/index';
 import { ToolbarMarkProps } from './ToolbarMark.types';
 
 /**

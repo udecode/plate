@@ -1,12 +1,19 @@
 import { Editor, Transforms } from 'slate';
-import { isNodeTypeIn } from '../common/queries';
-import { DEFAULT_ELEMENT, ToggleTypeEditor } from './types';
+import { isNodeTypeIn } from '../queries/index';
+import { DEFAULT_ELEMENT } from '../types/node.types';
 
 export interface WithToggleTypeOptions {
   /**
    * Default type
    */
   defaultType?: string;
+}
+
+export interface ToggleTypeEditor extends Editor {
+  /**
+   * Toggle the type of the selected nodes.
+   */
+  toggleType: (activeType: string, defaultType?: string) => void;
 }
 
 /**

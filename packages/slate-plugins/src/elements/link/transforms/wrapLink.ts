@@ -1,4 +1,5 @@
-import { Editor, Location, Transforms } from 'slate';
+import { Editor, Location } from 'slate';
+import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import { LINK } from '../types';
 
 /**
@@ -15,7 +16,7 @@ export const wrapLink = (
     at?: Location;
   } = {}
 ) => {
-  Transforms.wrapNodes(
+  wrapNodes(
     editor,
     {
       type: typeLink,

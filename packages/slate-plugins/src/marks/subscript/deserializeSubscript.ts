@@ -1,5 +1,5 @@
 import { DeserializeHtml } from '@udecode/core';
-import { getLeafDeserializer } from '../../mark/utils';
+import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
 import { MARK_SUBSCRIPT, SubscriptDeserializeOptions } from './types';
 
 export const deserializeSubscript = ({

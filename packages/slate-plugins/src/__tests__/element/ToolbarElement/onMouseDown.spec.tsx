@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
-import { pipe } from '../../../common';
-import { withToggleType } from '../../../element';
-import { ToolbarElement } from '../../../element/components';
+import { pipe, withToggleType } from '../../../common';
+import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
 import { HeadingType } from '../../../elements/heading';
 import { input, output } from './onMouseDown.fixture';
 

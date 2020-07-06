@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/core';
-import { onKeyDownMark } from '../../mark';
+import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
 import { deserializeUnderline } from './deserializeUnderline';
 import { renderLeafUnderline } from './renderLeafUnderline';
 import { MARK_UNDERLINE, UnderlinePluginOptions } from './types';

@@ -1,6 +1,9 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
-import { MarkPluginOptions, RenderLeafOptions } from '../../mark';
+import {
+  MarkPluginOptions,
+  RenderLeafOptions,
+} from '../../common/types/Mark.types';
 
 export const MARK_STRIKETHROUGH = 'strikethrough';
 

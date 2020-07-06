@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
 import { getBlockAbove, isBlockTextEmpty } from '../../common/queries';
-import { DEFAULT_ELEMENT } from '../../element';
+import { DEFAULT_ELEMENT } from '../../common/types/node.types';
 import { WithResetBlockTypeOptions } from './types';
 
 /**

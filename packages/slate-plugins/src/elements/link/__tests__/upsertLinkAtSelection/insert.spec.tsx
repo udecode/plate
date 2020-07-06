@@ -1,8 +1,10 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../element/index';
-import { LINK, upsertLinkAtSelection, withLink } from '../../../index';
+import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
+import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
+import { LINK } from '../../types';
+import { withLink } from '../../withLink';
 
 const input = (
   <editor>
