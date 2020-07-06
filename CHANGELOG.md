@@ -22,6 +22,7 @@ patch version bumps.
 - removed `getSelectionNodesArrayByType`
 - replaced `insertLink` by `upsertLinkAtSelection`
 - `wrapLink` is now only wrapping the link (without unwrapping).
+- `@udecode/core` package renamed to `@udecode/slate-plugins-core`.
 
 ### Features
 
