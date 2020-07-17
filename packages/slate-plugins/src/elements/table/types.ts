@@ -1,59 +1,70 @@
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-
-export enum TableType {
-  TABLE = 'table',
-  ROW = 'tr',
-  CELL = 'td',
-  HEAD = 'th',
-}
-
-export const defaultTableTypes: Required<TableTypeOption> = {
-  typeTable: TableType.TABLE,
-  typeTr: TableType.ROW,
-  typeTd: TableType.CELL,
-  typeTh: TableType.HEAD,
-};
+import {
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
 
 // Data of Element node
 export interface TableNodeData {}
-
 // Element node
 export interface TableNode extends Element, TableNodeData {}
 
-// Type option
-export interface TableTypeOption {
-  typeTable?: string;
-  typeTr?: string;
-  typeTd?: string;
-  typeTh?: string;
-}
-
-// deserialize options
-export interface TableDeserializeOptions extends TableTypeOption {}
-
 // renderElement options given as props
-interface TableRenderElementOptionsProps {}
-
-// renderElement options
-export interface TableRenderElementOptions
-  extends TableRenderElementOptionsProps,
-    TableTypeOption {
-  Table?: any;
-  Row?: any;
-  Cell?: any;
+export interface TableRenderElementPropsOptions {
+  /**
+   * Call to provide customized styling that will layer on top of the variant rules.
+   */
+  styles?: IStyleFunctionOrObject<TableElementStyleProps, TableElementStyles>;
 }
 
 // renderElement props
-export interface TableRenderElementProps
+export interface TableElementProps
   extends RenderElementProps,
-    TableRenderElementOptionsProps {
+    RenderNodePropsOptions,
+    TableRenderElementPropsOptions {
   element: TableNode;
 }
 
-// Plugin options
-export interface TablePluginOptions
-  extends TableRenderElementOptions,
-    TableDeserializeOptions {}
+export type TableKeyOption = 'table' | 'th' | 'tr' | 'td';
 
-export interface WithTableOptions extends TableTypeOption {}
+// Plugin options
+export type TablePluginOptionsValues = RenderNodeOptions &
+  RootProps<TableRenderElementPropsOptions>;
+export type TablePluginOptionsKeys = keyof TablePluginOptionsValues;
+export type TablePluginOptions<
+  Value extends TablePluginOptionsKeys = TablePluginOptionsKeys
+> = Partial<Record<TableKeyOption, Pick<TablePluginOptionsValues, Value>>>;
+
+// renderElement options
+export type TableRenderElementOptionsKeys = TablePluginOptionsKeys;
+export interface TableRenderElementOptions
+  extends TablePluginOptions<TableRenderElementOptionsKeys> {}
+
+// deserialize options
+export interface TableDeserializeOptions
+  extends TablePluginOptions<'type' | 'rootProps'> {}
+
+export interface WithTableOptions extends TablePluginOptions<'type'> {}
+export interface TableOptions extends TablePluginOptions<'type'> {}
+
+export interface TableElementStyles {
+  /**
+   * Style for the root element.
+   */
+  root?: IStyle;
+
+  // Insert TableElement classNames below
+}
+
+export interface TableElementStyleProps {
+  /**
+   * Accept custom classNames
+   */
+  className?: string;
+
+  // Insert TableElement style props below
+}

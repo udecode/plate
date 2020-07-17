@@ -1,11 +1,18 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
-import { HighlightDeserializeOptions, MARK_HIGHLIGHT } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_HIGHLIGHT } from './defaults';
+import { HighlightDeserializeOptions } from './types';
 
-export const deserializeHighlight = ({
-  typeHighlight = MARK_HIGHLIGHT,
-}: HighlightDeserializeOptions = {}): DeserializeHtml => ({
-  leaf: getLeafDeserializer(typeHighlight, {
-    tagNames: ['MARK'],
-  }),
-});
+export const deserializeHighlight = (
+  options?: HighlightDeserializeOptions
+): DeserializeHtml => {
+  const { highlight } = setDefaults(options, DEFAULTS_HIGHLIGHT);
+
+  return {
+    leaf: getLeafDeserializer({
+      type: highlight.type,
+      rules: [{ nodeNames: ['MARK'] }],
+    }),
+  };
+};

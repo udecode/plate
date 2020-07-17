@@ -1,17 +1,32 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { TableDeserializeOptions, TableType } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_TABLE } from './defaults';
+import { TableDeserializeOptions } from './types';
 
-export const deserializeTable = ({
-  typeTable = TableType.TABLE,
-  typeTr = TableType.ROW,
-  typeTd = TableType.CELL,
-  typeTh = TableType.HEAD,
-}: TableDeserializeOptions = {}): DeserializeHtml => ({
-  element: {
-    ...getElementDeserializer(typeTable, { tagNames: ['TABLE'] }),
-    ...getElementDeserializer(typeTr, { tagNames: ['TR'] }),
-    ...getElementDeserializer(typeTd, { tagNames: ['TD'] }),
-    ...getElementDeserializer(typeTh, { tagNames: ['TH'] }),
-  },
-});
+export const deserializeTable = (
+  options?: TableDeserializeOptions
+): DeserializeHtml => {
+  const { table, td, th, tr } = setDefaults(options, DEFAULTS_TABLE);
+
+  return {
+    element: [
+      ...getElementDeserializer({
+        type: table.type,
+        rules: [{ nodeNames: 'TABLE' }],
+      }),
+      ...getElementDeserializer({
+        type: tr.type,
+        rules: [{ nodeNames: 'TR' }],
+      }),
+      ...getElementDeserializer({
+        type: td.type,
+        rules: [{ nodeNames: 'TD' }],
+      }),
+      ...getElementDeserializer({
+        type: th.type,
+        rules: [{ nodeNames: 'TH' }],
+      }),
+    ],
+  };
+};

@@ -2,8 +2,8 @@
 
 import { jsx } from '../../../../__test-utils__/jsx';
 import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
+import { ELEMENT_LINK } from '../../defaults';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
-import { LINK } from '../../types';
 import { withLink } from '../../withLink';
 
 const urlInput = 'http://input.com';
@@ -12,7 +12,7 @@ const input = (
   <editor>
     <hp>
       insert link <anchor />
-      <element type={LINK} url={urlInput}>
+      <element type={ELEMENT_LINK} url={urlInput}>
         here
       </element>
       <focus />.
@@ -26,7 +26,7 @@ const output = (
   <editor>
     <hp>
       insert link{' '}
-      <element type={LINK} url={urlOutput}>
+      <element type={ELEMENT_LINK} url={urlOutput}>
         here
       </element>
       .
@@ -35,7 +35,9 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(withInlineVoid({ inlineTypes: [LINK] })(input));
+  const editor = withLink()(
+    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)
+  );
   upsertLinkAtSelection(editor, urlOutput);
 
   expect(input.children).toEqual(output.children);

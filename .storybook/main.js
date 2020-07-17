@@ -6,7 +6,6 @@ module.exports = {
     '../stories/docs/**/getting-started.stories.mdx',
     '../stories/docs/**/guide.stories.mdx',
     '../stories/docs/**/contributing.stories.mdx',
-    '../stories/docs/**/*.stories.(tsx|mdx)',
     '../stories/examples/playground.stories.tsx',
     '../stories/examples/**/*.stories.(tsx|mdx)',
     '../stories/elements/**/*.stories.(tsx|mdx)',
@@ -17,6 +16,7 @@ module.exports = {
     '../stories/deserializers/**/*.stories.(tsx|mdx)',
     '../stories/components/**/*.stories.(tsx|mdx)',
     '../stories/widgets/**/*.stories.(tsx|mdx)',
+    '../stories/docs/api/*.stories.(tsx|mdx)',
     '../stories/**/*.stories.(tsx|mdx)',
   ],
   addons: [

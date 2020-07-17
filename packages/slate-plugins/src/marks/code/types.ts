@@ -1,44 +1,46 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_CODE = 'code';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface CodeNodeData {}
-
 // Text node
 export interface CodeNode extends Text, CodeNodeData {}
 
-// Type option
-interface TypeOption {
-  typeCode?: string;
-}
-
 // renderLeaf options given as props
-interface CodeRenderLeafOptionsProps {}
+export interface CodeRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface CodeRenderLeafOptions
-  extends RenderLeafOptions,
-    CodeRenderLeafOptionsProps,
-    TypeOption {}
-
-// renderLeaf props
-export interface CodeRenderLeafProps
+// Leaf props
+export interface CodeLeafProps
   extends RenderLeafProps,
-    CodeRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    CodeRenderLeafPropsOptions {
   leaf: CodeNode;
 }
 
-// deserialize options
-export interface CodeDeserializeOptions extends TypeOption {}
+export type CodeKeyOption = 'code';
 
 // Plugin options
-export interface CodePluginOptions
-  extends MarkPluginOptions,
-    CodeRenderLeafOptions,
-    CodeDeserializeOptions {}
+export type CodePluginOptionsValues = RenderNodeOptions &
+  RootProps<CodeRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type CodePluginOptionsKeys = keyof CodePluginOptionsValues;
+export type CodePluginOptions<
+  Value extends CodePluginOptionsKeys = CodePluginOptionsKeys
+> = Partial<Record<CodeKeyOption, Pick<CodePluginOptionsValues, Value>>>;
+
+// renderLeaf options
+export type CodeRenderLeafOptionsKeys = CodePluginOptionsKeys;
+export interface CodeRenderLeafOptions
+  extends CodePluginOptions<CodeRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface CodeDeserializeOptions
+  extends CodePluginOptions<'type' | 'rootProps'> {}

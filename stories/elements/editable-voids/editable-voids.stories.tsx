@@ -10,7 +10,7 @@ import {
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { nodeTypes } from '../../config/initialValues';
+import { options } from '../../config/initialValues';
 import { EditableVoidPlugin } from './EditableVoidPlugin';
 import { EDITABLE_VOID } from './types';
 
@@ -22,7 +22,7 @@ const initialValueVoids: Node[] = [
   {
     children: [
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -35,7 +35,7 @@ const initialValueVoids: Node[] = [
         children: [{ text: '' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: '',
@@ -46,7 +46,7 @@ const initialValueVoids: Node[] = [
   },
 ];
 
-const plugins = [ParagraphPlugin(nodeTypes), EditableVoidPlugin()];
+const plugins = [ParagraphPlugin(options), EditableVoidPlugin()];
 
 const withPlugins = [
   withReact,

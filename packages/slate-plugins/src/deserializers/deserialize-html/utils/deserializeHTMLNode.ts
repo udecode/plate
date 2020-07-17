@@ -50,12 +50,9 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
   if (element) return element;
 
   // mark
-  const texts = deserializeHTMLToMarks({
+  return deserializeHTMLToMarks({
     plugins,
     el: htmlElement,
     children,
   });
-  if (texts) return texts;
-
-  return children;
 };

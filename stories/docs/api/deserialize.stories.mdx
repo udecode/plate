@@ -1,0 +1,74 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="API/deserialize" />
+
+# Deserialize HTML
+
+Note: `deserialize` is used by `withDeserializeHTML` and `serializeHTMLFromNodes`.
+
+### Using getElementDeserializer
+
+Get a deserializer by type, node names, class names and styles.
+
+```js
+export const deserializeAlign = (
+  options?: AlignDeserializeOptions
+): DeserializeHtml => {
+  const { align_center, align_right } = setDefaults(options, DEFAULTS_ALIGN);
+
+  return {
+    element: [
+      ...getElementDeserializer({
+        type: align_center.type,
+        rules: [
+          { className: align_center.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'center',
+            },
+          },
+        ],
+      }),
+      ...getElementDeserializer({
+        type: align_right.type,
+        rules: [
+          { className: align_right.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'right',
+            },
+          },
+        ],
+      }),
+    ],
+  };
+};
+```
+
+### Using getLeafDeserializer
+
+Get a deserializer by type, node names, class names and styles.
+
+```js
+export const deserializeBold = (
+  options?: BoldDeserializeOptions
+): DeserializeHtml => {
+  const { bold } = setDefaults(options, DEFAULTS_BOLD);
+
+  return {
+    leaf: getLeafDeserializer({
+      type: bold.type,
+      rules: [
+        { nodeNames: ['STRONG'] },
+        {
+          style: {
+            fontWeight: ['600', '700', 'bold'],
+          },
+        },
+      ],
+    }),
+  };
+};
+```

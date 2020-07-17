@@ -13,7 +13,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValuePreview, nodeTypes } from '../config/initialValues';
+import { initialValuePreview, options } from '../config/initialValues';
 
 export default {
   title: 'Decorators/Preview Markdown',
@@ -27,7 +27,7 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
 
   if (boolean('PreviewPlugin', true)) plugins.push(PreviewPlugin());
 

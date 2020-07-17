@@ -1,13 +1,18 @@
 import { ReactEditor } from 'slate-react';
 import { insertImage } from '../transforms';
+import { ImagePluginOptions } from '../types';
 import { isImageUrl, onImageLoad } from '../utils';
 
 /**
  * Allows for pasting images from clipboard.
  * Not yet: dragging and dropping images, selecting them through a file system dialog.
- * @param typeImg
+ * @param img.type
  */
-export const withImageUpload = () => <T extends ReactEditor>(editor: T) => {
+export const withImageUpload = (options?: ImagePluginOptions<'type'>) => <
+  T extends ReactEditor
+>(
+  editor: T
+) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {
@@ -23,7 +28,7 @@ export const withImageUpload = () => <T extends ReactEditor>(editor: T) => {
         }
       }
     } else if (isImageUrl(text)) {
-      insertImage(editor, text);
+      insertImage(editor, text, options);
     } else {
       insertData(data);
     }

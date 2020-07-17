@@ -1,42 +1,78 @@
-import { RenderElementOptions } from '@udecode/slate-plugins-core';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-
-export const LINK = 'a';
+import {
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import {
+  StyledComponentStyleProps,
+  StyledComponentStyles,
+} from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface LinkNodeData {
   url: string;
 }
-
 // Element node
 export interface LinkNode extends Element, LinkNodeData {}
 
-// Type option
-interface TypeOption {
-  typeLink?: string;
+// renderElement options given as props
+export interface LinkRenderElementPropsOptions {
+  /**
+   * Call to provide customized styling that will layer on top of the variant rules.
+   */
+  styles?: IStyleFunctionOrObject<
+    StyledComponentStyleProps,
+    StyledComponentStyles
+  >;
 }
 
-// deserialize options
-export interface LinkDeserializeOptions extends TypeOption {}
-
-// renderElement options given as props
-interface LinkRenderElementOptionsProps {}
-
-// renderElement options
-export interface LinkRenderElementOptions
-  extends RenderElementOptions,
-    LinkRenderElementOptionsProps,
-    TypeOption {}
-
 // renderElement props
-export interface LinkRenderElementProps
+export interface LinkElementProps
   extends RenderElementProps,
-    LinkRenderElementOptionsProps {
+    RenderNodePropsOptions,
+    LinkRenderElementPropsOptions {
   element: LinkNode;
 }
 
+export type LinkKeyOption = 'link';
+
 // Plugin options
-export interface LinkPluginOptions
-  extends LinkRenderElementOptions,
-    LinkDeserializeOptions {}
+export type LinkPluginOptionsValues = RenderNodeOptions &
+  RootProps<LinkRenderElementPropsOptions>;
+export type LinkPluginOptionsKeys = keyof LinkPluginOptionsValues;
+export type LinkPluginOptions<
+  Value extends LinkPluginOptionsKeys = LinkPluginOptionsKeys
+> = Partial<Record<LinkKeyOption, Pick<LinkPluginOptionsValues, Value>>>;
+
+// renderElement options
+export type LinkRenderElementOptionsKeys = LinkPluginOptionsKeys;
+export interface LinkRenderElementOptions
+  extends LinkPluginOptions<LinkRenderElementOptionsKeys> {}
+
+// deserialize options
+export interface LinkDeserializeOptions
+  extends LinkPluginOptions<'type' | 'rootProps'> {}
+
+export interface LinkOptions extends LinkPluginOptions<'type'> {}
+
+export interface LinkElementStyles {
+  /**
+   * Style for the root element.
+   */
+  root?: IStyle;
+
+  // Insert LinkElement classNames below
+}
+
+export interface LinkElementStyleProps {
+  /**
+   * Accept custom classNames
+   */
+  className?: string;
+
+  // Insert LinkElement style props below
+}

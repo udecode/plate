@@ -1,40 +1,46 @@
-import { RenderElementOptions } from '@udecode/slate-plugins-core';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-
-export const PARAGRAPH = 'p';
+import {
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface ParagraphNodeData {}
-
 // Element node
 export interface ParagraphNode extends Element, ParagraphNodeData {}
 
-// Type option
-interface TypeOption {
-  typeP?: string;
-}
-
-// deserialize options
-export interface ParagraphDeserializeOptions extends TypeOption {}
-
 // renderElement options given as props
-interface ParagraphRenderElementOptionsProps {}
-
-// renderElement options
-export interface ParagraphRenderElementOptions
-  extends RenderElementOptions,
-    ParagraphRenderElementOptionsProps,
-    TypeOption {}
+export interface ParagraphRenderElementPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // renderElement props
-export interface ParagraphRenderElementProps
+export interface ParagraphElementProps
   extends RenderElementProps,
-    ParagraphRenderElementOptionsProps {
+    RenderNodePropsOptions,
+    ParagraphRenderElementPropsOptions {
   element: ParagraphNode;
 }
 
+export type ParagraphKeyOption = 'p';
+
 // Plugin options
-export interface ParagraphPluginOptions
-  extends ParagraphRenderElementOptions,
-    ParagraphDeserializeOptions {}
+export type ParagraphPluginOptionsValues = RenderNodeOptions &
+  RootProps<ParagraphRenderElementPropsOptions>;
+export type ParagraphPluginOptionsKeys = keyof ParagraphPluginOptionsValues;
+export type ParagraphPluginOptions<
+  Value extends ParagraphPluginOptionsKeys = ParagraphPluginOptionsKeys
+> = Partial<
+  Record<ParagraphKeyOption, Pick<ParagraphPluginOptionsValues, Value>>
+>;
+
+// renderElement options
+export type ParagraphRenderElementOptionsKeys = ParagraphPluginOptionsKeys;
+export interface ParagraphRenderElementOptions
+  extends ParagraphPluginOptions<ParagraphRenderElementOptionsKeys> {}
+
+// deserialize options
+export interface ParagraphDeserializeOptions
+  extends ParagraphPluginOptions<'type' | 'rootProps'> {}

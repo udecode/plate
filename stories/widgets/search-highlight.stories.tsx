@@ -17,7 +17,7 @@ import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
   initialValueSearchHighlighting,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -33,9 +33,9 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(options)];
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin(nodeTypes));
+    plugins.push(SearchHighlightPlugin(options));
 
   const createReactEditor = () => () => {
     const decorate = [];

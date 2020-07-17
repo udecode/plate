@@ -1,4 +1,4 @@
-import { DeserializeElement, SlatePlugin } from '@udecode/slate-plugins-core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { Descendant, Element } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
@@ -15,26 +15,26 @@ export const deserializeHTMLToElement = ({
   el: HTMLElement;
   children: DeserializeHTMLChildren[];
 }): Element | undefined => {
-  const type = el.getAttribute('data-slate-type') || el.nodeName;
+  let element: any;
 
-  const elementDeserializers = plugins.reduce(
-    (obj: DeserializeElement, { deserialize: deserializePlugin }) => {
-      if (deserializePlugin?.element) {
-        obj = { ...obj, ...deserializePlugin.element };
-      }
-      return obj;
-    },
-    {}
-  );
+  plugins.some(({ deserialize: pluginDeserializers }) => {
+    if (!pluginDeserializers?.element) return;
 
-  if (elementDeserializers[type]) {
-    const attrs = elementDeserializers[type](el);
+    return pluginDeserializers.element.some((deserializer) => {
+      const deserialized = deserializer.deserialize(el);
+      if (!deserialized) return;
 
+      element = deserialized;
+      return true;
+    });
+  });
+
+  if (element) {
     let descendants = children as Descendant[];
     if (!descendants.length) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', { ...attrs }, descendants);
+    return jsx('element', element, descendants);
   }
 };

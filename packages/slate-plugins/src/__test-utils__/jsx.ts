@@ -1,5 +1,5 @@
 import { createHyperscript } from 'slate-hyperscript';
-import { nodeTypes } from '../__fixtures__/initialValues.fixtures';
+import { options } from '../../../../stories/config/initialValues';
 import { createText } from './hyperscript/creators';
 
 declare global {
@@ -8,7 +8,7 @@ declare global {
       [key: string]: any;
       editor: any;
       mention: any;
-      actionitem: any;
+      TodoList: any;
       inline: any;
       htext: any;
     }
@@ -17,27 +17,27 @@ declare global {
 
 export const jsx = createHyperscript({
   elements: {
-    hp: { type: nodeTypes.typeP },
-    hmention: { type: nodeTypes.typeMention },
-    hblockquote: { type: nodeTypes.typeBlockquote },
-    hcode: { type: nodeTypes.typeCodeBlock },
-    ha: { type: nodeTypes.typeLink },
-    himg: { type: nodeTypes.typeImg },
-    hembed: { type: nodeTypes.typeMediaEmbed },
-    hactionitem: { type: nodeTypes.typeActionItem },
-    htable: { type: nodeTypes.typeTable },
-    htr: { type: nodeTypes.typeTr },
-    htd: { type: nodeTypes.typeTd },
-    hul: { type: nodeTypes.typeUl },
-    hol: { type: nodeTypes.typeOl },
-    hli: { type: nodeTypes.typeLi },
-    hh1: { type: nodeTypes.typeH1 },
-    hh2: { type: nodeTypes.typeH2 },
-    hh3: { type: nodeTypes.typeH3 },
-    hh4: { type: nodeTypes.typeH4 },
-    hh5: { type: nodeTypes.typeH5 },
-    hh6: { type: nodeTypes.typeH6 },
-    hcenter: { type: nodeTypes.typeAlignCenter },
+    hp: { type: options.p.type },
+    hmention: { type: options.mention.type },
+    hblockquote: { type: options.blockquote.type },
+    hcode: { type: options.code_block.type },
+    ha: { type: options.link.type },
+    himg: { type: options.img.type },
+    hembed: { type: options.media_embed.type },
+    hTodoList: { type: options.todo_li.type },
+    htable: { type: options.table.type },
+    htr: { type: options.tr.type },
+    htd: { type: options.td.type },
+    hul: { type: options.ul.type },
+    hol: { type: options.ol.type },
+    hli: { type: options.li.type },
+    hh1: { type: options.h1.type },
+    hh2: { type: options.h2.type },
+    hh3: { type: options.h3.type },
+    hh4: { type: options.h4.type },
+    hh5: { type: options.h5.type },
+    hh6: { type: options.h6.type },
+    hcenter: { type: options.align_center.type },
     inline: { inline: true },
     block: {},
   },

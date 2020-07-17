@@ -1,11 +1,15 @@
 import { Editor, Path, Transforms } from 'slate';
 import { isNodeTypeIn } from '../../../common/queries';
+import { setDefaults } from '../../../common/utils/setDefaults';
+import { DEFAULTS_TABLE } from '../defaults';
 import { isTable, isTableCell } from '../queries';
-import { defaultTableTypes } from '../types';
+import { TableOptions } from '../types';
 import { getEmptyCellNode } from '../utils';
 
-export const addColumn = (editor: Editor, options = defaultTableTypes) => {
-  if (isNodeTypeIn(editor, options.typeTable)) {
+export const addColumn = (editor: Editor, options?: TableOptions) => {
+  const { table } = setDefaults(options, DEFAULTS_TABLE);
+
+  if (isNodeTypeIn(editor, table.type)) {
     const currentCellItem = Editor.above(editor, {
       match: isTableCell(options),
     });
@@ -21,10 +25,14 @@ export const addColumn = (editor: Editor, options = defaultTableTypes) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
 
-        Transforms.insertNodes(editor, getEmptyCellNode(options), {
-          at: newCellPath,
-          select: rowIdx === currentRowIdx,
-        });
+        Transforms.insertNodes(
+          editor,
+          getEmptyCellNode({ ...options, header: !rowIdx }),
+          {
+            at: newCellPath,
+            select: rowIdx === currentRowIdx,
+          }
+        );
       });
     }
   }

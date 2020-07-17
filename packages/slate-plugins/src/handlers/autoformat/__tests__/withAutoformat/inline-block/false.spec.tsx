@@ -2,7 +2,7 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
-import { CODE_BLOCK } from '../../../../../elements/code-block/types';
+import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/defaults';
 import { withAutoformat } from '../../../withAutoformat';
 
 const input = (
@@ -24,7 +24,12 @@ const output = (
 it('should run default', () => {
   const editor = withAutoformat({
     rules: [
-      { trigger: '`', type: CODE_BLOCK, markup: '///', mode: 'inline-block' },
+      {
+        trigger: '`',
+        type: ELEMENT_CODE_BLOCK,
+        markup: '///',
+        mode: 'inline-block',
+      },
     ],
   })(withReact(input));
 

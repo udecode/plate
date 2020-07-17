@@ -26,7 +26,6 @@ import {
   Search,
 } from '@styled-icons/material';
 import {
-  ActionItemPlugin,
   AlignPlugin,
   BalloonToolbar,
   BlockquotePlugin,
@@ -62,6 +61,7 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
+  TodoListPlugin,
   ToolbarAlign,
   ToolbarElement,
   ToolbarImage,
@@ -104,7 +104,7 @@ import {
   initialValuePasteHtml,
   initialValueSoftBreak,
   initialValueTables,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
@@ -132,38 +132,32 @@ const initialValue: Node[] = [
 export const Plugins = () => {
   const plugins: any[] = [];
 
-  if (boolean('ParagraphPlugin', true))
-    plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin(nodeTypes));
-  if (boolean('ActionItemPlugin', true))
-    plugins.push(ActionItemPlugin(nodeTypes));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(nodeTypes));
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
-  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(nodeTypes));
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
+    plugins.push(BlockquotePlugin(options));
+  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
+  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(options));
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
   if (boolean('MediaEmbedPlugin', true))
-    plugins.push(MediaEmbedPlugin(nodeTypes));
-  if (boolean('CodeBlockPlugin', true))
-    plugins.push(CodeBlockPlugin(nodeTypes));
-  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(nodeTypes));
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
-  if (boolean('HighlightPlugin', true))
-    plugins.push(HighlightPlugin(nodeTypes));
+    plugins.push(MediaEmbedPlugin(options));
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(options));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(options));
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin(nodeTypes));
-  if (boolean('UnderlinePlugin', true))
-    plugins.push(UnderlinePlugin(nodeTypes));
+    plugins.push(SearchHighlightPlugin(options));
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin(options));
   if (boolean('StrikethroughPlugin', true))
-    plugins.push(StrikethroughPlugin(nodeTypes));
-  if (boolean('SubscriptPlugin', true))
-    plugins.push(SubscriptPlugin(nodeTypes));
+    plugins.push(StrikethroughPlugin(options));
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin(options));
   if (boolean('SuperscriptPlugin', true))
-    plugins.push(SuperscriptPlugin(nodeTypes));
+    plugins.push(SuperscriptPlugin(options));
   if (boolean('SoftBreakPlugin', true))
     plugins.push(
       SoftBreakPlugin({
@@ -173,9 +167,9 @@ export const Plugins = () => {
             hotkey: 'enter',
             query: {
               allow: [
-                nodeTypes.typeCodeBlock,
-                nodeTypes.typeBlockquote,
-                nodeTypes.typeTd,
+                options.code_block.type,
+                options.blockquote.type,
+                options.td.type,
               ],
             },
           },
@@ -208,26 +202,26 @@ export const Plugins = () => {
   const withPlugins = [
     withReact,
     withHistory,
-    withTable(nodeTypes),
+    withTable(options),
     withLink(),
     withDeserializeHTML({ plugins }),
     withImageUpload(),
-    withToggleType({ defaultType: nodeTypes.typeP }),
+    withToggleType({ defaultType: options.p.type }),
     withResetBlockType({
       types: [
-        nodeTypes.typeActionItem,
-        nodeTypes.typeBlockquote,
-        nodeTypes.typeCodeBlock,
+        options.todo_li.type,
+        options.blockquote.type,
+        options.code_block.type,
       ],
-      defaultType: nodeTypes.typeP,
+      defaultType: options.p.type,
     }),
-    withList(nodeTypes),
+    withList(options),
     withAutoformat({ rules: autoformatRules }),
     withTransforms(),
     withNormalizeTypes({
-      rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+      rules: [{ path: [0, 0], strictType: options.h1.type }],
     }),
-    withTrailingNode({ type: nodeTypes.typeP, level: 1 }),
+    withTrailingNode({ type: options.p.type, level: 1 }),
     withInlineVoid({ plugins }),
   ] as const;
 
@@ -270,27 +264,27 @@ export const Plugins = () => {
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
           {/* Elements */}
-          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
+          <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
+          <ToolbarElement type={options.h3.type} icon={<Looks3 />} />
+          <ToolbarElement type={options.h4.type} icon={<Looks4 />} />
+          <ToolbarElement type={options.h5.type} icon={<Looks5 />} />
+          <ToolbarElement type={options.h6.type} icon={<Looks6 />} />
           <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeUl}
+            {...options}
+            typeList={options.ul.type}
             icon={<FormatListBulleted />}
           />
           <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeOl}
+            {...options}
+            typeList={options.ol.type}
             icon={<FormatListNumbered />}
           />
           <ToolbarElement
-            type={nodeTypes.typeBlockquote}
+            type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
 
           {/* Marks */}
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
@@ -314,15 +308,15 @@ export const Plugins = () => {
 
           <ToolbarAlign icon={<FormatAlignLeft />} />
           <ToolbarAlign
-            type={nodeTypes.typeAlignCenter}
+            type={options.align_center.type}
             icon={<FormatAlignCenter />}
           />
           <ToolbarAlign
-            type={nodeTypes.typeAlignRight}
+            type={options.align_right.type}
             icon={<FormatAlignRight />}
           />
-          <ToolbarLink {...nodeTypes} icon={<Link />} />
-          <ToolbarImage {...nodeTypes} icon={<Image />} />
+          <ToolbarLink {...options} icon={<Link />} />
+          <ToolbarImage {...options} icon={<Image />} />
         </HeadingToolbar>
         <BalloonToolbar arrow>
           <ToolbarMark

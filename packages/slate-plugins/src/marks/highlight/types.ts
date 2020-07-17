@@ -1,49 +1,48 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_HIGHLIGHT = 'highlight';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface HighlightNodeData {}
-
 // Text node
 export interface HighlightNode extends Text, HighlightNodeData {}
 
-// Type option
-interface TypeOption {
-  typeHighlight?: string;
-}
-
 // renderLeaf options given as props
-interface HighlightRenderLeafOptionsProps {}
+export interface HighlightRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface HighlightRenderLeafOptions
-  extends RenderLeafOptions,
-    HighlightRenderLeafOptionsProps,
-    TypeOption {
-  /**
-   * Background color of the highlighted ranges
-   */
-  bg?: string;
-}
-
-// renderLeaf props
-export interface HighlightRenderLeafProps
+// Leaf props
+export interface HighlightLeafProps
   extends RenderLeafProps,
-    HighlightRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    HighlightRenderLeafPropsOptions {
   leaf: HighlightNode;
 }
 
-// deserialize options
-export interface HighlightDeserializeOptions extends TypeOption {}
+export type HighlightKeyOption = 'highlight';
 
 // Plugin options
-export interface HighlightPluginOptions
-  extends MarkPluginOptions,
-    HighlightRenderLeafOptions,
-    HighlightDeserializeOptions {}
+export type HighlightPluginOptionsValues = RenderNodeOptions &
+  RootProps<HighlightRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type HighlightPluginOptionsKeys = keyof HighlightPluginOptionsValues;
+export type HighlightPluginOptions<
+  Value extends HighlightPluginOptionsKeys = HighlightPluginOptionsKeys
+> = Partial<
+  Record<HighlightKeyOption, Pick<HighlightPluginOptionsValues, Value>>
+>;
+
+// renderLeaf options
+export type HighlightRenderLeafOptionsKeys = HighlightPluginOptionsKeys;
+export interface HighlightRenderLeafOptions
+  extends HighlightPluginOptions<HighlightRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface HighlightDeserializeOptions
+  extends HighlightPluginOptions<'type' | 'rootProps'> {}

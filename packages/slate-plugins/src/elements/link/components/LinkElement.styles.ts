@@ -1,15 +1,10 @@
-import { LinkElementStyleProps, LinkElementStyles } from './LinkElement.types';
-
-const classNames = {
-  root: 'slate-LinkElement',
-};
+import { LinkElementStyleProps, LinkElementStyles } from '../types';
 
 export const getLinkElementStyles = ({
   className,
 }: LinkElementStyleProps): LinkElementStyles => {
   return {
     root: [
-      classNames.root,
       {
         // Insert css properties
         textDecoration: 'initial',

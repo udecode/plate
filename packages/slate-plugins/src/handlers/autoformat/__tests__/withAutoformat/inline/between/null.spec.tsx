@@ -2,7 +2,7 @@
 
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../../__test-utils__/jsx';
-import { MARK_ITALIC } from '../../../../../../marks/italic/types';
+import { MARK_ITALIC } from '../../../../../../marks/italic/defaults';
 import { withAutoformat } from '../../../../withAutoformat';
 
 const input = (

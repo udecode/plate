@@ -17,7 +17,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueLinks, nodeTypes } from '../config/initialValues';
+import { initialValueLinks, options } from '../config/initialValues';
 
 export default {
   title: 'Elements/Link',
@@ -29,13 +29,13 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
 
   const withPlugins = [
     withReact,
     withHistory,
-    withLink(),
+    withLink(options),
     withInlineVoid({ plugins }),
   ] as const;
 
@@ -51,7 +51,7 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
-          <ToolbarLink {...nodeTypes} icon={<Link />} />
+          <ToolbarLink {...options} icon={<Link />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

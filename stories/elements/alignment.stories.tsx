@@ -28,7 +28,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -45,22 +45,21 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withResetBlockType({
-    types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
-    defaultType: nodeTypes.typeP,
+    types: [options.blockquote.type, options.code_block.type],
+    defaultType: options.p.type,
   }),
 ] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
-  if (boolean('ParagraphPlugin', true))
-    plugins.push(ParagraphPlugin(nodeTypes));
-  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(nodeTypes));
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
   if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+    plugins.push(BlockquotePlugin(options));
+  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
   if (boolean('SoftBreakPlugin', true))
     plugins.push(
       SoftBreakPlugin({
@@ -69,7 +68,7 @@ export const Example = () => {
           {
             hotkey: 'enter',
             query: {
-              allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+              allow: [options.code_block.type, options.blockquote.type],
             },
           },
         ],
@@ -114,11 +113,11 @@ export const Example = () => {
         <HeadingToolbar>
           <ToolbarAlign icon={<FormatAlignLeft />} />
           <ToolbarAlign
-            type={nodeTypes.typeAlignCenter}
+            type={options.align_center.type}
             icon={<FormatAlignCenter />}
           />
           <ToolbarAlign
-            type={nodeTypes.typeAlignRight}
+            type={options.align_right.type}
             icon={<FormatAlignRight />}
           />
         </HeadingToolbar>

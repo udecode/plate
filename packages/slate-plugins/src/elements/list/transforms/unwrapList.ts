@@ -1,15 +1,12 @@
 import { Editor } from 'slate';
 import { unwrapNodesByType } from '../../../common/transforms';
-import { ListType } from '../types';
+import { setDefaults } from '../../../common/utils/setDefaults';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 
-export const unwrapList = (
-  editor: Editor,
-  {
-    typeUl = ListType.UL,
-    typeOl = ListType.OL,
-    typeLi = ListType.LI,
-  }: { typeUl?: string; typeOl?: string; typeLi?: string } = {}
-) => {
-  unwrapNodesByType(editor, typeLi);
-  unwrapNodesByType(editor, [typeUl, typeOl], { split: true });
+export const unwrapList = (editor: Editor, options?: ListOptions) => {
+  const { li, ul, ol } = setDefaults(options, DEFAULTS_LIST);
+
+  unwrapNodesByType(editor, li.type);
+  unwrapNodesByType(editor, [ul.type, ol.type], { split: true });
 };

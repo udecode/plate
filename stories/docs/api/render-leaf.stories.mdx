@@ -1,0 +1,77 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="API/renderLeaf" />
+
+# renderLeaf
+
+Note: `renderLeaf` should always return `children` (wrapped or not).
+
+### Using getRenderLeafDefault
+
+Get a `renderLeaf` handler for a single type, with default options.
+
+```js
+export const renderLeafBold = (options?: BoldRenderLeafOptions) =>
+  getRenderLeafDefault({
+    key: 'bold',
+    defaultOptions: DEFAULTS_BOLD,
+    options,
+  });
+```
+
+### Using getRenderLeaf
+
+Get a `renderLeaf` handler for a single type.
+
+```js
+export const renderLeafBold = (
+  options?: BoldRenderLeafOptions
+) => {
+  const { bold } = setDefaults(options, DEFAULTS_BOLD);
+
+  return getRenderLeaf(bold);
+};
+```
+
+### Custom
+
+```js
+export const renderLeafBold = ({ children, leaf }: RenderLeafProps) => {
+  if (leaf.bold && !!leaf.text) {
+    return <strong className="slate-bold">{children}</strong>;
+  }
+
+  return children;
+}
+```
+
+### Options
+
+```js
+const options: BoldRenderLeafOptions = {
+  // Use a unique key for each slate node.
+  bold: {
+    // Give a React component or HTML tag (e.g. 'span') to render the leaf.
+    component: StyledLeaf,
+    // Give a unique string for each mark.
+    type: MARK_BOLD,
+    // Specify the hotkey to toggle this mark.
+    hotkey: 'mod+b',
+    // Specify the marks to clear when toggling this mark.
+    clear: '',
+    // Give props to the root of the React component.
+    rootProps: {
+      // Give a className to the React component. Give an empty string to remove the className.
+      className: 'slate-bold',
+      // When using a styled component, specify the root tag to render.
+      as: 'strong',
+      // Customize styled components: https://github.com/microsoft/fluentui/wiki/Component-Styling
+      styles: {
+        root: {
+          fontWeight: 600,
+        }
+      }
+    },
+  },
+}
+```

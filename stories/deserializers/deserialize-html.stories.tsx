@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActionItemPlugin,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
@@ -22,6 +21,7 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   TablePlugin,
+  TodoListPlugin,
   UnderlinePlugin,
   withDeserializeHTML,
   withImageUpload,
@@ -33,7 +33,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValuePasteHtml, nodeTypes } from '../config/initialValues';
+import { initialValuePasteHtml, options } from '../config/initialValues';
 
 export default {
   title: 'Deserializers/HTML',
@@ -41,36 +41,36 @@ export default {
 };
 
 const plugins = [
-  ParagraphPlugin(nodeTypes),
-  BlockquotePlugin(nodeTypes),
-  CodeBlockPlugin(nodeTypes),
-  HeadingPlugin(nodeTypes),
-  ImagePlugin(nodeTypes),
-  LinkPlugin(nodeTypes),
-  ListPlugin(nodeTypes),
-  TablePlugin(nodeTypes),
-  ActionItemPlugin(nodeTypes),
-  MentionPlugin(nodeTypes),
-  MediaEmbedPlugin(nodeTypes),
-  BoldPlugin(nodeTypes),
-  CodePlugin(nodeTypes),
-  ItalicPlugin(nodeTypes),
-  StrikethroughPlugin(nodeTypes),
-  HighlightPlugin(nodeTypes),
-  UnderlinePlugin(nodeTypes),
-  SubscriptPlugin(nodeTypes),
-  SuperscriptPlugin(nodeTypes),
+  ParagraphPlugin(options),
+  BlockquotePlugin(options),
+  CodeBlockPlugin(options),
+  HeadingPlugin(options),
+  ImagePlugin(options),
+  LinkPlugin(options),
+  ListPlugin(options),
+  TablePlugin(options),
+  TodoListPlugin(options),
+  MentionPlugin(options),
+  MediaEmbedPlugin(options),
+  BoldPlugin(options),
+  CodePlugin(options),
+  ItalicPlugin(options),
+  StrikethroughPlugin(options),
+  HighlightPlugin(options),
+  UnderlinePlugin(options),
+  SubscriptPlugin(options),
+  SuperscriptPlugin(options),
   SoftBreakPlugin(),
 ];
 
 const withPlugins = [
   withReact,
   withHistory,
-  withTable(nodeTypes),
+  withTable(options),
   withLink(),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
-  withList(nodeTypes),
+  withList(options),
   withInlineVoid({ plugins }),
 ] as const;
 

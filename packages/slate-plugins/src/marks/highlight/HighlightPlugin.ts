@@ -1,20 +1,22 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
+import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { DEFAULTS_HIGHLIGHT } from './defaults';
 import { deserializeHighlight } from './deserializeHighlight';
 import { renderLeafHighlight } from './renderLeafHighlight';
-import { HighlightPluginOptions, MARK_HIGHLIGHT } from './types';
+import { HighlightPluginOptions } from './types';
 
 /**
  * Enables support for highlights, useful when reviewing
  * content or highlighting it for future reference.
  */
 export const HighlightPlugin = (
-  options: HighlightPluginOptions = {}
+  options?: HighlightPluginOptions
 ): SlatePlugin => ({
   renderLeaf: renderLeafHighlight(options),
   deserialize: deserializeHighlight(options),
-  onKeyDown: onKeyDownMark(
-    options.typeHighlight ?? MARK_HIGHLIGHT,
-    options.hotkey
-  ),
+  onKeyDown: onKeyDownMarkDefault({
+    key: 'highlight',
+    defaultOptions: DEFAULTS_HIGHLIGHT,
+    options,
+  }),
 });

@@ -1,4 +1,5 @@
 export * from './components';
+export * from './defaults';
 export * from './deserializeTable';
 export * from './queries';
 export * from './renderElementTable';

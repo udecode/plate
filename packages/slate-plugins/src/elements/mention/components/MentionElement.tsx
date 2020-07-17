@@ -1,38 +1,65 @@
 import * as React from 'react';
+import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
 import { getHandler } from '../../../common/utils';
-import { MentionRenderElementProps } from '../types';
+import {
+  MentionElementProps,
+  MentionElementStyleProps,
+  MentionElementStyles,
+} from '../types';
+import { getMentionElementStyles } from './MentionElement.styles';
 
-export const MentionElement = ({
+const getClassNames = classNamesFunction<
+  MentionElementStyleProps,
+  MentionElementStyles
+>();
+
+/**
+ *   MentionElement with no default styles.
+ * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
+ */
+export const MentionElementBase = ({
   attributes,
   children,
   element,
   prefix,
+  className,
+  styles,
+  as: Tag = 'span',
   onClick,
-}: MentionRenderElementProps) => {
+}: MentionElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
 
+  const classNames = getClassNames(styles, {
+    className,
+    // Other style props
+    selected,
+    focused,
+  });
+
   return (
-    <span
+    <Tag
       {...attributes}
       data-slate-value={element.value}
+      className={classNames.root}
       contentEditable={false}
-      style={{
-        padding: '3px 3px 2px',
-        margin: '0 1px',
-        verticalAlign: 'baseline',
-        display: 'inline-block',
-        borderRadius: '4px',
-        backgroundColor: '#eee',
-        fontSize: '0.9em',
-        boxShadow: selected && focused ? '0 0 0 2px #B4D5FF' : 'none',
-      }}
       onClick={getHandler(onClick, { value: element.value })}
     >
       {prefix}
       {element.value}
       {children}
-    </span>
+    </Tag>
   );
 };
+
+/**
+ * MentionElement
+ */
+export const MentionElement = styled<
+  MentionElementProps,
+  MentionElementStyleProps,
+  MentionElementStyles
+>(MentionElementBase, getMentionElementStyles, undefined, {
+  scope: 'MentionElement',
+});

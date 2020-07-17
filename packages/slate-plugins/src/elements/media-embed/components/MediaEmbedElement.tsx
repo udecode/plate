@@ -1,76 +1,54 @@
 import * as React from 'react';
+import { classNamesFunction, styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor } from 'slate-react';
-import styled from 'styled-components';
-import { MediaEmbedRenderElementProps } from '../types';
+import {
+  MediaEmbedElementProps,
+  MediaEmbedElementStyleProps,
+  MediaEmbedElementStyles,
+} from '../types';
+import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
+import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 
-const MediaEmbedWrapper = styled.div`
-  padding: 75% 0 0 0;
-  position: relative;
-`;
+const getClassNames = classNamesFunction<
+  MediaEmbedElementStyleProps,
+  MediaEmbedElementStyles
+>();
 
-const Iframe = styled.iframe`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-`;
-
-const Input = styled.input`
-  font-size: 0.85em;
-  width: 100%;
-  padding: 0.5em;
-  border: 2px solid #ddd;
-  background: #fafafa;
-  margin-top: 5px;
-`;
-
-export const MediaEmbedUrlInput = ({
-  url,
-  onChange,
-  ...props
-}: {
-  url: string;
-  onChange: Function;
-}) => {
-  const [value, setValue] = React.useState(url);
-
-  return (
-    <Input
-      {...props}
-      value={value}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => {
-        const newUrl = e.target.value;
-        setValue(newUrl);
-        onChange(newUrl);
-      }}
-    />
-  );
-};
-
-export const MediaEmbedElement = ({
+/**
+ * MediaEmbedElement with no default styles.
+ * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
+ */
+export const MediaEmbedElementBase = ({
   attributes,
   children,
   element,
-}: MediaEmbedRenderElementProps) => {
+  className,
+  styles,
+}: MediaEmbedElementProps) => {
+  const classNames = getClassNames(styles, {
+    className,
+    // Other style props
+  });
+
   const editor = useEditor();
   const { url } = element;
 
   return (
-    <div {...attributes}>
+    <div {...attributes} className={classNames.root}>
       <div contentEditable={false}>
-        <MediaEmbedWrapper>
-          <Iframe
+        <div className={classNames.iframeWrapper}>
+          <iframe
+            className={classNames.iframe}
             title="embed"
             src={`${url}?title=0&byline=0&portrait=0`}
             frameBorder="0"
           />
-        </MediaEmbedWrapper>
+        </div>
 
         <MediaEmbedUrlInput
           data-testid="MediaEmbedUrlInput"
+          className={classNames.input}
           url={url}
           onChange={(val: string) => {
             const path = ReactEditor.findPath(editor, element);
@@ -82,3 +60,14 @@ export const MediaEmbedElement = ({
     </div>
   );
 };
+
+/**
+ * MediaEmbedElement
+ */
+export const MediaEmbedElement = styled<
+  MediaEmbedElementProps,
+  MediaEmbedElementStyleProps,
+  MediaEmbedElementStyles
+>(MediaEmbedElementBase, getMediaEmbedElementStyles, undefined, {
+  scope: 'MediaEmbedElement',
+});

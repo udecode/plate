@@ -1,16 +1,10 @@
 import { getRenderElement } from '../../common/utils/getRenderElement';
-import { MentionElement } from './components';
-import { MENTION, MentionRenderElementOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_MENTION } from './defaults';
+import { MentionRenderElementOptions } from './types';
 
-export const renderElementMention = ({
-  typeMention = MENTION,
-  component = MentionElement,
-  prefix = '@',
-  onClick,
-}: MentionRenderElementOptions = {}) =>
-  getRenderElement({
-    type: typeMention,
-    component,
-    prefix,
-    onClick,
-  });
+export const renderElementMention = (options?: MentionRenderElementOptions) => {
+  const { mention } = setDefaults(options, DEFAULTS_MENTION);
+
+  return getRenderElement(mention);
+};

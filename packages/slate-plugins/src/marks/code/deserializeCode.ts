@@ -1,11 +1,25 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
-import { CodeDeserializeOptions, MARK_CODE } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_CODE } from './defaults';
+import { CodeDeserializeOptions } from './types';
 
-export const deserializeCode = ({
-  typeCode = MARK_CODE,
-}: CodeDeserializeOptions = {}): DeserializeHtml => ({
-  leaf: getLeafDeserializer(typeCode, {
-    tagNames: ['CODE', 'KBD'],
-  }),
-});
+export const deserializeCode = (
+  options?: CodeDeserializeOptions
+): DeserializeHtml => {
+  const { code } = setDefaults(options, DEFAULTS_CODE);
+
+  return {
+    leaf: getLeafDeserializer({
+      type: code.type,
+      rules: [
+        { nodeNames: ['CODE', 'KBD'] },
+        {
+          style: {
+            wordWrap: 'break-word',
+          },
+        },
+      ],
+    }),
+  };
+};

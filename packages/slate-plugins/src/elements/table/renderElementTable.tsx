@@ -1,20 +1,10 @@
-import { getElementComponent } from '../../common/utils/getElementComponent';
 import { getRenderElements } from '../../common/utils/getRenderElement';
-import { TableCell, TableElement } from './components';
-import { TableRenderElementOptions, TableType } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_TABLE } from './defaults';
+import { TableRenderElementOptions } from './types';
 
-export const renderElementTable = ({
-  Table = TableElement,
-  Row = getElementComponent('tr'),
-  Cell = getElementComponent(TableCell),
-  typeTable = TableType.TABLE,
-  typeTr = TableType.ROW,
-  typeTd = TableType.CELL,
-  typeTh = TableType.HEAD,
-}: TableRenderElementOptions = {}) =>
-  getRenderElements([
-    { component: Table, type: typeTable },
-    { component: Row, type: typeTr },
-    { component: Cell, type: typeTd },
-    { component: Cell, type: typeTh },
-  ]);
+export const renderElementTable = (options?: TableRenderElementOptions) => {
+  const { table, td, th, tr } = setDefaults(options, DEFAULTS_TABLE);
+
+  return getRenderElements([table, th, tr, td]);
+};

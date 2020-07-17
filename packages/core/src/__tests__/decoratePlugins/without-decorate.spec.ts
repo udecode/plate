@@ -8,7 +8,9 @@ const decorateEmpty: Decorate = () => [];
 const output: any = [];
 
 it('should be empty', () => {
-  expect(decoratePlugins([], [])(nodeEntry)).toEqual(output);
-  expect(decoratePlugins([{}], [])(nodeEntry)).toEqual(output);
-  expect(decoratePlugins([], [decorateEmpty])(nodeEntry)).toEqual(output);
+  expect(decoratePlugins({} as any, [], [])(nodeEntry)).toEqual(output);
+  expect(decoratePlugins({} as any, [{}], [])(nodeEntry)).toEqual(output);
+  expect(decoratePlugins({} as any, [], [decorateEmpty])(nodeEntry)).toEqual(
+    output
+  );
 });

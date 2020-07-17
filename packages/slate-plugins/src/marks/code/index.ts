@@ -1,4 +1,5 @@
 export * from './CodePlugin';
-export * from './renderLeafCode';
+export * from './defaults';
 export * from './deserializeCode';
+export * from './renderLeafCode';
 export * from './types';

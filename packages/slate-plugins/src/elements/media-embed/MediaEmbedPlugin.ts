@@ -1,7 +1,9 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_MEDIA_EMBED } from './defaults';
 import { deserializeIframe } from './deserializeIframe';
 import { renderElementMediaEmbed } from './renderElementMediaEmbed';
-import { MEDIA_EMBED, MediaEmbedPluginOptions } from './types';
+import { MediaEmbedPluginOptions } from './types';
 
 /**
  * Enables support for embeddable media such as YouTube
@@ -9,9 +11,12 @@ import { MEDIA_EMBED, MediaEmbedPluginOptions } from './types';
  */
 export const MediaEmbedPlugin = (
   options?: MediaEmbedPluginOptions
-): SlatePlugin => ({
-  renderElement: renderElementMediaEmbed(options),
-  deserialize: deserializeIframe(options),
-  inlineTypes: options?.inlineTypes || [],
-  voidTypes: [options?.typeMediaEmbed || MEDIA_EMBED],
-});
+): SlatePlugin => {
+  const { media_embed } = setDefaults(options, DEFAULTS_MEDIA_EMBED);
+
+  return {
+    renderElement: renderElementMediaEmbed(options),
+    deserialize: deserializeIframe(options),
+    voidTypes: [media_embed.type],
+  };
+};

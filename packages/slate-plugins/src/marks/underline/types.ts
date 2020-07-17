@@ -1,44 +1,48 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_UNDERLINE = 'underline';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface UnderlineNodeData {}
-
 // Text node
 export interface UnderlineNode extends Text, UnderlineNodeData {}
 
-// Type option
-interface TypeOption {
-  typeUnderline?: string;
-}
-
 // renderLeaf options given as props
-interface UnderlineRenderLeafOptionsProps {}
+export interface UnderlineRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface UnderlineRenderLeafOptions
-  extends RenderLeafOptions,
-    UnderlineRenderLeafOptionsProps,
-    TypeOption {}
-
-// renderLeaf props
-export interface UnderlineRenderLeafProps
+// Leaf props
+export interface UnderlineLeafProps
   extends RenderLeafProps,
-    UnderlineRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    UnderlineRenderLeafPropsOptions {
   leaf: UnderlineNode;
 }
 
-// deserialize options
-export interface UnderlineDeserializeOptions extends TypeOption {}
+export type UnderlineKeyOption = 'underline';
 
 // Plugin options
-export interface UnderlinePluginOptions
-  extends MarkPluginOptions,
-    UnderlineRenderLeafOptions,
-    UnderlineDeserializeOptions {}
+export type UnderlinePluginOptionsValues = RenderNodeOptions &
+  RootProps<UnderlineRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type UnderlinePluginOptionsKeys = keyof UnderlinePluginOptionsValues;
+export type UnderlinePluginOptions<
+  Value extends UnderlinePluginOptionsKeys = UnderlinePluginOptionsKeys
+> = Partial<
+  Record<UnderlineKeyOption, Pick<UnderlinePluginOptionsValues, Value>>
+>;
+
+// renderLeaf options
+export type UnderlineRenderLeafOptionsKeys = UnderlinePluginOptionsKeys;
+export interface UnderlineRenderLeafOptions
+  extends UnderlinePluginOptions<UnderlineRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface UnderlineDeserializeOptions
+  extends UnderlinePluginOptions<'type' | 'rootProps'> {}

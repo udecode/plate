@@ -1,12 +1,12 @@
 import { getRenderElement } from '../../common/utils/getRenderElement';
-import { CodeBlockElement } from './components';
-import { CODE_BLOCK, CodeBlockRenderElementOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_CODE_BLOCK } from './defaults';
+import { CodeBlockRenderElementOptions } from './types';
 
-export const renderElementCodeBlock = ({
-  typeCodeBlock = CODE_BLOCK,
-  component = CodeBlockElement,
-}: CodeBlockRenderElementOptions = {}) =>
-  getRenderElement({
-    type: typeCodeBlock,
-    component,
-  });
+export const renderElementCodeBlock = (
+  options?: CodeBlockRenderElementOptions
+) => {
+  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+
+  return getRenderElement(code_block);
+};

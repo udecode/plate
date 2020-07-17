@@ -34,7 +34,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueBasicMarks, nodeTypes } from '../config/initialValues';
+import { initialValueBasicMarks, options } from '../config/initialValues';
 
 export default {
   title: 'Marks/Basic Marks',
@@ -53,18 +53,16 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const All = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(nodeTypes));
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(nodeTypes));
-  if (boolean('UnderlinePlugin', true))
-    plugins.push(UnderlinePlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(options));
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(options));
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin(options));
   if (boolean('StrikethroughPlugin', true))
-    plugins.push(StrikethroughPlugin(nodeTypes));
-  if (boolean('SubscriptPlugin', true))
-    plugins.push(SubscriptPlugin(nodeTypes));
+    plugins.push(StrikethroughPlugin(options));
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin(options));
   if (boolean('SuperscriptPlugin', true))
-    plugins.push(SuperscriptPlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(nodeTypes));
+    plugins.push(SuperscriptPlugin(options));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueBasicMarks);

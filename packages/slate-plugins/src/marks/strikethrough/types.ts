@@ -1,44 +1,48 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_STRIKETHROUGH = 'strikethrough';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface StrikethroughNodeData {}
-
 // Text node
 export interface StrikethroughNode extends Text, StrikethroughNodeData {}
 
-// Type option
-interface TypeOption {
-  typeStrikethrough?: string;
-}
-
 // renderLeaf options given as props
-interface StrikethroughRenderLeafOptionsProps {}
+export interface StrikethroughRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface StrikethroughRenderLeafOptions
-  extends RenderLeafOptions,
-    StrikethroughRenderLeafOptionsProps,
-    TypeOption {}
-
-// renderLeaf props
-export interface StrikethroughRenderLeafProps
+// Leaf props
+export interface StrikethroughLeafProps
   extends RenderLeafProps,
-    StrikethroughRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    StrikethroughRenderLeafPropsOptions {
   leaf: StrikethroughNode;
 }
 
-// deserialize options
-export interface StrikethroughDeserializeOptions extends TypeOption {}
+export type StrikethroughKeyOption = 'strikethrough';
 
 // Plugin options
-export interface StrikethroughPluginOptions
-  extends MarkPluginOptions,
-    StrikethroughRenderLeafOptions,
-    StrikethroughDeserializeOptions {}
+export type StrikethroughPluginOptionsValues = RenderNodeOptions &
+  RootProps<StrikethroughRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type StrikethroughPluginOptionsKeys = keyof StrikethroughPluginOptionsValues;
+export type StrikethroughPluginOptions<
+  Value extends StrikethroughPluginOptionsKeys = StrikethroughPluginOptionsKeys
+> = Partial<
+  Record<StrikethroughKeyOption, Pick<StrikethroughPluginOptionsValues, Value>>
+>;
+
+// renderLeaf options
+export type StrikethroughRenderLeafOptionsKeys = StrikethroughPluginOptionsKeys;
+export interface StrikethroughRenderLeafOptions
+  extends StrikethroughPluginOptions<StrikethroughRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface StrikethroughDeserializeOptions
+  extends StrikethroughPluginOptions<'type' | 'rootProps'> {}
