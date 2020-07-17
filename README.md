@@ -30,11 +30,14 @@ and
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
 - ✅ Unit tested with `slate@0.58.4`.
-- 📖
+- 📓
   [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)
   and
   [Demos](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
   on Storybook.
+- 
+  📖 [API](https://slate-plugins-api.netlify.app/) generated with
+  [TypeDoc](https://typedoc.org/).
 
 ## Table of contents
 
@@ -64,11 +67,13 @@ You will also need these peerDependencies:
 yarn add slate slate-hyperscript slate-react styled-components react react-dom
 ```
 
-For full documentation on using `slate-plugins` visit:
+For guidance on using `@udecode/slate-plugins` visit:
 [slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
+and checkout our [API](https://slate-plugins-api.netlify.app/)
+documentation.
 
 For additional help, join us in our
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
 
 ## 🔌 Plugins
 
