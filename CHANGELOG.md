@@ -172,6 +172,8 @@ DEFAULTS_HEADING
 DEFAULTS_ALIGN
 ```
 
+- All element and leaf plugins use a default `className`: useful for
+  serialization.
 - Components:
   - New:
     - `StyledComponent`
