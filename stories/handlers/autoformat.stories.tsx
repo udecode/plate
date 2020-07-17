@@ -26,7 +26,7 @@ import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
   initialValueAutoformat,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -37,39 +37,39 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withAutoformat({
     rules: autoformatRules,
   }),
   withResetBlockType({
     types: [
-      nodeTypes.typeActionItem,
-      nodeTypes.typeBlockquote,
-      nodeTypes.typeCodeBlock,
+      options.todo_li.type,
+      options.blockquote.type,
+      options.code_block.type,
     ],
-    defaultType: nodeTypes.typeP,
+    defaultType: options.p.type,
   }),
-  withList(nodeTypes),
+  withList(options),
 ] as const;
 
 export const Example = () => {
   const plugins = [
-    ParagraphPlugin(nodeTypes),
+    ParagraphPlugin(options),
     BoldPlugin(),
     ItalicPlugin(),
     CodePlugin(),
     StrikethroughPlugin(),
-    BlockquotePlugin(nodeTypes),
-    ListPlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
-    CodeBlockPlugin(nodeTypes),
+    BlockquotePlugin(options),
+    ListPlugin(options),
+    HeadingPlugin(options),
+    CodeBlockPlugin(options),
     SoftBreakPlugin({
       rules: [
         { hotkey: 'shift+enter' },
         {
           hotkey: 'enter',
           query: {
-            allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+            allow: [options.code_block.type, options.blockquote.type],
           },
         },
       ],

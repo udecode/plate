@@ -2,8 +2,8 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
+import { ELEMENT_ALIGN_CENTER } from '../../defaults';
 import { upsertAlign } from '../../transforms/upsertAlign';
-import { ALIGN_CENTER } from '../../types';
 
 const input = ((
   <editor>
@@ -23,7 +23,7 @@ const output = ((
 ) as any) as Editor;
 
 it('should align center', () => {
-  upsertAlign(input, { type: ALIGN_CENTER });
+  upsertAlign(input, { type: ELEMENT_ALIGN_CENTER });
 
   expect(input.children).toEqual(output.children);
 });

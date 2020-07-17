@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
-import { getLinkElementStyles } from './LinkElement.styles';
 import {
   LinkElementProps,
   LinkElementStyleProps,
   LinkElementStyles,
-} from './LinkElement.types';
+} from '../types';
+import { getLinkElementStyles } from './LinkElement.styles';
 
 const getClassNames = classNamesFunction<
   LinkElementStyleProps,

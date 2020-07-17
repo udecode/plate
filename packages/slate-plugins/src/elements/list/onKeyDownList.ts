@@ -5,14 +5,10 @@ import {
   isNodeTypeIn,
   isRangeAtRoot,
 } from '../../common/queries';
-import { PARAGRAPH } from '../paragraph';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_LIST } from './defaults';
 import { isList } from './queries';
-import {
-  defaultListTypes,
-  ListHotkey,
-  ListOnKeyDownOptions,
-  ListType,
-} from './types';
+import { ListHotkey, ListOnKeyDownOptions, ListOptions } from './types';
 
 /**
  * Move a list item next to its parent.
@@ -23,10 +19,12 @@ const moveUp = (
   listNode: Ancestor,
   listPath: number[],
   listItemPath: number[],
-  options = defaultListTypes
+  options?: ListOptions
 ) => {
+  const { li } = setDefaults(options, DEFAULTS_LIST);
+
   const [listParentNode, listParentPath] = Editor.parent(editor, listPath);
-  if (listParentNode.type !== options.typeLi) return;
+  if (listParentNode.type !== li.type) return;
 
   const newListItemPath = Path.next(listParentPath);
 
@@ -83,7 +81,7 @@ const moveDown = (
   editor: Editor,
   listNode: Ancestor,
   listItemPath: number[],
-  options = defaultListTypes
+  options?: ListOptions
 ) => {
   // Previous sibling is the new parent
   const previousSiblingItem = Editor.node(
@@ -118,18 +116,16 @@ const moveDown = (
   }
 };
 
-export const onKeyDownList = ({
-  typeUl = ListType.UL,
-  typeOl = ListType.OL,
-  typeLi = ListType.LI,
-  typeP = PARAGRAPH,
-}: ListOnKeyDownOptions = {}) => (e: KeyboardEvent, editor: Editor) => {
-  const options = { typeUl, typeOl, typeLi, typeP };
+export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
+  e: KeyboardEvent,
+  editor: Editor
+) => {
+  const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
   if (Object.values(ListHotkey).includes(e.key)) {
     if (
       editor.selection &&
-      isNodeTypeIn(editor, typeLi) &&
+      isNodeTypeIn(editor, li.type) &&
       !isRangeAtRoot(editor.selection)
     ) {
       if (e.key === ListHotkey.TAB) {
@@ -141,9 +137,9 @@ export const onKeyDownList = ({
         editor,
         editor.selection
       );
-      if (paragraphNode.type !== typeP) return;
+      if (paragraphNode.type !== p.type) return;
       const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
-      if (listItemNode.type !== typeLi) return;
+      if (listItemNode.type !== li.type) return;
       const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
       // move up

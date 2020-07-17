@@ -11,7 +11,7 @@ import { RenderElementProps, RenderLeafProps } from 'slate-react';
  * keywords, where changes to the content (or some external data) has the
  * potential to change the formatting.
  */
-export type Decorate = (entry: NodeEntry) => Range[];
+export type Decorate = (entry: NodeEntry, editor: Editor) => Range[];
 
 export type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
 
@@ -36,26 +36,20 @@ export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
 // Handler when we press a key.
 export type OnKeyDown = (e: any, editor: Editor, options?: any) => void;
 
-export type DeserializeElement = Record<
-  string,
-  (
+export type DeserializeNode = {
+  type: string;
+  deserialize: (
     el: HTMLElement
   ) =>
     | {
-        type: string;
-        [key: string]: any;
+        [key: string]: unknown;
       }
-    | undefined
->;
-
-export type DeserializeLeafValue = (
-  el: HTMLElement
-) => Record<string, any> | undefined | false;
-type DeserializeLeaf = Record<string, DeserializeLeafValue>;
+    | undefined;
+};
 
 export interface DeserializeHtml {
-  element?: DeserializeElement;
-  leaf?: DeserializeLeaf;
+  element?: DeserializeNode[];
+  leaf?: DeserializeNode[];
 }
 
 /**
@@ -80,27 +74,5 @@ export interface SlatePlugin {
   voidTypes?: string[];
   onDOMBeforeInput?: OnDOMBeforeInput;
   onKeyDown?: OnKeyDown | null;
-}
-
-export interface GetRenderElementOptions {
-  /**
-   * Type of the element.
-   */
-  type: string;
-  /**
-   * React component to render the element.
-   */
-  component: any;
-
-  /**
-   * Options passed to the component as props.
-   */
   [key: string]: any;
-}
-
-export interface RenderElementOptions {
-  /**
-   * React component to render the element.
-   */
-  component?: any;
 }

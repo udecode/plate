@@ -4,4 +4,5 @@ export * from './renderElementImage';
 export * from './transforms';
 export * from './types';
 export * from './utils';
+export * from './defaults';
 export * from './image-upload';

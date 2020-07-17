@@ -10,7 +10,7 @@ const decorate: Decorate = () => [range];
 const output = [range, range];
 
 it('should be a list of ranges', () => {
-  expect(decoratePlugins([{ decorate }], [decorate])(nodeEntry)).toEqual(
-    output
-  );
+  expect(
+    decoratePlugins({} as any, [{ decorate }], [decorate])(nodeEntry)
+  ).toEqual(output);
 });

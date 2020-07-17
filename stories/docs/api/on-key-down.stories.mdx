@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="API/onKeyDown" />
+
+# onKeyDown
+
+### Using onKeyDownMarkDefault
+
+Get `onKeyDown` handler for mark with default options.
+
+```js
+export const onKeyDownBold = (options?: BoldPluginOptions) =>
+  onKeyDownMarkDefault({
+    key: 'bold',
+    defaultOptions: DEFAULTS_BOLD,
+    options,
+  });
+```
+
+### Using onKeyDownMark
+
+Get `onKeyDown` handler if there is a hotkey defined.
+
+```js
+export const onKeyDownBold = (options?: BoldPluginOptions) => {
+  const { bold } = setDefaults(options, DEFAULTS_BOLD);
+
+  return onKeyDownMark(bold);
+});
+```
+
+### Custom
+
+```js
+export const onKeyDownBold = ({ type, hotkey, clear }: MarkOnKeyDownOptions) => (e: any, editor: Editor) => {
+  if (isHotkey(hotkey, e)) {
+    e.preventDefault();
+    toggleMark(editor, type, clear);
+  }
+}
+```

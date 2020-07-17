@@ -14,7 +14,25 @@ const stripSlateDataAttributes = (rawHtml: string): string =>
     .replace(/( data-slate)(-node|-type)="[^"]+"/gm, '')
     .replace(/( data-testid)="[^"]+"/gm, '');
 
-// TODO: We might also want to remove generated classes in the future.
+/**
+ * Remove all class names that are not starting with `slate-`
+ */
+const stripClassNames = (html: string) => {
+  const allClasses = html.split(/(class="[^"]*")/g);
+
+  let filteredHtml = '';
+  allClasses.forEach((item, index) => {
+    if (index % 2 === 0) {
+      return (filteredHtml += item);
+    }
+    const slateClassNames = item.match(/(slate-[^"\s]*)/g);
+    if (slateClassNames) {
+      filteredHtml += `class="${slateClassNames.join(' ')}"`;
+    }
+  });
+
+  return filteredHtml;
+};
 
 const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
   // If no type provided we wrap children with div tag
@@ -22,40 +40,52 @@ const getNode = (elementProps: RenderElementProps, plugins: SlatePlugin[]) => {
     return `<div>${elementProps.children}</div>`;
   }
 
-  // Search for matching plugin based on element type
-  const elementPlugin = plugins
-    .filter((plugin) => plugin.renderElement)
-    .find((plugin) => {
-      return Object.keys(
-        plugin.deserialize?.element as Record<string, unknown>
-      ).includes(String(elementProps.element.type));
-    });
+  let html: string | undefined;
 
-  // Render element using picked plugins renderElement function and ReactDOM
-  if (elementPlugin?.renderElement) {
-    return renderToStaticMarkup(
-      elementPlugin.renderElement(elementProps) as ReactElement
+  // Search for matching plugin based on element type
+  plugins.some((plugin) => {
+    if (!plugin.renderElement) return false;
+    if (
+      !plugin.deserialize?.element?.some(
+        (item) => item.type === String(elementProps.element.type)
+      )
+    ) {
+      html = `<div>${elementProps.children}</div>`;
+      return false;
+    }
+
+    // Render element using picked plugins renderElement function and ReactDOM
+    html = renderToStaticMarkup(
+      plugin.renderElement(elementProps) as ReactElement
     );
-  }
+
+    html = stripClassNames(html);
+
+    return true;
+  });
+
+  return html;
 };
 
 const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
   const { children } = leafProps;
-  return plugins
-    .filter((plugin) => plugin.renderLeaf)
-    .filter(({ renderLeaf }) => renderLeaf?.(leafProps) !== children)
-    .reduce((result, plugin) => {
-      const newLeafProps = {
-        ...leafProps,
-        children: encodeURIComponent(result),
-      };
-      if (plugin?.renderLeaf) {
-        return decodeURIComponent(
-          renderToStaticMarkup(plugin.renderLeaf(newLeafProps))
-        );
-      }
-      return result;
-    }, children);
+  return plugins.reduce((result, plugin) => {
+    if (!plugin.renderLeaf) return result;
+    if (plugin.renderLeaf(leafProps) === children) return result;
+
+    const newLeafProps = {
+      ...leafProps,
+      children: encodeURIComponent(result),
+    };
+
+    let html = decodeURIComponent(
+      renderToStaticMarkup(plugin.renderLeaf(newLeafProps))
+    );
+
+    html = stripClassNames(html);
+
+    return html;
+  }, children);
 };
 
 /**

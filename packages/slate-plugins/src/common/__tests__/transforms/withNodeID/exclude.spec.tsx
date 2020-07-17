@@ -3,7 +3,7 @@
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { PARAGRAPH } from '../../../../elements/paragraph/index';
+import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/index';
 import { withNodeID } from '../../../plugins/node-id/index';
 import { idCreatorFixture } from './fixtures';
 
@@ -28,7 +28,7 @@ const output = (
 it('should add an id to the new elements', () => {
   const editor = withNodeID({
     idCreator: idCreatorFixture,
-    exclude: [PARAGRAPH],
+    exclude: [ELEMENT_PARAGRAPH],
   })(withHistory(input));
 
   editor.insertNode(

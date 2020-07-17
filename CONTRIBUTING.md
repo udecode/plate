@@ -127,7 +127,7 @@ folder structure and naming convention, as defined below.
 
 ```sh
 # Proper naming convention and structure for test files
-+-- packages/slate-plugins/src/__tests__/[plugin-name]/[filename]
++-- packages/path_to_plugin/__tests__/[filename_to_test]
 |   +-- [case-1].spec.ts
 |   +-- [case-2].spec.tsx
 |   +-- [case-3].spec.ts

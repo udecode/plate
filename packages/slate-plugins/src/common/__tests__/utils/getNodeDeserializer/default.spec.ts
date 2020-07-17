@@ -1,18 +1,14 @@
-import { PARAGRAPH } from '../../../../elements/paragraph/index';
+import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/index';
 import { getNodeDeserializer } from '../../../utils/getNodeDeserializer';
 
-const createNode = () => ({ type: PARAGRAPH });
-
-const output = {
-  P: createNode,
-  p: createNode,
-};
+const node = () => ({ type: ELEMENT_PARAGRAPH });
 
 it('should be', () => {
-  expect(
-    getNodeDeserializer(PARAGRAPH, {
-      createNode,
-      tagNames: ['P'],
-    })
-  ).toEqual(output);
+  const res = getNodeDeserializer({
+    type: ELEMENT_PARAGRAPH,
+    node,
+    rules: [{ nodeNames: 'P' }],
+  });
+
+  expect(res[0].deserialize(document.createElement('p'))).toEqual(node());
 });

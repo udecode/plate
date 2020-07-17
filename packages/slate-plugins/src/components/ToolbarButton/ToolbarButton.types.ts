@@ -5,7 +5,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 
 export interface ToolbarButtonProps {
   /**
-   * Additional class name to provide on the root element, in addition to the slate-ToolbarButton class.
+   * Additional class name to provide on the root element.
    */
   className?: string;
 

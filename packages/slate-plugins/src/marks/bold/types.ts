@@ -1,44 +1,46 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_BOLD = 'bold';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface BoldNodeData {}
-
 // Text node
 export interface BoldNode extends Text, BoldNodeData {}
 
-// Type option
-interface TypeOption {
-  typeBold?: string;
-}
-
 // renderLeaf options given as props
-interface BoldRenderLeafOptionsProps {}
+export interface BoldRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface BoldRenderLeafOptions
-  extends RenderLeafOptions,
-    BoldRenderLeafOptionsProps,
-    TypeOption {}
-
-// renderLeaf props
-export interface BoldRenderLeafProps
+// Leaf props
+export interface BoldLeafProps
   extends RenderLeafProps,
-    BoldRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    BoldRenderLeafPropsOptions {
   leaf: BoldNode;
 }
 
-// deserialize options
-export interface BoldDeserializeOptions extends TypeOption {}
+export type BoldKeyOption = 'bold';
 
 // Plugin options
-export interface BoldPluginOptions
-  extends MarkPluginOptions,
-    BoldRenderLeafOptions,
-    BoldDeserializeOptions {}
+export type BoldPluginOptionsValues = RenderNodeOptions &
+  RootProps<BoldRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type BoldPluginOptionsKeys = keyof BoldPluginOptionsValues;
+export type BoldPluginOptions<
+  Value extends BoldPluginOptionsKeys = BoldPluginOptionsKeys
+> = Partial<Record<BoldKeyOption, Pick<BoldPluginOptionsValues, Value>>>;
+
+// renderLeaf options
+export type BoldRenderLeafOptionsKeys = BoldPluginOptionsKeys;
+export interface BoldRenderLeafOptions
+  extends BoldPluginOptions<BoldRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface BoldDeserializeOptions
+  extends BoldPluginOptions<'type' | 'rootProps'> {}

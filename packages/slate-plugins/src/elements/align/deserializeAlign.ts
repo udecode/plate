@@ -1,20 +1,40 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import {
-  ALIGN_CENTER,
-  ALIGN_LEFT,
-  ALIGN_RIGHT,
-  AlignDeserializeOptions,
-} from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_ALIGN } from './defaults';
+import { AlignDeserializeOptions } from './types';
 
-export const deserializeAlign = ({
-  typeAlignLeft = ALIGN_LEFT,
-  typeAlignCenter = ALIGN_CENTER,
-  typeAlignRight = ALIGN_RIGHT,
-}: AlignDeserializeOptions = {}): DeserializeHtml => ({
-  element: {
-    ...getElementDeserializer(typeAlignLeft, { tagNames: ['DIV'] }),
-    ...getElementDeserializer(typeAlignRight, { tagNames: ['DIV'] }),
-    ...getElementDeserializer(typeAlignCenter, { tagNames: ['DIV'] }),
-  },
-});
+export const deserializeAlign = (
+  options?: AlignDeserializeOptions
+): DeserializeHtml => {
+  const { align_center, align_right } = setDefaults(options, DEFAULTS_ALIGN);
+
+  return {
+    element: [
+      ...getElementDeserializer({
+        type: align_center.type,
+        rules: [
+          { className: align_center.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'center',
+            },
+          },
+        ],
+      }),
+      ...getElementDeserializer({
+        type: align_right.type,
+        rules: [
+          { className: align_right.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'right',
+            },
+          },
+        ],
+      }),
+    ],
+  };
+};

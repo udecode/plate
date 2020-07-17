@@ -30,7 +30,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueExitBreak,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -41,29 +41,29 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withResetBlockType({
     types: [
-      nodeTypes.typeActionItem,
-      nodeTypes.typeBlockquote,
-      nodeTypes.typeCodeBlock,
+      options.todo_li.type,
+      options.blockquote.type,
+      options.code_block.type,
     ],
-    defaultType: nodeTypes.typeP,
+    defaultType: options.p.type,
   }),
-  withList(nodeTypes),
+  withList(options),
   withTransforms(),
-  withTrailingNode({ type: nodeTypes.typeP }),
+  withTrailingNode({ type: options.p.type }),
 ] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [
-    ParagraphPlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
-    CodeBlockPlugin(nodeTypes),
-    BlockquotePlugin(nodeTypes),
-    CodePlugin(nodeTypes),
-    ListPlugin(nodeTypes),
-    TablePlugin(nodeTypes),
+    ParagraphPlugin(options),
+    HeadingPlugin(options),
+    CodeBlockPlugin(options),
+    BlockquotePlugin(options),
+    CodePlugin(options),
+    ListPlugin(options),
+    TablePlugin(options),
   ];
   if (boolean('SoftBreakPlugin', true))
     plugins.push(
@@ -73,7 +73,7 @@ export const Example = () => {
           {
             hotkey: 'enter',
             query: {
-              allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+              allow: [options.code_block.type, options.blockquote.type],
             },
           },
         ],
@@ -114,13 +114,13 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
-          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
+          <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
+          <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
           <ToolbarElement
-            type={nodeTypes.typeBlockquote}
+            type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

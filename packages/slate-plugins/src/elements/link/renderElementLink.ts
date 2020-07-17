@@ -1,12 +1,10 @@
 import { getRenderElement } from '../../common/utils/getRenderElement';
-import { LinkElement } from './components';
-import { LINK, LinkRenderElementOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_LINK } from './defaults';
+import { LinkRenderElementOptions } from './types';
 
-export const renderElementLink = ({
-  typeLink = LINK,
-  component = LinkElement,
-}: LinkRenderElementOptions = {}) =>
-  getRenderElement({
-    type: typeLink,
-    component,
-  });
+export const renderElementLink = (options?: LinkRenderElementOptions) => {
+  const { link } = setDefaults(options, DEFAULTS_LINK);
+
+  return getRenderElement(link);
+};

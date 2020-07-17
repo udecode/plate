@@ -17,7 +17,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueImages, nodeTypes } from '../config/initialValues';
+import { initialValueImages, options } from '../config/initialValues';
 
 export default {
   title: 'Elements/Image',
@@ -30,8 +30,8 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
 
   const withPlugins = [
     withReact,
@@ -52,7 +52,7 @@ export const Example = () => {
         onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
         <HeadingToolbar>
-          <ToolbarImage {...nodeTypes} icon={<Image />} />
+          <ToolbarImage {...options} icon={<Image />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
       </Slate>

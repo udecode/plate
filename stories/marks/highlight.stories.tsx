@@ -35,7 +35,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHighlight, nodeTypes } from '../config/initialValues';
+import { initialValueHighlight, options } from '../config/initialValues';
 
 export default {
   title: 'Marks/Highlight',
@@ -54,9 +54,8 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const All = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
-  if (boolean('HighlightPlugin', true))
-    plugins.push(HighlightPlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueHighlight);

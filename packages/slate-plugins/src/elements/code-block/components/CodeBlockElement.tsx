@@ -1,18 +1,46 @@
 import * as React from 'react';
-import styled from 'styled-components';
-import { CodeBlockRenderElementProps } from '../types';
+import { classNamesFunction, styled } from '@uifabric/utilities';
+import {
+  CodeBlockElementProps,
+  CodeBlockElementStyleProps,
+  CodeBlockElementStyles,
+} from '../types';
+import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 
-const Pre = styled.pre`
-  padding: 10px;
-  background-color: #eee;
-  white-space: pre-wrap;
-`;
+const getClassNames = classNamesFunction<
+  CodeBlockElementStyleProps,
+  CodeBlockElementStyles
+>();
 
-export const CodeBlockElement = ({
+/**
+ *   CodeBlockElement with no default styles.
+ * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
+ */
+export const CodeBlockElementBase = ({
   attributes,
   children,
-}: CodeBlockRenderElementProps) => (
-  <Pre>
-    <code {...attributes}>{children}</code>
-  </Pre>
-);
+  className,
+  styles,
+}: CodeBlockElementProps) => {
+  const classNames = getClassNames(styles, {
+    className,
+    // Other style props
+  });
+
+  return (
+    <pre {...attributes} className={classNames.root}>
+      <code>{children}</code>
+    </pre>
+  );
+};
+
+/**
+ * CodeBlockElement
+ */
+export const CodeBlockElement = styled<
+  CodeBlockElementProps,
+  CodeBlockElementStyleProps,
+  CodeBlockElementStyles
+>(CodeBlockElementBase, getCodeBlockElementStyles, undefined, {
+  scope: 'CodeBlockElement',
+});

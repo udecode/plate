@@ -1,16 +1,25 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { BoldDeserializeOptions, MARK_BOLD } from './types';
+import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_BOLD } from './defaults';
+import { BoldDeserializeOptions } from './types';
 
-export const deserializeBold = ({
-  typeBold = MARK_BOLD,
-}: BoldDeserializeOptions = {}): DeserializeHtml => {
-  const leaf = { [typeBold]: true };
+export const deserializeBold = (
+  options?: BoldDeserializeOptions
+): DeserializeHtml => {
+  const { bold } = setDefaults(options, DEFAULTS_BOLD);
 
   return {
-    leaf: {
-      SPAN: (el) =>
-        ['600', '700', 'bold'].includes(el.style.fontWeight) && leaf,
-      STRONG: () => leaf,
-    },
+    leaf: getLeafDeserializer({
+      type: bold.type,
+      rules: [
+        { nodeNames: ['STRONG'] },
+        {
+          style: {
+            fontWeight: ['600', '700', 'bold'],
+          },
+        },
+      ],
+    }),
   };
 };

@@ -1,12 +1,12 @@
-import { getElementComponent } from '../../common/utils/getElementComponent';
 import { getRenderElement } from '../../common/utils/getRenderElement';
-import { PARAGRAPH, ParagraphRenderElementOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_PARAGRAPH } from './defaults';
+import { ParagraphRenderElementOptions } from './types';
 
-export const renderElementParagraph = ({
-  typeP = PARAGRAPH,
-  component = getElementComponent('p'),
-}: ParagraphRenderElementOptions = {}) =>
-  getRenderElement({
-    type: typeP,
-    component,
-  });
+export const renderElementParagraph = (
+  options?: ParagraphRenderElementOptions
+) => {
+  const { p } = setDefaults(options, DEFAULTS_PARAGRAPH);
+
+  return getRenderElement(p);
+};

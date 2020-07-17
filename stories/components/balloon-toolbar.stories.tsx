@@ -7,6 +7,7 @@ import {
   FormatItalic,
   FormatUnderlined,
 } from '@styled-icons/material';
+import { TippyProps } from '@tippyjs/react';
 import {
   BalloonToolbar,
   BoldPlugin,
@@ -24,7 +25,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueBalloonToolbar, nodeTypes } from '../config/initialValues';
+import { initialValueBalloonToolbar, options } from '../config/initialValues';
 
 export default {
   title: 'Components/Balloon Toolbar',
@@ -32,10 +33,10 @@ export default {
 };
 
 const plugins = [
-  BoldPlugin(nodeTypes),
-  ItalicPlugin(nodeTypes),
-  UnderlinePlugin(nodeTypes),
-  ListPlugin(nodeTypes),
+  BoldPlugin(options),
+  ItalicPlugin(options),
+  UnderlinePlugin(options),
+  ListPlugin(options),
 ];
 
 const withPlugins = [withReact, withHistory] as const;
@@ -51,7 +52,7 @@ export const Example = () => {
     'top'
   );
   const hiddenDelay = number('hiddenDelay', 0);
-  const tooltip = object('tooltip', {
+  const tooltip: TippyProps = object('tooltip', {
     arrow: true,
     delay: 0,
     duration: [200, 0],

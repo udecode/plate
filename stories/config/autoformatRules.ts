@@ -8,59 +8,59 @@ import {
   unwrapList,
 } from '@udecode/slate-plugins';
 import { Editor } from 'slate';
-import { nodeTypes } from './initialValues';
+import { options } from './initialValues';
 
-const preFormat = (editor: Editor) => unwrapList(editor, nodeTypes);
+const preFormat = (editor: Editor) => unwrapList(editor, options);
 
 export const autoformatRules: AutoformatRule[] = [
   {
-    type: nodeTypes.typeH1,
+    type: options.h1.type,
     markup: '#',
     preFormat,
   },
   {
-    type: nodeTypes.typeH2,
+    type: options.h2.type,
     markup: '##',
     preFormat,
   },
   {
-    type: nodeTypes.typeH3,
+    type: options.h3.type,
     markup: '###',
     preFormat,
   },
   {
-    type: nodeTypes.typeH4,
+    type: options.h4.type,
     markup: '####',
     preFormat,
   },
   {
-    type: nodeTypes.typeH5,
+    type: options.h5.type,
     markup: '#####',
     preFormat,
   },
   {
-    type: nodeTypes.typeH6,
+    type: options.h6.type,
     markup: '######',
     preFormat,
   },
   {
-    type: nodeTypes.typeLi,
+    type: options.li.type,
     markup: ['*', '-', '+'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...nodeTypes, typeList: nodeTypes.typeUl });
+      toggleList(editor, { ...options, typeList: options.ul.type });
     },
   },
   {
-    type: nodeTypes.typeLi,
+    type: options.li.type,
     markup: ['1.', '1)'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...nodeTypes, typeList: nodeTypes.typeOl });
+      toggleList(editor, { ...options, typeList: options.ol.type });
     },
   },
   {
-    type: nodeTypes.typeBlockquote,
+    type: options.blockquote.type,
     markup: ['>'],
     preFormat,
   },
@@ -102,9 +102,9 @@ export const autoformatRules: AutoformatRule[] = [
   },
   {
     trigger: '`',
-    type: nodeTypes.typeCodeBlock,
+    type: options.code_block.type,
     markup: '``',
     mode: 'inline-block',
-    preFormat: (editor) => unwrapList(editor, nodeTypes),
+    preFormat: (editor) => unwrapList(editor, options),
   },
 ];

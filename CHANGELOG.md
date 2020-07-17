@@ -7,7 +7,208 @@ Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
 
-## 0.61.0 (2020-07-02)
+## 0.62.0 (2020-07-17)
+
+### Breaking Changes
+
+- Removed:
+  - `styled-components` from peerDependencies
+  - `AlignElement`
+  - `DeserializeElement` in favor of `DeserializeNode`
+  - `DeserializeLeaf` in favor of `DeserializeNode`
+  - `getElementComponent` in favor of `getRenderElement`
+  - `HeadingEelements`
+  - `ListElements`
+- Renamed:
+  - `ActionItem` to `TodoList`.
+  - Node types, full list:
+
+```js
+ELEMENT_PARAGRAPH
+ELEMENT_MENTION
+ELEMENT_BLOCKQUOTE
+ELEMENT_CODE_BLOCK
+ELEMENT_LINK
+ELEMENT_IMAGE
+ELEMENT_MEDIA_EMBED
+ELEMENT_TODO_LI
+ELEMENT_H1
+ELEMENT_H2
+ELEMENT_H3
+ELEMENT_H4
+ELEMENT_H5
+ELEMENT_H6
+ELEMENT_ALIGN_LEFT
+ELEMENT_ALIGN_CENTER
+ELEMENT_ALIGN_RIGHT
+ELEMENT_UL
+ELEMENT_OL
+ELEMENT_LI
+ELEMENT_TABLE
+ELEMENT_TH
+ELEMENT_TR
+ELEMENT_TD
+
+MARK_BOLD
+MARK_ITALIC
+MARK_UNDERLINE
+MARK_STRIKETHROUGH
+MARK_CODE
+MARK_SUBSCRIPT
+MARK_SUPERSCRIPT
+MARK_HIGHLIGHT
+MARK_SEARCH_HIGHLIGHT
+```
+
+- Plugin options follow a new structure:
+
+For `getRenderElement`:
+```
+const options: ParagraphRenderElementOptions = {
+  // Use a unique key for each slate node.
+  p: {
+    // Give a React component or HTML tag (e.g. 'div') to render the element.
+    component: StyledElement,
+    // Give a unique type for each element.
+    type: ELEMENT_PARAGRAPH,
+    // Give props to the root of the React component.
+    rootProps: {
+      // Give a className to the React component. Give an empty string to remove the className.
+      className: 'slate-p',
+      // When using a styled component, specify the root tag to render.
+      as: 'p',
+      // Customize styled components: https://github.com/microsoft/fluentui/wiki/Component-Styling
+      styles: {
+        root: {
+          margin: 0,
+        }
+      }
+    },
+  },
+}
+```
+
+For `getRenderLeaf`:
+
+```
+const options: BoldRenderLeafOptions = {
+  // Use a unique key for each slate node.
+  bold: {
+    // Give a React component or HTML tag (e.g. 'span') to render the leaf.
+    component: StyledLeaf,
+    // Give a unique string for each mark.
+    type: MARK_BOLD,
+    // Specify the hotkey to toggle this mark.
+    hotkey: 'mod+b',
+    // Specify the marks to clear when toggling this mark.
+    clear: '',
+    // Give props to the root of the React component.
+    rootProps: {
+      // Give a className to the React component. Give an empty string to remove the className.
+      className: 'slate-bold',
+      // When using a styled component, specify the root tag to render.
+      as: 'strong',
+      // Customize styled components: https://github.com/microsoft/fluentui/wiki/Component-Styling
+      styles: {
+        root: {
+          fontWeight: 600,
+        }
+      }
+    },
+  },
+}
+```
+
+- `onKeyDownMark` signature updated:
+
+```
+// from
+(
+  type: string,
+  hotkey: undefined,
+  options?: MarkOnKeyDownOptions
+)
+// to
+(options: MarkOnKeyDownOptions)
+```
+
+- `HighlightPlugin`:
+  - Removed `bg` option in favor of `styles` props.
+- Updated `getLeafDeserializer`, `getElementDeserializer` and
+  `getNodeDeserializer`
+- Updated `deserializeHTMLToMarks`.
+- Updated default hotkeys:
+  - `code`: `mod+e`
+  - `strikethrough`: `mod+shift+s`
+- `getNodeDeserializer`
+  - returns a list of deserializers
+  - options:
+    - updated: `node` (renamed from `createNode`): Slate node creator from HTML element.
+    - new: `rules`: List of rules the element needs to follow to be
+      deserialized to a slate node:
+        - updated: `nodeNames` (renamed from `tagNames`): Required node names
+          to deserialize the element. Set '*' to allow any node name.
+        - new: `className`: Required className to deserialized the element.
+        - new: `style`: Required style to deserialize the element. Each value
+          should be a (list of) string.
+- ...
+
+### Features
+
+- Centralized default options for each plugin (`defaults.ts`):
+
+```js
+DEFAULTS_PARAGRAPH
+DEFAULTS_MENTION
+DEFAULTS_BLOCKQUOTE
+DEFAULTS_CODE_BLOCK
+DEFAULTS_LINK
+DEFAULTS_IMAGE
+DEFAULTS_MEDIA_EMBED
+DEFAULTS_TODO_LIST
+DEFAULTS_TABLE
+DEFAULTS_LIST
+DEFAULTS_HEADING
+DEFAULTS_ALIGN
+```
+
+- Components:
+  - New:
+    - `StyledComponent`
+    - `StyledElement`
+    - `StyledLeaf`
+  - Updated:
+    - `strikethrough`: `<s>` tag instead of `<span>` with styles
+- New utils:
+  - `setDefaults` – Deep merge the default object properties
+    that are not defined in the destination object. Used to set the
+    default options.
+  - `getRenderLeafDefault`
+  - `onKeyDownMarkDefault`
+- Hotkeys:
+  - New:
+    - `highlight`: `mod+shift+h`
+  - Updated:
+    - `code`: `mod+e`
+    - `strikethrough`: `mod+shift+s`
+- HTML Deserializers:
+  - added style deserializing for:
+    - superscript: `vertical-align: sub`
+    - subscript: `vertical-align: super`
+    - code: `word-wrap: break-word`
+- Styles updated:
+  - `blockquote`
+  - `code`
+  - `code-block`
+  - `table`
+- Decorate code block using Prismjs. It's using javascript language by
+  default (WIP).
+
+### Bug Fixes
+
+- `align`: deserialize
+
+## 0.61.0 (2020-07-06)
 
 ### Breaking Changes
 
@@ -98,8 +299,8 @@ TODO: it's not working when the url is at the start of the block.
 - renamed `htmlSerialize` to `serializeHTMLFromNodes`.
 - removed `ToolbarCodeBlock` in favor of `ToolbarElement` instead.
 - `withBreakEmptyReset` and `withDeleteStartReset` – renamed option
-  `typeP` to `defaultType`.
-- `withToggleType` – renamed option `typeP` to `defaultType`
+  `p.type` to `defaultType`.
+- `withToggleType` – renamed option `p.type` to `defaultType`
 - `withTable` – removed `insertBreak` handler that prevented to insert
   break inside table cells, you should now use `SoftBreakPlugin` to
   allow inserting soft breaks instead.
@@ -423,29 +624,29 @@ useMention(CHARACTERS, {
     you will need to migrate or override the types with the previous
     ones:
 
-```js
+```
 // you can add nodeTypes to any element plugin
 export const nodeTypes = {
-  typeP: PARAGRAPH,
+  p.type: PARAGRAPH,
   typeMention: MENTION,
-  typeBlockquote: BLOCKQUOTE,
+  blockquote.type: BLOCKQUOTE,
   typeCode: CODE_BLOCK,
   typeLink: LINK,
   typeImg: IMAGE,
   typeVideo: MEDIA_EMBED,
-  typeActionItem: ACTION_ITEM,
+  todo_li.type: TODO_LIST,
   typeTable: TableType.TABLE,
   typeTr: TableType.ROW,
   typeTd: TableType.CELL,
-  typeUl: ListType.UL,
-  typeOl: ListType.OL,
+  ul.type: ListType.UL,
+  ol.type: ListType.OL,
   typeLi: ListType.LI,
-  typeH1: HeadingType.H1,
-  typeH2: HeadingType.H2,
-  typeH3: HeadingType.H3,
-  typeH4: HeadingType.H4,
-  typeH5: HeadingType.H5,
-  typeH6: HeadingType.H6,
+  h1.type: HeadingType.H1,
+  h2.type: HeadingType.H2,
+  h3.type: HeadingType.H3,
+  h4.type: HeadingType.H4,
+  h5.type: HeadingType.H5,
+  h6.type: HeadingType.H6,
   typeEditableVoid: EDITABLE_VOID,
 };
 ```

@@ -6,7 +6,7 @@ import { MentionNodeData } from '../types';
 
 export interface MentionSelectProps {
   /**
-   * Additional class name to provide on the root element, in addition to the slate-MentionSelect class.
+   * Additional class name to provide on the root element.
    */
   className?: string;
 

@@ -34,7 +34,8 @@
     "lodash": "^4.17.15",
     "marked": "^1.0.0",
     "prismjs": "^1.20.0",
-    "react-use": "^15.1.0"
+    "react-use": "^15.1.0",
+    "utility-types": "^3.10.0"
   },
   "devDependencies": {
     "@types/marked": "^0.7.4"
@@ -44,8 +45,7 @@
     "react-dom": "*",
     "slate": ">=0.58.3",
     "slate-hyperscript": ">=0.58.3",
-    "slate-react": ">=0.58.3",
-    "styled-components": "^5.1.0"
+    "slate-react": ">=0.58.3"
   },
   "publishConfig": {
     "access": "public"

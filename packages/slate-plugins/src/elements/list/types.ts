@@ -1,6 +1,15 @@
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import { PARAGRAPH } from '../paragraph';
+import {
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import {
+  StyledComponentStyleProps,
+  StyledComponentStyles,
+} from '../../components/StyledComponent/StyledComponent.types';
 
 export const ListHotkey = {
   TAB: 'Tab',
@@ -8,61 +17,49 @@ export const ListHotkey = {
   DELETE_BACKWARD: 'Backspace',
 };
 
-export enum ListType {
-  OL = 'ol',
-  UL = 'ul',
-  LI = 'li',
-}
-
-export const defaultListTypes: ListTypeOption = {
-  typeUl: ListType.UL,
-  typeOl: ListType.OL,
-  typeLi: ListType.LI,
-  typeP: PARAGRAPH,
-};
-
 // Data of Element node
 export interface ListNodeData {}
-
 // Element node
 export interface ListNode extends Element, ListNodeData {}
 
-// Type option
-export interface ListTypeOption {
-  typeUl?: string;
-  typeOl?: string;
-  typeLi?: string;
-  typeP?: string;
-}
-
-// deserialize options
-export interface ListDeserializeOptions extends ListTypeOption {}
-
 // renderElement options given as props
-interface ListRenderElementOptionsProps {}
-
-// renderElement options
-export interface ListRenderElementOptions
-  extends ListRenderElementOptionsProps,
-    ListTypeOption {
-  UL?: any;
-  OL?: any;
-  LI?: any;
+export interface ListRenderElementPropsOptions {
+  /**
+   * Call to provide customized styling that will layer on top of the variant rules.
+   */
+  styles?: IStyleFunctionOrObject<
+    StyledComponentStyleProps,
+    StyledComponentStyles
+  >;
 }
 
 // renderElement props
-export interface ListRenderElementProps
+export interface ListElementProps
   extends RenderElementProps,
-    ListRenderElementOptionsProps {
+    RenderNodePropsOptions,
+    ListRenderElementPropsOptions {
   element: ListNode;
 }
 
-export interface ListOnKeyDownOptions extends ListTypeOption {}
+export type ListKeyOption = 'ul' | 'ol' | 'li' | 'p';
 
 // Plugin options
-export interface ListPluginOptions
-  extends ListRenderElementOptions,
-    ListDeserializeOptions,
-    ListOnKeyDownOptions {}
+export type ListPluginOptionsValues = RenderNodeOptions &
+  RootProps<ListRenderElementPropsOptions>;
+export type ListPluginOptionsKeys = keyof ListPluginOptionsValues;
+export type ListPluginOptions<
+  Value extends ListPluginOptionsKeys = ListPluginOptionsKeys
+> = Partial<Record<ListKeyOption, Pick<ListPluginOptionsValues, Value>>>;
 
-export interface WithListOptions extends ListTypeOption {}
+// renderElement options
+export type ListRenderElementOptionsKeys = ListPluginOptionsKeys;
+export interface ListRenderElementOptions
+  extends ListPluginOptions<ListRenderElementOptionsKeys> {}
+
+// deserialize options
+export interface ListDeserializeOptions
+  extends ListPluginOptions<'type' | 'rootProps'> {}
+
+export interface ListOnKeyDownOptions extends ListPluginOptions<'type'> {}
+export interface WithListOptions extends ListPluginOptions<'type'> {}
+export interface ListOptions extends ListPluginOptions<'type'> {}

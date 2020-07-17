@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../../__test-utils__/jsx';
-import { ListType } from '../../../../elements/list/index';
-import { PARAGRAPH } from '../../../../elements/paragraph/index';
-import { isDescendant } from '../../../queries/index';
-import { setPropsToNodes } from '../../../transforms/index';
+import { ELEMENT_LI } from '../../../../elements/list/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/defaults';
+import { isDescendant } from '../../../queries/isDescendant';
+import { setPropsToNodes } from '../../../transforms/setPropsToNodes';
 
 const node = (
   <hli>
@@ -16,9 +16,9 @@ const node = (
 const props = { a: 1 };
 
 const output = (
-  <element type={ListType.LI} a={1}>
+  <element type={ELEMENT_LI} a={1}>
     <htext a={1}>test</htext>
-    <element type={PARAGRAPH} a={1}>
+    <element type={ELEMENT_PARAGRAPH} a={1}>
       <htext a={1}>test</htext>
     </element>
     <htext a={1}>test</htext>

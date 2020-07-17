@@ -1,5 +1,6 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+
 .history
 node_modules/
 report.*
@@ -101,3 +102,4 @@ connect.lock
 storybook-static/
 
 # Local
+packages/slate-plugins/docs/

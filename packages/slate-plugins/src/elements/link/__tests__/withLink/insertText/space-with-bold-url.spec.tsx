@@ -3,7 +3,7 @@
 import { withReact } from 'slate-react';
 import { jsx } from '../../../../../__test-utils__/jsx';
 import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
-import { LINK } from '../../../types';
+import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';
 
 const input = (
@@ -31,7 +31,7 @@ const output = (
 describe('when inserting a space after a url text containing bold mark', () => {
   it('should wrap the url with a link', () => {
     const editor = withLink()(
-      withInlineVoid({ inlineTypes: [LINK] })(withReact(input))
+      withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
     );
 
     editor.insertText(text);

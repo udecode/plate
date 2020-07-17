@@ -1,6 +1,13 @@
-import { MARK_BOLD } from '../../../../marks/bold/types';
 import { getLeafDeserializer } from '../../../utils/getLeafDeserializer';
 
 it('should be', () => {
-  expect(getLeafDeserializer(MARK_BOLD)[MARK_BOLD]).toBeDefined();
+  const el = document.createElement('strong');
+  el.textContent = 'hello';
+
+  expect(
+    getLeafDeserializer({
+      type: 'bold',
+      rules: [{ nodeNames: 'strong' }],
+    })[0].deserialize(document.createElement('strong'))
+  ).toBe(undefined);
 });

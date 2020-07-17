@@ -1,43 +1,39 @@
 import { Editor, Transforms } from 'slate';
 import { getNodesByType, isNodeTypeIn } from '../../../common/queries';
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
-import { PARAGRAPH } from '../../paragraph';
-import { ListType } from '../types';
+import { setDefaults } from '../../../common/utils/setDefaults';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (
   editor: Editor,
   {
     typeList,
-    typeUl = ListType.UL,
-    typeOl = ListType.OL,
-    typeLi = ListType.LI,
-    typeP = PARAGRAPH,
+    ...options
   }: {
     typeList: string;
-    typeUl?: string;
-    typeOl?: string;
-    typeLi?: string;
-    typeP?: string;
-  }
+  } & ListOptions
 ) => {
   if (!editor.selection) return;
 
+  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+
   const isActive = isNodeTypeIn(editor, typeList);
 
-  unwrapList(editor, { typeUl, typeOl, typeLi });
+  unwrapList(editor, options);
 
   Transforms.setNodes(editor, {
-    type: typeP,
+    type: p.type,
   });
 
   if (!isActive) {
     const list = { type: typeList, children: [] };
     wrapNodes(editor, list);
 
-    const nodes = [...getNodesByType(editor, typeP)];
+    const nodes = [...getNodesByType(editor, p.type)];
 
-    const listItem = { type: typeLi, children: [] };
+    const listItem = { type: li.type, children: [] };
 
     for (const [, path] of nodes) {
       Transforms.wrapNodes(editor, listItem, {

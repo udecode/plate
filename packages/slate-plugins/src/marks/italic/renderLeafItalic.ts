@@ -1,7 +1,10 @@
-import { getRenderLeaf } from '../../common/utils/getRenderLeaf';
-import { ItalicRenderLeafOptions, MARK_ITALIC } from './types';
+import { getRenderLeafDefault } from '../../common/utils/getRenderLeafDefault';
+import { DEFAULTS_ITALIC } from './defaults';
+import { ItalicRenderLeafOptions } from './types';
 
-export const renderLeafItalic = ({
-  typeItalic = MARK_ITALIC,
-}: ItalicRenderLeafOptions = {}) =>
-  getRenderLeaf({ type: typeItalic, component: 'em' });
+export const renderLeafItalic = (options?: ItalicRenderLeafOptions) =>
+  getRenderLeafDefault({
+    key: 'italic',
+    defaultOptions: DEFAULTS_ITALIC,
+    options,
+  });

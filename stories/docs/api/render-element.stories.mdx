@@ -1,0 +1,73 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="API/renderElement" />
+
+# renderElement
+
+Note: `renderElement` should return `undefined` by default so `EditablePlugins` can run the next one.
+
+### Using getRenderElement
+
+Get a `renderElement` handler for a single type. If the given `type` is equals to the slate element type, render the given `component`.
+
+```js
+export const renderElementParagraph = (
+  options?: ParagraphRenderElementOptions
+) => {
+  const { p } = setDefaults(options, DEFAULTS_PARAGRAPH);
+
+  return getRenderElement(p);
+};
+```
+
+### Using getRenderElements
+
+Get a `renderElement` handler for multiple types.
+
+```js
+export const renderElementList = (options?: ListRenderElementOptions) => {
+  const { ul, ol, li } = setDefaults(options, DEFAULTS_LIST);
+
+  return getRenderElements([ul, ol, li]);
+};
+```
+
+### Custom
+
+```js
+export const renderElementParagraph = () => ({
+  attributes,
+  ...props
+}: RenderElementProps) => {
+  if (props.element.type === ELEMENT_PARAGRAPH) {
+    return <p {...attributes} {...props} className="slate-p" />;
+  }
+}
+```
+
+### Options
+
+```js
+const options: ParagraphRenderElementOptions = {
+  // Use a unique key for each slate node.
+  p: {
+    // Give a React component or HTML tag (e.g. 'div') to render the element.
+    component: StyledElement,
+    // Give a unique type for each element.
+    type: ELEMENT_PARAGRAPH,
+    // Give props to the root of the React component.
+    rootProps: {
+      // Give a className to the React component. Give an empty string to remove the className.
+      className: 'slate-p',
+      // When using a styled component, specify the root tag to render.
+      as: 'p',
+      // Customize styled components: https://github.com/microsoft/fluentui/wiki/Component-Styling
+      styles: {
+        root: {
+          margin: 0,
+        }
+      }
+    },
+  },
+}
+```

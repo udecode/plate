@@ -5,7 +5,7 @@ import { withReact } from 'slate-react';
 import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
 import { pipe } from '../../../../common/utils/pipe';
 import { ToolbarLink } from '../../components/ToolbarLink';
-import { LINK } from '../../types';
+import { ELEMENT_LINK } from '../../defaults';
 import { withLink } from '../../withLink';
 import { input, output } from './onMouseDown.fixture';
 
@@ -14,7 +14,7 @@ it('should render', () => {
     input,
     withReact,
     withLink(),
-    withInlineVoid({ inlineTypes: [LINK] })
+    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })
   );
 
   jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);

@@ -38,7 +38,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueTables,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -47,13 +47,13 @@ export default {
   subcomponents: { renderElementTable },
 };
 
-const withPlugins = [withReact, withHistory, withTable(nodeTypes)] as const;
+const withPlugins = [withReact, withHistory, withTable(options)] as const;
 
 export const Example = () => {
   const plugins = [
-    ParagraphPlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
-    BoldPlugin(nodeTypes),
+    ParagraphPlugin(options),
+    HeadingPlugin(options),
+    BoldPlugin(options),
     SoftBreakPlugin({
       rules: [
         { hotkey: 'shift+enter' },
@@ -61,9 +61,9 @@ export const Example = () => {
           hotkey: 'enter',
           query: {
             allow: [
-              nodeTypes.typeCodeBlock,
-              nodeTypes.typeBlockquote,
-              nodeTypes.typeTd,
+              options.code_block.type,
+              options.blockquote.type,
+              options.td.type,
             ],
           },
         },
@@ -89,7 +89,7 @@ export const Example = () => {
       ],
     }),
   ];
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(nodeTypes));
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueTables);
@@ -105,32 +105,32 @@ export const Example = () => {
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderAll />}
             transform={insertTable}
           />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderClear />}
             transform={deleteTable}
           />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderBottom />}
             transform={addRow}
           />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderTop />}
             transform={deleteRow}
           />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderLeft />}
             transform={addColumn}
           />
           <ToolbarTable
-            {...nodeTypes}
+            {...options}
             icon={<BorderRight />}
             transform={deleteColumn}
           />
