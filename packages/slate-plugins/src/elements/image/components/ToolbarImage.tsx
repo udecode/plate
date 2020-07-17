@@ -5,12 +5,12 @@ import {
   ToolbarButtonProps,
 } from '../../../components/ToolbarButton';
 import { insertImage } from '../transforms';
-import { IMAGE } from '../types';
+import { ImagePluginOptions } from '../types';
 
 export const ToolbarImage = ({
-  typeImg = IMAGE,
+  img,
   ...props
-}: ToolbarButtonProps) => {
+}: ToolbarButtonProps & ImagePluginOptions<'type'>) => {
   const editor = useEditor();
 
   return (
@@ -20,7 +20,7 @@ export const ToolbarImage = ({
 
         const url = window.prompt('Enter the URL of the image:');
         if (!url) return;
-        insertImage(editor, url, { typeImg });
+        insertImage(editor, url, { img });
       }}
       {...props}
     />

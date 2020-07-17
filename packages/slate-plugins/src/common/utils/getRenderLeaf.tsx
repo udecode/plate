@@ -1,18 +1,18 @@
 import * as React from 'react';
-import { GetRenderElementOptions } from '@udecode/slate-plugins-core';
+import { pickBy } from 'lodash';
 import { RenderLeafProps } from 'slate-react';
+import { RenderNodeOptions } from '../types/PluginOptions.types';
 
 /**
- * Get generic renderLeaf for a type
- * TODO: data-slate-type
+ * Get a `renderLeaf` handler for a single type.
  */
 export const getRenderLeaf = ({
   type,
   component: Component,
-  ...options
-}: GetRenderElementOptions) => ({ children, leaf }: RenderLeafProps) => {
+  rootProps,
+}: Required<RenderNodeOptions>) => ({ children, leaf }: RenderLeafProps) => {
   if (leaf[type] && !!leaf.text) {
-    return <Component {...options}>{children}</Component>;
+    return <Component {...pickBy(rootProps)}>{children}</Component>;
   }
 
   return children;

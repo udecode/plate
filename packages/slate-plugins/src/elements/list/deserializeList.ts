@@ -1,15 +1,28 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
 import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { ListDeserializeOptions, ListType } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_LIST } from './defaults';
+import { ListDeserializeOptions } from './types';
 
-export const deserializeList = ({
-  typeUl = ListType.UL,
-  typeOl = ListType.OL,
-  typeLi = ListType.LI,
-}: ListDeserializeOptions = {}): DeserializeHtml => ({
-  element: {
-    ...getElementDeserializer(typeUl, { tagNames: ['UL'] }),
-    ...getElementDeserializer(typeOl, { tagNames: ['OL'] }),
-    ...getElementDeserializer(typeLi, { tagNames: ['LI'] }),
-  },
-});
+export const deserializeList = (
+  options?: ListDeserializeOptions
+): DeserializeHtml => {
+  const { li, ul, ol } = setDefaults(options, DEFAULTS_LIST);
+
+  return {
+    element: [
+      ...getElementDeserializer({
+        type: ul.type,
+        rules: [{ nodeNames: 'UL' }],
+      }),
+      ...getElementDeserializer({
+        type: ol.type,
+        rules: [{ nodeNames: 'OL' }],
+      }),
+      ...getElementDeserializer({
+        type: li.type,
+        rules: [{ nodeNames: 'LI' }],
+      }),
+    ],
+  };
+};

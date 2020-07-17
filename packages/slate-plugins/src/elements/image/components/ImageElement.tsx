@@ -1,42 +1,62 @@
 import * as React from 'react';
+import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
-import styled from 'styled-components';
-import { ImageRenderElementProps } from '../types';
+import {
+  ImageElementProps,
+  ImageElementStyleProps,
+  ImageElementStyles,
+} from '../types';
+import { getImageElementStyles } from './ImageElement.styles';
 
-const Image = styled.img<{ selected: boolean; focused: boolean }>`
-  display: block;
-  max-width: 100%;
-  max-height: 20em;
-  padding: 10px 0;
-  box-shadow: ${(props) =>
-    props.selected && props.focused ? '0 0 0 3px #B4D5FF' : 'none'};
-`;
+const getClassNames = classNamesFunction<
+  ImageElementStyleProps,
+  ImageElementStyles
+>();
 
-export const ImageElement = ({
+/**
+ * ImageElement with no default styles.
+ * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
+ */
+export const ImageElementBase = ({
   attributes,
   children,
   element,
-}: ImageRenderElementProps) => {
+  className,
+  styles,
+}: ImageElementProps) => {
   const { url } = element;
-  const selected = useSelected();
   const focused = useFocused();
+  const selected = useSelected();
 
-  const type = attributes['data-slate-type'];
-  delete attributes['data-slate-type'];
+  const classNames = getClassNames(styles, {
+    className,
+    // Other style props
+    focused,
+    selected,
+  });
 
   return (
-    <div {...attributes}>
+    <div {...attributes} className={classNames.root}>
       <div contentEditable={false}>
-        <Image
-          data-slate-type={type}
+        <img
           data-testid="ImageElementImage"
+          className={classNames.img}
           src={url}
           alt=""
-          selected={selected}
-          focused={focused}
         />
       </div>
       {children}
     </div>
   );
 };
+
+/**
+ * ImageElement
+ */
+export const ImageElement = styled<
+  ImageElementProps,
+  ImageElementStyleProps,
+  ImageElementStyles
+>(ImageElementBase, getImageElementStyles, undefined, {
+  scope: 'ImageElement',
+});

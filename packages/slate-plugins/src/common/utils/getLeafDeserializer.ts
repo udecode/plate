@@ -1,21 +1,18 @@
-import { getNodeDeserializer } from './getNodeDeserializer';
+import {
+  getNodeDeserializer,
+  GetNodeDeserializerOptions,
+} from './getNodeDeserializer';
 
-export type CreateLeaf = (
-  el: HTMLElement
-) => {
-  [key: string]: unknown;
-};
+export interface GetLeafDeserializerOptions
+  extends Omit<GetNodeDeserializerOptions, 'node'> {
+  type: string;
+}
 
 /**
- * Get a deserializer by type and/or tag names with a common leaf creator.
+ * See {@link getNodeDeserializer}.
  */
-export const getLeafDeserializer = (
-  type: string,
-  {
-    createLeaf = () => ({ [type]: true }),
-    tagNames = [],
-  }: {
-    createLeaf?: CreateLeaf;
-    tagNames?: string[];
-  } = {}
-) => getNodeDeserializer(type, { createNode: createLeaf, tagNames });
+export const getLeafDeserializer = (options: GetLeafDeserializerOptions) =>
+  getNodeDeserializer({
+    ...options,
+    node: () => ({ [options.type]: true }),
+  });

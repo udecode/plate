@@ -1,10 +1,8 @@
-import { RenderElementOptions, SlatePlugin } from '@udecode/slate-plugins';
+import { SlatePlugin } from '@udecode/slate-plugins';
 import { renderElementEditableVoid } from './renderElementEditableVoid';
 import { EDITABLE_VOID } from './types';
 
-export const EditableVoidPlugin = (
-  options?: RenderElementOptions
-): SlatePlugin => ({
+export const EditableVoidPlugin = (options?: any): SlatePlugin => ({
   renderElement: renderElementEditableVoid(options),
   voidTypes: [EDITABLE_VOID],
 });

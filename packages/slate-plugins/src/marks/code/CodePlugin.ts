@@ -1,17 +1,19 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMark } from '../../common/utils/onKeyDownMark';
+import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { DEFAULTS_CODE } from './defaults';
 import { deserializeCode } from './deserializeCode';
 import { renderLeafCode } from './renderLeafCode';
-import { CodePluginOptions, MARK_CODE } from './types';
+import { CodePluginOptions } from './types';
 
 /**
- * Enables support for inline code formatting.
+ * Enables support for code formatting
  */
-export const CodePlugin = (options: CodePluginOptions = {}): SlatePlugin => ({
+export const CodePlugin = (options?: CodePluginOptions): SlatePlugin => ({
   renderLeaf: renderLeafCode(options),
   deserialize: deserializeCode(options),
-  onKeyDown: onKeyDownMark(
-    options.typeCode ?? MARK_CODE,
-    options.hotkey ?? 'mod+`'
-  ),
+  onKeyDown: onKeyDownMarkDefault({
+    key: 'code',
+    defaultOptions: DEFAULTS_CODE,
+    options,
+  }),
 });

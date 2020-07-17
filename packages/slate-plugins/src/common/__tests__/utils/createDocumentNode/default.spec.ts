@@ -1,12 +1,12 @@
 import { Node } from 'slate';
-import { PARAGRAPH } from '../../../../elements/paragraph/index';
+import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/index';
 import { createDocumentNode } from '../../../utils/index';
 
 const output: Node[] = [
   {
     children: [
       {
-        type: PARAGRAPH,
+        type: ELEMENT_PARAGRAPH,
         children: [{ text: '' }],
       },
     ],

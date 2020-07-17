@@ -1,10 +1,14 @@
 import { Editor, Point } from 'slate';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { TableType, WithTableOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_TABLE } from './defaults';
+import { WithTableOptions } from './types';
 
-export const withTable = ({
-  typeTd = TableType.CELL,
-}: WithTableOptions = {}) => <T extends Editor>(editor: T) => {
+export const withTable = (options?: WithTableOptions) => <T extends Editor>(
+  editor: T
+) => {
+  const { td } = setDefaults(options, DEFAULTS_TABLE);
+
   const { deleteBackward, deleteForward } = editor;
 
   const preventDeleteCell = (operation: any, pointCallback: any) => (
@@ -14,7 +18,7 @@ export const withTable = ({
 
     if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === typeTd,
+        match: (n) => n.type === td.type,
       });
 
       if (cell) {

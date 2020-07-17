@@ -1,7 +1,10 @@
-import { getRenderLeaf } from '../../common/utils/getRenderLeaf';
-import { BoldRenderLeafOptions, MARK_BOLD } from './types';
+import { getRenderLeafDefault } from '../../common/utils/getRenderLeafDefault';
+import { DEFAULTS_BOLD } from './defaults';
+import { BoldRenderLeafOptions } from './types';
 
-export const renderLeafBold = ({
-  typeBold = MARK_BOLD,
-}: BoldRenderLeafOptions = {}) =>
-  getRenderLeaf({ type: typeBold, component: 'strong' });
+export const renderLeafBold = (options?: BoldRenderLeafOptions) =>
+  getRenderLeafDefault({
+    key: 'bold',
+    defaultOptions: DEFAULTS_BOLD,
+    options,
+  });

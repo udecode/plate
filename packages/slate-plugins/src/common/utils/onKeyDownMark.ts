@@ -1,32 +1,33 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { toggleMark } from '../transforms/toggleMark';
-import { MarkOnKeyDownOptions } from '../types/Mark.types';
+
+export interface MarkOnKeyDownOptions {
+  /**
+   * Key of the mark
+   */
+  type: string;
+
+  /**
+   * Hotkey to toggle the mark
+   */
+  hotkey?: string;
+
+  /**
+   * Mark to clear
+   */
+  clear?: string | string[];
+}
 
 /**
- * `onKeyDown` handler for a type.
+ * Get `onKeyDown` handler if there is a hotkey defined.
  */
-export function onKeyDownMark(
-  type: string,
-  hotkey: undefined,
-  options?: MarkOnKeyDownOptions
-): null;
-export function onKeyDownMark(
-  type: string,
-  hotkey?: string,
-  options?: MarkOnKeyDownOptions
-): (e: any, editor: Editor) => void;
-export function onKeyDownMark(
-  type: string,
-  hotkey?: string,
-  { clear }: MarkOnKeyDownOptions = {}
-) {
-  if (!hotkey) return null;
-
-  return (e: any, editor: Editor) => {
-    if (isHotkey(hotkey, e)) {
-      e.preventDefault();
-      toggleMark(editor, type, clear);
-    }
-  };
-}
+export const onKeyDownMark = ({ type, hotkey, clear }: MarkOnKeyDownOptions) =>
+  hotkey
+    ? (e: any, editor: Editor) => {
+        if (isHotkey(hotkey, e)) {
+          e.preventDefault();
+          toggleMark(editor, type, clear);
+        }
+      }
+    : undefined;

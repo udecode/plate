@@ -1,10 +1,16 @@
 import { NodeEntry, Range, Text } from 'slate';
-import { MARK_SEARCH_HIGHLIGHT, SearchHighlightDecorateOptions } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_SEARCH_HIGHLIGHT } from './defaults';
+import { SearchHighlightDecorateOptions } from './types';
 
-export const decorateSearchHighlight = ({
-  search,
-  typeSearchHighlight = MARK_SEARCH_HIGHLIGHT,
-}: SearchHighlightDecorateOptions) => ([node, path]: NodeEntry) => {
+export const decorateSearchHighlight = (
+  options?: SearchHighlightDecorateOptions
+) => ([node, path]: NodeEntry) => {
+  const { search_highlight, search } = setDefaults(
+    options,
+    DEFAULTS_SEARCH_HIGHLIGHT
+  );
+
   const ranges: Range[] = [];
 
   if (search && Text.isText(node)) {
@@ -16,7 +22,7 @@ export const decorateSearchHighlight = ({
         ranges.push({
           anchor: { path, offset: offset - search.length },
           focus: { path, offset },
-          [typeSearchHighlight]: true,
+          [search_highlight.type]: true,
         });
       }
       offset = offset + part.length + search.length;

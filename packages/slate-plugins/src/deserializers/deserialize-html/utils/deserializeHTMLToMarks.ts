@@ -1,4 +1,4 @@
-import { DeserializeLeafValue, SlatePlugin } from '@udecode/slate-plugins-core';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { Descendant, Element, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { setPropsToNodes } from '../../../common';
@@ -12,50 +12,41 @@ export interface DeserializeMarksProps {
 
 /**
  * Deserialize HTML to Descendant[] with marks on Text.
+ * Build the leaf from the leaf deserializers of each plugin.
  */
 export const deserializeHTMLToMarks = ({
   plugins,
   el,
   children,
 }: DeserializeMarksProps) => {
-  const type = el.getAttribute('data-slate-type') || el.nodeName;
+  let leaf = {};
 
-  const textTags: {
-    [key: string]: DeserializeLeafValue[];
-  } = {};
+  plugins.forEach(({ deserialize: pluginDeserializers }) => {
+    if (!pluginDeserializers?.leaf) return;
 
-  plugins.forEach(({ deserialize: deserializePlugin }) => {
-    const leaf = deserializePlugin?.leaf;
-    if (!leaf) return;
+    pluginDeserializers.leaf.forEach((deserializer) => {
+      const leafPart = deserializer.deserialize(el);
 
-    Object.keys(leaf).forEach((tag) => {
-      if (!textTags[tag]) textTags[tag] = [leaf[tag]];
-      else textTags[tag].push(leaf[tag]);
+      if (!leafPart) return;
+
+      leaf = { ...leaf, ...leafPart };
     });
   });
 
-  if (textTags[type]) {
-    const props = textTags[type].reduce((obj, tag) => {
-      const newProps = tag(el);
-      if (newProps) {
-        Object.assign(obj, newProps);
-      }
-      return obj;
-    }, {});
+  return children.reduce((arr: Descendant[], child) => {
+    if (!child) return arr;
 
-    return children.reduce((arr: Descendant[], child) => {
-      if (!child) return arr;
-
-      if (Element.isElement(child)) {
-        setPropsToNodes(child, props, {
+    if (Element.isElement(child)) {
+      if (Object.keys(leaf).length) {
+        setPropsToNodes(child, leaf, {
           filter: ([n]) => Text.isText(n),
         });
-        arr.push(child);
-      } else {
-        arr.push(jsx('text', props, child));
       }
+      arr.push(child);
+    } else {
+      arr.push(jsx('text', leaf, child));
+    }
 
-      return arr;
-    }, []);
-  }
+    return arr;
+  }, []);
 };

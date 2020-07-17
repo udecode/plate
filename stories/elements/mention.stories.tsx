@@ -15,7 +15,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueMentions, nodeTypes } from '../config/initialValues';
+import { initialValueMentions, options } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
 export default {
@@ -29,13 +29,15 @@ export default {
 
 export const Example = () => {
   const plugins = [
-    ParagraphPlugin(nodeTypes),
-    HeadingPlugin(nodeTypes),
+    ParagraphPlugin(options),
+    HeadingPlugin(options),
     MentionPlugin({
-      ...nodeTypes,
-      onClick: (mentionable: MentionNodeData) =>
-        console.info(`Hello, I'm ${mentionable.value}`),
-      prefix: text('prefix', '@'),
+      mention: {
+        ...options.mention,
+        onClick: (mentionable: MentionNodeData) =>
+          console.info(`Hello, I'm ${mentionable.value}`),
+        prefix: text('prefix', '@'),
+      },
     }),
   ];
 

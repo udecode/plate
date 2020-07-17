@@ -3,8 +3,8 @@ import { BoldPlugin } from '../bold';
 import { CodePlugin } from '../code';
 import { ItalicPlugin } from '../italic';
 import { StrikethroughPlugin } from '../strikethrough';
-import { SubscriptPlugin } from '../subscript';
-import { SuperscriptPlugin } from '../superscript';
+import { SubscriptPlugin } from '../subsupscript/subscript/SubscriptPlugin';
+import { SuperscriptPlugin } from '../subsupscript/superscript/SuperscriptPlugin';
 import { UnderlinePlugin } from '../underline';
 import { BasicMarkPluginsOptions } from './types';
 

@@ -13,7 +13,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueEmbeds, nodeTypes } from '../config/initialValues';
+import { initialValueEmbeds, options } from '../config/initialValues';
 
 export default {
   title: 'Elements/Media Embed',
@@ -24,9 +24,9 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
   if (boolean('MediaEmbedPlugin', true))
-    plugins.push(MediaEmbedPlugin(nodeTypes));
+    plugins.push(MediaEmbedPlugin(options));
 
   const withPlugins = [
     withReact,

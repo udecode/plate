@@ -1,18 +1,46 @@
 import * as React from 'react';
-import styled from 'styled-components';
-import { BlockquoteRenderElementProps } from '../types';
+import { classNamesFunction, styled } from '@uifabric/utilities';
+import {
+  BlockquoteElementProps,
+  BlockquoteElementStyleProps,
+  BlockquoteElementStyles,
+} from '../types';
+import { getBlockquoteElementStyles } from './BlockquoteElement.styles';
 
-const StyledBlockquoteElement = styled.blockquote`
-  border-left: 2px solid #ddd;
-  padding: 10px 20px 10px 16px;
-  color: #aaa;
+const getClassNames = classNamesFunction<
+  BlockquoteElementStyleProps,
+  BlockquoteElementStyles
+>();
 
-  margin: 8px 0;
-`;
-
-export const BlockquoteElement = ({
+/**
+ * BlockquoteElement with no default styles.
+ * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
+ */
+export const BlockquoteElementBase = ({
   attributes,
   children,
-}: BlockquoteRenderElementProps) => (
-  <StyledBlockquoteElement {...attributes}>{children}</StyledBlockquoteElement>
-);
+  className,
+  styles,
+}: BlockquoteElementProps) => {
+  const classNames = getClassNames(styles, {
+    className,
+    // Other style props
+  });
+
+  return (
+    <blockquote {...attributes} className={classNames.root}>
+      {children}
+    </blockquote>
+  );
+};
+
+/**
+ * BlockquoteElement
+ */
+export const BlockquoteElement = styled<
+  BlockquoteElementProps,
+  BlockquoteElementStyleProps,
+  BlockquoteElementStyles
+>(BlockquoteElementBase, getBlockquoteElementStyles, undefined, {
+  scope: 'BlockquoteElement',
+});

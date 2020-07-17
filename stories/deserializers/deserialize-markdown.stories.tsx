@@ -25,7 +25,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValuePasteMd, nodeTypes } from '../config/initialValues';
+import { initialValuePasteMd, options } from '../config/initialValues';
 
 export default {
   title: 'Deserializers/Markdown',
@@ -33,28 +33,28 @@ export default {
 };
 
 const plugins = [
-  ParagraphPlugin(nodeTypes),
-  BlockquotePlugin(nodeTypes),
-  CodeBlockPlugin(nodeTypes),
-  HeadingPlugin(nodeTypes),
-  ImagePlugin(nodeTypes),
-  LinkPlugin(nodeTypes),
-  ListPlugin(nodeTypes),
-  TablePlugin(nodeTypes),
-  BoldPlugin(nodeTypes),
-  CodePlugin(nodeTypes),
-  ItalicPlugin(nodeTypes),
-  StrikethroughPlugin(nodeTypes),
-  UnderlinePlugin(nodeTypes),
+  ParagraphPlugin(options),
+  BlockquotePlugin(options),
+  CodeBlockPlugin(options),
+  HeadingPlugin(options),
+  ImagePlugin(options),
+  LinkPlugin(options),
+  ListPlugin(options),
+  TablePlugin(options),
+  BoldPlugin(options),
+  CodePlugin(options),
+  ItalicPlugin(options),
+  StrikethroughPlugin(options),
+  UnderlinePlugin(options),
 ];
 
 const withPlugins = [
   withReact,
   withHistory,
-  withLink(),
+  withLink(options),
   withDeserializeMd(plugins),
-  withImageUpload(),
-  withTable(nodeTypes),
+  withImageUpload(options),
+  withTable(options),
   withInlineVoid({ plugins }),
 ] as const;
 

@@ -4,8 +4,12 @@ import { isNodeTypeIn } from '../../../common/queries/isNodeTypeIn';
 import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
 import { ToolbarButton } from '../../../components/ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
+import {
+  ELEMENT_ALIGN_CENTER,
+  ELEMENT_ALIGN_LEFT,
+  ELEMENT_ALIGN_RIGHT,
+} from '../defaults';
 import { upsertAlign } from '../transforms/upsertAlign';
-import { ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT } from '../types';
 
 export interface ToolbarAlignProps extends ToolbarButtonProps {
   type?: string;
@@ -14,7 +18,7 @@ export interface ToolbarAlignProps extends ToolbarButtonProps {
 
 export const ToolbarAlign = ({
   type,
-  unwrapTypes = [ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT],
+  unwrapTypes = [ELEMENT_ALIGN_LEFT, ELEMENT_ALIGN_CENTER, ELEMENT_ALIGN_RIGHT],
   ...props
 }: ToolbarAlignProps) => {
   const editor = useSlate();

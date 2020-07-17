@@ -10,7 +10,7 @@
 [Slate](https://github.com/ianstormtaylor/slate/) is a completely
 customizable framework for building rich text editors. However, your
 codebase can quickly get complex when implementing tens of features.
-Built on top of Slate, `slate-plugins` enables you to use a list of
+Built on top of Slate, slate-plugins enables you to use a list of
 configurable and extendable plugins to keep your codebase clean and easy
 to debug.
 
@@ -26,9 +26,10 @@ and
 ## 📦 Included
 
 - ✨ 30+ Editor Plugins.
-- ✅ Unit tested with `slate@0.58.3`.
+- 💅 Styling.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
+- ✅ Unit tested with `slate@0.58.4`.
 - 📖
   [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)
   and
@@ -99,8 +100,8 @@ For additional help, join us in our
 | [Highlight](packages/slate-plugins/src/marks/highlight/)         | Enables support for highlights.               |
 | [Italic](packages/slate-plugins/src/marks/italic)                | Enables support for italic formatting.        |
 | [Strikethrough](packages/slate-plugins/src/marks/strikethrough/) | Enables support for strikethrough formatting. |
-| [Subscript](packages/slate-plugins/src/marks/subscript/)         | Enables support for subscript formatting.     |
-| [Superscript](packages/slate-plugins/src/marks/superscript/)     | Enables support for superscript formatting.   |
+| [Subscript](packages/slate-plugins/src/marks/subsupscript/subscript)         | Enables support for subscript formatting.     |
+| [Superscript](packages/slate-plugins/src/marks/subsupscript/superscript/)     | Enables support for superscript formatting.   |
 | [Underline](packages/slate-plugins/src/marks/underline)          | Enables support for underline formatting.     |
 
 | Deserializer Plugins                                                            |                                                                                 |

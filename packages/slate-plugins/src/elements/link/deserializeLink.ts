@@ -1,14 +1,22 @@
 import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { LINK, LinkDeserializeOptions } from './types';
+import { getNodeDeserializer } from '../../common/utils/getNodeDeserializer';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_LINK } from './defaults';
+import { LinkDeserializeOptions } from './types';
 
-export const deserializeLink = ({
-  typeLink = LINK,
-}: LinkDeserializeOptions = {}): DeserializeHtml => ({
-  element: {
-    ...getElementDeserializer(typeLink, {
-      tagNames: ['A'],
-      createElement: (el) => ({ type: typeLink, url: el.getAttribute('href') }),
+export const deserializeLink = (
+  options?: LinkDeserializeOptions
+): DeserializeHtml => {
+  const { link } = setDefaults(options, DEFAULTS_LINK);
+
+  return {
+    element: getNodeDeserializer({
+      type: link.type,
+      node: (el) => ({
+        type: link.type,
+        url: el.getAttribute('href'),
+      }),
+      rules: [{ nodeNames: 'A' }],
     }),
-  },
-});
+  };
+};

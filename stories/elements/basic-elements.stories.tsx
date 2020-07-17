@@ -1,3 +1,4 @@
+import 'prismjs/themes/prism.css';
 import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
@@ -32,7 +33,7 @@ import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,
-  nodeTypes,
+  options,
 } from '../config/initialValues';
 
 export default {
@@ -48,21 +49,20 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withResetBlockType({
-    types: [nodeTypes.typeBlockquote, nodeTypes.typeCodeBlock],
-    defaultType: nodeTypes.typeP,
+    types: [options.blockquote.type, options.code_block.type],
+    defaultType: options.p.type,
   }),
 ] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
-  if (boolean('ParagraphPlugin', true))
-    plugins.push(ParagraphPlugin(nodeTypes));
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin(nodeTypes));
-  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(nodeTypes));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(nodeTypes));
+    plugins.push(BlockquotePlugin(options));
+  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
   if (boolean('SoftBreakPlugin', true))
     plugins.push(
       SoftBreakPlugin({
@@ -71,7 +71,7 @@ export const Example = () => {
           {
             hotkey: 'enter',
             query: {
-              allow: [nodeTypes.typeCodeBlock, nodeTypes.typeBlockquote],
+              allow: [options.code_block.type, options.blockquote.type],
             },
           },
         ],
@@ -114,17 +114,17 @@ export const Example = () => {
         }}
       >
         <HeadingToolbar>
-          <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
-          <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
-          <ToolbarElement type={nodeTypes.typeH3} icon={<Looks3 />} />
-          <ToolbarElement type={nodeTypes.typeH4} icon={<Looks4 />} />
-          <ToolbarElement type={nodeTypes.typeH5} icon={<Looks5 />} />
-          <ToolbarElement type={nodeTypes.typeH6} icon={<Looks6 />} />
+          <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
+          <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
+          <ToolbarElement type={options.h3.type} icon={<Looks3 />} />
+          <ToolbarElement type={options.h4.type} icon={<Looks4 />} />
+          <ToolbarElement type={options.h5.type} icon={<Looks5 />} />
+          <ToolbarElement type={options.h6.type} icon={<Looks6 />} />
           <ToolbarElement
-            type={nodeTypes.typeBlockquote}
+            type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={nodeTypes.typeCodeBlock} icon={<CodeBlock />} />
+          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

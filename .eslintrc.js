@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-namespace': 'off',
+    camelcase: 'off',
     'import/extensions': [
       'error',
       'never',

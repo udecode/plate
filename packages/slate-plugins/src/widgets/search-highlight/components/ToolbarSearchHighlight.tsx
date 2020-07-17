@@ -1,26 +1,5 @@
 import * as React from 'react';
-import styled from 'styled-components';
-
-const Wrapper = styled.div`
-  position: relative;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-`;
-
-const Input = styled.input`
-  box-sizing: border-box;
-  font-size: 0.85em;
-  width: 100%;
-  padding: 0.5em;
-  padding-left: 2em;
-  border: 2px solid #ddd;
-  background: #fafafa;
-
-  :focus {
-    outline: 0;
-    border-color: blue;
-  }
-`;
+import { HeadingToolbar } from '../../../components/Toolbar/HeadingToolbar/HeadingToolbar';
 
 interface Props {
   icon: any;
@@ -28,22 +7,41 @@ interface Props {
 }
 
 export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
-  <Wrapper>
-    <Icon
+  <HeadingToolbar styles={{ root: { height: '38px' } }}>
+    <div
       style={{
-        position: 'absolute',
-        top: '0.5em',
-        left: '0.5em',
-        color: '#ccc',
-        width: 20,
-        height: 20,
+        position: 'relative',
+        paddingBottom: '10px',
+        marginBottom: '10px',
       }}
-    />
-    <Input
-      data-testid="ToolbarSearchHighlightInput"
-      type="search"
-      placeholder="Search the text..."
-      onChange={(e) => setSearch(e.target.value)}
-    />
-  </Wrapper>
+    >
+      <Icon
+        size={18}
+        style={{
+          position: 'absolute',
+          top: '0.5em',
+          left: '0.5em',
+          color: '#ccc',
+        }}
+      />
+      <input
+        data-testid="ToolbarSearchHighlightInput"
+        type="search"
+        placeholder="Search the text..."
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          boxSizing: 'border-box',
+          fontSize: '0.85em',
+          width: '100%',
+          padding: '0.5em',
+          paddingLeft: '2em',
+          border: '2px solid #ddd',
+          background: '#fafafa',
+          // selectors: {
+          //   ':focus': { outline: '0', borderColor: 'blue' },
+          // },
+        }}
+      />
+    </div>
+  </HeadingToolbar>
 );

@@ -1,27 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
-import { Subscript, Superscript } from '@styled-icons/foundation';
-import {
-  FormatAlignCenter,
-  FormatAlignLeft,
-  FormatAlignRight,
-  FormatBold,
-  FormatItalic,
-  FormatListBulleted,
-  FormatListNumbered,
-  FormatQuote,
-  FormatStrikethrough,
-  FormatUnderlined,
-  Image,
-  Link,
-  LooksOne,
-  LooksTwo,
-} from '@styled-icons/material';
 import { render } from '@testing-library/react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import {
   initialValueAutoformat,
   initialValueBasicElements,
@@ -37,8 +18,9 @@ import {
   initialValuePasteHtml,
   initialValueSoftBreak,
   initialValueTables,
-  nodeTypes,
-} from '../../../../slate-plugins/src/__fixtures__/initialValues.fixtures';
+  options,
+} from '../../../../../stories/config/initialValues';
+import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import { withInlineVoid } from '../../../../slate-plugins/src/common/plugins/inline-void/withInlineVoid';
 import { withNodeID } from '../../../../slate-plugins/src/common/plugins/node-id/withNodeID';
 import { withToggleType } from '../../../../slate-plugins/src/common/plugins/withToggleType';
@@ -50,7 +32,6 @@ import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar
 import { ToolbarElement } from '../../../../slate-plugins/src/components/ToolbarElement/ToolbarElement';
 import { ToolbarMark } from '../../../../slate-plugins/src/components/ToolbarMark/ToolbarMark';
 import { withDeserializeHTML } from '../../../../slate-plugins/src/deserializers/deserialize-html/withDeserializeHTML';
-import { ActionItemPlugin } from '../../../../slate-plugins/src/elements/action-item/ActionItemPlugin';
 import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignPlugin';
 import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/components/ToolbarAlign';
 import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
@@ -69,73 +50,75 @@ import { withList } from '../../../../slate-plugins/src/elements/list/withList';
 import { MediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/MediaEmbedPlugin';
 import { MentionPlugin } from '../../../../slate-plugins/src/elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/ParagraphPlugin';
-import { ToolbarTable } from '../../../../slate-plugins/src/elements/table/components/ToolbarTable';
+import { renderElementParagraph } from '../../../../slate-plugins/src/elements/paragraph/renderElementParagraph';
+import { ToolbarTable } from '../../../../slate-plugins/src/elements/table/components/ToolbarTable/ToolbarTable';
 import { TablePlugin } from '../../../../slate-plugins/src/elements/table/TablePlugin';
 import { withTable } from '../../../../slate-plugins/src/elements/table/withTable';
+import { TodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/TodoListPlugin';
 import { withAutoformat } from '../../../../slate-plugins/src/handlers/autoformat/withAutoformat';
 import { ExitBreakPlugin } from '../../../../slate-plugins/src/handlers/exit-break/ExitBreakPlugin';
 import { withResetBlockType } from '../../../../slate-plugins/src/handlers/reset-block-type/withResetBlockType';
 import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-break/SoftBreakPlugin';
 import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
 import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
+import { MARK_BOLD } from '../../../../slate-plugins/src/marks/bold/defaults';
 import { renderLeafBold } from '../../../../slate-plugins/src/marks/bold/renderLeafBold';
-import { MARK_BOLD } from '../../../../slate-plugins/src/marks/bold/types';
 import { CodePlugin } from '../../../../slate-plugins/src/marks/code/CodePlugin';
+import { MARK_CODE } from '../../../../slate-plugins/src/marks/code/defaults';
 import { renderLeafCode } from '../../../../slate-plugins/src/marks/code/renderLeafCode';
-import { MARK_CODE } from '../../../../slate-plugins/src/marks/code/types';
 import { HighlightPlugin } from '../../../../slate-plugins/src/marks/highlight/HighlightPlugin';
 import { renderLeafHighlight } from '../../../../slate-plugins/src/marks/highlight/renderLeafHighlight';
+import { MARK_ITALIC } from '../../../../slate-plugins/src/marks/italic/defaults';
 import { ItalicPlugin } from '../../../../slate-plugins/src/marks/italic/ItalicPlugin';
 import { renderLeafItalic } from '../../../../slate-plugins/src/marks/italic/renderLeafItalic';
-import { MARK_ITALIC } from '../../../../slate-plugins/src/marks/italic/types';
+import { MARK_STRIKETHROUGH } from '../../../../slate-plugins/src/marks/strikethrough/defaults';
 import { renderLeafStrikethrough } from '../../../../slate-plugins/src/marks/strikethrough/renderLeafStrikethrough';
 import { StrikethroughPlugin } from '../../../../slate-plugins/src/marks/strikethrough/StrikethroughPlugin';
-import { MARK_STRIKETHROUGH } from '../../../../slate-plugins/src/marks/strikethrough/types';
-import { renderLeafSubscript } from '../../../../slate-plugins/src/marks/subscript/renderLeafSubscript';
-import { SubscriptPlugin } from '../../../../slate-plugins/src/marks/subscript/SubscriptPlugin';
-import { MARK_SUBSCRIPT } from '../../../../slate-plugins/src/marks/subscript/types';
-import { renderLeafSuperscript } from '../../../../slate-plugins/src/marks/superscript/renderLeafSuperscript';
-import { SuperscriptPlugin } from '../../../../slate-plugins/src/marks/superscript/SuperscriptPlugin';
-import { MARK_SUPERSCRIPT } from '../../../../slate-plugins/src/marks/superscript/types';
+import {
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+} from '../../../../slate-plugins/src/marks/subsupscript/defaults';
+import { renderLeafSubscript } from '../../../../slate-plugins/src/marks/subsupscript/subscript/renderLeafSubscript';
+import { SubscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/subscript/SubscriptPlugin';
+import { renderLeafSuperscript } from '../../../../slate-plugins/src/marks/subsupscript/superscript/renderLeafSuperscript';
+import { SuperscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/superscript/SuperscriptPlugin';
+import { MARK_UNDERLINE } from '../../../../slate-plugins/src/marks/underline/defaults';
 import { renderLeafUnderline } from '../../../../slate-plugins/src/marks/underline/renderLeafUnderline';
-import { MARK_UNDERLINE } from '../../../../slate-plugins/src/marks/underline/types';
 import { UnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/UnderlinePlugin';
 import { withNormalizeTypes } from '../../../../slate-plugins/src/normalizers/withNormalizeTypes';
 import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
 
-const markOptions = { ...nodeTypes, hotkey: '' };
-
 const plugins = [
   ...BasicElementPlugins(),
   ...BasicMarkPlugins(),
-  BlockquotePlugin(nodeTypes),
-  ActionItemPlugin(nodeTypes),
-  HeadingPlugin(nodeTypes),
-  ImagePlugin(nodeTypes),
-  LinkPlugin(nodeTypes),
-  ListPlugin(nodeTypes),
-  MentionPlugin(nodeTypes),
-  ParagraphPlugin(nodeTypes),
-  TablePlugin(nodeTypes),
-  MediaEmbedPlugin(nodeTypes),
-  CodeBlockPlugin(nodeTypes),
-  AlignPlugin(nodeTypes),
-  BoldPlugin(markOptions),
+  BlockquotePlugin(options),
+  TodoListPlugin(options),
+  HeadingPlugin({ ...options, levels: 5 }),
+  ImagePlugin(options),
+  LinkPlugin(options),
+  ListPlugin(options),
+  MentionPlugin(options),
+  ParagraphPlugin(options),
+  TablePlugin(options),
+  MediaEmbedPlugin(options),
+  CodeBlockPlugin(options),
+  AlignPlugin(options),
+  BoldPlugin(options),
   BoldPlugin(),
-  CodePlugin(markOptions),
+  CodePlugin(options),
   CodePlugin(),
-  ItalicPlugin(markOptions),
+  ItalicPlugin(options),
   ItalicPlugin(),
-  StrikethroughPlugin(markOptions),
+  StrikethroughPlugin(options),
   StrikethroughPlugin(),
-  HighlightPlugin(markOptions),
+  HighlightPlugin({ ...options, highlight: { hotkey: '' } }),
   HighlightPlugin(),
-  UnderlinePlugin(markOptions),
+  UnderlinePlugin(options),
   UnderlinePlugin(),
-  SubscriptPlugin(markOptions),
+  SubscriptPlugin(options),
   SubscriptPlugin(),
-  SuperscriptPlugin(markOptions),
+  SuperscriptPlugin(options),
   SuperscriptPlugin(),
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
@@ -162,20 +145,20 @@ const initialValue = [
 const withPlugins = [
   withReact,
   withHistory,
-  withTable(nodeTypes),
+  withTable(options),
   withLink(),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withResetBlockType({
-    types: [nodeTypes.typeActionItem, nodeTypes.typeBlockquote],
-    defaultType: nodeTypes.typeP,
+    types: [options.todo_li.type, options.blockquote.type],
+    defaultType: options.p.type,
   }),
-  withList(nodeTypes),
+  withList(options),
   withAutoformat({ rules: autoformatRulesFixtures }),
   withTransforms(),
   withNormalizeTypes({
-    rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+    rules: [{ path: [0, 0], strictType: options.h1.type }],
   }),
   withNodeID(),
   withInlineVoid({ plugins }),
@@ -198,56 +181,44 @@ const Editor = () => {
       }}
     >
       <HeadingToolbar>
-        <ToolbarElement type={nodeTypes.typeH1} icon={<LooksOne />} />
-        <ToolbarElement type={nodeTypes.typeH2} icon={<LooksTwo />} />
-        <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
-        <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
-        <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
-        <ToolbarMark type={MARK_STRIKETHROUGH} icon={<FormatStrikethrough />} />
-        <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
+        <ToolbarElement type={options.h1.type} icon={null} />
+        <ToolbarElement type={options.h2.type} icon={null} />
+        <ToolbarMark type={MARK_BOLD} icon={null} />
+        <ToolbarMark type={MARK_ITALIC} icon={null} />
+        <ToolbarMark type={MARK_UNDERLINE} icon={null} />
+        <ToolbarMark type={MARK_STRIKETHROUGH} icon={null} />
+        <ToolbarMark type={MARK_CODE} icon={null} />
         <ToolbarMark
           type={MARK_SUPERSCRIPT}
           clear={MARK_SUBSCRIPT}
-          icon={<Superscript />}
+          icon={null}
         />
         <ToolbarMark
           type={MARK_SUBSCRIPT}
           clear={MARK_SUPERSCRIPT}
-          icon={<Subscript />}
+          icon={null}
         />
-        <ToolbarLink {...nodeTypes} icon={<Link />} />
-        <ToolbarList {...nodeTypes} icon={<FormatListBulleted />} />
-        <ToolbarList {...nodeTypes} icon={<FormatListNumbered />} />
-        <ToolbarElement
-          type={nodeTypes.typeBlockquote}
-          icon={<FormatQuote />}
-        />
-        <ToolbarImage {...nodeTypes} icon={<Image />} />
+        <ToolbarLink {...options} icon={null} />
+        <ToolbarList {...options} icon={null} />
+        <ToolbarList {...options} icon={null} />
+        <ToolbarElement type={options.blockquote.type} icon={null} />
+        <ToolbarImage {...options} icon={null} />
         <ToolbarTable transform={jest.fn()} icon={null} />
-        <ToolbarAlign icon={<FormatAlignLeft />} />
-        <ToolbarAlign
-          type={nodeTypes.typeAlignCenter}
-          icon={<FormatAlignCenter />}
-        />
-        <ToolbarAlign
-          type={nodeTypes.typeAlignRight}
-          icon={<FormatAlignRight />}
-        />
+        <ToolbarAlign icon={null} />
+        <ToolbarAlign type={options.align_center.type} icon={null} />
+        <ToolbarAlign type={options.align_right.type} icon={null} />
       </HeadingToolbar>
       <BalloonToolbar>
-        <ToolbarMark reversed type={MARK_BOLD} icon={<FormatBold />} />
-        <ToolbarMark reversed type={MARK_ITALIC} icon={<FormatItalic />} />
-        <ToolbarMark
-          reversed
-          type={MARK_UNDERLINE}
-          icon={<FormatUnderlined />}
-        />
+        <ToolbarMark reversed type={MARK_BOLD} icon={null} />
+        <ToolbarMark reversed type={MARK_ITALIC} icon={null} />
+        <ToolbarMark reversed type={MARK_UNDERLINE} icon={null} />
       </BalloonToolbar>
       <EditablePlugins
         data-testid="EditablePlugins"
         plugins={plugins}
         decorate={decorate}
         onKeyDown={onKeyDown}
+        renderElement={[renderElementParagraph()]}
         renderLeaf={[
           renderLeafHighlight(),
           renderLeafBold(),

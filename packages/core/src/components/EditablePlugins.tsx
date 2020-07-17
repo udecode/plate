@@ -102,7 +102,7 @@ export const EditablePlugins = ({
         lineHeight: 1.5,
       }}
       decorate={useCallback(
-        decoratePlugins(plugins, decorateList),
+        decoratePlugins(editor, plugins, decorateList),
         decorateDeps
       )}
       renderElement={useCallback(

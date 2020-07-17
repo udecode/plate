@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
 import {
-  ActionItemPlugin,
   EditablePlugins,
   HeadingPlugin,
   HeadingToolbar,
@@ -10,6 +9,7 @@ import {
   ParagraphPlugin,
   pipe,
   SlateDocument,
+  TodoListPlugin,
   ToolbarList,
   withList,
   withResetBlockType,
@@ -18,32 +18,31 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueList, nodeTypes } from '../config/initialValues';
+import { initialValueList, options } from '../config/initialValues';
 
 export default {
   title: 'Elements/List',
   component: ListPlugin,
   subcomponents: {
-    ActionItemPlugin,
+    TodoListPlugin,
   },
 };
 
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: nodeTypes.typeP }),
+  withToggleType({ defaultType: options.p.type }),
   withResetBlockType({
-    types: [nodeTypes.typeActionItem],
-    defaultType: nodeTypes.typeP,
+    types: [options.todo_li.type],
+    defaultType: options.p.type,
   }),
-  withList(nodeTypes),
+  withList(options),
 ] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
-  if (boolean('ActionItemPlugin', true))
-    plugins.push(ActionItemPlugin(nodeTypes));
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(nodeTypes));
+  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueList);
@@ -58,13 +57,13 @@ export const Example = () => {
       >
         <HeadingToolbar>
           <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeUl}
+            {...options}
+            typeList={options.ul.type}
             icon={<FormatListBulleted />}
           />
           <ToolbarList
-            {...nodeTypes}
-            typeList={nodeTypes.typeOl}
+            {...options}
+            typeList={options.ol.type}
             icon={<FormatListNumbered />}
           />
         </HeadingToolbar>

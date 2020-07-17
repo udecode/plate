@@ -1,79 +1,68 @@
 import {
-  ACTION_ITEM,
-  ALIGN_CENTER,
-  ALIGN_LEFT,
-  ALIGN_RIGHT,
-  BLOCKQUOTE,
-  CODE_BLOCK,
-  HeadingType,
-  IMAGE,
-  LINK,
-  ListType,
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_HIGHLIGHT,
-  MARK_ITALIC,
-  MARK_SEARCH_HIGHLIGHT,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
-  MEDIA_EMBED,
-  MENTION,
-  PARAGRAPH,
+  DEFAULTS_ALIGN,
+  DEFAULTS_BLOCKQUOTE,
+  DEFAULTS_BOLD,
+  DEFAULTS_CODE,
+  DEFAULTS_CODE_BLOCK,
+  DEFAULTS_HEADING,
+  DEFAULTS_HIGHLIGHT,
+  DEFAULTS_IMAGE,
+  DEFAULTS_ITALIC,
+  DEFAULTS_LINK,
+  DEFAULTS_LIST,
+  DEFAULTS_MEDIA_EMBED,
+  DEFAULTS_MENTION,
+  DEFAULTS_PARAGRAPH,
+  DEFAULTS_SEARCH_HIGHLIGHT,
+  DEFAULTS_STRIKETHROUGH,
+  DEFAULTS_SUBSUPSCRIPT,
+  DEFAULTS_TABLE,
+  DEFAULTS_TODO_LIST,
+  DEFAULTS_UNDERLINE,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
-  TableType,
 } from '@udecode/slate-plugins';
 import faker from 'faker';
 import { Descendant, Text } from 'slate';
 
 export const headingTypes = [
-  HeadingType.H1,
-  HeadingType.H2,
-  HeadingType.H3,
-  HeadingType.H4,
-  HeadingType.H5,
-  HeadingType.H6,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
 ];
 
-export const nodeTypes = {
-  // elements
-  typeP: PARAGRAPH,
-  typeMention: MENTION,
-  typeBlockquote: BLOCKQUOTE,
-  typeCodeBlock: CODE_BLOCK,
-  typeLink: LINK,
-  typeImg: IMAGE,
-  typeMediaEmbed: MEDIA_EMBED,
-  typeActionItem: ACTION_ITEM,
-  typeTable: TableType.TABLE,
-  typeTr: TableType.ROW,
-  typeTd: TableType.CELL,
-  typeTh: TableType.HEAD,
-  typeUl: ListType.UL,
-  typeOl: ListType.OL,
-  typeLi: ListType.LI,
-  typeH1: HeadingType.H1,
-  typeH2: HeadingType.H2,
-  typeH3: HeadingType.H3,
-  typeH4: HeadingType.H4,
-  typeH5: HeadingType.H5,
-  typeH6: HeadingType.H6,
+export const options = {
+  ...DEFAULTS_PARAGRAPH,
+  ...DEFAULTS_MENTION,
+  ...DEFAULTS_BLOCKQUOTE,
+  ...DEFAULTS_CODE_BLOCK,
+  ...DEFAULTS_LINK,
+  ...DEFAULTS_IMAGE,
+  ...DEFAULTS_MEDIA_EMBED,
+  ...DEFAULTS_TODO_LIST,
+  ...DEFAULTS_TABLE,
+  ...DEFAULTS_LIST,
+  ...DEFAULTS_HEADING,
+  ...DEFAULTS_ALIGN,
   // marks
-  typeBold: MARK_BOLD,
-  typeItalic: MARK_ITALIC,
-  typeUnderline: MARK_UNDERLINE,
-  typeStrikethrough: MARK_STRIKETHROUGH,
-  typeCode: MARK_CODE,
-  typeSubscript: MARK_SUBSCRIPT,
-  typeSuperscript: MARK_SUPERSCRIPT,
-  typeHighlight: MARK_HIGHLIGHT,
-  typeSearchHighlight: MARK_SEARCH_HIGHLIGHT,
-  typeAlignLeft: ALIGN_LEFT,
-  typeAlignRight: ALIGN_RIGHT,
-  typeAlignCenter: ALIGN_CENTER,
+  ...DEFAULTS_BOLD,
+  ...DEFAULTS_ITALIC,
+  ...DEFAULTS_UNDERLINE,
+  ...DEFAULTS_STRIKETHROUGH,
+  ...DEFAULTS_CODE,
+  ...DEFAULTS_SUBSUPSCRIPT,
+  ...DEFAULTS_HIGHLIGHT,
+  ...DEFAULTS_SEARCH_HIGHLIGHT,
 };
 
 const createParagraph = (text: string, mark?: string) => {
@@ -83,7 +72,7 @@ const createParagraph = (text: string, mark?: string) => {
   }
 
   return {
-    type: nodeTypes.typeP,
+    type: options.p.type,
     children: [leaf],
   };
 };
@@ -104,10 +93,10 @@ export const createList = (
       });
 
       return {
-        type: nodeTypes.typeLi,
+        type: options.li.type,
         children: [
           {
-            type: nodeTypes.typeP,
+            type: options.p.type,
             children: marks,
           },
         ],
@@ -117,7 +106,7 @@ export const createList = (
 
   return [
     {
-      type: nodeTypes.typeUl,
+      type: options.ul.type,
       children,
     },
   ];
@@ -127,7 +116,7 @@ export const initialValueEmbeds: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '🎥 Media Embed',
@@ -135,7 +124,7 @@ export const initialValueEmbeds: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -144,12 +133,12 @@ export const initialValueEmbeds: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeMediaEmbed,
+        type: options.media_embed.type,
         url: 'https://player.vimeo.com/video/26689853',
         children: [{ text: '' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -165,11 +154,11 @@ export const initialValueForcedLayout: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [{ text: '👮 Title' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -178,7 +167,7 @@ export const initialValueForcedLayout: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -195,32 +184,32 @@ export const initialValueBalloonToolbar: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
               'This example shows how you can make a hovering menu appear above ' +
               'your content, which you can use to make text ',
           },
-          { text: 'bold', [nodeTypes.typeBold]: true },
+          { text: 'bold', [options.bold.type]: true },
           { text: ', ' },
-          { text: 'italic', [nodeTypes.typeItalic]: true },
+          { text: 'italic', [options.italic.type]: true },
           { text: ', or anything else you might want to do!' },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           { text: 'Try it out yourself! Just ' },
           {
             text: 'select any piece of text and the menu will appear',
-            [nodeTypes.typeBold]: true,
+            [options.bold.type]: true,
           },
           { text: '.' },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -239,13 +228,13 @@ export const initialValueHugeDocument: Descendant[] = [{ children: [] }];
 
 for (let h = 0; h < HEADINGS; h++) {
   (initialValueHugeDocument[0] as any).children.push({
-    type: nodeTypes.typeH1,
+    type: options.h1.type,
     children: [{ text: faker.lorem.sentence() }],
   });
 
   for (let p = 0; p < PARAGRAPHS; p++) {
     (initialValueHugeDocument[0] as any).children.push({
-      type: nodeTypes.typeP,
+      type: options.p.type,
       children: [{ text: faker.lorem.paragraph() }],
     });
   }
@@ -255,7 +244,7 @@ export const initialValueImages: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '📷 Image',
@@ -263,7 +252,7 @@ export const initialValueImages: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -272,12 +261,12 @@ export const initialValueImages: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeImg,
+        type: options.img.type,
         url: 'https://source.unsplash.com/kFrdX5IeQzI',
         children: [{ text: '' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -293,7 +282,7 @@ export const initialValueLinks: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '🔗 Link',
@@ -301,14 +290,14 @@ export const initialValueLinks: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
               'In addition to block nodes, you can create inline nodes, like ',
           },
           {
-            type: nodeTypes.typeLink,
+            type: options.link.type,
             url: 'https://en.wikipedia.org/wiki/Hypertext',
             children: [{ text: 'hyperlinks' }],
           },
@@ -318,7 +307,7 @@ export const initialValueLinks: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -334,7 +323,7 @@ export const initialValuePreview: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [
           {
             text: '👀 Preview Markdown',
@@ -342,20 +331,32 @@ export const initialValuePreview: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
-              'Slate is flexible enough to add **decorations** that can format text based on its content. For example, this editor has **Markdown** preview decorations on it, to make it _dead_ simple to make an editor with built-in Markdown previewing.',
+              'Slate is flexible enough to add **decorations** that can format text based on its content. For example, this editor has **Markdown** preview decorations on it, to make it _dead_ simple to make an editor with built-in `Markdown` previewing.',
           },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
+        children: [{ text: '- List.' }],
+      },
+      {
+        type: options.p.type,
+        children: [{ text: '> Blockquote.' }],
+      },
+      {
+        type: options.p.type,
+        children: [{ text: '---' }],
+      },
+      {
+        type: options.p.type,
         children: [{ text: '## Try it out!' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [{ text: 'Try it out for yourself!' }],
       },
     ],
@@ -366,7 +367,7 @@ export const initialValueAutoformat: any[] = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [
           {
             text: '🏃‍♀️ Autoformat',
@@ -374,7 +375,7 @@ export const initialValueAutoformat: any[] = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -383,7 +384,7 @@ export const initialValueAutoformat: any[] = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'While typing:',
@@ -403,7 +404,7 @@ export const initialValueAutoformat: any[] = [
         }
       ),
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -435,7 +436,7 @@ export const initialValueMentions: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '💬 Mention',
@@ -443,7 +444,7 @@ export const initialValueMentions: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -452,17 +453,17 @@ export const initialValueMentions: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           { text: 'Try mentioning characters, like ' },
           {
-            type: nodeTypes.typeMention,
+            type: options.mention.type,
             value: 'R2-D2',
             children: [{ text: '' }],
           },
           { text: ' or ' },
           {
-            type: nodeTypes.typeMention,
+            type: options.mention.type,
             value: 'Mace Windu',
             children: [{ text: '' }],
           },
@@ -477,7 +478,7 @@ export const initialValuePasteHtml: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [
           {
             text: '🍪 Deserialize HTML',
@@ -485,7 +486,7 @@ export const initialValuePasteHtml: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -501,11 +502,11 @@ export const initialValuePasteHtml: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [{ text: 'This is an example of doing exactly that!' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -521,7 +522,7 @@ export const initialValuePasteMd: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [
           {
             text: '🍩 Deserialize Markdown',
@@ -529,7 +530,7 @@ export const initialValuePasteMd: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -545,11 +546,11 @@ export const initialValuePasteMd: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [{ text: 'This is an example of doing exactly that!' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -565,7 +566,7 @@ export const initialValuePlainText: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           { text: 'This is editable plain text, just like a <textarea>!' },
         ],
@@ -578,7 +579,7 @@ export const initialValueBasicMarks: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [
           {
             text: '💅 Marks',
@@ -586,7 +587,7 @@ export const initialValueBasicMarks: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '💧 Basic Marks',
@@ -594,41 +595,53 @@ export const initialValueBasicMarks: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
-              'These are the basic marks. You can customize the type and component for each of these',
+              'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.',
           },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
-            text: 'Marks with empty text are ignored by default',
+            text:
+              'You can customize the type, the component and the hotkey for each of these.',
           },
         ],
       },
+      createParagraph('This text is bold.', options.bold.type),
+      createParagraph('This text is italic.', options.italic.type),
+      createParagraph('This text is underlined.', options.underline.type),
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
-          { text: 'Bold, ', [nodeTypes.typeBold]: true },
-          { text: 'italic, ', [nodeTypes.typeItalic]: true },
-          { text: 'underline, ', [nodeTypes.typeUnderline]: true },
-          { text: 'strikethrough, ', [nodeTypes.typeStrikethrough]: true },
           {
-            text: 'mixed, ',
-            [nodeTypes.typeBold]: true,
-            [nodeTypes.typeItalic]: true,
-            [nodeTypes.typeUnderline]: true,
+            text: 'This text is bold, italic and underlined.',
+            [options.bold.type]: true,
+            [options.italic.type]: true,
+            [options.underline.type]: true,
           },
-          { text: 'code, ', [nodeTypes.typeCode]: true },
-          { text: 'sub, ', [nodeTypes.typeSubscript]: true },
-          { text: 'sup, ', [nodeTypes.typeSuperscript]: true },
         ],
       },
-    ],
+      createParagraph(
+        'This is a strikethrough text.',
+        options.strikethrough.type
+      ),
+      createParagraph('This is an inline code.', options.code.type),
+      {
+        type: options.p.type,
+        children: [
+          { text: 'These are ' },
+          { text: 'a subscript', [options.subscript.type]: true },
+          { text: ' and ' },
+          { text: 'a superscript', [options.superscript.type]: true },
+          { text: '.' },
+        ],
+      },
+    ] as any,
   },
 ];
 
@@ -636,7 +649,7 @@ export const initialValueHighlight: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '🌈 Highlight',
@@ -644,14 +657,14 @@ export const initialValueHighlight: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'The Highlight plugin enables support for ',
           },
           {
             text: 'highlights',
-            [nodeTypes.typeHighlight]: true,
+            [options.highlight.type]: true,
           },
           {
             text:
@@ -667,15 +680,15 @@ export const initialValueBasicElements: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [{ text: '🧱 Elements' }],
       },
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [{ text: '🔥 Basic Elements' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'These are the most common elements, known as blocks:',
@@ -683,35 +696,35 @@ export const initialValueBasicElements: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [{ text: 'Heading 1' }],
       },
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [{ text: 'Heading 2' }],
       },
       {
-        type: nodeTypes.typeH3,
+        type: options.h3.type,
         children: [{ text: 'Heading 3' }],
       },
       {
-        type: nodeTypes.typeH4,
+        type: options.h4.type,
         children: [{ text: 'Heading 4' }],
       },
       {
-        type: nodeTypes.typeH5,
+        type: options.h5.type,
         children: [{ text: 'Heading 5' }],
       },
       {
-        type: nodeTypes.typeH6,
+        type: options.h6.type,
         children: [{ text: 'Heading 6' }],
       },
       {
-        type: nodeTypes.typeBlockquote,
+        type: options.blockquote.type,
         children: [{ text: 'Blockquote' }],
       },
       {
-        type: nodeTypes.typeCodeBlock,
+        type: options.code_block.type,
         children: [{ text: 'Code block' }],
       },
     ],
@@ -722,33 +735,33 @@ export const initialValueList: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [{ text: '✍️ List' }],
       },
       {
-        type: nodeTypes.typeUl,
+        type: options.ul.type,
         children: [
           {
-            type: nodeTypes.typeLi,
+            type: options.li.type,
             children: [
-              { type: nodeTypes.typeP, children: [{ text: 'Bulleted list' }] },
+              { type: options.p.type, children: [{ text: 'Bulleted list' }] },
             ],
           },
         ],
       },
       {
-        type: nodeTypes.typeOl,
+        type: options.ol.type,
         children: [
           {
-            type: nodeTypes.typeLi,
+            type: options.li.type,
             children: [
-              { type: nodeTypes.typeP, children: [{ text: 'Numbered list' }] },
+              { type: options.p.type, children: [{ text: 'Numbered list' }] },
             ],
           },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -757,37 +770,37 @@ export const initialValueList: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Slide to the left.' }],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Slide to the right.' }],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: 'Criss-cross.' }],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Criss-cross!' }],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: 'Cha cha real smooth…' }],
       },
       {
-        type: nodeTypes.typeActionItem,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: "Let's go to work!" }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [{ text: 'Try it out for yourself!' }],
       },
     ],
@@ -798,18 +811,18 @@ export const initialValueSearchHighlighting: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
               'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
           },
-          { text: 'decorations', [nodeTypes.typeBold]: true },
+          { text: 'decorations', [options.bold.type]: true },
           { text: ' to them in realtime.' },
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'Try it out for yourself by typing in the search box above!',
@@ -821,67 +834,67 @@ export const initialValueSearchHighlighting: SlateDocument = [
 ];
 
 const createTable = () => ({
-  type: nodeTypes.typeTable,
+  type: options.table.type,
   children: [
     {
-      type: nodeTypes.typeTr,
+      type: options.tr.type,
       children: [
         {
-          type: nodeTypes.typeTh,
+          type: options.th.type,
           children: [createParagraph('')],
         },
         {
-          type: nodeTypes.typeTh,
-          children: [createParagraph('Human', nodeTypes.typeBold)],
+          type: options.th.type,
+          children: [createParagraph('Human', options.bold.type)],
         },
         {
-          type: nodeTypes.typeTh,
-          children: [createParagraph('Dog', nodeTypes.typeBold)],
+          type: options.th.type,
+          children: [createParagraph('Dog', options.bold.type)],
         },
         {
-          type: nodeTypes.typeTh,
-          children: [createParagraph('Cat', nodeTypes.typeBold)],
+          type: options.th.type,
+          children: [createParagraph('Cat', options.bold.type)],
         },
       ],
     },
     {
-      type: nodeTypes.typeTr,
+      type: options.tr.type,
       children: [
         {
-          type: nodeTypes.typeTd,
-          children: [createParagraph('# of Feet', nodeTypes.typeBold)],
+          type: options.td.type,
+          children: [createParagraph('# of Feet', options.bold.type)],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('2')],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('4')],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('4')],
         },
       ],
     },
     {
-      type: nodeTypes.typeTr,
+      type: options.tr.type,
       children: [
         {
-          type: nodeTypes.typeTd,
-          children: [createParagraph('# of Lives', nodeTypes.typeBold)],
+          type: options.td.type,
+          children: [createParagraph('# of Lives', options.bold.type)],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('1')],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('1')],
         },
         {
-          type: nodeTypes.typeTd,
+          type: options.td.type,
           children: [createParagraph('9')],
         },
       ],
@@ -893,7 +906,7 @@ export const initialValueTables: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH2,
+        type: options.h2.type,
         children: [
           {
             text: '🏓 Table',
@@ -901,7 +914,7 @@ export const initialValueTables: SlateDocument = [
         ],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -911,7 +924,7 @@ export const initialValueTables: SlateDocument = [
       },
       createTable(),
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text:
@@ -927,11 +940,11 @@ export const initialValueSoftBreak: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [{ text: '🍦 Soft Break ⇧⏎' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'You can define a set of rules with:',
@@ -943,11 +956,11 @@ export const initialValueSoftBreak: SlateDocument = [
         'query – filter the block types where the rule applies, e.g. pressing ⏎ will insert a soft break only inside block quotes and code blocks.',
       ]),
       {
-        type: nodeTypes.typeBlockquote,
+        type: options.blockquote.type,
         children: [{ text: 'Try here ⏎' }],
       },
       {
-        type: nodeTypes.typeCodeBlock,
+        type: options.code_block.type,
         children: [{ text: 'And ⏎ here.' }],
       },
     ] as SlateDocumentFragment,
@@ -958,11 +971,11 @@ export const initialValueExitBreak: SlateDocument = [
   {
     children: [
       {
-        type: nodeTypes.typeH1,
+        type: options.h1.type,
         children: [{ text: '⏎ Exit Break ⏎' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [
           {
             text: 'You can define a set of rules with:',
@@ -976,15 +989,15 @@ export const initialValueExitBreak: SlateDocument = [
         'before – If true, exit to the previous block. e.g. press ⇧⌘⏎ to exit before the selected block 👆',
       ]),
       {
-        type: nodeTypes.typeBlockquote,
+        type: options.blockquote.type,
         children: [{ text: 'Try here ⌘⏎' }],
       },
       {
-        type: nodeTypes.typeCodeBlock,
+        type: options.code_block.type,
         children: [{ text: 'And in the middle ⌘⏎ of the block.' }],
       },
       {
-        type: nodeTypes.typeP,
+        type: options.p.type,
         children: [{ text: 'It also works for nested blocks:' }],
       },
       createTable(),

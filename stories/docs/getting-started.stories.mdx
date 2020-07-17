@@ -16,14 +16,14 @@ yarn add @udecode/slate-plugins
 You will also need these peerDependencies:
 
 ```bash
-yarn add slate slate-hyperscript slate-react styled-components react react-dom
+yarn add slate slate-hyperscript slate-react react react-dom
 ```
 
 For full documentation on using `@udecode/slate-plugins` visit:
-[slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
+[slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/).
 
 For additional help, join us in our
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
 
 ## Editor
 
@@ -45,10 +45,16 @@ import {
 
 const initialValue: Node[] = [
   {
+    type: options.p.type,
     children: [
-      { text: 'This is editable plain text, just like a <textarea>!' },
+      {
+        text: 'This text is bold, italic and underlined.',
+        [options.bold.type]: true,
+        [options.italic.type]: true,
+        [options.underline.type]: true,
+      },
     ],
-  },
+  }
 ];
 
 const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];

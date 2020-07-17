@@ -1,7 +1,9 @@
 import { Editor, Transforms } from 'slate';
 import { isCollapsed } from '../../../common/queries/isCollapsed';
 import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
-import { LINK } from '../types';
+import { setDefaults } from '../../../common/utils/setDefaults';
+import { DEFAULTS_LINK } from '../defaults';
+import { LinkOptions } from '../types';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -12,32 +14,29 @@ import { wrapLink } from './wrapLink';
 export const upsertLinkAtSelection = (
   editor: Editor,
   url: string,
-  {
-    typeLink = LINK,
-    wrap,
-  }: {
-    typeLink?: string;
-
+  options?: {
     /**
      * If true, wrap the link at the location (default: selection) even if the selection is collapsed.
      */
     wrap?: boolean;
-  } = {}
+  } & LinkOptions
 ) => {
   if (!editor.selection) return;
 
+  const { link, wrap } = setDefaults(options, DEFAULTS_LINK);
+
   if (!wrap && isCollapsed(editor.selection)) {
     return Transforms.insertNodes(editor, {
-      type: typeLink,
+      type: link.type,
       url,
       children: [{ text: url }],
     });
   }
 
-  unwrapNodesByType(editor, typeLink, { at: editor.selection });
+  unwrapNodesByType(editor, link.type, { at: editor.selection });
 
   wrapLink(editor, url, {
-    typeLink,
+    link,
     at: editor.selection,
   });
 

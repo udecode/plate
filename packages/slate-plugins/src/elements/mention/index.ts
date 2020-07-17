@@ -4,5 +4,6 @@ export * from './renderElementMention';
 export * from './transforms';
 export * from './types';
 export * from './useMention';
+export * from './defaults';
 export * from './deserializeMention';
 export * from './utils';

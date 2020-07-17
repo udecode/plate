@@ -12,7 +12,7 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueForcedLayout, nodeTypes } from '../config/initialValues';
+import { initialValueForcedLayout, options } from '../config/initialValues';
 
 export default {
   title: 'Normalizers/Forced Layout',
@@ -20,16 +20,16 @@ export default {
   subcomponents: { withTrailingNode },
 };
 
-const plugins = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
+const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
 
 const withPlugins = [
   withReact,
   withHistory,
   withTransforms(),
   withNormalizeTypes({
-    rules: [{ path: [0, 0], strictType: nodeTypes.typeH1 }],
+    rules: [{ path: [0, 0], strictType: options.h1.type }],
   }),
-  withTrailingNode({ type: nodeTypes.typeH3, level: 1 }),
+  withTrailingNode({ type: options.h3.type, level: 1 }),
 ] as const;
 
 export const Example = () => {

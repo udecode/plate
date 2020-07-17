@@ -1,44 +1,46 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../../common/types/Mark.types';
-
-export const MARK_ITALIC = 'italic';
+  RenderNodeOptions,
+  RenderNodePropsOptions,
+  RootProps,
+} from '../../common/types/PluginOptions.types';
+import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface ItalicNodeData {}
-
 // Text node
 export interface ItalicNode extends Text, ItalicNodeData {}
 
-// Type option
-interface TypeOption {
-  typeItalic?: string;
-}
-
 // renderLeaf options given as props
-interface ItalicRenderLeafOptionsProps {}
+export interface ItalicRenderLeafPropsOptions
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
-// renderLeaf options
-export interface ItalicRenderLeafOptions
-  extends RenderLeafOptions,
-    ItalicRenderLeafOptionsProps,
-    TypeOption {}
-
-// renderLeaf props
-export interface ItalicRenderLeafProps
+// Leaf props
+export interface ItalicLeafProps
   extends RenderLeafProps,
-    ItalicRenderLeafOptionsProps {
+    RenderNodePropsOptions,
+    ItalicRenderLeafPropsOptions {
   leaf: ItalicNode;
 }
 
-// deserialize options
-export interface ItalicDeserializeOptions extends TypeOption {}
+export type ItalicKeyOption = 'italic';
 
 // Plugin options
-export interface ItalicPluginOptions
-  extends MarkPluginOptions,
-    ItalicRenderLeafOptions,
-    ItalicDeserializeOptions {}
+export type ItalicPluginOptionsValues = RenderNodeOptions &
+  RootProps<ItalicRenderLeafPropsOptions> &
+  Partial<MarkOnKeyDownOptions>;
+export type ItalicPluginOptionsKeys = keyof ItalicPluginOptionsValues;
+export type ItalicPluginOptions<
+  Value extends ItalicPluginOptionsKeys = ItalicPluginOptionsKeys
+> = Partial<Record<ItalicKeyOption, Pick<ItalicPluginOptionsValues, Value>>>;
+
+// renderLeaf options
+export type ItalicRenderLeafOptionsKeys = ItalicPluginOptionsKeys;
+export interface ItalicRenderLeafOptions
+  extends ItalicPluginOptions<ItalicRenderLeafOptionsKeys> {}
+
+// deserialize options
+export interface ItalicDeserializeOptions
+  extends ItalicPluginOptions<'type' | 'rootProps'> {}

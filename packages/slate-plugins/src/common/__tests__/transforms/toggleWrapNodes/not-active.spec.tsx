@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '../../../../__test-utils__/jsx';
-import { CODE_BLOCK } from '../../../../elements/code-block/index';
+import { ELEMENT_CODE_BLOCK } from '../../../../elements/code-block/index';
 import { toggleWrapNodes } from '../../../transforms/index';
 
 const input = (
@@ -24,7 +24,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleWrapNodes(input, CODE_BLOCK);
+  toggleWrapNodes(input, ELEMENT_CODE_BLOCK);
 
   expect(input.children).toEqual(output.children);
 });

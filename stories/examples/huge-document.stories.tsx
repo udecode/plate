@@ -9,13 +9,13 @@ import {
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueHugeDocument, nodeTypes } from '../config/initialValues';
+import { initialValueHugeDocument, options } from '../config/initialValues';
 
 export default {
   title: 'Examples/Huge Document',
 };
 
-const plugins = [ParagraphPlugin(nodeTypes), HeadingPlugin(nodeTypes)];
+const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
 
 const withPlugins = [withReact, withHistory] as const;
 

@@ -8,7 +8,7 @@ import { getNextIndex, getPreviousIndex } from './utils';
 
 export const useMention = (
   mentionables: MentionNodeData[] = [],
-  { maxSuggestions = 10, trigger = '@' }: UseMentionOptions = {}
+  { maxSuggestions = 10, trigger = '@', ...options }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
@@ -18,14 +18,14 @@ export const useMention = (
     .slice(0, maxSuggestions);
 
   const onAddMention = useCallback(
-    (editor: Editor, option: MentionNodeData) => {
+    (editor: Editor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, option);
+        insertMention(editor, data, options);
         return setTargetRange(null);
       }
     },
-    [targetRange]
+    [options, targetRange]
   );
 
   const onKeyDownMention = useCallback(

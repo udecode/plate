@@ -1,18 +1,10 @@
-import { getElementComponent } from '../../common/utils/getElementComponent';
 import { getRenderElements } from '../../common/utils/getRenderElement';
-import { OlElement, UlElement } from './components';
-import { ListRenderElementOptions, ListType } from './types';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_LIST } from './defaults';
+import { ListRenderElementOptions } from './types';
 
-export const renderElementList = ({
-  UL = getElementComponent(UlElement),
-  OL = getElementComponent(OlElement),
-  LI = getElementComponent('li'),
-  typeUl = ListType.UL,
-  typeOl = ListType.OL,
-  typeLi = ListType.LI,
-}: ListRenderElementOptions = {}) =>
-  getRenderElements([
-    { type: typeUl, component: UL },
-    { type: typeOl, component: OL },
-    { type: typeLi, component: LI },
-  ]);
+export const renderElementList = (options?: ListRenderElementOptions) => {
+  const { ul, ol, li } = setDefaults(options, DEFAULTS_LIST);
+
+  return getRenderElements([ul, ol, li]);
+};

@@ -1,7 +1,7 @@
 import { Editor, Path } from 'slate';
 import { isNodeType, QueryOptions, TransformEditor } from '../common';
 import { getLastNode } from '../common/queries';
-import { PARAGRAPH } from '../elements/paragraph';
+import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
 export interface WithTrailingNode extends QueryOptions {
   /**
@@ -18,7 +18,7 @@ export interface WithTrailingNode extends QueryOptions {
  * Add a trailing block when the last node type is not `type`
  */
 export const withTrailingNode = ({
-  type = PARAGRAPH,
+  type = ELEMENT_PARAGRAPH,
   level = 1,
   ...query
 }: WithTrailingNode = {}) => <T extends Editor & TransformEditor>(

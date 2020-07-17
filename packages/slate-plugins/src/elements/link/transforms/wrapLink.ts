@@ -1,6 +1,8 @@
 import { Editor, Location } from 'slate';
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
-import { LINK } from '../types';
+import { setDefaults } from '../../../common/utils/setDefaults';
+import { DEFAULTS_LINK } from '../defaults';
+import { LinkOptions } from '../types';
 
 /**
  * Wrap selected nodes with a link and collapse at the end.
@@ -8,18 +10,16 @@ import { LINK } from '../types';
 export const wrapLink = (
   editor: Editor,
   url: string,
-  {
-    typeLink = LINK,
-    at,
-  }: {
-    typeLink?: string;
+  options?: {
     at?: Location;
-  } = {}
+  } & LinkOptions
 ) => {
+  const { at, link } = setDefaults(options, DEFAULTS_LINK);
+
   wrapNodes(
     editor,
     {
-      type: typeLink,
+      type: link.type,
       url,
       children: [],
     },
