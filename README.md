@@ -16,12 +16,12 @@ to debug.
 
 This library comes with a lot of plugins for the elements, marks,
 deserialization, normalization, and so on. We also provide a bunch of
-helpers on top of Slate's API.
+helpers on top of Slate:
+[API documentation](https://slate-plugins-api.netlify.app/).
 
-[Try out the existing ones](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
+[Try out our plugins](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
 and
-[create your own plugins](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!
-
+[create yours in a few minutes](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!
 
 ## 📦 Included
 
@@ -170,8 +170,8 @@ into their own package in the future.
 
 ## 👏 [Contributing](CONTRIBUTING.md)
 
-We welcome contributions to `slate-plugins`! Please feel free to **share
-your own plugins** here.
+We welcome contributions to `@udecode/slate-plugins`! Please feel free
+to **share your own plugins** here.
 
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
