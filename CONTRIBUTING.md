@@ -279,8 +279,9 @@ are on the latest versions (yarn at least v1.3.2).
    _bonus_: use your own fork for this step
 3. `cd slate-plugins`
 4. `yarn`
-5. `yarn test`
-6. `yarn storybook`
+5. `yarn build`
+6. `yarn test` (optional)
+7. `yarn storybook`
 
 ### Working with Storybook
 
