@@ -192,9 +192,13 @@ Useful scripts include:
 
 > Installs package dependencies
 
+#### `yarn build`
+
+> Build the local packages.
+
 #### `yarn storybook`
 
-> Starts storybook dev
+> Starts storybook dev (after building).
 
 #### `yarn lint`
 
