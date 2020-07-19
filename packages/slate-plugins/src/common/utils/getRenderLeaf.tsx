@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { pickBy } from 'lodash';
+import pickBy from 'lodash/pickBy';
 import { RenderLeafProps } from 'slate-react';
 import { RenderNodeOptions } from '../types/PluginOptions.types';
 

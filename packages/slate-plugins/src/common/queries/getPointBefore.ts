@@ -1,5 +1,6 @@
 /* eslint-disable no-constant-condition */
-import { castArray, map } from 'lodash';
+import castArray from 'lodash/castArray';
+import map from 'lodash/map';
 import { Editor, Location, Path, Point } from 'slate';
 
 export interface BeforeOptions {

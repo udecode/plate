@@ -1,4 +1,4 @@
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray';
 import { Editor, Transforms } from 'slate';
 import { WrapOptions } from '../types/Transforms.types';
 
