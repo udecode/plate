@@ -1,4 +1,4 @@
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 import { isMarkActive } from '../queries/isMarkActive';
 

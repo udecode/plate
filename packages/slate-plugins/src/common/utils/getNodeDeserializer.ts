@@ -1,5 +1,5 @@
 import { DeserializeNode } from '@udecode/slate-plugins-core';
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray';
 
 export interface GetNodeDeserializerRule {
   /**
