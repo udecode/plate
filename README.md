@@ -16,12 +16,12 @@ to debug.
 
 This library comes with a lot of plugins for the elements, marks,
 deserialization, normalization, and so on. We also provide a bunch of
-helpers on top of Slate's API.
+helpers on top of Slate:
+[API documentation](https://slate-plugins-api.netlify.app/).
 
-[Try out the existing ones](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
+[Try out our plugins](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
 and
-[create your own plugins](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!
-
+[create yours in a few minutes](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!
 
 ## 📦 Included
 
@@ -30,11 +30,14 @@ and
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
 - ✅ Unit tested with `slate@0.58.4`.
-- 📖
+- 📓
   [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)
   and
   [Demos](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
   on Storybook.
+- 
+  📖 [API](https://slate-plugins-api.netlify.app/) generated with
+  [TypeDoc](https://typedoc.org/).
 
 ## Table of contents
 
@@ -64,11 +67,13 @@ You will also need these peerDependencies:
 yarn add slate slate-hyperscript slate-react styled-components react react-dom
 ```
 
-For full documentation on using `slate-plugins` visit:
+For guidance on using `@udecode/slate-plugins` visit:
 [slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
+and checkout our [API](https://slate-plugins-api.netlify.app/)
+documentation.
 
 For additional help, join us in our
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)
+[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
 
 ## 🔌 Plugins
 
@@ -170,8 +175,8 @@ into their own package in the future.
 
 ## 👏 [Contributing](CONTRIBUTING.md)
 
-We welcome contributions to `slate-plugins`! Please feel free to **share
-your own plugins** here.
+We welcome contributions to `@udecode/slate-plugins`! Please feel free
+to **share your own plugins** here.
 
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
@@ -187,9 +192,13 @@ Useful scripts include:
 
 > Installs package dependencies
 
+#### `yarn build`
+
+> Build the local packages.
+
 #### `yarn storybook`
 
-> Starts storybook dev
+> Starts storybook dev (after building).
 
 #### `yarn lint`
 
