@@ -14,6 +14,7 @@ export * from './isBlockTextEmpty';
 export * from './isCollapsed';
 export * from './isDescendant';
 export * from './isEnd';
+export * from './isExpanded';
 export * from './isFirstChild';
 export * from './isMarkActive';
 export * from './isNodeType';
