@@ -1,4 +1,4 @@
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray';
 import { Editor, Range } from 'slate';
 import { getRangeFromBlockStart } from '../../common/queries';
 import { getText } from '../../common/queries/getText';

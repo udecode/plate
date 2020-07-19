@@ -1,4 +1,4 @@
-import { merge } from 'lodash';
+import merge from 'lodash/merge';
 import { Descendant, Node, NodeEntry } from 'slate';
 import { isAncestor, isNodeType } from '../queries';
 import { QueryOptions } from '../types/QueryOptions.types';

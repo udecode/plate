@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { castArray } from 'lodash';
+import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 
 export interface WithInlineVoidOptions {
