@@ -18,13 +18,10 @@ import {
   renderLeafPlugins,
 } from '../utils';
 
-export interface EditablePluginsProps {
+export interface EditablePluginsProps
+  extends Omit<React.TextareaHTMLAttributes<HTMLDivElement>, 'onKeyDown'> {
   [key: string]: any;
-  placeholder?: string;
-  // Enable read-only
-  readOnly?: boolean;
-  role?: string;
-  style?: React.CSSProperties;
+  as?: React.ElementType;
   /**
    * Each plugin fields will be combined by role.
    *
