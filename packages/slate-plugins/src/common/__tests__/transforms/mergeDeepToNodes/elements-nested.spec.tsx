@@ -4,7 +4,7 @@ import { Element } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { ELEMENT_LI } from '../../../../elements/list/index';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/index';
-import { setPropsToNodes } from '../../../transforms/index';
+import { mergeDeepToNodes } from '../../../transforms/index';
 
 const node = (
   <hli>
@@ -26,6 +26,12 @@ const output = (
 ) as any;
 
 it('should set props to all elements', () => {
-  setPropsToNodes(node, props, { filter: ([n]) => Element.isElement(n) });
+  mergeDeepToNodes({
+    node,
+    source: props,
+    query: {
+      filter: ([n]) => Element.isElement(n),
+    },
+  });
   expect(node).toEqual(output);
 });

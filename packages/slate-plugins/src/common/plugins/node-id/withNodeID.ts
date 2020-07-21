@@ -1,7 +1,7 @@
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries/index';
-import { setPropsToNodes } from '../../transforms/setPropsToNodes';
+import { defaultsDeepToNodes } from '../../transforms/defaultsDeepToNodes';
 import { QueryOptions } from '../../types/QueryOptions.types';
 
 export interface WithNodeIDProps extends QueryOptions {
@@ -44,10 +44,14 @@ export const withNodeID = ({
       const { node } = operation;
 
       // it will not overwrite ids once it's set as it's read-only
-      setPropsToNodes(node, idPropsCreator, {
-        filter: newFilter,
-        allow,
-        exclude,
+      defaultsDeepToNodes({
+        node,
+        source: idPropsCreator,
+        query: {
+          filter: newFilter,
+          allow,
+          exclude,
+        },
       });
 
       return apply({
