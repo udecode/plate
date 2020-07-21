@@ -2,7 +2,7 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
-import { setPropsToNodes } from '../../../transforms/index';
+import { mergeDeepToNodes } from '../../../transforms/index';
 
 const editor = ((
   <editor>
@@ -21,7 +21,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  setPropsToNodes(editor, props);
+  mergeDeepToNodes({ node: editor, source: props });
   expect(editor.a).toBe(1);
   expect(editor.children).toEqual(output.children);
 });

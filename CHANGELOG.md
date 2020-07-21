@@ -6,6 +6,38 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.63.0
+
+### Breaking Changes
+
+- renamed `setPropsToNodes` to `mergeDeepToNodes`
+
+### Features
+
+- new utils:
+  - `applyDeepToNodes`
+  - `defaultsDeepToNodes`
+
+### Bug Fixes
+
+- `withNodeID`: use `defaultsDeepToNodes` instead of `mergeDeepToNodes`
+  as we don't want to override any existing id.
+- missing export
+
+## v0.62.3
+### Features
+
+- update `EditablePluginsProps` interface.
+
+## v0.62.2
+### Bug Fixes
+- `attributes` was missing in the element plugins
+
+## v0.62.1
+### Bug Fixes
+
+- tree-shaking support for `lodash`
+- export `isExpanded`
 
 ## 0.62.0 (2020-07-17)
 
