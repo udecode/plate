@@ -4,7 +4,7 @@ import { jsx } from '../../../../__test-utils__/jsx';
 import { ELEMENT_LI } from '../../../../elements/list/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/defaults';
 import { isDescendant } from '../../../queries/isDescendant';
-import { setPropsToNodes } from '../../../transforms/setPropsToNodes';
+import { mergeDeepToNodes } from '../../../transforms/mergeDeepToNodes';
 
 const node = (
   <hli>
@@ -26,6 +26,12 @@ const output = (
 ) as any;
 
 it('should set props to all descendants', () => {
-  setPropsToNodes(node, props, { filter: ([n]) => isDescendant(n) });
+  mergeDeepToNodes({
+    node,
+    source: props,
+    query: {
+      filter: ([n]) => isDescendant(n),
+    },
+  });
   expect(node).toEqual(output);
 });

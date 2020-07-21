@@ -1,7 +1,7 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { Descendant, Element, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
-import { setPropsToNodes } from '../../../common';
+import { mergeDeepToNodes } from '../../../common';
 import { DeserializeHTMLChildren } from '../types';
 
 export interface DeserializeMarksProps {
@@ -38,8 +38,12 @@ export const deserializeHTMLToMarks = ({
 
     if (Element.isElement(child)) {
       if (Object.keys(leaf).length) {
-        setPropsToNodes(child, leaf, {
-          filter: ([n]) => Text.isText(n),
+        mergeDeepToNodes({
+          node: child,
+          source: leaf,
+          query: {
+            filter: ([n]) => Text.isText(n),
+          },
         });
       }
       arr.push(child);
