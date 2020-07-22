@@ -19,7 +19,10 @@ import {
 } from '../utils';
 
 export interface EditablePluginsProps
-  extends Omit<React.TextareaHTMLAttributes<HTMLDivElement>, 'onKeyDown'> {
+  extends Omit<
+    React.TextareaHTMLAttributes<HTMLDivElement>,
+    'value' | 'onChange' | 'onKeyDown'
+  > {
   [key: string]: any;
   as?: React.ElementType;
   /**
