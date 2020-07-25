@@ -244,6 +244,7 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
               },
               { at: listItemPath }
             );
+            return e.preventDefault();
           }
 
           /**
@@ -263,20 +264,20 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
               at: nextParagraphPath,
               to: nextListItemPath,
             });
+          } else {
+            /**
+             * If end, insert a list item after and select it
+             */
+            Transforms.insertNodes(
+              editor,
+              {
+                type: li.type,
+                children: [{ type: p.type, children: [{ text: '' }] }],
+              },
+              { at: nextListItemPath }
+            );
+            Transforms.select(editor, nextListItemPath);
           }
-
-          /**
-           * If end, insert a list item after and select it
-           */
-          Transforms.insertNodes(
-            editor,
-            {
-              type: li.type,
-              children: [{ type: p.type, children: [{ text: '' }] }],
-            },
-            { at: nextListItemPath }
-          );
-          Transforms.select(editor, nextListItemPath);
 
           /**
            * If there is a list in the list item, move it to the next list item

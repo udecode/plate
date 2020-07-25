@@ -97,7 +97,6 @@ const plugins = [
   TodoListPlugin(options),
   HeadingPlugin({ ...options, levels: 5 }),
   ImagePlugin(options),
-  ResetBlockTypePlugin(optionsResetBlockTypes),
   LinkPlugin(options),
   ListPlugin(options),
   MentionPlugin(options),
@@ -123,9 +122,9 @@ const plugins = [
   SuperscriptPlugin(options),
   SuperscriptPlugin(),
   SearchHighlightPlugin(),
+  ResetBlockTypePlugin(optionsResetBlockTypes),
   SoftBreakPlugin(),
   ExitBreakPlugin(),
-  ResetBlockTypePlugin(optionsResetBlockTypes),
 ];
 
 const initialValue = [

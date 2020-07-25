@@ -6,13 +6,55 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.64.1
+
+### Bug Fixes
+
+- `onKeyDownList`: fixed a bug when inserting break at the start of a
+  list item.
+
 ## v0.64.0
 
 ### Breaking Changes
 
 - removed:
   - `withResetBlockType`, `withBreakEmptyReset`,
+    `withDeleteStartReset` in favor of `ResetBlo ### Breaking Changes
+
+- removed:
+  - `withResetBlockType`, `withBreakEmptyReset`,
     `withDeleteStartReset` in favor of `ResetBlockTypePlugin`.
+  - `withList`: its logic has been moved into `ListPlugin`
+    (`onKeyDownList`).
+  - `isTable`, `isTableRow`, `isTableCell` in favor of `getAboveByType`.
+
+### Features
+
+- new plugin `ResetBlockTypePlugin` replacing `withResetBlockType`
+  - `onKeyDownResetBlockType`
+- new editor plugin:
+  - `withRemoveEmptyNodes`: Remove nodes with empty text. `options`
+    accepts node types where the rule applies.
+- queries:
+  - `getAboveByType`: Get the block above a location (default:
+    selection) by type.
+  - `isAncestorEmpty`: Is an ancestor empty (empty text and no inline
+    children).
+  - `isBlockAboveEmpty`: Is the block above the selection empty.
+- new normalizer: `withRemoveEmptyNodes`:
+  - Remove nodes with empty text.
+  - Option `type` to specify which node types are targeted.
+- `link` plugin:
+  - `isUrl` option with default to `is-url` package.
+  - Paste a string inside a link element will edit its children text but
+    not its url.
+  - Uses `withRemoveEmptyNodes`.
+- `getRenderLeaf` is now passing `leaf` to the component props.
+
+### Bug Fixes
+
+- Pasting some urls was freezing the editor.
+- `list`: delete at the start of a list item will move it up.ckTypePlugin`.
   - `withList`: its logic has been moved into `ListPlugin`
     (`onKeyDownList`).
   - `isTable`, `isTableRow`, `isTableCell` in favor of `getAboveByType`.
