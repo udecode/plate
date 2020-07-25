@@ -43,7 +43,6 @@ patch version bumps.
 ### Bug Fixes
 
 - Pasting some urls was freezing the editor.
-- Markdown deserializer was not working.
 - `list`: delete at the start of a list item will move it up.
 
 ## v0.63.1
