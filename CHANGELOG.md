@@ -6,6 +6,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.64.1
+
+### Bug Fixes
+
+- `onKeyDownList`: fixed a bug when inserting break at the start of a
+  list item.
+
 ## v0.64.0
 
 ### Breaking Changes
