@@ -49,7 +49,6 @@ const withPlugins = [
 export const Example = () => {
   const plugins: SlatePlugin[] = [
     ParagraphPlugin(options),
-    ResetBlockTypePlugin(optionsResetBlockTypes),
     HeadingPlugin(options),
     CodeBlockPlugin(options),
     BlockquotePlugin(options),

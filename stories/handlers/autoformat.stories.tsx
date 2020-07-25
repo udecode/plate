@@ -50,11 +50,11 @@ export const Example = () => {
     ItalicPlugin(),
     CodePlugin(),
     StrikethroughPlugin(),
-    ResetBlockTypePlugin(optionsResetBlockTypes),
     BlockquotePlugin(options),
     ListPlugin(options),
     HeadingPlugin(options),
     CodeBlockPlugin(options),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
     SoftBreakPlugin({
       rules: [
         { hotkey: 'shift+enter' },
