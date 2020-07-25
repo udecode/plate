@@ -180,7 +180,7 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
   const resetBlockTypesListRule = {
     types: [li.type],
     defaultType: p.type,
-    onReset: unwrapList,
+    onReset: (_editor: Editor) => unwrapList(_editor, options),
   };
 
   onKeyDownResetBlockType({
