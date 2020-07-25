@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['@borealisgroup/eslint-config-ts', 'plugin:mdx/recommended'],
-  plugins: ['import'],
+  plugins: ['import', 'prettier'],
   settings: {
     'import/resolver': {
       typescript: {
@@ -9,6 +9,7 @@ module.exports = {
     },
   },
   rules: {
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/interface-name-prefix': 'off',

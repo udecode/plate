@@ -12,7 +12,11 @@ export const getRenderLeaf = ({
   rootProps,
 }: Required<RenderNodeOptions>) => ({ children, leaf }: RenderLeafProps) => {
   if (leaf[type] && !!leaf.text) {
-    return <Component {...pickBy(rootProps)}>{children}</Component>;
+    return (
+      <Component leaf={leaf} {...pickBy(rootProps)}>
+        {children}
+      </Component>
+    );
   }
 
   return children;

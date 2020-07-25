@@ -1,3 +1,4 @@
+import { isUrl } from '../../common/utils/isUrl';
 import { LinkElement } from './components/LinkElement';
 import { LinkKeyOption, LinkPluginOptionsValues } from './types';
 
@@ -10,6 +11,7 @@ export const DEFAULTS_LINK: Record<
   link: {
     component: LinkElement,
     type: ELEMENT_LINK,
+    isUrl,
     rootProps: {
       className: 'slate-link',
     },

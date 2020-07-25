@@ -21,6 +21,7 @@ export const withDeserializeMd = (plugins: SlatePlugin[]) => <
 
     if (content) {
       const html = marked(content);
+
       const parsed = new DOMParser().parseFromString(html, 'text/html');
 
       // `filterBreaklines` filters all the breaklines in the pasted document

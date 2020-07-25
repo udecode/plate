@@ -1,22 +1,40 @@
-export const isUrl = (url: string) => {
-  const pattern = new RegExp(
-    '^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-      '(\\#[-a-z\\d_]*)?$',
-    'i'
-  ); // fragment locator
+/**
+ * RegExps.
+ * A URL must match #1 and then at least one of #2/#3.
+ * Use two levels of REs to avoid REDOS.
+ */
 
-  if (!pattern.test(url)) {
+const protocolAndDomainRE = /^(?:\w+:)?\/\/(\S+)$/;
+
+const localhostDomainRE = /^localhost[:?\d]*(?:[^:?\d]\S*)?$/;
+const nonLocalhostDomainRE = /^[^\s.]+\.\S{2,}$/;
+
+/**
+ * Loosely validate a URL `string`.
+ */
+export const isUrl = (string: any) => {
+  if (typeof string !== 'string') {
+    return false;
+  }
+
+  const match = string.match(protocolAndDomainRE);
+  if (!match) {
+    return false;
+  }
+
+  const everythingAfterProtocol = match[1];
+  if (!everythingAfterProtocol) {
     return false;
   }
 
   try {
-    new URL(url);
-    return true;
+    new URL(string);
   } catch (err) {
     return false;
   }
+
+  return (
+    localhostDomainRE.test(everythingAfterProtocol) ||
+    nonLocalhostDomainRE.test(everythingAfterProtocol)
+  );
 };

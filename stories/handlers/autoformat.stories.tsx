@@ -11,12 +11,11 @@ import {
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  ResetBlockTypePlugin,
   SlateDocument,
   SoftBreakPlugin,
   StrikethroughPlugin,
   withAutoformat,
-  withList,
-  withResetBlockType,
   withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -27,6 +26,7 @@ import {
   headingTypes,
   initialValueAutoformat,
   options,
+  optionsResetBlockTypes,
 } from '../config/initialValues';
 
 export default {
@@ -41,15 +41,6 @@ const withPlugins = [
   withAutoformat({
     rules: autoformatRules,
   }),
-  withResetBlockType({
-    types: [
-      options.todo_li.type,
-      options.blockquote.type,
-      options.code_block.type,
-    ],
-    defaultType: options.p.type,
-  }),
-  withList(options),
 ] as const;
 
 export const Example = () => {
@@ -59,6 +50,7 @@ export const Example = () => {
     ItalicPlugin(),
     CodePlugin(),
     StrikethroughPlugin(),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
     BlockquotePlugin(options),
     ListPlugin(options),
     HeadingPlugin(options),

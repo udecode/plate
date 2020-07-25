@@ -1,23 +1,17 @@
 import { Editor, Transforms } from 'slate';
-import { isNodeTypeIn } from '../../../common/queries';
+import { getAboveByType, isNodeTypeIn } from '../../../common/queries';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
-import { isTable, isTableCell, isTableRow } from '../queries';
 import { TableOptions } from '../types';
 
 export const deleteColumn = (editor: Editor, options?: TableOptions) => {
-  const { table } = setDefaults(options, DEFAULTS_TABLE);
+  const { table, tr, td, th } = setDefaults(options, DEFAULTS_TABLE);
 
   if (isNodeTypeIn(editor, table.type)) {
-    const currentCellItem = Editor.above(editor, {
-      match: isTableCell(options),
-    });
-    const currentRowItem = Editor.above(editor, {
-      match: isTableRow(options),
-    });
-    const currentTableItem = Editor.above(editor, {
-      match: isTable(options),
-    });
+    const currentCellItem = getAboveByType(editor, [td.type, th.type]);
+    const currentRowItem = getAboveByType(editor, tr.type);
+    const currentTableItem = getAboveByType(editor, table.type);
+
     if (
       currentCellItem &&
       currentRowItem &&
