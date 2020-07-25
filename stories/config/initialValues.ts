@@ -25,6 +25,9 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+  ResetBlockTypePluginOptions,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
@@ -63,6 +66,32 @@ export const options = {
   ...DEFAULTS_SUBSUPSCRIPT,
   ...DEFAULTS_HIGHLIGHT,
   ...DEFAULTS_SEARCH_HIGHLIGHT,
+};
+
+export const inlineTypes = [options.mention.type, options.link.type];
+
+const resetBlockTypesCommonRule = {
+  types: [
+    options.blockquote.type,
+    options.code_block.type,
+    options.todo_li.type,
+  ],
+  defaultType: options.p.type,
+};
+
+export const optionsResetBlockTypes: ResetBlockTypePluginOptions = {
+  rules: [
+    {
+      ...resetBlockTypesCommonRule,
+      hotkey: 'Enter',
+      predicate: isBlockAboveEmpty,
+    },
+    {
+      ...resetBlockTypesCommonRule,
+      hotkey: 'Backspace',
+      predicate: isSelectionAtBlockStart,
+    },
+  ],
 };
 
 const createParagraph = (text: string, mark?: string) => {

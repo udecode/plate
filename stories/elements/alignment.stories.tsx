@@ -15,11 +15,11 @@ import {
   HeadingToolbar,
   ParagraphPlugin,
   pipe,
+  ResetBlockTypePlugin,
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
   ToolbarAlign,
-  withResetBlockType,
   withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -29,6 +29,7 @@ import {
   headingTypes,
   initialValueBasicElements,
   options,
+  optionsResetBlockTypes,
 } from '../config/initialValues';
 
 export default {
@@ -46,14 +47,11 @@ const withPlugins = [
   withReact,
   withHistory,
   withToggleType({ defaultType: options.p.type }),
-  withResetBlockType({
-    types: [options.blockquote.type, options.code_block.type],
-    defaultType: options.p.type,
-  }),
 ] as const;
 
 export const Example = () => {
-  const plugins: SlatePlugin[] = [];
+  const plugins: SlatePlugin[] = [ResetBlockTypePlugin(optionsResetBlockTypes)];
+
   if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
   if (boolean('BlockquotePlugin', true))

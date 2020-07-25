@@ -7,9 +7,10 @@ import { isCollapsed } from '../../common/queries/isCollapsed';
 import { isNodeTypeIn } from '../../common/queries/isNodeTypeIn';
 import { unwrapNodesByType } from '../../common/transforms/unwrapNodesByType';
 import { isUrl as isUrlProtocol, setDefaults } from '../../common/utils';
+import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { DEFAULTS_LINK } from './defaults';
 import { upsertLinkAtSelection, wrapLink } from './transforms';
-import { LinkOptions } from './types';
+import { LinkOptions, WithLinkOptions } from './types';
 
 const upsertLink = (
   editor: Editor,
@@ -40,10 +41,12 @@ const upsertLink = (
  * Insert space after a url to wrap a link.
  * Lookup from the block start to the cursor to check if there is an url.
  * If not found, lookup before the cursor for a space character to check the url.
+ *
+ * On insert data:
+ * Paste a string inside a link element will edit its children text but not its url.
+ *
  */
-export const withLink = (options?: LinkOptions & { isUrl?: Function }) => <
-  T extends ReactEditor
->(
+export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
   editor: T
 ) => {
   const { link, isUrl } = setDefaults(options, {
@@ -93,14 +96,22 @@ export const withLink = (options?: LinkOptions & { isUrl?: Function }) => <
   editor.insertData = (data: DataTransfer) => {
     const text = data.getData('text/plain');
 
-    if (text && isUrl(text) && !isNodeTypeIn(editor, link.type)) {
-      upsertLinkAtSelection(editor, text, {
-        link,
-      });
-    } else {
-      insertData(data);
+    if (text) {
+      if (isNodeTypeIn(editor, link.type)) {
+        return insertText(text);
+      }
+
+      if (isUrl(text)) {
+        return upsertLinkAtSelection(editor, text, {
+          link,
+        });
+      }
     }
+
+    insertData(data);
   };
+
+  editor = withRemoveEmptyNodes({ type: link.type })(editor);
 
   return editor;
 };

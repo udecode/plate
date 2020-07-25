@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
-import { isNodeTypeIn } from '../queries/index';
-import { DEFAULT_ELEMENT } from '../types/node.types';
+import { isNodeTypeIn } from '../../queries/index';
+import { DEFAULT_ELEMENT } from '../../types/node.types';
 
 export interface WithToggleTypeOptions {
   /**

@@ -61,5 +61,4 @@ export interface ListDeserializeOptions
   extends ListPluginOptions<'type' | 'rootProps'> {}
 
 export interface ListOnKeyDownOptions extends ListPluginOptions<'type'> {}
-export interface WithListOptions extends ListPluginOptions<'type'> {}
 export interface ListOptions extends ListPluginOptions<'type'> {}

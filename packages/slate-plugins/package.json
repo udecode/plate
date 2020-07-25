@@ -37,9 +37,6 @@
     "react-use": "^15.1.0",
     "utility-types": "^3.10.0"
   },
-  "devDependencies": {
-    "@types/marked": "^0.7.4"
-  },
   "peerDependencies": {
     "react": "*",
     "react-dom": "*",
@@ -50,5 +47,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
+  "devDependencies": {
+    "@types/marked": "^1.1.0"
+  }
 }

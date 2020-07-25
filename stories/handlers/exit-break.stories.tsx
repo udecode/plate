@@ -13,13 +13,12 @@ import {
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  ResetBlockTypePlugin,
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
   TablePlugin,
   ToolbarElement,
-  withList,
-  withResetBlockType,
   withToggleType,
   withTrailingNode,
   withTransforms,
@@ -31,6 +30,7 @@ import {
   headingTypes,
   initialValueExitBreak,
   options,
+  optionsResetBlockTypes,
 } from '../config/initialValues';
 
 export default {
@@ -42,15 +42,6 @@ const withPlugins = [
   withReact,
   withHistory,
   withToggleType({ defaultType: options.p.type }),
-  withResetBlockType({
-    types: [
-      options.todo_li.type,
-      options.blockquote.type,
-      options.code_block.type,
-    ],
-    defaultType: options.p.type,
-  }),
-  withList(options),
   withTransforms(),
   withTrailingNode({ type: options.p.type }),
 ] as const;
@@ -58,12 +49,14 @@ const withPlugins = [
 export const Example = () => {
   const plugins: SlatePlugin[] = [
     ParagraphPlugin(options),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
     HeadingPlugin(options),
     CodeBlockPlugin(options),
     BlockquotePlugin(options),
     CodePlugin(options),
     ListPlugin(options),
     TablePlugin(options),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
   ];
   if (boolean('SoftBreakPlugin', true))
     plugins.push(

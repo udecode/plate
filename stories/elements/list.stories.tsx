@@ -8,17 +8,20 @@ import {
   ListPlugin,
   ParagraphPlugin,
   pipe,
+  ResetBlockTypePlugin,
   SlateDocument,
   TodoListPlugin,
   ToolbarList,
-  withList,
-  withResetBlockType,
   withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { initialValueList, options } from '../config/initialValues';
+import {
+  initialValueList,
+  options,
+  optionsResetBlockTypes,
+} from '../config/initialValues';
 
 export default {
   title: 'Elements/List',
@@ -32,17 +35,14 @@ const withPlugins = [
   withReact,
   withHistory,
   withToggleType({ defaultType: options.p.type }),
-  withResetBlockType({
-    types: [options.todo_li.type],
-    defaultType: options.p.type,
-  }),
-  withList(options),
 ] as const;
 
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
   if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
+  if (boolean('ResetBlockTypePlugin', true))
+    plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueList);
