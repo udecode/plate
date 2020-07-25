@@ -19,11 +19,12 @@ import {
   initialValueSoftBreak,
   initialValueTables,
   options,
+  optionsResetBlockTypes,
 } from '../../../../../stories/config/initialValues';
 import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import { withInlineVoid } from '../../../../slate-plugins/src/common/plugins/inline-void/withInlineVoid';
 import { withNodeID } from '../../../../slate-plugins/src/common/plugins/node-id/withNodeID';
-import { withToggleType } from '../../../../slate-plugins/src/common/plugins/withToggleType';
+import { withToggleType } from '../../../../slate-plugins/src/common/plugins/toggle-type/withToggleType';
 import { withTransforms } from '../../../../slate-plugins/src/common/transforms/withTransforms';
 import { SlateDocument } from '../../../../slate-plugins/src/common/types/SlateDocument.types';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
@@ -46,7 +47,6 @@ import { LinkPlugin } from '../../../../slate-plugins/src/elements/link/LinkPlug
 import { withLink } from '../../../../slate-plugins/src/elements/link/withLink';
 import { ToolbarList } from '../../../../slate-plugins/src/elements/list/components/ToolbarList';
 import { ListPlugin } from '../../../../slate-plugins/src/elements/list/ListPlugin';
-import { withList } from '../../../../slate-plugins/src/elements/list/withList';
 import { MediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/MediaEmbedPlugin';
 import { MentionPlugin } from '../../../../slate-plugins/src/elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/ParagraphPlugin';
@@ -57,7 +57,7 @@ import { withTable } from '../../../../slate-plugins/src/elements/table/withTabl
 import { TodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/TodoListPlugin';
 import { withAutoformat } from '../../../../slate-plugins/src/handlers/autoformat/withAutoformat';
 import { ExitBreakPlugin } from '../../../../slate-plugins/src/handlers/exit-break/ExitBreakPlugin';
-import { withResetBlockType } from '../../../../slate-plugins/src/handlers/reset-block-type/withResetBlockType';
+import { ResetBlockTypePlugin } from '../../../../slate-plugins/src/handlers/reset-block-type/ResetBlockTypePlugin';
 import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-break/SoftBreakPlugin';
 import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
 import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
@@ -86,6 +86,7 @@ import { MARK_UNDERLINE } from '../../../../slate-plugins/src/marks/underline/de
 import { renderLeafUnderline } from '../../../../slate-plugins/src/marks/underline/renderLeafUnderline';
 import { UnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/UnderlinePlugin';
 import { withNormalizeTypes } from '../../../../slate-plugins/src/normalizers/withNormalizeTypes';
+import { withRemoveEmptyNodes } from '../../../../slate-plugins/src/normalizers/withRemoveEmptyNodes';
 import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
 
@@ -96,6 +97,7 @@ const plugins = [
   TodoListPlugin(options),
   HeadingPlugin({ ...options, levels: 5 }),
   ImagePlugin(options),
+  ResetBlockTypePlugin(optionsResetBlockTypes),
   LinkPlugin(options),
   ListPlugin(options),
   MentionPlugin(options),
@@ -123,6 +125,7 @@ const plugins = [
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
   ExitBreakPlugin(),
+  ResetBlockTypePlugin(optionsResetBlockTypes),
 ];
 
 const initialValue = [
@@ -150,11 +153,6 @@ const withPlugins = [
   withDeserializeHTML({ plugins }),
   withImageUpload(),
   withToggleType({ defaultType: options.p.type }),
-  withResetBlockType({
-    types: [options.todo_li.type, options.blockquote.type],
-    defaultType: options.p.type,
-  }),
-  withList(options),
   withAutoformat({ rules: autoformatRulesFixtures }),
   withTransforms(),
   withNormalizeTypes({
@@ -162,6 +160,7 @@ const withPlugins = [
   }),
   withNodeID(),
   withInlineVoid({ plugins }),
+  withRemoveEmptyNodes({ type: options.link.type }),
 ] as const;
 
 const Editor = () => {

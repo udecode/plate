@@ -44,12 +44,19 @@ export const getRenderElement = ({
  */
 export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
   attributes,
-  ...props
+  element,
+  children,
 }: RenderElementProps) => {
   for (const { type, component: Component, rootProps } of options) {
-    if (props.element.type === type) {
+    if (element.type === type) {
       return (
-        <Component attributes={attributes} {...props} {...pickBy(rootProps)} />
+        <Component
+          attributes={attributes}
+          element={element}
+          {...pickBy(rootProps)}
+        >
+          {children}
+        </Component>
       );
     }
   }

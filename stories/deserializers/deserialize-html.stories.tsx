@@ -27,7 +27,6 @@ import {
   withImageUpload,
   withInlineVoid,
   withLink,
-  withList,
   withTable,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -70,7 +69,6 @@ const withPlugins = [
   withLink(),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
-  withList(options),
   withInlineVoid({ plugins }),
 ] as const;
 

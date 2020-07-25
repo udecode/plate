@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
-import { withToggleType } from '../../../../common/plugins/withToggleType';
+import { withToggleType } from '../../../../common/plugins/toggle-type/withToggleType';
 import { pipe } from '../../../../common/utils/pipe';
 import { ELEMENT_H1 } from '../../../heading/defaults';
 import { ToolbarImage } from '../../components/ToolbarImage';

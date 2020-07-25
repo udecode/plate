@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.63.1",
+  "version": "0.64.0",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
-    "@udecode/slate-plugins-core": "^0.63.1",
+    "@udecode/slate-plugins-core": "^0.64.0",
     "@uifabric/styling": "^7.12.11",
     "@uifabric/utilities": "^7.19.0",
     "image-extensions": "^1.1.0",
@@ -36,9 +36,6 @@
     "prismjs": "^1.20.0",
     "react-use": "^15.1.0",
     "utility-types": "^3.10.0"
-  },
-  "devDependencies": {
-    "@types/marked": "^0.7.4"
   },
   "peerDependencies": {
     "react": "*",
@@ -50,5 +47,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
+  "devDependencies": {
+    "@types/marked": "^1.1.0"
+  }
 }

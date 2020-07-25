@@ -1,14 +1,29 @@
-export interface WithResetBlockTypeOptions {
+import { Editor } from 'slate';
+
+export interface ResetBlockTypePluginRule {
   /**
-   * Node types where the plugin applies.
+   * Node types where the rule applies.
    */
   types: string[];
+
+  hotkey: string | string[];
+
   /**
-   * Default type to set when resetting.
+   * Additional condition to the rule.
+   */
+  predicate: (editor: Editor) => boolean;
+
+  /**
+   * Set node to this default type when resetting.
    */
   defaultType?: string;
+
   /**
-   * Callback called when unwrapping.
+   * Callback called when resetting.
    */
-  onUnwrap?: any;
+  onReset?: (editor: Editor) => void;
+}
+
+export interface ResetBlockTypePluginOptions {
+  rules: ResetBlockTypePluginRule[];
 }

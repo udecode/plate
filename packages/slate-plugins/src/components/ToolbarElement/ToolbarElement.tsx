@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ReactEditor, useSlate } from 'slate-react';
-import { ToggleTypeEditor } from '../../common/plugins/withToggleType';
+import { ToggleTypeEditor } from '../../common/plugins/toggle-type/withToggleType';
 import { isNodeTypeIn } from '../../common/queries/index';
 import { getPreventDefaultHandler } from '../../common/utils/index';
 import { ToolbarButton } from '../ToolbarButton/index';

@@ -42,7 +42,12 @@ export type LinkKeyOption = 'link';
 
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
-  RootProps<LinkRenderElementPropsOptions>;
+  RootProps<LinkRenderElementPropsOptions> & {
+    /**
+     * Callback to validate an url.
+     */
+    isUrl?: (text: string) => boolean;
+  };
 export type LinkPluginOptionsKeys = keyof LinkPluginOptionsValues;
 export type LinkPluginOptions<
   Value extends LinkPluginOptionsKeys = LinkPluginOptionsKeys
@@ -51,11 +56,13 @@ export type LinkPluginOptions<
 // renderElement options
 export type LinkRenderElementOptionsKeys = LinkPluginOptionsKeys;
 export interface LinkRenderElementOptions
-  extends LinkPluginOptions<LinkRenderElementOptionsKeys> {}
+  extends LinkPluginOptions<'type' | 'component' | 'rootProps'> {}
 
 // deserialize options
 export interface LinkDeserializeOptions
   extends LinkPluginOptions<'type' | 'rootProps'> {}
+
+export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {}
 
 export interface LinkOptions extends LinkPluginOptions<'type'> {}
 

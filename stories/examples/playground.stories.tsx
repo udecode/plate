@@ -54,6 +54,7 @@ import {
   MentionSelect,
   ParagraphPlugin,
   pipe,
+  ResetBlockTypePlugin,
   SearchHighlightPlugin,
   SlateDocument,
   SoftBreakPlugin,
@@ -76,9 +77,7 @@ import {
   withImageUpload,
   withInlineVoid,
   withLink,
-  withList,
   withNormalizeTypes,
-  withResetBlockType,
   withTable,
   withToggleType,
   withTrailingNode,
@@ -105,6 +104,7 @@ import {
   initialValueSoftBreak,
   initialValueTables,
   options,
+  optionsResetBlockTypes,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
@@ -158,6 +158,8 @@ export const Plugins = () => {
   if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin(options));
   if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(options));
+  if (boolean('ResetBlockTypePlugin', true))
+    plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
   if (boolean('SoftBreakPlugin', true))
     plugins.push(
       SoftBreakPlugin({
@@ -207,15 +209,6 @@ export const Plugins = () => {
     withDeserializeHTML({ plugins }),
     withImageUpload(),
     withToggleType({ defaultType: options.p.type }),
-    withResetBlockType({
-      types: [
-        options.todo_li.type,
-        options.blockquote.type,
-        options.code_block.type,
-      ],
-      defaultType: options.p.type,
-    }),
-    withList(options),
     withAutoformat({ rules: autoformatRules }),
     withTransforms(),
     withNormalizeTypes({

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { withToggleType } from '../../../../common/plugins/withToggleType';
+import { withToggleType } from '../../../../common/plugins/toggle-type/withToggleType';
 import { pipe } from '../../../../common/utils/pipe';
 import { MediaEmbedElement } from '../../components/MediaEmbedElement';
 import { ELEMENT_MEDIA_EMBED } from '../../defaults';

@@ -1,5 +1,5 @@
-import 'is-hotkey';
 import { KeyboardEvent } from 'react';
+import { HotKeyOptions } from 'is-hotkey';
 
 declare module 'is-hotkey' {
   function isHotkey(
