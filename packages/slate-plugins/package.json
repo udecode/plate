@@ -32,9 +32,11 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "lodash": "^4.17.15",
-    "marked": "^1.0.0",
     "prismjs": "^1.20.0",
     "react-use": "^15.1.0",
+    "remark-parse": "^8.0.3",
+    "remark-slate": "^1.1.1",
+    "unified": "^9.1.0",
     "utility-types": "^3.10.0"
   },
   "peerDependencies": {

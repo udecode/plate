@@ -1,2 +1,2 @@
-export * from './filterBreakLines'
-export * from './parseMD'
+export * from './filterBreakLines';
+export * from './parseMD';

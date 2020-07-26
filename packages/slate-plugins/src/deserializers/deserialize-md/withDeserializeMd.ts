@@ -1,36 +1,40 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core'
-import { Node, Transforms } from 'slate'
-import { ReactEditor } from 'slate-react'
-import { deserializeHTMLToDocument } from '../deserialize-html'
-import { parseMD } from './utils'
+import { Transforms } from 'slate';
+import { ReactEditor } from 'slate-react';
+import { parseMD } from './utils';
+
+export interface WithDeserializeMdOptions {
+  [key: string]: { type: string };
+}
 
 /**
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMd = (options) => <T extends ReactEditor>(
+export const withDeserializeMd = (options: WithDeserializeMdOptions) => <
+  T extends ReactEditor
+>(
   editor: T
 ) => {
-  const { insertData } = editor
+  const { insertData } = editor;
 
   editor.insertData = (data) => {
-    const content = data.getData('text/plain')
+    const content = data.getData('text/plain');
 
     if (content) {
-      const fragment = parseMD(options)(content)
+      const fragment = parseMD(options)(content);
 
-      if (!fragment.length) return
+      if (!fragment.length) return;
 
       if (fragment[0].type) {
-        Transforms.setNodes(editor, { type: fragment[0].type })
+        Transforms.setNodes(editor, { type: fragment[0].type });
       }
 
-      Transforms.insertFragment(editor, fragment)
-      return
+      Transforms.insertFragment(editor, fragment);
+      return;
     }
 
-    insertData(data)
-  }
+    insertData(data);
+  };
 
-  return editor
-}
+  return editor;
+};
