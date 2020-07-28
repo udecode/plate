@@ -583,8 +583,14 @@ export const initialValuePasteMd: SlateDocument = [
         children: [
           {
             text:
-              "Try it out for yourself! Copy and paste some Markdown content from another file into this editor and it's formatting should be preserved.",
+              'Try it out for yourself! Copy and paste Markdown content from ',
           },
+          {
+            type: options.link.type,
+            url: 'https://markdown-it.github.io/',
+            children: [{ text: 'https://markdown-it.github.io/' }],
+          },
+          { text: '' },
         ],
       },
     ],

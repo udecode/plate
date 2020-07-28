@@ -1,16 +1,20 @@
 import { Editor } from 'slate';
 import { OnKeyDown, SlatePlugin } from '../types';
 
+/**
+ * Run `onKeyDownList` then `onKeyDown` of each plugin.
+ * Stop if one handler returns false.
+ */
 export const onKeyDownPlugins = (
   editor: Editor,
   plugins: SlatePlugin[],
   onKeyDownList: OnKeyDown[]
 ) => (event: any) => {
-  onKeyDownList.forEach((onKeyDown) => {
-    onKeyDown(event, editor);
-  });
+  const onKeyDowns: OnKeyDown[] = [...onKeyDownList];
 
   plugins.forEach(({ onKeyDown }) => {
-    onKeyDown?.(event, editor);
+    if (onKeyDown) onKeyDowns.push(onKeyDown);
   });
+
+  onKeyDowns.some((onKeyDown) => onKeyDown(event, editor) === false);
 };
