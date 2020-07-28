@@ -7,5 +7,3 @@ export * from './queries';
 export * from './renderElementList';
 export * from './transforms';
 export * from './types';
-export { isBlockTextEmptyAfterSelection } from '../../common/queries/isBlockTextEmptyAfterSelection';
-export { getNextSiblingNodes } from '../../common/queries/getNextSiblingNodes';
