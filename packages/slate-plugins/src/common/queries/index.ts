@@ -1,6 +1,7 @@
 export * from './getAboveByType';
 export * from './getBlockAbove';
 export * from './getLastNode';
+export * from './getNextSiblingNodes';
 export * from './getNode';
 export * from './getNodes';
 export * from './getNodesByType';
@@ -13,6 +14,7 @@ export * from './getSelectionText';
 export * from './isAncestor';
 export * from './isAncestorEmpty';
 export * from './isBlockAboveEmpty';
+export * from './isBlockTextEmptyAfterSelection';
 export * from './isCollapsed';
 export * from './isDescendant';
 export * from './isEnd';

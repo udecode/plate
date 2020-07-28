@@ -46,7 +46,8 @@ export const useMention = (
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
-          return onAddMention(editor, values[valueIndex]);
+          onAddMention(editor, values[valueIndex]);
+          return false;
         }
       }
     },

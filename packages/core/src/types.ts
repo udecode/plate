@@ -33,8 +33,15 @@ export type RenderElement = (
  */
 export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
 
-// Handler when we press a key.
-export type OnKeyDown = (e: any, editor: Editor, options?: any) => void;
+/**
+ * Handler called on key down.
+ * If one handler returns false, do not run the next handlers.
+ */
+export type OnKeyDown = (
+  e: any,
+  editor: Editor,
+  options?: any
+) => boolean | void;
 
 export type DeserializeNode = {
   type: string;
