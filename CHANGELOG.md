@@ -6,6 +6,34 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.65.0
+
+### Breaking Changes
+
+- `EditablePlugins`:
+  - `onKeyDownPlugins`: Run `onKeyDownList` then `onKeyDown` of each
+    plugin. Stop if one handler returns false. It's a way to "stop
+    propagation". By doing so, you should carefully order your plugins.
+
+### Features
+
+- `isBlockTextEmptyAfterSelection`: Is there empty text after the
+  selection. If there is no leaf after the selected leaf, return
+  `Editor.isEnd`. Else, check if the next leaves are empty.
+- `getNextSiblingNodes`: Get the next sibling nodes after a path.
+
+### Bug Fixes
+
+- When a link was inserted at the end of a list item, we could not add a
+  new list item after it.
+- Stopping the propagation in mention `onKeyDown` so pressing `Enter`
+  in a list item will not insert a new list item when selecting a
+  mention.
+
+## v0.64.3
+### Bug Fixes
+- markdown deserializer is now fixed by using `remark-slate`
+
 ## v0.64.2
 
 ### Bug Fixes

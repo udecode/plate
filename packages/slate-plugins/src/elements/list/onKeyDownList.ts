@@ -9,12 +9,14 @@ import {
   Transforms,
 } from 'slate';
 import {
+  getAboveByType,
   isBlockAboveEmpty,
   isFirstChild,
   isNodeTypeIn,
   isRangeAtRoot,
   isSelectionAtBlockStart,
 } from '../../common/queries';
+import { isBlockTextEmptyAfterSelection } from '../../common/queries/isBlockTextEmptyAfterSelection';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { unwrapList } from './transforms/unwrapList';
@@ -128,9 +130,10 @@ const moveDown = (
   }
 };
 
-export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
+const handleMoveList = (
   e: KeyboardEvent,
-  editor: Editor
+  editor: Editor,
+  options?: ListOnKeyDownOptions
 ) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
@@ -177,6 +180,17 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
     }
   }
 
+  return moved;
+};
+
+export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
+  e: KeyboardEvent,
+  editor: Editor
+) => {
+  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+
+  const moved = handleMoveList(e, editor, options);
+
   const resetBlockTypesListRule = {
     types: [li.type],
     defaultType: p.type,
@@ -203,95 +217,85 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
    */
   if (!moved && isHotkey('Enter', e)) {
     if (editor.selection && !isRangeAtRoot(editor.selection)) {
-      const [paragraphNode, paragraphPath] = Editor.parent(
-        editor,
-        editor.selection
-      );
-      if (paragraphNode.type === p.type) {
-        const [listItemNode, listItemPath] = Editor.parent(
-          editor,
-          paragraphPath
-        );
+      const paragraphEntry = getAboveByType(editor, p.type);
+      if (!paragraphEntry) return;
+      const [, paragraphPath] = paragraphEntry;
 
-        if (listItemNode.type === li.type) {
-          if (!Range.isCollapsed(editor.selection)) {
-            Transforms.delete(editor);
-          }
+      const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
+      if (listItemNode.type !== li.type) return;
 
-          const isStart = Editor.isStart(
-            editor,
-            editor.selection.anchor,
-            paragraphPath
-          );
-          const isEnd = Editor.isEnd(
-            editor,
-            editor.selection.anchor,
-            paragraphPath
-          );
-
-          const nextParagraphPath = Path.next(paragraphPath);
-          const nextListItemPath = Path.next(listItemPath);
-
-          /**
-           * If start, insert a list item before
-           */
-          if (isStart) {
-            Transforms.insertNodes(
-              editor,
-              {
-                type: li.type,
-                children: [{ type: p.type, children: [{ text: '' }] }],
-              },
-              { at: listItemPath }
-            );
-            return e.preventDefault();
-          }
-
-          /**
-           * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
-           */
-          if (!isEnd) {
-            Transforms.splitNodes(editor, { at: editor.selection });
-            Transforms.wrapNodes(
-              editor,
-              {
-                type: li.type,
-                children: [],
-              },
-              { at: nextParagraphPath }
-            );
-            Transforms.moveNodes(editor, {
-              at: nextParagraphPath,
-              to: nextListItemPath,
-            });
-          } else {
-            /**
-             * If end, insert a list item after and select it
-             */
-            Transforms.insertNodes(
-              editor,
-              {
-                type: li.type,
-                children: [{ type: p.type, children: [{ text: '' }] }],
-              },
-              { at: nextListItemPath }
-            );
-            Transforms.select(editor, nextListItemPath);
-          }
-
-          /**
-           * If there is a list in the list item, move it to the next list item
-           */
-          if (listItemNode.children.length > 1) {
-            Transforms.moveNodes(editor, {
-              at: nextParagraphPath,
-              to: nextListItemPath.concat(1),
-            });
-          }
-
-          return e.preventDefault();
-        }
+      if (!Range.isCollapsed(editor.selection)) {
+        Transforms.delete(editor);
       }
+
+      const isStart = Editor.isStart(
+        editor,
+        editor.selection.focus,
+        paragraphPath
+      );
+      const isEnd = isBlockTextEmptyAfterSelection(editor);
+
+      const nextParagraphPath = Path.next(paragraphPath);
+      const nextListItemPath = Path.next(listItemPath);
+
+      /**
+       * If start, insert a list item before
+       */
+      if (isStart) {
+        Transforms.insertNodes(
+          editor,
+          {
+            type: li.type,
+            children: [{ type: p.type, children: [{ text: '' }] }],
+          },
+          { at: listItemPath }
+        );
+        return e.preventDefault();
+      }
+
+      /**
+       * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
+       */
+      if (!isEnd) {
+        Transforms.splitNodes(editor, { at: editor.selection });
+        Transforms.wrapNodes(
+          editor,
+          {
+            type: li.type,
+            children: [],
+          },
+          { at: nextParagraphPath }
+        );
+        Transforms.moveNodes(editor, {
+          at: nextParagraphPath,
+          to: nextListItemPath,
+        });
+      } else {
+        /**
+         * If end, insert a list item after and select it
+         */
+        Transforms.insertNodes(
+          editor,
+          {
+            type: li.type,
+            children: [{ type: p.type, children: [{ text: '' }] }],
+          },
+          { at: nextListItemPath }
+        );
+        Transforms.select(editor, nextListItemPath);
+      }
+
+      /**
+       * If there is a list in the list item, move it to the next list item
+       */
+      if (listItemNode.children.length > 1) {
+        Transforms.moveNodes(editor, {
+          at: nextParagraphPath,
+          to: nextListItemPath.concat(1),
+        });
+      }
+
+      return e.preventDefault();
     }
   }
 };
