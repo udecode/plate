@@ -101,10 +101,10 @@ export const EditablePlugins = ({
         fontSize: 16,
         lineHeight: 1.5,
       }}
-      decorate={useCallback(
-        decoratePlugins(editor, plugins, decorateList),
-        decorateDeps
-      )}
+      decorate={useCallback(decoratePlugins(editor, plugins, decorateList), [
+        editor,
+        ...decorateDeps,
+      ])}
       renderElement={useCallback(
         renderElementPlugins(plugins, renderElementList),
         renderElementDeps
@@ -115,12 +115,12 @@ export const EditablePlugins = ({
       )}
       onDOMBeforeInput={useCallback(
         onDOMBeforeInputPlugins(editor, plugins, onDOMBeforeInputList),
-        onDOMBeforeInputDeps
+        [editor, ...onDOMBeforeInputDeps]
       )}
-      onKeyDown={useCallback(
-        onKeyDownPlugins(editor, plugins, onKeyDownList),
-        onKeyDownDeps
-      )}
+      onKeyDown={useCallback(onKeyDownPlugins(editor, plugins, onKeyDownList), [
+        editor,
+        ...onKeyDownDeps,
+      ])}
       {...props}
     />
   );
