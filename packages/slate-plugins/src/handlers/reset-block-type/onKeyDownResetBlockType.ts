@@ -6,18 +6,27 @@ import { ResetBlockTypePluginOptions } from './types';
 
 export const onKeyDownResetBlockType = ({
   rules,
-}: ResetBlockTypePluginOptions) => (event: KeyboardEvent, editor: Editor) => {
+}: ResetBlockTypePluginOptions) => (
+  event: KeyboardEvent | null,
+  editor: Editor
+) => {
+  let reset: boolean | undefined;
+
   if (editor.selection && isCollapsed(editor.selection)) {
     rules.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
-      if (isHotkey(hotkey, event)) {
+      if (!event || (hotkey && isHotkey(hotkey, event))) {
         if (predicate(editor) && isNodeTypeIn(editor, types)) {
-          event.preventDefault();
+          event?.preventDefault();
 
           Transforms.setNodes(editor, { type: defaultType });
 
           onReset?.(editor);
+
+          reset = true;
         }
       }
     });
   }
+
+  return reset;
 };

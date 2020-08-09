@@ -12,6 +12,7 @@ import {
   SlateDocument,
   TodoListPlugin,
   ToolbarList,
+  withList,
   withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -35,6 +36,7 @@ const withPlugins = [
   withReact,
   withHistory,
   withToggleType({ defaultType: options.p.type }),
+  withList(options),
 ] as const;
 
 export const Example = () => {

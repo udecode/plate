@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -20,17 +20,18 @@ import {
   withImageUpload,
   withInlineVoid,
   withLink,
+  withList,
   withTable,
-} from '@udecode/slate-plugins'
-import { createEditor } from 'slate'
-import { withHistory } from 'slate-history'
-import { Slate, withReact } from 'slate-react'
-import { initialValuePasteMd, options } from '../config/initialValues'
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
+import { initialValuePasteMd, options } from '../config/initialValues';
 
 export default {
   title: 'Deserializers/Markdown',
   component: withDeserializeMd,
-}
+};
 
 const plugins = [
   ParagraphPlugin(options),
@@ -46,23 +47,24 @@ const plugins = [
   ItalicPlugin(options),
   StrikethroughPlugin(options),
   UnderlinePlugin(options),
-]
+];
 
 const withPlugins = [
   withReact,
   withHistory,
   withLink(options),
+  withList(options),
   withDeserializeMd(options),
   withImageUpload(options),
   withTable(options),
   withInlineVoid({ plugins }),
-] as const
+] as const;
 
 export const Example = () => {
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValuePasteMd)
+    const [value, setValue] = useState(initialValuePasteMd);
 
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [])
+    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (
       <Slate
@@ -75,10 +77,10 @@ export const Example = () => {
           placeholder="Paste in some Markdown..."
         />
       </Slate>
-    )
-  }
+    );
+  };
 
-  const Editor = createReactEditor()
+  const Editor = createReactEditor();
 
-  return <Editor />
-}
+  return <Editor />;
+};
