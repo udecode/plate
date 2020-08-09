@@ -18,6 +18,7 @@ import {
   SlatePlugin,
   SoftBreakPlugin,
   ToolbarElement,
+  withList,
   withToggleType,
   withTrailingNode,
   withTransforms,
@@ -40,6 +41,7 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
+  withList(options),
   withToggleType({ defaultType: options.p.type }),
   withTransforms(),
   withTrailingNode({ type: options.p.type }),
