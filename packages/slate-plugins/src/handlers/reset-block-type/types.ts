@@ -6,7 +6,7 @@ export interface ResetBlockTypePluginRule {
    */
   types: string[];
 
-  hotkey: string | string[];
+  hotkey?: string | string[];
 
   /**
    * Additional condition to the rule.

@@ -2,15 +2,11 @@ import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { parseMD } from './utils';
 
-export interface WithDeserializeMdOptions {
-  [key: string]: { type: string };
-}
-
 /**
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMd = (options: WithDeserializeMdOptions) => <
+export const withDeserializeMd = (options?: Record<string, any>) => <
   T extends ReactEditor
 >(
   editor: T

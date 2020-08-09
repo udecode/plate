@@ -21,6 +21,7 @@ import {
   SlateDocument,
   ToolbarMark,
   UnderlinePlugin,
+  withList,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -39,7 +40,7 @@ const plugins = [
   ListPlugin(options),
 ];
 
-const withPlugins = [withReact, withHistory] as const;
+const withPlugins = [withReact, withHistory, withList(options)] as const;
 
 export const Example = () => {
   const [value, setValue] = useState(initialValueBalloonToolbar);
