@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.65.1",
+  "version": "0.66.0",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.0.2",
-    "@udecode/slate-plugins-core": "^0.65.1",
+    "@udecode/slate-plugins-core": "^0.66.0",
     "@uifabric/styling": "^7.12.11",
     "@uifabric/utilities": "^7.19.0",
     "image-extensions": "^1.1.0",
