@@ -6,3 +6,4 @@ export * from './italic';
 export * from './strikethrough';
 export * from './subsupscript';
 export * from './underline';
+export * from './withMarks';
