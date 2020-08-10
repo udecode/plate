@@ -10,13 +10,11 @@ export const autoformatInline = (
     between,
     markup,
     ignoreTrim,
-    shouldChange,
   }: {
     type: string;
     between?: string[];
     markup?: string;
     ignoreTrim?: boolean;
-    shouldChange?: boolean;
   }
 ) => {
   const selection = editor.selection as Range;
@@ -69,7 +67,7 @@ export const autoformatInline = (
   Transforms.select(editor, markupRange);
   editor.addMark(type, true);
   Transforms.collapse(editor, { edge: 'end' });
-  editor.removeMark(type, shouldChange);
+  editor.removeMark(type, false);
 
   // delete start markup
   const startMarkupPointBefore = getPointBefore(editor, selection, {
