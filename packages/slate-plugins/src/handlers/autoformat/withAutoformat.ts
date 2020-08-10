@@ -69,6 +69,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
             between,
             ignoreTrim,
             markup: Array.isArray(markup) ? markup[0] : markup,
+            shouldChange: false,
           })
         ) {
           return valid();

@@ -1,15 +1,23 @@
-import { Editor, Range, Transforms } from 'slate';
+import { MarkEditor } from 'packages/slate-plugins/src/marks';
+import { Range, Transforms } from 'slate';
 import { getPointBefore } from '../../../common/queries/getPointBefore';
 import { getText } from '../../../common/queries/getText';
 
 export const autoformatInline = (
-  editor: Editor,
+  editor: MarkEditor,
   {
     type,
     between,
     markup,
     ignoreTrim,
-  }: { type: string; between?: string[]; markup?: string; ignoreTrim?: boolean }
+    shouldChange,
+  }: {
+    type: string;
+    between?: string[];
+    markup?: string;
+    ignoreTrim?: boolean;
+    shouldChange?: boolean;
+  }
 ) => {
   const selection = editor.selection as Range;
 
@@ -61,7 +69,7 @@ export const autoformatInline = (
   Transforms.select(editor, markupRange);
   editor.addMark(type, true);
   Transforms.collapse(editor, { edge: 'end' });
-  editor.removeMark(type);
+  editor.removeMark(type, shouldChange);
 
   // delete start markup
   const startMarkupPointBefore = getPointBefore(editor, selection, {

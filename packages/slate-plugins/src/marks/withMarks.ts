@@ -1,15 +1,13 @@
-import { Editor, Transforms, Range, Text } from 'slate';
+import { Editor, Range, Text, Transforms } from 'slate';
 
-export interface MarkEditor {
-  shouldChange: boolean;
+export interface MarkEditor extends Editor {
+  removeMark: (key: string, shouldChange?: boolean) => void;
 }
 
-export const withMarks = ({ shouldChange = true }) => <T extends Editor>(
-  editor: T
-) => {
+export const withMarks = () => <T extends Editor>(editor: T) => {
   const e = editor as T & MarkEditor;
 
-  e.removeMark = (key: string) => {
+  e.removeMark = (key: string, shouldChange = true) => {
     const { selection } = editor;
     if (selection) {
       if (Range.isExpanded(selection)) {

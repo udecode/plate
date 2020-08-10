@@ -210,7 +210,7 @@ export const Plugins = () => {
     withLink(),
     withList(options),
     withDeserializeHTML({ plugins }),
-    withMarks({ shouldChange: false }),
+    withMarks(),
     withImageUpload(),
     withToggleType({ defaultType: options.p.type }),
     withAutoformat({ rules: autoformatRules }),
