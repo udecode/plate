@@ -1,7 +1,7 @@
-import { MarkEditor } from 'packages/slate-plugins/src/marks';
 import { Range, Transforms } from 'slate';
 import { getPointBefore } from '../../../common/queries/getPointBefore';
 import { getText } from '../../../common/queries/getText';
+import { MarkEditor } from '../../../marks/withMarks';
 
 export const autoformatInline = (
   editor: MarkEditor,
