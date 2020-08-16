@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ToggleTypeEditor } from '@udecode/slate-plugins';
 import { ReactEditor, useEditor } from 'slate-react';
+import { ToggleTypeEditor } from '../../common/plugins/toggle-type/withToggleType';
 import { useDragBlock } from './useDragBlock';
 import { useDropBlockOnEditor } from './useDropBlockOnEditor';
 
