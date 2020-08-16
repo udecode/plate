@@ -25,6 +25,7 @@
     "snyk-protect": "snyk protect"
   },
   "dependencies": {
+    "@react-hook/merged-ref": "^1.3.0",
     "@tippyjs/react": "^4.0.2",
     "@udecode/slate-plugins-core": "^0.66.1",
     "@uifabric/styling": "^7.12.11",
@@ -33,6 +34,8 @@
     "is-hotkey": "^0.1.6",
     "lodash": "^4.17.15",
     "prismjs": "^1.20.0",
+    "react-dnd": "^11.1.3",
+    "react-dnd-html5-backend": "^11.1.3",
     "react-use": "^15.1.0",
     "remark-parse": "^8.0.3",
     "remark-slate": "^1.1.1",

@@ -1,5 +1,7 @@
 import 'tippy.js/dist/tippy.css';
 import React, { useMemo, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
@@ -78,14 +80,15 @@ import {
   withInlineVoid,
   withLink,
   withList,
+  withMarks,
+  withNodeID,
   withNormalizeTypes,
   withTable,
   withToggleType,
   withTrailingNode,
   withTransforms,
-  withMarks,
 } from '@udecode/slate-plugins';
-import { createEditor, Node } from 'slate';
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
@@ -114,7 +117,7 @@ export default {
   title: 'Examples/Playground',
 };
 
-const initialValue: Node[] = [
+const initialValue: any[] = [
   ...initialValueForcedLayout,
   ...initialValueBasicMarks,
   ...initialValueHighlight,
@@ -130,6 +133,19 @@ const initialValue: Node[] = [
   ...initialValueExitBreak,
   ...initialValuePasteHtml,
 ];
+
+const setNodeId = (nodes: any[]) => {
+  let id = 10000;
+  nodes.forEach((node) => {
+    const children = node.children as any[];
+    children?.forEach((block) => {
+      block.id = id;
+      id++;
+    });
+  });
+};
+
+setNodeId(initialValue);
 
 export const Plugins = () => {
   const plugins: any[] = [];
@@ -215,6 +231,7 @@ export const Plugins = () => {
     withToggleType({ defaultType: options.p.type }),
     withAutoformat({ rules: autoformatRules }),
     withTransforms(),
+    withNodeID(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: options.h1.type }],
     }),
@@ -249,103 +266,114 @@ export const Plugins = () => {
     if (boolean('onKeyDownMentions', true)) onKeyDown.push(onKeyDownMention);
 
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => {
-          setValue(newValue as SlateDocument);
+      <DndProvider backend={HTML5Backend}>
+        <Slate
+          editor={editor}
+          value={value}
+          onChange={(newValue) => {
+            setValue(newValue as SlateDocument);
 
-          onChangeMention(editor);
-        }}
-      >
-        <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
-        <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
-          {/* Elements */}
-          <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
-          <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
-          <ToolbarElement type={options.h3.type} icon={<Looks3 />} />
-          <ToolbarElement type={options.h4.type} icon={<Looks4 />} />
-          <ToolbarElement type={options.h5.type} icon={<Looks5 />} />
-          <ToolbarElement type={options.h6.type} icon={<Looks6 />} />
-          <ToolbarList
-            {...options}
-            typeList={options.ul.type}
-            icon={<FormatListBulleted />}
+            onChangeMention(editor);
+          }}
+        >
+          <ToolbarSearchHighlight
+            icon={Search}
+            setSearch={setSearchHighlight}
           />
-          <ToolbarList
-            {...options}
-            typeList={options.ol.type}
-            icon={<FormatListNumbered />}
-          />
-          <ToolbarElement
-            type={options.blockquote.type}
-            icon={<FormatQuote />}
-          />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
+            {/* Elements */}
+            <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
+            <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
+            <ToolbarElement type={options.h3.type} icon={<Looks3 />} />
+            <ToolbarElement type={options.h4.type} icon={<Looks4 />} />
+            <ToolbarElement type={options.h5.type} icon={<Looks5 />} />
+            <ToolbarElement type={options.h6.type} icon={<Looks6 />} />
+            <ToolbarList
+              {...options}
+              typeList={options.ul.type}
+              icon={<FormatListBulleted />}
+            />
+            <ToolbarList
+              {...options}
+              typeList={options.ol.type}
+              icon={<FormatListNumbered />}
+            />
+            <ToolbarElement
+              type={options.blockquote.type}
+              icon={<FormatQuote />}
+            />
+            <ToolbarElement
+              type={options.code_block.type}
+              icon={<CodeBlock />}
+            />
 
-          {/* Marks */}
-          <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
-          <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
-          <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
-          <ToolbarMark
-            type={MARK_STRIKETHROUGH}
-            icon={<FormatStrikethrough />}
-          />
-          <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
-          <ToolbarMark
-            type={MARK_SUPERSCRIPT}
-            clear={MARK_SUBSCRIPT}
-            icon={<Superscript />}
-          />
-          <ToolbarMark
-            type={MARK_SUBSCRIPT}
-            clear={MARK_SUPERSCRIPT}
-            icon={<Subscript />}
-          />
+            {/* Marks */}
+            <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
+            <ToolbarMark type={MARK_ITALIC} icon={<FormatItalic />} />
+            <ToolbarMark type={MARK_UNDERLINE} icon={<FormatUnderlined />} />
+            <ToolbarMark
+              type={MARK_STRIKETHROUGH}
+              icon={<FormatStrikethrough />}
+            />
+            <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
+            <ToolbarMark
+              type={MARK_SUPERSCRIPT}
+              clear={MARK_SUBSCRIPT}
+              icon={<Superscript />}
+            />
+            <ToolbarMark
+              type={MARK_SUBSCRIPT}
+              clear={MARK_SUPERSCRIPT}
+              icon={<Subscript />}
+            />
 
-          <ToolbarAlign icon={<FormatAlignLeft />} />
-          <ToolbarAlign
-            type={options.align_center.type}
-            icon={<FormatAlignCenter />}
+            <ToolbarAlign icon={<FormatAlignLeft />} />
+            <ToolbarAlign
+              type={options.align_center.type}
+              icon={<FormatAlignCenter />}
+            />
+            <ToolbarAlign
+              type={options.align_right.type}
+              icon={<FormatAlignRight />}
+            />
+            <ToolbarLink {...options} icon={<Link />} />
+            <ToolbarImage {...options} icon={<Image />} />
+          </HeadingToolbar>
+          <BalloonToolbar arrow>
+            <ToolbarMark
+              reversed
+              type={MARK_BOLD}
+              icon={<FormatBold />}
+              tooltip={{ content: 'Bold (⌘B)' }}
+            />
+            <ToolbarMark
+              reversed
+              type={MARK_ITALIC}
+              icon={<FormatItalic />}
+              tooltip={{ content: 'Italic (⌘I)' }}
+            />
+            <ToolbarMark
+              reversed
+              type={MARK_UNDERLINE}
+              icon={<FormatUnderlined />}
+              tooltip={{ content: 'Underline (⌘U)' }}
+            />
+          </BalloonToolbar>
+          <MentionSelect at={target} valueIndex={index} options={values} />
+          <EditablePlugins
+            style={{
+              padding: 20,
+            }}
+            plugins={plugins}
+            decorate={decorate}
+            decorateDeps={[search]}
+            renderLeafDeps={[search]}
+            onKeyDown={onKeyDown}
+            onKeyDownDeps={[index, mentionSearch, target]}
+            placeholder="Enter some plain text..."
           />
-          <ToolbarAlign
-            type={options.align_right.type}
-            icon={<FormatAlignRight />}
-          />
-          <ToolbarLink {...options} icon={<Link />} />
-          <ToolbarImage {...options} icon={<Image />} />
-        </HeadingToolbar>
-        <BalloonToolbar arrow>
-          <ToolbarMark
-            reversed
-            type={MARK_BOLD}
-            icon={<FormatBold />}
-            tooltip={{ content: 'Bold (⌘B)' }}
-          />
-          <ToolbarMark
-            reversed
-            type={MARK_ITALIC}
-            icon={<FormatItalic />}
-            tooltip={{ content: 'Italic (⌘I)' }}
-          />
-          <ToolbarMark
-            reversed
-            type={MARK_UNDERLINE}
-            icon={<FormatUnderlined />}
-            tooltip={{ content: 'Underline (⌘U)' }}
-          />
-        </BalloonToolbar>
-        <MentionSelect at={target} valueIndex={index} options={values} />
-        <EditablePlugins
-          plugins={plugins}
-          decorate={decorate}
-          decorateDeps={[search]}
-          renderLeafDeps={[search]}
-          onKeyDown={onKeyDown}
-          onKeyDownDeps={[index, mentionSearch, target]}
-          placeholder="Enter some plain text..."
-        />
-      </Slate>
+        </Slate>
+      </DndProvider>
     );
   };
 

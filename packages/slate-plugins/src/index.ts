@@ -2,6 +2,7 @@ export * from '@udecode/slate-plugins-core';
 export * from './common';
 export * from './components';
 export * from './decorators';
+export * from './dnd';
 export * from './serializers';
 export * from './deserializers';
 export * from './elements';
