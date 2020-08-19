@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Editor, Path } from 'slate';
 import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
@@ -25,11 +25,17 @@ export const getSelectableElement = ({
   return forwardRef(
     ({ attributes, element, ...props }: RenderElementProps, ref) => {
       const editor = useEditor();
-      const path = ReactEditor.findPath(editor, element);
-      if (
-        (level && level !== path.length - 1) ||
-        (filter && filter(editor, path))
-      ) {
+      const path = useMemo(() => ReactEditor.findPath(editor, element), [
+        editor,
+        element,
+      ]);
+      const filteredOut = useMemo(
+        () =>
+          (level && level !== path.length - 1) ||
+          (filter && filter(editor, path)),
+        [path, editor]
+      );
+      if (filteredOut) {
         return (
           <Component attributes={attributes} element={element} {...props} />
         );
