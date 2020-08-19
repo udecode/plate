@@ -25,14 +25,12 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-  getSelectableElement,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   ResetBlockTypePluginOptions,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
-  StyledElement,
 } from '@udecode/slate-plugins';
 import faker from 'faker';
 import { Descendant, Text } from 'slate';
@@ -47,6 +45,7 @@ export const headingTypes = [
 ];
 
 export const options = {
+  ...DEFAULTS_PARAGRAPH,
   ...DEFAULTS_MENTION,
   ...DEFAULTS_BLOCKQUOTE,
   ...DEFAULTS_CODE_BLOCK,
@@ -67,28 +66,6 @@ export const options = {
   ...DEFAULTS_SUBSUPSCRIPT,
   ...DEFAULTS_HIGHLIGHT,
   ...DEFAULTS_SEARCH_HIGHLIGHT,
-  p: {
-    ...DEFAULTS_PARAGRAPH.p,
-    component: getSelectableElement({
-      component: StyledElement,
-      styles: {
-        blockAndGutter: {
-          padding: '4px 0',
-        },
-        blockToolbarWrapper: {
-          height: '1.5em',
-        },
-      },
-    }),
-    rootProps: {
-      styles: {
-        root: {
-          margin: 0,
-          lineHeight: '1.5',
-        },
-      },
-    },
-  },
 };
 
 export const inlineTypes = [options.mention.type, options.link.type];
