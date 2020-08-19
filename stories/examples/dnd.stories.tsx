@@ -87,12 +87,7 @@ import {
   withToggleType,
   withTrailingNode,
   withTransforms,
-  getSelectableElement,
-  DEFAULTS_PARAGRAPH,
-  DEFAULTS_LIST,
-  DEFAULTS_IMAGE,
-  DEFAULTS_TABLE,
-  DEFAULTS_HEADING
+  getSelectableElement
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate'
 import { withHistory } from 'slate-history';
