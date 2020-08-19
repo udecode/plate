@@ -94,7 +94,7 @@ import {
   DEFAULTS_TABLE,
   DEFAULTS_HEADING
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
+import { createEditor } from 'slate'
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
@@ -123,50 +123,43 @@ export default {
   title: 'Examples/Drag&Drop',
 };
 
-
-const wrapDraggableComponents = ({ types, options } : { types: string[], options: any }) => {
-  const opts = {}
-  types?.forEach(k => {
-    opts[k] = {
-      ...options[k],
-      component: getSelectableElement({ 
-        component: options[k].component,
-        styles: {
-          blockAndGutter: {
-            padding: '4px 0',
-          },
-          blockToolbarWrapper: {
-            height: '1.5em',
-          },
-        }
-      }),
-      rootProps: {
-        styles: {
-          root: {
-            margin: 0,
-            lineHeight: '1.5',
-          }
+const draggableComponentOptions = [
+  { ...defaultOptions.p, level: 1 },
+  defaultOptions.ol,
+  defaultOptions.ul,
+  defaultOptions.img,
+  defaultOptions.table,
+  defaultOptions.h1,
+  defaultOptions.h2,
+  defaultOptions.h3
+].map(({ type, level, component, ...options } : { type: string, level?: number, component: any }) => (
+  [type,
+  {
+    ...options,
+    component: getSelectableElement({
+      component,
+      level,
+      styles: {
+        blockAndGutter: {
+          padding: '4px 0',
+        },
+        blockToolbarWrapper: {
+          height: '1.5em',
+        },
+      }
+    }),
+    rootProps: {
+      styles: {
+        root: {
+          margin: 0,
+          lineHeight: '1.5',
         }
       }
     }
-  })
-  return { ...options, ...opts }
-}
+  }]
+))
 
-const options = wrapDraggableComponents({
-  types: [
-    DEFAULTS_PARAGRAPH.p.type,
-    DEFAULTS_LIST.ol.type,
-    DEFAULTS_LIST.ul.type,
-    DEFAULTS_IMAGE.img.type,
-    DEFAULTS_TABLE.table.type,
-    DEFAULTS_HEADING.h1.type,
-    DEFAULTS_HEADING.h2.type,
-    DEFAULTS_HEADING.h3.type,
-    DEFAULTS_HEADING.h4.type
-  ],
-  options: defaultOptions
-})
+const options = { ...defaultOptions, ...Object.fromEntries(draggableComponentOptions) }
 
 const initialValue: any[] = [
   ...initialValueForcedLayout,
