@@ -43,7 +43,12 @@ const plugins = [
 
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015
   // modules by default.
-  commonjs(),
+  commonjs({
+    include: /node_modules/,
+    namedExports: {
+      'react-is': ['typeOf', 'isElement', 'isValidElementType']
+    }
+  }),
 
   // Convert JSON imports to ES6 modules.
   json(),
@@ -82,7 +87,7 @@ const plugins = [
       },
     },
     extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', '.ts', '.tsx'],
-    exclude: 'node_modules/**',
+    exclude: /node_modules/,
     runtimeHelpers: true,
   }),
 
