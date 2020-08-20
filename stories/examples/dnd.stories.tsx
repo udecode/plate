@@ -37,6 +37,7 @@ import {
   decorateSearchHighlight,
   EditablePlugins,
   ExitBreakPlugin,
+  getSelectableElement,
   HeadingPlugin,
   HeadingToolbar,
   HighlightPlugin,
@@ -87,9 +88,8 @@ import {
   withToggleType,
   withTrailingNode,
   withTransforms,
-  getSelectableElement
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate'
+import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
@@ -115,46 +115,68 @@ import {
 import { MENTIONABLES } from '../config/mentionables';
 
 export default {
-  title: 'Examples/Drag&Drop',
+  title: 'Examples/Drag & Drop',
 };
 
 const draggableComponentOptions = [
   { ...defaultOptions.p, level: 1 },
-  defaultOptions.ol,
-  defaultOptions.ul,
-  defaultOptions.img,
-  defaultOptions.table,
+  defaultOptions.blockquote,
+  defaultOptions.todo_li,
   defaultOptions.h1,
   defaultOptions.h2,
-  defaultOptions.h3
-].map(({ type, level, component, ...options } : { type: string, level?: number, component: any }) => (
-  [type,
-  {
-    ...options,
-    component: getSelectableElement({
-      component,
-      level,
-      styles: {
-        blockAndGutter: {
-          padding: '4px 0',
+  defaultOptions.h3,
+  defaultOptions.h4,
+  defaultOptions.h5,
+  defaultOptions.h6,
+  defaultOptions.img,
+  defaultOptions.link,
+  defaultOptions.ol,
+  defaultOptions.ul,
+  defaultOptions.table,
+  defaultOptions.media_embed,
+  defaultOptions.code_block,
+].map(
+  ({
+    type,
+    level,
+    component,
+    ...options
+  }: {
+    type: string;
+    level?: number;
+    component: any;
+  }) => [
+    type,
+    {
+      ...options,
+      component: getSelectableElement({
+        component,
+        level,
+        styles: {
+          blockAndGutter: {
+            padding: '4px 0',
+          },
+          blockToolbarWrapper: {
+            height: '1.5em',
+          },
         },
-        blockToolbarWrapper: {
-          height: '1.5em',
+      }),
+      rootProps: {
+        styles: {
+          root: {
+            margin: 0,
+            lineHeight: '1.5',
+          },
         },
-      }
-    }),
-    rootProps: {
-      styles: {
-        root: {
-          margin: 0,
-          lineHeight: '1.5',
-        }
-      }
-    }
-  }]
-))
+      },
+    },
+  ]
+);
 
-const options = { ...defaultOptions, ...Object.fromEntries(draggableComponentOptions) }
+const options = {
+  ...defaultOptions,
+  ...Object.fromEntries(draggableComponentOptions),
+};
 
 const initialValue: any[] = [
   ...initialValueForcedLayout,
