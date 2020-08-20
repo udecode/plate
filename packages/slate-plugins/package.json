@@ -54,6 +54,7 @@
   },
   "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
   "devDependencies": {
-    "@types/marked": "^1.1.0"
+    "@types/marked": "^1.1.0",
+    "react-dnd-test-backend": "^11.1.3"
   }
 }
