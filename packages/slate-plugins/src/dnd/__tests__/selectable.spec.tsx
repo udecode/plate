@@ -33,10 +33,10 @@ it('should render draggable component', () => {
 it('should filter based on level', () => {
   const editor = jest.fn();
   jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
-  jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0, 0]);
+  jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({
     component: DEFAULTS_PARAGRAPH.p.component,
-    level: 1,
+    level: 0,
   });
   const { container } = render(
     <DndProvider backend={TestBackend}>

@@ -31,7 +31,7 @@ export const getSelectableElement = ({
       ]);
       const filteredOut = useMemo(
         () =>
-          (level && level !== path.length - 1) ||
+          (Number.isInteger(level) && level !== path.length - 1) ||
           (filter && filter(editor, path)),
         [path, editor]
       );
