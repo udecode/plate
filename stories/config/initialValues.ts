@@ -4,6 +4,7 @@ import {
   DEFAULTS_BOLD,
   DEFAULTS_CODE,
   DEFAULTS_CODE_BLOCK,
+  DEFAULTS_KBD,
   DEFAULTS_HEADING,
   DEFAULTS_HIGHLIGHT,
   DEFAULTS_IMAGE,
@@ -63,6 +64,7 @@ export const options = {
   ...DEFAULTS_UNDERLINE,
   ...DEFAULTS_STRIKETHROUGH,
   ...DEFAULTS_CODE,
+  ...DEFAULTS_KBD,
   ...DEFAULTS_SUBSUPSCRIPT,
   ...DEFAULTS_HIGHLIGHT,
   ...DEFAULTS_SEARCH_HIGHLIGHT,
@@ -676,6 +678,17 @@ export const initialValueBasicMarks: SlateDocument = [
           { text: '.' },
         ],
       },
+      {
+        type: options.p.type,
+        children: [
+          { text: 'You can also press ' },
+          { text: 'Super + B', [options.kbd.type]: true },
+          { text: ' to mark selected text bold or ' },
+          { text: 'Super + I', [options.kbd.type]: true },
+          { text: ' to mark it italic.' },
+        ],
+      },
+      createParagraph('There are many other keyboard shortcuts.'),
     ] as any,
   },
 ];
