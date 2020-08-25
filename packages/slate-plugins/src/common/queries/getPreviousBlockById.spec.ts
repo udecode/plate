@@ -19,6 +19,28 @@ const nodesFixture5 = [
   },
 ];
 
+const nodesFixtureWithList = [
+  {
+    children: [{ text: '' }],
+    id: '1',
+    type: 'p',
+  },
+  {
+    children: [
+      {type: 'li', id: '21', children: [{ type: 'p', id: '211', children: [{text: 'hi'}]}]},
+      {type: 'li', id: '22', children: [{ type: 'p', id: '221', children: [{text: 'hi'}]}]},
+      {type: 'li', id: '23', children: [{ type: 'p', id: '231', children: [{text: 'hi'}]}]}
+    ],
+    id: '2',
+    type: 'ul',
+  },
+  {
+    children: [{ text: '' }],
+    id: '3',
+    type: 'p',
+  }
+]
+
 describe('when getPreviousNodeById', () => {
   describe('when not first block', () => {
     it('should be ', () => {
@@ -43,4 +65,12 @@ describe('when getPreviousNodeById', () => {
       expect(getPreviousBlockById(e, '11')?.[0]).toBeUndefined();
     });
   });
+
+  describe('when list', () => {
+    it('should return previous block', () => {
+      const e = createEditor();
+      e.children = nodesFixtureWithList;
+      expect(getPreviousBlockById(e, '2')?.[0]).toEqual(nodesFixtureWithList[0]);
+    })
+  })
 });
