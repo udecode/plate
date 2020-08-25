@@ -1,7 +1,7 @@
 import { Editor, Node, NodeEntry } from 'slate';
+import { getBlockPathById } from '../../dnd';
 import { QueryOptions } from '../types/QueryOptions.types';
 import { isNodeType } from './isNodeType';
-import { getBlockPathById } from '../../dnd';
 
 /**
  * Find the block before a block by id.
@@ -12,11 +12,11 @@ export const getPreviousBlockById = (
   id: string,
   query?: QueryOptions
 ): NodeEntry<Node> | undefined => {
-  const path = getBlockPathById(editor, id)
-  if (path) {
-    const prevEntry = Editor.previous(editor, { at: path })
+  const nodePath = getBlockPathById(editor, id);
+  if (nodePath) {
+    const prevEntry = Editor.previous(editor, { at: nodePath });
     if (prevEntry && prevEntry[0].id && Editor.isBlock(editor, prevEntry[0])) {
-      return prevEntry
+      return prevEntry;
     }
   }
   let found = false;
