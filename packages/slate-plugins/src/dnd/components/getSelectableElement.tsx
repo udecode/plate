@@ -1,7 +1,12 @@
 import React, { forwardRef, useMemo } from 'react';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Editor, Path } from 'slate';
-import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
+import {
+  ReactEditor,
+  RenderElementProps,
+  useEditor,
+  useReadOnly,
+} from 'slate-react';
 import { Selectable } from './Selectable';
 import {
   ElementWithId,
@@ -25,6 +30,7 @@ export const getSelectableElement = ({
   return forwardRef(
     ({ attributes, element, ...props }: RenderElementProps, ref) => {
       const editor = useEditor();
+      const readOnly = useReadOnly();
       const path = useMemo(() => ReactEditor.findPath(editor, element), [
         editor,
         element,
@@ -35,7 +41,7 @@ export const getSelectableElement = ({
           (filter && filter(editor, path)),
         [path, editor]
       );
-      if (filteredOut) {
+      if (filteredOut || readOnly) {
         return (
           <Component attributes={attributes} element={element} {...props} />
         );
