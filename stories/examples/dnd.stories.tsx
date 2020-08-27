@@ -425,6 +425,7 @@ export const Example = () => {
             style={{
               padding: 20,
             }}
+            readOnly={boolean('readOnly', false)}
             plugins={plugins}
             decorate={decorate}
             decorateDeps={[search]}
