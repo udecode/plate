@@ -78,4 +78,30 @@ it('should not be draggable if readOnly', () => {
   expect(container.querySelector('.slate-Selectable')).not.toBeInTheDocument();
 });
 
+it('should be draggable in readOnly if allowReadOnly', () => {
+  const editor = jest.fn();
+  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest.spyOn(SlateReact, 'useReadOnly').mockReturnValue(true);
+  jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
+  const DraggableElement = getSelectableElement({
+    component: DEFAULTS_PARAGRAPH.p.component,
+    allowReadOnly: true
+  });
+  const { container } = render(
+    <DndProvider backend={TestBackend}>
+      <DraggableElement
+        attributes={{} as any}
+        element={{
+          type: DEFAULTS_PARAGRAPH.p.type,
+          children: [{ text: 'test' }],
+        }}
+      >
+        test
+      </DraggableElement>
+    </DndProvider>
+  );
+  expect(container.querySelector('.slate-Selectable')).toBeInTheDocument();
+});
+
+
 it.todo('should be draggable');

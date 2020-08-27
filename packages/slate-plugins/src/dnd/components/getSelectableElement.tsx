@@ -19,6 +19,7 @@ export interface GetSelectabelElementOptions {
   styles?: IStyleFunctionOrObject<SelectableStyleProps, SelectableStyles>;
   level?: number;
   filter?: (editor: Editor, path: Path) => boolean;
+  allowReadOnly?: boolean;
 }
 
 export const getSelectableElement = ({
@@ -26,6 +27,7 @@ export const getSelectableElement = ({
   styles,
   level,
   filter,
+  allowReadOnly = false,
 }: GetSelectabelElementOptions) => {
   return forwardRef(
     ({ attributes, element, ...props }: RenderElementProps, ref) => {
@@ -41,7 +43,7 @@ export const getSelectableElement = ({
           (filter && filter(editor, path)),
         [path, editor]
       );
-      if (filteredOut || readOnly) {
+      if (filteredOut || (!allowReadOnly && readOnly)) {
         return (
           <Component attributes={attributes} element={element} {...props} />
         );
