@@ -1,0 +1,8 @@
+.storybook
+.github
+.dependabot
+.circleci
+scripts
+templates
+stories
+

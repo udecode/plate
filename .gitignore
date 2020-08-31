@@ -10,14 +10,13 @@ jspm_packages/
 /packages/*/node_modules
 /packages/*/LICENSE
 **/lib
-**/dist
 
 # compiled output
-/dist
+
 /tmp
 /out-tsc
 /build
-
+dist/
 # Runtime data
 pids
 *.pid

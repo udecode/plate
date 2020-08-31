@@ -1,19 +1,5 @@
-name: ci
-on:
-  push:
-    branches:
-    - master
-    - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
-  pull_request:
-    branches:
-    - master
-    - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
+name: Test
+on: [push]
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -28,7 +14,4 @@ jobs:
       run: yarn build
     - name: Lint
       run: yarn lint
-    - name: Generate coverage report
-      run: yarn test:cov
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+

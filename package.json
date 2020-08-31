@@ -1,12 +1,21 @@
 {
   "private": true,
   "license": "MIT",
+  "name": "slate-plugins",
+  "version": "0.0.1",
+  "main": "packages/slate-plugins/dist",
   "workspaces": [
     "packages/core",
     "packages/slate-plugins"
   ],
+  "files": [
+    "packages",
+    "lerna.json"
+  ],
   "scripts": {
-    "build": "lerna run build --since",
+    "prepare": "yarn build",
+    "postinstall": "lerna bootstrap --ignore-prepublish --hoist",
+    "build": "lerna run build",
     "build:w": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
     "build:core": "lerna exec --scope @udecode/slate-plugins-core -- yarn build",
     "build:plugins": "lerna exec --ignore @udecode/slate-plugins-core --parallel -- yarn build",
@@ -102,7 +111,8 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "styled-icons": "^10.2.1"
+    "styled-icons": "^10.2.1",
+    "lerna": "^3.20.2"
   },
   "snyk": true
 }
