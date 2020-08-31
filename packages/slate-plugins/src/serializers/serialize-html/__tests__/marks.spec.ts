@@ -2,6 +2,7 @@ import { BoldPlugin } from '../../../marks/bold/BoldPlugin';
 import { CodePlugin } from '../../../marks/code/CodePlugin';
 import { HighlightPlugin } from '../../../marks/highlight/HighlightPlugin';
 import { ItalicPlugin } from '../../../marks/italic/ItalicPlugin';
+import { KbdPlugin } from '../../../marks/kbd/KbdPlugin';
 import { StrikethroughPlugin } from '../../../marks/strikethrough/StrikethroughPlugin';
 import { SubscriptPlugin } from '../../../marks/subsupscript/subscript/SubscriptPlugin';
 import { SuperscriptPlugin } from '../../../marks/subsupscript/superscript/SuperscriptPlugin';
@@ -62,11 +63,23 @@ it('serialize code to html', () => {
     htmlStringToDOMNode(
       serializeHTMLFromNodes([CodePlugin()])([
         { text: 'Some paragraph of text with ' },
-        { text: 'code', code: true },
+        { text: 'some code', code: true },
         { text: ' part.' },
       ])
     ).getElementsByTagName('code')[0].textContent
-  ).toEqual('code');
+  ).toEqual('some code');
+});
+
+it('serialize kbd to html', () => {
+  expect(
+    htmlStringToDOMNode(
+      serializeHTMLFromNodes([KbdPlugin()])([
+        { text: 'Some paragraph of text with ' },
+        { text: 'keyboard shortcut', kbd: true },
+        { text: ' part.' },
+      ])
+    ).getElementsByTagName('kbd')[0].textContent
+  ).toEqual('keyboard shortcut');
 });
 
 it('serialize subscript to html', () => {

@@ -16,6 +16,7 @@ import {
   SoftBreakPlugin,
   StrikethroughPlugin,
   withAutoformat,
+  withList,
   withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -37,6 +38,7 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
+  withList(options),
   withToggleType({ defaultType: options.p.type }),
   withAutoformat({
     rules: autoformatRules,

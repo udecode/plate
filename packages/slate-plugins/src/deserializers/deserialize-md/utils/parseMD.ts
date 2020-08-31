@@ -17,12 +17,22 @@ import {
   ELEMENT_UL,
 } from '../../../elements/list/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
-import { WithDeserializeMdOptions } from '../withDeserializeMd';
 
-export const parseMD = (options: WithDeserializeMdOptions) => (
-  content: string
-) => {
-  setDefaults(options, {
+export const parseMD = (options?: Record<string, any>) => (content: string) => {
+  const {
+    p,
+    blockquote,
+    link,
+    ul,
+    ol,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+  } = setDefaults(options, {
     p: { type: ELEMENT_PARAGRAPH },
     blockquote: { type: ELEMENT_PARAGRAPH },
     link: { type: ELEMENT_LINK },
@@ -41,19 +51,19 @@ export const parseMD = (options: WithDeserializeMdOptions) => (
     .use(markdown)
     .use(slate, {
       nodeTypes: {
-        paragraph: options.p.type,
-        block_quote: options.blockquote.type,
-        link: options.link.type,
-        ul_list: options.ul.type,
-        ol_list: options.ol.type,
-        listItem: options.li.type,
+        paragraph: p.type,
+        block_quote: blockquote.type,
+        link: link.type,
+        ul_list: ul.type,
+        ol_list: ol.type,
+        listItem: li.type,
         heading: {
-          1: options.h1.type,
-          2: options.h2.type,
-          3: options.h3.type,
-          4: options.h4.type,
-          5: options.h5.type,
-          6: options.h6.type,
+          1: h1.type,
+          2: h2.type,
+          3: h3.type,
+          4: h4.type,
+          5: h5.type,
+          6: h6.type,
         },
       },
     })

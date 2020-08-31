@@ -23,6 +23,7 @@ import { deserializeBold } from '../../../../marks/bold/deserializeBold';
 import { deserializeCode } from '../../../../marks/code/index';
 import { deserializeHighlight } from '../../../../marks/highlight/deserializeHighlight';
 import { deserializeItalic } from '../../../../marks/italic/deserializeItalic';
+import { deserializeKbd } from '../../../../marks/kbd/index';
 import { deserializeStrikethrough } from '../../../../marks/strikethrough/deserializeStrikethrough';
 import { deserializeSubscript } from '../../../../marks/subsupscript/subscript/deserializeSubscript';
 import { deserializeSuperscript } from '../../../../marks/subsupscript/superscript/deserializeSuperscript';
@@ -87,6 +88,7 @@ const input1 = [
   { deserialize: deserializeBold() },
   { deserialize: deserializeHighlight() },
   { deserialize: deserializeCode() },
+  { deserialize: deserializeKbd() },
   { deserialize: deserializeItalic() },
   { deserialize: deserializeStrikethrough() },
   { deserialize: deserializeSubscript() },
@@ -110,7 +112,7 @@ const output = (
       <htext strikethrough>s</htext>
       <htext strikethrough>style</htext>
       <htext code>code</htext>
-      <htext code>kbd</htext>
+      <htext kbd>kbd</htext>
       <htext subscript>sub</htext>
       <htext superscript>sup</htext>
     </hp>

@@ -7,11 +7,9 @@ discussion to documentation to bugfixes to feature improvements.
 Please review this document to help to streamline the process and save
 everyone's precious time.
 
-
 This repo uses yarn workspaces, so you should install `yarn` as the
 package manager. See
 [installation guide](https://yarnpkg.com/en/docs/install).
-
 
 ## Issues
 
@@ -88,21 +86,26 @@ It can be immensely helpful to get feedback in your editor, if you're
 using VSCode, you should install the `eslint` plugin and configure it
 with these settings:
 
-```plaintext
-"eslint.autoFixOnSave": true,
-"eslint.packageManager": "yarn",
-"eslint.options": {
-  "cache": true,
-  "cacheLocation": ".cache/eslint",
-  "extensions": [".js", ".jsx", ".mjs", ".json", ".ts", ".tsx"]
-},
-"eslint.validate": [
-  "javascript",
-  "javascriptreact",
-  {"language": "typescript", "autoFix": true },
-  {"language": "typescriptreact", "autoFix": true }
-],
-"eslint.alwaysShowStatus": true
+```json
+// .vscode/settings.json
+{
+  "eslint.packageManager": "yarn",
+  "eslint.options": {
+    "cache": true,
+    "cacheLocation": ".cache/eslint",
+    "extensions": [".js", ".jsx", ".mjs", ".json", ".ts", ".tsx"]
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.alwaysShowStatus": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}
 ```
 
 This should enable auto-fix for all source files, and give linting
@@ -136,13 +139,13 @@ folder structure and naming convention, as defined below.
 Write your tests using the following convention:
 
 ```ts
-const input = 1;
+const input = 1
 
-const output = 1;
+const output = 1
 
-it('should be', () => {
-  expect(input).toEqual(output);
-});
+it("should be", () => {
+  expect(input).toEqual(output)
+})
 ```
 
 When using `slate-hyperscript`, include this at the top of the file:
@@ -150,7 +153,7 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
-import { jsx } from '../../../../__test-utils__/jsx';
+import { jsx } from "../../../../__test-utils__/jsx"
 ```
 
 Example of `input` and `output` being an editor containing one
@@ -161,13 +164,13 @@ const input = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor;
+) as any) as Editor
 
 const output = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor;
+) as any) as Editor
 ```
 
 ## Pull Requests (PRs)
@@ -334,4 +337,3 @@ yarn release
 # update the release page
 open https://github.com/udecode/slate-plugins/releases
 ```
-

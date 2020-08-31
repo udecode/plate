@@ -6,6 +6,35 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.66.0
+
+### Breaking Changes
+
+- `withList` is now needed for nested list (back again). Moved
+  `onKeyDownList` handler for Enter and Backspace to `insertBreak` and
+  `deleteBackward`.
+
+### Features
+
+- queries:
+  - `isSelectionInListItem`
+- transforms:
+  - `moveListItemDown`
+  - `moveListItemUp`
+  - `insertListItem`
+
+### Bug Fixes
+
+- Could not use IME in nested lists, fixed using `withList`.
+
+## v0.65.1
+
+### Bug Fixes
+
+- Add `editor` as deps in `Editable` `onKeyDown`, `decorate` and
+  `onDOMBeforeInput`. Sometimes the editor reference can change, e.g.
+  when resetting the editor.
+
 ## v0.65.0
 
 ### Breaking Changes

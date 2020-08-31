@@ -13,7 +13,7 @@ export const deserializeCode = (
     leaf: getLeafDeserializer({
       type: code.type,
       rules: [
-        { nodeNames: ['CODE', 'KBD'] },
+        { nodeNames: ['CODE'] },
         {
           style: {
             wordWrap: 'break-word',

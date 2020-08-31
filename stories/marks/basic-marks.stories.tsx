@@ -7,6 +7,7 @@ import {
   FormatItalic,
   FormatStrikethrough,
   FormatUnderlined,
+  Keyboard,
 } from '@styled-icons/material';
 import {
   BoldPlugin,
@@ -15,9 +16,11 @@ import {
   HeadingPlugin,
   HeadingToolbar,
   ItalicPlugin,
+  KbdPlugin,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
+  MARK_KBD,
   MARK_STRIKETHROUGH,
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
@@ -46,6 +49,7 @@ export default {
     SubscriptPlugin,
     SuperscriptPlugin,
     CodePlugin,
+    KbdPlugin,
     ToolbarMark,
   },
 };
@@ -63,6 +67,7 @@ export const All = () => {
   if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(options));
   if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
+  if (boolean('KbdPlugin', true)) plugins.push(KbdPlugin(options));
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueBasicMarks);
@@ -84,6 +89,7 @@ export const All = () => {
             icon={<FormatStrikethrough />}
           />
           <ToolbarMark type={MARK_CODE} icon={<CodeAlt />} />
+          <ToolbarMark type={MARK_KBD} icon={<Keyboard />} />
           <ToolbarMark
             type={MARK_SUPERSCRIPT}
             clear={MARK_SUBSCRIPT}
