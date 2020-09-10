@@ -8,10 +8,10 @@
     "**fixture**"
   ],
   "includeMergedTags": true,
-  "npmClient": "yarn",
+  "npmClient": "npm",
   "packages": [
     "packages/*"
   ],
-  "useWorkspaces": true,
+  "useWorkspaces": false,
   "version": "0.66.7"
 }

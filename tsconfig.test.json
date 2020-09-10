@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "paths": {
+      "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
+    }
   }
 }
