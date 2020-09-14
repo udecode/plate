@@ -1,10 +1,10 @@
+import { cloneDeep } from 'lodash';
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries/index';
 import { defaultsDeepToNodes } from '../../transforms/defaultsDeepToNodes';
 import { mergeDeepToNodes } from '../../transforms/mergeDeepToNodes';
 import { QueryOptions } from '../../types/QueryOptions.types';
-import { cloneDeep } from 'lodash';
 
 export interface WithNodeIDProps extends QueryOptions {
   // Key used for the id. Default is `id`.
@@ -14,7 +14,7 @@ export interface WithNodeIDProps extends QueryOptions {
   // Filter `Text` nodes.
   filterText?: boolean;
   // The existing ID is still reset even if the ID already exists. Default is `false`.
-  resetExistingID?: boolean
+  resetExistingID?: boolean;
 }
 
 /**
@@ -47,9 +47,11 @@ export const withNodeID = ({
       };
 
       const node = cloneDeep(operation.node);
-      
+
       // it will not overwrite ids once it's set as it's read-only
-      const applyDeepToNodes = resetExistingID ? mergeDeepToNodes : defaultsDeepToNodes;
+      const applyDeepToNodes = resetExistingID
+        ? mergeDeepToNodes
+        : defaultsDeepToNodes;
       applyDeepToNodes({
         node,
         source: idPropsCreator,

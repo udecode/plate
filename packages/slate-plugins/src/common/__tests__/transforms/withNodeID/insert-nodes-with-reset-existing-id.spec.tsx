@@ -24,9 +24,10 @@ const output = (
 ) as any;
 
 it('should reset the id', () => {
-  const editor = withNodeID({ idCreator: idCreatorFixture, resetExistingID: true })(
-    withTransforms()(withHistory(input))
-  );
+  const editor = withNodeID({
+    idCreator: idCreatorFixture,
+    resetExistingID: true,
+  })(withTransforms()(withHistory(input)));
 
   editor.insertNodes(
     (

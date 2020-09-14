@@ -85,7 +85,7 @@ it('should be draggable in readOnly if allowReadOnly', () => {
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({
     component: DEFAULTS_PARAGRAPH.p.component,
-    allowReadOnly: true
+    allowReadOnly: true,
   });
   const { container } = render(
     <DndProvider backend={TestBackend}>
@@ -102,6 +102,5 @@ it('should be draggable in readOnly if allowReadOnly', () => {
   );
   expect(container.querySelector('.slate-Selectable')).toBeInTheDocument();
 });
-
 
 it.todo('should be draggable');
