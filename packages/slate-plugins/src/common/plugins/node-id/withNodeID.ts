@@ -1,7 +1,9 @@
+import { cloneDeep } from 'lodash';
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries/index';
 import { defaultsDeepToNodes } from '../../transforms/defaultsDeepToNodes';
+import { mergeDeepToNodes } from '../../transforms/mergeDeepToNodes';
 import { QueryOptions } from '../../types/QueryOptions.types';
 
 export interface WithNodeIDProps extends QueryOptions {
@@ -11,6 +13,8 @@ export interface WithNodeIDProps extends QueryOptions {
   idCreator?: Function;
   // Filter `Text` nodes.
   filterText?: boolean;
+  // The existing ID is still reset even if the ID already exists. Default is `false`.
+  resetExistingID?: boolean;
 }
 
 /**
@@ -20,6 +24,7 @@ export const withNodeID = ({
   idKey = 'id',
   idCreator = () => Date.now(),
   filterText = true,
+  resetExistingID = false,
   filter = () => true,
   allow,
   exclude,
@@ -41,10 +46,13 @@ export const withNodeID = ({
           : isDescendant(node);
       };
 
-      const { node } = operation;
+      const node = cloneDeep(operation.node);
 
       // it will not overwrite ids once it's set as it's read-only
-      defaultsDeepToNodes({
+      const applyDeepToNodes = resetExistingID
+        ? mergeDeepToNodes
+        : defaultsDeepToNodes;
+      applyDeepToNodes({
         node,
         source: idPropsCreator,
         query: {
