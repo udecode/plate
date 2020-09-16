@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { Editor, Path, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
 import { isSelectionAtBlockStart } from '../../common/queries/isSelectionAtBlockStart';
@@ -25,8 +25,17 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
 
   editor.insertBreak = () => {
     const res = isSelectionInListItem(editor, options);
-
     let moved: boolean | undefined;
+
+    if (res) {
+      const { listItemNode, listItemPath } = res
+      if (listItemNode.children.length > 1) {
+        return Transforms.insertNodes(editor, {
+          type: DEFAULTS_LIST.li.type,
+          children: [{ type: DEFAULTS_LIST.p.type, children: [{ text: '' }]}]
+        }, { at: Path.next(listItemPath), select: true });
+      }
+    }
     if (res && isBlockAboveEmpty(editor)) {
       const { listNode, listPath, listItemPath } = res;
       moved = moveListItemUp(editor, listNode, listPath, listItemPath, options);
@@ -59,11 +68,19 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
     const res = isSelectionInListItem(editor, options);
 
     let moved: boolean | undefined;
+
     if (res && isSelectionAtBlockStart(editor)) {
       const { listNode, listPath, listItemPath } = res;
 
       moved = moveListItemUp(editor, listNode, listPath, listItemPath, options);
       if (moved) return;
+    }
+
+    if (res) {
+      const { listItemNode } = res;
+      if (listItemNode.children.length > 1 && Range.isCollapsed(editor.selection as Range)) {
+        return deleteBackward(unit);
+      }
     }
 
     const didReset = onKeyDownResetBlockType({

@@ -4,6 +4,7 @@ import { isRangeAtRoot } from '../../../common/queries/isRangeAtRoot';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
+import { getAboveByType } from '../../../common/queries/getAboveByType';
 
 /**
  * Is the selection in li>p.
@@ -20,12 +21,13 @@ export const isSelectionInListItem = (
     isNodeTypeIn(editor, li.type) &&
     !isRangeAtRoot(editor.selection)
   ) {
-    const [paragraphNode, paragraphPath] = Editor.parent(
+    const [, paragraphPath] = Editor.parent(
       editor,
       editor.selection
     );
-    if (paragraphNode.type !== p.type) return;
-    const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
+
+    const [listItemNode, listItemPath] = getAboveByType(editor, li.type) ||  Editor.parent(editor, paragraphPath);
+
     if (listItemNode.type !== li.type) return;
     const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
