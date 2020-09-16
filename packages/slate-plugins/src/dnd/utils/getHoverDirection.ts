@@ -26,6 +26,7 @@ export const getHoverDirection = (
 
   // Determine mouse position
   const clientOffset = monitor.getClientOffset();
+  if (!clientOffset) return
 
   // Get pixels to the top
   const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
