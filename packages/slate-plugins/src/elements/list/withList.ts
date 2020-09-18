@@ -28,12 +28,16 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
     let moved: boolean | undefined;
 
     if (res) {
-      const { listItemNode, listItemPath } = res
+      const { listItemNode, listItemPath } = res;
       if (listItemNode.children.length > 1) {
-        return Transforms.insertNodes(editor, {
-          type: li.type,
-          children: [{ type: p.type, children: [{ text: '' }]}]
-        }, { at: Path.next(listItemPath), select: true });
+        return Transforms.insertNodes(
+          editor,
+          {
+            type: li.type,
+            children: [{ type: p.type, children: [{ text: '' }] }],
+          },
+          { at: Path.next(listItemPath), select: true }
+        );
       }
     }
     if (res && isBlockAboveEmpty(editor)) {
@@ -78,7 +82,10 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
 
     if (res) {
       const { listItemNode } = res;
-      if (listItemNode.children.length > 1 && Range.isCollapsed(editor.selection as Range)) {
+      if (
+        listItemNode.children.length > 1 &&
+        Range.isCollapsed(editor.selection as Range)
+      ) {
         return deleteBackward(unit);
       }
     }

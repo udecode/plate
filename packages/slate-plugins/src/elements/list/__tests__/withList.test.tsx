@@ -1,7 +1,7 @@
 import { createEditor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { DEFAULTS_LIST, withList } from '..';
 import { getAboveByType } from '../../../common/queries/getAboveByType';
+import { DEFAULTS_LIST, withList } from '..';
 
 const listNodeWithImage = {
   type: DEFAULTS_LIST.ul.type,
