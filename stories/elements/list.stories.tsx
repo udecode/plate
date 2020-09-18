@@ -14,11 +14,14 @@ import {
   ToolbarList,
   withList,
   withToggleType,
+  ImagePlugin,
+  withImageUpload, ExitBreakPlugin, SoftBreakPlugin
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  headingTypes,
   initialValueList,
   options,
   optionsResetBlockTypes,
@@ -37,10 +40,49 @@ const withPlugins = [
   withHistory,
   withToggleType({ defaultType: options.p.type }),
   withList(options),
+  withImageUpload(options)
 ] as const;
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  const plugins: any[] = [
+    ParagraphPlugin(options),
+    HeadingPlugin(options),
+    ImagePlugin(options),
+    SoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [
+              options.code_block.type,
+              options.blockquote.type,
+              options.td.type,
+            ],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: headingTypes,
+          },
+        },
+      ],
+    }),
+  ];
   if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
   if (boolean('ResetBlockTypePlugin', true))

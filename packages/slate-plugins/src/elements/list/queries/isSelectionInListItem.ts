@@ -1,4 +1,5 @@
 import { Editor } from 'slate';
+import { getAboveByType } from '../../../common/queries/getAboveByType';
 import { isNodeTypeIn } from '../../../common/queries/isNodeTypeIn';
 import { isRangeAtRoot } from '../../../common/queries/isRangeAtRoot';
 import { setDefaults } from '../../../common/utils/setDefaults';
@@ -13,19 +14,18 @@ export const isSelectionInListItem = (
   editor: Editor,
   options?: ListOptions
 ) => {
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+  const { li } = setDefaults(options, DEFAULTS_LIST);
 
   if (
     editor.selection &&
     isNodeTypeIn(editor, li.type) &&
     !isRangeAtRoot(editor.selection)
   ) {
-    const [paragraphNode, paragraphPath] = Editor.parent(
-      editor,
-      editor.selection
-    );
-    if (paragraphNode.type !== p.type) return;
-    const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
+    const [, paragraphPath] = Editor.parent(editor, editor.selection);
+
+    const [listItemNode, listItemPath] =
+      getAboveByType(editor, li.type) || Editor.parent(editor, paragraphPath);
+
     if (listItemNode.type !== li.type) return;
     const [listNode, listPath] = Editor.parent(editor, listItemPath);
 
