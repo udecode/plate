@@ -31,8 +31,8 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
       const { listItemNode, listItemPath } = res
       if (listItemNode.children.length > 1) {
         return Transforms.insertNodes(editor, {
-          type: DEFAULTS_LIST.li.type,
-          children: [{ type: DEFAULTS_LIST.p.type, children: [{ text: '' }]}]
+          type: li.type,
+          children: [{ type: p.type, children: [{ text: '' }]}]
         }, { at: Path.next(listItemPath), select: true });
       }
     }
