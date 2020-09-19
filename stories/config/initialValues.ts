@@ -888,19 +888,19 @@ const createTable = () => ({
       type: options.tr.type,
       children: [
         {
-          type: options.th.type,
+          type: options.td.type,
           children: [createParagraph('')],
         },
         {
-          type: options.th.type,
+          type: options.td.type,
           children: [createParagraph('Human', options.bold.type)],
         },
         {
-          type: options.th.type,
+          type: options.td.type,
           children: [createParagraph('Dog', options.bold.type)],
         },
         {
-          type: options.th.type,
+          type: options.td.type,
           children: [createParagraph('Cat', options.bold.type)],
         },
       ],
