@@ -7,7 +7,7 @@ import { WithTableOptions } from './types';
 export const withTable = (options?: WithTableOptions) => <T extends Editor>(
   editor: T
 ) => {
-  const { td } = setDefaults(options, DEFAULTS_TABLE);
+  const { td, th } = setDefaults(options, DEFAULTS_TABLE);
 
   const { deleteBackward, deleteForward } = editor;
 
@@ -18,7 +18,7 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
 
     if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === td.type,
+        match: (n) => n.type === td.type || n.type === th.type,
       });
 
       if (cell) {
