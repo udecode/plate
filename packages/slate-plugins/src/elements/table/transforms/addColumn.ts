@@ -24,7 +24,7 @@ export const addColumn = (editor: Editor, options?: TableOptions) => {
 
         Transforms.insertNodes(
           editor,
-          getEmptyCellNode({ ...options, header: !rowIdx }),
+          getEmptyCellNode({ ...options }),
           {
             at: newCellPath,
             select: rowIdx === currentRowIdx,
