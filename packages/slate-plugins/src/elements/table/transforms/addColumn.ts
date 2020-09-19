@@ -22,14 +22,10 @@ export const addColumn = (editor: Editor, options?: TableOptions) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
 
-        Transforms.insertNodes(
-          editor,
-          getEmptyCellNode({ ...options, header: !rowIdx }),
-          {
-            at: newCellPath,
-            select: rowIdx === currentRowIdx,
-          }
-        );
+        Transforms.insertNodes(editor, getEmptyCellNode({ ...options }), {
+          at: newCellPath,
+          select: rowIdx === currentRowIdx,
+        });
       });
     }
   }
