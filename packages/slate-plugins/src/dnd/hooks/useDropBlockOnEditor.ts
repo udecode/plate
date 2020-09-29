@@ -1,7 +1,6 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
 import { Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getPreviousBlockById } from '../../common/queries/getPreviousBlockById';
 import { isExpanded } from '../../common/queries/isExpanded';
 import { DragItemBlock } from '../components/Selectable.types';
 import { getBlockPathById } from '../utils/getBlockPathById';
@@ -24,10 +23,8 @@ export const useDropBlockOnEditor = (
 ) => {
   return useDrop({
     accept: 'block',
-    // canDrop: () => false,
     drop: (dragItem: DragItemBlock, monitor: DropTargetMonitor) => {
       const direction = getHoverDirection(dragItem, monitor, blockRef, id);
-
       if (!direction) return;
 
       const dragPath = getBlockPathById(editor, dragItem.id);
@@ -44,9 +41,13 @@ export const useDropBlockOnEditor = (
       }
 
       if (direction === 'top') {
-        const nodeBeforeDrop = getPreviousBlockById(editor, id);
-        if (!nodeBeforeDrop) return;
-        [, dropPath] = nodeBeforeDrop;
+        const nodePath = getBlockPathById(editor, id) as Path;
+
+        if (!nodePath) return;
+        dropPath = [
+          ...nodePath.slice(0, -1),
+          nodePath[nodePath.length - 1] - 1,
+        ];
 
         if (Path.equals(dragPath, dropPath)) return;
       }
@@ -54,7 +55,10 @@ export const useDropBlockOnEditor = (
       if (direction) {
         const _dropPath = dropPath as Path;
 
-        const before = Path.isBefore(dragPath, _dropPath);
+        const before =
+          Path.isBefore(dragPath, _dropPath) &&
+          Path.compare(dragPath, _dropPath) !== -1 &&
+          Path.isSibling(dragPath, _dropPath);
         const to = before ? _dropPath : Path.next(_dropPath);
 
         Transforms.moveNodes(editor, {

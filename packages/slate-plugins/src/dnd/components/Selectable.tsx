@@ -31,7 +31,7 @@ const SelectableBase = ({
 
   const { dropLine, dragRef, isDragging } = useDndBlock({
     id: element.id,
-    blockRef,
+    blockRef: rootRef,
   });
 
   const dragWrapperRef = useRef(null);
