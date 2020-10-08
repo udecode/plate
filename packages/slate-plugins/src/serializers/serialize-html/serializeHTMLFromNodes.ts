@@ -88,6 +88,14 @@ const getLeaf = (leafProps: RenderLeafProps, plugins: SlatePlugin[]) => {
   }, children);
 };
 
+const isEncoded = (str = '') => {
+  try {
+    return str !== decodeURIComponent(str);
+  } catch (error) {
+    return false;
+  }
+};
+
 /**
  *
  * @param plugins
@@ -102,7 +110,9 @@ export const serializeHTMLFromNodes = (plugins: SlatePlugin[]) => (
           {
             leaf: node as SlateText,
             text: node as SlateText,
-            children: node.text,
+            children: isEncoded(node.text)
+              ? node.text
+              : encodeURIComponent(node.text),
             attributes: { 'data-slate-leaf': true },
           },
           plugins
