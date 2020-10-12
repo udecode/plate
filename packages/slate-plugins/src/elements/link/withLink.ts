@@ -1,3 +1,4 @@
+import { get } from 'lodash';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import {
@@ -41,10 +42,6 @@ const upsertLink = (
 };
 
 /**
- * To used when call withLink with rangeBeforeOptions. Default value for options is undefined
- */
-export const DEFAULT_WITH_LINK_OPTIONS = undefined;
-/**
  * Insert space after a url to wrap a link.
  * Lookup from the block start to the cursor to check if there is an url.
  * If not found, lookup before the cursor for a space character to check the url.
@@ -53,10 +50,9 @@ export const DEFAULT_WITH_LINK_OPTIONS = undefined;
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = (
-  options?: WithLinkOptions,
-  rangeBeforeOptions?: RangeBeforeOptions
-) => <T extends ReactEditor>(editor: T) => {
+export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
+  editor: T
+) => {
   const { link, isUrl } = setDefaults(options, {
     ...DEFAULTS_LINK,
     isUrl: isUrlProtocol,
@@ -87,13 +83,9 @@ export const withLink = (
 
       const rangeOptions: RangeBeforeOptions = {
         ...DEFAULT_RANGE_BEFORE_OPTIONS,
-        ...rangeBeforeOptions,
-      }
-      const beforeWordRange = getRangeBefore(
-        editor,
-        selection,
-        rangeOptions
-      );
+        ...get(options, 'rangeBeforeOptions', {}),
+      };
+      const beforeWordRange = getRangeBefore(editor, selection, rangeOptions);
 
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
