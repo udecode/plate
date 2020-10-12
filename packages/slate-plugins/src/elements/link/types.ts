@@ -2,6 +2,7 @@ import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
+import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
   RenderNodeOptions,
   RenderNodePropsOptions,
@@ -62,7 +63,12 @@ export interface LinkRenderElementOptions
 export interface LinkDeserializeOptions
   extends LinkPluginOptions<'type' | 'rootProps'> {}
 
-export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {}
+export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
+  /**
+   * Allow custom config for rangeBeforeOptions.
+   */
+  rangeBeforeOptions?: RangeBeforeOptions;
+}
 
 export interface LinkOptions extends LinkPluginOptions<'type'> {}
 
