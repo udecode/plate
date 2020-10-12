@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import get from 'lodash/get';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import {
