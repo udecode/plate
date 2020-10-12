@@ -1,6 +1,10 @@
+import get from 'lodash/get';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getRangeBefore } from '../../common/queries/getRangeBefore';
+import {
+  getRangeBefore,
+  RangeBeforeOptions,
+} from '../../common/queries/getRangeBefore';
 import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
 import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
@@ -57,6 +61,12 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
   const { insertData, insertText } = editor;
 
   editor.insertText = (text) => {
+    const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
+      matchString: ' ',
+      skipInvalid: true,
+      afterMatch: true,
+      multiPaths: true,
+    };
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
@@ -71,12 +81,11 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
         return insertText(text);
       }
 
-      const beforeWordRange = getRangeBefore(editor, selection, {
-        matchString: ' ',
-        skipInvalid: true,
-        afterMatch: true,
-        multiPaths: true,
-      });
+      const rangeOptions: RangeBeforeOptions = {
+        ...DEFAULT_RANGE_BEFORE_OPTIONS,
+        ...get(options, 'rangeBeforeOptions', {}),
+      };
+      const beforeWordRange = getRangeBefore(editor, selection, rangeOptions);
 
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
