@@ -41,6 +41,10 @@ const upsertLink = (
 };
 
 /**
+ * To used when call withLink with rangeBeforeOptions. Default value for options is undefined
+ */
+export const DEFAULT_WITH_LINK_OPTIONS = undefined;
+/**
  * Insert space after a url to wrap a link.
  * Lookup from the block start to the cursor to check if there is an url.
  * If not found, lookup before the cursor for a space character to check the url.
