@@ -48,10 +48,6 @@ export type LinkPluginOptionsValues = RenderNodeOptions &
      * Callback to validate an url.
      */
     isUrl?: (text: string) => boolean;
-    /**
-     * Allow custom config for rangeBeforeOptions.
-     */
-    rangeBeforeOptions?: RangeBeforeOptions;
   };
 export type LinkPluginOptionsKeys = keyof LinkPluginOptionsValues;
 export type LinkPluginOptions<
@@ -67,7 +63,12 @@ export interface LinkRenderElementOptions
 export interface LinkDeserializeOptions
   extends LinkPluginOptions<'type' | 'rootProps'> {}
 
-export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {}
+export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
+   /**
+     * Allow custom config for rangeBeforeOptions.
+     */
+    rangeBeforeOptions?: RangeBeforeOptions;
+}
 
 export interface LinkOptions extends LinkPluginOptions<'type'> {}
 
