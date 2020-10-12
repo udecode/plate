@@ -61,6 +61,12 @@ export const withLink = (
   const { insertData, insertText } = editor;
 
   editor.insertText = (text) => {
+    const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
+      matchString: ' ',
+      skipInvalid: true,
+      afterMatch: true,
+      multiPaths: true,
+    };
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
@@ -75,12 +81,11 @@ export const withLink = (
         return insertText(text);
       }
 
-      const beforeWordRange = getRangeBefore(editor, selection, {
-        matchString: ' ',
-        skipInvalid: true,
-        afterMatch: true,
-        multiPaths: true,
-      });
+      const beforeWordRange = getRangeBefore(
+        editor,
+        selection,
+        DEFAULT_RANGE_BEFORE_OPTIONS
+      );
 
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
