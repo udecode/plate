@@ -64,10 +64,10 @@ export interface LinkDeserializeOptions
   extends LinkPluginOptions<'type' | 'rootProps'> {}
 
 export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
-   /**
-     * Allow custom config for rangeBeforeOptions.
-     */
-    rangeBeforeOptions?: RangeBeforeOptions;
+  /**
+   * Allow custom config for rangeBeforeOptions.
+   */
+  rangeBeforeOptions?: RangeBeforeOptions;
 }
 
 export interface LinkOptions extends LinkPluginOptions<'type'> {}
