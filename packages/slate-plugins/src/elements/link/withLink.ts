@@ -1,6 +1,9 @@
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getRangeBefore } from '../../common/queries/getRangeBefore';
+import {
+  getRangeBefore,
+  RangeBeforeOptions,
+} from '../../common/queries/getRangeBefore';
 import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
 import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
@@ -46,9 +49,10 @@ const upsertLink = (
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
-  editor: T
-) => {
+export const withLink = (
+  options?: WithLinkOptions,
+  rangeBeforeOptions?: RangeBeforeOptions
+) => <T extends ReactEditor>(editor: T) => {
   const { link, isUrl } = setDefaults(options, {
     ...DEFAULTS_LINK,
     isUrl: isUrlProtocol,
