@@ -81,10 +81,14 @@ export const withLink = (
         return insertText(text);
       }
 
+      const rangeOptions: RangeBeforeOptions = {
+        ...DEFAULT_RANGE_BEFORE_OPTIONS,
+        ...rangeBeforeOptions,
+      }
       const beforeWordRange = getRangeBefore(
         editor,
         selection,
-        DEFAULT_RANGE_BEFORE_OPTIONS
+        rangeOptions
       );
 
       if (beforeWordRange) {
