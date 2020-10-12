@@ -2,6 +2,7 @@ import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
+import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
   RenderNodeOptions,
   RenderNodePropsOptions,
@@ -47,6 +48,10 @@ export type LinkPluginOptionsValues = RenderNodeOptions &
      * Callback to validate an url.
      */
     isUrl?: (text: string) => boolean;
+    /**
+     * Allow custom config for rangeBeforeOptions.
+     */
+    rangeBeforeOptions?: RangeBeforeOptions;
   };
 export type LinkPluginOptionsKeys = keyof LinkPluginOptionsValues;
 export type LinkPluginOptions<
