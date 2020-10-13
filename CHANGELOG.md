@@ -54,7 +54,7 @@ patch version bumps.
 
 ### Bug Fixes
 
-- `serializeHTMLFromNodes: it should now work with plugins using slate
+- `serializeHTMLFromNodes`: it should now work with plugins using slate
   hooks
 - `isSelectionInListItem`: it's now using `getParent` to not throw an
   error when selecting the root.
