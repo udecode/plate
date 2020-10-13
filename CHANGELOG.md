@@ -10,6 +10,9 @@ patch version bumps.
 
 ### Breaking Changes
 
+- removed:
+  - `isRangeAtRoot`
+  - `isPointAtRoot`
 - `deserializeHTMLElement`, `deserializeHTMLToDocument`,
   `deserializeHTMLToDocumentFragment`:
   - Refactor parameters from `(plugins: SlatePlugin[]) => (element:
@@ -35,10 +38,14 @@ patch version bumps.
 
 ### Features
 
+- `common/queries`:
+  - `getParent` – Calls `Editor.parent` and returns undefined if there
+    is no parent instead of throwing an error.
 - `common/utils`
   - `createElementWithSlate` – Create a React element wrapped in a Slate provider
 - `types`:
   - `SlateProps`
+  - `EditorParentOptions`
 - `serializeHTMLFromNodes`:
   - new option `stripDataAttributes` (default:
   `true`) – Enable stripping data attributes
@@ -47,8 +54,10 @@ patch version bumps.
 
 ### Bug Fixes
 
-- `serializeHTMLFromNodes`: it should now work with plugins using slate
+- `serializeHTMLFromNodes: it should now work with plugins using slate
   hooks
+- `isSelectionInListItem`: it's now using `getParent` to not throw an
+  error when selecting the root.
 
 ## v0.66.0
 
