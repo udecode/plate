@@ -153,3 +153,26 @@ it('serialize complex example with multiple no types on top level node to html',
     '<div><p class="slate-p">Some paragraph that contains, <em class="slate-italic">italicized text</em> and <strong class="slate-bold">bolded text</strong> is first.</p></div><div><strong class="slate-bold">FOO</strong></div>'
   );
 });
+
+it('serialize string with %', () => {
+  const render = serializeHTMLFromNodes([ParagraphPlugin()])([
+    {
+      children: [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'None encoded string 100%',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      children: [{ text: 'Encoded string 100%25' }],
+    },
+  ]);
+  expect(render).toBe(
+    '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%</div>'
+  );
+});

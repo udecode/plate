@@ -114,6 +114,14 @@ const getLeaf = ({
   }, children);
 };
 
+const isEncoded = (str = '') => {
+  try {
+    return str !== decodeURIComponent(str);
+  } catch (error) {
+    return false;
+  }
+};
+
 /**
  * Convert Slate Nodes into HTML string
  */
@@ -151,7 +159,9 @@ export const serializeHTMLFromNodes = ({
           leafProps: {
             leaf: node as SlateText,
             text: node as SlateText,
-            children: node.text,
+            children: isEncoded(node.text)
+              ? node.text
+              : encodeURIComponent(node.text),
             attributes: { 'data-slate-leaf': true },
           },
           slateProps,
