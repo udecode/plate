@@ -1,4 +1,4 @@
-import { Editor, Point } from 'slate';
+import { Editor, Node, Point, Transforms } from 'slate';
 import { isCollapsed } from '../../common/queries/isCollapsed';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from './defaults';
@@ -8,6 +8,8 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
   editor: T
 ) => {
   const { td, th } = setDefaults(options, DEFAULTS_TABLE);
+  const matchCells = (node: Node) =>
+    node.type === td.type || node.type === th.type;
 
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
@@ -20,7 +22,7 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
     // Prevent deletions within a cell
     if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === td.type || n.type === th.type,
+        match: matchCells,
       });
 
       if (cell) {
@@ -35,7 +37,7 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
     // Prevent deleting cell when selection is before or after a table
     const next = nextPoint(editor, selection, { unit });
     const [cell] = Editor.nodes(editor, {
-      match: (n) => n.type === td.type || n.type === th.type,
+      match: matchCells,
       at: next,
     });
     if (cell) {
@@ -48,17 +50,25 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
   editor.deleteFragment = () => {
     const { selection } = editor;
     const [start] = Editor.nodes(editor, {
-      match: (n) => n.type === td.type,
+      match: matchCells,
       at: selection?.anchor.path,
     });
     const [end] = Editor.nodes(editor, {
-      match: (n) => n.type === td.type,
+      match: matchCells,
       at: selection?.focus.path,
     });
     // Skip deletes if they start or end in a table cell, unless start & end in the same cell
     if ((start || end) && start?.[0] !== end?.[0]) {
-      // TODO: Clear cells content
-      // TODO: Delete content oustide the table
+      // Clear cells content
+      const cells = Editor.nodes(editor, {
+        match: matchCells,
+      });
+      for (const [, path] of cells) {
+        for (const [, childPath] of Node.children(editor, path)) {
+          Transforms.removeNodes(editor, { at: childPath });
+        }
+      }
+      Transforms.collapse(editor);
       return;
     }
     deleteFragment();
