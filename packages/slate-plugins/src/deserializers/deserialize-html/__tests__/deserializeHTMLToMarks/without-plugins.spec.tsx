@@ -2,7 +2,7 @@ import { deserializeHTMLToMarks } from '../../utils/index';
 
 const input = {
   plugins: [{}],
-  el: document.createElement('strong'),
+  element: document.createElement('strong'),
   children: [{ text: 'test' }],
 };
 

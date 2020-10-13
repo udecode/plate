@@ -6,13 +6,13 @@ import { DeserializeHTMLChildren } from '../types';
  * Deserialize HTML body element to Fragment.
  */
 export const deserializeHTMLToFragment = ({
-  el,
+  element,
   children,
 }: {
-  el: HTMLElement;
+  element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }): Descendant[] | undefined => {
-  if (el.nodeName === 'BODY') {
+  if (element.nodeName === 'BODY') {
     return jsx('fragment', {}, children);
   }
 };

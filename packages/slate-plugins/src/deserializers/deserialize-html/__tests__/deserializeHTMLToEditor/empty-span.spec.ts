@@ -12,5 +12,10 @@ const output: SlateDocument = [
 ];
 
 it('should be', () => {
-  expect(deserializeHTMLToDocument(plugins)(body)).toEqual(output);
+  expect(
+    deserializeHTMLToDocument({
+      plugins,
+      element: body,
+    })
+  ).toEqual(output);
 });

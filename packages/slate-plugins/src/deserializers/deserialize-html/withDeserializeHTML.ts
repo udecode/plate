@@ -25,7 +25,10 @@ export const withDeserializeHTML = ({
 
     if (html) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
-      const fragment = deserializeHTMLToDocumentFragment(plugins)(body);
+      const fragment = deserializeHTMLToDocumentFragment({
+        plugins,
+        element: body,
+      });
 
       const firstNodeType = fragment[0].type as string | undefined;
 

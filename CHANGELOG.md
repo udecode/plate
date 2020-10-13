@@ -6,6 +6,48 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.67.0
+
+### Breaking Changes
+
+- `deserializeHTMLElement`, `deserializeHTMLToDocument`,
+  `deserializeHTMLToDocumentFragment`:
+  - Refactor parameters from `(plugins: SlatePlugin[]) => (element:
+    HTMLElement)` to `({ plugins: SlatePlugin[]; element: HTMLElement; }`
+- `deserializeHTMLToElement`, `deserializeHTMLToFragment`,
+  `deserializeHTMLToMarks`:
+  - Refactor option `el` to `element`
+- `serializeHTMLFromNodes`:
+  - Refactor from `(plugins: SlatePlugin[]) => ( nodes: SlateNode[] )`
+    to
+```
+{
+  /**
+   * Plugins with renderElement or renderLeaf.
+   */
+  plugins: SlatePlugin[];
+  /**
+   * Slate nodes to convert to HTML.
+   */
+  nodes: SlateNode[];
+}
+```
+- 
+
+### Features
+
+- `common/utils`
+  - `createElementWithSlate` – Create a React element wrapped in a Slate provider
+- `types`:
+  - `SlateProps`
+- `serializeHTMLFromNodes`: new option `stripDataAttributes` (default:
+  `true`)
+
+### Bug Fixes
+
+- `serializeHTMLFromNodes`: it should now work with plugins using slate
+  hooks
+
 ## v0.66.0
 
 ### Breaking Changes

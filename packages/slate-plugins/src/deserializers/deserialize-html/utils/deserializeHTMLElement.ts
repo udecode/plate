@@ -5,8 +5,12 @@ import { deserializeHTMLNode } from './deserializeHTMLNode';
 /**
  * Deserialize HTML element.
  */
-export const deserializeHTMLElement = (plugins: SlatePlugin[]) => (
-  element: HTMLElement
-): DeserializeHTMLReturn => {
+export const deserializeHTMLElement = ({
+  plugins,
+  element,
+}: {
+  plugins: SlatePlugin[];
+  element: HTMLElement;
+}): DeserializeHTMLReturn => {
   return deserializeHTMLNode(plugins)(element);
 };

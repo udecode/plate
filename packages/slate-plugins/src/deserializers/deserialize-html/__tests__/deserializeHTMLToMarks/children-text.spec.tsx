@@ -9,7 +9,7 @@ import {
 
 const input: DeserializeMarksProps = {
   plugins: [BoldPlugin()],
-  el: document.createElement('strong'),
+  element: document.createElement('strong'),
   children: <fragment>test</fragment>,
 } as any;
 
