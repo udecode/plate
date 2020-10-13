@@ -11,7 +11,7 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
   const matchCells = (node: Node) =>
     node.type === td.type || node.type === th.type;
 
-  const { deleteBackward, deleteForward, deleteFragment } = editor;
+  const { deleteBackward, deleteForward, deleteFragment, insertText } = editor;
 
   const preventDeleteCell = (
     operation: any,
@@ -72,6 +72,20 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
       return;
     }
     deleteFragment();
+  };
+
+  editor.insertText = (text) => {
+    const { selection } = editor;
+    // Collapse selection if multiple cells are selected to avoid breaking the table
+    if (!isCollapsed(selection)) {
+      const [cell] = Editor.nodes(editor, { match: matchCells });
+      if (cell) {
+        Transforms.collapse(editor, { edge: 'end' });
+        insertText(text);
+        return;
+      }
+    }
+    insertText(text);
   };
 
   // prevent deleting cells with deleteBackward
