@@ -32,7 +32,6 @@ patch version bumps.
   nodes: SlateNode[];
 }
 ```
-- 
 
 ### Features
 
@@ -40,8 +39,11 @@ patch version bumps.
   - `createElementWithSlate` – Create a React element wrapped in a Slate provider
 - `types`:
   - `SlateProps`
-- `serializeHTMLFromNodes`: new option `stripDataAttributes` (default:
-  `true`)
+- `serializeHTMLFromNodes`:
+  - new option `stripDataAttributes` (default:
+  `true`) – Enable stripping data attributes
+  - new option `slateProps` (default: empty editor) – Slate props to
+    provide if the rendering depends on slate hooks
 
 ### Bug Fixes
 
