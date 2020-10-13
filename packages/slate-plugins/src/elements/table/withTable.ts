@@ -9,13 +9,15 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
 ) => {
   const { td, th } = setDefaults(options, DEFAULTS_TABLE);
 
-  const { deleteBackward, deleteForward } = editor;
+  const { deleteBackward, deleteForward, deleteFragment } = editor;
 
-  const preventDeleteCell = (operation: any, pointCallback: any) => (
-    unit: any
-  ) => {
+  const preventDeleteCell = (
+    operation: any,
+    pointCallback: any,
+    nextPoint: any
+  ) => (unit: any) => {
     const { selection } = editor;
-
+    // Prevent deletions within a cell
     if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
         match: (n) => n.type === td.type || n.type === th.type,
@@ -30,15 +32,51 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
         }
       }
     }
+    // Prevent deleting cell when selection is before or after a table
+    const next = nextPoint(editor, selection, { unit });
+    const [cell] = Editor.nodes(editor, {
+      match: (n) => n.type === td.type || n.type === th.type,
+      at: next,
+    });
+    if (cell) {
+      return;
+    }
 
     operation(unit);
   };
 
+  editor.deleteFragment = () => {
+    const { selection } = editor;
+    const [start] = Editor.nodes(editor, {
+      match: (n) => n.type === td.type,
+      at: selection?.anchor.path,
+    });
+    const [end] = Editor.nodes(editor, {
+      match: (n) => n.type === td.type,
+      at: selection?.focus.path,
+    });
+    // Skip deletes if they start or end in a table cell, unless start & end in the same cell
+    if ((start || end) && start?.[0] !== end?.[0]) {
+      // TODO: Clear cells content
+      // TODO: Delete content oustide the table
+      return;
+    }
+    deleteFragment();
+  };
+
   // prevent deleting cells with deleteBackward
-  editor.deleteBackward = preventDeleteCell(deleteBackward, Editor.start);
+  editor.deleteBackward = preventDeleteCell(
+    deleteBackward,
+    Editor.start,
+    Editor.before
+  );
 
   // prevent deleting cells with deleteForward
-  editor.deleteForward = preventDeleteCell(deleteForward, Editor.end);
+  editor.deleteForward = preventDeleteCell(
+    deleteForward,
+    Editor.end,
+    Editor.after
+  );
 
   return editor;
 };
