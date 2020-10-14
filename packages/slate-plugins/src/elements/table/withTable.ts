@@ -19,29 +19,28 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
     nextPoint: any
   ) => (unit: any) => {
     const { selection } = editor;
-    // Prevent deletions within a cell
+
     if (isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, {
         match: matchCells,
       });
-
       if (cell) {
+        // Prevent deletions within a cell
         const [, cellPath] = cell;
         const start = pointCallback(editor, cellPath);
 
         if (selection && Point.equals(selection.anchor, start)) {
           return;
         }
+      } else {
+        // Prevent deleting cell when selection is before or after a table
+        const next = nextPoint(editor, selection, { unit });
+        const [nextCell] = Editor.nodes(editor, {
+          match: matchCells,
+          at: next,
+        });
+        if (nextCell) return;
       }
-    }
-    // Prevent deleting cell when selection is before or after a table
-    const next = nextPoint(editor, selection, { unit });
-    const [cell] = Editor.nodes(editor, {
-      match: matchCells,
-      at: next,
-    });
-    if (cell) {
-      return;
     }
 
     operation(unit);
