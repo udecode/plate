@@ -13,15 +13,18 @@ import { serializeHTMLFromNodes } from '../index';
 
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes([ListPlugin()])([
-      {
-        type: 'ul',
-        children: [
-          { type: 'li', children: [{ text: 'Item one' }] },
-          { type: 'li', children: [{ text: 'Item two' }] },
-        ],
-      },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [ListPlugin()],
+      nodes: [
+        {
+          type: 'ul',
+          children: [
+            { type: 'li', children: [{ text: 'Item one' }] },
+            { type: 'li', children: [{ text: 'Item two' }] },
+          ],
+        },
+      ],
+    })
   ).getElementsByTagName('ul')[0];
   expect(render.children.length).toEqual(2);
   expect(render.children[0].outerHTML).toEqual(
@@ -34,15 +37,18 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   expect(
-    serializeHTMLFromNodes([LinkPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      {
-        type: 'a',
-        url: 'https://theuselessweb.com/',
-        children: [{ text: 'link' }],
-      },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [LinkPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        {
+          type: 'a',
+          url: 'https://theuselessweb.com/',
+          children: [{ text: 'link' }],
+        },
+        { text: ' part.' },
+      ],
+    })
   ).toBe(
     'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-link">link</a> part.'
   );
@@ -51,32 +57,38 @@ it('serialize link to html', () => {
 it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([BlockquotePlugin()])([
-        {
-          type: 'blockquote',
-          children: [{ text: 'Blockquoted text here...' }],
-        },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [BlockquotePlugin()],
+        nodes: [
+          {
+            type: 'blockquote',
+            children: [{ text: 'Blockquoted text here...' }],
+          },
+        ],
+      })
     ).getElementsByTagName('blockquote')[0].textContent
   ).toEqual('Blockquoted text here...');
 });
 
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes([HeadingPlugin()])([
-      {
-        type: 'h1',
-        children: [{ text: 'Heading 1' }],
-      },
-      {
-        type: 'h2',
-        children: [{ text: 'Heading 2' }],
-      },
-      {
-        type: 'h3',
-        children: [{ text: 'Heading 3' }],
-      },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [HeadingPlugin()],
+      nodes: [
+        {
+          type: 'h1',
+          children: [{ text: 'Heading 1' }],
+        },
+        {
+          type: 'h2',
+          children: [{ text: 'Heading 2' }],
+        },
+        {
+          type: 'h3',
+          children: [{ text: 'Heading 3' }],
+        },
+      ],
+    })
   );
   expect(render.getElementsByTagName('h1')[0].textContent).toEqual('Heading 1');
   expect(render.getElementsByTagName('h2')[0].textContent).toEqual('Heading 2');
@@ -85,46 +97,55 @@ it('serialize headings to html', () => {
 
 it('serialize paragraph to html', () => {
   expect(
-    serializeHTMLFromNodes([ParagraphPlugin()])([
-      {
-        type: 'p',
-        children: [{ text: 'Some random paragraph here...' }],
-      },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [ParagraphPlugin()],
+      nodes: [
+        {
+          type: 'p',
+          children: [{ text: 'Some random paragraph here...' }],
+        },
+      ],
+    })
   ).toMatch(new RegExp('<p class="slate-p">Some random paragraph here...</p>'));
 });
 
 it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([ImagePlugin()])([
-        {
-          type: 'img',
-          url:
-            'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-          children: [],
-        },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [ImagePlugin()],
+        nodes: [
+          {
+            type: 'img',
+            url:
+              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+            children: [],
+          },
+        ],
+      })
     ).getElementsByTagName('img')[0].src
   ).toEqual('https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg');
 });
 
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes([TablePlugin()])([
-      {
-        type: 'table',
-        children: [
-          {
-            type: 'tr',
-            children: [
-              { type: 'td', children: [{ text: 'Foo' }] },
-              { type: 'td', children: [{ text: 'Bar' }] },
-            ],
-          },
-        ],
-      },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [TablePlugin()],
+      nodes: [
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'tr',
+              children: [
+                { type: 'td', children: [{ text: 'Foo' }] },
+                { type: 'td', children: [{ text: 'Bar' }] },
+              ],
+            },
+          ],
+        },
+      ],
+    })
   ).getElementsByTagName('table');
   expect(
     render.item(0)?.children[0].children[0].children[0].textContent
@@ -136,8 +157,11 @@ it('serialize table to html', () => {
 
 it('serialize alignments to html', () => {
   expect(
-    serializeHTMLFromNodes([AlignPlugin()])([
-      { type: 'align_center', children: [{ text: 'I am centered text!' }] },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [AlignPlugin()],
+      nodes: [
+        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+      ],
+    })
   ).toBe('<div class="slate-align-center">I am centered text!</div>');
 });

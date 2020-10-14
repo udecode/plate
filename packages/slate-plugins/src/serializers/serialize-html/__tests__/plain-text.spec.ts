@@ -6,12 +6,20 @@ it('serializes with edge case where input is non-rich text', () => {
   const input = htmlStringToDOMNode('Some non-rich text here.');
   const output = 'Some non-rich text here.';
   expect(
-    serializeHTMLFromNodes([])(deserializeHTMLToDocumentFragment([])(input))
+    serializeHTMLFromNodes({
+      plugins: [],
+      nodes: deserializeHTMLToDocumentFragment({ plugins: [], element: input }),
+    })
   ).toEqual(output);
 });
 
 it('serializes with edge case where input is text element', () => {
   const input = [{ text: 'Test just text.' }];
   const output = 'Test just text.';
-  expect(serializeHTMLFromNodes([])(input)).toEqual(output);
+  expect(
+    serializeHTMLFromNodes({
+      plugins: [],
+      nodes: input,
+    })
+  ).toEqual(output);
 });

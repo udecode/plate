@@ -1,6 +1,7 @@
 import { Editor } from 'slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
+import { getParent } from './getParent';
 
 /**
  * Is there empty text after the selection.
@@ -14,8 +15,11 @@ export const isBlockTextEmptyAfterSelection = (editor: Editor) => {
 
   const cursor = editor.selection.focus;
 
-  if (!Editor.isEnd(editor, cursor, Editor.parent(editor, editor.selection)[1]))
-    return false;
+  const selectionParentEntry = getParent(editor, editor.selection);
+  if (!selectionParentEntry) return false;
+  const [, selectionParentPath] = selectionParentEntry;
+
+  if (!Editor.isEnd(editor, cursor, selectionParentPath)) return false;
 
   const siblingNodes = getNextSiblingNodes(blockAbove, cursor.path);
 

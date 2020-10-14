@@ -6,7 +6,7 @@ import { DeserializeHTMLChildren } from '../types';
 
 export interface DeserializeMarksProps {
   plugins: SlatePlugin[];
-  el: HTMLElement;
+  element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }
 
@@ -16,7 +16,7 @@ export interface DeserializeMarksProps {
  */
 export const deserializeHTMLToMarks = ({
   plugins,
-  el,
+  element,
   children,
 }: DeserializeMarksProps) => {
   let leaf = {};
@@ -25,7 +25,7 @@ export const deserializeHTMLToMarks = ({
     if (!pluginDeserializers?.leaf) return;
 
     pluginDeserializers.leaf.forEach((deserializer) => {
-      const leafPart = deserializer.deserialize(el);
+      const leafPart = deserializer.deserialize(element);
 
       if (!leafPart) return;
 

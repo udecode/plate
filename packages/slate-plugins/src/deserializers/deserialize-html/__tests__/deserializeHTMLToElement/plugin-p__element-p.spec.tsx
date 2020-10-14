@@ -6,7 +6,7 @@ import { deserializeHTMLToElement } from '../../utils/index';
 
 const input = {
   plugins: [ParagraphPlugin({ p: { type: 'p' } })],
-  el: document.createElement('p'),
+  element: document.createElement('p'),
   children: [{ text: 'test' }],
 };
 

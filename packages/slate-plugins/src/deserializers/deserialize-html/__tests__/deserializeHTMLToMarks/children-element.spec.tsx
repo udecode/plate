@@ -8,7 +8,7 @@ import { deserializeHTMLToMarks } from '../../utils/index';
 
 const input = {
   plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],
-  el: document.createElement('strong'),
+  element: document.createElement('strong'),
   children: [
     <hli>
       <hp>test</hp>test

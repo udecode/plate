@@ -16,5 +16,10 @@ const output = (
 ) as any;
 
 it('should not deserialize the tags without plugins', () => {
-  expect(deserializeHTMLElement(input1)(input2)).toEqual(output.children);
+  expect(
+    deserializeHTMLElement({
+      plugins: input1,
+      element: input2,
+    })
+  ).toEqual(output.children);
 });

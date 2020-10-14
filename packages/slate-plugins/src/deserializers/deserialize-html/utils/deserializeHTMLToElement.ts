@@ -8,33 +8,33 @@ import { DeserializeHTMLChildren } from '../types';
  */
 export const deserializeHTMLToElement = ({
   plugins,
-  el,
+  element,
   children,
 }: {
   plugins: SlatePlugin[];
-  el: HTMLElement;
+  element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }): Element | undefined => {
-  let element: any;
+  let slateElement: any;
 
   plugins.some(({ deserialize: pluginDeserializers }) => {
     if (!pluginDeserializers?.element) return;
 
     return pluginDeserializers.element.some((deserializer) => {
-      const deserialized = deserializer.deserialize(el);
+      const deserialized = deserializer.deserialize(element);
       if (!deserialized) return;
 
-      element = deserialized;
+      slateElement = deserialized;
       return true;
     });
   });
 
-  if (element) {
+  if (slateElement) {
     let descendants = children as Descendant[];
     if (!descendants.length) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', element, descendants);
+    return jsx('element', slateElement, descendants);
   }
 };

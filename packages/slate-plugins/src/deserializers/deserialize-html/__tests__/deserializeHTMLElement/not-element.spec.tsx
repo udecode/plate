@@ -16,5 +16,10 @@ const output = (
 ) as any;
 
 it('should not have the comment node', () => {
-  expect(deserializeHTMLElement(input1)(input2)).toEqual(output.children);
+  expect(
+    deserializeHTMLElement({
+      plugins: input1,
+      element: input2,
+    })
+  ).toEqual(output.children);
 });

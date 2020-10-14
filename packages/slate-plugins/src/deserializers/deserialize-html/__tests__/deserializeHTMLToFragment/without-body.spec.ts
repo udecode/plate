@@ -1,7 +1,7 @@
 import { deserializeHTMLToFragment } from '../../utils/index';
 
 const input = {
-  el: document.createElement('div'),
+  element: document.createElement('div'),
   children: [],
 };
 

@@ -29,7 +29,7 @@ and
 - 💅 Styling.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
-- ✅ Unit tested with `slate@0.58.4`.
+- ✅ Unit tested with `slate@0.59.0`.
 - 📓
   [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)
   and
