@@ -75,6 +75,15 @@
         "test",
         "ideas"
       ]
+    },
+    {
+      "login": "cycle",
+      "name": "Cycle ORM",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/47758579?v=4",
+      "profile": "https://cycle-orm.dev/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
