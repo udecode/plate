@@ -1,4 +1,4 @@
-export const content = [
+export const content = Object.freeze([
   { type: 'p', children: [{ text: 'A' }] },
   {
     type: 'table',
@@ -20,9 +20,9 @@ export const content = [
     ],
   },
   { type: 'p', children: [{ text: 'B' }] },
-] as any;
+]) as any;
 
-export const out = [
+export const out = Object.freeze([
   { type: 'p', children: [{ text: 'A' }] },
   {
     type: 'table',
@@ -44,9 +44,9 @@ export const out = [
     ],
   },
   { type: 'p', children: [{ text: 'B' }] },
-];
+]);
 
-export const output2 = [
+export const output2 = Object.freeze([
   { type: 'p', children: [{ text: 'A' }] },
   {
     type: 'table',
@@ -68,4 +68,4 @@ export const output2 = [
     ],
   },
   { type: 'p', children: [{ text: 'B' }] },
-];
+]);
