@@ -1,33 +1,6 @@
 import { createEditor } from 'slate';
 import { withTable } from '..';
-
-const content = [
-  { type: 'p', children: [{ text: 'A' }] },
-  {
-    type: 'table',
-    children: [
-      {
-        type: 'tr',
-        children: [
-          { type: 'td', children: [{ text: 'A1' }] },
-          { type: 'td', children: [{ text: 'B1' }] },
-        ],
-      },
-      {
-        type: 'tr',
-        children: [
-          { type: 'td', children: [{ text: 'A2' }] },
-          { type: 'td', children: [{ text: 'B2' }] },
-        ],
-      },
-    ],
-  },
-  { type: 'p', children: [{ text: 'B' }] },
-] as any;
-
-const out = [...content];
-out[1].children[0].children[0].children[0].text = '';
-out[1].children[0].children[1].children[0].text = '';
+import { content, out, output2 } from './fixtures';
 
 describe('withTable', () => {
   it('should prevent cell deletions on deleteBackward from outside the table', () => {
@@ -60,6 +33,16 @@ describe('withTable', () => {
     editor.deleteFragment();
     expect(editor.children).toEqual(out);
   });
+  it('should allow deletions within a cell without deleting the cell', () => {
+    const editor = withTable()(createEditor());
+    editor.children = content;
+    editor.selection = {
+      anchor: { path: [1, 0, 0, 0], offset: 1 },
+      focus: { path: [1, 0, 0, 0], offset: 1 },
+    };
+    editor.deleteBackward('character');
+    editor.deleteBackward('character');
+    expect(editor.children).toEqual(output2);
+  });
   it.todo('should prevent cell deletions on insertText');
-  it.todo('should prevent cell deletions on delete within a cell');
 });
