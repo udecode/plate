@@ -62,6 +62,19 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "alantrrs",
+      "name": "Alan",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/689720?v=4",
+      "profile": "https://twitter.com/alantrrs",
+      "contributions": [
+        "code",
+        "plugin",
+        "bug",
+        "test",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
