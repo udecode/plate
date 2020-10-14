@@ -155,23 +155,26 @@ it('serialize complex example with multiple no types on top level node to html',
 });
 
 it('serialize string with %', () => {
-  const render = serializeHTMLFromNodes([ParagraphPlugin()])([
-    {
-      children: [
-        {
-          type: 'p',
-          children: [
-            {
-              text: 'None encoded string 100%',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      children: [{ text: 'Encoded string 100%25' }],
-    },
-  ]);
+  const render = serializeHTMLFromNodes({
+    plugins: [ParagraphPlugin()],
+    nodes: [
+      {
+        children: [
+          {
+            type: 'p',
+            children: [
+              {
+                text: 'None encoded string 100%',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        children: [{ text: 'Encoded string 100%25' }],
+      },
+    ],
+  });
   expect(render).toBe(
     '<div><p class="slate-p">None encoded string 100%</p></div><div>Encoded string 100%</div>'
   );
