@@ -53,7 +53,6 @@ export const decorateCodeBlock = () => (entry: NodeEntry) => {
 
   if (node.type === ELEMENT_CODE_BLOCK) {
     const text = Node.string(node);
-    // const [parent] = Editor.parent(editor, path);
     // const langName: any = parent.lang || 'markup';
     const langName: any = 'javascript';
     const lang = languages[langName];

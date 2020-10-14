@@ -38,13 +38,16 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
     .flat();
 
   // body
-  const fragment = deserializeHTMLToFragment({ el: htmlElement, children });
+  const fragment = deserializeHTMLToFragment({
+    element: htmlElement,
+    children,
+  });
   if (fragment) return fragment;
 
   // element
   const element = deserializeHTMLToElement({
     plugins,
-    el: htmlElement,
+    element: htmlElement,
     children,
   });
   if (element) return element;
@@ -52,7 +55,7 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
   // mark
   return deserializeHTMLToMarks({
     plugins,
-    el: htmlElement,
+    element: htmlElement,
     children,
   });
 };

@@ -6,6 +6,59 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.67.0
+
+### Breaking Changes
+
+- removed:
+  - `isRangeAtRoot`
+  - `isPointAtRoot`
+- `deserializeHTMLElement`, `deserializeHTMLToDocument`,
+  `deserializeHTMLToDocumentFragment`:
+  - Refactor parameters from `(plugins: SlatePlugin[]) => (element:
+    HTMLElement)` to `({ plugins: SlatePlugin[]; element: HTMLElement; }`
+- `deserializeHTMLToElement`, `deserializeHTMLToFragment`,
+  `deserializeHTMLToMarks`:
+  - Refactor option `el` to `element`
+- `serializeHTMLFromNodes`:
+  - Refactor from `(plugins: SlatePlugin[]) => ( nodes: SlateNode[] )`
+    to
+```
+{
+  /**
+   * Plugins with renderElement or renderLeaf.
+   */
+  plugins: SlatePlugin[];
+  /**
+   * Slate nodes to convert to HTML.
+   */
+  nodes: SlateNode[];
+}
+```
+
+### Features
+
+- `common/queries`:
+  - `getParent` – Calls `Editor.parent` and returns undefined if there
+    is no parent instead of throwing an error.
+- `common/utils`
+  - `createElementWithSlate` – Create a React element wrapped in a Slate provider
+- `types`:
+  - `SlateProps`
+  - `EditorParentOptions`
+- `serializeHTMLFromNodes`:
+  - new option `stripDataAttributes` (default:
+  `true`) – Enable stripping data attributes
+  - new option `slateProps` (default: empty editor) – Slate props to
+    provide if the rendering depends on slate hooks
+
+### Bug Fixes
+
+- `serializeHTMLFromNodes`: it should now work with plugins using slate
+  hooks
+- `isSelectionInListItem`: it's now using `getParent` to not throw an
+  error when selecting the root.
+
 ## v0.66.0
 
 ### Breaking Changes

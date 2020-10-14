@@ -12,11 +12,14 @@ import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize bold to html', () => {
   expect(
-    serializeHTMLFromNodes([BoldPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'bold', bold: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [BoldPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'bold', bold: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <strong class="slate-bold">bold</strong> part.'
   );
@@ -24,11 +27,14 @@ it('serialize bold to html', () => {
 
 it('serialize italic to html', () => {
   expect(
-    serializeHTMLFromNodes([ItalicPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'italic', italic: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [ItalicPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'italic', italic: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <em class="slate-italic">italic</em> part.'
   );
@@ -37,11 +43,14 @@ it('serialize italic to html', () => {
 it('serialize highlight to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([HighlightPlugin()])([
-        { text: 'Some paragraph of text with ' },
-        { text: 'highlighted', highlight: true },
-        { text: ' part.' },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [HighlightPlugin()],
+        nodes: [
+          { text: 'Some paragraph of text with ' },
+          { text: 'highlighted', highlight: true },
+          { text: ' part.' },
+        ],
+      })
     ).getElementsByTagName('mark')[0].textContent
   ).toEqual('highlighted');
 });
@@ -49,11 +58,14 @@ it('serialize highlight to html', () => {
 it('serialize strikethrough to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([StrikethroughPlugin()])([
-        { text: 'Some paragraph of text with ' },
-        { text: 'strikethrough', strikethrough: true },
-        { text: ' part.' },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [StrikethroughPlugin()],
+        nodes: [
+          { text: 'Some paragraph of text with ' },
+          { text: 'strikethrough', strikethrough: true },
+          { text: ' part.' },
+        ],
+      })
     ).getElementsByClassName('slate-strikethrough')[0].textContent
   ).toEqual('strikethrough');
 });
@@ -61,11 +73,14 @@ it('serialize strikethrough to html', () => {
 it('serialize code to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([CodePlugin()])([
-        { text: 'Some paragraph of text with ' },
-        { text: 'some code', code: true },
-        { text: ' part.' },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [CodePlugin()],
+        nodes: [
+          { text: 'Some paragraph of text with ' },
+          { text: 'some code', code: true },
+          { text: ' part.' },
+        ],
+      })
     ).getElementsByTagName('code')[0].textContent
   ).toEqual('some code');
 });
@@ -73,22 +88,28 @@ it('serialize code to html', () => {
 it('serialize kbd to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes([KbdPlugin()])([
-        { text: 'Some paragraph of text with ' },
-        { text: 'keyboard shortcut', kbd: true },
-        { text: ' part.' },
-      ])
+      serializeHTMLFromNodes({
+        plugins: [KbdPlugin()],
+        nodes: [
+          { text: 'Some paragraph of text with ' },
+          { text: 'keyboard shortcut', kbd: true },
+          { text: ' part.' },
+        ],
+      })
     ).getElementsByTagName('kbd')[0].textContent
   ).toEqual('keyboard shortcut');
 });
 
 it('serialize subscript to html', () => {
   expect(
-    serializeHTMLFromNodes([SubscriptPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'subscripted', subscript: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [SubscriptPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'subscripted', subscript: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <sub class="slate-subscript">subscripted</sub> part.'
   );
@@ -96,11 +117,14 @@ it('serialize subscript to html', () => {
 
 it('serialize superscript to html', () => {
   expect(
-    serializeHTMLFromNodes([SuperscriptPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'superscripted', superscript: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [SuperscriptPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'superscripted', superscript: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <sup class="slate-superscript">superscripted</sup> part.'
   );
@@ -108,11 +132,14 @@ it('serialize superscript to html', () => {
 
 it('serialize underline to html', () => {
   expect(
-    serializeHTMLFromNodes([UnderlinePlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'underlined', underline: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [UnderlinePlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'underlined', underline: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <u class="slate-underline">underlined</u> part.'
   );
@@ -120,11 +147,14 @@ it('serialize underline to html', () => {
 
 it('serialize bold and italic together to html', () => {
   expect(
-    serializeHTMLFromNodes([BoldPlugin(), ItalicPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'bold', bold: true, italic: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [BoldPlugin(), ItalicPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'bold', bold: true, italic: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <em class="slate-italic"><strong class="slate-bold">bold</strong></em> part.'
   );
@@ -132,11 +162,14 @@ it('serialize bold and italic together to html', () => {
 
 it('serialize bold and superscript together to html', () => {
   expect(
-    serializeHTMLFromNodes([BoldPlugin(), SuperscriptPlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'bold', bold: true, superscript: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [BoldPlugin(), SuperscriptPlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'bold', bold: true, superscript: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <sup class="slate-superscript"><strong class="slate-bold">bold</strong></sup> part.'
   );
@@ -144,11 +177,14 @@ it('serialize bold and superscript together to html', () => {
 
 it('serialize bold italic and underline together to html', () => {
   expect(
-    serializeHTMLFromNodes([BoldPlugin(), ItalicPlugin(), UnderlinePlugin()])([
-      { text: 'Some paragraph of text with ' },
-      { text: 'bold', bold: true, italic: true, underline: true },
-      { text: ' part.' },
-    ])
+    serializeHTMLFromNodes({
+      plugins: [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()],
+      nodes: [
+        { text: 'Some paragraph of text with ' },
+        { text: 'bold', bold: true, italic: true, underline: true },
+        { text: ' part.' },
+      ],
+    })
   ).toEqual(
     'Some paragraph of text with <u class="slate-underline"><em class="slate-italic"><strong class="slate-bold">bold</strong></em></u> part.'
   );

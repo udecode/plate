@@ -1,7 +1,7 @@
 import { Editor, Path, Range, Transforms } from 'slate';
 import { getAboveByType } from '../../../common/queries/getAboveByType';
+import { getParent } from '../../../common/queries/getParent';
 import { isBlockTextEmptyAfterSelection } from '../../../common/queries/isBlockTextEmptyAfterSelection';
-import { isRangeAtRoot } from '../../../common/queries/isRangeAtRoot';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
@@ -12,12 +12,15 @@ import { ListOptions } from '../types';
 export const insertListItem = (editor: Editor, options?: ListOptions) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
-  if (editor.selection && !isRangeAtRoot(editor.selection)) {
+  if (editor.selection) {
     const paragraphEntry = getAboveByType(editor, p.type);
     if (!paragraphEntry) return;
     const [, paragraphPath] = paragraphEntry;
 
-    const [listItemNode, listItemPath] = Editor.parent(editor, paragraphPath);
+    const listItemEntry = getParent(editor, paragraphPath);
+    if (!listItemEntry) return;
+    const [listItemNode, listItemPath] = listItemEntry;
+
     if (listItemNode.type !== li.type) return;
 
     if (!Range.isCollapsed(editor.selection)) {

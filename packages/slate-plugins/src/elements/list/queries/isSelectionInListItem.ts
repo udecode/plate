@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 import { getAboveByType } from '../../../common/queries/getAboveByType';
+import { getParent } from '../../../common/queries/getParent';
 import { isNodeTypeIn } from '../../../common/queries/isNodeTypeIn';
-import { isRangeAtRoot } from '../../../common/queries/isRangeAtRoot';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
@@ -16,18 +16,21 @@ export const isSelectionInListItem = (
 ) => {
   const { li } = setDefaults(options, DEFAULTS_LIST);
 
-  if (
-    editor.selection &&
-    isNodeTypeIn(editor, li.type) &&
-    !isRangeAtRoot(editor.selection)
-  ) {
-    const [, paragraphPath] = Editor.parent(editor, editor.selection);
+  if (editor.selection && isNodeTypeIn(editor, li.type)) {
+    const selectionParentEntry = getParent(editor, editor.selection);
+    if (!selectionParentEntry) return;
+    const [, paragraphPath] = selectionParentEntry;
 
-    const [listItemNode, listItemPath] =
-      getAboveByType(editor, li.type) || Editor.parent(editor, paragraphPath);
+    const listItemEntry =
+      getAboveByType(editor, li.type) || getParent(editor, paragraphPath);
+    if (!listItemEntry) return;
+    const [listItemNode, listItemPath] = listItemEntry;
 
     if (listItemNode.type !== li.type) return;
-    const [listNode, listPath] = Editor.parent(editor, listItemPath);
+
+    const listEntry = getParent(editor, listItemPath);
+    if (!listEntry) return;
+    const [listNode, listPath] = listEntry;
 
     return {
       listNode,

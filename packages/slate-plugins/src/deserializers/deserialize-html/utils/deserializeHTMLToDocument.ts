@@ -5,10 +5,14 @@ import { deserializeHTMLToDocumentFragment } from './deserializeHTMLToDocumentFr
 /**
  * Deserialize HTML to a valid Slate value.
  */
-export const deserializeHTMLToDocument = (plugins: SlatePlugin[]) => (
-  body: HTMLElement
-): SlateDocument => {
-  const nodes = deserializeHTMLToDocumentFragment(plugins)(body);
+export const deserializeHTMLToDocument = ({
+  plugins,
+  element,
+}: {
+  plugins: SlatePlugin[];
+  element: HTMLElement;
+}): SlateDocument => {
+  const nodes = deserializeHTMLToDocumentFragment({ plugins, element });
 
   return [{ children: nodes }];
 };

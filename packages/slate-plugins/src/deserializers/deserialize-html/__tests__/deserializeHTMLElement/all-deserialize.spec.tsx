@@ -153,5 +153,10 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  expect(deserializeHTMLElement(input1)(input2)).toEqual(output.children);
+  expect(
+    deserializeHTMLElement({
+      plugins: input1,
+      element: input2,
+    })
+  ).toEqual(output.children);
 });

@@ -12,7 +12,7 @@ const fragment = (
 );
 
 const input = {
-  el: document.createElement('body'),
+  element: document.createElement('body'),
   children: fragment,
 } as any;
 

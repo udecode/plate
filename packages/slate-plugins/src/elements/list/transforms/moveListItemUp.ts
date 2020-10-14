@@ -1,4 +1,5 @@
 import { Ancestor, Editor, Path, Transforms } from 'slate';
+import { getParent } from '../../../common/queries/getParent';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
@@ -16,7 +17,10 @@ export const moveListItemUp = (
 ) => {
   const { li } = setDefaults(options, DEFAULTS_LIST);
 
-  const [listParentNode, listParentPath] = Editor.parent(editor, listPath);
+  const listParentEntry = getParent(editor, listPath);
+  if (!listParentEntry) return;
+  const [listParentNode, listParentPath] = listParentEntry;
+
   if (listParentNode.type !== li.type) return;
 
   const newListItemPath = Path.next(listParentPath);

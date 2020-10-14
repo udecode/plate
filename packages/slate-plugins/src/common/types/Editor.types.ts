@@ -15,3 +15,8 @@ export interface EditorAboveOptions {
   mode?: 'highest' | 'lowest';
   voids?: boolean;
 }
+
+export interface EditorParentOptions {
+  depth?: number | undefined;
+  edge?: 'start' | 'end' | undefined;
+}
