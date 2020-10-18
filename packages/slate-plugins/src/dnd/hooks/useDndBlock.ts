@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getEmptyImage } from "react-dnd-html5-backend"
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import { ReactEditor, useEditor } from 'slate-react';
 import { ToggleTypeEditor } from '../../common/plugins/toggle-type/withToggleType';
 import { useDragBlock } from './useDragBlock';
@@ -27,8 +27,8 @@ export const useDndBlock = ({
   });
 
   if (removePreview) {
-    drop(blockRef)
-    preview(getEmptyImage(), { captureDraggingState: true })
+    drop(blockRef);
+    preview(getEmptyImage(), { captureDraggingState: true });
   } else {
     preview(drop(blockRef));
   }

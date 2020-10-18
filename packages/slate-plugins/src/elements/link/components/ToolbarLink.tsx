@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { getAboveByType, isCollapsed, isNodeTypeIn } from '../../../common/queries';
+import {
+  getAboveByType,
+  isCollapsed,
+  isNodeTypeIn,
+} from '../../../common/queries';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import {
   ToolbarButton,
@@ -22,7 +26,7 @@ export const ToolbarLink = ({
       active={isLink}
       onMouseDown={(event) => {
         event.preventDefault();
-        let prevUrl: string = '';
+        let prevUrl = '';
 
         const linkNode = getAboveByType(editor, options.link.type);
         if (linkNode) {
@@ -30,10 +34,11 @@ export const ToolbarLink = ({
         }
         const url = window.prompt(`Enter the URL of the link:`, prevUrl);
         if (!url) return;
-        
+
         // If our cursor is in middle of a link, then we don't want to inser it inline
-        const shouldWrap: boolean = linkNode !== undefined && isCollapsed(editor.selection)
-        upsertLinkAtSelection(editor, url, {wrap: shouldWrap, ...options});
+        const shouldWrap: boolean =
+          linkNode !== undefined && isCollapsed(editor.selection);
+        upsertLinkAtSelection(editor, url, { wrap: shouldWrap, ...options });
       }}
       {...props}
     />

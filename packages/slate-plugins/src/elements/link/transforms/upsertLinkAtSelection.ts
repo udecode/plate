@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { getSelectionText, getAboveByType,  isCollapsed } from '../../../common/queries';
+import { isCollapsed } from '../../../common/queries';
 import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LINK } from '../defaults';
