@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { isCollapsed } from '../../../common/queries/isCollapsed';
+import { isCollapsed } from '../../../common/queries';
 import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LINK } from '../defaults';
@@ -31,6 +31,13 @@ export const upsertLinkAtSelection = (
       url,
       children: [{ text: url }],
     });
+  }
+
+  // if our cursor is inside an existing link, but don't have the text selected, select it now
+  if (wrap && isCollapsed(editor.selection)) {
+    const linkLeaf = Editor.leaf(editor, editor.selection);
+    const [, inlinePath] = linkLeaf;
+    Transforms.select(editor, inlinePath);
   }
 
   unwrapNodesByType(editor, link.type, { at: editor.selection });
