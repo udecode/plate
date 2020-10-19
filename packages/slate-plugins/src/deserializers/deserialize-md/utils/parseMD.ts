@@ -2,6 +2,7 @@ import markdown from 'remark-parse';
 import slate from 'remark-slate';
 import unified from 'unified';
 import { setDefaults } from '../../../common/utils/setDefaults';
+import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -17,7 +18,6 @@ import {
   ELEMENT_UL,
 } from '../../../elements/list/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
-import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
 
 export const parseMD = (options?: Record<string, any>) => (content: string) => {
   const {
