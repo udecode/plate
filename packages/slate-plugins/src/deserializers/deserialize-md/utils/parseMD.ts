@@ -17,6 +17,7 @@ import {
   ELEMENT_UL,
 } from '../../../elements/list/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
+import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
 
 export const parseMD = (options?: Record<string, any>) => (content: string) => {
   const {
@@ -34,7 +35,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
     h6,
   } = setDefaults(options, {
     p: { type: ELEMENT_PARAGRAPH },
-    blockquote: { type: ELEMENT_PARAGRAPH },
+    blockquote: { type: ELEMENT_BLOCKQUOTE },
     link: { type: ELEMENT_LINK },
     ul: { type: ELEMENT_UL },
     ol: { type: ELEMENT_OL },
