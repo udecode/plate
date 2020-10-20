@@ -1,6 +1,6 @@
+import { TypeOnKeyDownOptions } from '../../common/utils/onKeyDownType';
 import { BlockquoteElement } from './components/BlockquoteElement';
 import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
-import { TypeOnKeyDownOptions } from '../../common/utils/onKeyDownType';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
