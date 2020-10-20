@@ -14,7 +14,7 @@ import {
 
 // Data of Element node
 export interface TodoListNodeData {
-  checked: boolean;
+  checked?: boolean;
 }
 // Element node
 export interface TodoListNode extends Element, TodoListNodeData {}
