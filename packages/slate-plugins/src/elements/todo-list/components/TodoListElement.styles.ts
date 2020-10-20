@@ -18,6 +18,7 @@ export const getTodoListElementStyles = ({
       rootClassName,
     ],
     checkboxWrapper: {
+      userSelect: 'none',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
