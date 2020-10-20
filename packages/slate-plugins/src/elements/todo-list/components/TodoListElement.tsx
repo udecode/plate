@@ -42,7 +42,7 @@ export const TodoListElementBase = ({
           data-testid="TodoListElementCheckbox"
           className={classNames.checkbox}
           type="checkbox"
-          checked={checked}
+          checked={!!checked}
           onChange={(e) => {
             const path = ReactEditor.findPath(editor, element);
 
