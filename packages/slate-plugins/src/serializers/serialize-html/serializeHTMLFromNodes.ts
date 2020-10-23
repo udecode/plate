@@ -53,7 +53,7 @@ const getNode = ({
 
   // Search for matching plugin based on element type
   plugins.some((plugin) => {
-    if (!plugin.renderElement) return false;
+    if (!plugin.serialize?.element && !plugin.renderElement) return false;
     if (
       !plugin.deserialize?.element?.some(
         (item) => item.type === String(elementProps.element.type)
@@ -67,7 +67,9 @@ const getNode = ({
     html = renderToStaticMarkup(
       createElementWithSlate({
         ...slateProps,
-        children: plugin.renderElement(elementProps),
+        children:
+          plugin.serialize?.element?.(elementProps) ??
+          plugin.renderElement?.(elementProps),
       })
     );
 
@@ -91,8 +93,12 @@ const getLeaf = ({
   const { children } = leafProps;
 
   return plugins.reduce((result, plugin) => {
-    if (!plugin.renderLeaf) return result;
-    if (plugin.renderLeaf(leafProps) === children) return result;
+    if (!plugin.serialize?.leaf && !plugin.renderLeaf) return result;
+    if (
+      (plugin.serialize?.leaf?.(leafProps) ??
+        plugin.renderLeaf?.(leafProps)) === children
+    )
+      return result;
 
     const newLeafProps = {
       ...leafProps,
@@ -103,7 +109,9 @@ const getLeaf = ({
       renderToStaticMarkup(
         createElementWithSlate({
           ...slateProps,
-          children: plugin.renderLeaf(newLeafProps),
+          children:
+            plugin.serialize?.leaf?.(leafProps) ??
+            plugin.renderLeaf?.(newLeafProps),
         })
       )
     );
