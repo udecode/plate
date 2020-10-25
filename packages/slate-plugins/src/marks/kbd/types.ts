@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type KbdKeyOption = 'kbd';
 // Plugin options
 export type KbdPluginOptionsValues = RenderNodeOptions &
   RootProps<KbdRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type KbdPluginOptionsKeys = keyof KbdPluginOptionsValues;
 export type KbdPluginOptions<
   Value extends KbdPluginOptionsKeys = KbdPluginOptionsKeys

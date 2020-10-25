@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_KBD } from './defaults';
 import { deserializeKbd } from './deserializeKbd';
 import { renderLeafKbd } from './renderLeafKbd';
@@ -11,7 +11,7 @@ import { KbdPluginOptions } from './types';
 export const KbdPlugin = (options?: KbdPluginOptions): SlatePlugin => ({
   renderLeaf: renderLeafKbd(options),
   deserialize: deserializeKbd(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'kbd',
     defaultOptions: DEFAULTS_KBD,
     options,

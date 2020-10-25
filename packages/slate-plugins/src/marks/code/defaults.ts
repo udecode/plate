@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { CodeKeyOption, CodePluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_CODE = 'code';
 
 export const DEFAULTS_CODE: Record<
   CodeKeyOption,
-  CodePluginOptionsValues & MarkOnKeyDownOptions
+  CodePluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   code: {
     component: StyledLeaf,

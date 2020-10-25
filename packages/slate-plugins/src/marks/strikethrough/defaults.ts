@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import {
   StrikethroughKeyOption,
@@ -9,7 +9,7 @@ export const MARK_STRIKETHROUGH = 'strikethrough';
 
 export const DEFAULTS_STRIKETHROUGH: Record<
   StrikethroughKeyOption,
-  StrikethroughPluginOptionsValues & MarkOnKeyDownOptions
+  StrikethroughPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   strikethrough: {
     component: StyledLeaf,

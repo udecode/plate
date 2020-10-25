@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_HIGHLIGHT } from './defaults';
 import { deserializeHighlight } from './deserializeHighlight';
 import { renderLeafHighlight } from './renderLeafHighlight';
@@ -14,7 +14,7 @@ export const HighlightPlugin = (
 ): SlatePlugin => ({
   renderLeaf: renderLeafHighlight(options),
   deserialize: deserializeHighlight(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'highlight',
     defaultOptions: DEFAULTS_HIGHLIGHT,
     options,

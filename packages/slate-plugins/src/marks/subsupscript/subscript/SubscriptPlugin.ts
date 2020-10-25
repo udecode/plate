@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_SUBSUPSCRIPT } from '../defaults';
 import { deserializeSubscript } from './deserializeSubscript';
 import { renderLeafSubscript } from './renderLeafSubscript';
@@ -13,7 +13,7 @@ export const SubscriptPlugin = (
 ): SlatePlugin => ({
   renderLeaf: renderLeafSubscript(options),
   deserialize: deserializeSubscript(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'subscript',
     defaultOptions: DEFAULTS_SUBSUPSCRIPT,
     options,

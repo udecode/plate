@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type SubscriptKeyOption = 'subscript';
 // Plugin options
 export type SubscriptPluginOptionsValues = RenderNodeOptions &
   RootProps<SubscriptRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type SubscriptPluginOptionsKeys = keyof SubscriptPluginOptionsValues;
 export type SubscriptPluginOptions<
   Value extends SubscriptPluginOptionsKeys = SubscriptPluginOptionsKeys
