@@ -3,7 +3,7 @@
 import * as isHotkey from 'is-hotkey';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { MARK_BOLD } from '../../../../marks/bold/defaults';
-import { onKeyDownMark } from '../../../utils/onKeyDownMark';
+import { getOnHotkeyToggleMark } from '../../../utils/getOnHotkeyToggleMark';
 
 const input = (
   <editor>
@@ -32,7 +32,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  onKeyDownMark({ type: MARK_BOLD, hotkey: 'ctrl+b' })?.(event, input);
+  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: 'ctrl+b' })?.(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });
