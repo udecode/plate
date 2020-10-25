@@ -1,0 +1,33 @@
+import { Editor, Transforms } from 'slate';
+import { isNodeTypeIn } from '../queries/isNodeTypeIn';
+import { EditorNodesOptions } from '../types/Editor.types';
+import { DEFAULT_ELEMENT } from '../types/node.types';
+
+export interface ToggleNodeTypeOptions {
+  /**
+   * If there is no node type above the selection, set the selected node type to activeType.
+   */
+  activeType: string;
+
+  /**
+   * If there is a node type above the selection, set the selected node type to inactiveType.
+   */
+  inactiveType?: string;
+}
+
+/**
+ * Toggle the type of the selected node.
+ */
+export const toggleNodeType = (
+  editor: Editor,
+  options: ToggleNodeTypeOptions,
+  editorNodesOptions?: Omit<EditorNodesOptions, 'match'>
+) => {
+  const { activeType, inactiveType = DEFAULT_ELEMENT } = options;
+
+  const isActive = isNodeTypeIn(editor, activeType, editorNodesOptions);
+
+  Transforms.setNodes(editor, {
+    type: isActive ? inactiveType : activeType,
+  });
+};
