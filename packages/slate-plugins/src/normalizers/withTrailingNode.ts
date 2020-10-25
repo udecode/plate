@@ -1,5 +1,5 @@
-import { Editor, Path } from 'slate';
-import { isNodeType, QueryOptions, TransformEditor } from '../common';
+import { Editor, Path, Transforms } from 'slate';
+import { isNodeType, QueryOptions } from '../common';
 import { getLastNode } from '../common/queries';
 import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
@@ -21,9 +21,7 @@ export const withTrailingNode = ({
   type = ELEMENT_PARAGRAPH,
   level = 1,
   ...query
-}: WithTrailingNode = {}) => <T extends Editor & TransformEditor>(
-  editor: T
-) => {
+}: WithTrailingNode = {}) => <T extends Editor>(editor: T) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
@@ -32,7 +30,8 @@ export const withTrailingNode = ({
       const [lastNode, lastPath] = entry;
 
       if (lastNode.type !== type && isNodeType(entry, query)) {
-        editor.insertNodes(
+        Transforms.insertNodes(
+          editor,
           {
             type,
             children: [{ text: '' }],

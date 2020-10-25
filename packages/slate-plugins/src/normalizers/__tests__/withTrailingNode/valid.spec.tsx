@@ -2,7 +2,6 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
-import { withTransforms } from '../../../common/transforms/index';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
 import { withTrailingNode } from '../../withTrailingNode';
 
@@ -32,7 +31,7 @@ it('should be', () => {
   const editor = withTrailingNode({
     type: ELEMENT_PARAGRAPH,
     level: 1,
-  })(withTransforms()(input as Editor));
+  })(input as Editor);
 
   editor.normalizeNode([input, []]);
 

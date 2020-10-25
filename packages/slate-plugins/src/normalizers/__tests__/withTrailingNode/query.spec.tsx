@@ -2,7 +2,6 @@
 
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
-import { withTransforms } from '../../../common/transforms/index';
 import { ELEMENT_H1 } from '../../../elements/heading/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
 import { withTrailingNode } from '../../index';
@@ -34,7 +33,7 @@ it('should be', () => {
     type: ELEMENT_PARAGRAPH,
     level: 0,
     exclude: [ELEMENT_H1],
-  })(withTransforms()(input as Editor));
+  })(input as Editor);
 
   editor.normalizeNode([input, []]);
 

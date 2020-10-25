@@ -78,12 +78,10 @@ import {
   withInlineVoid,
   withLink,
   withList,
+  withMarks,
   withNormalizeTypes,
   withTable,
-  withToggleType,
   withTrailingNode,
-  withTransforms,
-  withMarks,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -212,9 +210,7 @@ export const Plugins = () => {
     withDeserializeHTML({ plugins }),
     withMarks(),
     withImageUpload(),
-    withToggleType({ defaultType: options.p.type }),
     withAutoformat({ rules: autoformatRules }),
-    withTransforms(),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: options.h1.type }],
     }),
