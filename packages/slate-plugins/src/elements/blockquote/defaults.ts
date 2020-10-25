@@ -1,4 +1,4 @@
-import { TypeOnKeyDownOptions } from '../../common/utils/onKeyDownType';
+import { GetOnHotkeyToggleNodeTypeOptions } from '../../common/utils/getOnHotkeyToggleNodeType';
 import { BlockquoteElement } from './components/BlockquoteElement';
 import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
 export const DEFAULTS_BLOCKQUOTE: Record<
   BlockquoteKeyOption,
-  Required<BlockquotePluginOptionsValues> & TypeOnKeyDownOptions
+  Required<BlockquotePluginOptionsValues> & GetOnHotkeyToggleNodeTypeOptions
 > = {
   blockquote: {
     component: BlockquoteElement,
