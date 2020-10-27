@@ -59,6 +59,11 @@ export interface DeserializeHtml {
   leaf?: DeserializeNode[];
 }
 
+export interface SerializeHtml {
+  element?: RenderElement;
+  leaf?: RenderLeaf;
+}
+
 /**
  * Each plugin fields will be combined by role.
  *
@@ -71,10 +76,14 @@ export interface DeserializeHtml {
  *
  * To deserialize HTML:
  * - deserialize
+ *
+ * To serialize HTML (overriding renderElement / renderLeaf):
+ * - serialize
  */
 export interface SlatePlugin {
   decorate?: Decorate;
   deserialize?: DeserializeHtml;
+  serialize?: SerializeHtml;
   inlineTypes?: string[];
   renderElement?: RenderElement;
   renderLeaf?: RenderLeaf;
