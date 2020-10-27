@@ -19,6 +19,11 @@ export interface GetRenderElementOptions {
   [key: string]: any;
 }
 
+const getHtmlAttributes = ({ attributes, attributesToProps }) => {
+  if (attributes && attributesToProps) return pickBy(attributesToProps(attributes))
+  return {}
+}
+
 /**
  * Get a `renderElement` handler for a single type.
  * If the given `type` is equals to the slate element type, render the given `component`.
@@ -33,8 +38,9 @@ export const getRenderElement = ({
   ...props
 }: RenderElementProps) => {
   if (props.element.type === type) {
+    const htmlAttributes = getHtmlAttributes({ attributes: props.element?.attributes, attributesToProps: rootProps.attributesToProps })
     return (
-      <Component attributes={attributes} {...props} {...pickBy(rootProps)} />
+      <Component attributes={attributes} htmlAttributes={htmlAttributes} {...props} {...pickBy(rootProps)} />
     );
   }
 };
@@ -49,9 +55,11 @@ export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
 }: RenderElementProps) => {
   for (const { type, component: Component, rootProps } of options) {
     if (element.type === type) {
+      const htmlAttributes = getHtmlAttributes({ attributes: element?.attributes, attributesToProps: rootProps.attributesToProps })
       return (
         <Component
           attributes={attributes}
+          htmlAttributes={htmlAttributes}
           element={element}
           {...pickBy(rootProps)}
         >

@@ -8,6 +8,8 @@ export interface RenderNodePropsOptions {
   className?: string;
 
   as?: any;
+
+  attributesToProps?: (attributes: { [key: string]: any } | undefined | unknown) => { [key: string]: any };
 }
 
 /**
