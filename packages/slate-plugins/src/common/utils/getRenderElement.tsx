@@ -21,6 +21,7 @@ export interface GetRenderElementOptions {
 
 const getHtmlAttributes = ({ attributes, attributesToProps }) => {
   if (attributes && attributesToProps) return pickBy(attributesToProps(attributes))
+  if (attributes) return pickBy(attributes)
   return {}
 }
 
