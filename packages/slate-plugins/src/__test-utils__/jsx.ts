@@ -27,6 +27,7 @@ export const jsx = createHyperscript({
     hTodoList: { type: options.todo_li.type },
     htable: { type: options.table.type },
     htr: { type: options.tr.type },
+    hth: { type: options.th.type },
     htd: { type: options.td.type },
     hul: { type: options.ul.type },
     hol: { type: options.ol.type },
