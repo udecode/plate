@@ -950,6 +950,35 @@ const createTable = () => ({
   ],
 });
 
+const createSpanningTable = () => ({
+  type: options.table.type,
+  children: [
+    {
+      type: options.tr.type,
+      children: [
+        {
+          type: options.th.type,
+          attributes: { colspan: "2" },
+          children: [createParagraph("Heading", options.bold.type)],
+        },
+      ],
+    },
+    {
+      type: options.tr.type,
+      children: [
+        {
+          type: options.td.type,
+          children: [createParagraph("Cell 1", options.bold.type)],
+        },
+        {
+          type: options.td.type,
+          children: [createParagraph("Cell 2")],
+        },
+      ],
+    },
+  ],
+});
+
 export const initialValueTables: SlateDocument = [
   {
     children: [
@@ -977,6 +1006,16 @@ export const initialValueTables: SlateDocument = [
           {
             text:
               "This table is just a basic example of rendering a table, and it doesn't have fancy functionality. But you could augment it to add support for navigating with arrow keys, displaying table headers, adding column and rows, or even formulas if you wanted to get really crazy!",
+          },
+        ],
+      },
+      createSpanningTable(),
+      {
+        type: options.p.type,
+        children: [
+          {
+            text:
+              "This table is an example of rendering a table spanning multiple columns.",
           },
         ],
       },
