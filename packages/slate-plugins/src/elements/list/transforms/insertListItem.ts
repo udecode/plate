@@ -73,7 +73,7 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
       /**
        * If end, insert a list item after and select it
        */
-      const marks = Editor.marks(editor) || {}
+      const marks = Editor.marks(editor) || {};
       Transforms.insertNodes(
         editor,
         {
