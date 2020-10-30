@@ -73,11 +73,12 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
       /**
        * If end, insert a list item after and select it
        */
+      const marks = Editor.marks(editor) || {}
       Transforms.insertNodes(
         editor,
         {
           type: li.type,
-          children: [{ type: p.type, children: [{ text: '' }] }],
+          children: [{ type: p.type, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );
