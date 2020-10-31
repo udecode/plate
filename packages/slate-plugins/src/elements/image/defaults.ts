@@ -5,7 +5,7 @@ export const ELEMENT_IMAGE = 'img';
 
 export const DEFAULTS_IMAGE: Record<
   ImageKeyOption,
-  Required<ImagePluginOptionsValues>
+  ImagePluginOptionsValues
 > = {
   img: {
     component: ImageElement,

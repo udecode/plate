@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { HighlightKeyOption, HighlightPluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_HIGHLIGHT = 'highlight';
 
 export const DEFAULTS_HIGHLIGHT: Record<
   HighlightKeyOption,
-  HighlightPluginOptionsValues & MarkOnKeyDownOptions
+  HighlightPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   highlight: {
     component: StyledLeaf,

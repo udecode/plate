@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_ITALIC } from './defaults';
 import { deserializeItalic } from './deserializeItalic';
 import { renderLeafItalic } from './renderLeafItalic';
@@ -11,7 +11,7 @@ import { ItalicPluginOptions } from './types';
 export const ItalicPlugin = (options?: ItalicPluginOptions): SlatePlugin => ({
   renderLeaf: renderLeafItalic(options),
   deserialize: deserializeItalic(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'italic',
     defaultOptions: DEFAULTS_ITALIC,
     options,

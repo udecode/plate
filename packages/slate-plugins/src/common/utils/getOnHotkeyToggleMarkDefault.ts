@@ -1,10 +1,10 @@
-import { onKeyDownMark } from './onKeyDownMark';
+import { getOnHotkeyToggleMark } from './getOnHotkeyToggleMark';
 import { setDefaults } from './setDefaults';
 
 /**
  * Get `onKeyDown` handler for mark with default options.
  */
-export const onKeyDownMarkDefault = <Key extends string>({
+export const getOnHotkeyToggleMarkDefault = <Key extends string>({
   key,
   defaultOptions,
   options,
@@ -15,5 +15,5 @@ export const onKeyDownMarkDefault = <Key extends string>({
 }) => {
   const keyOptions = setDefaults(options, defaultOptions)[key];
 
-  return onKeyDownMark(keyOptions);
+  return getOnHotkeyToggleMark(keyOptions);
 };

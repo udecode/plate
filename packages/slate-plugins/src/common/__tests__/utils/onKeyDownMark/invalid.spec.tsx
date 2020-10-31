@@ -2,7 +2,7 @@
 
 import { jsx } from '../../../../__test-utils__/jsx';
 import { MARK_BOLD } from '../../../../marks/bold/defaults';
-import { onKeyDownMark } from '../../../utils/onKeyDownMark';
+import { getOnHotkeyToggleMark } from '../../../utils/getOnHotkeyToggleMark';
 
 const input = (
   <editor>
@@ -27,7 +27,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownMark({ type: MARK_BOLD, hotkey: 'enter' })?.(event, input);
+  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: 'enter' })?.(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

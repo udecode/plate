@@ -1,4 +1,6 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { getOnHotkeyToggleNodeTypeDefault } from '../../common/utils/getOnHotkeyToggleNodeTypeDefault';
+import { DEFAULTS_HEADING } from './defaults';
 import { deserializeHeading } from './deserializeHeading';
 import { renderElementHeading } from './renderElementHeading';
 import { HeadingPluginOptions } from './types';
@@ -10,4 +12,9 @@ import { HeadingPluginOptions } from './types';
 export const HeadingPlugin = (options?: HeadingPluginOptions): SlatePlugin => ({
   renderElement: renderElementHeading(options),
   deserialize: deserializeHeading(options),
+  onKeyDown: getOnHotkeyToggleNodeTypeDefault({
+    key: 'h1',
+    defaultOptions: DEFAULTS_HEADING,
+    options,
+  }),
 });

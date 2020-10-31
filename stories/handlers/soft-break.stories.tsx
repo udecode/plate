@@ -19,9 +19,7 @@ import {
   SoftBreakPlugin,
   ToolbarElement,
   withList,
-  withToggleType,
   withTrailingNode,
-  withTransforms,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -42,8 +40,6 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
-  withToggleType({ defaultType: options.p.type }),
-  withTransforms(),
   withTrailingNode({ type: options.p.type }),
 ] as const;
 

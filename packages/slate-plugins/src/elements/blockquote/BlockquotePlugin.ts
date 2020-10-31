@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownTypeDefault } from '../../common/utils/onKeyDownTypeDefault';
+import { getOnHotkeyToggleNodeTypeDefault } from '../../common/utils/getOnHotkeyToggleNodeTypeDefault';
 import { DEFAULTS_BLOCKQUOTE } from './defaults';
 import { deserializeBlockquote } from './deserializeBlockquote';
 import { renderElementBlockquote } from './renderElementBlockquote';
@@ -14,7 +14,7 @@ export const BlockquotePlugin = (
 ): SlatePlugin => ({
   renderElement: renderElementBlockquote(options),
   deserialize: deserializeBlockquote(options),
-  onKeyDown: onKeyDownTypeDefault({
+  onKeyDown: getOnHotkeyToggleNodeTypeDefault({
     key: 'blockquote',
     defaultOptions: DEFAULTS_BLOCKQUOTE,
     options,

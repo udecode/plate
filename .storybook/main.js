@@ -7,17 +7,17 @@ module.exports = {
     '../stories/docs/**/guide.stories.mdx',
     '../stories/docs/**/contributing.stories.mdx',
     '../stories/examples/playground.stories.tsx',
-    '../stories/examples/**/*.stories.(tsx|mdx)',
-    '../stories/elements/**/*.stories.(tsx|mdx)',
-    '../stories/marks/**/*.stories.(tsx|mdx)',
-    '../stories/handlers/**/*.stories.(tsx|mdx)',
-    '../stories/decorators/**/*.stories.(tsx|mdx)',
-    '../stories/normalizers/**/*.stories.(tsx|mdx)',
-    '../stories/deserializers/**/*.stories.(tsx|mdx)',
-    '../stories/components/**/*.stories.(tsx|mdx)',
-    '../stories/widgets/**/*.stories.(tsx|mdx)',
-    '../stories/docs/api/*.stories.(tsx|mdx)',
-    '../stories/**/*.stories.(tsx|mdx)',
+    '../stories/examples/**/*.stories.@(tsx|mdx)',
+    '../stories/elements/**/*.stories.@(tsx|mdx)',
+    '../stories/marks/**/*.stories.@(tsx|mdx)',
+    '../stories/handlers/**/*.stories.@(tsx|mdx)',
+    '../stories/decorators/**/*.stories.@(tsx|mdx)',
+    '../stories/normalizers/**/*.stories.@(tsx|mdx)',
+    '../stories/deserializers/**/*.stories.@(tsx|mdx)',
+    '../stories/components/**/*.stories.@(tsx|mdx)',
+    '../stories/widgets/**/*.stories.@(tsx|mdx)',
+    '../stories/docs/api/*.stories.@(tsx|mdx)',
+    '../stories/**/*.stories.@(tsx|mdx)',
   ],
   addons: [
     '@storybook/addon-knobs',
@@ -60,7 +60,7 @@ module.exports = {
       "@udecode/slate-plugins": path.resolve(__dirname, "..", "packages/slate-plugins/src"),
     };
 
-    config.resolve.extensions.push('.ts', '.tsx');
+    // config.resolve.extensions.push('.ts', '.tsx');
 
     return config;
   }

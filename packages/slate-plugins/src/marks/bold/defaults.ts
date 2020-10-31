@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { BoldKeyOption, BoldPluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_BOLD = 'bold';
 
 export const DEFAULTS_BOLD: Record<
   BoldKeyOption,
-  BoldPluginOptionsValues & MarkOnKeyDownOptions
+  BoldPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   bold: {
     component: StyledLeaf,

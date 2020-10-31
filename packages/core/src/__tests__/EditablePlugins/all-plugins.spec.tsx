@@ -24,8 +24,6 @@ import {
 import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import { withInlineVoid } from '../../../../slate-plugins/src/common/plugins/inline-void/withInlineVoid';
 import { withNodeID } from '../../../../slate-plugins/src/common/plugins/node-id/withNodeID';
-import { withToggleType } from '../../../../slate-plugins/src/common/plugins/toggle-type/withToggleType';
-import { withTransforms } from '../../../../slate-plugins/src/common/transforms/withTransforms';
 import { SlateDocument } from '../../../../slate-plugins/src/common/types/SlateDocument.types';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
@@ -151,9 +149,7 @@ const withPlugins = [
   withLink(),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
-  withToggleType({ defaultType: options.p.type }),
   withAutoformat({ rules: autoformatRulesFixtures }),
-  withTransforms(),
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: options.h1.type }],
   }),

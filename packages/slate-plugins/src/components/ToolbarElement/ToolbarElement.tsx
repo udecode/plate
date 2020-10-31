@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ReactEditor, useSlate } from 'slate-react';
-import { ToggleTypeEditor } from '../../common/plugins/toggle-type/withToggleType';
+import { useSlate } from 'slate-react';
 import { isNodeTypeIn } from '../../common/queries/index';
+import { toggleNodeType } from '../../common/transforms/toggleNodeType';
 import { getPreventDefaultHandler } from '../../common/utils/index';
 import { ToolbarButton } from '../ToolbarButton/index';
 import { ToolbarElementProps } from './ToolbarElement.types';
@@ -9,13 +9,20 @@ import { ToolbarElementProps } from './ToolbarElement.types';
 /**
  * Toolbar button to toggle the type of elements in selection.
  */
-export const ToolbarElement = ({ type, ...props }: ToolbarElementProps) => {
-  const editor = useSlate() as ReactEditor & ToggleTypeEditor;
+export const ToolbarElement = ({
+  type,
+  inactiveType,
+  ...props
+}: ToolbarElementProps) => {
+  const editor = useSlate();
 
   return (
     <ToolbarButton
       active={isNodeTypeIn(editor, type)}
-      onMouseDown={getPreventDefaultHandler(editor.toggleType, type)}
+      onMouseDown={getPreventDefaultHandler(toggleNodeType, editor, {
+        activeType: type,
+        inactiveType,
+      })}
       {...props}
     />
   );

@@ -7,7 +7,6 @@ import {
   SlateDocument,
   withNormalizeTypes,
   withTrailingNode,
-  withTransforms,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -25,7 +24,6 @@ const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
 const withPlugins = [
   withReact,
   withHistory,
-  withTransforms(),
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: options.h1.type }],
   }),

@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type ItalicKeyOption = 'italic';
 // Plugin options
 export type ItalicPluginOptionsValues = RenderNodeOptions &
   RootProps<ItalicRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type ItalicPluginOptionsKeys = keyof ItalicPluginOptionsValues;
 export type ItalicPluginOptions<
   Value extends ItalicPluginOptionsKeys = ItalicPluginOptionsKeys
