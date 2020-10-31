@@ -29,6 +29,7 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   ResetBlockTypePluginOptions,
+  setDefaults,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
@@ -46,28 +47,27 @@ export const headingTypes = [
 ];
 
 export const options = {
-  ...DEFAULTS_PARAGRAPH,
-  ...DEFAULTS_MENTION,
-  ...DEFAULTS_BLOCKQUOTE,
-  ...DEFAULTS_CODE_BLOCK,
-  ...DEFAULTS_LINK,
-  ...DEFAULTS_IMAGE,
-  ...DEFAULTS_MEDIA_EMBED,
-  ...DEFAULTS_TODO_LIST,
-  ...DEFAULTS_TABLE,
-  ...DEFAULTS_LIST,
-  ...DEFAULTS_HEADING,
-  ...DEFAULTS_ALIGN,
-  // marks
-  ...DEFAULTS_BOLD,
-  ...DEFAULTS_ITALIC,
-  ...DEFAULTS_UNDERLINE,
-  ...DEFAULTS_STRIKETHROUGH,
-  ...DEFAULTS_CODE,
-  ...DEFAULTS_KBD,
-  ...DEFAULTS_SUBSUPSCRIPT,
-  ...DEFAULTS_HIGHLIGHT,
-  ...DEFAULTS_SEARCH_HIGHLIGHT,
+  ...setDefaults(DEFAULTS_PARAGRAPH, {}),
+  ...setDefaults(DEFAULTS_MENTION, {}),
+  ...setDefaults(DEFAULTS_BLOCKQUOTE, {}),
+  ...setDefaults(DEFAULTS_CODE_BLOCK, {}),
+  ...setDefaults(DEFAULTS_LINK, {}),
+  ...setDefaults(DEFAULTS_IMAGE, {}),
+  ...setDefaults(DEFAULTS_MEDIA_EMBED, {}),
+  ...setDefaults(DEFAULTS_TODO_LIST, {}),
+  ...setDefaults(DEFAULTS_TABLE, {}),
+  ...setDefaults(DEFAULTS_LIST, {}),
+  ...setDefaults(DEFAULTS_HEADING, {}),
+  ...setDefaults(DEFAULTS_ALIGN, {}),
+  ...setDefaults(DEFAULTS_BOLD, {}),
+  ...setDefaults(DEFAULTS_ITALIC, {}),
+  ...setDefaults(DEFAULTS_UNDERLINE, {}),
+  ...setDefaults(DEFAULTS_STRIKETHROUGH, {}),
+  ...setDefaults(DEFAULTS_CODE, {}),
+  ...setDefaults(DEFAULTS_KBD, {}),
+  ...setDefaults(DEFAULTS_SUBSUPSCRIPT, {}),
+  ...setDefaults(DEFAULTS_HIGHLIGHT, {}),
+  ...setDefaults(DEFAULTS_SEARCH_HIGHLIGHT, {}),
 };
 
 export const inlineTypes = [options.mention.type, options.link.type];
@@ -75,7 +75,7 @@ export const inlineTypes = [options.mention.type, options.link.type];
 const resetBlockTypesCommonRule = {
   types: [options.bold.type, options.code_block.type, options.todo_li.type],
   defaultType: options.p.type,
-} as { types: string[]; defaultType: string };
+};
 
 export const optionsResetBlockTypes: ResetBlockTypePluginOptions = {
   rules: [
