@@ -4,11 +4,11 @@ import {
   DEFAULTS_BOLD,
   DEFAULTS_CODE,
   DEFAULTS_CODE_BLOCK,
-  DEFAULTS_KBD,
   DEFAULTS_HEADING,
   DEFAULTS_HIGHLIGHT,
   DEFAULTS_IMAGE,
   DEFAULTS_ITALIC,
+  DEFAULTS_KBD,
   DEFAULTS_LINK,
   DEFAULTS_LIST,
   DEFAULTS_MEDIA_EMBED,
@@ -73,13 +73,9 @@ export const options = {
 export const inlineTypes = [options.mention.type, options.link.type];
 
 const resetBlockTypesCommonRule = {
-  types: [
-    options.blockquote.type,
-    options.code_block.type,
-    options.todo_li.type,
-  ],
+  types: [options.bold.type, options.code_block.type, options.todo_li.type],
   defaultType: options.p.type,
-};
+} as { types: string[]; defaultType: string };
 
 export const optionsResetBlockTypes: ResetBlockTypePluginOptions = {
   rules: [
