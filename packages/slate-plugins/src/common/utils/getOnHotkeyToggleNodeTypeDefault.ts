@@ -8,7 +8,7 @@ interface GetOnHotkeyToggleNodeTypeDefaultOptions {
 }
 
 /**
- * Get `onKeyDown` handler for mark with default options.
+ * `getOnHotkeyToggleNodeType` with default options.
  */
 export const getOnHotkeyToggleNodeTypeDefault = ({
   key,
