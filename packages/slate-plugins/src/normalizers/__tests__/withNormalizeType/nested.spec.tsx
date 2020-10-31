@@ -3,7 +3,6 @@
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
 import { options } from '../../../../../../stories/config/initialValues';
-import { withTransforms } from '../../../common/transforms/index';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
 import { withNormalizeTypes } from '../../index';
 
@@ -35,7 +34,7 @@ it('should be', () => {
       },
       { path: [0, 1], type: ELEMENT_PARAGRAPH },
     ],
-  })(withTransforms()(input as Editor));
+  })(input as Editor);
 
   editor.normalizeNode([input, []]);
 

@@ -6,12 +6,12 @@ export interface ResetBlockTypePluginRule {
    */
   types: string[];
 
-  hotkey?: string | string[];
-
   /**
    * Additional condition to the rule.
    */
   predicate: (editor: Editor) => boolean;
+
+  hotkey?: string | string[];
 
   /**
    * Set node to this default type when resetting.

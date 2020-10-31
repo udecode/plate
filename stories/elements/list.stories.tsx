@@ -3,19 +3,20 @@ import { boolean } from '@storybook/addon-knobs';
 import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
 import {
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
+  ImagePlugin,
   ListPlugin,
   ParagraphPlugin,
   pipe,
   ResetBlockTypePlugin,
   SlateDocument,
+  SoftBreakPlugin,
   TodoListPlugin,
   ToolbarList,
+  withImageUpload,
   withList,
-  withToggleType,
-  ImagePlugin,
-  withImageUpload, ExitBreakPlugin, SoftBreakPlugin
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -38,9 +39,8 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withToggleType({ defaultType: options.p.type }),
   withList(options),
-  withImageUpload(options)
+  withImageUpload(options),
 ] as const;
 
 export const Example = () => {

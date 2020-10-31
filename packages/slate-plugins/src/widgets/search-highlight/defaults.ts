@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { ItalicPluginOptionsValues } from '../../marks/italic/types';
 import { SearchHighlightKeyOption } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_SEARCH_HIGHLIGHT = 'search_highlight';
 
 export const DEFAULTS_SEARCH_HIGHLIGHT: Record<
   SearchHighlightKeyOption,
-  ItalicPluginOptionsValues & MarkOnKeyDownOptions
+  ItalicPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   search_highlight: {
     type: MARK_SEARCH_HIGHLIGHT,

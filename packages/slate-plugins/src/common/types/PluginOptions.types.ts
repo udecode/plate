@@ -10,10 +10,21 @@ export interface RenderNodePropsOptions {
   as?: any;
 }
 
+export interface HotkeyOptions {
+  /**
+   * Hotkey to toggle node type
+   */
+  hotkey?: string | string[];
+
+  defaultType?: string;
+}
+
 /**
  * `renderElement` and `renderLeaf` option values
  */
-export interface RenderNodeOptions extends RootProps<RenderNodePropsOptions> {
+export interface RenderNodeOptions
+  extends RootProps<RenderNodePropsOptions>,
+    HotkeyOptions {
   /**
    * Type of the node.
    */

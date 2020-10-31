@@ -3,7 +3,6 @@
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
 import { options } from '../../../../../../stories/config/initialValues';
-import { withTransforms } from '../../../common/transforms/index';
 import { withNormalizeTypes } from '../../index';
 
 const input = (<editor />) as any;
@@ -19,7 +18,7 @@ it('should be', () => {
       },
       { path: [0, 1], type: options.p.type },
     ],
-  })(withTransforms()(input as Editor));
+  })(input as Editor);
 
   editor.normalizeNode([input, []]);
 

@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_BOLD } from './defaults';
 import { deserializeBold } from './deserializeBold';
 import { renderLeafBold } from './renderLeafBold';
@@ -11,7 +11,7 @@ import { BoldPluginOptions } from './types';
 export const BoldPlugin = (options?: BoldPluginOptions): SlatePlugin => ({
   renderLeaf: renderLeafBold(options),
   deserialize: deserializeBold(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'bold',
     defaultOptions: DEFAULTS_BOLD,
     options,

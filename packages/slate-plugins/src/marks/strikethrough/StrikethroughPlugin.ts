@@ -1,5 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { onKeyDownMarkDefault } from '../../common/utils/onKeyDownMarkDefault';
+import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
 import { DEFAULTS_STRIKETHROUGH } from './defaults';
 import { deserializeStrikethrough } from './deserializeStrikethrough';
 import { renderLeafStrikethrough } from './renderLeafStrikethrough';
@@ -13,7 +13,7 @@ export const StrikethroughPlugin = (
 ): SlatePlugin => ({
   renderLeaf: renderLeafStrikethrough(options),
   deserialize: deserializeStrikethrough(options),
-  onKeyDown: onKeyDownMarkDefault({
+  onKeyDown: getOnHotkeyToggleMarkDefault({
     key: 'strikethrough',
     defaultOptions: DEFAULTS_STRIKETHROUGH,
     options,

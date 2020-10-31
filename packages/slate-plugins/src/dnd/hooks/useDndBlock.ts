@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { ReactEditor, useEditor } from 'slate-react';
-import { ToggleTypeEditor } from '../../common/plugins/toggle-type/withToggleType';
+import { useEditor } from 'slate-react';
 import { useDragBlock } from './useDragBlock';
 import { useDropBlockOnEditor } from './useDropBlockOnEditor';
 
@@ -14,7 +13,7 @@ export const useDndBlock = ({
   blockRef: any;
   removePreview?: boolean;
 }) => {
-  const editor = useEditor() as ReactEditor & ToggleTypeEditor;
+  const editor = useEditor();
 
   const [dropLine, setDropLine] = useState<'' | 'top' | 'bottom'>('');
 

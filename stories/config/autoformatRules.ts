@@ -45,7 +45,7 @@ export const autoformatRules: AutoformatRule[] = [
   },
   {
     type: options.li.type,
-    markup: ['*', '-', '+'],
+    markup: ['*', '-'],
     preFormat,
     format: (editor) => {
       toggleList(editor, { ...options, typeList: options.ul.type });
@@ -58,6 +58,10 @@ export const autoformatRules: AutoformatRule[] = [
     format: (editor) => {
       toggleList(editor, { ...options, typeList: options.ol.type });
     },
+  },
+  {
+    type: options.todo_li.type,
+    markup: ['[]'],
   },
   {
     type: options.blockquote.type,

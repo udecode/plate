@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type StrikethroughKeyOption = 'strikethrough';
 // Plugin options
 export type StrikethroughPluginOptionsValues = RenderNodeOptions &
   RootProps<StrikethroughRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type StrikethroughPluginOptionsKeys = keyof StrikethroughPluginOptionsValues;
 export type StrikethroughPluginOptions<
   Value extends StrikethroughPluginOptionsKeys = StrikethroughPluginOptionsKeys

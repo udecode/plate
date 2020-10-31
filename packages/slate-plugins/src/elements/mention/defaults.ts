@@ -5,7 +5,7 @@ export const ELEMENT_MENTION = 'mention';
 
 export const DEFAULTS_MENTION: Record<
   MentionKeyOption,
-  Required<MentionPluginOptionsValues>
+  MentionPluginOptionsValues
 > = {
   mention: {
     component: MentionElement,

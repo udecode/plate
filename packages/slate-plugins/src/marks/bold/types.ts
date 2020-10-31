@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type BoldKeyOption = 'bold';
 // Plugin options
 export type BoldPluginOptionsValues = RenderNodeOptions &
   RootProps<BoldRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type BoldPluginOptionsKeys = keyof BoldPluginOptionsValues;
 export type BoldPluginOptions<
   Value extends BoldPluginOptionsKeys = BoldPluginOptionsKeys

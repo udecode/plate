@@ -5,7 +5,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
@@ -30,7 +30,7 @@ export type SearchHighlightKeyOption = 'search_highlight';
 // Plugin options
 export type SearchHighlightPluginOptionsValues = RenderNodeOptions &
   RootProps<SearchHighlightRenderLeafPropsOptions> &
-  Partial<MarkOnKeyDownOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions>;
 export type SearchHighlightPluginOptionsKeys = keyof SearchHighlightPluginOptionsValues;
 export type SearchHighlightPluginOptions<
   Value extends SearchHighlightPluginOptionsKeys = SearchHighlightPluginOptionsKeys

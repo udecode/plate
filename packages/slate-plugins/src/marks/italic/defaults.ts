@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { ItalicKeyOption, ItalicPluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_ITALIC = 'italic';
 
 export const DEFAULTS_ITALIC: Record<
   ItalicKeyOption,
-  ItalicPluginOptionsValues & MarkOnKeyDownOptions
+  ItalicPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   italic: {
     component: StyledLeaf,

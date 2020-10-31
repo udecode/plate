@@ -1,15 +1,13 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { withToggleType } from '../../../../common/plugins/toggle-type/withToggleType';
-import { pipe } from '../../../../common/utils/pipe';
+import { ReactEditor } from 'slate-react';
 import { MediaEmbedElement } from '../../components/MediaEmbedElement';
 import { ELEMENT_MEDIA_EMBED } from '../../defaults';
 import { input, output } from './onChange.fixture';
 
 it('should render', () => {
-  const editor = pipe(input, withToggleType());
+  const editor = input;
 
   jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0]);

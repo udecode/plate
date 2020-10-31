@@ -1,9 +1,8 @@
 /** @jsx jsx */
-import { Editor } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { withNodeID } from '../../../plugins/node-id/withNodeID';
-import { withTransforms } from '../../../transforms/withTransforms';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((
@@ -27,9 +26,10 @@ it('should reset the id', () => {
   const editor = withNodeID({
     idCreator: idCreatorFixture,
     resetExistingID: true,
-  })(withTransforms()(withHistory(input)));
+  })(withHistory(input));
 
-  editor.insertNodes(
+  Transforms.insertNodes(
+    editor,
     (
       <fragment>
         <hp id={11}>inserted</hp>

@@ -25,7 +25,6 @@ import {
   SlatePlugin,
   SoftBreakPlugin,
   ToolbarElement,
-  withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -47,11 +46,7 @@ export default {
   },
 };
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withToggleType({ defaultType: options.p.type }),
-] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
