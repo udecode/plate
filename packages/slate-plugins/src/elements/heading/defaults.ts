@@ -17,7 +17,7 @@ const baseFontSize = 16;
 
 export const DEFAULTS_HEADING: Record<
   HeadingKeyOption,
-  Required<HeadingPluginOptionsValues>
+  HeadingPluginOptionsValues
 > &
   Required<HeadingLevelsOption> = {
   h1: {
