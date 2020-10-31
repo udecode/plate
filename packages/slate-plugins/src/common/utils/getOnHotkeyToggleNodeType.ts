@@ -1,19 +1,13 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { toggleNodeType } from '../transforms/toggleNodeType';
+import { HotkeyOptions } from '../types/PluginOptions.types';
 
-export interface GetOnHotkeyToggleNodeTypeOptions {
+export interface GetOnHotkeyToggleNodeTypeOptions extends HotkeyOptions {
   /**
    * Key of the mark
    */
   type: string;
-
-  defaultType?: string;
-
-  /**
-   * Hotkey to toggle the mark
-   */
-  hotkey?: string;
 }
 
 /**

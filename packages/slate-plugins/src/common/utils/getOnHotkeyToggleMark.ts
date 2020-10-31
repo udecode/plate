@@ -1,17 +1,13 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { toggleMark } from '../transforms/toggleMark';
+import { HotkeyOptions } from '../types/PluginOptions.types';
 
-export interface GetOnHotkeyToggleMarkOptions {
+export interface GetOnHotkeyToggleMarkOptions extends HotkeyOptions {
   /**
    * Key of the mark
    */
   type: string;
-
-  /**
-   * Hotkey to toggle the mark
-   */
-  hotkey?: string;
 
   /**
    * Mark to clear

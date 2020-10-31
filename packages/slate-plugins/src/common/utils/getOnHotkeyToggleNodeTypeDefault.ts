@@ -1,18 +1,20 @@
 import { getOnHotkeyToggleNodeType } from './getOnHotkeyToggleNodeType';
 import { setDefaults } from './setDefaults';
 
+interface GetOnHotkeyToggleNodeTypeDefaultOptions {
+  key: string;
+  defaultOptions: Record<string, any>;
+  options?: any;
+}
+
 /**
  * Get `onKeyDown` handler for mark with default options.
  */
-export const getOnHotkeyToggleNodeTypeDefault = <Key extends string>({
+export const getOnHotkeyToggleNodeTypeDefault = ({
   key,
   defaultOptions,
   options,
-}: {
-  key: Key;
-  defaultOptions: Record<Key, any>;
-  options?: any;
-}) => {
+}: GetOnHotkeyToggleNodeTypeDefaultOptions) => {
   const keyOptions = setDefaults(options, defaultOptions)[key];
 
   return getOnHotkeyToggleNodeType(keyOptions);
