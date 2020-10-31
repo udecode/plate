@@ -1,4 +1,5 @@
 import isHotkey from 'is-hotkey';
+import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 import { toggleNodeType } from '../transforms/toggleNodeType';
 import { HotkeyOptions } from '../types/PluginOptions.types';
@@ -20,11 +21,15 @@ export const getOnHotkeyToggleNodeType = ({
 }: GetOnHotkeyToggleNodeTypeOptions) => {
   if (!hotkey) return;
 
-  return (e: any, editor: Editor) => {
-    if (isHotkey(hotkey, e)) {
-      e.preventDefault();
+  const hotkeys = castArray(hotkey);
 
-      toggleNodeType(editor, { activeType: type, inactiveType: defaultType });
+  return (e: any, editor: Editor) => {
+    for (const key of hotkeys) {
+      if (isHotkey(key, e)) {
+        e.preventDefault();
+        toggleNodeType(editor, { activeType: type, inactiveType: defaultType });
+        return;
+      }
     }
   };
 };
