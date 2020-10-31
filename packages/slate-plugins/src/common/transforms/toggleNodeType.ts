@@ -17,6 +17,7 @@ export interface ToggleNodeTypeOptions {
 
 /**
  * Toggle the type of the selected node.
+ * Don't do anything if activeType === inactiveType.
  */
 export const toggleNodeType = (
   editor: Editor,
@@ -26,6 +27,8 @@ export const toggleNodeType = (
   const { activeType, inactiveType = DEFAULT_ELEMENT } = options;
 
   const isActive = isNodeTypeIn(editor, activeType, editorNodesOptions);
+
+  if (isActive && activeType === inactiveType) return;
 
   Transforms.setNodes(editor, {
     type: isActive ? inactiveType : activeType,
