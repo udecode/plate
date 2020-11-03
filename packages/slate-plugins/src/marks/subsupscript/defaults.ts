@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import {
   SubscriptKeyOption,
@@ -16,7 +16,7 @@ export const DEFAULTS_SUBSUPSCRIPT: Record<
   SubscriptKeyOption | SuperscriptKeyOption,
   SubscriptPluginOptionsValues &
     SuperscriptPluginOptionsValues &
-    MarkOnKeyDownOptions
+    GetOnHotkeyToggleMarkOptions
 > = {
   subscript: {
     component: StyledLeaf,

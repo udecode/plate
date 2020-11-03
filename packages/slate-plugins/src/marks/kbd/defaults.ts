@@ -1,4 +1,4 @@
-import { MarkOnKeyDownOptions } from '../../common/utils/onKeyDownMark';
+import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
 import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { KbdKeyOption, KbdPluginOptionsValues } from './types';
 
@@ -6,7 +6,7 @@ export const MARK_KBD = 'kbd';
 
 export const DEFAULTS_KBD: Record<
   KbdKeyOption,
-  KbdPluginOptionsValues & MarkOnKeyDownOptions
+  KbdPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   kbd: {
     component: StyledLeaf,

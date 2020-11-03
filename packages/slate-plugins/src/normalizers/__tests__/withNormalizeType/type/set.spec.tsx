@@ -3,7 +3,6 @@
 import { Editor } from 'slate';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { options } from '../../../../../../../stories/config/initialValues';
-import { withTransforms } from '../../../../common/transforms/index';
 import { withNormalizeTypes } from '../../../index';
 
 const input = (
@@ -25,7 +24,7 @@ const output = (
 it('should be', () => {
   const editor = withNormalizeTypes({
     rules: [{ path: [0], type: options.h1.type }],
-  })(withTransforms()(input as Editor));
+  })(input as Editor);
 
   editor.normalizeNode([input, []]);
 

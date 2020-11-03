@@ -6,11 +6,12 @@ export const ELEMENT_CODE_BLOCK = 'code_block';
 
 export const DEFAULTS_CODE_BLOCK: Record<
   CodeBlockKeyOption,
-  Required<CodeBlockPluginOptionsValues>
+  CodeBlockPluginOptionsValues
 > = {
   code_block: {
     component: CodeBlockElement,
     type: ELEMENT_CODE_BLOCK,
+    hotkey: ['mod+opt+8', 'mod+shift+8'],
     rootProps: {
       className: 'slate-code-block',
     },

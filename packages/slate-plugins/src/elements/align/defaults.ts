@@ -7,7 +7,7 @@ export const ELEMENT_ALIGN_RIGHT = 'align_right';
 
 export const DEFAULTS_ALIGN: Record<
   AlignKeyOption,
-  Required<AlignPluginOptionsValues>
+  AlignPluginOptionsValues
 > = {
   align_left: {
     component: StyledElement,

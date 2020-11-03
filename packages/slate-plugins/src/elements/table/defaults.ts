@@ -9,7 +9,7 @@ export const ELEMENT_TD = 'td';
 
 export const DEFAULTS_TABLE: Record<
   TableKeyOption,
-  Required<TablePluginOptionsValues>
+  TablePluginOptionsValues
 > = {
   table: {
     component: TableElement,

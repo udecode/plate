@@ -17,7 +17,6 @@ import {
   StrikethroughPlugin,
   withAutoformat,
   withList,
-  withToggleType,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -39,7 +38,6 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
-  withToggleType({ defaultType: options.p.type }),
   withAutoformat({
     rules: autoformatRules,
   }),

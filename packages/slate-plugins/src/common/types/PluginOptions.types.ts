@@ -9,16 +9,30 @@ export interface RenderNodePropsOptions {
 
   as?: any;
 
+  /**
+   * Function to evaluate any stored attributes on the element and return as props
+   */
   attributesToProps?: AttributesToProps;
 }
 
 export type DeserializedAttributes = { [key: string]: any } | undefined;
 export type AttributesToProps = (attributes: DeserializedAttributes) => { [key: string]: any };
 
+export interface HotkeyOptions {
+  /**
+   * Hotkey to toggle node type
+   */
+  hotkey?: string | string[];
+
+  defaultType?: string;
+}
+
 /**
  * `renderElement` and `renderLeaf` option values
  */
-export interface RenderNodeOptions extends RootProps<RenderNodePropsOptions> {
+export interface RenderNodeOptions
+  extends RootProps<RenderNodePropsOptions>,
+    HotkeyOptions {
   /**
    * Type of the node.
    */

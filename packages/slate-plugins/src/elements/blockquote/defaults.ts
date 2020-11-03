@@ -5,11 +5,12 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
 export const DEFAULTS_BLOCKQUOTE: Record<
   BlockquoteKeyOption,
-  Required<BlockquotePluginOptionsValues>
+  BlockquotePluginOptionsValues
 > = {
   blockquote: {
     component: BlockquoteElement,
     type: ELEMENT_BLOCKQUOTE,
+    hotkey: 'mod+shift+.',
     rootProps: {
       className: 'slate-blockquote',
       as: 'blockquote',

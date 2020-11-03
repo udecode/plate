@@ -1,9 +1,5 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
-import {
-  MarkPluginOptions,
-  RenderLeafOptions,
-} from '../common/types/Mark.types';
 
 // Data of Text node
 export interface TemplateNodeData {}
@@ -21,8 +17,7 @@ interface TemplateRenderLeafOptionsProps {}
 
 // renderLeaf options
 export interface TemplateRenderLeafOptions
-  extends RenderLeafOptions,
-    TemplateRenderLeafOptionsProps,
+  extends TemplateRenderLeafOptionsProps,
     TypeOption {}
 
 // renderLeaf props
@@ -37,6 +32,5 @@ export interface TemplateDeserializeOptions extends TypeOption {}
 
 // Plugin options
 export interface TemplatePluginOptions
-  extends MarkPluginOptions,
-    TemplateRenderLeafOptions,
+  extends TemplateRenderLeafOptions,
     TemplateDeserializeOptions {}

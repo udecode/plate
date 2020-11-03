@@ -5,7 +5,7 @@ export const ELEMENT_MEDIA_EMBED = 'media_embed';
 
 export const DEFAULTS_MEDIA_EMBED: Record<
   MediaEmbedKeyOption,
-  Required<MediaEmbedPluginOptionsValues>
+  MediaEmbedPluginOptionsValues
 > = {
   media_embed: {
     component: MediaEmbedElement,

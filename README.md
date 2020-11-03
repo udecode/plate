@@ -73,7 +73,7 @@ and checkout our [API](https://slate-plugins-api.netlify.app/)
 documentation.
 
 For additional help, join us in our
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
+[Slack](https://join.slack.com/t/slate-js/shared_invite/zt-f8t986ip-7dA1DyiqPpzootz1snKXkw).
 
 ## 🔌 Plugins
 

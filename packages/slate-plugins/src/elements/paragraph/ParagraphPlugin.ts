@@ -1,4 +1,6 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { getOnHotkeyToggleNodeTypeDefault } from '../../common/utils/getOnHotkeyToggleNodeTypeDefault';
+import { DEFAULTS_PARAGRAPH } from './defaults';
 import { deserializeParagraph } from './deserializeParagraph';
 import { renderElementParagraph } from './renderElementParagraph';
 import { ParagraphPluginOptions } from './types';
@@ -11,4 +13,9 @@ export const ParagraphPlugin = (
 ): SlatePlugin => ({
   renderElement: renderElementParagraph(options),
   deserialize: deserializeParagraph(options),
+  onKeyDown: getOnHotkeyToggleNodeTypeDefault({
+    key: 'p',
+    defaultOptions: DEFAULTS_PARAGRAPH,
+    options,
+  }),
 });

@@ -1,6 +1,6 @@
 import { Editor, Path, Transforms } from 'slate';
 import { getNode } from '../common/queries';
-import { TransformEditor } from '../common/transforms';
+import { ErrorHandler } from '../common/types/ErrorHandler.types';
 
 interface Rule {
   /**
@@ -17,7 +17,7 @@ interface Rule {
   path: Path;
 }
 
-export interface WithNormalizeTypes {
+export interface WithNormalizeTypes extends ErrorHandler {
   /**
    * Set of rules for the types.
    * For each rule, provide a `path` and either `strictType` or `type`.
@@ -29,8 +29,8 @@ export interface WithNormalizeTypes {
   rules: Rule[];
 }
 
-export const withNormalizeTypes = ({ rules }: WithNormalizeTypes) => <
-  T extends Editor & TransformEditor
+export const withNormalizeTypes = ({ rules, onError }: WithNormalizeTypes) => <
+  T extends Editor
 >(
   editor: T
 ) => {
@@ -46,13 +46,18 @@ export const withNormalizeTypes = ({ rules }: WithNormalizeTypes) => <
             Transforms.setNodes(editor, { type: strictType }, { at: path });
           }
         } else {
-          editor.insertNodes(
-            {
-              type: strictType ?? type,
-              children: [{ text: '' }],
-            },
-            { at: path }
-          );
+          try {
+            Transforms.insertNodes(
+              editor,
+              {
+                type: strictType ?? type,
+                children: [{ text: '' }],
+              },
+              { at: path }
+            );
+          } catch (err) {
+            onError?.(err);
+          }
         }
       });
     }

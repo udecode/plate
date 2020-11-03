@@ -103,23 +103,32 @@ export const EditablePlugins = ({
       }}
       decorate={useCallback(decoratePlugins(editor, plugins, decorateList), [
         editor,
-        ...decorateDeps,
+        ...[...plugins.flatMap((p) => p.decorateDeps ?? []), ...decorateDeps],
       ])}
       renderElement={useCallback(
         renderElementPlugins(plugins, renderElementList),
-        renderElementDeps
+        [
+          ...plugins.flatMap((p) => p.renderElementDeps ?? []),
+          ...renderElementDeps,
+        ]
       )}
-      renderLeaf={useCallback(
-        renderLeafPlugins(plugins, renderLeafList),
-        renderLeafDeps
-      )}
+      renderLeaf={useCallback(renderLeafPlugins(plugins, renderLeafList), [
+        ...plugins.flatMap((p) => p.renderLeafDeps ?? []),
+        ...renderLeafDeps,
+      ])}
       onDOMBeforeInput={useCallback(
         onDOMBeforeInputPlugins(editor, plugins, onDOMBeforeInputList),
-        [editor, ...onDOMBeforeInputDeps]
+        [
+          editor,
+          ...[
+            ...plugins.flatMap((p) => p.onDOMBeforeInputDeps ?? []),
+            ...onDOMBeforeInputDeps,
+          ],
+        ]
       )}
       onKeyDown={useCallback(onKeyDownPlugins(editor, plugins, onKeyDownList), [
         editor,
-        ...onKeyDownDeps,
+        ...[...plugins.flatMap((p) => p.onKeyDownDeps ?? []), ...onKeyDownDeps],
       ])}
       {...props}
     />

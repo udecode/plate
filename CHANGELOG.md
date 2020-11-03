@@ -6,6 +6,43 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+## v0.68.0
+
+### Breaking Changes
+
+- remove `withToggleType`, use `toggleNodeType` instead.
+- remove `withTransforms`, use `Transforms.insertNodes` instead.
+- renamed `onKeyDownMark` to `getOnHotkeyToggleMark`.
+- renamed `onKeyDownMarkDefault` to `getOnHotkeyToggleMarkDefault`.
+
+### Features
+
+- `toggleNodeType`: Toggle the type of the selected node.
+- hotkey to toggle node type (default type is paragraph):
+  - blockquote: `mod+shift+.`
+  - paragraph: `['mod+opt+0', 'mod+shift+0']`
+  - todo list: `['mod+opt+4', 'mod+shift+4']`
+  - code block: `['mod+opt+8', 'mod+shift+8']`
+- `getOnHotkeyToggleNodeType`: Get `onKeyDown` handler to toggle node
+  type if hotkey is pressed.
+- `getOnHotkeyToggleNodeTypeDefault`: `getOnHotkeyToggleNodeType` with
+  default options.
+- added `serialize` as a plugin option. it accepts `element` and `leaf`
+  properties.
+- `serializeHTMLFromNodes` will use `plugin.serialize.element`
+  in place of `plugin.renderElement` and `plugin.serialize.leaf` in place of
+  `plugin.renderLeaf`
+
+
+### Bug Fixes
+
+- `todo-list`:
+  - use `user-select: none` in the checkbox wrapper to fix selection
+    bug.
+  - checked can be `undefined`
+- `table`: Set child type of a table cell to be `<p>` for the `TablePlugin`.
+- `list`: Copy the marks from the current leaf node to the next
+
 ## v0.67.0
 
 ### Breaking Changes

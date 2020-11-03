@@ -59,6 +59,11 @@ export interface DeserializeHtml {
   leaf?: DeserializeNode[];
 }
 
+export interface SerializeHtml {
+  element?: RenderElement;
+  leaf?: RenderLeaf;
+}
+
 /**
  * Each plugin fields will be combined by role.
  *
@@ -71,15 +76,29 @@ export interface DeserializeHtml {
  *
  * To deserialize HTML:
  * - deserialize
+ *
+ * To serialize HTML (overriding renderElement / renderLeaf):
+ * - serialize
  */
 export interface SlatePlugin {
   decorate?: Decorate;
+  // Dependencies of `decorate`
+  decorateDeps?: any[];
   deserialize?: DeserializeHtml;
+  serialize?: SerializeHtml;
   inlineTypes?: string[];
   renderElement?: RenderElement;
+  // Dependencies of `renderElement`
+  renderElementDeps?: any[];
   renderLeaf?: RenderLeaf;
+  // Dependencies of `renderLeaf`
+  renderLeafDeps?: any[];
   voidTypes?: string[];
   onDOMBeforeInput?: OnDOMBeforeInput;
+  // Dependencies of `onDOMBeforeInput`
+  onDOMBeforeInputDeps?: any[];
   onKeyDown?: OnKeyDown | null;
+  // Dependencies of `onKeyDown`
+  onKeyDownDeps?: any[];
   [key: string]: any;
 }

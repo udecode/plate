@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
-import { pipe, withToggleType } from '../../../common/index';
 import { ELEMENT_H1 } from '../../../elements/heading/defaults';
 import { ToolbarElement } from '../../ToolbarElement/ToolbarElement';
 import { input, output } from './onMouseDown.fixture';
 
 it('should render', () => {
-  const editor = pipe(input, withToggleType());
+  const editor = input;
 
   jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
 
