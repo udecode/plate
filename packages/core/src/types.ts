@@ -82,13 +82,23 @@ export interface SerializeHtml {
  */
 export interface SlatePlugin {
   decorate?: Decorate;
+  // Dependencies of `decorate`
+  decorateDeps?: any[];
   deserialize?: DeserializeHtml;
   serialize?: SerializeHtml;
   inlineTypes?: string[];
   renderElement?: RenderElement;
+  // Dependencies of `renderElement`
+  renderElementDeps?: any[];
   renderLeaf?: RenderLeaf;
+  // Dependencies of `renderLeaf`
+  renderLeafDeps?: any[];
   voidTypes?: string[];
   onDOMBeforeInput?: OnDOMBeforeInput;
+  // Dependencies of `onDOMBeforeInput`
+  onDOMBeforeInputDeps?: any[];
   onKeyDown?: OnKeyDown | null;
+  // Dependencies of `onKeyDown`
+  onKeyDownDeps?: any[];
   [key: string]: any;
 }
