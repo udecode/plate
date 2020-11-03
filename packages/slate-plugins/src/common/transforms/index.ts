@@ -8,4 +8,3 @@ export * from './toggleWrapNodes';
 export * from './unhangRange';
 export * from './unwrapNodesByType';
 export * from './wrapNodes';
-export * from './toggleNodeType';
