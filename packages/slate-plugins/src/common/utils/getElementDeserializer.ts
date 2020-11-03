@@ -1,7 +1,7 @@
 import {
   getNodeDeserializer,
   GetNodeDeserializerOptions,
-  WithOptional
+  WithOptional,
 } from './getNodeDeserializer';
 
 export interface GetElementDeserializerOptions

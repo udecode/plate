@@ -1,4 +1,7 @@
-import { GetNodeDeserializerOptions, GetElementDeserializerOptions, GetLeafDeserializerOptions } from '../utils'
+import {
+  GetElementDeserializerOptions,
+  GetLeafDeserializerOptions,
+} from '../utils';
 
 export type DeserializerOptions =
   | GetElementDeserializerOptions
