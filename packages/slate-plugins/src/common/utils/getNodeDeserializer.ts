@@ -32,7 +32,7 @@ export interface GetNodeDeserializerOptions {
   /**
   * List of html attributes to store with the node
   */
-  attributes?: string[] | undefined;
+  attributes?: string[];
 
   /**
    * List of rules the element needs to follow to be deserialized to a slate node.

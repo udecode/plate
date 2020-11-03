@@ -9,8 +9,11 @@ export interface RenderNodePropsOptions {
 
   as?: any;
 
-  attributesToProps?: (attributes: { [key: string]: any } | undefined | unknown) => { [key: string]: any };
+  attributesToProps?: AttributesToProps;
 }
+
+export type DeserializedAttributes = { [key: string]: any } | undefined;
+export type AttributesToProps = (attributes: DeserializedAttributes) => { [key: string]: any };
 
 /**
  * `renderElement` and `renderLeaf` option values
