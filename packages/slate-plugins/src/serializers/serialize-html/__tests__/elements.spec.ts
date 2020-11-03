@@ -145,7 +145,11 @@ it('serialize table to html', () => {
             {
               type: 'tr',
               children: [
-                { type: 'td', attributes: { colspan: '2' }, children: [{ text: 'Span' }] },
+                {
+                  type: 'td',
+                  attributes: { colspan: '2' },
+                  children: [{ text: 'Span' }],
+                },
               ],
             },
           ],
@@ -153,15 +157,11 @@ it('serialize table to html', () => {
       ],
     })
   ).getElementsByTagName('table')[0];
-  expect(
-    render.children[0].children[0].children[0].textContent
-  ).toEqual('Foo');
-  expect(
-    render.children[0].children[0].children[1].textContent
-  ).toEqual('Bar');
-  expect(
-    render.children[0]?.children[1].children[0].outerHTML
-  ).toEqual('<td colspan=\"2\" class=\"slate-td\">Span</td>')
+  expect(render.children[0].children[0].children[0].textContent).toEqual('Foo');
+  expect(render.children[0].children[0].children[1].textContent).toEqual('Bar');
+  expect(render.children[0]?.children[1].children[0].outerHTML).toEqual(
+    '<td colspan="2" class="slate-td">Span</td>'
+  );
 });
 
 it('serialize alignments to html', () => {

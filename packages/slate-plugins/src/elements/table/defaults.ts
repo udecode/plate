@@ -35,7 +35,7 @@ export const DEFAULTS_TABLE: Record<
       as: 'th',
       attributesToProps: (attributes) => ({
         colSpan: attributes?.['colspan'],
-        rowSpan: attributes?.['rowspan']
+        rowSpan: attributes?.['rowspan'],
       }),
       styles: {
         root: {
@@ -61,7 +61,7 @@ export const DEFAULTS_TABLE: Record<
       as: 'td',
       attributesToProps: (attributes) => ({
         colSpan: attributes?.['colspan'],
-        rowSpan: attributes?.['rowspan']
+        rowSpan: attributes?.['rowspan'],
       }),
       styles: {
         root: {

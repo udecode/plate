@@ -16,7 +16,9 @@ export interface RenderNodePropsOptions {
 }
 
 export type DeserializedAttributes = { [key: string]: any } | undefined;
-export type AttributesToProps = (attributes: DeserializedAttributes) => { [key: string]: any };
+export type AttributesToProps = (
+  attributes: DeserializedAttributes
+) => { [key: string]: any };
 
 export interface HotkeyOptions {
   /**

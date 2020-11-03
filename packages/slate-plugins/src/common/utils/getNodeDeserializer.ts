@@ -30,8 +30,8 @@ export interface GetNodeDeserializerOptions {
   node: (el: HTMLElement) => { [key: string]: any } | undefined;
 
   /**
-  * List of html attributes to store with the node
-  */
+   * List of html attributes to store with the node
+   */
   attributes?: string[];
 
   /**
@@ -75,18 +75,19 @@ export const getNodeDeserializer = ({
             }
           }
 
-          
-          let htmlAttributes = {}
+          const htmlAttributes = {};
           if (attributes) {
             const attributeNames = el.getAttributeNames();
             for (const attribute of attributes) {
-              if (attributeNames.includes(attribute)) htmlAttributes[attribute] = el.getAttribute(attribute)
+              if (attributeNames.includes(attribute))
+                htmlAttributes[attribute] = el.getAttribute(attribute);
             }
           }
-          
+
           const slateNode = node(el);
-          if (slateNode && Object.keys(htmlAttributes).length) slateNode.attributes = htmlAttributes
-          return slateNode
+          if (slateNode && Object.keys(htmlAttributes).length)
+            slateNode.attributes = htmlAttributes;
+          return slateNode;
         },
       });
     });

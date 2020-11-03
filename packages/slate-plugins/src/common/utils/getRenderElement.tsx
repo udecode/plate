@@ -2,7 +2,11 @@ import * as React from 'react';
 import pickBy from 'lodash/pickBy';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import { RenderNodeOptions, DeserializedAttributes, AttributesToProps } from '../types/PluginOptions.types';
+import {
+  AttributesToProps,
+  DeserializedAttributes,
+  RenderNodeOptions,
+} from '../types/PluginOptions.types';
 
 export interface GetRenderElementOptions {
   /**
@@ -33,9 +37,13 @@ export interface GetHtmlAttributes {
   attributesToProps?: AttributesToProps;
 }
 
-const getHtmlAttributes = ({ attributes, attributesToProps }: GetHtmlAttributes) => {
-  if (attributes && attributesToProps) return pickBy(attributesToProps(attributes))
-  if (attributes) return pickBy(attributes)
+const getHtmlAttributes = ({
+  attributes,
+  attributesToProps,
+}: GetHtmlAttributes) => {
+  if (attributes && attributesToProps)
+    return pickBy(attributesToProps(attributes));
+  if (attributes) return pickBy(attributes);
 };
 
 /**
@@ -52,9 +60,17 @@ export const getRenderElement = ({
   ...props
 }: RenderElementPropsWithAttributes) => {
   if (props.element.type === type) {
-    const htmlAttributes = getHtmlAttributes({ attributes: props.element?.attributes, attributesToProps: rootProps.attributesToProps })
+    const htmlAttributes = getHtmlAttributes({
+      attributes: props.element?.attributes,
+      attributesToProps: rootProps.attributesToProps,
+    });
     return (
-      <Component attributes={attributes} htmlAttributes={htmlAttributes} {...props} {...pickBy(rootProps)} />
+      <Component
+        attributes={attributes}
+        htmlAttributes={htmlAttributes}
+        {...props}
+        {...pickBy(rootProps)}
+      />
     );
   }
 };
@@ -69,7 +85,10 @@ export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
 }: RenderElementPropsWithAttributes) => {
   for (const { type, component: Component, rootProps } of options) {
     if (element.type === type) {
-      const htmlAttributes = getHtmlAttributes({ attributes: element?.attributes, attributesToProps: rootProps.attributesToProps })
+      const htmlAttributes = getHtmlAttributes({
+        attributes: element?.attributes,
+        attributesToProps: rootProps.attributesToProps,
+      });
       return (
         <Component
           attributes={attributes}
