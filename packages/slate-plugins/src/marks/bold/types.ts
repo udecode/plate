@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type BoldKeyOption = 'bold';
 // Plugin options
 export type BoldPluginOptionsValues = RenderNodeOptions &
   RootProps<BoldRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type BoldPluginOptionsKeys = keyof BoldPluginOptionsValues;
 export type BoldPluginOptions<
   Value extends BoldPluginOptionsKeys = BoldPluginOptionsKeys
@@ -43,4 +45,4 @@ export interface BoldRenderLeafOptions
 
 // deserialize options
 export interface BoldDeserializeOptions
-  extends BoldPluginOptions<'type' | 'rootProps'> {}
+  extends BoldPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

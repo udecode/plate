@@ -1,10 +1,11 @@
 import {
   getNodeDeserializer,
   GetNodeDeserializerOptions,
+  WithOptional
 } from './getNodeDeserializer';
 
 export interface GetLeafDeserializerOptions
-  extends Omit<GetNodeDeserializerOptions, 'node'> {
+  extends WithOptional<GetNodeDeserializerOptions, 'node'> {
   type: string;
 }
 
@@ -13,6 +14,6 @@ export interface GetLeafDeserializerOptions
  */
 export const getLeafDeserializer = (options: GetLeafDeserializerOptions) =>
   getNodeDeserializer({
-    ...options,
     node: () => ({ [options.type]: true }),
+    ...options,
   });

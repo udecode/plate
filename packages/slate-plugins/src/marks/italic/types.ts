@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type ItalicKeyOption = 'italic';
 // Plugin options
 export type ItalicPluginOptionsValues = RenderNodeOptions &
   RootProps<ItalicRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type ItalicPluginOptionsKeys = keyof ItalicPluginOptionsValues;
 export type ItalicPluginOptions<
   Value extends ItalicPluginOptionsKeys = ItalicPluginOptionsKeys
@@ -43,4 +45,4 @@ export interface ItalicRenderLeafOptions
 
 // deserialize options
 export interface ItalicDeserializeOptions
-  extends ItalicPluginOptions<'type' | 'rootProps'> {}
+  extends ItalicPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

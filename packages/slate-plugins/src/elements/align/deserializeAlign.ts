@@ -22,6 +22,7 @@ export const deserializeAlign = (
             },
           },
         ],
+        ...options?.align_center?.deserialize,
       }),
       ...getElementDeserializer({
         type: align_right.type,
@@ -34,6 +35,7 @@ export const deserializeAlign = (
             },
           },
         ],
+        ...options?.align_right?.deserialize,
       }),
     ],
   };

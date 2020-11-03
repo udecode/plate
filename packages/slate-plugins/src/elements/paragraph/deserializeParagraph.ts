@@ -13,6 +13,7 @@ export const deserializeParagraph = (
     element: getElementDeserializer({
       type: p.type,
       rules: [{ nodeNames: 'P' }],
+      ...options?.p?.deserialize,
     }),
   };
 };

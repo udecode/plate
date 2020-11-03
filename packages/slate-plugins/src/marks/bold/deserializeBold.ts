@@ -20,6 +20,7 @@ export const deserializeBold = (
           },
         },
       ],
+      ...options?.bold?.deserialize,
     }),
   };
 };

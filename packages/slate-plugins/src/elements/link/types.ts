@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -43,7 +44,8 @@ export type LinkKeyOption = 'link';
 
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
-  RootProps<LinkRenderElementPropsOptions> & {
+  RootProps<LinkRenderElementPropsOptions> &
+  Deserialize & {
     /**
      * Callback to validate an url.
      */
@@ -61,7 +63,7 @@ export interface LinkRenderElementOptions
 
 // deserialize options
 export interface LinkDeserializeOptions
-  extends LinkPluginOptions<'type' | 'rootProps'> {}
+  extends LinkPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
   /**

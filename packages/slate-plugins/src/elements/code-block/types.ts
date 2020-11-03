@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -36,7 +37,8 @@ export type CodeBlockKeyOption = 'code_block';
 
 // Plugin options
 export type CodeBlockPluginOptionsValues = RenderNodeOptions &
-  RootProps<CodeBlockRenderElementPropsOptions>;
+  RootProps<CodeBlockRenderElementPropsOptions> &
+  Deserialize;
 export type CodeBlockPluginOptionsKeys = keyof CodeBlockPluginOptionsValues;
 export type CodeBlockPluginOptions<
   Value extends CodeBlockPluginOptionsKeys = CodeBlockPluginOptionsKeys
@@ -51,7 +53,7 @@ export interface CodeBlockRenderElementOptions
 
 // deserialize options
 export interface CodeBlockDeserializeOptions
-  extends CodeBlockPluginOptions<'type' | 'rootProps'> {}
+  extends CodeBlockPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface CodeBlockElementStyles {
   /**

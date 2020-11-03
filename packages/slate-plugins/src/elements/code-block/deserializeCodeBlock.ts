@@ -13,6 +13,7 @@ export const deserializeCodeBlock = (
     element: getElementDeserializer({
       type: code_block.type,
       rules: [{ nodeNames: 'PRE' }],
+      ...options?.code_block?.deserialize,
     }),
   };
 };

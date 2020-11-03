@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type StrikethroughKeyOption = 'strikethrough';
 // Plugin options
 export type StrikethroughPluginOptionsValues = RenderNodeOptions &
   RootProps<StrikethroughRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type StrikethroughPluginOptionsKeys = keyof StrikethroughPluginOptionsValues;
 export type StrikethroughPluginOptions<
   Value extends StrikethroughPluginOptionsKeys = StrikethroughPluginOptionsKeys
@@ -45,4 +47,4 @@ export interface StrikethroughRenderLeafOptions
 
 // deserialize options
 export interface StrikethroughDeserializeOptions
-  extends StrikethroughPluginOptions<'type' | 'rootProps'> {}
+  extends StrikethroughPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

@@ -15,6 +15,7 @@ export const deserializeHeading = (
   let deserializers = getElementDeserializer({
     type: h1.type,
     rules: [{ nodeNames: 'H1' }],
+    ...options?.h1?.deserialize,
   });
 
   if (levels >= 2)
@@ -23,6 +24,7 @@ export const deserializeHeading = (
       ...getElementDeserializer({
         type: h2.type,
         rules: [{ nodeNames: 'H2' }],
+        ...options?.h2?.deserialize,
       }),
     ];
   if (levels >= 3)
@@ -31,6 +33,7 @@ export const deserializeHeading = (
       ...getElementDeserializer({
         type: h3.type,
         rules: [{ nodeNames: 'H3' }],
+        ...options?.h3?.deserialize,
       }),
     ];
   if (levels >= 4)
@@ -39,6 +42,7 @@ export const deserializeHeading = (
       ...getElementDeserializer({
         type: h4.type,
         rules: [{ nodeNames: 'H4' }],
+        ...options?.h4?.deserialize,
       }),
     ];
   if (levels >= 5)
@@ -47,6 +51,7 @@ export const deserializeHeading = (
       ...getElementDeserializer({
         type: h5.type,
         rules: [{ nodeNames: 'H5' }],
+        ...options?.h5?.deserialize,
       }),
     ];
   if (levels >= 6)
@@ -55,6 +60,7 @@ export const deserializeHeading = (
       ...getElementDeserializer({
         type: h6.type,
         rules: [{ nodeNames: 'H6' }],
+        ...options?.h6?.deserialize,
       }),
     ];
 

@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type KbdKeyOption = 'kbd';
 // Plugin options
 export type KbdPluginOptionsValues = RenderNodeOptions &
   RootProps<KbdRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type KbdPluginOptionsKeys = keyof KbdPluginOptionsValues;
 export type KbdPluginOptions<
   Value extends KbdPluginOptionsKeys = KbdPluginOptionsKeys
@@ -43,4 +45,4 @@ export interface KbdRenderLeafOptions
 
 // deserialize options
 export interface KbdDeserializeOptions
-  extends KbdPluginOptions<'type' | 'rootProps'> {}
+  extends KbdPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

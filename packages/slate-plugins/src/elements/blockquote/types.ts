@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -37,7 +38,8 @@ export type BlockquoteKeyOption = 'blockquote';
 
 // Plugin options
 export type BlockquotePluginOptionsValues = RenderNodeOptions &
-  RootProps<BlockquoteRenderElementPropsOptions>;
+  RootProps<BlockquoteRenderElementPropsOptions> &
+  Deserialize;
 export type BlockquotePluginOptionsKeys = keyof BlockquotePluginOptionsValues;
 export type BlockquotePluginOptions<
   Value extends BlockquotePluginOptionsKeys = BlockquotePluginOptionsKeys
@@ -52,7 +54,7 @@ export interface BlockquoteRenderElementOptions
 
 // deserialize options
 export interface BlockquoteDeserializeOptions
-  extends BlockquotePluginOptions<'type' | 'rootProps'> {}
+  extends BlockquotePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface BlockquoteElementStyles {
   /**

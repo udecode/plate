@@ -14,18 +14,22 @@ export const deserializeTable = (
       ...getElementDeserializer({
         type: table.type,
         rules: [{ nodeNames: 'TABLE' }],
+        ...options?.table?.deserialize,
       }),
       ...getElementDeserializer({
         type: tr.type,
         rules: [{ nodeNames: 'TR' }],
+        ...options?.tr?.deserialize,
       }),
       ...getElementDeserializer({
         type: td.type,
         rules: [{ nodeNames: 'TD' }],
+        ...options?.td?.deserialize,
       }),
       ...getElementDeserializer({
         type: th.type,
         rules: [{ nodeNames: 'TH' }],
+        ...options?.th?.deserialize,
       }),
     ],
   };

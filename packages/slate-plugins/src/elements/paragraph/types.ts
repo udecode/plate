@@ -1,6 +1,7 @@
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -28,7 +29,8 @@ export type ParagraphKeyOption = 'p';
 
 // Plugin options
 export type ParagraphPluginOptionsValues = RenderNodeOptions &
-  RootProps<ParagraphRenderElementPropsOptions>;
+  RootProps<ParagraphRenderElementPropsOptions> &
+  Deserialize;
 export type ParagraphPluginOptionsKeys = keyof ParagraphPluginOptionsValues;
 export type ParagraphPluginOptions<
   Value extends ParagraphPluginOptionsKeys = ParagraphPluginOptionsKeys
@@ -43,4 +45,4 @@ export interface ParagraphRenderElementOptions
 
 // deserialize options
 export interface ParagraphDeserializeOptions
-  extends ParagraphPluginOptions<'type' | 'rootProps'> {}
+  extends ParagraphPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
