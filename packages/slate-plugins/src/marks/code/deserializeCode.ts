@@ -20,6 +20,7 @@ export const deserializeCode = (
           },
         },
       ],
+      ...options?.code?.deserialize,
     }),
   };
 };

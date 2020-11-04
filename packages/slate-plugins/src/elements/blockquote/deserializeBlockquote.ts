@@ -13,6 +13,7 @@ export const deserializeBlockquote = (
     element: getElementDeserializer({
       type: blockquote.type,
       rules: [{ nodeNames: 'BLOCKQUOTE' }],
+      ...options?.blockquote?.deserialize,
     }),
   };
 };

@@ -17,6 +17,7 @@ export const deserializeMention = (
         value: el.getAttribute('data-slate-value'),
       }),
       rules: [{ className: mention.rootProps.className }],
+      ...options?.mention?.deserialize,
     }),
   };
 };

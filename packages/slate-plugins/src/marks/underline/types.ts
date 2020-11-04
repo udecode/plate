@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type UnderlineKeyOption = 'underline';
 // Plugin options
 export type UnderlinePluginOptionsValues = RenderNodeOptions &
   RootProps<UnderlineRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type UnderlinePluginOptionsKeys = keyof UnderlinePluginOptionsValues;
 export type UnderlinePluginOptions<
   Value extends UnderlinePluginOptionsKeys = UnderlinePluginOptionsKeys
@@ -45,4 +47,4 @@ export interface UnderlineRenderLeafOptions
 
 // deserialize options
 export interface UnderlineDeserializeOptions
-  extends UnderlinePluginOptions<'type' | 'rootProps'> {}
+  extends UnderlinePluginOptions<'type' | 'rootProps' | 'deserialize'> {}

@@ -20,6 +20,7 @@ export const deserializeSubscript = (
           },
         },
       ],
+      ...options?.subscript?.deserialize,
     }),
   };
 };

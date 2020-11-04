@@ -20,6 +20,7 @@ export const deserializeUnderline = (
           },
         },
       ],
+      ...options?.underline?.deserialize,
     }),
   };
 };

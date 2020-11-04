@@ -1,6 +1,7 @@
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -28,7 +29,8 @@ export type AlignKeyOption = 'align_left' | 'align_center' | 'align_right';
 
 // Plugin options
 export type AlignPluginOptionsValues = RenderNodeOptions &
-  RootProps<AlignRenderElementPropsOptions>;
+  RootProps<AlignRenderElementPropsOptions> &
+  Deserialize;
 export type AlignPluginOptionsKeys = keyof AlignPluginOptionsValues;
 export type AlignPluginOptions<
   Value extends AlignPluginOptionsKeys = AlignPluginOptionsKeys
@@ -41,4 +43,4 @@ export interface AlignRenderElementOptions
 
 // deserialize options
 export interface AlignDeserializeOptions
-  extends AlignPluginOptions<'type' | 'rootProps'> {}
+  extends AlignPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

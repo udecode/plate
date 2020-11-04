@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -53,7 +54,8 @@ export type MentionKeyOption = 'mention';
 
 // Plugin options
 export type MentionPluginOptionsValues = RenderNodeOptions &
-  RootProps<MentionRenderElementPropsOptions>;
+  RootProps<MentionRenderElementPropsOptions> &
+  Deserialize;
 export type MentionPluginOptionsKeys = keyof MentionPluginOptionsValues;
 export type MentionPluginOptions<
   Value extends MentionPluginOptionsKeys = MentionPluginOptionsKeys
@@ -66,7 +68,7 @@ export interface MentionRenderElementOptions
 
 // deserialize options
 export interface MentionDeserializeOptions
-  extends MentionPluginOptions<'type' | 'rootProps'> {}
+  extends MentionPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface WithMentionOptions extends MentionPluginOptions<'type'> {}
 

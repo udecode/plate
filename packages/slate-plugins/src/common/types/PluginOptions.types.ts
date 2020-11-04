@@ -1,3 +1,19 @@
+import {
+  GetElementDeserializerOptions,
+  GetLeafDeserializerOptions,
+} from '../utils';
+
+export type DeserializerOptions =
+  | GetElementDeserializerOptions
+  | GetLeafDeserializerOptions;
+
+export interface Deserialize extends RenderNodeOptions {
+  /**
+   * `getElementDeserializer` and `getLeafDeserializer` options
+   */
+  deserialize?: Partial<DeserializerOptions>;
+}
+
 /**
  * Props of the root component of the component to render.
  */

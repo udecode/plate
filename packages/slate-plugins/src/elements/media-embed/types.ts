@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -42,7 +43,8 @@ export type MediaEmbedKeyOption = 'media_embed';
 
 // Plugin options
 export type MediaEmbedPluginOptionsValues = RenderNodeOptions &
-  RootProps<MediaEmbedRenderElementPropsOptions>;
+  RootProps<MediaEmbedRenderElementPropsOptions> &
+  Deserialize;
 export type MediaEmbedPluginOptionsKeys = keyof MediaEmbedPluginOptionsValues;
 export type MediaEmbedPluginOptions<
   Value extends MediaEmbedPluginOptionsKeys = MediaEmbedPluginOptionsKeys
@@ -57,7 +59,7 @@ export interface MediaEmbedRenderElementOptions
 
 // deserialize options
 export interface MediaEmbedDeserializeOptions
-  extends MediaEmbedPluginOptions<'type' | 'rootProps'> {}
+  extends MediaEmbedPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface MediaEmbedElementStyles {
   /**

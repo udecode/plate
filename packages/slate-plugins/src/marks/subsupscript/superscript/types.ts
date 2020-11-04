@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type SuperscriptKeyOption = 'superscript';
 // Plugin options
 export type SuperscriptPluginOptionsValues = RenderNodeOptions &
   RootProps<SuperscriptRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type SuperscriptPluginOptionsKeys = keyof SuperscriptPluginOptionsValues;
 export type SuperscriptPluginOptions<
   Value extends SuperscriptPluginOptionsKeys = SuperscriptPluginOptionsKeys
@@ -45,4 +47,4 @@ export interface SuperscriptRenderLeafOptions
 
 // deserialize options
 export interface SuperscriptDeserializeOptions
-  extends SuperscriptPluginOptions<'type' | 'rootProps'> {}
+  extends SuperscriptPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type CodeKeyOption = 'code';
 // Plugin options
 export type CodePluginOptionsValues = RenderNodeOptions &
   RootProps<CodeRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type CodePluginOptionsKeys = keyof CodePluginOptionsValues;
 export type CodePluginOptions<
   Value extends CodePluginOptionsKeys = CodePluginOptionsKeys
@@ -43,4 +45,4 @@ export interface CodeRenderLeafOptions
 
 // deserialize options
 export interface CodeDeserializeOptions
-  extends CodePluginOptions<'type' | 'rootProps'> {}
+  extends CodePluginOptions<'type' | 'rootProps' | 'deserialize'> {}

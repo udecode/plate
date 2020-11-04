@@ -20,6 +20,7 @@ export const deserializeStrikethrough = (
           },
         },
       ],
+      ...options?.strikethrough?.deserialize,
     }),
   };
 };

@@ -20,6 +20,7 @@ export const deserializeSuperscript = (
           },
         },
       ],
+      ...options?.superscript?.deserialize,
     }),
   };
 };

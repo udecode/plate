@@ -27,6 +27,7 @@ export const deserializeIframe = (
         { nodeNames: 'IFRAME' },
         { className: media_embed.rootProps.className },
       ],
+      ...options?.media_embed?.deserialize,
     }),
   };
 };

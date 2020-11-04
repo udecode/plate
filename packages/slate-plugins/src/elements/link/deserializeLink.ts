@@ -17,6 +17,7 @@ export const deserializeLink = (
         url: el.getAttribute('href'),
       }),
       rules: [{ nodeNames: 'A' }],
+      ...options?.link?.deserialize,
     }),
   };
 };

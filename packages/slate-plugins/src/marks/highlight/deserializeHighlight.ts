@@ -13,6 +13,7 @@ export const deserializeHighlight = (
     leaf: getLeafDeserializer({
       type: highlight.type,
       rules: [{ nodeNames: ['MARK'] }],
+      ...options?.highlight?.deserialize,
     }),
   };
 };
