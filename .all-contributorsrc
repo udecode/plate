@@ -84,6 +84,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "devpaul",
+      "name": "Paul",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/331431?v=4",
+      "profile": "https://devpaul.com",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
