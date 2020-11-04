@@ -2,6 +2,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -45,7 +46,8 @@ export type ListKeyOption = 'ul' | 'ol' | 'li' | 'p';
 
 // Plugin options
 export type ListPluginOptionsValues = RenderNodeOptions &
-  RootProps<ListRenderElementPropsOptions>;
+  RootProps<ListRenderElementPropsOptions> &
+  Deserialize;
 export type ListPluginOptionsKeys = keyof ListPluginOptionsValues;
 export type ListPluginOptions<
   Value extends ListPluginOptionsKeys = ListPluginOptionsKeys
@@ -58,7 +60,7 @@ export interface ListRenderElementOptions
 
 // deserialize options
 export interface ListDeserializeOptions
-  extends ListPluginOptions<'type' | 'rootProps'> {}
+  extends ListPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface ListOnKeyDownOptions extends ListPluginOptions<'type'> {}
 export interface ListOptions extends ListPluginOptions<'type'> {}

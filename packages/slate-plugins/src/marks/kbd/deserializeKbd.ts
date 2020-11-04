@@ -20,6 +20,7 @@ export const deserializeKbd = (
           },
         },
       ],
+      ...options?.kbd?.deserialize,
     }),
   };
 };

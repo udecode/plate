@@ -1,7 +1,12 @@
 import * as React from 'react';
 import pickBy from 'lodash/pickBy';
+import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import { RenderNodeOptions } from '../types/PluginOptions.types';
+import {
+  AttributesToProps,
+  DeserializedAttributes,
+  RenderNodeOptions,
+} from '../types/PluginOptions.types';
 
 export interface GetRenderElementOptions {
   /**
@@ -19,6 +24,28 @@ export interface GetRenderElementOptions {
   [key: string]: any;
 }
 
+export interface ElementWithAttributes extends Element {
+  attributes?: DeserializedAttributes;
+}
+
+export interface RenderElementPropsWithAttributes extends RenderElementProps {
+  element: ElementWithAttributes;
+}
+
+export interface GetHtmlAttributes {
+  attributes?: DeserializedAttributes;
+  attributesToProps?: AttributesToProps;
+}
+
+const getHtmlAttributes = ({
+  attributes,
+  attributesToProps,
+}: GetHtmlAttributes) => {
+  if (attributes && attributesToProps)
+    return pickBy(attributesToProps(attributes));
+  if (attributes) return pickBy(attributes);
+};
+
 /**
  * Get a `renderElement` handler for a single type.
  * If the given `type` is equals to the slate element type, render the given `component`.
@@ -31,10 +58,19 @@ export const getRenderElement = ({
 }: Required<RenderNodeOptions>) => ({
   attributes,
   ...props
-}: RenderElementProps) => {
+}: RenderElementPropsWithAttributes) => {
   if (props.element.type === type) {
+    const htmlAttributes = getHtmlAttributes({
+      attributes: props.element?.attributes,
+      attributesToProps: rootProps.attributesToProps,
+    });
     return (
-      <Component attributes={attributes} {...props} {...pickBy(rootProps)} />
+      <Component
+        attributes={attributes}
+        htmlAttributes={htmlAttributes}
+        {...props}
+        {...pickBy(rootProps)}
+      />
     );
   }
 };
@@ -46,12 +82,17 @@ export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
   attributes,
   element,
   children,
-}: RenderElementProps) => {
+}: RenderElementPropsWithAttributes) => {
   for (const { type, component: Component, rootProps } of options) {
     if (element.type === type) {
+      const htmlAttributes = getHtmlAttributes({
+        attributes: element?.attributes,
+        attributesToProps: rootProps.attributesToProps,
+      });
       return (
         <Component
           attributes={attributes}
+          htmlAttributes={htmlAttributes}
           element={element}
           {...pickBy(rootProps)}
         >

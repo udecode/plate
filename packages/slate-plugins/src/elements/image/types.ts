@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -35,7 +36,8 @@ export type ImageKeyOption = 'img';
 
 // Plugin options
 export type ImagePluginOptionsValues = RenderNodeOptions &
-  RootProps<ImageRenderElementPropsOptions>;
+  RootProps<ImageRenderElementPropsOptions> &
+  Deserialize;
 export type ImagePluginOptionsKeys = keyof ImagePluginOptionsValues;
 export type ImagePluginOptions<
   Value extends ImagePluginOptionsKeys = ImagePluginOptionsKeys
@@ -48,7 +50,7 @@ export interface ImageRenderElementOptions
 
 // deserialize options
 export interface ImageDeserializeOptions
-  extends ImagePluginOptions<'type' | 'rootProps'> {}
+  extends ImagePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface ImageElementStyles {
   /**

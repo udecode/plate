@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type SubscriptKeyOption = 'subscript';
 // Plugin options
 export type SubscriptPluginOptionsValues = RenderNodeOptions &
   RootProps<SubscriptRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type SubscriptPluginOptionsKeys = keyof SubscriptPluginOptionsValues;
 export type SubscriptPluginOptions<
   Value extends SubscriptPluginOptionsKeys = SubscriptPluginOptionsKeys
@@ -45,4 +47,4 @@ export interface SubscriptRenderLeafOptions
 
 // deserialize options
 export interface SubscriptDeserializeOptions
-  extends SubscriptPluginOptions<'type' | 'rootProps'> {}
+  extends SubscriptPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

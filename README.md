@@ -228,6 +228,10 @@ Useful scripts include:
     <td align="center"><a href="https://twitter.com/alantrrs"><img src="https://avatars2.githubusercontent.com/u/689720?v=4" width="100px;" alt=""/><br /><sub><b>Alan</b></sub></a><br /><a href="https://github.com/udecode/slate-plugins/commits?author=alantrrs" title="Code">💻</a> <a href="#plugin-alantrrs" title="Plugin/utility libraries">🔌</a> <a href="https://github.com/udecode/slate-plugins/issues?q=author%3Aalantrrs" title="Bug reports">🐛</a> <a href="https://github.com/udecode/slate-plugins/commits?author=alantrrs" title="Tests">⚠️</a> <a href="#ideas-alantrrs" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/cycle-app"><img src="https://avatars0.githubusercontent.com/u/53185684?v=4" width="100px;" alt=""/><br /><sub><b>cycle-app</b></sub></a><br /><a href="https://github.com/udecode/slate-plugins/commits?author=cycle-app" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://devpaul.com"><img src="https://avatars2.githubusercontent.com/u/331431?v=4" width="100px;" alt=""/><br /><sub><b>Paul</b></sub></a><br /><a href="https://github.com/udecode/slate-plugins/commits?author=devpaul" title="Code">💻</a> <a href="https://github.com/udecode/slate-plugins/issues?q=author%3Adevpaul" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/danlunde"><img src="https://avatars3.githubusercontent.com/u/59754?v=4" width="100px;" alt=""/><br /><sub><b>Daniel Lunde</b></sub></a><br /><a href="https://github.com/udecode/slate-plugins/commits?author=danlunde" title="Code">💻</a> <a href="#plugin-danlunde" title="Plugin/utility libraries">🔌</a> <a href="https://github.com/udecode/slate-plugins/commits?author=danlunde" title="Tests">⚠️</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->

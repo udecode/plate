@@ -20,6 +20,7 @@ export const deserializeItalic = (
           },
         },
       ],
+      ...options?.italic?.deserialize,
     }),
   };
 };

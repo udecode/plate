@@ -17,6 +17,7 @@ export const deserializeImage = (
         url: el.getAttribute('src'),
       }),
       rules: [{ nodeNames: 'IMG' }],
+      ...options?.img?.deserialize,
     }),
   };
 };

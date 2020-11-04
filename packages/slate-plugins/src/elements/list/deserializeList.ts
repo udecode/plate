@@ -14,14 +14,17 @@ export const deserializeList = (
       ...getElementDeserializer({
         type: ul.type,
         rules: [{ nodeNames: 'UL' }],
+        ...options?.ul?.deserialize,
       }),
       ...getElementDeserializer({
         type: ol.type,
         rules: [{ nodeNames: 'OL' }],
+        ...options?.ol?.deserialize,
       }),
       ...getElementDeserializer({
         type: li.type,
         rules: [{ nodeNames: 'LI' }],
+        ...options?.li?.deserialize,
       }),
     ],
   };

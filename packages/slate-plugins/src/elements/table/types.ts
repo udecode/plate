@@ -3,6 +3,7 @@ import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -33,7 +34,8 @@ export type TableKeyOption = 'table' | 'th' | 'tr' | 'td';
 
 // Plugin options
 export type TablePluginOptionsValues = RenderNodeOptions &
-  RootProps<TableRenderElementPropsOptions>;
+  RootProps<TableRenderElementPropsOptions> &
+  Deserialize;
 export type TablePluginOptionsKeys = keyof TablePluginOptionsValues;
 export type TablePluginOptions<
   Value extends TablePluginOptionsKeys = TablePluginOptionsKeys
@@ -46,7 +48,7 @@ export interface TableRenderElementOptions
 
 // deserialize options
 export interface TableDeserializeOptions
-  extends TablePluginOptions<'type' | 'rootProps'> {}
+  extends TablePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface WithTableOptions extends TablePluginOptions<'type'> {}
 export interface TableOptions extends TablePluginOptions<'type'> {}

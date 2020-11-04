@@ -1,6 +1,7 @@
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 import {
+  Deserialize,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -30,7 +31,8 @@ export type HighlightKeyOption = 'highlight';
 // Plugin options
 export type HighlightPluginOptionsValues = RenderNodeOptions &
   RootProps<HighlightRenderLeafPropsOptions> &
-  Partial<GetOnHotkeyToggleMarkOptions>;
+  Partial<GetOnHotkeyToggleMarkOptions> &
+  Deserialize;
 export type HighlightPluginOptionsKeys = keyof HighlightPluginOptionsValues;
 export type HighlightPluginOptions<
   Value extends HighlightPluginOptionsKeys = HighlightPluginOptionsKeys
@@ -45,4 +47,4 @@ export interface HighlightRenderLeafOptions
 
 // deserialize options
 export interface HighlightDeserializeOptions
-  extends HighlightPluginOptions<'type' | 'rootProps'> {}
+  extends HighlightPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
