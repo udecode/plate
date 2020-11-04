@@ -94,6 +94,17 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "danlunde",
+      "name": "Daniel Lunde",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/59754?v=4",
+      "profile": "https://github.com/danlunde",
+      "contributions": [
+        "code",
+        "plugin",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
