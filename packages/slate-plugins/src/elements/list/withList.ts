@@ -2,9 +2,11 @@ import { Editor, Path, Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
 import { isSelectionAtBlockStart } from '../../common/queries/isSelectionAtBlockStart';
+import { moveChildren } from '../../common/transforms/moveChildren';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { isSelectionInListItem } from './queries/isSelectionInListItem';
+import { deleteListFragment } from './transforms/deleteListFragment';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
@@ -15,7 +17,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   editor: T
 ) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
-  const { insertBreak, deleteBackward } = editor;
+  const { insertBreak, deleteBackward, deleteFragment } = editor;
 
   const resetBlockTypesListRule = {
     types: [li.type],
@@ -74,7 +76,28 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
     let moved: boolean | undefined;
 
     if (res && isSelectionAtBlockStart(editor)) {
-      const { listNode, listPath, listItemPath } = res;
+      const { listNode, listPath, listItemNode, listItemPath } = res;
+
+      if (listItemNode.children.length > 1) {
+        const [listParentNode] = Editor.parent(editor, listPath);
+
+        if (
+          // check if this is a first, top-level node
+          listParentNode.type !== li.type &&
+          listItemPath[listItemPath.length - 1] === 0
+        ) {
+          if (listNode.children.length <= 1) {
+            // move all children to the container
+            moveChildren(
+              editor,
+              [listItemNode, listItemPath],
+              Path.next(listPath)
+            );
+            Transforms.removeNodes(editor, { at: listPath });
+            return;
+          }
+        }
+      }
 
       moved = moveListItemUp(editor, listNode, listPath, listItemPath, options);
       if (moved) return;
@@ -101,6 +124,14 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
     if (didReset) return;
 
     deleteBackward(unit);
+  };
+
+  editor.deleteFragment = () => {
+    const { selection } = editor;
+    if (selection) {
+      if (deleteListFragment(editor, selection, options)) return;
+    }
+    deleteFragment();
   };
 
   return editor;
