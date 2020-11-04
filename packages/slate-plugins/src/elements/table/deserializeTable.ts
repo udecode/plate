@@ -23,11 +23,13 @@ export const deserializeTable = (
       }),
       ...getElementDeserializer({
         type: td.type,
+        attributes: ['rowspan', 'colspan'],
         rules: [{ nodeNames: 'TD' }],
         ...options?.td?.deserialize,
       }),
       ...getElementDeserializer({
         type: th.type,
+        attributes: ['rowspan', 'colspan'],
         rules: [{ nodeNames: 'TH' }],
         ...options?.th?.deserialize,
       }),

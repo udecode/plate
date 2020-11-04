@@ -21,6 +21,7 @@ export const StyledElementBase = ({
   children,
   className,
   styles,
+  htmlAttributes,
   as = 'div',
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
@@ -31,7 +32,7 @@ export const StyledElementBase = ({
   const Tag = as;
 
   return (
-    <Tag {...attributes} className={classNames.root}>
+    <Tag {...attributes} {...htmlAttributes} className={classNames.root}>
       {children}
     </Tag>
   );

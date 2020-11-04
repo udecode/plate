@@ -142,17 +142,26 @@ it('serialize table to html', () => {
                 { type: 'td', children: [{ text: 'Bar' }] },
               ],
             },
+            {
+              type: 'tr',
+              children: [
+                {
+                  type: 'td',
+                  attributes: { colspan: '2' },
+                  children: [{ text: 'Span' }],
+                },
+              ],
+            },
           ],
         },
       ],
     })
-  ).getElementsByTagName('table');
-  expect(
-    render.item(0)?.children[0].children[0].children[0].textContent
-  ).toEqual('Foo');
-  expect(
-    render.item(0)?.children[0].children[0].children[1].textContent
-  ).toEqual('Bar');
+  ).getElementsByTagName('table')[0];
+  expect(render.children[0].children[0].children[0].textContent).toEqual('Foo');
+  expect(render.children[0].children[0].children[1].textContent).toEqual('Bar');
+  expect(render.children[0]?.children[1].children[0].outerHTML).toEqual(
+    '<td colspan="2" class="slate-td">Span</td>'
+  );
 });
 
 it('serialize alignments to html', () => {

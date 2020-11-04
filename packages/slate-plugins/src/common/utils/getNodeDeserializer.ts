@@ -33,6 +33,11 @@ export interface GetNodeDeserializerOptions {
   node: (el: HTMLElement) => { [key: string]: any } | undefined;
 
   /**
+   * List of html attributes to store with the node
+   */
+  attributes?: string[];
+
+  /**
    * List of rules the element needs to follow to be deserialized to a slate node.
    */
   rules: GetNodeDeserializerRule[];
@@ -44,6 +49,7 @@ export interface GetNodeDeserializerOptions {
 export const getNodeDeserializer = ({
   type,
   node,
+  attributes,
   rules,
 }: GetNodeDeserializerOptions) => {
   const deserializers: DeserializeNode[] = [];
@@ -72,7 +78,19 @@ export const getNodeDeserializer = ({
             }
           }
 
-          return node(el);
+          const htmlAttributes = {};
+          if (attributes) {
+            const attributeNames = el.getAttributeNames();
+            for (const attribute of attributes) {
+              if (attributeNames.includes(attribute))
+                htmlAttributes[attribute] = el.getAttribute(attribute);
+            }
+          }
+
+          const slateNode = node(el);
+          if (slateNode && Object.keys(htmlAttributes).length)
+            slateNode.attributes = htmlAttributes;
+          return slateNode;
         },
       });
     });

@@ -33,6 +33,10 @@ export const DEFAULTS_TABLE: Record<
     rootProps: {
       className: 'slate-th',
       as: 'th',
+      attributesToProps: (attributes) => ({
+        colSpan: attributes?.['colspan'],
+        rowSpan: attributes?.['rowspan'],
+      }),
       styles: {
         root: {
           backgroundColor: 'rgb(244, 245, 247)',
@@ -55,6 +59,10 @@ export const DEFAULTS_TABLE: Record<
     rootProps: {
       className: 'slate-td',
       as: 'td',
+      attributesToProps: (attributes) => ({
+        colSpan: attributes?.['colspan'],
+        rowSpan: attributes?.['rowspan'],
+      }),
       styles: {
         root: {
           backgroundColor: 'rgb(255, 255, 255)',

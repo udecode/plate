@@ -24,7 +24,17 @@ export interface RenderNodePropsOptions {
   className?: string;
 
   as?: any;
+
+  /**
+   * Function to evaluate any stored attributes on the element and return as props
+   */
+  attributesToProps?: AttributesToProps;
 }
+
+export type DeserializedAttributes = { [key: string]: any } | undefined;
+export type AttributesToProps = (
+  attributes: DeserializedAttributes
+) => { [key: string]: any };
 
 export interface HotkeyOptions {
   /**

@@ -12,6 +12,8 @@ export interface StyledComponentPropsOptions extends RenderNodePropsOptions {
     StyledComponentStyles
   >;
 
+  htmlAttributes?: { [key: string]: any };
+
   children?: any;
 }
 
