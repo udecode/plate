@@ -41,6 +41,22 @@ const upsertLink = (
   });
 };
 
+const upsertLinkIfValid = (
+  editor: ReactEditor,
+  { link, isUrl }: { link: any; isUrl: any }
+) => {
+  const rangeFromBlockStart = getRangeFromBlockStart(editor);
+  const textFromBlockStart = getText(editor, rangeFromBlockStart);
+
+  if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
+    upsertLink(editor, textFromBlockStart, {
+      at: rangeFromBlockStart,
+      link,
+    });
+    return true;
+  }
+};
+
 /**
  * Insert space after a url to wrap a link.
  * Lookup from the block start to the cursor to check if there is an url.
@@ -60,31 +76,26 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
 
   const { insertData, insertText } = editor;
 
+  const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
+    matchString: ' ',
+    skipInvalid: true,
+    afterMatch: true,
+    multiPaths: true,
+  };
+
+  const rangeOptions: RangeBeforeOptions = {
+    ...DEFAULT_RANGE_BEFORE_OPTIONS,
+    ...get(options, 'rangeBeforeOptions', {}),
+  };
+
   editor.insertText = (text) => {
-    const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
-      matchString: ' ',
-      skipInvalid: true,
-      afterMatch: true,
-      multiPaths: true,
-    };
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
-      const rangeFromBlockStart = getRangeFromBlockStart(editor);
-      const textFromBlockStart = getText(editor, rangeFromBlockStart);
-
-      if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-        upsertLink(editor, textFromBlockStart, {
-          at: rangeFromBlockStart,
-          link,
-        });
+      if (upsertLinkIfValid(editor, { link, isUrl })) {
         return insertText(text);
       }
 
-      const rangeOptions: RangeBeforeOptions = {
-        ...DEFAULT_RANGE_BEFORE_OPTIONS,
-        ...get(options, 'rangeBeforeOptions', {}),
-      };
       const beforeWordRange = getRangeBefore(editor, selection, rangeOptions);
 
       if (beforeWordRange) {
@@ -119,6 +130,14 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
 
     insertData(data);
   };
+
+  // editor.insertBreak = () => {
+  //   if (upsertLinkIfValid(editor, { link, isUrl })) {
+  //     console.log('fix cursor');
+  //   }
+  //
+  //   insertBreak();
+  // };
 
   editor = withRemoveEmptyNodes({ type: link.type })(editor);
 
