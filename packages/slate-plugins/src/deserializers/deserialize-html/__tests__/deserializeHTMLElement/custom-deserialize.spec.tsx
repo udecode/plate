@@ -76,7 +76,9 @@ const output = (
     </himg>
     <htable>
       <htr>
-        <htd colSpan="2">table</htd>
+        <htd colSpan="2" attributes={{ colspan: '2' }}>
+          table
+        </htd>
       </htr>
     </htable>
   </editor>
