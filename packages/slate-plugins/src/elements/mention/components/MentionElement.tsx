@@ -25,6 +25,7 @@ export const MentionElementBase = ({
   prefix,
   className,
   styles,
+  htmlAttributes,
   as: Tag = 'span',
   onClick,
 }: MentionElementProps) => {
@@ -45,6 +46,7 @@ export const MentionElementBase = ({
       className={classNames.root}
       contentEditable={false}
       onClick={getHandler(onClick, { value: element.value })}
+      {...htmlAttributes}
     >
       {prefix}
       {element.value}

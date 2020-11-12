@@ -32,9 +32,14 @@ export interface RenderNodePropsOptions {
 }
 
 export type DeserializedAttributes = { [key: string]: any } | undefined;
+export type HtmlAttributes = { [key: string]: any } | undefined;
 export type AttributesToProps = (
   attributes: DeserializedAttributes
-) => { [key: string]: any };
+) => HtmlAttributes;
+
+export interface HtmlAttributesProps {
+  htmlAttributes?: HtmlAttributes;
+}
 
 export interface HotkeyOptions {
   /**

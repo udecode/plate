@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -28,6 +29,7 @@ export interface ImageRenderElementPropsOptions {
 export interface ImageElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     ImageRenderElementPropsOptions {
   element: ImageNode;
 }

@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -29,6 +30,7 @@ export interface CodeBlockRenderElementPropsOptions {
 export interface CodeBlockElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     CodeBlockRenderElementPropsOptions {
   element: CodeBlockNode;
 }

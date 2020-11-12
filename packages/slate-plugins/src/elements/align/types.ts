@@ -2,6 +2,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -21,6 +22,7 @@ export interface AlignRenderElementPropsOptions
 export interface AlignElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     AlignRenderElementPropsOptions {
   element: AlignNode;
 }
