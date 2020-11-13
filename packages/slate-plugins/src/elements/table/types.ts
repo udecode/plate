@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -26,6 +27,7 @@ export interface TableRenderElementPropsOptions {
 export interface TableElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     TableRenderElementPropsOptions {
   element: TableNode;
 }

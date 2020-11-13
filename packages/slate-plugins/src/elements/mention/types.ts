@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -46,6 +47,7 @@ export interface MentionRenderElementPropsOptions {
 export interface MentionElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     MentionRenderElementPropsOptions {
   element: MentionNode;
 }

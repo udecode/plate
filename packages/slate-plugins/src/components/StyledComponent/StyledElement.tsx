@@ -32,7 +32,7 @@ export const StyledElementBase = ({
   const Tag = as;
 
   return (
-    <Tag {...attributes} {...htmlAttributes} className={classNames.root}>
+    <Tag {...attributes} className={classNames.root} {...htmlAttributes}>
       {children}
     </Tag>
   );

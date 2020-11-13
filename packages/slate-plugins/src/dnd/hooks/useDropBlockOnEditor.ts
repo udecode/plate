@@ -57,7 +57,6 @@ export const useDropBlockOnEditor = (
 
         const before =
           Path.isBefore(dragPath, _dropPath) &&
-          Path.compare(dragPath, _dropPath) !== -1 &&
           Path.isSibling(dragPath, _dropPath);
         const to = before ? _dropPath : Path.next(_dropPath);
 

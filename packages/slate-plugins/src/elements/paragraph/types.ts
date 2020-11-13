@@ -2,6 +2,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -21,6 +22,7 @@ export interface ParagraphRenderElementPropsOptions
 export interface ParagraphElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     ParagraphRenderElementPropsOptions {
   element: ParagraphNode;
 }
