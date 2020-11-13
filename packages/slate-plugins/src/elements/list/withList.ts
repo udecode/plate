@@ -26,27 +26,64 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   };
 
   editor.insertBreak = () => {
+    if (!editor.selection) return;
+
     const res = isSelectionInListItem(editor, options);
     let moved: boolean | undefined;
 
+    // If selection is in a li
     if (res) {
-      const { listItemNode, listItemPath } = res;
-      if (listItemNode.children.length > 1) {
-        return Transforms.insertNodes(
-          editor,
-          {
-            type: li.type,
-            children: [{ type: p.type, children: [{ text: '' }] }],
-          },
-          { at: Path.next(listItemPath), select: true }
-        );
-      }
-    }
-    if (res && isBlockAboveEmpty(editor)) {
-      const { listNode, listPath, listItemPath } = res;
-      moved = moveListItemUp(editor, listNode, listPath, listItemPath, options);
+      const { listNode, listPath, listItemNode, listItemPath } = res;
 
-      if (moved) return;
+      const cursor = editor.selection.focus;
+
+      // If the li has ul child (p + ul)
+      if (listItemNode.children.length > 1) {
+        /**
+         * If selection is at the end of li,
+         * insert below li where children will be moved.
+         */
+        if (Editor.isEnd(editor, cursor, listItemPath)) {
+          return Transforms.insertNodes(
+            editor,
+            {
+              type: li.type,
+              children: [{ type: p.type, children: [{ text: '' }] }],
+            },
+            { at: Path.next(listItemPath), select: true }
+          );
+        }
+
+        /**
+         * If selection is at start of li,
+         * insert above li.
+         */
+        if (Editor.isStart(editor, cursor, listItemPath)) {
+          return Transforms.insertNodes(
+            editor,
+            {
+              type: li.type,
+              children: [{ type: p.type, children: [{ text: '' }] }],
+            },
+            { at: listItemPath }
+          );
+        }
+      }
+
+      /**
+       * If selected li is empty, move it up.
+       */
+      if (isBlockAboveEmpty(editor)) {
+        moved = moveListItemUp(
+          editor,
+          listNode,
+          listPath,
+          listItemPath,
+          options
+        );
+
+        if (moved) return;
+      }
     }
 
     const didReset = onKeyDownResetBlockType({
@@ -60,7 +97,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
     if (didReset) return;
 
     /**
-     * Add a new list item if selection is in a LIST_ITEM > p.type.
+     * If selection is in li > p, insert li.
      */
     if (!moved) {
       const inserted = insertListItem(editor, options);
