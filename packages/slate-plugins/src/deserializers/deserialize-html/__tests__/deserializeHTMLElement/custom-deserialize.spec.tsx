@@ -26,7 +26,7 @@ const input1 = [
   ImagePlugin({
     img: {
       deserialize: {
-        attributes: ['alt']
+        attributes: ['alt'],
       },
     },
   }),
@@ -67,7 +67,7 @@ const output = (
         a
       </ha>
     </hp>
-    <himg url="https://i.imgur.com/removed.png" attributes={{ alt: "removed" }}>
+    <himg url="https://i.imgur.com/removed.png" attributes={{ alt: 'removed' }}>
       <htext />
     </himg>
     <htable>
@@ -77,12 +77,8 @@ const output = (
         </hth>
       </htr>
       <htr>
-        <htd>
-          cell 1
-        </htd>
-        <htd>
-          cell 2
-        </htd>
+        <htd>cell 1</htd>
+        <htd>cell 2</htd>
       </htr>
     </htable>
   </editor>

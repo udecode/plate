@@ -30,7 +30,12 @@ export const LinkElementBase = ({
   });
 
   return (
-    <a {...attributes} href={element.url} className={classNames.root} {...htmlAttributes}>
+    <a
+      {...attributes}
+      href={element.url}
+      className={classNames.root}
+      {...htmlAttributes}
+    >
       {children}
     </a>
   );

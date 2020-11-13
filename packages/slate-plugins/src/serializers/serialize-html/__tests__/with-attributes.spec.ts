@@ -1,8 +1,4 @@
-import {
-  htmlStringToDOMNode,
-  ImagePlugin,
-  LinkPlugin,
-} from '../../../index';
+import { htmlStringToDOMNode, ImagePlugin, LinkPlugin } from '../../../index';
 import { serializeHTMLFromNodes } from '../index';
 
 it('serialize link to html with attributes', () => {
@@ -41,5 +37,7 @@ it('serialize image with alt to html', () => {
         ],
       })
     ).getElementsByTagName('img')[0].outerHTML
-  ).toEqual('<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up">');
+  ).toEqual(
+    '<img src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt="Never gonna give you up">'
+  );
 });

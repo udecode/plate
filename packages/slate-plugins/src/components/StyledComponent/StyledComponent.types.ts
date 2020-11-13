@@ -1,7 +1,10 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
-import { RenderNodePropsOptions, HtmlAttributesProps } from '../../common/types/PluginOptions.types';
+import {
+  HtmlAttributesProps,
+  RenderNodePropsOptions,
+} from '../../common/types/PluginOptions.types';
 
 export interface StyledComponentPropsOptions extends RenderNodePropsOptions {
   /**
