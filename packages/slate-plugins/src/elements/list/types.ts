@@ -3,6 +3,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -38,6 +39,7 @@ export interface ListRenderElementPropsOptions {
 export interface ListElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     ListRenderElementPropsOptions {
   element: ListNode;
 }

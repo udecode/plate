@@ -15,7 +15,7 @@ const inlineTags = ['<a href="http://google.com" target="_blank">a</a>'];
 
 const elementTags = [
   '<img alt="removed" src="https://i.imgur.com/removed.png" />',
-  '<table><tr><td colspan="2">table</td></tr></table>',
+  '<table><tr><th colspan="2" scope="row">header</th></tr><tr><td>cell 1</td><td>cell 2</td></tr></table>',
 ];
 
 const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
@@ -26,11 +26,7 @@ const input1 = [
   ImagePlugin({
     img: {
       deserialize: {
-        node: (el) => ({
-          type: 'img',
-          url: el.getAttribute('src'),
-          alt: el.getAttribute('alt'),
-        }),
+        attributes: ['alt'],
       },
     },
   }),
@@ -47,9 +43,9 @@ const input1 = [
   }),
   ParagraphPlugin(),
   TablePlugin({
-    td: {
+    th: {
       deserialize: {
-        node: (el) => ({ type: 'td', colSpan: el.getAttribute('colspan') }),
+        node: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
       },
     },
   }),
@@ -71,14 +67,18 @@ const output = (
         a
       </ha>
     </hp>
-    <himg alt="removed" url="https://i.imgur.com/removed.png">
+    <himg url="https://i.imgur.com/removed.png" attributes={{ alt: 'removed' }}>
       <htext />
     </himg>
     <htable>
       <htr>
-        <htd colSpan="2" attributes={{ colspan: '2' }}>
-          table
-        </htd>
+        <hth scope="row" attributes={{ colspan: '2' }}>
+          header
+        </hth>
+      </htr>
+      <htr>
+        <htd>cell 1</htd>
+        <htd>cell 2</htd>
       </htr>
     </htable>
   </editor>

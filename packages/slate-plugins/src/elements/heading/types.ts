@@ -3,6 +3,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -34,6 +35,7 @@ export interface HeadingRenderElementPropsOptions {
 export interface HeadingElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     HeadingRenderElementPropsOptions {
   element: HeadingNode;
 }
