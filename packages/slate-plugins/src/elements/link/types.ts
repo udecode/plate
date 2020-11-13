@@ -1,11 +1,14 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
+  NodeToPropsOptions,
+  RenderElementPropsWithAttributes,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -20,7 +23,12 @@ export interface LinkNodeData {
   url: string;
 }
 // Element node
-export interface LinkNode extends Element, LinkNodeData {}
+export interface LinkNode extends ElementWithAttributes, LinkNodeData {}
+
+export type LinkNodeToPropsOptions = NodeToPropsOptions &
+  RootProps<LinkRenderElementPropsOptions> & {
+    element: LinkNode;
+  };
 
 // renderElement options given as props
 export interface LinkRenderElementPropsOptions {
@@ -47,6 +55,7 @@ export type LinkKeyOption = 'link';
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
   RootProps<LinkRenderElementPropsOptions> &
+  NodeToProps<LinkNodeToPropsOptions> &
   Deserialize & {
     /**
      * Callback to validate an url.

@@ -1,3 +1,5 @@
+import { Element } from 'slate';
+import { RenderElementProps } from 'slate-react';
 import {
   GetElementDeserializerOptions,
   GetLeafDeserializerOptions,
@@ -24,18 +26,30 @@ export interface RenderNodePropsOptions {
   className?: string;
 
   as?: any;
-
-  /**
-   * Function to evaluate any stored attributes on the element and return as props
-   */
-  attributesToProps?: AttributesToProps;
 }
 
 export type DeserializedAttributes = { [key: string]: any } | undefined;
+
+export interface ElementWithAttributes extends Element {
+  attributes?: DeserializedAttributes;
+}
+
+export interface RenderElementPropsWithAttributes extends RenderElementProps {
+  element: ElementWithAttributes;
+}
+
+export interface NodeToPropsOptions
+  extends RenderElementPropsWithAttributes,
+    RootProps<RenderNodePropsOptions> {}
+
+export interface NodeToProps<T> {
+  /**
+   * Function to evaluate a node and return props
+   */
+  nodeToProps?: (options: T) => HtmlAttributes;
+}
+
 export type HtmlAttributes = { [key: string]: any } | undefined;
-export type AttributesToProps = (
-  attributes: DeserializedAttributes
-) => HtmlAttributes;
 
 export interface HtmlAttributesProps {
   htmlAttributes?: HtmlAttributes;
