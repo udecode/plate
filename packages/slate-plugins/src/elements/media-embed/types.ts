@@ -4,6 +4,7 @@ import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -35,6 +36,7 @@ export interface MediaEmbedRenderElementPropsOptions {
 export interface MediaEmbedElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     MediaEmbedRenderElementPropsOptions {
   element: MediaEmbedNode;
 }

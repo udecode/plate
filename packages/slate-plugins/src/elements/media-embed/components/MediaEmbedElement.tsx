@@ -25,6 +25,7 @@ export const MediaEmbedElementBase = ({
   element,
   className,
   styles,
+  htmlAttributes,
 }: MediaEmbedElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -43,6 +44,7 @@ export const MediaEmbedElementBase = ({
             title="embed"
             src={`${url}?title=0&byline=0&portrait=0`}
             frameBorder="0"
+            {...htmlAttributes}
           />
         </div>
 

@@ -5,6 +5,7 @@ import { RenderElementProps } from 'slate-react';
 import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
   Deserialize,
+  HtmlAttributesProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -36,6 +37,7 @@ export interface LinkRenderElementPropsOptions {
 export interface LinkElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
+    HtmlAttributesProps,
     LinkRenderElementPropsOptions {
   element: LinkNode;
 }

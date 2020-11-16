@@ -160,7 +160,7 @@ it('serialize table to html', () => {
   expect(render.children[0].children[0].children[0].textContent).toEqual('Foo');
   expect(render.children[0].children[0].children[1].textContent).toEqual('Bar');
   expect(render.children[0]?.children[1].children[0].outerHTML).toEqual(
-    '<td colspan="2" class="slate-td">Span</td>'
+    '<td class="slate-td" colspan="2">Span</td>'
   );
 });
 

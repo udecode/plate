@@ -1,7 +1,10 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
-import { RenderNodePropsOptions } from '../../common/types/PluginOptions.types';
+import {
+  HtmlAttributesProps,
+  RenderNodePropsOptions,
+} from '../../common/types/PluginOptions.types';
 
 export interface StyledComponentPropsOptions extends RenderNodePropsOptions {
   /**
@@ -19,6 +22,7 @@ export interface StyledComponentPropsOptions extends RenderNodePropsOptions {
 
 export interface StyledElementProps
   extends Omit<StyledComponentProps, 'children'>,
+    HtmlAttributesProps,
     RenderElementProps {}
 
 export interface StyledLeafProps

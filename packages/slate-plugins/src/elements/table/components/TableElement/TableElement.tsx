@@ -21,6 +21,7 @@ export const TableElementBase = ({
   children,
   className,
   styles,
+  htmlAttributes,
 }: TableElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -28,7 +29,7 @@ export const TableElementBase = ({
   });
 
   return (
-    <table {...attributes} className={classNames.root}>
+    <table {...attributes} className={classNames.root} {...htmlAttributes}>
       <tbody>{children}</tbody>
     </table>
   );
