@@ -62,8 +62,9 @@ export const getRenderElement = ({
   if (props.element.type === type) {
     const htmlAttributes = getHtmlAttributes({
       attributes: props.element?.attributes,
-      attributesToProps: rootProps.attributesToProps,
+      attributesToProps: rootProps?.attributesToProps,
     });
+
     return (
       <Component
         attributes={attributes}
@@ -87,8 +88,9 @@ export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
     if (element.type === type) {
       const htmlAttributes = getHtmlAttributes({
         attributes: element?.attributes,
-        attributesToProps: rootProps.attributesToProps,
+        attributesToProps: rootProps?.attributesToProps,
       });
+
       return (
         <Component
           attributes={attributes}
