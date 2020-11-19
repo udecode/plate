@@ -1,94 +1,47 @@
+/** @jsx jsx */
+
 import { createEditor, Editor, Range, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
+import { jsx } from '../../../__test-utils__/jsx';
 import { deleteListFragment } from './deleteListFragment';
+
+// TODO: refactor
 
 const ONEPATH = [0, 1, 0, 0, 0];
 const TWOPATH = [0, 1, 0, 1, 0, 0, 0];
 const THREEPATH = [0, 1, 0, 1, 0, 1, 0, 0, 0];
 
-const createExampleNodes = () => ({
-  // [0]
-  children: [
-    {
-      type: 'p',
-      children: [{ text: 'before' }],
-    },
-    {
-      // [0, 1]
-      type: 'ul',
-      children: [
-        {
-          // [0, 1, 0]
-          type: 'li',
-          children: [
-            {
-              type: 'p',
-              children: [{ text: 'one' }],
-            },
-            {
-              // [0, 1, 0, 1]
-              type: 'ul',
-              children: [
-                {
-                  // [0, 1, 0, 1, 0]
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [{ text: 'two' }],
-                    },
-                    {
-                      // [0, 1, 0, 1, 0, 1]
-                      type: 'ul',
-                      children: [
-                        {
-                          // [0, 1, 0, 1, 0, 1, 0]
-                          type: 'li',
-                          children: [
-                            {
-                              // [0, 1, 0, 1, 0, 1, 0, 1]
-                              type: 'p',
-                              children: [{ text: 'three' }],
-                            },
-                          ],
-                        },
-                        {
-                          // [0, 1, 0, 1, 0, 1, 1]
-                          type: 'li',
-                          children: [
-                            {
-                              // [0, 1, 0, 1, 0, 1, 1, 1]
-                              type: 'p',
-                              children: [{ text: 'four' }],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  // [0, 1, 0, 1, 1]
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'five' }] }],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          // [0, 1, 1]
-          type: 'li',
-          children: [{ type: 'p', children: [{ text: 'six' }] }],
-        },
-      ],
-    },
-    {
-      type: 'p',
-      children: [{ text: 'after' }],
-    },
-  ],
-});
+const createExampleNodes = () =>
+  (
+    <block>
+      <hp>before</hp>
+      <hul>
+        <hli>
+          <hp>one</hp>
+          <hul>
+            <hli>
+              <hp>two</hp>
+              <hul>
+                <hli>
+                  <hp>three</hp>
+                </hli>
+                <hli>
+                  <hp>four</hp>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hp>five</hp>
+            </hli>
+          </hul>
+        </hli>
+        <hli>
+          <hp>six</hp>
+        </hli>
+      </hul>
+      <hp>after</hp>
+    </block>
+  ) as any;
 
 const createExample = (editor: Editor = createEditor()) => {
   Transforms.insertNodes(editor, createExampleNodes());
@@ -133,63 +86,31 @@ describe('deleteListFragment', () => {
 
       expect(actual).toEqual(3);
       const expected = [
-        {
-          children: [
-            {
-              type: 'p',
-              children: [{ text: '' }],
-            },
-            {
-              type: 'ul',
-              children: [
-                {
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [{ text: 'two' }],
-                    },
-                    {
-                      type: 'ul',
-                      children: [
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [{ text: 'three' }],
-                            },
-                          ],
-                        },
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [{ text: 'four' }],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'five' }] }],
-                },
-                {
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'six' }] }],
-                },
-              ],
-            },
-            {
-              type: 'p',
-              children: [{ text: 'after' }],
-            },
-          ],
-        },
+        <block>
+          <hp>
+            <htext />
+          </hp>
+          <hul>
+            <hli>
+              <hp>two</hp>
+              <hul>
+                <hli>
+                  <hp>three</hp>
+                </hli>
+                <hli>
+                  <hp>four</hp>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hp>five</hp>
+            </hli>
+            <hli>
+              <hp>six</hp>
+            </hli>
+          </hul>
+          <hp>after</hp>
+        </block>,
       ];
       expect(editor.children).toEqual(expected);
 
@@ -212,63 +133,29 @@ describe('deleteListFragment', () => {
 
       expect(actual).toEqual(3);
       const expected = [
-        {
-          children: [
-            {
-              type: 'p',
-              children: [{ text: 'e' }],
-            },
-            {
-              type: 'ul',
-              children: [
-                {
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [{ text: 'two' }],
-                    },
-                    {
-                      type: 'ul',
-                      children: [
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [{ text: 'three' }],
-                            },
-                          ],
-                        },
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [{ text: 'four' }],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'five' }] }],
-                },
-                {
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'six' }] }],
-                },
-              ],
-            },
-            {
-              type: 'p',
-              children: [{ text: 'after' }],
-            },
-          ],
-        },
+        <block>
+          <hp>e</hp>
+          <hul>
+            <hli>
+              <hp>two</hp>
+              <hul>
+                <hli>
+                  <hp>three</hp>
+                </hli>
+                <hli>
+                  <hp>four</hp>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hp>five</hp>
+            </hli>
+            <hli>
+              <hp>six</hp>
+            </hli>
+          </hul>
+          <hp>after</hp>
+        </block>,
       ];
       expect(editor.children).toEqual(expected);
 
@@ -292,70 +179,33 @@ describe('deleteListFragment', () => {
 
       expect(actual).toEqual(0);
       const expected = [
-        {
-          children: [
-            {
-              type: 'p',
-              children: [{ text: 'before' }],
-            },
-            {
-              type: 'ul',
-              children: [
-                {
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [{ text: 'one' }],
-                    },
-                    {
-                      type: 'ul',
-                      children: [
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [{ text: '' }],
-                            },
-                            {
-                              type: 'ul',
-                              children: [
-                                {
-                                  type: 'li',
-                                  children: [
-                                    {
-                                      type: 'p',
-                                      children: [{ text: 'four' }],
-                                    },
-                                  ],
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: 'li',
-                          children: [
-                            { type: 'p', children: [{ text: 'five' }] },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: 'li',
-                  children: [{ type: 'p', children: [{ text: 'six' }] }],
-                },
-              ],
-            },
-            {
-              type: 'p',
-              children: [{ text: 'after' }],
-            },
-          ],
-        },
+        <block>
+          <hp>before</hp>
+          <hul>
+            <hli>
+              <hp>one</hp>
+              <hul>
+                <hli>
+                  <hp>
+                    <htext />
+                  </hp>
+                  <hul>
+                    <hli>
+                      <hp>four</hp>
+                    </hli>
+                  </hul>
+                </hli>
+                <hli>
+                  <hp>five</hp>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hp>six</hp>
+            </hli>
+          </hul>
+          <hp>after</hp>
+        </block>,
       ];
       expect(editor.children).toEqual(expected);
 
@@ -377,101 +227,29 @@ describe('deleteListFragment', () => {
 
       expect(actual).toEqual(2);
       const expected = [
-        {
-          children: [
-            {
-              type: 'p',
-              children: [
-                {
-                  text: 'before',
-                },
-              ],
-            },
-            {
-              type: 'ul',
-              children: [
-                {
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [
-                        {
-                          text: 'oo',
-                        },
-                      ],
-                    },
-                    {
-                      type: 'ul',
-                      children: [
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [
-                                {
-                                  text: 'five',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [
-                                {
-                                  text: 'three',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                        {
-                          type: 'li',
-                          children: [
-                            {
-                              type: 'p',
-                              children: [
-                                {
-                                  text: 'four',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  type: 'li',
-                  children: [
-                    {
-                      type: 'p',
-                      children: [
-                        {
-                          text: 'six',
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'p',
-              children: [
-                {
-                  text: 'after',
-                },
-              ],
-            },
-          ],
-        },
+        <block>
+          <hp>before</hp>
+          <hul>
+            <hli>
+              <hp>oo</hp>
+              <hul>
+                <hli>
+                  <hp>five</hp>
+                </hli>
+                <hli>
+                  <hp>three</hp>
+                </hli>
+                <hli>
+                  <hp>four</hp>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hp>six</hp>
+            </hli>
+          </hul>
+          <hp>after</hp>
+        </block>,
       ];
       expect(editor.children).toEqual(expected);
 
