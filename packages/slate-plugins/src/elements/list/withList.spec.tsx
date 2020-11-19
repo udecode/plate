@@ -1,39 +1,51 @@
+/** @jsx jsx */
+
 import { createEditor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { jsx } from '../../__test-utils__/jsx';
 import { getAboveByType } from '../../common/queries/getAboveByType';
-import { DEFAULTS_LIST, withList } from './index';
+import { withList } from './index';
 
-const listNodeWithImage = {
-  type: DEFAULTS_LIST.ul.type,
-  children: [
-    {
-      type: DEFAULTS_LIST.li.type,
-      children: [{ type: DEFAULTS_LIST.p.type, children: [{ text: '' }] }],
-    },
-    {
-      type: DEFAULTS_LIST.li.type,
-      children: [
-        { type: DEFAULTS_LIST.p.type, children: [{ text: '' }] },
-        { type: 'image', children: [{ text: '' }] },
-      ],
-    },
-  ],
-};
-describe('withList', () => {
+const listNodeWithImage = (
+  <hul>
+    <hli>
+      <hp>
+        <htext />
+      </hp>
+    </hli>
+    <hli>
+      <hp>
+        <htext />
+      </hp>
+      <himg>
+        <htext />
+      </himg>
+    </hli>
+  </hul>
+) as any;
+
+describe('withList - list node with image', () => {
   it('should insert a new list item when enter is pressed with an image in the current list item', () => {
     const editor = withList()(createEditor() as ReactEditor);
+
     editor.insertNode(listNodeWithImage);
+
     const selection = {
       anchor: { path: [0, 1, 1, 0], offset: 0 },
       focus: { path: [0, 1, 1, 0], offset: 0 },
     };
     Transforms.select(editor, selection);
+
     editor.insertBreak();
-    expect((editor.children[0] as { children: any[] }).children.length).toBe(3);
+
+    expect((editor.children[0] as { children: any[] }).children.length).toBe(2);
   });
+
   it('should delete the image without deleting the list item when an image is deleted from alist item', () => {
     const editor = withList()(createEditor() as ReactEditor);
+
     editor.insertNode(listNodeWithImage);
+
     const selection = {
       anchor: { path: [0, 1, 1, 0], offset: 0 },
       focus: { path: [0, 1, 1, 0], offset: 0 },
@@ -63,6 +75,7 @@ describe('getTypeAboveBylevel()', () => {
     const nodeEntry = getAboveByType(editor, 'li');
     expect(nodeEntry).toBeTruthy();
   });
+
   it('should return null', () => {
     const editor = withList()(createEditor() as ReactEditor);
     editor.insertNode(listNodeWithImage);

@@ -56,6 +56,7 @@ export const removeRootListItem = (
     moveListItemSublistItemsToList(editor, {
       fromListItem: listItem,
       toList: list,
+      // start: true,
     });
   }
 

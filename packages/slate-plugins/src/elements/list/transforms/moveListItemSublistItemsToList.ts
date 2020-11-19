@@ -13,6 +13,11 @@ export interface MergeListItemIntoListOptions {
    * List items will be moved in this list.
    */
   toList: NodeEntry<Ancestor>;
+
+  /**
+   * Move to the start of the list instead of the end.
+   */
+  start?: boolean;
 }
 
 /**
@@ -20,7 +25,7 @@ export interface MergeListItemIntoListOptions {
  */
 export const moveListItemSublistItemsToList = (
   editor: Editor,
-  { fromListItem, toList }: MergeListItemIntoListOptions
+  { fromListItem, toList, start }: MergeListItemIntoListOptions
 ) => {
   const fromListItemSublist = getListItemSublist(fromListItem);
   if (!fromListItemSublist) return 0;
@@ -30,7 +35,7 @@ export const moveListItemSublistItemsToList = (
 
   const moved = moveChildren(editor, {
     at: fromListItemSublistPath,
-    to: Path.next(lastChildPath),
+    to: start ? toList[1].concat([0]) : Path.next(lastChildPath),
   });
 
   // Remove the empty list
