@@ -1,14 +1,17 @@
-import { Editor, Path, Range, Transforms } from 'slate';
+import { Editor, Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
+import { isCollapsed } from '../../common/queries/isCollapsed';
 import { isSelectionAtBlockStart } from '../../common/queries/isSelectionAtBlockStart';
-import { moveChildren } from '../../common/transforms/moveChildren';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
-import { isSelectionInListItem } from './queries/isSelectionInListItem';
+import { getListItemEntry } from './queries/getListItemEntry';
+import { hasListInListItem } from './queries/hasListInListItem';
 import { deleteListFragment } from './transforms/deleteListFragment';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
+import { removeFirstListItem } from './transforms/removeFirstListItem';
+import { removeRootListItem } from './transforms/removeRootListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { DEFAULTS_LIST } from './defaults';
 import { ListOptions } from './types';
@@ -28,17 +31,17 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   editor.insertBreak = () => {
     if (!editor.selection) return;
 
-    const res = isSelectionInListItem(editor, options);
+    const res = getListItemEntry(editor, {}, options);
     let moved: boolean | undefined;
 
     // If selection is in a li
     if (res) {
-      const { listNode, listPath, listItemNode, listItemPath } = res;
+      const { list, listItem } = res;
+      const [listItemNode, listItemPath] = listItem;
 
       const cursor = editor.selection.focus;
 
-      // If the li has ul child (p + ul)
-      if (listItemNode.children.length > 1) {
+      if (hasListInListItem(listItemNode)) {
         /**
          * If selection is at the end of li,
          * insert below li where children will be moved.
@@ -76,9 +79,10 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
       if (isBlockAboveEmpty(editor)) {
         moved = moveListItemUp(
           editor,
-          listNode,
-          listPath,
-          listItemPath,
+          {
+            list,
+            listItem,
+          },
           options
         );
 
@@ -108,44 +112,26 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   };
 
   editor.deleteBackward = (unit) => {
-    const res = isSelectionInListItem(editor, options);
+    const res = getListItemEntry(editor, {}, options);
 
     let moved: boolean | undefined;
 
-    if (res && isSelectionAtBlockStart(editor)) {
-      const { listNode, listPath, listItemNode, listItemPath } = res;
+    if (res) {
+      const { list, listItem } = res;
+      const [listItemNode] = listItem;
 
-      if (listItemNode.children.length > 1) {
-        const [listParentNode] = Editor.parent(editor, listPath);
+      if (isSelectionAtBlockStart(editor)) {
+        moved = removeFirstListItem(editor, { list, listItem }, options);
+        if (moved) return;
 
-        if (
-          // check if this is a first, top-level node
-          listParentNode.type !== li.type &&
-          listItemPath[listItemPath.length - 1] === 0
-        ) {
-          if (listNode.children.length <= 1) {
-            // move all children to the container
-            moveChildren(
-              editor,
-              [listItemNode, listItemPath],
-              Path.next(listPath)
-            );
-            Transforms.removeNodes(editor, { at: listPath });
-            return;
-          }
-        }
+        moved = removeRootListItem(editor, { list, listItem }, options);
+        if (moved) return;
+
+        moved = moveListItemUp(editor, { list, listItem }, options);
+        if (moved) return;
       }
 
-      moved = moveListItemUp(editor, listNode, listPath, listItemPath, options);
-      if (moved) return;
-    }
-
-    if (res) {
-      const { listItemNode } = res;
-      if (
-        listItemNode.children.length > 1 &&
-        Range.isCollapsed(editor.selection as Range)
-      ) {
+      if (hasListInListItem(listItemNode) && isCollapsed(editor.selection)) {
         return deleteBackward(unit);
       }
     }
@@ -158,6 +144,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
         },
       ],
     })(null, editor);
+
     if (didReset) return;
 
     deleteBackward(unit);
@@ -165,9 +152,11 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
 
   editor.deleteFragment = () => {
     const { selection } = editor;
-    if (selection) {
-      if (deleteListFragment(editor, selection, options)) return;
+
+    if (selection && deleteListFragment(editor, selection, options)) {
+      return;
     }
+
     deleteFragment();
   };
 

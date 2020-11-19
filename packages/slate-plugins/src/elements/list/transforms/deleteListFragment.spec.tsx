@@ -1,101 +1,99 @@
 import { createEditor, Editor, Range, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
-import { deleteListFragment } from '../../transforms/deleteListFragment';
+import { deleteListFragment } from './deleteListFragment';
 
 const ONEPATH = [0, 1, 0, 0, 0];
 const TWOPATH = [0, 1, 0, 1, 0, 0, 0];
 const THREEPATH = [0, 1, 0, 1, 0, 1, 0, 0, 0];
 
-function createExampleNodes() {
-  return {
-    // [0]
-    children: [
-      {
-        type: 'p',
-        children: [{ text: 'before' }],
-      },
-      {
-        // [0, 1]
-        type: 'ul',
-        children: [
-          {
-            // [0, 1, 0]
-            type: 'li',
-            children: [
-              {
-                type: 'p',
-                children: [{ text: 'one' }],
-              },
-              {
-                // [0, 1, 0, 1]
-                type: 'ul',
-                children: [
-                  {
-                    // [0, 1, 0, 1, 0]
-                    type: 'li',
-                    children: [
-                      {
-                        type: 'p',
-                        children: [{ text: 'two' }],
-                      },
-                      {
-                        // [0, 1, 0, 1, 0, 1]
-                        type: 'ul',
-                        children: [
-                          {
-                            // [0, 1, 0, 1, 0, 1, 0]
-                            type: 'li',
-                            children: [
-                              {
-                                // [0, 1, 0, 1, 0, 1, 0, 1]
-                                type: 'p',
-                                children: [{ text: 'three' }],
-                              },
-                            ],
-                          },
-                          {
-                            // [0, 1, 0, 1, 0, 1, 1]
-                            type: 'li',
-                            children: [
-                              {
-                                // [0, 1, 0, 1, 0, 1, 1, 1]
-                                type: 'p',
-                                children: [{ text: 'four' }],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    // [0, 1, 0, 1, 1]
-                    type: 'li',
-                    children: [{ type: 'p', children: [{ text: 'five' }] }],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            // [0, 1, 1]
-            type: 'li',
-            children: [{ type: 'p', children: [{ text: 'six' }] }],
-          },
-        ],
-      },
-      {
-        type: 'p',
-        children: [{ text: 'after' }],
-      },
-    ],
-  };
-}
+const createExampleNodes = () => ({
+  // [0]
+  children: [
+    {
+      type: 'p',
+      children: [{ text: 'before' }],
+    },
+    {
+      // [0, 1]
+      type: 'ul',
+      children: [
+        {
+          // [0, 1, 0]
+          type: 'li',
+          children: [
+            {
+              type: 'p',
+              children: [{ text: 'one' }],
+            },
+            {
+              // [0, 1, 0, 1]
+              type: 'ul',
+              children: [
+                {
+                  // [0, 1, 0, 1, 0]
+                  type: 'li',
+                  children: [
+                    {
+                      type: 'p',
+                      children: [{ text: 'two' }],
+                    },
+                    {
+                      // [0, 1, 0, 1, 0, 1]
+                      type: 'ul',
+                      children: [
+                        {
+                          // [0, 1, 0, 1, 0, 1, 0]
+                          type: 'li',
+                          children: [
+                            {
+                              // [0, 1, 0, 1, 0, 1, 0, 1]
+                              type: 'p',
+                              children: [{ text: 'three' }],
+                            },
+                          ],
+                        },
+                        {
+                          // [0, 1, 0, 1, 0, 1, 1]
+                          type: 'li',
+                          children: [
+                            {
+                              // [0, 1, 0, 1, 0, 1, 1, 1]
+                              type: 'p',
+                              children: [{ text: 'four' }],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  // [0, 1, 0, 1, 1]
+                  type: 'li',
+                  children: [{ type: 'p', children: [{ text: 'five' }] }],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          // [0, 1, 1]
+          type: 'li',
+          children: [{ type: 'p', children: [{ text: 'six' }] }],
+        },
+      ],
+    },
+    {
+      type: 'p',
+      children: [{ text: 'after' }],
+    },
+  ],
+});
 
-function createExample(editor: Editor = createEditor()) {
+const createExample = (editor: Editor = createEditor()) => {
   Transforms.insertNodes(editor, createExampleNodes());
   return editor;
-}
+};
 
 describe('deleteListFragment', () => {
   describe('unhandled', () => {

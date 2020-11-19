@@ -1,5 +1,5 @@
 import { createEditor, Element } from 'slate';
-import { getNodesById } from './getNodesById';
+import { getNodeById } from './getNodeById';
 
 const nodesFixture1: Element[] = [
   {
@@ -117,6 +117,6 @@ describe('when getNodeById', () => {
   it('should be ', () => {
     const editor = createEditor();
     editor.children = nodesFixture1;
-    expect(getNodesById(editor, '2')?.[0]).toEqual([nodesFixture1[1], [1]]);
+    expect(getNodeById(editor, '2')).toEqual([nodesFixture1[1], [1]]);
   });
 });

@@ -1,78 +1,11 @@
-import {
-  Ancestor,
-  Editor,
-  Element,
-  Node,
-  NodeEntry,
-  Path,
-  Range,
-  Transforms,
-} from 'slate';
-import { moveChildren } from '../../../common/transforms/moveChildren';
+import { Editor, Element, Node, Path, Range, Transforms } from 'slate';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
-import { isSelectionInListItem } from '../queries';
+import { getListItemEntry } from '../queries';
 import { getListRoot } from '../queries/getListRoot';
 import { ListOptions } from '../types';
-
-function moveChildrenListItems(
-  editor: Editor,
-  listItemNode: Ancestor,
-  listItemPath: Path,
-  targetListPath: Path,
-  {
-    ul = DEFAULTS_LIST.ul,
-    ol = DEFAULTS_LIST.ol,
-    li = DEFAULTS_LIST.li,
-  }: Pick<ListOptions, 'ul' | 'ol' | 'li'>
-): number {
-  if (listItemNode.type !== li.type) return 0;
-
-  let moved = 0;
-
-  for (let i = 0; i < listItemNode.children.length; i++) {
-    const childNode = listItemNode.children[i];
-    if (
-      Editor.isBlock(editor, childNode) &&
-      (childNode.type === ul.type || childNode.type === ol.type)
-    ) {
-      const listPath = [...listItemPath, i];
-      moved +=
-        moveChildren(editor, [childNode, listPath], targetListPath, {
-          pass: ([node]) => node.type === li.type,
-        }) ?? 0;
-      // Remove the empty list
-      Transforms.delete(editor, { at: listPath });
-    }
-  }
-  return moved;
-}
-
-function moveListSiblingsAfterCursor(
-  editor: Editor,
-  cursor: Path,
-  targetPath: Path,
-  {
-    ul = DEFAULTS_LIST.ul,
-    ol = DEFAULTS_LIST.ol,
-  }: Pick<ListOptions, 'ul' | 'ol'>
-): number {
-  const offset = cursor[cursor.length - 1];
-  cursor = Path.parent(cursor);
-  const listNode = Node.get(editor, cursor);
-  const listEntry: NodeEntry = [listNode, cursor];
-  if (
-    (listNode.type !== ul.type && listNode.type !== ol.type) ||
-    Path.isParent(cursor, targetPath) // avoid moving nodes within its own list
-  )
-    return 0;
-
-  const moved =
-    moveChildren(editor, listEntry, targetPath, {
-      start: offset + 1,
-    }) ?? 0;
-  return moved;
-}
+import { moveChildrenListItems } from './moveChildrenListItems';
+import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
 export function deleteListFragment(
   editor: Editor,
@@ -88,10 +21,13 @@ export function deleteListFragment(
   let moved;
 
   Editor.withoutNormalizing(editor, () => {
-    const endListResult = isSelectionInListItem(editor, {
-      ...options,
-      at: endSelection,
-    });
+    const endListResult = getListItemEntry(
+      editor,
+      {
+        at: endSelection,
+      },
+      options
+    );
     if (!endListResult) return;
 
     let next: Path;
@@ -110,13 +46,17 @@ export function deleteListFragment(
       next = [...next, 0];
     } else {
       // find the first list item that will not be deleted
-      const startListResult = isSelectionInListItem(editor, {
-        ...options,
-        at: startSelection,
-      });
-      if (!startListResult) return;
+      const res = getListItemEntry(
+        editor,
+        {
+          at: startSelection,
+        },
+        options
+      );
+      if (!res) return;
+      const { listItem } = res;
+      const [listItemNode, listItemPath] = listItem;
 
-      const { listItemNode, listItemPath } = startListResult;
       const childListIndex = listItemNode.children.findIndex(
         (node) => node.type === ul.type || node.type === ol.type
       );
@@ -139,30 +79,29 @@ export function deleteListFragment(
     }
 
     // move all children into target list
-    const { listItemNode, listItemPath } = endListResult;
+    const { listItem } = endListResult;
+
     const childrenMoved = moveChildrenListItems(
       editor,
-      listItemNode,
-      listItemPath,
-      next,
+      { listItem, targetListPath: next },
       options
     );
 
     // move siblings outside of deleted fragment
-    let cursor = endSelection.path;
+    let cursorPath = endSelection.path;
     let siblingsMoved = 0;
     next = [...next.slice(0, -1), next[next.length - 1] + childrenMoved];
-    while (Path.isAfter(cursor, startSelection.path)) {
-      const node = Node.get(editor, cursor);
+
+    while (Path.isAfter(cursorPath, startSelection.path)) {
+      const node = Node.get(editor, cursorPath);
       if (node.type === li.type) {
         siblingsMoved += moveListSiblingsAfterCursor(
           editor,
-          cursor,
-          next,
+          { at: cursorPath, to: next },
           options
         );
       }
-      cursor = Path.parent(cursor);
+      cursorPath = Path.parent(cursorPath);
     }
 
     // delete the fragment
