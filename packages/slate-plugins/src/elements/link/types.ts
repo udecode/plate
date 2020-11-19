@@ -7,8 +7,6 @@ import {
   ElementWithAttributes,
   HtmlAttributesProps,
   NodeToProps,
-  NodeToPropsOptions,
-  RenderElementPropsWithAttributes,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -24,11 +22,6 @@ export interface LinkNodeData {
 }
 // Element node
 export interface LinkNode extends ElementWithAttributes, LinkNodeData {}
-
-export type LinkNodeToPropsOptions = NodeToPropsOptions &
-  RootProps<LinkRenderElementPropsOptions> & {
-    element: LinkNode;
-  };
 
 // renderElement options given as props
 export interface LinkRenderElementPropsOptions {
@@ -55,7 +48,7 @@ export type LinkKeyOption = 'link';
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
   RootProps<LinkRenderElementPropsOptions> &
-  NodeToProps<LinkNodeToPropsOptions> &
+  NodeToProps<LinkNode, LinkRenderElementPropsOptions> &
   Deserialize & {
     /**
      * Callback to validate an url.
@@ -70,7 +63,9 @@ export type LinkPluginOptions<
 // renderElement options
 export type LinkRenderElementOptionsKeys = LinkPluginOptionsKeys;
 export interface LinkRenderElementOptions
-  extends LinkPluginOptions<'type' | 'component' | 'rootProps'> {}
+  extends LinkPluginOptions<
+    'type' | 'component' | 'rootProps' | 'nodeToProps'
+  > {}
 
 // deserialize options
 export interface LinkDeserializeOptions

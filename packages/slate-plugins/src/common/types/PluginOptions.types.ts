@@ -38,15 +38,29 @@ export interface RenderElementPropsWithAttributes extends RenderElementProps {
   element: ElementWithAttributes;
 }
 
-export interface NodeToPropsOptions
-  extends RenderElementPropsWithAttributes,
-    RootProps<RenderNodePropsOptions> {}
+export interface ElementNode<T = Element> {
+  element: T;
+}
 
-export interface NodeToProps<T> {
+export interface NodeToPropsOptions<
+  ElementType = Element,
+  RootPropsType = RenderNodePropsOptions
+>
+  extends Omit<RenderElementPropsWithAttributes, 'element'>,
+    RootProps<RootPropsType> {
+  element: ElementType;
+}
+
+export interface NodeToProps<
+  ElementType = Element & { [key: string]: any },
+  RootPropsType = RenderNodePropsOptions & { [key: string]: any }
+> {
   /**
    * Function to evaluate a node and return props
    */
-  nodeToProps?: (options: T) => HtmlAttributes;
+  nodeToProps?: (
+    options: NodeToPropsOptions<ElementType, RootPropsType>
+  ) => HtmlAttributes;
 }
 
 export type HtmlAttributes = { [key: string]: any } | undefined;
