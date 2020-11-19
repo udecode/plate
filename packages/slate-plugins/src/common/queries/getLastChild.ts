@@ -1,4 +1,4 @@
-import { Ancestor, Descendant, NodeEntry } from 'slate';
+import { Ancestor, Descendant, NodeEntry, Path } from 'slate';
 
 /**
  * Get the last child of a node
@@ -13,3 +13,6 @@ export const getLastChild = (
     path.concat([node.children.length - 1]),
   ];
 };
+
+export const getLastChildPath = (nodeEntry: NodeEntry<Ancestor>): Path =>
+  getLastChild(nodeEntry)[1];

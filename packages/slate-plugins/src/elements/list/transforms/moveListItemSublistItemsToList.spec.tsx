@@ -44,9 +44,6 @@ const output = ((
     <hul>
       <hli id="2">
         <hp>2</hp>
-        <hul>
-          <htext />
-        </hul>
       </hli>
     </hul>
   </editor>

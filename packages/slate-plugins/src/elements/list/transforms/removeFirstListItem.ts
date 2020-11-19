@@ -2,7 +2,7 @@ import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { isFirstChild } from '../../../common/queries/isFirstChild';
 import { moveChildren } from '../../../common/transforms/moveChildren';
 import { hasListInListItem } from '../queries/hasListInListItem';
-import { isListAtRoot } from '../queries/isListAtRoot';
+import { isListNested } from '../queries/isListNested';
 import { ListOptions } from '../types';
 
 /**
@@ -26,7 +26,7 @@ export const removeFirstListItem = (
   const [listItemNode, listItemPath] = listItem;
 
   if (
-    isListAtRoot(editor, listPath, options) &&
+    !isListNested(editor, listPath, options) &&
     listNode.children.length <= 1 &&
     hasListInListItem(listItemNode) &&
     isFirstChild(listItemPath)

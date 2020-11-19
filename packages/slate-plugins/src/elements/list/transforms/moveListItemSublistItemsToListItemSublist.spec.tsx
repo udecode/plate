@@ -57,9 +57,6 @@ describe('when there is toListItem sublist', () => {
         </hli>
         <hli id="12">
           <hp>2</hp>
-          <hul>
-            <htext />
-          </hul>
         </hli>
       </hul>
     </editor>
@@ -120,9 +117,6 @@ describe('when there is no list in toListItem', () => {
         </hli>
         <hli id="12">
           <hp>2</hp>
-          <hul>
-            <htext />
-          </hul>
         </hli>
       </hul>
     </editor>

@@ -1,5 +1,5 @@
-import { Ancestor, Editor, NodeEntry, Path } from 'slate';
-import { getLastChild } from '../../../common/queries/getLastChild';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { moveChildren } from '../../../common/transforms/moveChildren';
 import { getListItemSublist } from '../queries/getListItemSublist';
 
@@ -23,13 +23,18 @@ export const moveListItemSublistItemsToList = (
   { fromListItem, toList }: MergeListItemIntoListOptions
 ) => {
   const fromListItemSublist = getListItemSublist(fromListItem);
-  if (!fromListItemSublist) return;
+  if (!fromListItemSublist) return 0;
 
   const [, fromListItemSublistPath] = fromListItemSublist;
-  const [, lastChildPath] = getLastChild(toList);
+  const lastChildPath = getLastChildPath(toList);
 
-  moveChildren(editor, {
+  const moved = moveChildren(editor, {
     at: fromListItemSublistPath,
     to: Path.next(lastChildPath),
   });
+
+  // Remove the empty list
+  Transforms.delete(editor, { at: fromListItemSublistPath });
+
+  return moved;
 };

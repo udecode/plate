@@ -1,5 +1,5 @@
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { getLastChild } from '../../../common/queries/getLastChild';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { getParent } from '../../../common/queries/getParent';
 import { moveChildren } from '../../../common/transforms/moveChildren';
 import { getListItemSublist } from '../queries/getListItemSublist';
@@ -37,7 +37,7 @@ export const moveListItemSublistItemsToListItemSublist = (
   const [, toListItemPath] = toListItem;
 
   const fromListItemSublist = getListItemSublist(fromListItem);
-  if (!fromListItemSublist) return;
+  if (!fromListItemSublist) return 0;
   const [, fromListItemSublistPath] = fromListItemSublist;
 
   const toListItemSublist = getListItemSublist(toListItem);
@@ -46,7 +46,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
   if (!toListItemSublist) {
     const fromList = getParent(editor, fromListItemPath);
-    if (!fromList) return;
+    if (!fromList) return 0;
     const [fromListNode] = fromList;
 
     const fromListType = fromListNode.type;
@@ -64,12 +64,16 @@ export const moveListItemSublistItemsToListItemSublist = (
     const [, toListItemSublistPath] = toListItemSublist;
     to = toListItemSublistPath.concat([0]);
   } else {
-    const [, lastChildPath] = getLastChild(toListItemSublist);
-    to = Path.next(lastChildPath);
+    to = Path.next(getLastChildPath(toListItemSublist));
   }
 
-  moveChildren(editor, {
+  const moved = moveChildren(editor, {
     at: fromListItemSublistPath,
     to,
   });
+
+  // Remove the empty list
+  Transforms.delete(editor, { at: fromListItemSublistPath });
+
+  return moved;
 };

@@ -1,40 +1,49 @@
-import { Editor, Element, Node, Path, Range, Transforms } from 'slate';
+import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
+import { getNode } from '../../../common/queries/getNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries';
+import { getListItemSublist } from '../queries/getListItemSublist';
 import { getListRoot } from '../queries/getListRoot';
 import { ListOptions } from '../types';
-import { moveChildrenListItems } from './moveChildrenListItems';
+import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
-export function deleteListFragment(
+export const deleteListFragment = (
   editor: Editor,
   selection: Range,
   options: ListOptions = {}
-): number | undefined {
+): number | undefined => {
   const [startSelection, endSelection] = Range.edges(selection);
-  if (Path.equals(startSelection.path, endSelection.path)) return; // only handle deletes across list items
+
+  // Selection should contain multiple blocks.
+  if (Path.equals(startSelection.path, endSelection.path)) return;
+
   const root = getListRoot(editor, endSelection, options);
-  if (!root) return; // end is outside of a list
+
+  // End selection should be in a list.
+  if (!root) return;
+
   const [rootNode, rootPath] = root;
-  const { li, ul, ol } = setDefaults(options, DEFAULTS_LIST);
-  let moved;
+  const { li } = setDefaults(options, DEFAULTS_LIST);
+  let moved = 0;
 
   Editor.withoutNormalizing(editor, () => {
-    const endListResult = getListItemEntry(
-      editor,
-      {
-        at: endSelection,
-      },
-      options
-    );
-    if (!endListResult) return;
+    const listEnd = getListItemEntry(editor, { at: endSelection }, options);
+    // End selection should be in a list item.
+    if (!listEnd) return;
 
     let next: Path;
+    let childrenMoved = 0;
+    const { listItem: listItemEnd } = listEnd;
+
     if (Path.isBefore(startSelection.path, rootPath)) {
+      // If start selection is before the root list.
       next = Path.next(rootPath);
-      // we are deleting the top of the list
-      // create a new list to copy list items
+
+      // Copy the root list after it.
       Transforms.insertNodes(
         editor,
         {
@@ -43,51 +52,42 @@ export function deleteListFragment(
         },
         { at: next }
       );
+
+      const toListNode = getNode(editor, next);
+      if (!toListNode) return 0;
+
+      childrenMoved = moveListItemSublistItemsToList(editor, {
+        fromListItem: listItemEnd,
+        toList: [toListNode as Ancestor, next],
+      });
+
+      // next is the first list item of the root copy.
       next = [...next, 0];
     } else {
-      // find the first list item that will not be deleted
-      const res = getListItemEntry(
+      // If start selection is inside the root list.
+
+      // Find the first list item that will not be deleted.
+      const listStart = getListItemEntry(
         editor,
-        {
-          at: startSelection,
-        },
+        { at: startSelection },
         options
       );
-      if (!res) return;
-      const { listItem } = res;
-      const [listItemNode, listItemPath] = listItem;
+      if (!listStart) return;
 
-      const childListIndex = listItemNode.children.findIndex(
-        (node) => node.type === ul.type || node.type === ol.type
-      );
-      if (childListIndex === -1) {
-        // there's no child list to move dangling list items, create one
-        const at = [...listItemPath, listItemNode.children.length];
-        Transforms.insertNodes(
-          editor,
-          {
-            type: rootNode.type,
-            children: [],
-          },
-          { at }
-        );
-        next = [...at, 0];
-      } else {
-        const childList = listItemNode.children[childListIndex] as Element;
-        next = [...listItemPath, childListIndex, childList.children.length];
-      }
+      const { listItem: listItemStart } = listStart;
+      const listItemSublist = getListItemSublist(listItemStart, options);
+
+      childrenMoved = moveListItemSublistItemsToListItemSublist(editor, {
+        fromListItem: listItemEnd,
+        toListItem: listItemStart,
+      });
+
+      next = listItemSublist
+        ? Path.next(getLastChildPath(listItemSublist))
+        : listItemStart[1].concat([1, 0]);
     }
 
-    // move all children into target list
-    const { listItem } = endListResult;
-
-    const childrenMoved = moveChildrenListItems(
-      editor,
-      { listItem, targetListPath: next },
-      options
-    );
-
-    // move siblings outside of deleted fragment
+    // Move siblings outside of deleted fragment
     let cursorPath = endSelection.path;
     let siblingsMoved = 0;
     next = [...next.slice(0, -1), next[next.length - 1] + childrenMoved];
@@ -104,11 +104,11 @@ export function deleteListFragment(
       cursorPath = Path.parent(cursorPath);
     }
 
-    // delete the fragment
+    // Move done. We can delete the fragment.
     Transforms.delete(editor, { at: selection });
 
     moved = siblingsMoved + childrenMoved;
   });
 
   return moved;
-}
+};

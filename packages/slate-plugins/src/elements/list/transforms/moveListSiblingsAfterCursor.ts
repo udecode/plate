@@ -26,11 +26,9 @@ export const moveListSiblingsAfterCursor = (
     return 0;
   }
 
-  return (
-    moveChildren(editor, {
-      at: listEntry,
-      to,
-      start: offset + 1,
-    }) ?? 0
-  );
+  return moveChildren(editor, {
+    at: listEntry,
+    to,
+    start: offset + 1,
+  });
 };

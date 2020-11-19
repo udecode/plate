@@ -36,7 +36,7 @@ export const moveChildren = (
   const parentPath = Path.isPath(at) ? at : at[1];
   const parentNode = Path.isPath(at) ? Node.get(editor, parentPath) : at[0];
 
-  if (!Editor.isBlock(editor, parentNode)) return;
+  if (!Editor.isBlock(editor, parentNode)) return moved;
 
   for (let i = parentNode.children.length - 1; i >= start; i--) {
     const childPath = [...parentPath, i];
