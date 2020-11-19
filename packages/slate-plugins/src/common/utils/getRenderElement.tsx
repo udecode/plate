@@ -2,14 +2,13 @@ import * as React from 'react';
 import pickBy from 'lodash/pickBy';
 import {
   NodeToProps,
-  NodeToPropsOptions,
   RenderElementPropsWithAttributes,
   RenderNodeOptions,
 } from '../types/PluginOptions.types';
 
 export interface GetRenderElementOptions
   extends Required<RenderNodeOptions>,
-    NodeToProps<NodeToPropsOptions> {}
+    NodeToProps<any, any> {}
 
 /**
  * Get a `renderElement` handler for a single type.
