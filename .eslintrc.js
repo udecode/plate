@@ -40,6 +40,36 @@ module.exports = {
   },
   overrides: [
     {
+      files: 'packages/**/*',
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              {
+                name: '@styled-icons',
+                message:
+                  '@styled-icons package is meant to be used in stories only',
+              },
+            ],
+            // The no-restricted-imports rule does not support custom messages for pattern imports yet: https://github.com/eslint/eslint/issues/11843
+            patterns: ['@styled-icons/*'],
+          },
+        ],
+      },
+    },
+    {
+      files: 'packages/**/__tests__/*',
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [],
+          },
+        ],
+      },
+    },
+    {
       files: '**/*.stories.tsx',
       rules: {
         // just for showing the code in addon-docs
