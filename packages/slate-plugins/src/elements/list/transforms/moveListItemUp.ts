@@ -1,8 +1,13 @@
-import { Ancestor, Editor, Path, Transforms } from 'slate';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getParent } from '../../../common/queries/getParent';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
+
+export interface MoveListItemUpOptions {
+  list: NodeEntry<Ancestor>;
+  listItem: NodeEntry<Ancestor>;
+}
 
 /**
  * Move a list item next to its parent.
@@ -10,12 +15,13 @@ import { ListOptions } from '../types';
  */
 export const moveListItemUp = (
   editor: Editor,
-  listNode: Ancestor,
-  listPath: number[],
-  listItemPath: number[],
+  { list, listItem }: MoveListItemUpOptions,
   options?: ListOptions
 ) => {
   const { li } = setDefaults(options, DEFAULTS_LIST);
+
+  const [listNode, listPath] = list;
+  const [, listItemPath] = listItem;
 
   const listParentEntry = getParent(editor, listPath);
   if (!listParentEntry) return;
