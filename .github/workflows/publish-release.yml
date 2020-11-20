@@ -8,6 +8,7 @@ on:
 
 env:
   CI: true
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 jobs:
   publish:
     name: Publish
