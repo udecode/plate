@@ -1,3 +1,4 @@
+import React from 'react';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element } from 'slate';
@@ -22,6 +23,8 @@ export interface SelectableProps
   children?: any;
 
   componentRef?: any;
+
+  dragIcon?: React.ReactNode;
 
   element: ElementWithId;
 }

@@ -64,11 +64,6 @@ export const getSelectableStyles = ({
       overflow: 'hidden',
       outline: 'none',
     },
-    dragIcon: {
-      width: 18,
-      height: 18,
-      color: 'rgba(55, 53, 47, 0.3)',
-    },
     dropLine: {
       position: 'absolute',
       left: 0,
