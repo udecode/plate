@@ -25,6 +25,20 @@ This changelog file is not maintained anymore. Check the
   - `moveChildren`
   - `moveListItemDown`
   - `moveListItemUp`
+- `getSelectableElement`: you should now provide a drag icon in
+  `dragIcon` option. Example:
+
+```
+import { DragIndicator } from '@styled-icons/material/DragIndicator';
+
+<DragIndicator
+  style={{
+    width: 18,
+    height: 18,
+    color: 'rgba(55, 53, 47, 0.3)',
+  }}
+/>
+```
 
 ### Features
 
@@ -45,6 +59,9 @@ This changelog file is not maintained anymore. Check the
   - `removeFirstListItem`
   - `removeRootListItem`: Remove list item and move its sublist to list if any
 
+### Bug Fixes
+
+- `styled-components` is not a peer dependency anymore
 
 ## v0.68.0
 
