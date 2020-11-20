@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import { DragIndicator } from '@styled-icons/material/DragIndicator';
 import Tippy from '@tippyjs/react';
 import { mergeStyles } from '@uifabric/styling';
 import { classNamesFunction, styled } from '@uifabric/utilities';
@@ -24,6 +23,7 @@ const SelectableBase = ({
   className,
   styles,
   componentRef,
+  dragIcon,
 }: SelectableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ const SelectableBase = ({
                   className={classNames.dragButton}
                   onMouseDown={(e: any) => e.stopPropagation()}
                 >
-                  <DragIndicator className={classNames.dragIcon} />
+                  {dragIcon}
                 </button>
               </div>
             </Tippy>

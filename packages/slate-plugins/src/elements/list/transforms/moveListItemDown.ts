@@ -1,13 +1,20 @@
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
-import { isList } from '../queries/isList';
+import { isNodeTypeList } from '../queries/isNodeTypeList';
 import { ListOptions } from '../types';
+
+export interface MoveListItemDownOptions {
+  list: NodeEntry<Ancestor>;
+  listItem: NodeEntry<Ancestor>;
+}
 
 export const moveListItemDown = (
   editor: Editor,
-  listNode: Ancestor,
-  listItemPath: number[],
+  { list, listItem }: MoveListItemDownOptions,
   options?: ListOptions
 ) => {
+  const [listNode] = list;
+  const [, listItemPath] = listItem;
+
   // Previous sibling is the new parent
   const previousSiblingItem = Editor.node(
     editor,
@@ -17,9 +24,9 @@ export const moveListItemDown = (
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = previousNode.children.find(isList(options)) as
-      | Element
-      | undefined;
+    const sublist = previousNode.children.find((n) =>
+      isNodeTypeList(n, options)
+    ) as Element | undefined;
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );

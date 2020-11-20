@@ -27,6 +27,7 @@ import {
   LooksTwo,
   Search,
 } from '@styled-icons/material';
+import { DragIndicator } from '@styled-icons/material/DragIndicator';
 import {
   AlignPlugin,
   BalloonToolbar,
@@ -150,6 +151,15 @@ const draggableComponentOptions = [
       component: getSelectableElement({
         component,
         level,
+        dragIcon: (
+          <DragIndicator
+            style={{
+              width: 18,
+              height: 18,
+              color: 'rgba(55, 53, 47, 0.3)',
+            }}
+          />
+        ),
         styles: {
           blockAndGutter: {
             padding: '4px 0',

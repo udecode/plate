@@ -8,6 +8,7 @@ import { ListOptions } from '../types';
 
 /**
  * Insert list item if selection in li>p.
+ * TODO: test
  */
 export const insertListItem = (editor: Editor, options?: ListOptions) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);

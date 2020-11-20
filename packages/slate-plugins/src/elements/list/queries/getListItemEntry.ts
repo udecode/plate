@@ -7,39 +7,35 @@ import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 
 /**
- * Is the selection in li>p.
- * If true, return the node entries.
+ * If at (default = selection) is in ul>li>p, return li and ul node entries.
  */
-export const isSelectionInListItem = (
+export const getListItemEntry = (
   editor: Editor,
-  options?: ListOptions & { at?: Location }
+  { at = editor.selection }: { at?: Location | null } = {},
+  options?: ListOptions
 ) => {
   const { li } = setDefaults(options, DEFAULTS_LIST);
-  const at = options?.at ?? editor.selection;
 
   if (at && isNodeTypeIn(editor, li.type, { at })) {
-    const selectionParentEntry = getParent(editor, at);
-    if (!selectionParentEntry) return;
-    const [, paragraphPath] = selectionParentEntry;
+    const selectionParent = getParent(editor, at);
+    if (!selectionParent) return;
+    const [, paragraphPath] = selectionParent;
 
-    const listItemEntry =
+    const listItem =
       getAboveByType(editor, li.type, { at }) ||
       getParent(editor, paragraphPath);
 
-    if (!listItemEntry) return;
-    const [listItemNode, listItemPath] = listItemEntry;
+    if (!listItem) return;
+    const [listItemNode, listItemPath] = listItem;
 
     if (listItemNode.type !== li.type) return;
 
-    const listEntry = getParent(editor, listItemPath);
-    if (!listEntry) return;
-    const [listNode, listPath] = listEntry;
+    const list = getParent(editor, listItemPath);
+    if (!list) return;
 
     return {
-      listNode,
-      listPath,
-      listItemNode,
-      listItemPath,
+      list,
+      listItem,
     };
   }
 };
