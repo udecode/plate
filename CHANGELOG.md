@@ -6,6 +6,46 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 Until 1.0.0 is released, breaking changes will be added as minor or
 patch version bumps.
 
+This changelog file is not maintained anymore. Check the
+[releases](https://github.com/udecode/slate-plugins/releases) instead.
+
+## v0.70.0
+
+### Breaking Changes
+
+- `isSelectionInListItem`:
+  - renamed to `getListItemEntry`
+  - returns `{ list, listItem }`
+- `isList`:
+  - renamed to `isNodeTypeList`
+  - renamed options from `(options?: ListOptions) => (n: Node)` to `(n:
+    Node, options?: ListOptions)`
+- options refactored (old/new not listed here):
+  - `isSelectionInListItem`
+  - `moveChildren`
+  - `moveListItemDown`
+  - `moveListItemUp`
+
+### Features
+
+- `withList`: handles some cases of `deleteBackward` to avoid deleting
+  sublist items when deleting a list item.
+- new functions:
+  - `getLastChild`: Get the last child of a node
+  - `getNodeById`: Get the first editor node entry found by id
+  - `getPreviousPath`
+  - `getListItemSublist`: Get the list inside listItem if existing
+  - `hasListInListItem`: Is there a list in `listItemNode`
+  - `isListNested`: Is the list nested, i.e. its parent is a list item
+  - `moveListItemSublistItemsToList`: Move the list items of the sublist
+    of `fromListItem` to `toList`
+  - `moveListItemSublistItemsToListItemSublist`: Move fromListItem
+    sublist list items to the end of `toListItem` sublist
+  - `moveListSiblingsAfterCursor`
+  - `removeFirstListItem`
+  - `removeRootListItem`: Remove list item and move its sublist to list if any
+
+
 ## v0.68.0
 
 ### Breaking Changes
