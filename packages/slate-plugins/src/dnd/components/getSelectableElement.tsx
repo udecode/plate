@@ -20,6 +20,7 @@ export interface GetSelectabelElementOptions {
   level?: number;
   filter?: (editor: Editor, path: Path) => boolean;
   allowReadOnly?: boolean;
+  dragIcon?: React.ReactNode;
 }
 
 export const getSelectableElement = ({
@@ -28,6 +29,7 @@ export const getSelectableElement = ({
   level,
   filter,
   allowReadOnly = false,
+  dragIcon,
 }: GetSelectabelElementOptions) => {
   return forwardRef(
     ({ attributes, element, ...props }: RenderElementProps, ref) => {
@@ -54,6 +56,7 @@ export const getSelectableElement = ({
           componentRef={ref}
           element={element as ElementWithId}
           styles={styles}
+          dragIcon={dragIcon}
         >
           <Component attributes={attributes} element={element} {...props} />
         </Selectable>
