@@ -1,10 +1,11 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -13,7 +14,9 @@ import {
 // Data of Element node
 export interface CodeBlockNodeData {}
 // Element node
-export interface CodeBlockNode extends Element, CodeBlockNodeData {}
+export interface CodeBlockNode
+  extends ElementWithAttributes,
+    CodeBlockNodeData {}
 
 // renderElement options given as props
 export interface CodeBlockRenderElementPropsOptions {
@@ -40,6 +43,7 @@ export type CodeBlockKeyOption = 'code_block';
 // Plugin options
 export type CodeBlockPluginOptionsValues = RenderNodeOptions &
   RootProps<CodeBlockRenderElementPropsOptions> &
+  NodeToProps<CodeBlockNode, CodeBlockRenderElementPropsOptions> &
   Deserialize;
 export type CodeBlockPluginOptionsKeys = keyof CodeBlockPluginOptionsValues;
 export type CodeBlockPluginOptions<

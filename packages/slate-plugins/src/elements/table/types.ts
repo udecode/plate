@@ -1,10 +1,11 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -13,7 +14,7 @@ import {
 // Data of Element node
 export interface TableNodeData {}
 // Element node
-export interface TableNode extends Element, TableNodeData {}
+export interface TableNode extends ElementWithAttributes, TableNodeData {}
 
 // renderElement options given as props
 export interface TableRenderElementPropsOptions {
@@ -37,6 +38,7 @@ export type TableKeyOption = 'table' | 'th' | 'tr' | 'td';
 // Plugin options
 export type TablePluginOptionsValues = RenderNodeOptions &
   RootProps<TableRenderElementPropsOptions> &
+  NodeToProps<TableNode, TableRenderElementPropsOptions> &
   Deserialize;
 export type TablePluginOptionsKeys = keyof TablePluginOptionsValues;
 export type TablePluginOptions<

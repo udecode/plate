@@ -1,3 +1,5 @@
+import { Element } from 'slate';
+import { RenderElementProps } from 'slate-react';
 import {
   GetElementDeserializerOptions,
   GetLeafDeserializerOptions,
@@ -24,18 +26,44 @@ export interface RenderNodePropsOptions {
   className?: string;
 
   as?: any;
-
-  /**
-   * Function to evaluate any stored attributes on the element and return as props
-   */
-  attributesToProps?: AttributesToProps;
 }
 
 export type DeserializedAttributes = { [key: string]: any } | undefined;
+
+export interface ElementWithAttributes extends Element {
+  attributes?: DeserializedAttributes;
+}
+
+export interface RenderElementPropsWithAttributes extends RenderElementProps {
+  element: ElementWithAttributes;
+}
+
+export interface ElementNode<T = Element> {
+  element: T;
+}
+
+export interface NodeToPropsOptions<
+  ElementType = Element,
+  RootPropsType = RenderNodePropsOptions
+>
+  extends Omit<RenderElementPropsWithAttributes, 'element'>,
+    RootProps<RootPropsType> {
+  element: ElementType;
+}
+
+export interface NodeToProps<
+  ElementType = Element & { [key: string]: any },
+  RootPropsType = RenderNodePropsOptions & { [key: string]: any }
+> {
+  /**
+   * Function to evaluate a node's attributes, element, children, and rootProps to generate new props
+   */
+  nodeToProps?: (
+    options: NodeToPropsOptions<ElementType, RootPropsType>
+  ) => HtmlAttributes;
+}
+
 export type HtmlAttributes = { [key: string]: any } | undefined;
-export type AttributesToProps = (
-  attributes: DeserializedAttributes
-) => HtmlAttributes;
 
 export interface HtmlAttributesProps {
   htmlAttributes?: HtmlAttributes;
