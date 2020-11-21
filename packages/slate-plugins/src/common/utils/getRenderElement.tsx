@@ -1,50 +1,14 @@
 import * as React from 'react';
 import pickBy from 'lodash/pickBy';
-import { Element } from 'slate';
-import { RenderElementProps } from 'slate-react';
 import {
-  AttributesToProps,
-  DeserializedAttributes,
+  NodeToProps,
+  RenderElementPropsWithAttributes,
   RenderNodeOptions,
 } from '../types/PluginOptions.types';
 
-export interface GetRenderElementOptions {
-  /**
-   * Type of the element.
-   */
-  type: string;
-  /**
-   * React component to render the element.
-   */
-  component: any;
-
-  /**
-   * Options passed to the component as props.
-   */
-  [key: string]: any;
-}
-
-export interface ElementWithAttributes extends Element {
-  attributes?: DeserializedAttributes;
-}
-
-export interface RenderElementPropsWithAttributes extends RenderElementProps {
-  element: ElementWithAttributes;
-}
-
-export interface GetHtmlAttributes {
-  attributes?: DeserializedAttributes;
-  attributesToProps?: AttributesToProps;
-}
-
-const getHtmlAttributes = ({
-  attributes,
-  attributesToProps,
-}: GetHtmlAttributes) => {
-  if (attributes && attributesToProps)
-    return pickBy(attributesToProps(attributes));
-  if (attributes) return pickBy(attributes);
-};
+export interface GetRenderElementOptions
+  extends Required<RenderNodeOptions>,
+    NodeToProps<any, any> {}
 
 /**
  * Get a `renderElement` handler for a single type.
@@ -55,23 +19,25 @@ export const getRenderElement = ({
   type,
   component: Component,
   rootProps,
-}: Required<RenderNodeOptions>) => ({
+  nodeToProps,
+}: GetRenderElementOptions) => ({
   attributes,
-  ...props
+  element,
+  children,
 }: RenderElementPropsWithAttributes) => {
-  if (props.element.type === type) {
-    const htmlAttributes = getHtmlAttributes({
-      attributes: props.element?.attributes,
-      attributesToProps: rootProps?.attributesToProps,
-    });
-
+  if (element.type === type) {
+    const htmlAttributes =
+      nodeToProps?.({ attributes, element, children, rootProps }) ??
+      element?.attributes;
     return (
       <Component
         attributes={attributes}
         htmlAttributes={htmlAttributes}
-        {...props}
+        element={element}
         {...pickBy(rootProps)}
-      />
+      >
+        {children}
+      </Component>
     );
   }
 };
@@ -79,18 +45,21 @@ export const getRenderElement = ({
 /**
  * Get a `renderElement` handler for multiple types.
  */
-export const getRenderElements = (options: Required<RenderNodeOptions>[]) => ({
+export const getRenderElements = (options: GetRenderElementOptions[]) => ({
   attributes,
   element,
   children,
 }: RenderElementPropsWithAttributes) => {
-  for (const { type, component: Component, rootProps } of options) {
+  for (const {
+    type,
+    component: Component,
+    rootProps,
+    nodeToProps,
+  } of options) {
     if (element.type === type) {
-      const htmlAttributes = getHtmlAttributes({
-        attributes: element?.attributes,
-        attributesToProps: rootProps?.attributesToProps,
-      });
-
+      const htmlAttributes =
+        nodeToProps?.({ attributes, element, children, rootProps }) ??
+        element?.attributes;
       return (
         <Component
           attributes={attributes}

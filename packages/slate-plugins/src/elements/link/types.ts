@@ -1,11 +1,12 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import { RangeBeforeOptions } from '../../common/queries/getRangeBefore';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -20,7 +21,7 @@ export interface LinkNodeData {
   url: string;
 }
 // Element node
-export interface LinkNode extends Element, LinkNodeData {}
+export interface LinkNode extends ElementWithAttributes, LinkNodeData {}
 
 // renderElement options given as props
 export interface LinkRenderElementPropsOptions {
@@ -47,6 +48,7 @@ export type LinkKeyOption = 'link';
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
   RootProps<LinkRenderElementPropsOptions> &
+  NodeToProps<LinkNode, LinkRenderElementPropsOptions> &
   Deserialize & {
     /**
      * Callback to validate an url.
@@ -61,7 +63,9 @@ export type LinkPluginOptions<
 // renderElement options
 export type LinkRenderElementOptionsKeys = LinkPluginOptionsKeys;
 export interface LinkRenderElementOptions
-  extends LinkPluginOptions<'type' | 'component' | 'rootProps'> {}
+  extends LinkPluginOptions<
+    'type' | 'component' | 'rootProps' | 'nodeToProps'
+  > {}
 
 // deserialize options
 export interface LinkDeserializeOptions

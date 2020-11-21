@@ -1,10 +1,11 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -24,7 +25,7 @@ export interface MentionNodeData {
   [key: string]: any;
 }
 // Element node
-export interface MentionNode extends Element, MentionNodeData {}
+export interface MentionNode extends ElementWithAttributes, MentionNodeData {}
 
 // renderElement options given as props
 export interface MentionRenderElementPropsOptions {
@@ -57,6 +58,7 @@ export type MentionKeyOption = 'mention';
 // Plugin options
 export type MentionPluginOptionsValues = RenderNodeOptions &
   RootProps<MentionRenderElementPropsOptions> &
+  NodeToProps<MentionNode, MentionRenderElementPropsOptions> &
   Deserialize;
 export type MentionPluginOptionsKeys = keyof MentionPluginOptionsValues;
 export type MentionPluginOptions<

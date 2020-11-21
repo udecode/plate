@@ -1,9 +1,10 @@
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -16,7 +17,7 @@ import {
 // Data of Element node
 export interface HeadingNodeData {}
 // Element node
-export interface HeadingNode extends Element, HeadingNodeData {}
+export interface HeadingNode extends ElementWithAttributes, HeadingNodeData {}
 
 // renderElement options given as props
 export interface HeadingRenderElementPropsOptions {
@@ -52,6 +53,7 @@ export type HeadingKeyOption = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 // Plugin options
 export type HeadingPluginOptionsValues = RenderNodeOptions &
   RootProps<HeadingRenderElementPropsOptions> &
+  NodeToProps<HeadingNode, HeadingRenderElementPropsOptions> &
   Deserialize;
 export type HeadingPluginOptionsKeys = keyof HeadingPluginOptionsValues;
 export type HeadingPluginOptions<

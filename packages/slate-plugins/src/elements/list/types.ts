@@ -1,9 +1,10 @@
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -22,7 +23,7 @@ export const ListHotkey = {
 // Data of Element node
 export interface ListNodeData {}
 // Element node
-export interface ListNode extends Element, ListNodeData {}
+export interface ListNode extends ElementWithAttributes, ListNodeData {}
 
 // renderElement options given as props
 export interface ListRenderElementPropsOptions {
@@ -49,6 +50,7 @@ export type ListKeyOption = 'ul' | 'ol' | 'li' | 'p';
 // Plugin options
 export type ListPluginOptionsValues = RenderNodeOptions &
   RootProps<ListRenderElementPropsOptions> &
+  NodeToProps<ListNode, ListRenderElementPropsOptions> &
   Deserialize;
 export type ListPluginOptionsKeys = keyof ListPluginOptionsValues;
 export type ListPluginOptions<

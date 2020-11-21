@@ -1,8 +1,9 @@
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -12,7 +13,7 @@ import { StyledComponentPropsOptions } from '../../components/StyledComponent/St
 // Data of Element node
 export interface AlignNodeData {}
 // Element node
-export interface AlignNode extends Element {}
+export interface AlignNode extends ElementWithAttributes, AlignNodeData {}
 
 // renderElement options given as props
 export interface AlignRenderElementPropsOptions
@@ -32,6 +33,7 @@ export type AlignKeyOption = 'align_left' | 'align_center' | 'align_right';
 // Plugin options
 export type AlignPluginOptionsValues = RenderNodeOptions &
   RootProps<AlignRenderElementPropsOptions> &
+  NodeToProps<AlignNode, AlignRenderElementPropsOptions> &
   Deserialize;
 export type AlignPluginOptionsKeys = keyof AlignPluginOptionsValues;
 export type AlignPluginOptions<
