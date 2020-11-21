@@ -1,10 +1,11 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -14,7 +15,9 @@ import {
 export interface BlockquoteNodeData {}
 
 // Element node
-export interface BlockquoteNode extends Element, BlockquoteNodeData {}
+export interface BlockquoteNode
+  extends ElementWithAttributes,
+    BlockquoteNodeData {}
 
 // renderElement options given as props
 export interface BlockquoteRenderElementPropsOptions {
@@ -41,6 +44,7 @@ export type BlockquoteKeyOption = 'blockquote';
 // Plugin options
 export type BlockquotePluginOptionsValues = RenderNodeOptions &
   RootProps<BlockquoteRenderElementPropsOptions> &
+  NodeToProps<BlockquoteNode, BlockquoteRenderElementPropsOptions> &
   Deserialize;
 export type BlockquotePluginOptionsKeys = keyof BlockquotePluginOptionsValues;
 export type BlockquotePluginOptions<

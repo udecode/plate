@@ -56,7 +56,7 @@ export interface NodeToProps<
   RootPropsType = RenderNodePropsOptions & { [key: string]: any }
 > {
   /**
-   * Function to evaluate a node and return props
+   * Function to evaluate a node's attributes, element, children, and rootProps to generate new props
    */
   nodeToProps?: (
     options: NodeToPropsOptions<ElementType, RootPropsType>

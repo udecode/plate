@@ -1,9 +1,10 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
+  ElementWithAttributes,
   HtmlAttributesProps,
+  NodeToProps,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -18,7 +19,7 @@ export interface TodoListNodeData {
   checked?: boolean;
 }
 // Element node
-export interface TodoListNode extends Element, TodoListNodeData {}
+export interface TodoListNode extends ElementWithAttributes, TodoListNodeData {}
 
 // renderElement options given as props
 export interface TodoListRenderElementPropsOptions {
@@ -44,7 +45,8 @@ export type TodoListKeyOption = 'todo_li';
 
 // Plugin options
 export type TodoListPluginOptionsValues = RenderNodeOptions &
-  RootProps<TodoListRenderElementPropsOptions>;
+  RootProps<TodoListRenderElementPropsOptions> &
+  NodeToProps<TodoListNode, TodoListRenderElementPropsOptions>;
 export type TodoListPluginOptionsKeys = keyof TodoListPluginOptionsValues;
 export type TodoListPluginOptions<
   Value extends TodoListPluginOptionsKeys = TodoListPluginOptionsKeys

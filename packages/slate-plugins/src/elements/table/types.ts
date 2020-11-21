@@ -6,7 +6,6 @@ import {
   ElementWithAttributes,
   HtmlAttributesProps,
   NodeToProps,
-  NodeToPropsOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
@@ -16,11 +15,6 @@ import {
 export interface TableNodeData {}
 // Element node
 export interface TableNode extends ElementWithAttributes, TableNodeData {}
-
-export type TableNodeToPropsOptions = NodeToPropsOptions &
-  RootProps<TableRenderElementPropsOptions> & {
-    element: TableNode;
-  };
 
 // renderElement options given as props
 export interface TableRenderElementPropsOptions {
@@ -44,7 +38,7 @@ export type TableKeyOption = 'table' | 'th' | 'tr' | 'td';
 // Plugin options
 export type TablePluginOptionsValues = RenderNodeOptions &
   RootProps<TableRenderElementPropsOptions> &
-  NodeToProps<TableNodeToPropsOptions> &
+  NodeToProps<TableNode, TableRenderElementPropsOptions> &
   Deserialize;
 export type TablePluginOptionsKeys = keyof TablePluginOptionsValues;
 export type TablePluginOptions<

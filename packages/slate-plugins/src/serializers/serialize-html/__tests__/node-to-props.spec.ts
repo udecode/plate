@@ -31,6 +31,35 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a href="https://theuselessweb.com/" class="slate-link" target="_blank">link</a> and an internal <a href="https://slatejs.orf/" class="slate-link">link</a>.'
+    'An external <a href="https://theuselessweb.com/" class="slate-link" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-link">link</a>.'
+  );
+});
+
+it('serialize image with alt to html', () => {
+  expect(
+    htmlStringToDOMNode(
+      serializeHTMLFromNodes({
+        plugins: [
+          ImagePlugin({
+            img: {
+              nodeToProps: ({ element }) => ({
+                width: element.url.split('/').pop(),
+                alt: element.attributes?.alt,
+              }),
+            },
+          }),
+        ],
+        nodes: [
+          {
+            type: 'img',
+            url: 'https://via.placeholder.com/300',
+            attributes: { alt: 'Placeholder' },
+            children: [],
+          },
+        ],
+      })
+    ).getElementsByTagName('img')[0].outerHTML
+  ).toEqual(
+    '<img src="https://via.placeholder.com/300" alt="Placeholder" width="300">'
   );
 });
