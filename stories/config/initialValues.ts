@@ -1049,6 +1049,16 @@ export const initialValueSoftBreak: SlateDocument = [
     ] as SlateDocumentFragment,
   },
 ];
+export const initialValueBlockquote: SlateDocument = [
+  {
+    children: [
+      {
+        type: options.blockquote.type,
+        children: [{ text: 'Try here ⏎' }],
+      },     
+    ] as SlateDocumentFragment,
+  },
+];
 
 export const initialValueExitBreak: SlateDocument = [
   {

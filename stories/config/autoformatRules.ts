@@ -4,6 +4,7 @@ import {
   MARK_CODE,
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
+  toggleBlockquote,
   toggleList,
   unwrapList,
 } from '@udecode/slate-plugins';
@@ -67,6 +68,14 @@ export const autoformatRules: AutoformatRule[] = [
     type: options.blockquote.type,
     markup: ['>'],
     preFormat,
+  },
+  {
+    type: options.blockquote.type,
+    markup: ['>*'],
+    preFormat,
+    format: (editor) => {
+      toggleBlockquote(editor, { ...options, typeList: options.blockquote.type });
+    },
   },
   {
     type: MARK_BOLD,
