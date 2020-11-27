@@ -21,6 +21,7 @@ import {
   ToolbarElement,
   ToolbarList,
   withAutoformat,
+  withBlockquote,
   withList,
   withMarks,
 } from '@udecode/slate-plugins';
@@ -49,12 +50,12 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
+  withBlockquote(options),
   withMarks(),
   withAutoformat({ rules: autoformatRules }),
   ] as const;
 
 const initialValue: Node[] = [  
-  ...initialValueBlockquote, 
   ...initialValueList, 
 ];
 

@@ -39,7 +39,7 @@ export interface BlockquoteElementProps
   element: BlockquoteNode;
 }
 
-export type BlockquoteKeyOption = 'blockquote';
+export type BlockquoteKeyOption = 'blockquote' | 'p';
 
 // Plugin options
 export type BlockquotePluginOptionsValues = RenderNodeOptions &
@@ -79,3 +79,5 @@ export interface BlockquoteElementStyleProps {
 
   // Insert BlockquoteElement style props below
 }
+
+export interface BlockQuoteOptions extends BlockquotePluginOptions<'type'> {}

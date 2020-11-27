@@ -1,3 +1,5 @@
+import { StyledElement } from '../../components/StyledComponent';
+import { ELEMENT_PARAGRAPH } from '../paragraph';
 import { BlockquoteElement } from './components/BlockquoteElement';
 import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
 
@@ -14,6 +16,20 @@ export const DEFAULTS_BLOCKQUOTE: Record<
     rootProps: {
       className: 'slate-blockquote',
       as: 'blockquote',
+    },
+  },
+  p: {
+    component: StyledElement,
+    type: ELEMENT_PARAGRAPH,
+    rootProps: {
+      className: `slate-${ELEMENT_BLOCKQUOTE}-${ELEMENT_PARAGRAPH}`,
+      as: 'div',
+      styles: {
+        root: {
+          // Get rid of default style
+          margin: '0',
+        },
+      },
     },
   },
 };

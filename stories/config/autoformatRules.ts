@@ -70,14 +70,6 @@ export const autoformatRules: AutoformatRule[] = [
     preFormat,
   },
   {
-    type: options.blockquote.type,
-    markup: ['>*'],
-    preFormat,
-    format: (editor) => {
-      toggleBlockquote(editor, { ...options, typeList: options.blockquote.type });
-    },
-  },
-  {
     type: MARK_BOLD,
     between: ['**', '**'],
     mode: 'inline',
