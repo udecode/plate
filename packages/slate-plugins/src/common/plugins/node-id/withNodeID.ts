@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { isDescendant } from '../../queries/index';
