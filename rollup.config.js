@@ -46,8 +46,8 @@ const plugins = [
   commonjs({
     include: /node_modules/,
     namedExports: {
-      'react-is': ['typeOf', 'isElement', 'isValidElementType']
-    }
+      'react-is': ['typeOf', 'isElement', 'isValidElementType'],
+    },
   }),
 
   // Convert JSON imports to ES6 modules.
@@ -77,6 +77,24 @@ const plugins = [
       'babel-plugin-dynamic-import-node',
       'babel-plugin-styled-components',
       ['inline-json-import', {}],
+      [
+        'import',
+        {
+          libraryName: 'lodash',
+          libraryDirectory: '',
+          camel2DashComponentName: false,
+        },
+        'lodash',
+      ],
+      [
+        'import',
+        {
+          libraryName: 'react-use',
+          libraryDirectory: 'lib',
+          camel2DashComponentName: false,
+        },
+        'react-use',
+      ],
     ],
     env: {
       test: {
