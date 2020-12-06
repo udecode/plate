@@ -1,9 +1,11 @@
 /** @jsx jsx */
 
-import { createEditor, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
+import { createEditor, Editor, Transforms } from 'slate';
+import { ReactEditor, withReact } from 'slate-react';
 import { jsx } from '../../__test-utils__/jsx';
+import { withInlineVoid } from '../../common/plugins/inline-void/withInlineVoid';
 import { getAboveByType } from '../../common/queries/getAboveByType';
+import { ELEMENT_LINK } from '../link/defaults';
 import { withList } from './index';
 
 const listNodeWithImage = (
@@ -86,5 +88,44 @@ describe('getTypeAboveBylevel()', () => {
     Transforms.select(editor, selection);
     const nodeEntry = getAboveByType(editor, 'ol');
     expect(nodeEntry).toBeFalsy();
+  });
+});
+
+describe('normalizeList', () => {
+  describe('when there is no p in li', () => {
+    it('should insert a p', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              hell
+              <cursor /> <ha>link</ha>
+              <htext />
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hp>
+                hello <ha>link</ha>
+                <htext />
+              </hp>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const editor = withList()(
+        withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
+      );
+
+      editor.insertText('o');
+
+      expect(editor.children).toEqual(expected.children);
+    });
   });
 });

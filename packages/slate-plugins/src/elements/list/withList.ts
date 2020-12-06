@@ -5,6 +5,7 @@ import { isCollapsed } from '../../common/queries/isCollapsed';
 import { isSelectionAtBlockStart } from '../../common/queries/isSelectionAtBlockStart';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
+import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { hasListInListItem } from './queries/hasListInListItem';
 import { deleteListFragment } from './transforms/deleteListFragment';
@@ -14,11 +15,12 @@ import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeRootListItem } from './transforms/removeRootListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { DEFAULTS_LIST } from './defaults';
-import { ListOptions } from './types';
+import { WithListOptions } from './types';
 
-export const withList = (options?: ListOptions) => <T extends ReactEditor>(
-  editor: T
-) => {
+export const withList = ({
+  validLiChildrenTypes,
+  ...options
+}: WithListOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
   const { insertBreak, deleteBackward, deleteFragment } = editor;
 
@@ -159,6 +161,12 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
 
     deleteFragment();
   };
+
+  editor.normalizeNode = getListNormalizer(
+    editor,
+    { validLiChildrenTypes },
+    options
+  );
 
   return editor;
 };

@@ -68,3 +68,13 @@ export interface ListDeserializeOptions
 
 export interface ListOnKeyDownOptions extends ListPluginOptions<'type'> {}
 export interface ListOptions extends ListPluginOptions<'type'> {}
+
+export interface WithListOptions extends ListOptions {
+  /**
+   * Valid children types for list items, in addition to p and ul types.
+   */
+  validLiChildrenTypes?: string[];
+}
+
+export interface ListNormalizerOptions
+  extends Pick<WithListOptions, 'validLiChildrenTypes'> {}

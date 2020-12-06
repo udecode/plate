@@ -5,6 +5,7 @@ export * from './getLastNode';
 export * from './getNextSiblingNodes';
 export * from './getNode';
 export * from './getNodeById';
+export * from './getChildren';
 export * from './getNodes';
 export * from './getNodesById';
 export * from './getNodesByType';
