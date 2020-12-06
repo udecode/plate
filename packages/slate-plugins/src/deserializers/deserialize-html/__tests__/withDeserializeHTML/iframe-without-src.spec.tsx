@@ -30,12 +30,14 @@ const output = (
   </editor>
 ) as any;
 
-it('should do nothing', () => {
-  const editor = withInlineVoid({})(
-    withDeserializeHTML({ plugins: [MediaEmbedPlugin()] })(withReact(input))
-  );
+describe('when inserting an iframe', () => {
+  it('should do nothing', () => {
+    const editor = withInlineVoid({})(
+      withDeserializeHTML({ plugins: [MediaEmbedPlugin()] })(withReact(input))
+    );
 
-  editor.insertData(data as any);
+    editor.insertData(data as any);
 
-  expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(output.children);
+  });
 });
