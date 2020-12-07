@@ -1,4 +1,5 @@
 export * from './components';
+export * from './normalizers';
 export * from './defaults';
 export * from './deserializeList';
 export * from './ListPlugin';
