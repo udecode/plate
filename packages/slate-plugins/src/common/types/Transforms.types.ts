@@ -7,3 +7,12 @@ export interface WrapOptions {
   split?: boolean;
   voids?: boolean;
 }
+
+export interface InsertNodesOptions {
+  at?: Path | Point | Range | undefined;
+  match?: ((node: Node) => boolean) | undefined;
+  mode?: 'highest' | 'lowest' | undefined;
+  hanging?: boolean | undefined;
+  select?: boolean | undefined;
+  voids?: boolean | undefined;
+}

@@ -1,5 +1,6 @@
 export * from './applyDeepToNodes';
 export * from './defaultsDeepToNodes';
+export * from './insertEmptyElement';
 export * from './mergeDeepToNodes';
 export * from './moveChildren';
 export * from './selectEndOfBlockAboveSelection';
