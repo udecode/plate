@@ -80,7 +80,7 @@ export const deleteListFragment = (
       childrenMoved = moveListItemSublistItemsToListItemSublist(editor, {
         fromListItem: listItemEnd,
         toListItem: listItemStart,
-      });
+      }, options);
 
       next = listItemSublist
         ? Path.next(getLastChildPath(listItemSublist))
