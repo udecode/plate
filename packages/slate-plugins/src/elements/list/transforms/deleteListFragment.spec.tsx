@@ -44,7 +44,7 @@ describe('deleteListFragment', () => {
         </editor>
       ) as any) as Editor;
 
-      const actual = deleteListFragment(editor, editor.selection as Range);
+      const actual = deleteListFragment(editor, editor.selection as Range, {});
 
       expect(actual).toBeUndefined();
     });
@@ -89,7 +89,7 @@ describe('deleteListFragment', () => {
         </editor>
       ) as any) as Editor;
 
-      const actual = deleteListFragment(editor, editor.selection as any);
+      const actual = deleteListFragment(editor, editor.selection as any, {});
 
       expect(actual).toBeUndefined();
     });
@@ -138,7 +138,7 @@ describe('deleteListFragment', () => {
 
       const editor = withHistory(input);
 
-      const actual = deleteListFragment(editor, editor.selection);
+      const actual = deleteListFragment(editor, editor.selection, {});
 
       expect(actual).toEqual(3);
       const expected = [
@@ -217,7 +217,7 @@ describe('deleteListFragment', () => {
 
       const editor = withHistory(input);
 
-      const actual = deleteListFragment(editor, editor.selection as any);
+      const actual = deleteListFragment(editor, editor.selection as any, {});
 
       expect(actual).toEqual(3);
       const expected = [
@@ -296,7 +296,7 @@ describe('deleteListFragment', () => {
 
       const editor = withHistory(input);
 
-      const actual = deleteListFragment(editor, editor.selection as any);
+      const actual = deleteListFragment(editor, editor.selection as any, {});
 
       expect(actual).toEqual(0);
       const expected = [
@@ -377,7 +377,7 @@ describe('deleteListFragment', () => {
 
       const editor = withHistory(input);
 
-      const actual = deleteListFragment(editor, editor.selection as any);
+      const actual = deleteListFragment(editor, editor.selection as any, {});
 
       expect(actual).toEqual(2);
       const expected = [
