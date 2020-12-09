@@ -3,6 +3,7 @@ import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { getParent } from '../../../common/queries/getParent';
 import { moveChildren } from '../../../common/transforms/moveChildren';
 import { getListItemSublist } from '../queries/getListItemSublist';
+import { ListOptions } from '../types';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
@@ -31,16 +32,17 @@ export const moveListItemSublistItemsToListItemSublist = (
     fromListItem,
     toListItem,
     start,
-  }: MoveListItemSublistItemsToListItemSublistOptions
+  }: MoveListItemSublistItemsToListItemSublistOptions,
+  options?: ListOptions
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
 
-  const fromListItemSublist = getListItemSublist(fromListItem);
+  const fromListItemSublist = getListItemSublist(fromListItem, options);
   if (!fromListItemSublist) return 0;
   const [, fromListItemSublistPath] = fromListItemSublist;
 
-  const toListItemSublist = getListItemSublist(toListItem);
+  const toListItemSublist = getListItemSublist(toListItem, options);
 
   let to: Path;
 

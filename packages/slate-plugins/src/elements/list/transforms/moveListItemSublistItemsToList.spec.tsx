@@ -56,7 +56,7 @@ it('should', () => {
   const toList = getNodeById(editor, '1') as NodeEntry<Ancestor>;
 
   if (fromListItem && toList) {
-    moveListItemSublistItemsToList(editor, { fromListItem, toList });
+    moveListItemSublistItemsToList(editor, { fromListItem, toList }, {});
   }
 
   expect(input.children).toEqual(output.children);
