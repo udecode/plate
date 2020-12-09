@@ -27,7 +27,7 @@ export interface MergeListItemIntoListOptions {
 export const moveListItemSublistItemsToList = (
   editor: Editor,
   { fromListItem, toList, start }: MergeListItemIntoListOptions,
-  options: ListOptions
+  options: ListOptions = {}
 ) => {
   const fromListItemSublist = getListItemSublist(fromListItem, options);
   if (!fromListItemSublist) return 0;
