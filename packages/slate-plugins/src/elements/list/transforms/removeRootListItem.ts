@@ -44,7 +44,7 @@ export const removeRootListItem = (
       moveListItemSublistItemsToListItemSublist(editor, {
         fromListItem: listItem,
         toListItem: [previousListItemNode as Ancestor, previousListItemPath],
-      });
+      }, options);
 
       // Select the P tag at the previous list item
       Transforms.select(
@@ -58,7 +58,7 @@ export const removeRootListItem = (
         fromListItem: listItem,
         toList: list,
         // start: true,
-      });
+      }, options);
     }
 
     // Remove the list-item
