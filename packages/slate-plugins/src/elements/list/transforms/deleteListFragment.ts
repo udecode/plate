@@ -59,7 +59,7 @@ export const deleteListFragment = (
       childrenMoved = moveListItemSublistItemsToList(editor, {
         fromListItem: listItemEnd,
         toList: [toListNode as Ancestor, next],
-      });
+      }, options);
 
       // next is the first list item of the root copy.
       next = [...next, 0];
