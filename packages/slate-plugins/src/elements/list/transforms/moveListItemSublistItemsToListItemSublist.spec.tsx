@@ -69,10 +69,14 @@ describe('when there is toListItem sublist', () => {
     const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
-      });
+      moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem,
+          toListItem,
+        },
+        {}
+      );
     }
 
     expect(input.children).toEqual(output.children);
@@ -129,10 +133,14 @@ describe('when there is no list in toListItem', () => {
     const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
-      });
+      moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem,
+          toListItem,
+        },
+        {}
+      );
     }
 
     expect(input.children).toEqual(output.children);
