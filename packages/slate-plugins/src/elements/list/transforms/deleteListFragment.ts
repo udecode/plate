@@ -56,10 +56,14 @@ export const deleteListFragment = (
       const toListNode = getNode(editor, next);
       if (!toListNode) return 0;
 
-      childrenMoved = moveListItemSublistItemsToList(editor, {
-        fromListItem: listItemEnd,
-        toList: [toListNode as Ancestor, next],
-      });
+      childrenMoved = moveListItemSublistItemsToList(
+        editor,
+        {
+          fromListItem: listItemEnd,
+          toList: [toListNode as Ancestor, next],
+        },
+        options
+      );
 
       // next is the first list item of the root copy.
       next = [...next, 0];
@@ -77,10 +81,14 @@ export const deleteListFragment = (
       const { listItem: listItemStart } = listStart;
       const listItemSublist = getListItemSublist(listItemStart, options);
 
-      childrenMoved = moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem: listItemEnd,
-        toListItem: listItemStart,
-      });
+      childrenMoved = moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem: listItemEnd,
+          toListItem: listItemStart,
+        },
+        options
+      );
 
       next = listItemSublist
         ? Path.next(getLastChildPath(listItemSublist))

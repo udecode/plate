@@ -40,10 +40,14 @@ export const removeRootListItem = (
 
     // We may have a trailing sub-list
     // that we need to merge backwards
-    moveListItemSublistItemsToListItemSublist(editor, {
-      fromListItem: listItem,
-      toListItem: [previousListItemNode as Ancestor, previousListItemPath],
-    });
+    moveListItemSublistItemsToListItemSublist(
+      editor,
+      {
+        fromListItem: listItem,
+        toListItem: [previousListItemNode as Ancestor, previousListItemPath],
+      },
+      options
+    );
 
     // Select the P tag at the previous list item
     Transforms.select(
@@ -53,11 +57,15 @@ export const removeRootListItem = (
   } else {
     // We may have a trailing sub-list that we
     // need to move into the root list
-    moveListItemSublistItemsToList(editor, {
-      fromListItem: listItem,
-      toList: list,
-      // start: true,
-    });
+    moveListItemSublistItemsToList(
+      editor,
+      {
+        fromListItem: listItem,
+        toList: list,
+        // start: true,
+      },
+      options
+    );
   }
 
   // Remove the list-item
