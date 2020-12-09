@@ -35,38 +35,36 @@ export const removeRootListItem = (
   const listItemPathRef = Editor.pathRef(editor, listItemPath);
   const previousListItemPath = getPreviousPath(listItemPath);
 
-  Editor.withoutNormalizing(editor, () => {
-    if (previousListItemPath) {
-      const [previousListItemNode] = Editor.node(editor, previousListItemPath);
+  if (previousListItemPath) {
+    const [previousListItemNode] = Editor.node(editor, previousListItemPath);
 
-      // We may have a trailing sub-list
-      // that we need to merge backwards
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem: listItem,
-        toListItem: [previousListItemNode as Ancestor, previousListItemPath],
-      }, options);
+    // We may have a trailing sub-list
+    // that we need to merge backwards
+    moveListItemSublistItemsToListItemSublist(editor, {
+      fromListItem: listItem,
+      toListItem: [previousListItemNode as Ancestor, previousListItemPath],
+    }, options);
 
-      // Select the P tag at the previous list item
-      Transforms.select(
-        editor,
-        Editor.end(editor, previousListItemPath.concat([0]))
-      );
-    } else {
-      // We may have a trailing sub-list that we
-      // need to move into the root list
-      moveListItemSublistItemsToList(editor, {
-        fromListItem: listItem,
-        toList: list,
-        // start: true,
-      }, options);
-    }
+    // Select the P tag at the previous list item
+    Transforms.select(
+      editor,
+      Editor.end(editor, previousListItemPath.concat([0]))
+    );
+  } else {
+    // We may have a trailing sub-list that we
+    // need to move into the root list
+    moveListItemSublistItemsToList(editor, {
+      fromListItem: listItem,
+      toList: list,
+      // start: true,
+    }, options);
+  }
 
-    // Remove the list-item
-    const listItemPathUnref = listItemPathRef.unref();
-    if (listItemPathUnref) {
-      Transforms.removeNodes(editor, { at: listItemPathUnref });
-    }
-  });
+  // Remove the list-item
+  const listItemPathUnref = listItemPathRef.unref();
+  if (listItemPathUnref) {
+    Transforms.removeNodes(editor, { at: listItemPathUnref });
+  }
 
   return true;
 };
