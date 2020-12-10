@@ -17,9 +17,9 @@ export const normalizeListItem = (
   }: { nodeEntry: NodeEntry } & ListNormalizerOptions,
   options?: ListOptions
 ) => {
-  const { p, ul } = setDefaults(options, DEFAULTS_LIST);
+  const { p, ul, ol } = setDefaults(options, DEFAULTS_LIST);
 
-  const allValidLiChildrenTypes = [ul.type, p.type, ...validLiChildrenTypes];
+  const allValidLiChildrenTypes = [ul.type, ol.type, p.type, ...validLiChildrenTypes];
 
   const [listItemNode, listItemPath] = nodeEntry;
   const firstChildPath: Path = listItemPath.concat([0]);
