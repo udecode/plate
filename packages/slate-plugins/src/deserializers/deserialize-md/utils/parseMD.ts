@@ -3,6 +3,7 @@ import slate from 'remark-slate';
 import unified from 'unified';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
+import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/defaults';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -12,7 +13,6 @@ import {
   ELEMENT_H6,
 } from '../../../elements/heading/defaults';
 import { ELEMENT_LINK } from '../../../elements/link/defaults';
-import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/defaults';
 import {
   ELEMENT_LI,
   ELEMENT_OL,
@@ -39,7 +39,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
     p: { type: ELEMENT_PARAGRAPH },
     blockquote: { type: ELEMENT_BLOCKQUOTE },
     link: { type: ELEMENT_LINK },
-    code: { type: ELEMENT_CODE_BLOCK},
+    code: { type: ELEMENT_CODE_BLOCK },
     ul: { type: ELEMENT_UL },
     ol: { type: ELEMENT_OL },
     li: { type: ELEMENT_LI },
