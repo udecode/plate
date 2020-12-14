@@ -3,6 +3,7 @@ import slate from 'remark-slate';
 import unified from 'unified';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
+import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/defaults';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -24,6 +25,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
     p,
     blockquote,
     link,
+    code,
     ul,
     ol,
     li,
@@ -37,6 +39,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
     p: { type: ELEMENT_PARAGRAPH },
     blockquote: { type: ELEMENT_BLOCKQUOTE },
     link: { type: ELEMENT_LINK },
+    code: { type: ELEMENT_CODE_BLOCK },
     ul: { type: ELEMENT_UL },
     ol: { type: ELEMENT_OL },
     li: { type: ELEMENT_LI },
@@ -55,6 +58,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
         paragraph: p.type,
         block_quote: blockquote.type,
         link: link.type,
+        code_block: code.type,
         ul_list: ul.type,
         ol_list: ol.type,
         listItem: li.type,
