@@ -5,7 +5,10 @@ import {
 } from './getNodeDeserializer';
 
 export interface GetLeafDeserializerOptions
-  extends WithOptional<GetNodeDeserializerOptions, 'node'> {
+  extends WithOptional<
+    Omit<GetNodeDeserializerOptions, 'withoutChildren'>,
+    'node'
+  > {
   type: string;
 }
 
