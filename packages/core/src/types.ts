@@ -52,6 +52,7 @@ export type DeserializeNode = {
         [key: string]: unknown;
       }
     | undefined;
+  withoutChildren?: boolean;
 };
 
 export interface DeserializeHtml {
