@@ -22,6 +22,11 @@ export interface GetNodeDeserializerRule {
   style?: Partial<
     Record<keyof CSSStyleDeclaration, string | string[] | undefined>
   >;
+
+  /**
+   * Required attribute name or name + value
+   */
+  attribute?: string | { [key: string]: string | string[] };
 }
 
 export interface GetNodeDeserializerOptions {
@@ -54,7 +59,7 @@ export const getNodeDeserializer = ({
 }: GetNodeDeserializerOptions) => {
   const deserializers: DeserializeNode[] = [];
 
-  rules.forEach(({ nodeNames = '*', style, className }) => {
+  rules.forEach(({ nodeNames = '*', style, className, attribute }) => {
     nodeNames = castArray<string>(nodeNames);
 
     nodeNames.forEach((nodeName) => {
@@ -78,12 +83,25 @@ export const getNodeDeserializer = ({
             }
           }
 
+          if (attribute) {
+            if (typeof attribute === 'string') {
+              if (!el.getAttributeNames().includes(attribute)) return;
+            } else {
+              for (const [key, value] of Object.entries(attribute)) {
+                const values = castArray<string>(value);
+                const attr = el.getAttribute(key);
+
+                if (!attr || !values.includes(attr)) return;
+              }
+            }
+          }
+
           const htmlAttributes = {};
           if (attributes) {
             const attributeNames = el.getAttributeNames();
-            for (const attribute of attributes) {
-              if (attributeNames.includes(attribute))
-                htmlAttributes[attribute] = el.getAttribute(attribute);
+            for (const attr of attributes) {
+              if (attributeNames.includes(attr))
+                htmlAttributes[attr] = el.getAttribute(attr);
             }
           }
 
