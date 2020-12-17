@@ -46,6 +46,11 @@ export interface GetNodeDeserializerOptions {
    * List of rules the element needs to follow to be deserialized to a slate node.
    */
   rules: GetNodeDeserializerRule[];
+
+  /**
+   * Whether or not to include deserialized children on this node
+   */
+  withoutChildren?: boolean;
 }
 
 /**
@@ -56,6 +61,7 @@ export const getNodeDeserializer = ({
   node,
   attributes,
   rules,
+  withoutChildren,
 }: GetNodeDeserializerOptions) => {
   const deserializers: DeserializeNode[] = [];
 
@@ -65,6 +71,7 @@ export const getNodeDeserializer = ({
     nodeNames.forEach((nodeName) => {
       deserializers.push({
         type,
+        withoutChildren,
         deserialize: (el) => {
           if (
             nodeNames.length &&

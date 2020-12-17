@@ -16,6 +16,7 @@ export const deserializeHTMLToElement = ({
   children: DeserializeHTMLChildren[];
 }): Element | undefined => {
   let slateElement: any;
+  let withoutChildren: boolean | undefined;
 
   plugins.some(({ deserialize: pluginDeserializers }) => {
     if (!pluginDeserializers?.element) return;
@@ -25,13 +26,14 @@ export const deserializeHTMLToElement = ({
       if (!deserialized) return;
 
       slateElement = deserialized;
+      withoutChildren = deserializer.withoutChildren;
       return true;
     });
   });
 
   if (slateElement) {
     let descendants = children as Descendant[];
-    if (!descendants.length) {
+    if (!descendants.length || withoutChildren) {
       descendants = [{ text: '' }];
     }
 
