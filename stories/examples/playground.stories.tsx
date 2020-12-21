@@ -34,6 +34,7 @@ import {
   CodePlugin,
   decorateSearchHighlight,
   EditablePlugins,
+  ELEMENT_IMAGE,
   ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
@@ -82,6 +83,7 @@ import {
   withNormalizeTypes,
   withTable,
   withTrailingNode,
+  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -216,6 +218,7 @@ export const Plugins = () => {
     }),
     withTrailingNode({ type: options.p.type, level: 1 }),
     withInlineVoid({ plugins }),
+    withSelectOnBackspace({ allow: [ELEMENT_IMAGE] }),
   ] as const;
 
   const createReactEditor = () => () => {
