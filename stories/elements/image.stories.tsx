@@ -13,6 +13,7 @@ import {
   ToolbarImage,
   withImageUpload,
   withInlineVoid,
+  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -38,6 +39,7 @@ export const Example = () => {
     withHistory,
     withImageUpload(),
     withInlineVoid({ plugins }),
+    withSelectOnBackspace({ allow: [ELEMENT_IMAGE] }),
   ] as const;
 
   const createReactEditor = () => () => {
