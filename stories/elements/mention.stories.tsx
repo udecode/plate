@@ -34,9 +34,11 @@ export const Example = () => {
     MentionPlugin({
       mention: {
         ...options.mention,
-        onClick: (mentionable: MentionNodeData) =>
-          console.info(`Hello, I'm ${mentionable.value}`),
-        prefix: text('prefix', '@'),
+        rootProps: {
+          onClick: (mentionable: MentionNodeData) =>
+            console.info(`Hello, I'm ${mentionable.value}`),
+          prefix: text('prefix', '@'),
+        },
       },
     }),
   ];
@@ -77,7 +79,7 @@ export const Example = () => {
       >
         <EditablePlugins
           plugins={plugins}
-          placeholder="Enter some text..."
+          placeholder='Enter some text...'
           onKeyDown={[onKeyDownMention]}
           onKeyDownDeps={[index, search, target]}
         />
