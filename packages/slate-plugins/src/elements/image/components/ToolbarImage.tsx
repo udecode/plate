@@ -19,7 +19,7 @@ export const ToolbarImage = ({
     <ToolbarButton
       onMouseDown={async (event) => {
         event.preventDefault();
-        let url = undefined;
+        let url;
         if (img?.rootProps?.getImageUrl != null) {
           url = await img.rootProps.getImageUrl();
         } else {
