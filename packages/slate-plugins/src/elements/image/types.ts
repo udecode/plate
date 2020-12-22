@@ -24,6 +24,7 @@ export interface ImageRenderElementPropsOptions {
    * Call to provide customized styling that will layer on top of the variant rules.
    */
   styles?: IStyleFunctionOrObject<ImageElementStyleProps, ImageElementStyles>;
+  getImageUrl?: () => Promise<string>;
 }
 
 // renderElement props
