@@ -24,6 +24,10 @@ export interface ImageRenderElementPropsOptions {
    * Call to provide customized styling that will layer on top of the variant rules.
    */
   styles?: IStyleFunctionOrObject<ImageElementStyleProps, ImageElementStyles>;
+  /**
+   * The provided function is invoked by clicking on the the ToolbarImage, and the
+   * resulting url is inserted as an image to the document.
+   */
   getImageUrl?: () => Promise<string>;
 }
 

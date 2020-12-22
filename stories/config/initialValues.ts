@@ -297,7 +297,7 @@ export const initialValueImages: SlateDocument = [
         children: [
           {
             text:
-              'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your keyboard and paste it anywhere in the editor!',
+              'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your keyboard and paste it anywhere in the editor! Additionally, you can customize the toolbar button to load an url asynchronously, for example showing a file picker and uploading a file to Amazon S3.',
           },
         ],
       },
