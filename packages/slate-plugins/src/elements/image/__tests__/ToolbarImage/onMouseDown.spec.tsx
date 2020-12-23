@@ -22,3 +22,27 @@ it('should render', () => {
 
   expect(editor.children).toEqual(output.children);
 });
+
+it('should invoke getUrlImage when provided', () => {
+  const editor = input;
+
+  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest
+    .spyOn(window, 'prompt')
+    .mockReturnValue('https://i.imgur.com/removed.png');
+
+  const getImageUrlMock = jest.fn();
+
+  const { getByTestId } = render(
+    <ToolbarImage
+      type={ELEMENT_H1}
+      img={{ rootProps: { getImageUrl: getImageUrlMock } }}
+      icon={null}
+    />
+  );
+
+  const element = getByTestId('ToolbarButton');
+  fireEvent.mouseDown(element);
+
+  expect(getImageUrlMock).toBeCalledTimes(1);
+});
