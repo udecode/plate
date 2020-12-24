@@ -39,7 +39,7 @@ export const Example = () => {
     withHistory,
     withImageUpload(),
     withInlineVoid({ plugins }),
-    withSelectOnBackspace({ allow: [ELEMENT_IMAGE] }),
+    withSelectOnBackspace({ allow: [options.img.type] }),
   ] as const;
 
   const createReactEditor = () => () => {

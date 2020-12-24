@@ -10,15 +10,21 @@ import { ImagePluginOptions } from '../types';
 export const ToolbarImage = ({
   img,
   ...props
-}: ToolbarButtonProps & ImagePluginOptions<'type'>) => {
+}: ToolbarButtonProps &
+  ImagePluginOptions<'type'> &
+  ImagePluginOptions<'rootProps'>) => {
   const editor = useEditor();
 
   return (
     <ToolbarButton
-      onMouseDown={(event) => {
+      onMouseDown={async (event) => {
         event.preventDefault();
-
-        const url = window.prompt('Enter the URL of the image:');
+        let url;
+        if (img?.rootProps?.getImageUrl != null) {
+          url = await img.rootProps.getImageUrl();
+        } else {
+          url = window.prompt('Enter the URL of the image:');
+        }
         if (!url) return;
         insertImage(editor, url, { img });
       }}
