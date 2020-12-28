@@ -1,6 +1,7 @@
-import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-common';
 import { CodeBlockElement } from './components/CodeBlockElement';
 import { CodeBlockKeyOption, CodeBlockPluginOptionsValues } from './types';
+
+export const ELEMENT_CODE_BLOCK = 'code_block';
 
 export const DEFAULTS_CODE_BLOCK: Record<
   CodeBlockKeyOption,

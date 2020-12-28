@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { MARK_BOLD, MARK_ITALIC } from '../../../constants';
+import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
+import { MARK_ITALIC } from '../../../../../slate-plugins/src/marks/italic/defaults';
 import { toggleMark } from '../../../transforms/toggleMark';
 
 const input = (

@@ -1,5 +1,5 @@
+import { setDefaults } from '../utils/setDefaults';
 import { getOnHotkeyToggleNodeType } from './getOnHotkeyToggleNodeType';
-import { setDefaults } from './setDefaults';
 
 interface GetOnHotkeyToggleNodeTypeDefaultOptions {
   key: string;

@@ -954,8 +954,8 @@ const createSpanningTable = () => ({
       children: [
         {
           type: options.th.type,
-          attributes: { colspan: "2" },
-          children: [createParagraph("Heading", options.bold.type)],
+          attributes: { colspan: '2' },
+          children: [createParagraph('Heading', options.bold.type)],
         },
       ],
     },
@@ -964,11 +964,11 @@ const createSpanningTable = () => ({
       children: [
         {
           type: options.td.type,
-          children: [createParagraph("Cell 1", options.bold.type)],
+          children: [createParagraph('Cell 1', options.bold.type)],
         },
         {
           type: options.td.type,
-          children: [createParagraph("Cell 2")],
+          children: [createParagraph('Cell 2')],
         },
       ],
     },
@@ -1011,7 +1011,7 @@ export const initialValueTables: SlateDocument = [
         children: [
           {
             text:
-              "This table is an example of rendering a table spanning multiple columns.",
+              'This table is an example of rendering a table spanning multiple columns.',
           },
         ],
       },

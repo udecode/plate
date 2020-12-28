@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Descendant, Editor, Range } from 'slate';
-import { ELEMENT_LINK } from '../../../constants';
-import { withInlineVoid } from '../../../plugins/inline-void/withInlineVoid';
+import { ELEMENT_LINK } from '../../../../../slate-plugins/src/elements/link/defaults';
+import { withInlineVoid } from '../../../../../slate-plugins/src/plugins/withInlineVoid/withInlineVoid';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
 

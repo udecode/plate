@@ -1,9 +1,57 @@
 import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
-import {
-  GetElementDeserializerOptions,
-  GetLeafDeserializerOptions,
-} from '../utils';
+
+export type WithOptional<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
+
+export interface GetNodeDeserializerRule {
+  /**
+   * Required node names to deserialize the element.
+   * Set '*' to allow any node name.
+   */
+  nodeNames?: string | string[];
+
+  /**
+   * Required className to deserialized the element.
+   */
+  className?: string;
+
+  /**
+   * Required style to deserialize the element. Each value should be a (list of) string.
+   */
+  style?: Partial<
+    Record<keyof CSSStyleDeclaration, string | string[] | undefined>
+  >;
+}
+
+export interface GetNodeDeserializerOptions {
+  type: string;
+
+  /**
+   * Slate node creator from HTML element.
+   */
+  node: (el: HTMLElement) => { [key: string]: any } | undefined;
+
+  /**
+   * List of html attributes to store with the node
+   */
+  attributes?: string[];
+
+  /**
+   * List of rules the element needs to follow to be deserialized to a slate node.
+   */
+  rules: GetNodeDeserializerRule[];
+}
+
+export interface GetLeafDeserializerOptions
+  extends WithOptional<GetNodeDeserializerOptions, 'node'> {
+  type: string;
+}
+
+export interface GetElementDeserializerOptions
+  extends WithOptional<GetNodeDeserializerOptions, 'node'> {
+  type: string;
+}
 
 export type DeserializerOptions =
   | GetElementDeserializerOptions
@@ -45,8 +93,7 @@ export interface ElementNode<T = Element> {
 export interface NodeToPropsOptions<
   ElementType = Element,
   RootPropsType = RenderNodePropsOptions
->
-  extends Omit<RenderElementPropsWithAttributes, 'element'>,
+> extends Omit<RenderElementPropsWithAttributes, 'element'>,
     RootProps<RootPropsType> {
   element: ElementType;
 }

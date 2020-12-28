@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { MARK_PRISM } from '@udecode/slate-plugins-common';
 import { RenderLeaf } from '@udecode/slate-plugins-core';
+
+export const MARK_PRISM = 'prism';
 
 export const renderLeafCodeBlock = (): RenderLeaf => ({ leaf, children }) => {
   if (leaf[MARK_PRISM] && !!leaf.text) {

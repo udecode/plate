@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
+import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Element } from 'slate';
 import { withReact } from 'slate-react';
-import { ELEMENT_MENTION } from '../../../constants';
-import { withInlineVoid } from '../../../plugins/inline-void/withInlineVoid';
+import { ELEMENT_MENTION } from '../../../../../slate-plugins/src/elements/mention/defaults';
+import { withInlineVoid } from '../../../../../slate-plugins/src/plugins/withInlineVoid/withInlineVoid';
 import { isAncestorEmpty } from '../../../queries/index';
-import { pipe } from '../../../utils/pipe';
 
 const input = ((
   <hp>

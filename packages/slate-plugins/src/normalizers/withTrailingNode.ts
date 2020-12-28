@@ -1,10 +1,10 @@
 import {
-  ELEMENT_PARAGRAPH,
   getLastNode,
   isNodeType,
   QueryOptions,
 } from '@udecode/slate-plugins-common';
 import { Editor, Path, Transforms } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
 export interface WithTrailingNode extends QueryOptions {
   /**

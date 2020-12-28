@@ -1,5 +1,5 @@
 import { Editor, Point } from 'slate';
-import { escapeRegExp } from '../utils';
+import { escapeRegExp } from '../utils/escapeRegexp';
 import { getText } from './getText';
 
 /**

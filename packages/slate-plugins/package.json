@@ -33,15 +33,13 @@
     "@uifabric/utilities": "^7.19.0",
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
-    "lodash": "^4.17.15",
     "prismjs": "^1.20.0",
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
     "react-use": "^15.1.0",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.1.1",
-    "unified": "^9.1.0",
-    "utility-types": "^3.10.0"
+    "unified": "^9.1.0"
   },
   "devDependencies": {
     "@types/marked": "^1.1.0",

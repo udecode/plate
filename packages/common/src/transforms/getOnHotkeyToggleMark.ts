@@ -1,7 +1,7 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { toggleMark } from '../transforms/toggleMark';
 import { HotkeyOptions } from '../types/PluginOptions.types';
+import { toggleMark } from './toggleMark';
 
 export interface GetOnHotkeyToggleMarkOptions extends HotkeyOptions {
   /**

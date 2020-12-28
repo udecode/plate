@@ -1,5 +1,5 @@
 import { createEditor } from 'slate';
-import { ELEMENT_PARAGRAPH } from '../../../constants';
+import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
 import { getNodesByType } from '../../../queries/index';
 
 it('should be', () => {

@@ -1,5 +1,5 @@
+import { setDefaults } from '../utils/setDefaults';
 import { getOnHotkeyToggleMark } from './getOnHotkeyToggleMark';
-import { setDefaults } from './setDefaults';
 
 /**
  * Get `onKeyDown` handler for mark with default options.

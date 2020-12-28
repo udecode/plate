@@ -1,11 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
-import {
-  pipe,
-  SlateDocument,
-  withInlineVoid,
-  withNodeID,
-} from '@udecode/slate-plugins-common';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -27,6 +21,7 @@ import {
   options,
   optionsResetBlockTypes,
 } from '../../../../../stories/config/initialValues';
+import { SlateDocument } from '../../../../common/src/types/SlateDocument.types';
 import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
@@ -87,8 +82,11 @@ import { renderLeafUnderline } from '../../../../slate-plugins/src/marks/underli
 import { UnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/UnderlinePlugin';
 import { withNormalizeTypes } from '../../../../slate-plugins/src/normalizers/withNormalizeTypes';
 import { withRemoveEmptyNodes } from '../../../../slate-plugins/src/normalizers/withRemoveEmptyNodes';
+import { withInlineVoid } from '../../../../slate-plugins/src/plugins/withInlineVoid/withInlineVoid';
+import { withNodeID } from '../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
 import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
+import { pipe } from '../../utils/pipe';
 
 const plugins = [
   ...BasicElementPlugins(),

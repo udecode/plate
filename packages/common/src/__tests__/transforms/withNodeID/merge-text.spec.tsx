@@ -3,7 +3,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
-import { withNodeID } from '../../../plugins/node-id/index';
+import { withNodeID } from '../../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((

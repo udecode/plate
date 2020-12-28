@@ -43,9 +43,9 @@
 // import 'prismjs/components/prism-typescript';
 // import 'prismjs/components/prism-wasm';
 // import 'prismjs/components/prism-yaml';
-import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-common';
 import { languages, Token, tokenize } from 'prismjs';
 import { Node, NodeEntry } from 'slate';
+import { ELEMENT_CODE_BLOCK } from './defaults';
 
 export const decorateCodeBlock = () => (entry: NodeEntry) => {
   const ranges: any = [];

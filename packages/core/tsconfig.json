@@ -1,9 +1,4 @@
 {
   "extends": "../../tsconfig",
-  "compilerOptions": {
-    "paths": {
-      "@udecode/slate-plugins-common": ["./packages/common/src"]
-    }
-  },
   "include": ["src"]
 }

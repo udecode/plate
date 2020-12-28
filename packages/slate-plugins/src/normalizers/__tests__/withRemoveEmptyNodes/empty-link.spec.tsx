@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { ELEMENT_LINK } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
+import { ELEMENT_LINK } from '../../../elements/link/defaults';
 import { withRemoveEmptyNodes } from '../../index';
 
 const input = ((

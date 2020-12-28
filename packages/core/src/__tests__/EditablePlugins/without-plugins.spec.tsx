@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
-import { pipe } from '@udecode/slate-plugins-common';
+import { pipe } from '@udecode/slate-plugins-core';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';

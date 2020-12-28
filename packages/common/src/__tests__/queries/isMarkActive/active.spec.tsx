@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { MARK_BOLD } from '../../../constants';
+import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
 import { isMarkActive } from '../../../queries/isMarkActive';
 
 const input = (

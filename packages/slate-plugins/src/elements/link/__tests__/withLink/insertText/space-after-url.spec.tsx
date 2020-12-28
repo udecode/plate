@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-import { ELEMENT_LINK, withInlineVoid } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../../../../plugins/withInlineVoid/withInlineVoid';
+import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';
 
 const input = (

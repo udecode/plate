@@ -1,11 +1,10 @@
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '@udecode/slate-plugins-common';
 import { StyledElement } from '../../components/StyledComponent/StyledElement';
 import { DEFAULTS_PARAGRAPH } from '../paragraph/defaults';
 import { ListKeyOption, ListPluginOptionsValues } from './types';
+
+export const ELEMENT_UL = 'ul';
+export const ELEMENT_OL = 'ol';
+export const ELEMENT_LI = 'li';
 
 export const DEFAULTS_LIST: Record<ListKeyOption, ListPluginOptionsValues> = {
   ul: {

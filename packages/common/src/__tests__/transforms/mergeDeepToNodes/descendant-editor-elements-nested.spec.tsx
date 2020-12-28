@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ELEMENT_LI, ELEMENT_PARAGRAPH } from '../../../constants';
+import { ELEMENT_LI } from '../../../../../slate-plugins/src/elements/list/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
 import { isDescendant } from '../../../queries/index';
 import { mergeDeepToNodes } from '../../../transforms/index';
 

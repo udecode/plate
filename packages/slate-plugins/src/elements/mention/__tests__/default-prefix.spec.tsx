@@ -1,12 +1,10 @@
 /** @jsx jsx */
 
-import {
-  ELEMENT_MENTION,
-  pipe,
-  withInlineVoid,
-} from '@udecode/slate-plugins-common';
+import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../../plugins/withInlineVoid/withInlineVoid';
+import { ELEMENT_MENTION } from '../defaults';
 
 const input = (
   <editor>

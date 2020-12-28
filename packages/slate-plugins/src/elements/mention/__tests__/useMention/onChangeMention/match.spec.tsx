@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
-import { pipe } from '@udecode/slate-plugins-common';
+import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';

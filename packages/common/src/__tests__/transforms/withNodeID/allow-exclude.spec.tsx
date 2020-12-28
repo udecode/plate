@@ -3,8 +3,12 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { ELEMENT_LI, ELEMENT_PARAGRAPH, ELEMENT_UL } from '../../../constants';
-import { withNodeID } from '../../../plugins/node-id/index';
+import {
+  ELEMENT_LI,
+  ELEMENT_UL,
+} from '../../../../../slate-plugins/src/elements/list/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
+import { withNodeID } from '../../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((

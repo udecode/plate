@@ -1,13 +1,5 @@
-import {
-  getNodeDeserializer,
-  GetNodeDeserializerOptions,
-  WithOptional,
-} from './getNodeDeserializer';
-
-export interface GetElementDeserializerOptions
-  extends WithOptional<GetNodeDeserializerOptions, 'node'> {
-  type: string;
-}
+import { GetElementDeserializerOptions } from '../types/PluginOptions.types';
+import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**
  * See {@link getNodeDeserializer}.

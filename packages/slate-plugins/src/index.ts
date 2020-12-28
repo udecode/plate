@@ -1,4 +1,5 @@
-// export * from "@udecode/slate-plugins-core";
+export * from '@udecode/slate-plugins-common';
+export * from '@udecode/slate-plugins-core';
 export * from './components';
 export * from './decorators';
 export * from './deserializers';
@@ -7,5 +8,6 @@ export * from './elements';
 export * from './handlers';
 export * from './marks';
 export * from './normalizers';
+export * from './plugins';
 export * from './serializers';
 export * from './widgets';

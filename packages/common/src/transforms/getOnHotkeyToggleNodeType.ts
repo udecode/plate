@@ -1,8 +1,8 @@
 import isHotkey from 'is-hotkey';
 import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
-import { toggleNodeType } from '../transforms/toggleNodeType';
 import { HotkeyOptions } from '../types/PluginOptions.types';
+import { toggleNodeType } from './toggleNodeType';
 
 export interface GetOnHotkeyToggleNodeTypeOptions extends HotkeyOptions {
   /**

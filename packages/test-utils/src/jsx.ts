@@ -1,33 +1,30 @@
 import { createHyperscript } from 'slate-hyperscript';
-import { ELEMENT_BLOCKQUOTE } from '../../common/src/constants/elements/blockquote/index';
-import { ELEMENT_CODE_BLOCK } from '../../common/src/constants/elements/code-block/index';
-import { ELEMENT_LINK } from '../../common/src/constants/elements/link/index';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '../../common/src/constants/elements/list/index';
-import { ELEMENT_MENTION } from '../../common/src/constants/elements/mention/index';
-import { ELEMENT_PARAGRAPH } from '../../common/src/constants/elements/paragraph/index';
-import { ELEMENT_ALIGN_CENTER } from '../../slate-plugins/src/elements/align/defaults';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '../../slate-plugins/src/elements/heading/defaults';
-import { ELEMENT_IMAGE } from '../../slate-plugins/src/elements/image/defaults';
-import { ELEMENT_MEDIA_EMBED } from '../../slate-plugins/src/elements/media-embed/defaults';
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-} from '../../slate-plugins/src/elements/table/defaults';
-import { ELEMENT_TODO_LI } from '../../slate-plugins/src/elements/todo-list/defaults';
 import { createText } from './hyperscript/creators';
+
+// const ELEMENT_ALIGN_LEFT = 'align_left';
+// const ELEMENT_ALIGN_RIGHT = 'align_right';
+const ELEMENT_ALIGN_CENTER = 'align_center';
+const ELEMENT_H1 = 'h1';
+const ELEMENT_H2 = 'h2';
+const ELEMENT_H3 = 'h3';
+const ELEMENT_H4 = 'h4';
+const ELEMENT_H5 = 'h5';
+const ELEMENT_H6 = 'h6';
+const ELEMENT_IMAGE = 'img';
+const ELEMENT_LI = 'li';
+const ELEMENT_LINK = 'a';
+const ELEMENT_MEDIA_EMBED = 'media_embed';
+const ELEMENT_MENTION = 'mention';
+const ELEMENT_OL = 'ol';
+const ELEMENT_PARAGRAPH = 'p';
+const ELEMENT_TABLE = 'table';
+const ELEMENT_TD = 'td';
+const ELEMENT_TH = 'th';
+const ELEMENT_TODO_LI = 'action_item';
+const ELEMENT_TR = 'tr';
+const ELEMENT_UL = 'ul';
+const ELEMENT_BLOCKQUOTE = 'blockquote';
+const ELEMENT_CODE_BLOCK = 'code_block';
 
 declare global {
   namespace JSX {

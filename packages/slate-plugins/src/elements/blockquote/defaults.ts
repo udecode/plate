@@ -1,6 +1,7 @@
-import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-common';
 import { BlockquoteElement } from './components/BlockquoteElement';
 import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
+
+export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
 export const DEFAULTS_BLOCKQUOTE: Record<
   BlockquoteKeyOption,

@@ -1,6 +1,7 @@
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-common';
 import { StyledElement } from '../../components/StyledComponent/StyledElement';
 import { ParagraphKeyOption, ParagraphPluginOptionsValues } from './types';
+
+export const ELEMENT_PARAGRAPH = 'p';
 
 export const DEFAULTS_PARAGRAPH: Record<
   ParagraphKeyOption,

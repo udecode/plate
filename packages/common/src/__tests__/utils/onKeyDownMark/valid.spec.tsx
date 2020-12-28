@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { MARK_BOLD } from '../../../constants';
-import { getOnHotkeyToggleMark } from '../../../utils/getOnHotkeyToggleMark';
+import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
+import { getOnHotkeyToggleMark } from '../../../transforms/getOnHotkeyToggleMark';
 
 const input = (
   <editor>

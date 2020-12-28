@@ -33,6 +33,11 @@
   "devDependencies": {
     "@udecode/slate-plugins-test-utils": "^0.71.2"
   },
+  "dependencies": {
+    "@udecode/slate-plugins-core": "^0.71.2",
+    "lodash": "^4.17.15",
+    "utility-types": "^3.10.0"
+  },
   "publishConfig": {
     "access": "public"
   }

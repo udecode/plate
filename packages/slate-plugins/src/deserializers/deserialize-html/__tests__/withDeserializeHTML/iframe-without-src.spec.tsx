@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { MediaEmbedPlugin } from '../../../../elements/media-embed/index';
+import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
 import { withDeserializeHTML } from '../../index';
 
 const input = ((
