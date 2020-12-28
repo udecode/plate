@@ -1,11 +1,11 @@
-import { Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 import { QueryOptions } from '../types/QueryOptions.types';
 
 /**
  * Is the node entry filling a condition.
  */
 export const isNodeType = (
-  entry?: NodeEntry<Node>,
+  entry?: NodeEntry,
   { filter = () => true, allow = [], exclude = [] }: QueryOptions = {}
 ) => {
   let filterAllow: typeof filter = () => true;

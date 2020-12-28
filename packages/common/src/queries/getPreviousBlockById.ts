@@ -1,6 +1,6 @@
-import { Editor, Node, NodeEntry } from 'slate';
-import { getBlockPathById } from '../temporary-slate-plugins';
+import { Editor, NodeEntry } from 'slate';
 import { QueryOptions } from '../types/QueryOptions.types';
+import { getBlockPathById } from './getBlockPathById';
 import { isNodeType } from './isNodeType';
 
 /**
@@ -11,7 +11,7 @@ export const getPreviousBlockById = (
   editor: Editor,
   id: string,
   query?: QueryOptions
-): NodeEntry<Node> | undefined => {
+): NodeEntry | undefined => {
   const nodePath = getBlockPathById(editor, id);
   if (nodePath) {
     const prevEntry = Editor.previous(editor, { at: nodePath });
@@ -48,7 +48,9 @@ export const getPreviousBlockById = (
     ...Editor.nodes(editor, {
       mode: 'highest',
       match: (n) => {
-        return Editor.isBlock(editor, n) && n.id && isNodeType([n, []], query);
+        return (
+          Editor.isBlock(editor, n) && !!n.id && isNodeType([n, []], query)
+        );
       },
       at: [],
     }),

@@ -27,6 +27,7 @@
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.0",
     "@tippyjs/react": "^4.0.2",
+    "@udecode/slate-plugins-common": "^0.71.2",
     "@udecode/slate-plugins-core": "^0.71.2",
     "@uifabric/styling": "^7.12.11",
     "@uifabric/utilities": "^7.19.0",
@@ -40,9 +41,12 @@
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.1.1",
     "unified": "^9.1.0",
-    "utility-types": "^3.10.0",
-    "@udecode/slate-plugins-common": "^0.70.1",
-    "@udecode/slate-plugins-test-utils": "^0.71.1"
+    "utility-types": "^3.10.0"
+  },
+  "devDependencies": {
+    "@types/marked": "^1.1.0",
+    "@udecode/slate-plugins-test-utils": "^0.71.2",
+    "react-dnd-test-backend": "^11.1.3"
   },
   "peerDependencies": {
     "react": "*",
@@ -54,9 +58,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
-  "devDependencies": {
-    "@types/marked": "^1.1.0",
-    "react-dnd-test-backend": "^11.1.3"
-  }
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
 }

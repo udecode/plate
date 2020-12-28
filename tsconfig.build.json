@@ -1,8 +1,6 @@
 {
   "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [
-      7005
-    ]
+    "ignoreDiagnostics": [7005]
   },
   "compilerOptions": {
     "allowJs": true,
@@ -12,11 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
@@ -35,7 +29,6 @@
     "dist",
     "**/dist",
     "**/*.stories.*",
-    "**/*test*",
     "**/*.spec*",
     "**/*fixture*",
     "**/*template*"

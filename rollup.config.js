@@ -39,7 +39,7 @@ const plugins = [
   typescript({
     clean: true,
     tsconfig: path.join(PACKAGE_ROOT_PATH, 'tsconfig.build.json'),
-    useTsconfigDeclarationDir: false
+    useTsconfigDeclarationDir: true,
   }),
 
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015

@@ -31,7 +31,7 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^0.70.1"
+    "@udecode/slate-plugins-common": "^0.71.2"
   },
   "publishConfig": {
     "access": "public"

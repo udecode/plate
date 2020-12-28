@@ -1,9 +1,9 @@
 {
-  "extends": "../../tsconfig",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
       "@udecode/slate-plugins-test-utils": ["./packages/test-utils/src"]
     }
   },
-  "include": ["src"]
+  "include": ["./src"]
 }
