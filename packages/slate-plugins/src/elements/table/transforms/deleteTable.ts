@@ -2,10 +2,10 @@ import {
   getAboveByType,
   isNodeTypeIn,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { Editor, Transforms } from "slate";
-import { DEFAULTS_TABLE } from "../defaults";
-import { TableOptions } from "../types";
+} from '@udecode/slate-plugins-common';
+import { Editor, Transforms } from 'slate';
+import { DEFAULTS_TABLE } from '../defaults';
+import { TableOptions } from '../types';
 
 export const deleteTable = (editor: Editor, options?: TableOptions) => {
   const { table } = setDefaults(options, DEFAULTS_TABLE);

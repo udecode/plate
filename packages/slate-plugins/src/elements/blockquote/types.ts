@@ -6,10 +6,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 
 // Data of Element node
 export interface BlockquoteNodeData {}
@@ -39,7 +39,7 @@ export interface BlockquoteElementProps
   element: BlockquoteNode;
 }
 
-export type BlockquoteKeyOption = "blockquote";
+export type BlockquoteKeyOption = 'blockquote';
 
 // Plugin options
 export type BlockquotePluginOptionsValues = RenderNodeOptions &
@@ -60,7 +60,7 @@ export interface BlockquoteRenderElementOptions
 
 // deserialize options
 export interface BlockquoteDeserializeOptions
-  extends BlockquotePluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends BlockquotePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface BlockquoteElementStyles {
   /**

@@ -1,10 +1,10 @@
 import {
   getLeafDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_UNDERLINE } from "./defaults";
-import { UnderlineDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_UNDERLINE } from './defaults';
+import { UnderlineDeserializeOptions } from './types';
 
 export const deserializeUnderline = (
   options?: UnderlineDeserializeOptions
@@ -15,10 +15,10 @@ export const deserializeUnderline = (
     leaf: getLeafDeserializer({
       type: underline.type,
       rules: [
-        { nodeNames: ["U"] },
+        { nodeNames: ['U'] },
         {
           style: {
-            textDecoration: "underline",
+            textDecoration: 'underline',
           },
         },
       ],

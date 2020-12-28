@@ -1,9 +1,9 @@
-import { isFirstChild } from "@udecode/slate-plugins-common";
-import { Editor } from "slate";
-import { getListItemEntry } from "./queries/getListItemEntry";
-import { moveListItemDown } from "./transforms/moveListItemDown";
-import { moveListItemUp } from "./transforms/moveListItemUp";
-import { ListOnKeyDownOptions } from "./types";
+import { isFirstChild } from '@udecode/slate-plugins-common';
+import { Editor } from 'slate';
+import { getListItemEntry } from './queries/getListItemEntry';
+import { moveListItemDown } from './transforms/moveListItemDown';
+import { moveListItemUp } from './transforms/moveListItemUp';
+import { ListOnKeyDownOptions } from './types';
 
 export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
   e: KeyboardEvent,
@@ -11,7 +11,7 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
 ) => {
   let moved: boolean | undefined = false;
 
-  if (e.key === "Tab") {
+  if (e.key === 'Tab') {
     const res = getListItemEntry(editor, {}, options);
     if (!res) return;
     const { list, listItem } = res;

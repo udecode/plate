@@ -1,5 +1,5 @@
-import castArray from "lodash/castArray";
-import { DeserializeNode } from "../../../core/src";
+import castArray from 'lodash/castArray';
+import { DeserializeNode } from '../../../core/src';
 
 export type WithOptional<T, K extends keyof T> = Omit<T, K> &
   Partial<Pick<T, K>>;
@@ -54,7 +54,7 @@ export const getNodeDeserializer = ({
 }: GetNodeDeserializerOptions) => {
   const deserializers: DeserializeNode[] = [];
 
-  rules.forEach(({ nodeNames = "*", style, className }) => {
+  rules.forEach(({ nodeNames = '*', style, className }) => {
     nodeNames = castArray<string>(nodeNames);
 
     nodeNames.forEach((nodeName) => {
@@ -64,7 +64,7 @@ export const getNodeDeserializer = ({
           if (
             nodeNames.length &&
             !nodeNames.includes(el.nodeName) &&
-            nodeName !== "*"
+            nodeName !== '*'
           )
             return;
 

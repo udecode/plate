@@ -1,6 +1,6 @@
-import castArray from "lodash/castArray";
-import { Editor } from "slate";
-import { SlatePlugin } from "../../../../core/src";
+import castArray from 'lodash/castArray';
+import { Editor } from 'slate';
+import { SlatePlugin } from '../../../../core/src';
 
 export interface WithInlineVoidOptions {
   plugins?: SlatePlugin[];

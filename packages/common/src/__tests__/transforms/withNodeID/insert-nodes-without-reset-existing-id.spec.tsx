@@ -1,9 +1,9 @@
 /** @jsx jsx */
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor, Transforms } from "slate";
-import { withHistory } from "slate-history";
-import { withNodeID } from "../../../plugins/node-id/withNodeID";
-import { idCreatorFixture } from "./fixtures";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor, Transforms } from 'slate';
+import { withHistory } from 'slate-history';
+import { withNodeID } from '../../../plugins/node-id/withNodeID';
+import { idCreatorFixture } from './fixtures';
 
 const input = ((
   <editor>
@@ -22,7 +22,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should keep the id", () => {
+it('should keep the id', () => {
   const editor = withNodeID({ idCreator: idCreatorFixture })(
     withHistory(input)
   );

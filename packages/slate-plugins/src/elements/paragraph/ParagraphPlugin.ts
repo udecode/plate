@@ -1,9 +1,9 @@
-import { getOnHotkeyToggleNodeTypeDefault } from "@udecode/slate-plugins-common";
-import { SlatePlugin } from "@udecode/slate-plugins-core";
-import { DEFAULTS_PARAGRAPH } from "./defaults";
-import { deserializeParagraph } from "./deserializeParagraph";
-import { renderElementParagraph } from "./renderElementParagraph";
-import { ParagraphPluginOptions } from "./types";
+import { getOnHotkeyToggleNodeTypeDefault } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { DEFAULTS_PARAGRAPH } from './defaults';
+import { deserializeParagraph } from './deserializeParagraph';
+import { renderElementParagraph } from './renderElementParagraph';
+import { ParagraphPluginOptions } from './types';
 
 /**
  * Enables support for paragraphs.
@@ -14,7 +14,7 @@ export const ParagraphPlugin = (
   renderElement: renderElementParagraph(options),
   deserialize: deserializeParagraph(options),
   onKeyDown: getOnHotkeyToggleNodeTypeDefault({
-    key: "p",
+    key: 'p',
     defaultOptions: DEFAULTS_PARAGRAPH,
     options,
   }),

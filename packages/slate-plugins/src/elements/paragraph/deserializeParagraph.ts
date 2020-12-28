@@ -1,10 +1,10 @@
 import {
   getElementDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_PARAGRAPH } from "./defaults";
-import { ParagraphDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_PARAGRAPH } from './defaults';
+import { ParagraphDeserializeOptions } from './types';
 
 export const deserializeParagraph = (
   options?: ParagraphDeserializeOptions
@@ -14,7 +14,7 @@ export const deserializeParagraph = (
   return {
     element: getElementDeserializer({
       type: p.type,
-      rules: [{ nodeNames: "P" }],
+      rules: [{ nodeNames: 'P' }],
       ...options?.p?.deserialize,
     }),
   };

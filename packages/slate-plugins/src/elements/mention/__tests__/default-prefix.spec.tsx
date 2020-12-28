@@ -4,9 +4,9 @@ import {
   ELEMENT_MENTION,
   pipe,
   withInlineVoid,
-} from "@udecode/slate-plugins-common";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
 
 const input = (
   <editor>
@@ -20,7 +20,7 @@ const output = (
   <editor>
     <hp>
       <htext />
-      <element type="mention" mentionable={{ value: "Count Duku" }}>
+      <element type="mention" mentionable={{ value: 'Count Duku' }}>
         <htext />
       </element>
       <htext />
@@ -28,7 +28,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should insert mention", () => {
+it('should insert mention', () => {
   const editor = pipe(
     input,
     withReact,
@@ -39,9 +39,9 @@ it("should insert mention", () => {
   );
 
   editor.insertNode({
-    type: "mention",
-    mentionable: { value: "Count Duku" },
-    children: [{ text: "" }],
+    type: 'mention',
+    mentionable: { value: 'Count Duku' },
+    children: [{ text: '' }],
   });
 
   expect(input.children).toEqual(output.children);

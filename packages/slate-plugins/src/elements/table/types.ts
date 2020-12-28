@@ -6,10 +6,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 
 // Data of Element node
 export interface TableNodeData {}
@@ -33,7 +33,7 @@ export interface TableElementProps
   element: TableNode;
 }
 
-export type TableKeyOption = "table" | "th" | "tr" | "td";
+export type TableKeyOption = 'table' | 'th' | 'tr' | 'td';
 
 // Plugin options
 export type TablePluginOptionsValues = RenderNodeOptions &
@@ -52,10 +52,10 @@ export interface TableRenderElementOptions
 
 // deserialize options
 export interface TableDeserializeOptions
-  extends TablePluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends TablePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
-export interface WithTableOptions extends TablePluginOptions<"type"> {}
-export interface TableOptions extends TablePluginOptions<"type"> {}
+export interface WithTableOptions extends TablePluginOptions<'type'> {}
+export interface TableOptions extends TablePluginOptions<'type'> {}
 
 export interface TableElementStyles {
   /**

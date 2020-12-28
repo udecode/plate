@@ -4,10 +4,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { Text } from "slate";
-import { RenderLeafProps } from "slate-react";
-import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
+} from '@udecode/slate-plugins-common';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface ItalicNodeData {}
@@ -16,7 +16,7 @@ export interface ItalicNode extends Text, ItalicNodeData {}
 
 // renderLeaf options given as props
 export interface ItalicRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, "children"> {}
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // Leaf props
 export interface ItalicLeafProps
@@ -26,7 +26,7 @@ export interface ItalicLeafProps
   leaf: ItalicNode;
 }
 
-export type ItalicKeyOption = "italic";
+export type ItalicKeyOption = 'italic';
 
 // Plugin options
 export type ItalicPluginOptionsValues = RenderNodeOptions &
@@ -45,4 +45,4 @@ export interface ItalicRenderLeafOptions
 
 // deserialize options
 export interface ItalicDeserializeOptions
-  extends ItalicPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends ItalicPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

@@ -5,10 +5,10 @@ import {
   isNodeType,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
-} from "@udecode/slate-plugins-common";
-import isHotkey from "is-hotkey";
-import { Editor, Path, Transforms } from "slate";
-import { ExitBreakOnKeyDownOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import isHotkey from 'is-hotkey';
+import { Editor, Path, Transforms } from 'slate';
+import { ExitBreakOnKeyDownOptions } from './types';
 
 /**
  * Check if the selection is at the edge of its parent block.
@@ -53,8 +53,8 @@ export const exitBreakAtEdges = (
 
 export const onKeyDownExitBreak = ({
   rules = [
-    { hotkey: "mod+enter" },
-    { hotkey: "mod+shift+enter", before: true },
+    { hotkey: 'mod+enter' },
+    { hotkey: 'mod+shift+enter', before: true },
   ],
 }: ExitBreakOnKeyDownOptions = {}) => (
   event: KeyboardEvent,
@@ -94,7 +94,7 @@ export const onKeyDownExitBreak = ({
 
         Transforms.insertNodes(
           editor,
-          { type: defaultType, children: [{ text: "" }] },
+          { type: defaultType, children: [{ text: '' }] },
           {
             at: insertPath,
             select: !isStart,

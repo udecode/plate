@@ -1,6 +1,6 @@
-import { getLastChildPath, moveChildren } from "@udecode/slate-plugins-common";
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from "slate";
-import { getListItemSublist } from "../queries/getListItemSublist";
+import { getLastChildPath, moveChildren } from '@udecode/slate-plugins-common';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { getListItemSublist } from '../queries/getListItemSublist';
 
 export interface MergeListItemIntoListOptions {
   /**

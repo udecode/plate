@@ -3,10 +3,10 @@ import {
   getParent,
   isBlockTextEmptyAfterSelection,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { Editor, Path, Range, Transforms } from "slate";
-import { DEFAULTS_LIST } from "../defaults";
-import { ListOptions } from "../types";
+} from '@udecode/slate-plugins-common';
+import { Editor, Path, Range, Transforms } from 'slate';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 
 /**
  * Insert list item if selection in li>p.
@@ -48,7 +48,7 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
         editor,
         {
           type: li.type,
-          children: [{ type: p.type, children: [{ text: "" }] }],
+          children: [{ type: p.type, children: [{ text: '' }] }],
         },
         { at: listItemPath }
       );
@@ -81,7 +81,7 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
         editor,
         {
           type: li.type,
-          children: [{ type: p.type, children: [{ text: "", ...marks }] }],
+          children: [{ type: p.type, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );

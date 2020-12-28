@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getPointFromLocation } from "../../../queries/getPointFromLocation";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getPointFromLocation } from '../../../queries/getPointFromLocation';
 
 const input = ((
   <editor>
@@ -20,6 +20,6 @@ const output = {
   path: [0, 0],
 };
 
-it("should be", () => {
+it('should be', () => {
   expect(getPointFromLocation(input, { focus: true })).toEqual(output);
 });

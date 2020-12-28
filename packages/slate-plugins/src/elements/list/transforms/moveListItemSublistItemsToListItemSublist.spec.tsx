@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { getNodeById } from "@udecode/slate-plugins-common";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Ancestor, Editor, NodeEntry } from "slate";
-import { moveListItemSublistItemsToListItemSublist } from "./moveListItemSublistItemsToListItemSublist";
+import { getNodeById } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Ancestor, Editor, NodeEntry } from 'slate';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
-describe("when there is toListItem sublist", () => {
+describe('when there is toListItem sublist', () => {
   const input = ((
     <editor>
       <hul id="1">
@@ -62,11 +62,11 @@ describe("when there is toListItem sublist", () => {
     </editor>
   ) as any) as Editor;
 
-  it("should", () => {
+  it('should', () => {
     const editor = input;
 
-    const fromListItem = getNodeById(editor, "12") as NodeEntry<Ancestor>;
-    const toListItem = getNodeById(editor, "11") as NodeEntry<Ancestor>;
+    const fromListItem = getNodeById(editor, '12') as NodeEntry<Ancestor>;
+    const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -79,7 +79,7 @@ describe("when there is toListItem sublist", () => {
   });
 });
 
-describe("when there is no list in toListItem", () => {
+describe('when there is no list in toListItem', () => {
   const input = ((
     <editor>
       <hul id="1">
@@ -122,11 +122,11 @@ describe("when there is no list in toListItem", () => {
     </editor>
   ) as any) as Editor;
 
-  it("should", () => {
+  it('should', () => {
     const editor = input;
 
-    const fromListItem = getNodeById(editor, "12") as NodeEntry<Ancestor>;
-    const toListItem = getNodeById(editor, "11") as NodeEntry<Ancestor>;
+    const fromListItem = getNodeById(editor, '12') as NodeEntry<Ancestor>;
+    const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {

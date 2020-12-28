@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { ELEMENT_LINK } from "../../../constants";
-import { withInlineVoid } from "../../../plugins/inline-void/withInlineVoid";
-import { isBlockTextEmptyAfterSelection } from "../../../queries/isBlockTextEmptyAfterSelection";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { ELEMENT_LINK } from '../../../constants';
+import { withInlineVoid } from '../../../plugins/inline-void/withInlineVoid';
+import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
 
 const input = ((
   <editor>
@@ -20,7 +20,7 @@ const input = ((
 
 const output = true;
 
-it("should be", () => {
+it('should be', () => {
   expect(
     isBlockTextEmptyAfterSelection(
       withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)

@@ -4,10 +4,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { Text } from "slate";
-import { RenderLeafProps } from "slate-react";
-import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
+} from '@udecode/slate-plugins-common';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface HighlightNodeData {}
@@ -16,7 +16,7 @@ export interface HighlightNode extends Text, HighlightNodeData {}
 
 // renderLeaf options given as props
 export interface HighlightRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, "children"> {}
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // Leaf props
 export interface HighlightLeafProps
@@ -26,7 +26,7 @@ export interface HighlightLeafProps
   leaf: HighlightNode;
 }
 
-export type HighlightKeyOption = "highlight";
+export type HighlightKeyOption = 'highlight';
 
 // Plugin options
 export type HighlightPluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface HighlightRenderLeafOptions
 
 // deserialize options
 export interface HighlightDeserializeOptions
-  extends HighlightPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends HighlightPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

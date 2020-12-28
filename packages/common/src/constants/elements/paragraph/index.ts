@@ -1,1 +1,1 @@
-export const ELEMENT_PARAGRAPH = "p";
+export const ELEMENT_PARAGRAPH = 'p';

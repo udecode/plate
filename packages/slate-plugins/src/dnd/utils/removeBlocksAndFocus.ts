@@ -1,8 +1,8 @@
-import { EditorNodesOptions, unhangRange } from "@udecode/slate-plugins-common";
-import { Transforms } from "slate";
-import { ReactEditor } from "slate-react";
-import { getBlocks } from "./getBlocks";
-import { getNodesRange } from "./getNodesRange";
+import { EditorNodesOptions, unhangRange } from '@udecode/slate-plugins-common';
+import { Transforms } from 'slate';
+import { ReactEditor } from 'slate-react';
+import { getBlocks } from './getBlocks';
+import { getNodesRange } from './getNodesRange';
 
 /**
  * Remove blocks with an id and focus the editor.

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { ELEMENT_ALIGN_CENTER } from "../../defaults";
-import { upsertAlign } from "../../transforms/upsertAlign";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { ELEMENT_ALIGN_CENTER } from '../../defaults';
+import { upsertAlign } from '../../transforms/upsertAlign';
 
 const input = ((
   <editor>
@@ -22,7 +22,7 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-it("should align center", () => {
+it('should align center', () => {
   upsertAlign(input, { type: ELEMENT_ALIGN_CENTER });
 
   expect(input.children).toEqual(output.children);

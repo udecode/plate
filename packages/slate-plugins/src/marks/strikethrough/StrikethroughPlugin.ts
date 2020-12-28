@@ -1,9 +1,9 @@
-import { getOnHotkeyToggleMarkDefault } from "@udecode/slate-plugins-common";
-import { SlatePlugin } from "@udecode/slate-plugins-core";
-import { DEFAULTS_STRIKETHROUGH } from "./defaults";
-import { deserializeStrikethrough } from "./deserializeStrikethrough";
-import { renderLeafStrikethrough } from "./renderLeafStrikethrough";
-import { StrikethroughPluginOptions } from "./types";
+import { getOnHotkeyToggleMarkDefault } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { DEFAULTS_STRIKETHROUGH } from './defaults';
+import { deserializeStrikethrough } from './deserializeStrikethrough';
+import { renderLeafStrikethrough } from './renderLeafStrikethrough';
+import { StrikethroughPluginOptions } from './types';
 
 /**
  * Enables support for strikethrough formatting.
@@ -14,7 +14,7 @@ export const StrikethroughPlugin = (
   renderLeaf: renderLeafStrikethrough(options),
   deserialize: deserializeStrikethrough(options),
   onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: "strikethrough",
+    key: 'strikethrough',
     defaultOptions: DEFAULTS_STRIKETHROUGH,
     options,
   }),

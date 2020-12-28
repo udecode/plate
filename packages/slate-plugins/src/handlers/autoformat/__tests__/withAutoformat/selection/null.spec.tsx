@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { autoformatRulesFixtures } from "../../../../../__fixtures__/autoformat.fixtures";
-import { withAutoformat } from "../../../withAutoformat";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { autoformatRulesFixtures } from '../../../../../__fixtures__/autoformat.fixtures';
+import { withAutoformat } from '../../../withAutoformat';
 
 const input = (
   <editor>
@@ -17,12 +17,12 @@ const output = (
   </editor>
 ) as any;
 
-it("should run insertText", () => {
+it('should run insertText', () => {
   const editor = withAutoformat({ rules: autoformatRulesFixtures })(
     withReact(input)
   );
 
-  editor.insertText(" ");
+  editor.insertText(' ');
 
   expect(input.children).toEqual(output.children);
 });

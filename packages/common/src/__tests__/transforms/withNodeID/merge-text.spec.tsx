@@ -1,10 +1,10 @@
 /** @jsx jsx */
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor, Transforms } from "slate";
-import { withHistory } from "slate-history";
-import { HistoryEditor } from "slate-history/dist/history-editor";
-import { withNodeID } from "../../../plugins/node-id/index";
-import { idCreatorFixture } from "./fixtures";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor, Transforms } from 'slate';
+import { withHistory } from 'slate-history';
+import { HistoryEditor } from 'slate-history/dist/history-editor';
+import { withNodeID } from '../../../plugins/node-id/index';
+import { idCreatorFixture } from './fixtures';
 
 const input = ((
   <editor>
@@ -24,7 +24,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should recover the ids", () => {
+it('should recover the ids', () => {
   const editor: HistoryEditor = withNodeID({
     idCreator: idCreatorFixture,
     filterText: false,

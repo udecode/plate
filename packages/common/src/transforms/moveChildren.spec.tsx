@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Ancestor, Editor, NodeEntry, Path } from "slate";
-import { getNodeById } from "../queries/getNodeById";
-import { moveChildren } from "./moveChildren";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Ancestor, Editor, NodeEntry, Path } from 'slate';
+import { getNodeById } from '../queries/getNodeById';
+import { moveChildren } from './moveChildren';
 
 const input = ((
   <editor>
@@ -48,9 +48,9 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-it("should be", () => {
-  const [, atPath] = getNodeById(input, "2") as NodeEntry<Ancestor>;
-  const [, toPath] = getNodeById(input, "12") as any;
+it('should be', () => {
+  const [, atPath] = getNodeById(input, '2') as NodeEntry<Ancestor>;
+  const [, toPath] = getNodeById(input, '12') as any;
 
   const moved = moveChildren(input, { at: atPath, to: Path.next(toPath) });
 

@@ -4,10 +4,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { Text } from "slate";
-import { RenderLeafProps } from "slate-react";
-import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
+} from '@udecode/slate-plugins-common';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface KbdNodeData {}
@@ -16,7 +16,7 @@ export interface KbdNode extends Text, KbdNodeData {}
 
 // renderLeaf options given as props
 export interface KbdRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, "children"> {}
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // Leaf props
 export interface KbdLeafProps
@@ -26,7 +26,7 @@ export interface KbdLeafProps
   leaf: KbdNode;
 }
 
-export type KbdKeyOption = "kbd";
+export type KbdKeyOption = 'kbd';
 
 // Plugin options
 export type KbdPluginOptionsValues = RenderNodeOptions &
@@ -45,4 +45,4 @@ export interface KbdRenderLeafOptions
 
 // deserialize options
 export interface KbdDeserializeOptions
-  extends KbdPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends KbdPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

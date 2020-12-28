@@ -43,9 +43,9 @@
 // import 'prismjs/components/prism-typescript';
 // import 'prismjs/components/prism-wasm';
 // import 'prismjs/components/prism-yaml';
-import { ELEMENT_CODE_BLOCK } from "@udecode/slate-plugins-common";
-import { languages, Token, tokenize } from "prismjs";
-import { Node, NodeEntry } from "slate";
+import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-common';
+import { languages, Token, tokenize } from 'prismjs';
+import { Node, NodeEntry } from 'slate';
 
 export const decorateCodeBlock = () => (entry: NodeEntry) => {
   const ranges: any = [];
@@ -54,7 +54,7 @@ export const decorateCodeBlock = () => (entry: NodeEntry) => {
   if (node.type === ELEMENT_CODE_BLOCK) {
     const text = Node.string(node);
     // const langName: any = parent.lang || 'markup';
-    const langName: any = "javascript";
+    const langName: any = 'javascript';
     const lang = languages[langName];
 
     // if (lang) {
@@ -62,7 +62,7 @@ export const decorateCodeBlock = () => (entry: NodeEntry) => {
     let offset = 0;
 
     for (const element of tokens) {
-      if (typeof element === "string") {
+      if (typeof element === 'string') {
         offset += element.length;
       } else {
         const token: Token = element;

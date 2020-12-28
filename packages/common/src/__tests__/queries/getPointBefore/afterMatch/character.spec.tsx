@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getPointBefore } from "../../../../queries/getPointBefore";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getPointBefore } from '../../../../queries/getPointBefore';
 
 const input = ((
   <editor>
@@ -15,10 +15,10 @@ const input = ((
 
 const output = { offset: 5, path: [0, 0] };
 
-it("should be", () => {
+it('should be', () => {
   expect(
     getPointBefore(input, input.selection as any, {
-      matchString: " ",
+      matchString: ' ',
       afterMatch: true,
       skipInvalid: true,
     })

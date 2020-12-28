@@ -7,14 +7,14 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 import {
   StyledComponentStyleProps,
   StyledComponentStyles,
-} from "../../components/StyledComponent/StyledComponent.types";
+} from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface LinkNodeData {
@@ -43,7 +43,7 @@ export interface LinkElementProps
   element: LinkNode;
 }
 
-export type LinkKeyOption = "link";
+export type LinkKeyOption = 'link';
 
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
@@ -64,21 +64,21 @@ export type LinkPluginOptions<
 export type LinkRenderElementOptionsKeys = LinkPluginOptionsKeys;
 export interface LinkRenderElementOptions
   extends LinkPluginOptions<
-    "type" | "component" | "rootProps" | "nodeToProps"
+    'type' | 'component' | 'rootProps' | 'nodeToProps'
   > {}
 
 // deserialize options
 export interface LinkDeserializeOptions
-  extends LinkPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends LinkPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
-export interface WithLinkOptions extends LinkPluginOptions<"type" | "isUrl"> {
+export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
   /**
    * Allow custom config for rangeBeforeOptions.
    */
   rangeBeforeOptions?: RangeBeforeOptions;
 }
 
-export interface LinkOptions extends LinkPluginOptions<"type"> {}
+export interface LinkOptions extends LinkPluginOptions<'type'> {}
 
 export interface LinkElementStyles {
   /**

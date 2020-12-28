@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { selectEndOfBlockAboveSelection } from "../../../transforms/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { selectEndOfBlockAboveSelection } from '../../../transforms/index';
 
 const input = ((
   <editor>
@@ -14,7 +14,7 @@ const input = ((
   </editor>
 ) as any) as Editor;
 
-it("should be", () => {
+it('should be', () => {
   selectEndOfBlockAboveSelection(input);
   expect(input.selection?.anchor).toEqual({
     offset: 4,

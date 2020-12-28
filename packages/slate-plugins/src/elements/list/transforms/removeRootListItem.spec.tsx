@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { getNodeById } from "@udecode/slate-plugins-common";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Ancestor, Editor, NodeEntry } from "slate";
-import { removeRootListItem } from "./removeRootListItem";
+import { getNodeById } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Ancestor, Editor, NodeEntry } from 'slate';
+import { removeRootListItem } from './removeRootListItem';
 
 const input = ((
   <editor>
@@ -80,11 +80,11 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-it("should", () => {
+it('should', () => {
   const editor = input;
 
-  const list = getNodeById(editor, "1") as NodeEntry<Ancestor>;
-  const listItem = getNodeById(editor, "13") as NodeEntry<Ancestor>;
+  const list = getNodeById(editor, '1') as NodeEntry<Ancestor>;
+  const listItem = getNodeById(editor, '13') as NodeEntry<Ancestor>;
 
   if (list && listItem) {
     removeRootListItem(editor, { list, listItem });

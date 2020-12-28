@@ -1,7 +1,7 @@
-import { getParent, setDefaults } from "@udecode/slate-plugins-common";
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from "slate";
-import { DEFAULTS_LIST } from "../defaults";
-import { ListOptions } from "../types";
+import { getParent, setDefaults } from '@udecode/slate-plugins-common';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 
 export interface MoveListItemUpOptions {
   list: NodeEntry<Ancestor>;

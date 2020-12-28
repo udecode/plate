@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { ParagraphPlugin } from "../../../../elements/paragraph/index";
-import { deserializeHTMLToElement } from "../../utils/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { ParagraphPlugin } from '../../../../elements/paragraph/index';
+import { deserializeHTMLToElement } from '../../utils/index';
 
 const input = {
-  plugins: [ParagraphPlugin({ p: { type: "p" } })],
-  element: document.createElement("p"),
-  children: [{ text: "test" }],
+  plugins: [ParagraphPlugin({ p: { type: 'p' } })],
+  element: document.createElement('p'),
+  children: [{ text: 'test' }],
 };
 
 const output = (
@@ -16,6 +16,6 @@ const output = (
   </hp>
 );
 
-it("should be", () => {
+it('should be', () => {
   expect(deserializeHTMLToElement(input)).toEqual(output);
 });

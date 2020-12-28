@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { ELEMENT_IMAGE, withImageUpload } from "../../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { ELEMENT_IMAGE, withImageUpload } from '../../../index';
 
 const input = (
   <editor>
@@ -19,11 +19,11 @@ const output = (
   </editor>
 ) as any;
 
-it("should insert image from the text", () => {
+it('should insert image from the text', () => {
   const editor = withImageUpload()(withReact(input));
 
   const data = {
-    getData: () => "https://i.imgur.com/removed.png",
+    getData: () => 'https://i.imgur.com/removed.png',
   };
   editor.insertData(data as any);
 

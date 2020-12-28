@@ -2,9 +2,9 @@ import {
   getLastChildPath,
   getParent,
   moveChildren,
-} from "@udecode/slate-plugins-common";
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from "slate";
-import { getListItemSublist } from "../queries/getListItemSublist";
+} from '@udecode/slate-plugins-common';
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { getListItemSublist } from '../queries/getListItemSublist';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**

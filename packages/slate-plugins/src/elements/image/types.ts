@@ -6,10 +6,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 
 // Data of Element node
 export interface ImageNodeData {
@@ -35,7 +35,7 @@ export interface ImageElementProps
   element: ImageNode;
 }
 
-export type ImageKeyOption = "img";
+export type ImageKeyOption = 'img';
 
 // Plugin options
 export type ImagePluginOptionsValues = RenderNodeOptions &
@@ -54,7 +54,7 @@ export interface ImageRenderElementOptions
 
 // deserialize options
 export interface ImageDeserializeOptions
-  extends ImagePluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends ImagePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
 export interface ImageElementStyles {
   /**

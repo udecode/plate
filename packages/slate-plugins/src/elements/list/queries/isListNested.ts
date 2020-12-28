@@ -1,7 +1,7 @@
-import { setDefaults } from "@udecode/slate-plugins-common";
-import { Editor, Path } from "slate";
-import { DEFAULTS_LIST } from "../defaults";
-import { ListOptions } from "../types";
+import { setDefaults } from '@udecode/slate-plugins-common';
+import { Editor, Path } from 'slate';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 
 /**
  * Is the list nested, i.e. its parent is a list item.

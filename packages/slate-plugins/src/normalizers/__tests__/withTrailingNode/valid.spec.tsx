@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { ELEMENT_PARAGRAPH } from "../../../elements/paragraph/index";
-import { withTrailingNode } from "../../withTrailingNode";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
+import { withTrailingNode } from '../../withTrailingNode';
 
 const input = (
   <editor>
@@ -27,7 +27,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   const editor = withTrailingNode({
     type: ELEMENT_PARAGRAPH,
     level: 1,

@@ -1,10 +1,10 @@
 import {
   getLeafDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_SUBSUPSCRIPT } from "../defaults";
-import { SubscriptDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_SUBSUPSCRIPT } from '../defaults';
+import { SubscriptDeserializeOptions } from './types';
 
 export const deserializeSubscript = (
   options?: SubscriptDeserializeOptions
@@ -15,10 +15,10 @@ export const deserializeSubscript = (
     leaf: getLeafDeserializer({
       type: subscript.type,
       rules: [
-        { nodeNames: ["SUB"] },
+        { nodeNames: ['SUB'] },
         {
           style: {
-            verticalAlign: "sub",
+            verticalAlign: 'sub',
           },
         },
       ],

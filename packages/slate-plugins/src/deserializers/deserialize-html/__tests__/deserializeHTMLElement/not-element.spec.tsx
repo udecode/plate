@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from "@udecode/slate-plugins-core/src";
-import { getHtmlDocument, jsx } from "@udecode/slate-plugins-test-utils";
-import { deserializeHTMLElement } from "../../../index";
+import { SlatePlugin } from '@udecode/slate-plugins-core/src';
+import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { deserializeHTMLElement } from '../../../index';
 
 const html = `<html><body>test<!-- You will not be able to see this text. --></body></html>`;
 const input1: SlatePlugin[] = [];
@@ -14,7 +14,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should not have the comment node", () => {
+it('should not have the comment node', () => {
   expect(
     deserializeHTMLElement({
       plugins: input1,

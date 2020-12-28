@@ -1,7 +1,7 @@
-import { isCollapsed, setDefaults } from "@udecode/slate-plugins-common";
-import { Editor, Node, Point, Transforms } from "slate";
-import { DEFAULTS_TABLE } from "./defaults";
-import { WithTableOptions } from "./types";
+import { isCollapsed, setDefaults } from '@udecode/slate-plugins-common';
+import { Editor, Node, Point, Transforms } from 'slate';
+import { DEFAULTS_TABLE } from './defaults';
+import { WithTableOptions } from './types';
 
 export const withTable = (options?: WithTableOptions) => <T extends Editor>(
   editor: T
@@ -78,7 +78,7 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
     if (!isCollapsed(selection)) {
       const [cell] = Editor.nodes(editor, { match: matchCells });
       if (cell) {
-        Transforms.collapse(editor, { edge: "end" });
+        Transforms.collapse(editor, { edge: 'end' });
         insertText(text);
         return;
       }

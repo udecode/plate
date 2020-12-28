@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getRangeBefore } from "../../../queries/getRangeBefore";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getRangeBefore } from '../../../queries/getRangeBefore';
 
 const input = ((
   <editor>
@@ -24,6 +24,6 @@ const output = {
   },
 };
 
-it("should be", () => {
+it('should be', () => {
   expect(getRangeBefore(input, input.selection as any)).toEqual(output);
 });

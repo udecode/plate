@@ -4,10 +4,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { Text } from "slate";
-import { RenderLeafProps } from "slate-react";
-import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
+} from '@udecode/slate-plugins-common';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface BoldNodeData {}
@@ -16,7 +16,7 @@ export interface BoldNode extends Text, BoldNodeData {}
 
 // renderLeaf options given as props
 export interface BoldRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, "children"> {}
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // Leaf props
 export interface BoldLeafProps
@@ -26,7 +26,7 @@ export interface BoldLeafProps
   leaf: BoldNode;
 }
 
-export type BoldKeyOption = "bold";
+export type BoldKeyOption = 'bold';
 
 // Plugin options
 export type BoldPluginOptionsValues = RenderNodeOptions &
@@ -45,4 +45,4 @@ export interface BoldRenderLeafOptions
 
 // deserialize options
 export interface BoldDeserializeOptions
-  extends BoldPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends BoldPluginOptions<'type' | 'rootProps' | 'deserialize'> {}

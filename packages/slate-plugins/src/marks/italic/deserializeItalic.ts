@@ -1,10 +1,10 @@
 import {
   getLeafDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_ITALIC } from "./defaults";
-import { ItalicDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_ITALIC } from './defaults';
+import { ItalicDeserializeOptions } from './types';
 
 export const deserializeItalic = (
   options?: ItalicDeserializeOptions
@@ -15,10 +15,10 @@ export const deserializeItalic = (
     leaf: getLeafDeserializer({
       type: italic.type,
       rules: [
-        { nodeNames: ["EM", "I"] },
+        { nodeNames: ['EM', 'I'] },
         {
           style: {
-            fontStyle: "italic",
+            fontStyle: 'italic',
           },
         },
       ],

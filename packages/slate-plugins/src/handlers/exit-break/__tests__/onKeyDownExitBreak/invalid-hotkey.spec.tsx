@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { onKeyDownExitBreak } from "../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { onKeyDownExitBreak } from '../../index';
 
 const input = (
   <editor>
@@ -12,7 +12,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent("keydown");
+const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
@@ -23,7 +23,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   onKeyDownExitBreak()(event, input);
   expect(input.children).toEqual(output.children);
 });

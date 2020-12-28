@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { ELEMENT_LINK, withInlineVoid } from "@udecode/slate-plugins-common";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { withLink } from "../../../withLink";
+import { ELEMENT_LINK, withInlineVoid } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>
@@ -14,7 +14,7 @@ const input = (
   </editor>
 ) as any;
 
-const text = " ";
+const text = ' ';
 
 const output = (
   <editor>
@@ -22,13 +22,13 @@ const output = (
       <htext />
       <element type="a" url="http://google.com">
         http://google.com
-      </element>{" "}
+      </element>{' '}
     </hp>
   </editor>
 ) as any;
 
-describe("when inserting a space after a url text (without link element) placed at the start of a block", () => {
-  it("should wrap the url with a link element", () => {
+describe('when inserting a space after a url text (without link element) placed at the start of a block', () => {
+  it('should wrap the url with a link element', () => {
     const editor = withLink()(
       withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
     );

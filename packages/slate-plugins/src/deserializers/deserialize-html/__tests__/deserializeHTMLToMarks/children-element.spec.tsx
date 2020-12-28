@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { ParagraphPlugin } from "../../../../elements/paragraph/index";
-import { BoldPlugin } from "../../../../marks/bold/index";
-import { ItalicPlugin } from "../../../../marks/italic/index";
-import { deserializeHTMLToMarks } from "../../utils/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { ParagraphPlugin } from '../../../../elements/paragraph/index';
+import { BoldPlugin } from '../../../../marks/bold/index';
+import { ItalicPlugin } from '../../../../marks/italic/index';
+import { deserializeHTMLToMarks } from '../../utils/index';
 
 const input = {
   plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],
-  element: document.createElement("strong"),
+  element: document.createElement('strong'),
   children: [
     <hli>
       <hp>test</hp>test
@@ -28,6 +28,6 @@ const output = (
   </fragment>
 );
 
-it("should be", () => {
+it('should be', () => {
   expect(deserializeHTMLToMarks(input as any)).toEqual(output);
 });

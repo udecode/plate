@@ -1,7 +1,7 @@
 /** @jsx jsx */
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { MentionNodeData } from "../../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { MentionNodeData } from '../../../index';
 
 export const editorWithMentionable = ((
   <editor>
@@ -13,7 +13,7 @@ export const editorWithMentionable = ((
 ) as any) as Editor;
 
 export const mentionables: MentionNodeData[] = [
-  { value: "t2" },
-  { value: "t22" },
-  { value: "t222" },
+  { value: 't2' },
+  { value: 't22' },
+  { value: 't222' },
 ];

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { mergeDeepToNodes } from "../../../transforms/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { mergeDeepToNodes } from '../../../transforms/index';
 
 const editor = ((
   <editor>
@@ -20,7 +20,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should do nothing", () => {
+it('should do nothing', () => {
   mergeDeepToNodes({ node: editor, source: props });
   expect(editor.a).toBe(1);
   expect(editor.children).toEqual(output.children);

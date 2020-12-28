@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { MARK_BOLD, MARK_ITALIC } from "../../../constants";
-import { toggleMark } from "../../../transforms/toggleMark";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { MARK_BOLD, MARK_ITALIC } from '../../../constants';
+import { toggleMark } from '../../../transforms/toggleMark';
 
 const input = (
   <editor>
@@ -25,7 +25,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   toggleMark(input, MARK_ITALIC, MARK_BOLD);
   expect(input.children).toEqual(output.children);
 });

@@ -1,9 +1,9 @@
-import { setDefaults } from "@udecode/slate-plugins-common";
-import { SlatePlugin } from "@udecode/slate-plugins-core";
-import { DEFAULTS_IMAGE } from "./defaults";
-import { deserializeImage } from "./deserializeImage";
-import { renderElementImage } from "./renderElementImage";
-import { ImagePluginOptions } from "./types";
+import { setDefaults } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { DEFAULTS_IMAGE } from './defaults';
+import { deserializeImage } from './deserializeImage';
+import { renderElementImage } from './renderElementImage';
+import { ImagePluginOptions } from './types';
 
 /**
  * Enables support for images.

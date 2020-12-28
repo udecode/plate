@@ -1,5 +1,5 @@
-import { Editor } from "slate";
-import { getNodesById } from "../..";
+import { Editor } from 'slate';
+import { getNodesById } from '../..';
 
 /**
  * @temp This is copied from  "packages/slate-plugins/src/dnd/utils/getBlockPathById.ts"

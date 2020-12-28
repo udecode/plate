@@ -5,14 +5,14 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 import {
   StyledComponentStyleProps,
   StyledComponentStyles,
-} from "../../components/StyledComponent/StyledComponent.types";
+} from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface TodoListNodeData {
@@ -41,7 +41,7 @@ export interface TodoListElementProps
   element: TodoListNode;
 }
 
-export type TodoListKeyOption = "todo_li";
+export type TodoListKeyOption = 'todo_li';
 
 // Plugin options
 export type TodoListPluginOptionsValues = RenderNodeOptions &
@@ -61,9 +61,9 @@ export interface TodoListRenderElementOptions
 
 // deserialize options
 export interface TodoListDeserializeOptions
-  extends TodoListPluginOptions<"type" | "rootProps"> {}
+  extends TodoListPluginOptions<'type' | 'rootProps'> {}
 
-export interface WithTodoListOptions extends TodoListPluginOptions<"type"> {}
+export interface WithTodoListOptions extends TodoListPluginOptions<'type'> {}
 
 export interface TodoListElementStyles {
   /**

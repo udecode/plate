@@ -1,10 +1,10 @@
 import {
   getNodeDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_MEDIA_EMBED } from "./defaults";
-import { MediaEmbedDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_MEDIA_EMBED } from './defaults';
+import { MediaEmbedDeserializeOptions } from './types';
 
 export const deserializeIframe = (
   options?: MediaEmbedDeserializeOptions
@@ -15,9 +15,9 @@ export const deserializeIframe = (
     element: getNodeDeserializer({
       type: media_embed.type,
       node: (el: HTMLElement) => {
-        let url = el.getAttribute("src");
+        let url = el.getAttribute('src');
         if (url) {
-          [url] = url.split("?");
+          [url] = url.split('?');
 
           return {
             type: media_embed.type,
@@ -26,7 +26,7 @@ export const deserializeIframe = (
         }
       },
       rules: [
-        { nodeNames: "IFRAME" },
+        { nodeNames: 'IFRAME' },
         { className: media_embed.rootProps.className },
       ],
       ...options?.media_embed?.deserialize,

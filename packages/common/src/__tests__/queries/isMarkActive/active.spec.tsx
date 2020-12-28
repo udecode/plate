@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { MARK_BOLD } from "../../../constants";
-import { isMarkActive } from "../../../queries/isMarkActive";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { MARK_BOLD } from '../../../constants';
+import { isMarkActive } from '../../../queries/isMarkActive';
 
 const input = (
   <editor>
@@ -14,6 +14,6 @@ const input = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   expect(isMarkActive(input, MARK_BOLD)).toEqual(true);
 });

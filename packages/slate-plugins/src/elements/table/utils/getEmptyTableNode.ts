@@ -1,7 +1,7 @@
-import { setDefaults } from "@udecode/slate-plugins-common";
-import { DEFAULTS_TABLE } from "../defaults";
-import { TableOptions } from "../types";
-import { getEmptyRowNode } from "./getEmptyRowNode";
+import { setDefaults } from '@udecode/slate-plugins-common';
+import { DEFAULTS_TABLE } from '../defaults';
+import { TableOptions } from '../types';
+import { getEmptyRowNode } from './getEmptyRowNode';
 
 export const getEmptyTableNode = (options?: TableOptions) => {
   const { table } = setDefaults(options, DEFAULTS_TABLE);

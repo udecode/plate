@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getRangeFromBlockStart } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getRangeFromBlockStart } from '../../../queries/index';
 
 const input = ((
   <editor>
@@ -12,6 +12,6 @@ const input = ((
 
 const output = undefined;
 
-it("should be", () => {
+it('should be', () => {
   expect(getRangeFromBlockStart(input)).toEqual(output);
 });

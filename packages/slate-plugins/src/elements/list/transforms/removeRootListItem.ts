@@ -1,9 +1,9 @@
-import { getPreviousPath, isExpanded } from "@udecode/slate-plugins-common";
-import { Ancestor, Editor, NodeEntry, Transforms } from "slate";
-import { hasListInListItem } from "../queries/hasListInListItem";
-import { ListOptions } from "../types";
-import { moveListItemSublistItemsToList } from "./moveListItemSublistItemsToList";
-import { moveListItemSublistItemsToListItemSublist } from "./moveListItemSublistItemsToListItemSublist";
+import { getPreviousPath, isExpanded } from '@udecode/slate-plugins-common';
+import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
+import { hasListInListItem } from '../queries/hasListInListItem';
+import { ListOptions } from '../types';
+import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
   list: NodeEntry<Ancestor>;

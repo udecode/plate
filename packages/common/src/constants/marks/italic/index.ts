@@ -1,1 +1,1 @@
-export const MARK_ITALIC = "italic";
+export const MARK_ITALIC = 'italic';

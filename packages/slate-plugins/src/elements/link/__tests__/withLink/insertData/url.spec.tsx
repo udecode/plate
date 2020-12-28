@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { ELEMENT_LINK, withInlineVoid } from "@udecode/slate-plugins-common";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { withLink } from "../../../withLink";
+import { ELEMENT_LINK, withInlineVoid } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>
@@ -14,7 +14,7 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => "http://google.com" };
+const data = { getData: () => 'http://google.com' };
 
 const output = (
   <editor>
@@ -28,7 +28,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should run default insertText", () => {
+it('should run default insertText', () => {
   const editor = withLink()(
     withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
   );

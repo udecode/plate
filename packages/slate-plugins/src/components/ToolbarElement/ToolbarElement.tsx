@@ -1,12 +1,12 @@
+import * as React from 'react';
 import {
   getPreventDefaultHandler,
   isNodeTypeIn,
   toggleNodeType,
-} from "@udecode/slate-plugins-common";
-import * as React from "react";
-import { useSlate } from "slate-react";
-import { ToolbarButton } from "../ToolbarButton/index";
-import { ToolbarElementProps } from "./ToolbarElement.types";
+} from '@udecode/slate-plugins-common';
+import { useSlate } from 'slate-react';
+import { ToolbarButton } from '../ToolbarButton/index';
+import { ToolbarElementProps } from './ToolbarElement.types';
 
 /**
  * Toolbar button to toggle the type of elements in selection.

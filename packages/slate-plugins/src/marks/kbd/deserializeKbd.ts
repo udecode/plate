@@ -1,10 +1,10 @@
 import {
   getLeafDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_KBD } from "./defaults";
-import { KbdDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_KBD } from './defaults';
+import { KbdDeserializeOptions } from './types';
 
 export const deserializeKbd = (
   options?: KbdDeserializeOptions
@@ -15,10 +15,10 @@ export const deserializeKbd = (
     leaf: getLeafDeserializer({
       type: kbd.type,
       rules: [
-        { nodeNames: ["KBD"] },
+        { nodeNames: ['KBD'] },
         {
           style: {
-            wordWrap: "break-word",
+            wordWrap: 'break-word',
           },
         },
       ],

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { withLink } from "../../../withLink";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { withLink } from '../../../withLink';
 
 const input = (
   <editor>
@@ -13,7 +13,7 @@ const input = (
   </editor>
 ) as any;
 
-const text = "test";
+const text = 'test';
 
 const output = (
   <editor>
@@ -21,8 +21,8 @@ const output = (
   </editor>
 ) as any;
 
-describe("when inserting a character that is not a space", () => {
-  it("should run default insertText", () => {
+describe('when inserting a character that is not a space', () => {
+  it('should run default insertText', () => {
     const editor = withLink()(withReact(input));
 
     editor.insertText(text);

@@ -1,1 +1,1 @@
-export * from "./utils/getBlockPathById";
+export * from './utils/getBlockPathById';

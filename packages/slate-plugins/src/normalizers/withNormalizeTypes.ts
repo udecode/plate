@@ -1,5 +1,5 @@
-import { ErrorHandler, getNode } from "@udecode/slate-plugins-common";
-import { Editor, Path, Transforms } from "slate";
+import { ErrorHandler, getNode } from '@udecode/slate-plugins-common';
+import { Editor, Path, Transforms } from 'slate';
 
 interface Rule {
   /**
@@ -50,7 +50,7 @@ export const withNormalizeTypes = ({ rules, onError }: WithNormalizeTypes) => <
               editor,
               {
                 type: strictType ?? type,
-                children: [{ text: "" }],
+                children: [{ text: '' }],
               },
               { at: path }
             );

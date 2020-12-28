@@ -1,9 +1,9 @@
-import { setDefaults } from "@udecode/slate-plugins-common";
-import { SlatePlugin } from "@udecode/slate-plugins-core";
-import { DEFAULTS_MENTION } from "./defaults";
-import { deserializeMention } from "./deserializeMention";
-import { renderElementMention } from "./renderElementMention";
-import { MentionPluginOptions } from "./types";
+import { setDefaults } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { DEFAULTS_MENTION } from './defaults';
+import { deserializeMention } from './deserializeMention';
+import { renderElementMention } from './renderElementMention';
+import { MentionPluginOptions } from './types';
 
 /**
  * Enables support for autocompleting @mentions and #tags.

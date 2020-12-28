@@ -6,10 +6,10 @@ import {
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import markdown from "remark-parse";
-import slate from "remark-slate";
-import unified from "unified";
+} from '@udecode/slate-plugins-common';
+import markdown from 'remark-parse';
+import slate from 'remark-slate';
+import unified from 'unified';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -17,7 +17,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from "../../../elements/heading/defaults";
+} from '../../../elements/heading/defaults';
 
 export const parseMD = (options?: Record<string, any>) => (content: string) => {
   const {

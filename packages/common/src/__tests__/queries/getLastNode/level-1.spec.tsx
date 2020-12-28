@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { getLastNode } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { getLastNode } from '../../../queries/index';
 
 const input = (
   <editor>
@@ -16,6 +16,6 @@ const input = (
 
 const output = <hp>test2</hp>;
 
-it("should be", () => {
+it('should be', () => {
   expect(getLastNode(input, 1)).toEqual([output, [1, 0]]);
 });

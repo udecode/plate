@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from "@udecode/slate-plugins-core/src";
-import { getHtmlDocument, jsx } from "@udecode/slate-plugins-test-utils";
-import { deserializeHTMLElement } from "../../../index";
+import { SlatePlugin } from '@udecode/slate-plugins-core/src';
+import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { deserializeHTMLElement } from '../../../index';
 
 const html = `<html><body><h1>test</h1></body></html>`;
 const input1: SlatePlugin[] = [];
@@ -14,7 +14,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should not deserialize the tags without plugins", () => {
+it('should not deserialize the tags without plugins', () => {
   expect(
     deserializeHTMLElement({
       plugins: input1,

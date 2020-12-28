@@ -1,15 +1,15 @@
-import { getPreventDefaultHandler } from "@udecode/slate-plugins-common";
-import { classNamesFunction, styled } from "@uifabric/utilities";
-import * as React from "react";
-import { useEffect, useRef } from "react";
-import { ReactEditor, useSlate } from "slate-react";
-import { PortalBody } from "../../../components/PortalBody";
-import { getMentionSelectStyles } from "./MentionSelect.styles";
+import * as React from 'react';
+import { useEffect, useRef } from 'react';
+import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
+import { classNamesFunction, styled } from '@uifabric/utilities';
+import { ReactEditor, useSlate } from 'slate-react';
+import { PortalBody } from '../../../components/PortalBody';
+import { getMentionSelectStyles } from './MentionSelect.styles';
 import {
   MentionSelectProps,
   MentionSelectStyleProps,
   MentionSelectStyles,
-} from "./MentionSelect.types";
+} from './MentionSelect.types';
 
 const getClassNames = classNamesFunction<
   MentionSelectStyleProps,
@@ -78,5 +78,5 @@ export const MentionSelect = styled<
   MentionSelectStyleProps,
   MentionSelectStyles
 >(MentionSelectBase, getMentionSelectStyles, undefined, {
-  scope: "MentionSelect",
+  scope: 'MentionSelect',
 });

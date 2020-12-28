@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { isCollapsed } from "../../../queries/isCollapsed";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { isCollapsed } from '../../../queries/isCollapsed';
 
 const input = ((
   <editor>
@@ -15,6 +15,6 @@ const input = ((
 
 const output = true;
 
-it("should be", () => {
+it('should be', () => {
   expect(isCollapsed(input.selection)).toBe(output);
 });

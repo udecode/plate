@@ -1,10 +1,10 @@
 import {
   getNodeDeserializer,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { DeserializeHtml } from "@udecode/slate-plugins-core";
-import { DEFAULTS_IMAGE } from "./defaults";
-import { ImageDeserializeOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import { DeserializeHtml } from '@udecode/slate-plugins-core';
+import { DEFAULTS_IMAGE } from './defaults';
+import { ImageDeserializeOptions } from './types';
 
 export const deserializeImage = (
   options?: ImageDeserializeOptions
@@ -16,9 +16,9 @@ export const deserializeImage = (
       type: img.type,
       node: (el) => ({
         type: img.type,
-        url: el.getAttribute("src"),
+        url: el.getAttribute('src'),
       }),
-      rules: [{ nodeNames: "IMG" }],
+      rules: [{ nodeNames: 'IMG' }],
       ...options?.img?.deserialize,
     }),
   };

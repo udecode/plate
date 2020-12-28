@@ -1,16 +1,16 @@
-import { GetOnHotkeyToggleMarkOptions } from "@udecode/slate-plugins-common";
-import { StyledLeaf } from "../../components/StyledComponent/StyledLeaf";
+import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
+import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import {
   SubscriptKeyOption,
   SubscriptPluginOptionsValues,
-} from "./subscript/types";
+} from './subscript/types';
 import {
   SuperscriptKeyOption,
   SuperscriptPluginOptionsValues,
-} from "./superscript/types";
+} from './superscript/types';
 
-export const MARK_SUPERSCRIPT = "superscript";
-export const MARK_SUBSCRIPT = "subscript";
+export const MARK_SUPERSCRIPT = 'superscript';
+export const MARK_SUBSCRIPT = 'subscript';
 
 export const DEFAULTS_SUBSUPSCRIPT: Record<
   SubscriptKeyOption | SuperscriptKeyOption,
@@ -21,21 +21,21 @@ export const DEFAULTS_SUBSUPSCRIPT: Record<
   subscript: {
     component: StyledLeaf,
     type: MARK_SUBSCRIPT,
-    hotkey: "mod+,",
+    hotkey: 'mod+,',
     clear: MARK_SUPERSCRIPT,
     rootProps: {
       className: `slate-subscript`,
-      as: "sub",
+      as: 'sub',
     },
   },
   superscript: {
     component: StyledLeaf,
     type: MARK_SUPERSCRIPT,
-    hotkey: "mod+.",
+    hotkey: 'mod+.',
     clear: MARK_SUBSCRIPT,
     rootProps: {
       className: `slate-superscript`,
-      as: "sup",
+      as: 'sup',
     },
   },
 };

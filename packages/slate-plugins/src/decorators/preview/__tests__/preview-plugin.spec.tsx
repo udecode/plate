@@ -1,14 +1,14 @@
-import { render } from "@testing-library/react";
-import { pipe } from "@udecode/slate-plugins-common";
-import { EditablePlugins } from "@udecode/slate-plugins-core";
-import React, { useMemo, useState } from "react";
-import { createEditor, Node } from "slate";
-import { withHistory } from "slate-history";
-import { Slate, withReact } from "slate-react";
-import { initialValuePreview } from "../../../../../../stories/config/initialValues";
-import { HeadingPlugin } from "../../../elements/heading/HeadingPlugin";
-import { ParagraphPlugin } from "../../../elements/paragraph/ParagraphPlugin";
-import { PreviewPlugin } from "../PreviewPlugin";
+import React, { useMemo, useState } from 'react';
+import { render } from '@testing-library/react';
+import { pipe } from '@udecode/slate-plugins-common';
+import { EditablePlugins } from '@udecode/slate-plugins-core';
+import { createEditor, Node } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
+import { initialValuePreview } from '../../../../../../stories/config/initialValues';
+import { HeadingPlugin } from '../../../elements/heading/HeadingPlugin';
+import { ParagraphPlugin } from '../../../elements/paragraph/ParagraphPlugin';
+import { PreviewPlugin } from '../PreviewPlugin';
 
 const Editor = () => {
   const [value, setValue] = useState<Node[]>(initialValuePreview);
@@ -35,8 +35,8 @@ const Editor = () => {
   );
 };
 
-it("should render", () => {
+it('should render', () => {
   const { getAllByTestId } = render(<Editor />);
 
-  expect(getAllByTestId("EditablePlugins").length).toBeGreaterThan(0);
+  expect(getAllByTestId('EditablePlugins').length).toBeGreaterThan(0);
 });

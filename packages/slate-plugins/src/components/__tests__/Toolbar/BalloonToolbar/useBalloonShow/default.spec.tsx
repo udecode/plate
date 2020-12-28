@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { renderHook } from "@testing-library/react-hooks";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { useBalloonShow } from "../../../../Toolbar/BalloonToolbar/useBalloonShow";
+import { renderHook } from '@testing-library/react-hooks';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { useBalloonShow } from '../../../../Toolbar/BalloonToolbar/useBalloonShow';
 
 const input1 = ((
   <editor>
@@ -24,12 +24,12 @@ const input2 = ((
   </editor>
 ) as any) as Editor;
 
-describe("when without selecting, then selecting, then deselecting, then again without ref", () => {
-  it("should be", () => {
+describe('when without selecting, then selecting, then deselecting, then again without ref', () => {
+  it('should be', () => {
     let editor = input1;
 
     let ref: any = {
-      current: document.createElement("div"),
+      current: document.createElement('div'),
     };
 
     const { result, rerender } = renderHook(() =>

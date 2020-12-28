@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { ELEMENT_LI, ELEMENT_PARAGRAPH } from "../../../constants";
-import { isDescendant } from "../../../queries/isDescendant";
-import { mergeDeepToNodes } from "../../../transforms/mergeDeepToNodes";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { ELEMENT_LI, ELEMENT_PARAGRAPH } from '../../../constants';
+import { isDescendant } from '../../../queries/isDescendant';
+import { mergeDeepToNodes } from '../../../transforms/mergeDeepToNodes';
 
 const node = (
   <hli>
@@ -24,7 +24,7 @@ const output = (
   </element>
 ) as any;
 
-it("should set props to all descendants", () => {
+it('should set props to all descendants', () => {
   mergeDeepToNodes({
     node,
     source: props,

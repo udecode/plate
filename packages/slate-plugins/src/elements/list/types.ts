@@ -6,18 +6,18 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { RenderElementProps } from "slate-react";
+} from '@udecode/slate-plugins-common';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { RenderElementProps } from 'slate-react';
 import {
   StyledComponentStyleProps,
   StyledComponentStyles,
-} from "../../components/StyledComponent/StyledComponent.types";
+} from '../../components/StyledComponent/StyledComponent.types';
 
 export const ListHotkey = {
-  TAB: "Tab",
-  ENTER: "Enter",
-  DELETE_BACKWARD: "Backspace",
+  TAB: 'Tab',
+  ENTER: 'Enter',
+  DELETE_BACKWARD: 'Backspace',
 };
 
 // Data of Element node
@@ -45,7 +45,7 @@ export interface ListElementProps
   element: ListNode;
 }
 
-export type ListKeyOption = "ul" | "ol" | "li" | "p";
+export type ListKeyOption = 'ul' | 'ol' | 'li' | 'p';
 
 // Plugin options
 export type ListPluginOptionsValues = RenderNodeOptions &
@@ -64,7 +64,7 @@ export interface ListRenderElementOptions
 
 // deserialize options
 export interface ListDeserializeOptions
-  extends ListPluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends ListPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
-export interface ListOnKeyDownOptions extends ListPluginOptions<"type"> {}
-export interface ListOptions extends ListPluginOptions<"type"> {}
+export interface ListOnKeyDownOptions extends ListPluginOptions<'type'> {}
+export interface ListOptions extends ListPluginOptions<'type'> {}

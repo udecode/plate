@@ -8,14 +8,14 @@ import {
   RangeBeforeOptions,
   setDefaults,
   unwrapNodesByType,
-} from "@udecode/slate-plugins-common";
-import get from "lodash/get";
-import { Editor, Range } from "slate";
-import { ReactEditor } from "slate-react";
-import { withRemoveEmptyNodes } from "../../normalizers/withRemoveEmptyNodes";
-import { DEFAULTS_LINK } from "./defaults";
-import { upsertLinkAtSelection, wrapLink } from "./transforms";
-import { LinkOptions, WithLinkOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import get from 'lodash/get';
+import { Editor, Range } from 'slate';
+import { ReactEditor } from 'slate-react';
+import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
+import { DEFAULTS_LINK } from './defaults';
+import { upsertLinkAtSelection, wrapLink } from './transforms';
+import { LinkOptions, WithLinkOptions } from './types';
 
 const upsertLink = (
   editor: Editor,
@@ -78,7 +78,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
   const { insertData, insertText } = editor;
 
   const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
-    matchString: " ",
+    matchString: ' ',
     skipInvalid: true,
     afterMatch: true,
     multiPaths: true,
@@ -86,11 +86,11 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
 
   const rangeOptions: RangeBeforeOptions = {
     ...DEFAULT_RANGE_BEFORE_OPTIONS,
-    ...get(options, "rangeBeforeOptions", {}),
+    ...get(options, 'rangeBeforeOptions', {}),
   };
 
   editor.insertText = (text) => {
-    if (text === " " && isCollapsed(editor.selection)) {
+    if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
       if (upsertLinkIfValid(editor, { link, isUrl })) {
@@ -115,7 +115,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
   };
 
   editor.insertData = (data: DataTransfer) => {
-    const text = data.getData("text/plain");
+    const text = data.getData('text/plain');
 
     if (text) {
       if (isNodeTypeIn(editor, link.type)) {

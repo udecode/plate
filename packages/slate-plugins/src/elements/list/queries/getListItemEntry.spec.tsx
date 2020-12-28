@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getListItemEntry } from "./getListItemEntry";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getListItemEntry } from './getListItemEntry';
 
-describe("when the cursor is in a list item paragraph", () => {
+describe('when the cursor is in a list item paragraph', () => {
   const input = ((
     <editor>
       <hul>
@@ -38,7 +38,7 @@ describe("when the cursor is in a list item paragraph", () => {
     </hli>
   ) as any;
 
-  it("should be", () => {
+  it('should be', () => {
     const res = getListItemEntry(input);
 
     expect(res).toEqual({
@@ -48,7 +48,7 @@ describe("when the cursor is in a list item paragraph", () => {
   });
 });
 
-describe("when the cursor is not in a list item", () => {
+describe('when the cursor is not in a list item', () => {
   const input = ((
     <editor>
       <hul>
@@ -62,7 +62,7 @@ describe("when the cursor is not in a list item", () => {
     </editor>
   ) as any) as Editor;
 
-  it("should be", () => {
+  it('should be', () => {
     const res = getListItemEntry(input);
 
     expect(res).toEqual(undefined);

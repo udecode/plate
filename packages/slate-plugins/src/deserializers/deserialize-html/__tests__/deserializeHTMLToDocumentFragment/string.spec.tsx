@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from "@udecode/slate-plugins-core";
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { ParagraphPlugin } from "../../../../elements/paragraph/ParagraphPlugin";
-import { deserializeHTMLToDocumentFragment } from "../../utils/deserializeHTMLToDocumentFragment";
+import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const input1: SlatePlugin[] = [ParagraphPlugin()];
 
@@ -14,11 +14,11 @@ const output = (
   </fragment>
 ) as any;
 
-it("should have the break line", () => {
+it('should have the break line', () => {
   expect(
     deserializeHTMLToDocumentFragment({
       plugins: input1,
-      element: "<p>first</p><p>second</p>",
+      element: '<p>first</p><p>second</p>',
     })
   ).toEqual(output);
 });

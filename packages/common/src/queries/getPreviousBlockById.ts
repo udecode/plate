@@ -1,7 +1,7 @@
-import { Editor, Node, NodeEntry } from "slate";
-import { getBlockPathById } from "../temporary-slate-plugins";
-import { QueryOptions } from "../types/QueryOptions.types";
-import { isNodeType } from "./isNodeType";
+import { Editor, Node, NodeEntry } from 'slate';
+import { getBlockPathById } from '../temporary-slate-plugins';
+import { QueryOptions } from '../types/QueryOptions.types';
+import { isNodeType } from './isNodeType';
 
 /**
  * Find the block before a block by id.
@@ -22,7 +22,7 @@ export const getPreviousBlockById = (
   let found = false;
   const nodeEntries = [
     ...Editor.nodes(editor, {
-      mode: "highest",
+      mode: 'highest',
       reverse: true,
       match: (n) => {
         // filter nodes that are not blocks and without id.
@@ -46,7 +46,7 @@ export const getPreviousBlockById = (
 
   const firstNodeEntry = [
     ...Editor.nodes(editor, {
-      mode: "highest",
+      mode: 'highest',
       match: (n) => {
         return Editor.isBlock(editor, n) && n.id && isNodeType([n, []], query);
       },

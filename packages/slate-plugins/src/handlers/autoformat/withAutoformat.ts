@@ -2,13 +2,13 @@ import {
   getRangeFromBlockStart,
   getText,
   isCollapsed,
-} from "@udecode/slate-plugins-common";
-import castArray from "lodash/castArray";
-import { Editor, Range } from "slate";
-import { autoformatBlock } from "./transforms/autoformatBlock";
-import { autoformatInline } from "./transforms/autoformatInline";
-import { autoformatInlineBlock } from "./transforms/autoformatInlineBlock";
-import { WithAutoformatOptions } from "./types";
+} from '@udecode/slate-plugins-common';
+import castArray from 'lodash/castArray';
+import { Editor, Range } from 'slate';
+import { autoformatBlock } from './transforms/autoformatBlock';
+import { autoformatInline } from './transforms/autoformatInline';
+import { autoformatInlineBlock } from './transforms/autoformatInlineBlock';
+import { WithAutoformatOptions } from './types';
 
 /**
  * Enables support for autoformatting actions.
@@ -25,7 +25,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
     if (!isCollapsed(editor.selection)) return insertText(text);
 
     for (const {
-      trigger = " ",
+      trigger = ' ',
       type,
       markup,
       preFormat,
@@ -56,7 +56,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
         return valid();
       }
 
-      if (mode === "inline-block") {
+      if (mode === 'inline-block') {
         if (
           autoformatInlineBlock(editor, { preFormat, markup, format, type })
         ) {
@@ -64,7 +64,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
         }
       }
 
-      if (mode === "inline") {
+      if (mode === 'inline') {
         if (
           autoformatInline(editor, {
             type,

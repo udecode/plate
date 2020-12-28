@@ -2,11 +2,11 @@ import {
   getAboveByType,
   isNodeTypeIn,
   setDefaults,
-} from "@udecode/slate-plugins-common";
-import { Editor, Path, Transforms } from "slate";
-import { DEFAULTS_TABLE } from "../defaults";
-import { TableOptions } from "../types";
-import { getEmptyCellNode } from "../utils";
+} from '@udecode/slate-plugins-common';
+import { Editor, Path, Transforms } from 'slate';
+import { DEFAULTS_TABLE } from '../defaults';
+import { TableOptions } from '../types';
+import { getEmptyCellNode } from '../utils';
 
 export const addColumn = (editor: Editor, options?: TableOptions) => {
   const { table, td, th } = setDefaults(options, DEFAULTS_TABLE);

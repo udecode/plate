@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import * as isHotkey from "is-hotkey";
-import { MARK_BOLD, MARK_ITALIC } from "../../../constants";
-import { getOnHotkeyToggleMark } from "../../../utils/getOnHotkeyToggleMark";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import * as isHotkey from 'is-hotkey';
+import { MARK_BOLD, MARK_ITALIC } from '../../../constants';
+import { getOnHotkeyToggleMark } from '../../../utils/getOnHotkeyToggleMark';
 
 const input = (
   <editor>
@@ -17,7 +17,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent("keydown");
+const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
@@ -31,12 +31,12 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
-  jest.spyOn(isHotkey, "default").mockReturnValue(true);
+it('should be', () => {
+  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
   getOnHotkeyToggleMark({
     type: MARK_BOLD,
-    hotkey: "ctrl+b",
+    hotkey: 'ctrl+b',
     clear: MARK_ITALIC,
   })?.(event, input);
   expect(input.children).toEqual(output.children);

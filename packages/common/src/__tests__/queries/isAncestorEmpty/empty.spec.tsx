@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor, Element } from "slate";
-import { isAncestorEmpty } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor, Element } from 'slate';
+import { isAncestorEmpty } from '../../../queries/index';
 
 const input = ((
   <hp>
@@ -12,6 +12,6 @@ const input = ((
 
 const output = true;
 
-it("should be", () => {
+it('should be', () => {
   expect(isAncestorEmpty(input, input as Element)).toEqual(output);
 });

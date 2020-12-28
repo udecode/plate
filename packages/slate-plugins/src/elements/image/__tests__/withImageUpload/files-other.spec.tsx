@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { withReact } from "slate-react";
-import { withImageUpload } from "../../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withReact } from 'slate-react';
+import { withImageUpload } from '../../../index';
 
 const input = (
   <editor>
@@ -16,12 +16,12 @@ const output = (
   </editor>
 ) as any;
 
-it("should insert image from the file(s)", () => {
+it('should insert image from the file(s)', () => {
   const editor = withImageUpload()(withReact(input));
 
   const data = {
-    getData: () => "test",
-    files: [new File(["test"], "not-an-image")],
+    getData: () => 'test',
+    files: [new File(['test'], 'not-an-image')],
   };
   editor.insertData(data as any);
 

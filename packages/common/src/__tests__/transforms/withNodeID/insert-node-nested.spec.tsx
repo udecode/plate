@@ -1,9 +1,9 @@
 /** @jsx jsx */
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { withHistory } from "slate-history";
-import { withNodeID } from "../../../plugins/node-id/withNodeID";
-import { idCreatorFixture } from "./fixtures";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { withHistory } from 'slate-history';
+import { withNodeID } from '../../../plugins/node-id/withNodeID';
+import { idCreatorFixture } from './fixtures';
 
 const input = ((
   <editor>
@@ -23,7 +23,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should add an id to the new elements", () => {
+it('should add an id to the new elements', () => {
   const editor = withNodeID({ idCreator: idCreatorFixture })(
     withHistory(input)
   );

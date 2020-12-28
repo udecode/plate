@@ -3,8 +3,8 @@ import {
   getLastNode,
   isNodeType,
   QueryOptions,
-} from "@udecode/slate-plugins-common";
-import { Editor, Path, Transforms } from "slate";
+} from '@udecode/slate-plugins-common';
+import { Editor, Path, Transforms } from 'slate';
 
 export interface WithTrailingNode extends QueryOptions {
   /**
@@ -37,7 +37,7 @@ export const withTrailingNode = ({
           editor,
           {
             type,
-            children: [{ text: "" }],
+            children: [{ text: '' }],
           },
           { at: Path.next(lastPath) }
         );

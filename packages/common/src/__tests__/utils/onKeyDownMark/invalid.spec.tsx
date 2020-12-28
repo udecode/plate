@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { MARK_BOLD } from "../../../constants";
-import { getOnHotkeyToggleMark } from "../../../utils/getOnHotkeyToggleMark";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { MARK_BOLD } from '../../../constants';
+import { getOnHotkeyToggleMark } from '../../../utils/getOnHotkeyToggleMark';
 
 const input = (
   <editor>
@@ -14,7 +14,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent("keydown");
+const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
@@ -26,8 +26,8 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
-  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: "enter" })?.(event, input);
+it('should be', () => {
+  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: 'enter' })?.(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

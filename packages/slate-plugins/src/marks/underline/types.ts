@@ -4,10 +4,10 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from "@udecode/slate-plugins-common";
-import { Text } from "slate";
-import { RenderLeafProps } from "slate-react";
-import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
+} from '@udecode/slate-plugins-common';
+import { Text } from 'slate';
+import { RenderLeafProps } from 'slate-react';
+import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface UnderlineNodeData {}
@@ -16,7 +16,7 @@ export interface UnderlineNode extends Text, UnderlineNodeData {}
 
 // renderLeaf options given as props
 export interface UnderlineRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, "children"> {}
+  extends Omit<StyledComponentPropsOptions, 'children'> {}
 
 // Leaf props
 export interface UnderlineLeafProps
@@ -26,7 +26,7 @@ export interface UnderlineLeafProps
   leaf: UnderlineNode;
 }
 
-export type UnderlineKeyOption = "underline";
+export type UnderlineKeyOption = 'underline';
 
 // Plugin options
 export type UnderlinePluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface UnderlineRenderLeafOptions
 
 // deserialize options
 export interface UnderlineDeserializeOptions
-  extends UnderlinePluginOptions<"type" | "rootProps" | "deserialize"> {}
+  extends UnderlinePluginOptions<'type' | 'rootProps' | 'deserialize'> {}

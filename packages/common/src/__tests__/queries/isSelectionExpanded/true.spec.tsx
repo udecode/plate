@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { isSelectionExpanded } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { isSelectionExpanded } from '../../../queries/index';
 
 const input = (
   <editor>
@@ -15,6 +15,6 @@ const input = (
 
 const output = true;
 
-it("should be", () => {
+it('should be', () => {
   expect(isSelectionExpanded(input)).toEqual(output);
 });

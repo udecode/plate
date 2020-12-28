@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { options } from "../../../../../../../stories/config/initialValues";
-import { withNormalizeTypes } from "../../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { options } from '../../../../../../../stories/config/initialValues';
+import { withNormalizeTypes } from '../../../index';
 
 const input = (
   <editor>
@@ -20,7 +20,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   const editor = withNormalizeTypes({
     rules: [{ path: [1], type: options.h2.type }],
   })(input as Editor);

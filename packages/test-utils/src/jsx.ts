@@ -1,6 +1,6 @@
-import { createHyperscript } from "slate-hyperscript";
-import { options } from "../../../stories/config/initialValues";
-import { createText } from "./hyperscript/creators";
+import { createHyperscript } from 'slate-hyperscript';
+import { options } from '../../../stories/config/initialValues';
+import { createText } from './hyperscript/creators';
 
 declare global {
   namespace JSX {

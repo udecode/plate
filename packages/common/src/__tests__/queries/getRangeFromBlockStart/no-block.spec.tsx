@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getRangeFromBlockStart } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getRangeFromBlockStart } from '../../../queries/index';
 
 const input = ((
   <editor>
@@ -17,6 +17,6 @@ const output: ReturnType<typeof getRangeFromBlockStart> = {
   focus: { path: [0], offset: 2 },
 };
 
-it("should be", () => {
+it('should be', () => {
   expect(getRangeFromBlockStart(input)).toEqual(output);
 });

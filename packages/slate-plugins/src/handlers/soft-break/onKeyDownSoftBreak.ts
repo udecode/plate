@@ -1,10 +1,10 @@
-import { getBlockAbove, isNodeType } from "@udecode/slate-plugins-common";
-import isHotkey from "is-hotkey";
-import { Editor } from "slate";
-import { SoftBreakOnKeyDownOptions } from "./types";
+import { getBlockAbove, isNodeType } from '@udecode/slate-plugins-common';
+import isHotkey from 'is-hotkey';
+import { Editor } from 'slate';
+import { SoftBreakOnKeyDownOptions } from './types';
 
 export const onKeyDownSoftBreak = ({
-  rules = [{ hotkey: "shift+enter" }],
+  rules = [{ hotkey: 'shift+enter' }],
 }: SoftBreakOnKeyDownOptions = {}) => (
   event: KeyboardEvent,
   editor: Editor
@@ -15,7 +15,7 @@ export const onKeyDownSoftBreak = ({
     if (isHotkey(hotkey, event) && isNodeType(entry, query)) {
       event.preventDefault();
 
-      editor.insertText("\n");
+      editor.insertText('\n');
     }
   });
 };

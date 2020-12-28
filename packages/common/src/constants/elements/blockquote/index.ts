@@ -1,1 +1,1 @@
-export const ELEMENT_BLOCKQUOTE = "blockquote";
+export const ELEMENT_BLOCKQUOTE = 'blockquote';

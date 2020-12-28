@@ -1,1 +1,1 @@
-export const ELEMENT_LINK = "a";
+export const ELEMENT_LINK = 'a';

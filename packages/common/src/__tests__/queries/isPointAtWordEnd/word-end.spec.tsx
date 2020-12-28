@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor, Range } from "slate";
-import { isPointAtWordEnd } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor, Range } from 'slate';
+import { isPointAtWordEnd } from '../../../queries/index';
 
 const input = ((
   <editor>
@@ -17,6 +17,6 @@ const at = Range.start(input.selection as Range);
 
 const output = true;
 
-it("should be", () => {
+it('should be', () => {
   expect(isPointAtWordEnd(input, { at })).toEqual(output);
 });

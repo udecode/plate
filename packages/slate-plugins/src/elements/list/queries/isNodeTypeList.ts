@@ -1,7 +1,7 @@
-import { setDefaults } from "@udecode/slate-plugins-common";
-import { Element, Node } from "slate";
-import { DEFAULTS_LIST } from "../defaults";
-import { ListOptions } from "../types";
+import { setDefaults } from '@udecode/slate-plugins-common';
+import { Element, Node } from 'slate';
+import { DEFAULTS_LIST } from '../defaults';
+import { ListOptions } from '../types';
 
 export const isNodeTypeList = (
   n: Node,

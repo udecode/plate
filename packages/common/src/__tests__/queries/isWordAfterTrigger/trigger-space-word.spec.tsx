@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor, Range } from "slate";
-import { isWordAfterTrigger } from "../../../queries/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor, Range } from 'slate';
+import { isWordAfterTrigger } from '../../../queries/index';
 
 const input = ((
   <editor>
@@ -15,6 +15,6 @@ const input = ((
 
 const at = Range.start(input.selection as Range);
 
-it("should be", () => {
-  expect(isWordAfterTrigger(input, { at, trigger: "@" }).match).toBeNull();
+it('should be', () => {
+  expect(isWordAfterTrigger(input, { at, trigger: '@' }).match).toBeNull();
 });

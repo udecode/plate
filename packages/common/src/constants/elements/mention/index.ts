@@ -1,1 +1,1 @@
-export const ELEMENT_MENTION = "mention";
+export const ELEMENT_MENTION = 'mention';

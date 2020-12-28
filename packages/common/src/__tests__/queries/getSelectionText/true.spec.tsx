@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { getSelectionText } from "../../../queries/getSelectionText";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { getSelectionText } from '../../../queries/getSelectionText';
 
 const input = ((
   <editor>
@@ -14,8 +14,8 @@ const input = ((
   </editor>
 ) as any) as Editor;
 
-const output = "test";
+const output = 'test';
 
-it("should be", () => {
+it('should be', () => {
   expect(getSelectionText(input)).toBe(output);
 });

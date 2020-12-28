@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { Editor } from "slate";
-import { withTrailingNode } from "../../index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { Editor } from 'slate';
+import { withTrailingNode } from '../../index';
 
 const input = (
   <editor>
@@ -26,7 +26,7 @@ const output = (
   </editor>
 ) as any;
 
-it("should be", () => {
+it('should be', () => {
   const editor = withTrailingNode()(input as Editor);
 
   editor.normalizeNode([input, []]);

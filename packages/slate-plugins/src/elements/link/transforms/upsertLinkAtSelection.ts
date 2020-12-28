@@ -2,11 +2,11 @@ import {
   isCollapsed,
   setDefaults,
   unwrapNodesByType,
-} from "@udecode/slate-plugins-common";
-import { Editor, Transforms } from "slate";
-import { DEFAULTS_LINK } from "../defaults";
-import { LinkOptions } from "../types";
-import { wrapLink } from "./wrapLink";
+} from '@udecode/slate-plugins-common';
+import { Editor, Transforms } from 'slate';
+import { DEFAULTS_LINK } from '../defaults';
+import { LinkOptions } from '../types';
+import { wrapLink } from './wrapLink';
 
 /**
  * Unwrap link at a location (default: selection).
@@ -49,5 +49,5 @@ export const upsertLinkAtSelection = (
     at: editor.selection,
   });
 
-  Transforms.collapse(editor, { edge: "end" });
+  Transforms.collapse(editor, { edge: 'end' });
 };

@@ -1,6 +1,6 @@
-import { getRenderElement, setDefaults } from "@udecode/slate-plugins-common";
-import { DEFAULTS_PARAGRAPH } from "./defaults";
-import { ParagraphRenderElementOptions } from "./types";
+import { getRenderElement, setDefaults } from '@udecode/slate-plugins-common';
+import { DEFAULTS_PARAGRAPH } from './defaults';
+import { ParagraphRenderElementOptions } from './types';
 
 export const renderElementParagraph = (
   options?: ParagraphRenderElementOptions

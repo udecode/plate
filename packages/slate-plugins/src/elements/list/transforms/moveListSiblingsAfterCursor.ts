@@ -1,7 +1,7 @@
-import { moveChildren } from "@udecode/slate-plugins-common";
-import { Editor, Node, NodeEntry, Path } from "slate";
-import { isNodeTypeList } from "../queries/isNodeTypeList";
-import { ListOptions } from "../types";
+import { moveChildren } from '@udecode/slate-plugins-common';
+import { Editor, Node, NodeEntry, Path } from 'slate';
+import { isNodeTypeList } from '../queries/isNodeTypeList';
+import { ListOptions } from '../types';
 
 export const moveListSiblingsAfterCursor = (
   editor: Editor,

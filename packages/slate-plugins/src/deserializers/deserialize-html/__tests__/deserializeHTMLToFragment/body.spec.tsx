@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
-import { deserializeHTMLToFragment } from "../../utils/index";
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import { deserializeHTMLToFragment } from '../../utils/index';
 
 const fragment = (
   <fragment>
@@ -12,12 +12,12 @@ const fragment = (
 );
 
 const input = {
-  element: document.createElement("body"),
+  element: document.createElement('body'),
   children: fragment,
 } as any;
 
 const output = fragment;
 
-it("should be", () => {
+it('should be', () => {
   expect(deserializeHTMLToFragment(input)).toEqual(output);
 });
