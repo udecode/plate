@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
-import { ELEMENT_LINK } from '../../../defaults';
-import { withLink } from '../../../withLink';
+import { ELEMENT_LINK, withInlineVoid } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { withReact } from "slate-react";
+import { withLink } from "../../../withLink";
 
 const input = (
   <editor>
@@ -20,7 +19,7 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'docs' };
+const data = { getData: () => "docs" };
 
 const output = (
   <editor>
@@ -34,8 +33,8 @@ const output = (
   </editor>
 ) as any;
 
-it('should run default insertText', () => {
-  jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
+it("should run default insertText", () => {
+  jest.spyOn(JSON, "parse").mockReturnValue(<fragment>docs</fragment>);
 
   const editor = withLink()(
     withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))

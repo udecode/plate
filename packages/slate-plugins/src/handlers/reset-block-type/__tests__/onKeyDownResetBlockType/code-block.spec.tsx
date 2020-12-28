@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import * as isHotkey from 'is-hotkey';
-import { Editor } from 'slate';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { options } from '../../../../../../../stories/config/initialValues';
-import { isBlockAboveEmpty } from '../../../../common/queries/isBlockAboveEmpty';
-import { ELEMENT_CODE_BLOCK } from '../../../../elements/code-block/defaults';
-import { onKeyDownResetBlockType } from '../../onKeyDownResetBlockType';
+import { isBlockAboveEmpty } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import * as isHotkey from "is-hotkey";
+import { Editor } from "slate";
+import { options } from "../../../../../../../stories/config/initialValues";
+import { ELEMENT_CODE_BLOCK } from "../../../../elements/code-block/defaults";
+import { onKeyDownResetBlockType } from "../../onKeyDownResetBlockType";
 
 const input = ((
   <editor>
@@ -26,19 +26,19 @@ const output = (
   </editor>
 ) as any;
 
-it('should render', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+it("should render", () => {
+  jest.spyOn(isHotkey, "default").mockReturnValue(true);
 
   onKeyDownResetBlockType({
     rules: [
       {
         types: [ELEMENT_CODE_BLOCK],
         defaultType: options.p.type,
-        hotkey: 'Enter',
+        hotkey: "Enter",
         predicate: isBlockAboveEmpty,
       },
     ],
-  })(new KeyboardEvent('keydown'), input);
+  })(new KeyboardEvent("keydown"), input);
 
   expect(input.children).toEqual(output.children);
 });

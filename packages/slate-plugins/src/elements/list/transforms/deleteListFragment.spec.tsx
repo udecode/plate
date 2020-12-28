@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import { Editor, Range } from 'slate';
-import { withHistory } from 'slate-history';
-import { jsx } from '../../../__test-utils__/jsx';
-import { deleteListFragment } from './deleteListFragment';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor, Range } from "slate";
+import { withHistory } from "slate-history";
+import { deleteListFragment } from "./deleteListFragment";
 
-describe('deleteListFragment', () => {
-  describe('unhandled', () => {
+describe("deleteListFragment", () => {
+  describe("unhandled", () => {
     it(`doesn't handle deletes that are within a single list item`, () => {
       const editor = ((
         <editor>
@@ -95,8 +95,8 @@ describe('deleteListFragment', () => {
     });
   });
 
-  describe('deletes top of list', () => {
-    it('deletes the entire first list item from the top of the list', () => {
+  describe("deletes top of list", () => {
+    it("deletes the entire first list item from the top of the list", () => {
       const input = ((
         <editor>
           <block>
@@ -175,7 +175,7 @@ describe('deleteListFragment', () => {
       expect(editor.children).toEqual(input.children);
     });
 
-    it('partially deletes the first list item', () => {
+    it("partially deletes the first list item", () => {
       const input = ((
         <editor>
           <block>
@@ -253,7 +253,7 @@ describe('deleteListFragment', () => {
     });
   });
 
-  describe('deletes inside the list', () => {
+  describe("deletes inside the list", () => {
     it("deep delete doesn't require moving siblings", () => {
       const input = ((
         <editor>
@@ -335,7 +335,7 @@ describe('deleteListFragment', () => {
       expect(editor.children).toEqual(input.children);
     });
 
-    it('delete moves siblings', () => {
+    it("delete moves siblings", () => {
       const input = ((
         <editor>
           <block>

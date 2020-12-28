@@ -1,14 +1,16 @@
 /** @jsx jsx */
-import { act, renderHook } from '@testing-library/react-hooks';
-import { Editor } from 'slate';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../../common/plugins/inline-void/withInlineVoid';
-import { pipe } from '../../../../../../common/utils/pipe';
-import { ELEMENT_MENTION } from '../../../../defaults';
-import { useMention } from '../../../../useMention';
-import { mentionables } from '../mentionables.fixture';
+import { act, renderHook } from "@testing-library/react-hooks";
+import {
+  ELEMENT_MENTION,
+  pipe,
+  withInlineVoid,
+} from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withHistory } from "slate-history";
+import { withReact } from "slate-react";
+import { useMention } from "../../../../useMention";
+import { mentionables } from "../mentionables.fixture";
 
 const input = ((
   <editor>
@@ -22,7 +24,7 @@ const input = ((
 const output = ((
   <editor>
     <hp>
-      t1{' '}
+      t1{" "}
       <hmention value="t2">
         <htext />
       </hmention>
@@ -40,7 +42,7 @@ const withPlugins = [
   }),
 ] as const;
 
-it('should go down', () => {
+it("should go down", () => {
   const editor = pipe(input, ...withPlugins);
 
   const { result } = renderHook(() => useMention(mentionables));
@@ -51,7 +53,7 @@ it('should go down', () => {
 
   act(() => {
     result.current.onKeyDownMention(
-      new KeyboardEvent('keydown', { key: 'Enter' }),
+      new KeyboardEvent("keydown", { key: "Enter" }),
       editor
     );
   });

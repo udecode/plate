@@ -1,15 +1,17 @@
-import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
-import { getLastChildPath } from '../../../common/queries/getLastChild';
-import { getNode } from '../../../common/queries/getNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { DEFAULTS_LIST } from '../defaults';
-import { getListItemEntry } from '../queries';
-import { getListItemSublist } from '../queries/getListItemSublist';
-import { getListRoot } from '../queries/getListRoot';
-import { ListOptions } from '../types';
-import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
-import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
-import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
+import {
+  getLastChildPath,
+  getNode,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { Ancestor, Editor, Node, Path, Range, Transforms } from "slate";
+import { DEFAULTS_LIST } from "../defaults";
+import { getListItemEntry } from "../queries";
+import { getListItemSublist } from "../queries/getListItemSublist";
+import { getListRoot } from "../queries/getListRoot";
+import { ListOptions } from "../types";
+import { moveListItemSublistItemsToList } from "./moveListItemSublistItemsToList";
+import { moveListItemSublistItemsToListItemSublist } from "./moveListItemSublistItemsToListItemSublist";
+import { moveListSiblingsAfterCursor } from "./moveListSiblingsAfterCursor";
 
 export const deleteListFragment = (
   editor: Editor,

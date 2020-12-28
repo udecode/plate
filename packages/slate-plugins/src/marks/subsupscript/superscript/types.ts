@@ -1,13 +1,13 @@
-import { Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
 import {
   Deserialize,
+  GetOnHotkeyToggleMarkOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../../common/types/PluginOptions.types';
-import { GetOnHotkeyToggleMarkOptions } from '../../../common/utils/getOnHotkeyToggleMark';
-import { StyledComponentPropsOptions } from '../../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { Text } from "slate";
+import { RenderLeafProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../../components/StyledComponent/StyledComponent.types";
 
 // Data of Text node
 export interface SuperscriptNodeData {}
@@ -16,7 +16,7 @@ export interface SuperscriptNode extends Text, SuperscriptNodeData {}
 
 // renderLeaf options given as props
 export interface SuperscriptRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // Leaf props
 export interface SuperscriptLeafProps
@@ -26,7 +26,7 @@ export interface SuperscriptLeafProps
   leaf: SuperscriptNode;
 }
 
-export type SuperscriptKeyOption = 'superscript';
+export type SuperscriptKeyOption = "superscript";
 
 // Plugin options
 export type SuperscriptPluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface SuperscriptRenderLeafOptions
 
 // deserialize options
 export interface SuperscriptDeserializeOptions
-  extends SuperscriptPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends SuperscriptPluginOptions<"type" | "rootProps" | "deserialize"> {}

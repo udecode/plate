@@ -1,7 +1,7 @@
-import { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
-import { getAboveByType, setDefaults } from '../../../common';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
+import { getAboveByType, setDefaults } from "@udecode/slate-plugins-common";
+import { Ancestor, Editor, NodeEntry, Path, Point, Range } from "slate";
+import { DEFAULTS_LIST } from "../defaults";
+import { ListOptions } from "../types";
 
 /**
  * Searches upward for the root list element

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../../__test-utils__/jsx';
-import { onImageLoad } from '../../../index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { onImageLoad } from "../../../index";
 
 const input = (
   <editor>
@@ -10,7 +10,7 @@ const input = (
 ) as any;
 
 const reader = {
-  result: '',
+  result: "",
 };
 
 const output = (
@@ -19,7 +19,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should be', () => {
+it("should be", () => {
   onImageLoad(input, reader as any)();
   expect(input.children).toEqual(output.children);
 });

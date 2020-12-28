@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../../__test-utils__/jsx';
-import { BoldPlugin } from '../../../../marks/bold/index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { BoldPlugin } from "../../../../marks/bold/index";
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
-} from '../../utils/index';
+} from "../../utils/index";
 
 const input: DeserializeMarksProps = {
   plugins: [BoldPlugin()],
-  element: document.createElement('strong'),
+  element: document.createElement("strong"),
   children: <fragment>test</fragment>,
 } as any;
 
@@ -19,6 +19,6 @@ const output = (
   </fragment>
 );
 
-it('should be', () => {
+it("should be", () => {
   expect(deserializeHTMLToMarks(input as any)).toEqual(output);
 });

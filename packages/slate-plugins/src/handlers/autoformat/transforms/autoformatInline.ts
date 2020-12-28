@@ -1,7 +1,6 @@
-import { Range, Transforms } from 'slate';
-import { getPointBefore } from '../../../common/queries/getPointBefore';
-import { getText } from '../../../common/queries/getText';
-import { MarkEditor } from '../../../marks/withMarks';
+import { getPointBefore, getText } from "@udecode/slate-plugins-common";
+import { Range, Transforms } from "slate";
+import { MarkEditor } from "../../../marks/withMarks";
 
 export const autoformatInline = (
   editor: MarkEditor,
@@ -20,7 +19,7 @@ export const autoformatInline = (
   const selection = editor.selection as Range;
 
   const startMarkup = between ? between[0] : markup;
-  const endMarkup = between ? between[1] : '';
+  const endMarkup = between ? between[1] : "";
 
   let endMarkupPointBefore = selection.anchor;
   if (endMarkup) {
@@ -66,7 +65,7 @@ export const autoformatInline = (
   // add mark to the text between the markups
   Transforms.select(editor, markupRange);
   editor.addMark(type, true);
-  Transforms.collapse(editor, { edge: 'end' });
+  Transforms.collapse(editor, { edge: "end" });
   editor.removeMark(type, false);
 
   // delete start markup

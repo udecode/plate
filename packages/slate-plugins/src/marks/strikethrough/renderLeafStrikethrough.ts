@@ -1,12 +1,12 @@
-import { getRenderLeafDefault } from '../../common/utils/getRenderLeafDefault';
-import { DEFAULTS_STRIKETHROUGH } from './defaults';
-import { StrikethroughRenderLeafOptions } from './types';
+import { getRenderLeafDefault } from "@udecode/slate-plugins-common";
+import { DEFAULTS_STRIKETHROUGH } from "./defaults";
+import { StrikethroughRenderLeafOptions } from "./types";
 
 export const renderLeafStrikethrough = (
   options?: StrikethroughRenderLeafOptions
 ) =>
   getRenderLeafDefault({
-    key: 'strikethrough',
+    key: "strikethrough",
     defaultOptions: DEFAULTS_STRIKETHROUGH,
     options,
   });

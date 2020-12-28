@@ -1,7 +1,6 @@
-import { getRenderElements } from '../../common/utils/getRenderElement';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_ALIGN } from './defaults';
-import { AlignRenderElementOptions } from './types';
+import { getRenderElements, setDefaults } from "@udecode/slate-plugins-common";
+import { DEFAULTS_ALIGN } from "./defaults";
+import { AlignRenderElementOptions } from "./types";
 
 export const renderElementAlign = (options?: AlignRenderElementOptions) => {
   const { align_left, align_center, align_right } = setDefaults(

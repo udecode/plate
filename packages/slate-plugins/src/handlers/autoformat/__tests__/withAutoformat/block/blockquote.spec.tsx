@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
-import { withReact } from 'slate-react';
-import { autoformatRulesFixtures } from '../../../../../__fixtures__/autoformat.fixtures';
-import { jsx } from '../../../../../__test-utils__/jsx';
-import { withAutoformat } from '../../../withAutoformat';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { withReact } from "slate-react";
+import { autoformatRulesFixtures } from "../../../../../__fixtures__/autoformat.fixtures";
+import { withAutoformat } from "../../../withAutoformat";
 
 const input = (
   <editor>
     <hp>
-      {'>'}
+      {">"}
       <cursor />
       hello
     </hp>
@@ -21,12 +21,12 @@ const output = (
   </editor>
 ) as any;
 
-it('should autoformat', () => {
+it("should autoformat", () => {
   const editor = withAutoformat({ rules: autoformatRulesFixtures })(
     withReact(input)
   );
 
-  editor.insertText(' ');
+  editor.insertText(" ");
 
   expect(input.children).toEqual(output.children);
 });

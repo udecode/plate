@@ -1,7 +1,7 @@
-import { NodeEntry, Range, Text } from 'slate';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_SEARCH_HIGHLIGHT } from './defaults';
-import { SearchHighlightDecorateOptions } from './types';
+import { setDefaults } from "@udecode/slate-plugins-common";
+import { NodeEntry, Range, Text } from "slate";
+import { DEFAULTS_SEARCH_HIGHLIGHT } from "./defaults";
+import { SearchHighlightDecorateOptions } from "./types";
 
 export const decorateSearchHighlight = (
   options?: SearchHighlightDecorateOptions

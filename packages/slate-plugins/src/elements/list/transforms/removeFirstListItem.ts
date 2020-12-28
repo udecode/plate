@@ -1,9 +1,8 @@
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { isFirstChild } from '../../../common/queries/isFirstChild';
-import { moveChildren } from '../../../common/transforms/moveChildren';
-import { hasListInListItem } from '../queries/hasListInListItem';
-import { isListNested } from '../queries/isListNested';
-import { ListOptions } from '../types';
+import { isFirstChild, moveChildren } from "@udecode/slate-plugins-common";
+import { Ancestor, Editor, NodeEntry, Path, Transforms } from "slate";
+import { hasListInListItem } from "../queries/hasListInListItem";
+import { isListNested } from "../queries/isListNested";
+import { ListOptions } from "../types";
 
 /**
  * If the list is not nested and

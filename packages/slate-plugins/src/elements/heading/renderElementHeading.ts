@@ -1,9 +1,11 @@
-import { RenderElementProps } from 'slate-react';
-import { RenderNodeOptions } from '../../common/types/PluginOptions.types';
-import { getRenderElements } from '../../common/utils/getRenderElement';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_HEADING } from './defaults';
-import { HeadingRenderElementOptions } from './types';
+import {
+  getRenderElements,
+  RenderNodeOptions,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { RenderElementProps } from "slate-react";
+import { DEFAULTS_HEADING } from "./defaults";
+import { HeadingRenderElementOptions } from "./types";
 
 /**
  * Font sizes are relative to the base font size

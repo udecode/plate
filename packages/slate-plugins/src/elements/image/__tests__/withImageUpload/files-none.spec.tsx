@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { withImageUpload } from '../../../index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { withReact } from "slate-react";
+import { withImageUpload } from "../../../index";
 
 const input = (
   <editor>
@@ -16,13 +16,13 @@ const output = (
   </editor>
 ) as any;
 
-it('should run default insertData', () => {
-  jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
+it("should run default insertData", () => {
+  jest.spyOn(JSON, "parse").mockReturnValue(<fragment>image.png</fragment>);
 
   const editor = withImageUpload()(withReact(input));
 
   const data = {
-    getData: () => 'test',
+    getData: () => "test",
   };
   editor.insertData(data as any);
 

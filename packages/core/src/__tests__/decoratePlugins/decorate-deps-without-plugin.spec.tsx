@@ -1,18 +1,18 @@
-import React, { useMemo, useState } from 'react';
-import { render } from '@testing-library/react';
-import { createEditor, Node, Point } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { Decorate } from '../..';
-import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
-import { EditablePlugins, EditablePluginsProps } from '../../components';
+import { render } from "@testing-library/react";
+import { pipe } from "@udecode/slate-plugins-common";
+import React, { useMemo, useState } from "react";
+import { createEditor, Node, Point } from "slate";
+import { withHistory } from "slate-history";
+import { Slate, withReact } from "slate-react";
+import { Decorate } from "../..";
+import { EditablePlugins, EditablePluginsProps } from "../../components";
 
 const EditorWithDecorateDeps = ({
   decorate,
   decorateDeps,
 }: {
-  decorate: EditablePluginsProps['decorate'];
-  decorateDeps: EditablePluginsProps['decorateDeps'];
+  decorate: EditablePluginsProps["decorate"];
+  decorateDeps: EditablePluginsProps["decorateDeps"];
 }) => {
   const [value, setValue] = useState<Node[]>([]);
 
@@ -39,7 +39,7 @@ const EditorWithDecorateDeps = ({
   );
 };
 
-it('should decorate with deps', () => {
+it("should decorate with deps", () => {
   const point: Point = { path: [0, 0], offset: 0 };
   const range = { anchor: point, focus: point };
   const decorate: Decorate = jest.fn(() => [range]);
@@ -47,6 +47,6 @@ it('should decorate with deps', () => {
     <EditorWithDecorateDeps decorate={[decorate]} decorateDeps={[1]} />
   );
   // make sure everything rendered
-  expect(getAllByTestId('DecorateDepsWithoutPlugin').length).toBeGreaterThan(0);
+  expect(getAllByTestId("DecorateDepsWithoutPlugin").length).toBeGreaterThan(0);
   expect(decorate).toHaveBeenCalledTimes(1);
 });

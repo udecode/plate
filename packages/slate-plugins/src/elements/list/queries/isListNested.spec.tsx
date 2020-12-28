@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../__test-utils__/jsx';
-import { getNodeById } from '../../../common/queries/getNodeById';
-import { isListNested } from './isListNested';
+import { getNodeById } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { isListNested } from "./isListNested";
 
-describe('when the list is nested', () => {
+describe("when the list is nested", () => {
   const input = (
     <editor>
       <hul id="1">
@@ -26,14 +26,14 @@ describe('when the list is nested', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
-    const list = getNodeById(input, '21');
+  it("should be", () => {
+    const list = getNodeById(input, "21");
 
     expect(isListNested(input, list[1] as any)).toBeTruthy();
   });
 });
 
-describe('when the list is not nested', () => {
+describe("when the list is not nested", () => {
   const input = (
     <editor>
       <hul id="1">
@@ -44,8 +44,8 @@ describe('when the list is not nested', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
-    const list = getNodeById(input, '1');
+  it("should be", () => {
+    const list = getNodeById(input, "1");
 
     expect(isListNested(input, list[1] as any)).toBeFalsy();
   });

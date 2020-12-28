@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { Editor } from 'slate';
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { BoldPlugin } from '../../../../marks/bold/index';
-import { withDeserializeHTML } from '../../index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withReact } from "slate-react";
+import { BoldPlugin } from "../../../../marks/bold/index";
+import { withDeserializeHTML } from "../../index";
 
 const input = ((
   <editor>
@@ -17,7 +17,7 @@ const input = ((
 
 // noinspection CheckTagEmptyBody
 const data = {
-  getData: () => '<html></html>',
+  getData: () => "<html></html>",
 };
 
 const output = (
@@ -29,7 +29,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should do nothing', () => {
+it("should do nothing", () => {
   const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
     withReact(input)
   );

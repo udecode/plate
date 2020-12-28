@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../../common/plugins/inline-void/withInlineVoid';
-import { ELEMENT_LINK } from '../../../defaults';
-import { withLink } from '../../../withLink';
+import { ELEMENT_LINK, withInlineVoid } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { withReact } from "slate-react";
+import { withLink } from "../../../withLink";
 
 const input = (
   <editor>
@@ -15,7 +14,7 @@ const input = (
   </editor>
 ) as any;
 
-const text = ' ';
+const text = " ";
 
 const output = (
   <editor>
@@ -23,8 +22,8 @@ const output = (
   </editor>
 ) as any;
 
-describe('when inserting a space after a text (not url)', () => {
-  it('should just insert a space', () => {
+describe("when inserting a space after a text (not url)", () => {
+  it("should just insert a space", () => {
     const editor = withLink()(
       withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
     );

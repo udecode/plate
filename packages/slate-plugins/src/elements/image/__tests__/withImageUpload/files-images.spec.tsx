@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { pipe } from '../../../../common/utils/pipe';
-import { withImageUpload } from '../../../index';
+import { pipe } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { withReact } from "slate-react";
+import { withImageUpload } from "../../../index";
 
 const input = (
   <editor>
@@ -17,14 +17,14 @@ const output = (
   </editor>
 ) as any;
 
-it('should insert image from the file(s)', () => {
+it("should insert image from the file(s)", () => {
   const editor = pipe(input, withReact, withImageUpload());
 
   const data = {
-    getData: () => 'test',
+    getData: () => "test",
     files: [
-      new File(['test'], 'test.png', {
-        type: 'image/png',
+      new File(["test"], "test.png", {
+        type: "image/png",
       }),
     ],
   };

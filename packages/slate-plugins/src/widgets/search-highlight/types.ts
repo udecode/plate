@@ -1,12 +1,12 @@
-import { Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
 import {
+  GetOnHotkeyToggleMarkOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
-import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { Text } from "slate";
+import { RenderLeafProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Text node
 export interface SearchHighlightNodeData {}
@@ -15,7 +15,7 @@ export interface SearchHighlightNode extends Text, SearchHighlightNodeData {}
 
 // renderLeaf options given as props
 export interface SearchHighlightRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // Leaf props
 export interface SearchHighlightLeafProps
@@ -25,7 +25,7 @@ export interface SearchHighlightLeafProps
   leaf: SearchHighlightNode;
 }
 
-export type SearchHighlightKeyOption = 'search_highlight';
+export type SearchHighlightKeyOption = "search_highlight";
 
 // Plugin options
 export type SearchHighlightPluginOptionsValues = RenderNodeOptions &
@@ -48,10 +48,10 @@ export interface SearchHighlightRenderLeafOptions
 
 // deserialize options
 export interface SearchHighlightDeserializeOptions
-  extends SearchHighlightPluginOptions<'type' | 'rootProps'> {}
+  extends SearchHighlightPluginOptions<"type" | "rootProps"> {}
 
 export interface SearchHighlightDecorateOptions
-  extends SearchHighlightPluginOptions<'type'> {
+  extends SearchHighlightPluginOptions<"type"> {
   /**
    * Searching text to highlight
    */

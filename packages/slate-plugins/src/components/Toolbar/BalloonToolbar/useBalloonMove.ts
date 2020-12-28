@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
-import { Editor } from 'slate';
-import { isSelectionExpanded } from '../../../common/queries';
-import { getSelectionText } from '../../../common/queries/getSelectionText';
-import { setPositionAtSelection } from './setPositionAtSelection';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+} from "@udecode/slate-plugins-common";
+import { useEffect } from "react";
+import { Editor } from "slate";
+import { setPositionAtSelection } from "./setPositionAtSelection";
 
 /**
  * Move when the selection changes.
@@ -14,7 +16,7 @@ export const useBalloonMove = ({
 }: {
   editor: Editor;
   ref: any;
-  direction: 'top' | 'bottom';
+  direction: "top" | "bottom";
 }) => {
   const selectionExpanded = isSelectionExpanded(editor);
   const selectionText = getSelectionText(editor);

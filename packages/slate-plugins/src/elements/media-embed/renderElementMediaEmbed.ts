@@ -1,7 +1,6 @@
-import { getRenderElement } from '../../common/utils/getRenderElement';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_MEDIA_EMBED } from './defaults';
-import { MediaEmbedRenderElementOptions } from './types';
+import { getRenderElement, setDefaults } from "@udecode/slate-plugins-common";
+import { DEFAULTS_MEDIA_EMBED } from "./defaults";
+import { MediaEmbedRenderElementOptions } from "./types";
 
 export const renderElementMediaEmbed = (
   options?: MediaEmbedRenderElementOptions

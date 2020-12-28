@@ -40,7 +40,9 @@
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.1.1",
     "unified": "^9.1.0",
-    "utility-types": "^3.10.0"
+    "utility-types": "^3.10.0",
+    "@udecode/slate-plugins-common": "^0.70.1",
+    "@udecode/slate-plugins-test-utils": "^0.71.1"
   },
   "peerDependencies": {
     "react": "*",

@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_CODE } from './defaults';
-import { CodeDeserializeOptions } from './types';
+import {
+  getLeafDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_CODE } from "./defaults";
+import { CodeDeserializeOptions } from "./types";
 
 export const deserializeCode = (
   options?: CodeDeserializeOptions
@@ -13,10 +15,10 @@ export const deserializeCode = (
     leaf: getLeafDeserializer({
       type: code.type,
       rules: [
-        { nodeNames: ['CODE'] },
+        { nodeNames: ["CODE"] },
         {
           style: {
-            wordWrap: 'break-word',
+            wordWrap: "break-word",
           },
         },
       ],

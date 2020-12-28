@@ -1,13 +1,13 @@
-import { Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
 import {
   Deserialize,
+  GetOnHotkeyToggleMarkOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../../common/types/PluginOptions.types';
-import { GetOnHotkeyToggleMarkOptions } from '../../../common/utils/getOnHotkeyToggleMark';
-import { StyledComponentPropsOptions } from '../../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { Text } from "slate";
+import { RenderLeafProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../../components/StyledComponent/StyledComponent.types";
 
 // Data of Text node
 export interface SubscriptNodeData {}
@@ -16,7 +16,7 @@ export interface SubscriptNode extends Text, SubscriptNodeData {}
 
 // renderLeaf options given as props
 export interface SubscriptRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // Leaf props
 export interface SubscriptLeafProps
@@ -26,7 +26,7 @@ export interface SubscriptLeafProps
   leaf: SubscriptNode;
 }
 
-export type SubscriptKeyOption = 'subscript';
+export type SubscriptKeyOption = "subscript";
 
 // Plugin options
 export type SubscriptPluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface SubscriptRenderLeafOptions
 
 // deserialize options
 export interface SubscriptDeserializeOptions
-  extends SubscriptPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends SubscriptPluginOptions<"type" | "rootProps" | "deserialize"> {}

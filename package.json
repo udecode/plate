@@ -2,6 +2,8 @@
   "private": true,
   "license": "MIT",
   "workspaces": [
+    "packages/test-utils",
+    "packages/common",
     "packages/core",
     "packages/slate-plugins"
   ],
@@ -9,6 +11,7 @@
     "build": "lerna run build --since",
     "build:w": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
     "build:core": "lerna exec --scope @udecode/slate-plugins-core -- yarn build",
+    "build:common": "lerna exec --scope @udecode/slate-plugins-common -- yarn build",
     "build:plugins": "lerna exec --ignore @udecode/slate-plugins-core --parallel -- yarn build",
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",

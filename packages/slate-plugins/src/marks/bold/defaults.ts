@@ -1,8 +1,9 @@
-import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
-import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
-import { BoldKeyOption, BoldPluginOptionsValues } from './types';
-
-export const MARK_BOLD = 'bold';
+import {
+  GetOnHotkeyToggleMarkOptions,
+  MARK_BOLD,
+} from "@udecode/slate-plugins-common";
+import { StyledLeaf } from "../../components/StyledComponent/StyledLeaf";
+import { BoldKeyOption, BoldPluginOptionsValues } from "./types";
 
 export const DEFAULTS_BOLD: Record<
   BoldKeyOption,
@@ -11,10 +12,10 @@ export const DEFAULTS_BOLD: Record<
   bold: {
     component: StyledLeaf,
     type: MARK_BOLD,
-    hotkey: 'mod+b',
+    hotkey: "mod+b",
     rootProps: {
       className: `slate-bold`,
-      as: 'strong',
+      as: "strong",
     },
   },
 };

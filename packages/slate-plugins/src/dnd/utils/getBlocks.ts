@@ -1,5 +1,5 @@
-import { Editor } from 'slate';
-import { EditorNodesOptions } from '../../common/types/Editor.types';
+import { EditorNodesOptions } from "@udecode/slate-plugins-common";
+import { Editor } from "slate";
 
 /**
  * Get blocks with an id

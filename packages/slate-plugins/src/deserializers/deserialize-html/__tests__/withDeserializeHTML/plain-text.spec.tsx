@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { Editor } from 'slate';
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { withDeserializeHTML } from '../../index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withReact } from "slate-react";
+import { withDeserializeHTML } from "../../index";
 
 const input = ((
   <editor>
@@ -15,7 +15,7 @@ const input = ((
 ) as any) as Editor;
 
 const data = {
-  getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),
+  getData: (format: string) => (format === "text/html" ? "" : "inserted"),
 };
 
 const output = (
@@ -27,8 +27,8 @@ const output = (
   </editor>
 ) as any;
 
-it('should do nothing', () => {
-  jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
+it("should do nothing", () => {
+  jest.spyOn(JSON, "parse").mockReturnValue(<fragment>inserted</fragment>);
 
   const editor = withDeserializeHTML()(withReact(input));
 

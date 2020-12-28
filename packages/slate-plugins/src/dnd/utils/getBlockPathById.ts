@@ -1,5 +1,5 @@
-import { Editor } from 'slate';
-import { getNodesById } from '../../common/queries/getNodesById';
+import { getNodesById } from "@udecode/slate-plugins-common";
+import { Editor } from "slate";
 
 /**
  * Get block path by id.

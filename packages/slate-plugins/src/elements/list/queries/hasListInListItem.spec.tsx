@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../__test-utils__/jsx';
-import { getNodeById } from '../../../common/queries/getNodeById';
-import { hasListInListItem } from './hasListInListItem';
+import { getNodeById } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { hasListInListItem } from "./hasListInListItem";
 
-describe('when there is a sublist', () => {
+describe("when there is a sublist", () => {
   const input = (
     <editor>
       <hul>
@@ -26,14 +26,14 @@ describe('when there is a sublist', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
-    const listItem = getNodeById(input, '2');
+  it("should be", () => {
+    const listItem = getNodeById(input, "2");
 
     expect(hasListInListItem(listItem[0] as any)).toBeTruthy();
   });
 });
 
-describe('when there is no sublist', () => {
+describe("when there is no sublist", () => {
   const input = (
     <editor>
       <hul>
@@ -44,8 +44,8 @@ describe('when there is no sublist', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
-    const listItem = getNodeById(input, '2');
+  it("should be", () => {
+    const listItem = getNodeById(input, "2");
 
     expect(hasListInListItem(listItem[0] as any)).toBeFalsy();
   });

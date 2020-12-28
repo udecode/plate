@@ -1,4 +1,3 @@
-import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
   ElementWithAttributes,
@@ -7,8 +6,9 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { RenderElementProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Element node
 export interface AlignNodeData {}
@@ -17,7 +17,7 @@ export interface AlignNode extends ElementWithAttributes, AlignNodeData {}
 
 // renderElement options given as props
 export interface AlignRenderElementPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // renderElement props
 export interface AlignElementProps
@@ -28,7 +28,7 @@ export interface AlignElementProps
   element: AlignNode;
 }
 
-export type AlignKeyOption = 'align_left' | 'align_center' | 'align_right';
+export type AlignKeyOption = "align_left" | "align_center" | "align_right";
 
 // Plugin options
 export type AlignPluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface AlignRenderElementOptions
 
 // deserialize options
 export interface AlignDeserializeOptions
-  extends AlignPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends AlignPluginOptions<"type" | "rootProps" | "deserialize"> {}

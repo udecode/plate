@@ -30,6 +30,9 @@
     "slate-hyperscript": ">=0.58.0",
     "slate-react": ">=0.58.0"
   },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "^0.70.1"
+  },
   "publishConfig": {
     "access": "public"
   }

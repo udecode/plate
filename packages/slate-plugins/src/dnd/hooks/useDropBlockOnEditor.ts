@@ -1,11 +1,11 @@
-import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { Path, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
-import { isExpanded } from '../../common/queries/isExpanded';
-import { DragItemBlock } from '../components/Selectable.types';
-import { getBlockPathById } from '../utils/getBlockPathById';
-import { getHoverDirection } from '../utils/getHoverDirection';
-import { getNewDirection } from '../utils/getNewDirection';
+import { isExpanded } from "@udecode/slate-plugins-common";
+import { DropTargetMonitor, useDrop } from "react-dnd";
+import { Path, Transforms } from "slate";
+import { ReactEditor } from "slate-react";
+import { DragItemBlock } from "../components/Selectable.types";
+import { getBlockPathById } from "../utils/getBlockPathById";
+import { getHoverDirection } from "../utils/getHoverDirection";
+import { getNewDirection } from "../utils/getNewDirection";
 
 export const useDropBlockOnEditor = (
   editor: ReactEditor,
@@ -22,7 +22,7 @@ export const useDropBlockOnEditor = (
   }
 ) => {
   return useDrop({
-    accept: 'block',
+    accept: "block",
     drop: (dragItem: DragItemBlock, monitor: DropTargetMonitor) => {
       const direction = getHoverDirection(dragItem, monitor, blockRef, id);
       if (!direction) return;
@@ -33,14 +33,14 @@ export const useDropBlockOnEditor = (
       ReactEditor.focus(editor);
 
       let dropPath: Path | undefined;
-      if (direction === 'bottom') {
+      if (direction === "bottom") {
         dropPath = getBlockPathById(editor, id);
         if (!dropPath) return;
 
         if (Path.equals(dragPath, Path.next(dropPath))) return;
       }
 
-      if (direction === 'top') {
+      if (direction === "top") {
         const nodePath = getBlockPathById(editor, id) as Path;
 
         if (!nodePath) return;

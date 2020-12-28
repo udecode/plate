@@ -1,8 +1,7 @@
-import { Editor, Location } from 'slate';
-import { wrapNodes } from '../../../common/transforms/wrapNodes';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { DEFAULTS_LINK } from '../defaults';
-import { LinkOptions } from '../types';
+import { setDefaults, wrapNodes } from "@udecode/slate-plugins-common";
+import { Editor, Location } from "slate";
+import { DEFAULTS_LINK } from "../defaults";
+import { LinkOptions } from "../types";
 
 /**
  * Wrap selected nodes with a link and collapse at the end.

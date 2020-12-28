@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { Ancestor, Editor, NodeEntry } from 'slate';
-import { jsx } from '../../../__test-utils__/jsx';
-import { getNodeById } from '../../../common/queries/getNodeById';
-import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
+import { getNodeById } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Ancestor, Editor, NodeEntry } from "slate";
+import { moveListItemSublistItemsToList } from "./moveListItemSublistItemsToList";
 
 const input = ((
   <editor>
@@ -49,11 +49,11 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-it('should', () => {
+it("should", () => {
   const editor = input;
 
-  const fromListItem = getNodeById(editor, '2') as NodeEntry<Ancestor>;
-  const toList = getNodeById(editor, '1') as NodeEntry<Ancestor>;
+  const fromListItem = getNodeById(editor, "2") as NodeEntry<Ancestor>;
+  const toList = getNodeById(editor, "1") as NodeEntry<Ancestor>;
 
   if (fromListItem && toList) {
     moveListItemSublistItemsToList(editor, { fromListItem, toList });

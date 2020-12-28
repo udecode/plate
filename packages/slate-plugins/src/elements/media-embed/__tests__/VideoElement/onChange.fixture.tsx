@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { Editor } from 'slate';
-import { jsx } from '../../../../__test-utils__/jsx';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
 
 export const input = ((
   <editor>

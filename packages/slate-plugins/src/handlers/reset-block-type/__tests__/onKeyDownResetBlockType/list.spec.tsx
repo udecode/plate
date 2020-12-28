@@ -1,15 +1,17 @@
 /** @jsx jsx */
 
-import * as isHotkey from 'is-hotkey';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { isBlockAboveEmpty } from '../../../../common/queries/isBlockAboveEmpty';
-import { isSelectionAtBlockStart } from '../../../../common/queries/isSelectionAtBlockStart';
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import * as isHotkey from "is-hotkey";
 import {
   ELEMENT_LI,
   ELEMENT_PARAGRAPH,
   unwrapList,
-} from '../../../../elements/index';
-import { onKeyDownResetBlockType } from '../../index';
+} from "../../../../elements/index";
+import { onKeyDownResetBlockType } from "../../index";
 
 const input = (
   <editor>
@@ -33,8 +35,8 @@ const output = (
   </editor>
 ) as any;
 
-it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+it("should be", () => {
+  jest.spyOn(isHotkey, "default").mockReturnValue(true);
 
   const resetBlockTypesListRule = {
     types: [ELEMENT_LI],
@@ -46,16 +48,16 @@ it('should be', () => {
     rules: [
       {
         ...resetBlockTypesListRule,
-        hotkey: 'Enter',
+        hotkey: "Enter",
         predicate: isBlockAboveEmpty,
       },
       {
         ...resetBlockTypesListRule,
-        hotkey: 'Backspace',
+        hotkey: "Backspace",
         predicate: isSelectionAtBlockStart,
       },
     ],
-  })(new KeyboardEvent('keydown'), input);
+  })(new KeyboardEvent("keydown"), input);
 
   expect(input.children).toEqual(output.children);
 });

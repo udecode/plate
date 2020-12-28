@@ -1,10 +1,12 @@
-import * as React from 'react';
-import { useSlate } from 'slate-react';
-import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
-import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
-import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
-import { ELEMENT_UL } from '../defaults';
-import { toggleList } from '../transforms/toggleList';
+import {
+  ELEMENT_UL,
+  getPreventDefaultHandler,
+} from "@udecode/slate-plugins-common";
+import * as React from "react";
+import { useSlate } from "slate-react";
+import { ToolbarButtonProps } from "../../../components/ToolbarButton/ToolbarButton.types";
+import { ToolbarElement } from "../../../components/ToolbarElement/ToolbarElement";
+import { toggleList } from "../transforms/toggleList";
 
 export const ToolbarList = ({
   typeList = ELEMENT_UL,

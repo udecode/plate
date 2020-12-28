@@ -1,10 +1,12 @@
-import { Editor, Location } from 'slate';
-import { getAboveByType } from '../../../common/queries/getAboveByType';
-import { getParent } from '../../../common/queries/getParent';
-import { isNodeTypeIn } from '../../../common/queries/isNodeTypeIn';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
+import {
+  getAboveByType,
+  getParent,
+  isNodeTypeIn,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { Editor, Location } from "slate";
+import { DEFAULTS_LIST } from "../defaults";
+import { ListOptions } from "../types";
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.

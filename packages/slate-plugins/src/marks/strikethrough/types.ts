@@ -1,13 +1,13 @@
-import { Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
 import {
   Deserialize,
+  GetOnHotkeyToggleMarkOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
-import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { Text } from "slate";
+import { RenderLeafProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Text node
 export interface StrikethroughNodeData {}
@@ -16,7 +16,7 @@ export interface StrikethroughNode extends Text, StrikethroughNodeData {}
 
 // renderLeaf options given as props
 export interface StrikethroughRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // Leaf props
 export interface StrikethroughLeafProps
@@ -26,7 +26,7 @@ export interface StrikethroughLeafProps
   leaf: StrikethroughNode;
 }
 
-export type StrikethroughKeyOption = 'strikethrough';
+export type StrikethroughKeyOption = "strikethrough";
 
 // Plugin options
 export type StrikethroughPluginOptionsValues = RenderNodeOptions &
@@ -47,4 +47,4 @@ export interface StrikethroughRenderLeafOptions
 
 // deserialize options
 export interface StrikethroughDeserializeOptions
-  extends StrikethroughPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends StrikethroughPluginOptions<"type" | "rootProps" | "deserialize"> {}

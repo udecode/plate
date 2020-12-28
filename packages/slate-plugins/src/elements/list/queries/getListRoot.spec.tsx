@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../__test-utils__/jsx';
-import { getListRoot } from './getListRoot';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { getListRoot } from "./getListRoot";
 
 const listRoot = (
   <hul>
@@ -24,7 +24,7 @@ const listRoot = (
 
 const input = (<editor>{listRoot}</editor>) as any;
 
-it('should be', () => {
+it("should be", () => {
   const sublist = getListRoot(input);
 
   expect(sublist).toEqual([listRoot, [0]]);

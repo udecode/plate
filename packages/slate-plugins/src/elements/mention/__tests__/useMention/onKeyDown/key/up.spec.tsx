@@ -1,12 +1,12 @@
 /** @jsx jsx */
-import { act, renderHook } from '@testing-library/react-hooks';
-import { Editor } from 'slate';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../../../__test-utils__/jsx';
-import { pipe } from '../../../../../../common/utils/pipe';
-import { useMention } from '../../../../index';
-import { mentionables } from '../mentionables.fixture';
+import { act, renderHook } from "@testing-library/react-hooks";
+import { pipe } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withHistory } from "slate-history";
+import { withReact } from "slate-react";
+import { useMention } from "../../../../index";
+import { mentionables } from "../mentionables.fixture";
 
 const input = ((
   <editor>
@@ -19,7 +19,7 @@ const input = ((
 
 const withPlugins = [withReact, withHistory] as const;
 
-it('should go down', () => {
+it("should go down", () => {
   const editor = pipe(input, ...withPlugins);
 
   const { result } = renderHook(() => useMention(mentionables));
@@ -30,7 +30,7 @@ it('should go down', () => {
 
   act(() => {
     result.current.onKeyDownMention(
-      new KeyboardEvent('keydown', { key: 'ArrowUp' }),
+      new KeyboardEvent("keydown", { key: "ArrowUp" }),
       editor
     );
   });

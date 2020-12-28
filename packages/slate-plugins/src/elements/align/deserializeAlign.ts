@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_ALIGN } from './defaults';
-import { AlignDeserializeOptions } from './types';
+import {
+  getElementDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_ALIGN } from "./defaults";
+import { AlignDeserializeOptions } from "./types";
 
 export const deserializeAlign = (
   options?: AlignDeserializeOptions
@@ -16,9 +18,9 @@ export const deserializeAlign = (
         rules: [
           { className: align_center.rootProps.className },
           {
-            nodeNames: 'DIV',
+            nodeNames: "DIV",
             style: {
-              textAlign: 'center',
+              textAlign: "center",
             },
           },
         ],
@@ -29,9 +31,9 @@ export const deserializeAlign = (
         rules: [
           { className: align_right.rootProps.className },
           {
-            nodeNames: 'DIV',
+            nodeNames: "DIV",
             style: {
-              textAlign: 'right',
+              textAlign: "right",
             },
           },
         ],

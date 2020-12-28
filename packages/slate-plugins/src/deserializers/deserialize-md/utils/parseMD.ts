@@ -1,8 +1,15 @@
-import markdown from 'remark-parse';
-import slate from 'remark-slate';
-import unified from 'unified';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
+import {
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_LI,
+  ELEMENT_LINK,
+  ELEMENT_OL,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_UL,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import markdown from "remark-parse";
+import slate from "remark-slate";
+import unified from "unified";
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -10,14 +17,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '../../../elements/heading/defaults';
-import { ELEMENT_LINK } from '../../../elements/link/defaults';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '../../../elements/list/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
+} from "../../../elements/heading/defaults";
 
 export const parseMD = (options?: Record<string, any>) => (content: string) => {
   const {

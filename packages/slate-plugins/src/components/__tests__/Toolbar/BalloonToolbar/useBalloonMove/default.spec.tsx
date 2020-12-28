@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { renderHook } from '@testing-library/react-hooks';
-import { Editor } from 'slate';
-import { jsx } from '../../../../../__test-utils__/jsx';
-import { useBalloonMove } from '../../../../Toolbar/BalloonToolbar/useBalloonMove';
+import { renderHook } from "@testing-library/react-hooks";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { useBalloonMove } from "../../../../Toolbar/BalloonToolbar/useBalloonMove";
 
 const input1 = ((
   <editor>
@@ -24,19 +24,19 @@ const input2 = ((
   </editor>
 ) as any) as Editor;
 
-describe('when without selecting, then selecting, then deselecting, then again without ref', () => {
-  it('should be', () => {
+describe("when without selecting, then selecting, then deselecting, then again without ref", () => {
+  it("should be", () => {
     let editor = input1;
 
     const ref: any = {
-      current: document.createElement('div'),
+      current: document.createElement("div"),
     };
 
     const { rerender } = renderHook(() =>
       useBalloonMove({
         editor,
         ref,
-        direction: 'bottom',
+        direction: "bottom",
       })
     );
 

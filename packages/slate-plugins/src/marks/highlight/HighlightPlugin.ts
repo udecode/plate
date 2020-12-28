@@ -1,9 +1,9 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getOnHotkeyToggleMarkDefault } from '../../common/utils/getOnHotkeyToggleMarkDefault';
-import { DEFAULTS_HIGHLIGHT } from './defaults';
-import { deserializeHighlight } from './deserializeHighlight';
-import { renderLeafHighlight } from './renderLeafHighlight';
-import { HighlightPluginOptions } from './types';
+import { getOnHotkeyToggleMarkDefault } from "@udecode/slate-plugins-common";
+import { SlatePlugin } from "@udecode/slate-plugins-core";
+import { DEFAULTS_HIGHLIGHT } from "./defaults";
+import { deserializeHighlight } from "./deserializeHighlight";
+import { renderLeafHighlight } from "./renderLeafHighlight";
+import { HighlightPluginOptions } from "./types";
 
 /**
  * Enables support for highlights, useful when reviewing
@@ -15,7 +15,7 @@ export const HighlightPlugin = (
   renderLeaf: renderLeafHighlight(options),
   deserialize: deserializeHighlight(options),
   onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: 'highlight',
+    key: "highlight",
     defaultOptions: DEFAULTS_HIGHLIGHT,
     options,
   }),

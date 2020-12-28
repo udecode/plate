@@ -1,20 +1,22 @@
-import { Editor, Path, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
-import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
-import { isCollapsed } from '../../common/queries/isCollapsed';
-import { isSelectionAtBlockStart } from '../../common/queries/isSelectionAtBlockStart';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
-import { getListItemEntry } from './queries/getListItemEntry';
-import { hasListInListItem } from './queries/hasListInListItem';
-import { deleteListFragment } from './transforms/deleteListFragment';
-import { insertListItem } from './transforms/insertListItem';
-import { moveListItemUp } from './transforms/moveListItemUp';
-import { removeFirstListItem } from './transforms/removeFirstListItem';
-import { removeRootListItem } from './transforms/removeRootListItem';
-import { unwrapList } from './transforms/unwrapList';
-import { DEFAULTS_LIST } from './defaults';
-import { ListOptions } from './types';
+import {
+  isBlockAboveEmpty,
+  isCollapsed,
+  isSelectionAtBlockStart,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { Editor, Path, Transforms } from "slate";
+import { ReactEditor } from "slate-react";
+import { onKeyDownResetBlockType } from "../../handlers/reset-block-type/onKeyDownResetBlockType";
+import { DEFAULTS_LIST } from "./defaults";
+import { getListItemEntry } from "./queries/getListItemEntry";
+import { hasListInListItem } from "./queries/hasListInListItem";
+import { deleteListFragment } from "./transforms/deleteListFragment";
+import { insertListItem } from "./transforms/insertListItem";
+import { moveListItemUp } from "./transforms/moveListItemUp";
+import { removeFirstListItem } from "./transforms/removeFirstListItem";
+import { removeRootListItem } from "./transforms/removeRootListItem";
+import { unwrapList } from "./transforms/unwrapList";
+import { ListOptions } from "./types";
 
 export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   editor: T
@@ -51,7 +53,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
             editor,
             {
               type: li.type,
-              children: [{ type: p.type, children: [{ text: '' }] }],
+              children: [{ type: p.type, children: [{ text: "" }] }],
             },
             { at: Path.next(listItemPath), select: true }
           );
@@ -66,7 +68,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
             editor,
             {
               type: li.type,
-              children: [{ type: p.type, children: [{ text: '' }] }],
+              children: [{ type: p.type, children: [{ text: "" }] }],
             },
             { at: listItemPath }
           );

@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_CODE_BLOCK } from './defaults';
-import { CodeBlockDeserializeOptions } from './types';
+import {
+  getElementDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_CODE_BLOCK } from "./defaults";
+import { CodeBlockDeserializeOptions } from "./types";
 
 export const deserializeCodeBlock = (
   options?: CodeBlockDeserializeOptions
@@ -12,7 +14,7 @@ export const deserializeCodeBlock = (
   return {
     element: getElementDeserializer({
       type: code_block.type,
-      rules: [{ nodeNames: 'PRE' }],
+      rules: [{ nodeNames: "PRE" }],
       ...options?.code_block?.deserialize,
     }),
   };

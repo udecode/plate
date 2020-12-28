@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { Editor } from 'slate';
-import { jsx } from '../../../__test-utils__/jsx';
-import { ELEMENT_LINK } from '../../../elements/link/defaults';
-import { withRemoveEmptyNodes } from '../../index';
+import { ELEMENT_LINK } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withRemoveEmptyNodes } from "../../index";
 
 const input = ((
   <editor>
@@ -24,7 +24,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should be', () => {
+it("should be", () => {
   const editor = withRemoveEmptyNodes({ type: ELEMENT_LINK })(input);
 
   editor.normalizeNode([(input.children[0] as any).children[0], [0, 0]]);

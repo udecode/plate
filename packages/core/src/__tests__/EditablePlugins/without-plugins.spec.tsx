@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import { render } from '@testing-library/react';
-import { createEditor, Node } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
-import { EditablePlugins } from '../../components';
+import { render } from "@testing-library/react";
+import { pipe } from "@udecode/slate-plugins-common";
+import React, { useMemo, useState } from "react";
+import { createEditor, Node } from "slate";
+import { withHistory } from "slate-history";
+import { Slate, withReact } from "slate-react";
+import { EditablePlugins } from "../../components";
 
 const EditorEmpty = () => {
   const [value, setValue] = useState<Node[]>([]);
@@ -28,8 +28,8 @@ const EditorEmpty = () => {
   );
 };
 
-it('should render', () => {
+it("should render", () => {
   const { getAllByTestId } = render(<EditorEmpty />);
 
-  expect(getAllByTestId('EditablePlugins').length).toBeGreaterThan(0);
+  expect(getAllByTestId("EditablePlugins").length).toBeGreaterThan(0);
 });

@@ -1,9 +1,9 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getOnHotkeyToggleMarkDefault } from '../../../common/utils/getOnHotkeyToggleMarkDefault';
-import { DEFAULTS_SUBSUPSCRIPT } from '../defaults';
-import { deserializeSubscript } from './deserializeSubscript';
-import { renderLeafSubscript } from './renderLeafSubscript';
-import { SubscriptPluginOptions } from './types';
+import { getOnHotkeyToggleMarkDefault } from "@udecode/slate-plugins-common";
+import { SlatePlugin } from "@udecode/slate-plugins-core";
+import { DEFAULTS_SUBSUPSCRIPT } from "../defaults";
+import { deserializeSubscript } from "./deserializeSubscript";
+import { renderLeafSubscript } from "./renderLeafSubscript";
+import { SubscriptPluginOptions } from "./types";
 
 /**
  * Enables support for subscript formatting.
@@ -14,7 +14,7 @@ export const SubscriptPlugin = (
   renderLeaf: renderLeafSubscript(options),
   deserialize: deserializeSubscript(options),
   onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: 'subscript',
+    key: "subscript",
     defaultOptions: DEFAULTS_SUBSUPSCRIPT,
     options,
   }),

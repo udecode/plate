@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getLeafDeserializer } from '../../common/utils/getLeafDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_STRIKETHROUGH } from './defaults';
-import { StrikethroughDeserializeOptions } from './types';
+import {
+  getLeafDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_STRIKETHROUGH } from "./defaults";
+import { StrikethroughDeserializeOptions } from "./types";
 
 export const deserializeStrikethrough = (
   options?: StrikethroughDeserializeOptions
@@ -13,10 +15,10 @@ export const deserializeStrikethrough = (
     leaf: getLeafDeserializer({
       type: strikethrough.type,
       rules: [
-        { nodeNames: ['S', 'DEL', 'STRIKE'] },
+        { nodeNames: ["S", "DEL", "STRIKE"] },
         {
           style: {
-            textDecoration: 'line-through',
+            textDecoration: "line-through",
           },
         },
       ],

@@ -1,10 +1,12 @@
-import * as React from 'react';
-import { useSlate } from 'slate-react';
-import { isMarkActive } from '../../common/queries/isMarkActive';
-import { toggleMark } from '../../common/transforms/toggleMark';
-import { getPreventDefaultHandler } from '../../common/utils/index';
-import { ToolbarButton } from '../ToolbarButton/index';
-import { ToolbarMarkProps } from './ToolbarMark.types';
+import {
+  getPreventDefaultHandler,
+  isMarkActive,
+  toggleMark,
+} from "@udecode/slate-plugins-common";
+import * as React from "react";
+import { useSlate } from "slate-react";
+import { ToolbarButton } from "../ToolbarButton/index";
+import { ToolbarMarkProps } from "./ToolbarMark.types";
 
 /**
  * Toolbar button to toggle the mark of the leaves in selection.

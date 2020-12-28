@@ -1,13 +1,13 @@
-import { Text } from 'slate';
-import { RenderLeafProps } from 'slate-react';
 import {
   Deserialize,
+  GetOnHotkeyToggleMarkOptions,
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
-import { GetOnHotkeyToggleMarkOptions } from '../../common/utils/getOnHotkeyToggleMark';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { Text } from "slate";
+import { RenderLeafProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Text node
 export interface CodeNodeData {}
@@ -16,7 +16,7 @@ export interface CodeNode extends Text, CodeNodeData {}
 
 // renderLeaf options given as props
 export interface CodeRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // Leaf props
 export interface CodeLeafProps
@@ -26,7 +26,7 @@ export interface CodeLeafProps
   leaf: CodeNode;
 }
 
-export type CodeKeyOption = 'code';
+export type CodeKeyOption = "code";
 
 // Plugin options
 export type CodePluginOptionsValues = RenderNodeOptions &
@@ -45,4 +45,4 @@ export interface CodeRenderLeafOptions
 
 // deserialize options
 export interface CodeDeserializeOptions
-  extends CodePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends CodePluginOptions<"type" | "rootProps" | "deserialize"> {}

@@ -1,9 +1,11 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getNodeDeserializer } from '../../common/utils/getNodeDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { CLASS_TODO_LIST_CHECKED } from './constants';
-import { DEFAULTS_TODO_LIST } from './defaults';
-import { TodoListDeserializeOptions } from './types';
+import {
+  getNodeDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { CLASS_TODO_LIST_CHECKED } from "./constants";
+import { DEFAULTS_TODO_LIST } from "./defaults";
+import { TodoListDeserializeOptions } from "./types";
 
 export const deserializeTodoList = (
   options?: TodoListDeserializeOptions

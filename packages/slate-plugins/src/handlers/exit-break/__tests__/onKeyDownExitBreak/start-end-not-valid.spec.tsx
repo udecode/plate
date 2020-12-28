@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import * as isHotkey from 'is-hotkey';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { onKeyDownExitBreak } from '../../index';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import * as isHotkey from "is-hotkey";
+import { onKeyDownExitBreak } from "../../index";
 
 const input = (
   <editor>
@@ -14,7 +14,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent('keydown');
+const event = new KeyboardEvent("keydown");
 
 const output = (
   <editor>
@@ -25,10 +25,10 @@ const output = (
   </editor>
 ) as any;
 
-it('should be', () => {
-  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+it("should be", () => {
+  jest.spyOn(isHotkey, "default").mockReturnValue(true);
   onKeyDownExitBreak({
-    rules: [{ hotkey: 'enter', level: 0, query: { start: true, end: true } }],
+    rules: [{ hotkey: "enter", level: 0, query: { start: true, end: true } }],
   })(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection?.anchor).toEqual({ offset: 2, path: [0, 0] });

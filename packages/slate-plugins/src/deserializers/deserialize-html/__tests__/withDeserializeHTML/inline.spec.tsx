@@ -1,14 +1,13 @@
 /** @jsx jsx */
 
-import { Editor } from 'slate';
-import { withReact } from 'slate-react';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { withInlineVoid } from '../../../../common/plugins/inline-void/withInlineVoid';
-import { pipe } from '../../../../common/utils/pipe';
-import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
-import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { pipe, withInlineVoid } from "@udecode/slate-plugins-common";
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { Editor } from "slate";
+import { withReact } from "slate-react";
+import { ELEMENT_MENTION } from "../../../../elements/mention/defaults";
+import { MentionPlugin } from "../../../../elements/mention/MentionPlugin";
+import { ParagraphPlugin } from "../../../../elements/paragraph/ParagraphPlugin";
+import { withDeserializeHTML } from "../../withDeserializeHTML";
 
 const input = ((
   <editor>
@@ -37,7 +36,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should do nothing', () => {
+it("should do nothing", () => {
   const editor = pipe(
     input,
     withReact,

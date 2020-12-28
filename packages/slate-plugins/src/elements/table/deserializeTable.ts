@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_TABLE } from './defaults';
-import { TableDeserializeOptions } from './types';
+import {
+  getElementDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_TABLE } from "./defaults";
+import { TableDeserializeOptions } from "./types";
 
 export const deserializeTable = (
   options?: TableDeserializeOptions
@@ -13,24 +15,24 @@ export const deserializeTable = (
     element: [
       ...getElementDeserializer({
         type: table.type,
-        rules: [{ nodeNames: 'TABLE' }],
+        rules: [{ nodeNames: "TABLE" }],
         ...options?.table?.deserialize,
       }),
       ...getElementDeserializer({
         type: tr.type,
-        rules: [{ nodeNames: 'TR' }],
+        rules: [{ nodeNames: "TR" }],
         ...options?.tr?.deserialize,
       }),
       ...getElementDeserializer({
         type: td.type,
-        attributes: ['rowspan', 'colspan'],
-        rules: [{ nodeNames: 'TD' }],
+        attributes: ["rowspan", "colspan"],
+        rules: [{ nodeNames: "TD" }],
         ...options?.td?.deserialize,
       }),
       ...getElementDeserializer({
         type: th.type,
-        attributes: ['rowspan', 'colspan'],
-        rules: [{ nodeNames: 'TH' }],
+        attributes: ["rowspan", "colspan"],
+        rules: [{ nodeNames: "TH" }],
         ...options?.th?.deserialize,
       }),
     ],

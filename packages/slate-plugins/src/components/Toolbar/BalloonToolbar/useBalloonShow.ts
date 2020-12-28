@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useTimeoutFn } from 'react-use';
-import { Editor } from 'slate';
-import { isSelectionExpanded } from '../../../common/queries';
-import { getSelectionText } from '../../../common/queries/getSelectionText';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+} from "@udecode/slate-plugins-common";
+import { useCallback, useEffect, useState } from "react";
+import { useTimeoutFn } from "react-use";
+import { Editor } from "slate";
 
 /**
  * Hide if not selecting.
@@ -44,7 +46,7 @@ export const useBalloonShow = ({
     if (!hidden && !selectionExpanded) {
       setHidden(true);
       if (ref.current) {
-        ref.current.removeAttribute('style');
+        ref.current.removeAttribute("style");
       }
     }
   }, [

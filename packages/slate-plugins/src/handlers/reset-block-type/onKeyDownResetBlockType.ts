@@ -1,8 +1,7 @@
-import isHotkey from 'is-hotkey';
-import { Editor, Transforms } from 'slate';
-import { isCollapsed } from '../../common/queries/isCollapsed';
-import { isNodeTypeIn } from '../../common/queries/isNodeTypeIn';
-import { ResetBlockTypePluginOptions } from './types';
+import { isCollapsed, isNodeTypeIn } from "@udecode/slate-plugins-common";
+import isHotkey from "is-hotkey";
+import { Editor, Transforms } from "slate";
+import { ResetBlockTypePluginOptions } from "./types";
 
 export const onKeyDownResetBlockType = ({
   rules,

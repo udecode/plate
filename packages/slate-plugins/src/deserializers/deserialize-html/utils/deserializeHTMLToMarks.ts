@@ -1,8 +1,8 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Descendant, Element, Text } from 'slate';
-import { jsx } from 'slate-hyperscript';
-import { mergeDeepToNodes } from '../../../common';
-import { DeserializeHTMLChildren } from '../types';
+import { mergeDeepToNodes } from "@udecode/slate-plugins-common";
+import { SlatePlugin } from "@udecode/slate-plugins-core";
+import { Descendant, Element, Text } from "slate";
+import { jsx } from "slate-hyperscript";
+import { DeserializeHTMLChildren } from "../types";
 
 export interface DeserializeMarksProps {
   plugins: SlatePlugin[];
@@ -48,7 +48,7 @@ export const deserializeHTMLToMarks = ({
       }
       arr.push(child);
     } else {
-      arr.push(jsx('text', leaf, child));
+      arr.push(jsx("text", leaf, child));
     }
 
     return arr;

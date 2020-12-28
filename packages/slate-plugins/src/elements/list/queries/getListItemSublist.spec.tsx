@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../__test-utils__/jsx';
-import { getListItemSublist } from './getListItemSublist';
+import { jsx } from "@udecode/slate-plugins-test-utils";
+import { getListItemSublist } from "./getListItemSublist";
 
-describe('when there is a sublist', () => {
+describe("when there is a sublist", () => {
   const input = (
     <hli>
       <hp>
@@ -26,14 +26,14 @@ describe('when there is a sublist', () => {
     </hul>
   ) as any;
 
-  it('should be', () => {
+  it("should be", () => {
     const sublist = getListItemSublist([input, [0]]);
 
     expect(sublist).toEqual([output, [0, 1]]);
   });
 });
 
-describe('when there is no sublist', () => {
+describe("when there is no sublist", () => {
   const input = (
     <hli>
       <hp>
@@ -43,7 +43,7 @@ describe('when there is no sublist', () => {
     </hli>
   ) as any;
 
-  it('should be', () => {
+  it("should be", () => {
     const sublist = getListItemSublist([input, [0]]);
 
     expect(sublist).toBeUndefined();

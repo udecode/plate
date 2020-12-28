@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_HEADING } from './defaults';
-import { HeadingDeserializeOptions } from './types';
+import {
+  getElementDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_HEADING } from "./defaults";
+import { HeadingDeserializeOptions } from "./types";
 
 export const deserializeHeading = (
   options?: HeadingDeserializeOptions
@@ -14,7 +16,7 @@ export const deserializeHeading = (
 
   let deserializers = getElementDeserializer({
     type: h1.type,
-    rules: [{ nodeNames: 'H1' }],
+    rules: [{ nodeNames: "H1" }],
     ...options?.h1?.deserialize,
   });
 
@@ -23,7 +25,7 @@ export const deserializeHeading = (
       ...deserializers,
       ...getElementDeserializer({
         type: h2.type,
-        rules: [{ nodeNames: 'H2' }],
+        rules: [{ nodeNames: "H2" }],
         ...options?.h2?.deserialize,
       }),
     ];
@@ -32,7 +34,7 @@ export const deserializeHeading = (
       ...deserializers,
       ...getElementDeserializer({
         type: h3.type,
-        rules: [{ nodeNames: 'H3' }],
+        rules: [{ nodeNames: "H3" }],
         ...options?.h3?.deserialize,
       }),
     ];
@@ -41,7 +43,7 @@ export const deserializeHeading = (
       ...deserializers,
       ...getElementDeserializer({
         type: h4.type,
-        rules: [{ nodeNames: 'H4' }],
+        rules: [{ nodeNames: "H4" }],
         ...options?.h4?.deserialize,
       }),
     ];
@@ -50,7 +52,7 @@ export const deserializeHeading = (
       ...deserializers,
       ...getElementDeserializer({
         type: h5.type,
-        rules: [{ nodeNames: 'H5' }],
+        rules: [{ nodeNames: "H5" }],
         ...options?.h5?.deserialize,
       }),
     ];
@@ -59,7 +61,7 @@ export const deserializeHeading = (
       ...deserializers,
       ...getElementDeserializer({
         type: h6.type,
-        rules: [{ nodeNames: 'H6' }],
+        rules: [{ nodeNames: "H6" }],
         ...options?.h6?.deserialize,
       }),
     ];

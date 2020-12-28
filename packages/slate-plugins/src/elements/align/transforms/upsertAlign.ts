@@ -1,11 +1,10 @@
-import { Editor } from 'slate';
-import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
-import { wrapNodes } from '../../../common/transforms/wrapNodes';
+import { unwrapNodesByType, wrapNodes } from "@udecode/slate-plugins-common";
+import { Editor } from "slate";
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
-} from '../defaults';
+} from "../defaults";
 
 export const upsertAlign = (
   editor: Editor,
@@ -30,6 +29,6 @@ export const upsertAlign = (
       type,
       children: [],
     },
-    { mode: 'lowest' }
+    { mode: "lowest" }
   );
 };

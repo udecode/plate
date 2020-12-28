@@ -1,17 +1,17 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { SlateDocument } from '../../../../common/index';
-import { deserializeHTMLToDocument } from '../../index';
+import { SlateDocument } from "@udecode/slate-plugins-common";
+import { SlatePlugin } from "@udecode/slate-plugins-core";
+import { deserializeHTMLToDocument } from "../../index";
 
 const plugins: SlatePlugin[] = [];
-const body = document.createElement('span');
+const body = document.createElement("span");
 
 const output: SlateDocument = [
   {
-    children: [{ text: '' }],
+    children: [{ text: "" }],
   },
 ];
 
-it('should be', () => {
+it("should be", () => {
   expect(
     deserializeHTMLToDocument({
       plugins,

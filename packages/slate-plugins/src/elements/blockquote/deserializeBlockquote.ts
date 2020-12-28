@@ -1,8 +1,10 @@
-import { DeserializeHtml } from '@udecode/slate-plugins-core';
-import { getElementDeserializer } from '../../common/utils/getElementDeserializer';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_BLOCKQUOTE } from './defaults';
-import { BlockquoteDeserializeOptions } from './types';
+import {
+  getElementDeserializer,
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import { DeserializeHtml } from "@udecode/slate-plugins-core";
+import { DEFAULTS_BLOCKQUOTE } from "./defaults";
+import { BlockquoteDeserializeOptions } from "./types";
 
 export const deserializeBlockquote = (
   options?: BlockquoteDeserializeOptions
@@ -12,7 +14,7 @@ export const deserializeBlockquote = (
   return {
     element: getElementDeserializer({
       type: blockquote.type,
-      rules: [{ nodeNames: 'BLOCKQUOTE' }],
+      rules: [{ nodeNames: "BLOCKQUOTE" }],
       ...options?.blockquote?.deserialize,
     }),
   };

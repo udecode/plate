@@ -1,7 +1,7 @@
-import { Editor, Transforms } from 'slate';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { DEFAULTS_MENTION } from '../defaults';
-import { MentionNode, MentionNodeData, MentionPluginOptions } from '../types';
+import { setDefaults } from "@udecode/slate-plugins-common";
+import { Editor, Transforms } from "slate";
+import { DEFAULTS_MENTION } from "../defaults";
+import { MentionNode, MentionNodeData, MentionPluginOptions } from "../types";
 
 export const insertMention = (
   editor: Editor,
@@ -12,7 +12,7 @@ export const insertMention = (
 
   const mentionNode: MentionNode = {
     type: mention.type,
-    children: [{ text: '' }],
+    children: [{ text: "" }],
     ...mentionable,
   };
   Transforms.insertNodes(editor, mentionNode);

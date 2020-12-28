@@ -1,9 +1,9 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { setDefaults } from '../../common/utils/setDefaults';
-import { DEFAULTS_LINK } from './defaults';
-import { deserializeLink } from './deserializeLink';
-import { renderElementLink } from './renderElementLink';
-import { LinkPluginOptions } from './types';
+import { setDefaults } from "@udecode/slate-plugins-common";
+import { SlatePlugin } from "@udecode/slate-plugins-core";
+import { DEFAULTS_LINK } from "./defaults";
+import { deserializeLink } from "./deserializeLink";
+import { renderElementLink } from "./renderElementLink";
+import { LinkPluginOptions } from "./types";
 
 /**
  * Enables support for hyperlinks.

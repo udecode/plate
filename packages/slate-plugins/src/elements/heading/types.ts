@@ -1,5 +1,3 @@
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
   ElementWithAttributes,
@@ -8,11 +6,13 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
+} from "@udecode/slate-plugins-common";
+import { IStyleFunctionOrObject } from "@uifabric/utilities";
+import { RenderElementProps } from "slate-react";
 import {
   StyledComponentStyleProps,
   StyledComponentStyles,
-} from '../../components/StyledComponent/StyledComponent.types';
+} from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Element node
 export interface HeadingNodeData {}
@@ -48,7 +48,7 @@ export interface HeadingLevelsOption {
   levels?: number;
 }
 
-export type HeadingKeyOption = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+export type HeadingKeyOption = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
 // Plugin options
 export type HeadingPluginOptionsValues = RenderNodeOptions &
@@ -69,5 +69,5 @@ export interface HeadingRenderElementOptions
 
 // deserialize options
 export interface HeadingDeserializeOptions
-  extends HeadingPluginOptions<'type' | 'rootProps' | 'deserialize'>,
+  extends HeadingPluginOptions<"type" | "rootProps" | "deserialize">,
     HeadingLevelsOption {}

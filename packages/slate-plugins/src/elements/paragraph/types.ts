@@ -1,4 +1,3 @@
-import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
   ElementWithAttributes,
@@ -7,8 +6,9 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
+} from "@udecode/slate-plugins-common";
+import { RenderElementProps } from "slate-react";
+import { StyledComponentPropsOptions } from "../../components/StyledComponent/StyledComponent.types";
 
 // Data of Element node
 export interface ParagraphNodeData {}
@@ -19,7 +19,7 @@ export interface ParagraphNode
 
 // renderElement options given as props
 export interface ParagraphRenderElementPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+  extends Omit<StyledComponentPropsOptions, "children"> {}
 
 // renderElement props
 export interface ParagraphElementProps
@@ -30,7 +30,7 @@ export interface ParagraphElementProps
   element: ParagraphNode;
 }
 
-export type ParagraphKeyOption = 'p';
+export type ParagraphKeyOption = "p";
 
 // Plugin options
 export type ParagraphPluginOptionsValues = RenderNodeOptions &
@@ -51,4 +51,4 @@ export interface ParagraphRenderElementOptions
 
 // deserialize options
 export interface ParagraphDeserializeOptions
-  extends ParagraphPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends ParagraphPluginOptions<"type" | "rootProps" | "deserialize"> {}

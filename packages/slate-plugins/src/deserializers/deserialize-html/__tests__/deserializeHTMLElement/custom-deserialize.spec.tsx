@@ -1,15 +1,14 @@
 /** @jsx jsx */
 
-import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
-import { jsx } from '../../../../__test-utils__/jsx';
-import { ImagePlugin } from '../../../../elements/image/index';
-import { LinkPlugin } from '../../../../elements/link/index';
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { TablePlugin } from '../../../../elements/table/index';
-import { deserializeBold } from '../../../../marks/bold/deserializeBold';
-import { deserializeHTMLElement } from '../../../index';
+import { getHtmlDocument, jsx } from "@udecode/slate-plugins-test-utils";
+import { ImagePlugin } from "../../../../elements/image/index";
+import { LinkPlugin } from "../../../../elements/link/index";
+import { ParagraphPlugin } from "../../../../elements/paragraph/index";
+import { TablePlugin } from "../../../../elements/table/index";
+import { deserializeBold } from "../../../../marks/bold/deserializeBold";
+import { deserializeHTMLElement } from "../../../index";
 
-const textTags = ['<b>strong</b>'];
+const textTags = ["<b>strong</b>"];
 
 const inlineTags = ['<a href="http://google.com" target="_blank">a</a>'];
 
@@ -18,15 +17,15 @@ const elementTags = [
   '<table><tr><th colspan="2" scope="row">header</th></tr><tr><td>cell 1</td><td>cell 2</td></tr></table>',
 ];
 
-const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
-  ''
-)}</p>${elementTags.join('')}</body></html>`;
+const html = `<html><body><p>${textTags.join("")}</p><p>${inlineTags.join(
+  ""
+)}</p>${elementTags.join("")}</body></html>`;
 
 const input1 = [
   ImagePlugin({
     img: {
       deserialize: {
-        attributes: ['alt'],
+        attributes: ["alt"],
       },
     },
   }),
@@ -34,9 +33,9 @@ const input1 = [
     link: {
       deserialize: {
         node: (el) => ({
-          type: 'a',
-          url: el.getAttribute('href'),
-          opener: el.getAttribute('target') === '_blank',
+          type: "a",
+          url: el.getAttribute("href"),
+          opener: el.getAttribute("target") === "_blank",
         }),
       },
     },
@@ -45,13 +44,13 @@ const input1 = [
   TablePlugin({
     th: {
       deserialize: {
-        node: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
+        node: (el) => ({ type: "th", scope: el.getAttribute("scope") }),
       },
     },
   }),
   {
     deserialize: deserializeBold({
-      bold: { deserialize: { rules: [{ nodeNames: ['B'] }] } },
+      bold: { deserialize: { rules: [{ nodeNames: ["B"] }] } },
     }),
   },
 ];
@@ -67,12 +66,12 @@ const output = (
         a
       </ha>
     </hp>
-    <himg url="https://i.imgur.com/removed.png" attributes={{ alt: 'removed' }}>
+    <himg url="https://i.imgur.com/removed.png" attributes={{ alt: "removed" }}>
       <htext />
     </himg>
     <htable>
       <htr>
-        <hth scope="row" attributes={{ colspan: '2' }}>
+        <hth scope="row" attributes={{ colspan: "2" }}>
           header
         </hth>
       </htr>
@@ -84,7 +83,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should be', () => {
+it("should be", () => {
   expect(
     deserializeHTMLElement({
       plugins: input1,

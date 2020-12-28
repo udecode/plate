@@ -1,18 +1,18 @@
-import * as React from 'react';
-import { useSlate } from 'slate-react';
 import {
   getAboveByType,
   isCollapsed,
   isNodeTypeIn,
-} from '../../../common/queries';
-import { setDefaults } from '../../../common/utils/setDefaults';
+  setDefaults,
+} from "@udecode/slate-plugins-common";
+import * as React from "react";
+import { useSlate } from "slate-react";
 import {
   ToolbarButton,
   ToolbarButtonProps,
-} from '../../../components/ToolbarButton';
-import { DEFAULTS_LINK } from '../defaults';
-import { upsertLinkAtSelection } from '../transforms';
-import { LinkOptions } from '../types';
+} from "../../../components/ToolbarButton";
+import { DEFAULTS_LINK } from "../defaults";
+import { upsertLinkAtSelection } from "../transforms";
+import { LinkOptions } from "../types";
 
 export const ToolbarLink = ({
   link,
@@ -26,7 +26,7 @@ export const ToolbarLink = ({
       active={isLink}
       onMouseDown={(event) => {
         event.preventDefault();
-        let prevUrl = '';
+        let prevUrl = "";
 
         const linkNode = getAboveByType(editor, options.link.type);
         if (linkNode) {
