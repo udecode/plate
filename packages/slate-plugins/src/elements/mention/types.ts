@@ -41,7 +41,7 @@ export interface MentionRenderElementPropsOptions {
    * Prefix rendered before mention
    */
   prefix?: string;
-  onClick?: ({ value }: { value: string }) => void;
+  onClick?: (mentionNode: MentionNode) => void;
 }
 
 // renderElement props
