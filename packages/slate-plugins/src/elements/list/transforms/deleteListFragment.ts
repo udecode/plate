@@ -29,6 +29,7 @@ export const deleteListFragment = (
   const [rootNode, rootPath] = root;
   const { li } = setDefaults(options, DEFAULTS_LIST);
   let moved = 0;
+  let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {
     const listEnd = getListItemEntry(editor, { at: endSelection }, options);
@@ -54,7 +55,7 @@ export const deleteListFragment = (
       );
 
       const toListNode = getNode(editor, next);
-      if (!toListNode) return 0;
+      if (!toListNode) return;
 
       childrenMoved = moveListItemSublistItemsToList(
         editor,
@@ -115,8 +116,9 @@ export const deleteListFragment = (
     // Move done. We can delete the fragment.
     Transforms.delete(editor, { at: selection });
 
+    deleted = true;
     moved = siblingsMoved + childrenMoved;
   });
 
-  return moved;
+  return deleted ? moved : undefined;
 };

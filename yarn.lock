@@ -15804,10 +15804,10 @@ remark-parse@^9.0.0:
   dependencies:
     mdast-util-from-markdown "^0.8.0"
 
-remark-slate@^1.1.1:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/remark-slate/-/remark-slate-1.2.2.tgz#86b2487fe5ffdcf2c39072ed29727daa94e8358d"
-  integrity sha512-2m8BVNUypma1PZ5H/XBrh160hndBEXgRSqTTG/DUKEeaZBwBWiYcCCjkDse7PDjIwiRYVALQxhABWA2nbhVXYw==
+remark-slate@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/remark-slate/-/remark-slate-1.4.0.tgz#d546e4eab254d7d896a80c56c7f45e071bc2227b"
+  integrity sha512-L+/rXpb//aVD/O5jNXR663NbNwHMqlIey22FJfSt0uXRE+vfjd8TBomt14glx6TjLwuqwBUbbLm45KLRLb+sog==
   dependencies:
     "@types/escape-html" "^1.0.0"
     escape-html "^1.0.3"
