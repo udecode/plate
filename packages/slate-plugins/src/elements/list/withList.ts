@@ -162,7 +162,7 @@ export const withList = ({
       Editor.withoutNormalizing(editor, () => {
         deleted = deleteListFragment(editor, selection, options);
       });
-      if (deleted) return;
+      if (deleted !== undefined) return;
     }
 
     deleteFragment();
