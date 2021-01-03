@@ -54,6 +54,7 @@ export type LinkPluginOptionsValues = RenderNodeOptions &
      * Callback to validate an url.
      */
     isUrl?: (text: string) => boolean;
+    attribute?: string;
   };
 export type LinkPluginOptionsKeys = keyof LinkPluginOptionsValues;
 export type LinkPluginOptions<
