@@ -57,18 +57,20 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
     if (!isEnd) {
-      Transforms.splitNodes(editor, { at: editor.selection });
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: li.type,
-          children: [],
-        },
-        { at: nextParagraphPath }
-      );
-      Transforms.moveNodes(editor, {
-        at: nextParagraphPath,
-        to: nextListItemPath,
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.splitNodes(editor);
+        Transforms.wrapNodes(
+          editor,
+          {
+            type: li.type,
+            children: [],
+          },
+          { at: nextParagraphPath }
+        );
+        Transforms.moveNodes(editor, {
+          at: nextParagraphPath,
+          to: nextListItemPath,
+        });
       });
     } else {
       /**
