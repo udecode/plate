@@ -45,7 +45,7 @@ export const MentionElementBase = ({
       data-slate-value={element.value}
       className={classNames.root}
       contentEditable={false}
-      onClick={getHandler(onClick, { value: element.value })}
+      onClick={getHandler(onClick, element)}
       {...htmlAttributes}
     >
       {prefix}

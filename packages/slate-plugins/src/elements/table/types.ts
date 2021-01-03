@@ -11,6 +11,10 @@ import {
   RootProps,
 } from '../../common/types/PluginOptions.types';
 
+export const TableHotKey = {
+  TAB: 'Tab',
+};
+
 // Data of Element node
 export interface TableNodeData {}
 // Element node
@@ -54,8 +58,9 @@ export interface TableRenderElementOptions
 export interface TableDeserializeOptions
   extends TablePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
-export interface WithTableOptions extends TablePluginOptions<'type'> {}
+export interface TableOnKeyDownOptions extends TablePluginOptions<'type'> {}
 export interface TableOptions extends TablePluginOptions<'type'> {}
+export interface WithTableOptions extends TablePluginOptions<'type'> {}
 
 export interface TableElementStyles {
   /**
