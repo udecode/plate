@@ -6,6 +6,7 @@ import { ToolbarButton } from '../../../components/ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
 import {
   ELEMENT_ALIGN_CENTER,
+  ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
 } from '../defaults';
@@ -18,7 +19,7 @@ export interface ToolbarAlignProps extends ToolbarButtonProps {
 
 export const ToolbarAlign = ({
   type,
-  unwrapTypes = [ELEMENT_ALIGN_LEFT, ELEMENT_ALIGN_CENTER, ELEMENT_ALIGN_RIGHT],
+  unwrapTypes = [ELEMENT_ALIGN_LEFT, ELEMENT_ALIGN_CENTER, ELEMENT_ALIGN_RIGHT, ELEMENT_ALIGN_JUSTIFY],
   ...props
 }: ToolbarAlignProps) => {
   const editor = useSlate();
