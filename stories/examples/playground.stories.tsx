@@ -8,6 +8,7 @@ import {
   FormatAlignCenter,
   FormatAlignLeft,
   FormatAlignRight,
+  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -310,6 +311,10 @@ export const Plugins = () => {
           <ToolbarAlign
             type={options.align_right.type}
             icon={<FormatAlignRight />}
+          />
+          <ToolbarAlign
+            type={options.align_justify.type}
+            icon={<FormatAlignJustify />}
           />
           <ToolbarLink {...options} icon={<Link />} />
           <ToolbarImage {...options} icon={<Image />} />

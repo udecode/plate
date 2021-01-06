@@ -4,6 +4,7 @@ import {
   FormatAlignCenter,
   FormatAlignLeft,
   FormatAlignRight,
+  FormatAlignJustify,
 } from '@styled-icons/material';
 import {
   AlignPlugin,
@@ -112,6 +113,10 @@ export const Example = () => {
           <ToolbarAlign
             type={options.align_right.type}
             icon={<FormatAlignRight />}
+          />
+          <ToolbarAlign
+            type={options.align_justify.type}
+            icon={<FormatAlignJustify />}
           />
         </HeadingToolbar>
         <EditablePlugins

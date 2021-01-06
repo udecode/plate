@@ -201,6 +201,7 @@ const Editor = () => {
         <ToolbarAlign icon={null} />
         <ToolbarAlign type={options.align_center.type} icon={null} />
         <ToolbarAlign type={options.align_right.type} icon={null} />
+        <ToolbarAlign type={options.align_justify.type} icon={null} />
       </HeadingToolbar>
       <BalloonToolbar>
         <ToolbarMark reversed type={MARK_BOLD} icon={null} />

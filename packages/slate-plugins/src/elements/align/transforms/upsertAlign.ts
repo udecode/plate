@@ -3,6 +3,7 @@ import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType'
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import {
   ELEMENT_ALIGN_CENTER,
+  ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
 } from '../defaults';
@@ -15,6 +16,7 @@ export const upsertAlign = (
       ELEMENT_ALIGN_LEFT,
       ELEMENT_ALIGN_CENTER,
       ELEMENT_ALIGN_RIGHT,
+      ELEMENT_ALIGN_JUSTIFY,
     ],
   }: { type?: string; unwrapTypes?: string[] }
 ) => {
