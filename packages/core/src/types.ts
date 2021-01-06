@@ -21,7 +21,8 @@ export type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
  * Return undefined in case the criteria for rendering isn't met
  */
 export type RenderElement = (
-  props: RenderElementProps
+  props: RenderElementProps,
+  next?: () => JSX.Element
 ) => JSX.Element | undefined;
 
 /**

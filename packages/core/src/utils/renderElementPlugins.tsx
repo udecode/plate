@@ -7,21 +7,35 @@ export const renderElementPlugins = (
   renderElementList: RenderElement[]
 ) => {
   const Tag = (elementProps: RenderElementProps) => {
-    let element;
+    let renderIdx = 0;
 
-    renderElementList.some((renderElement) => {
-      element = renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
+    const next = () => {
+      let element;
 
-    plugins.some(({ renderElement }) => {
-      element = renderElement && renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
+      renderElementList.some((renderElement, idx) => {
+        if (idx < renderIdx) {
+          return false;
+        }
+        renderIdx += 1;
+        element = renderElement(elementProps, next);
+        return !!element;
+      });
+      if (element) return element;
 
-    return <div {...elementProps.attributes}>{elementProps.children}</div>;
+      plugins.some(({ renderElement }, idx) => {
+        if (renderElementList.length + idx < renderIdx) {
+          return false;
+        }
+        renderIdx += 1;
+        element = renderElement && renderElement(elementProps, next);
+        return !!element;
+      });
+      if (element) return element;
+
+      return <div {...elementProps.attributes} {...elementProps.element?.attributes}>{elementProps.children}</div>;
+    }
+
+    return next();
   };
 
   return (elementProps: RenderElementProps) => {
