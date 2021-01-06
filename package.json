@@ -5,7 +5,8 @@
     "packages/test-utils",
     "packages/common",
     "packages/core",
-    "packages/slate-plugins"
+    "packages/slate-plugins",
+    "packages/slate-plugins-components"
   ],
   "scripts": {
     "build": "lerna run build --since",

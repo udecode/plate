@@ -114,7 +114,7 @@ const nodesFixture1: Element[] = [
 ];
 
 describe('when getNodeById', () => {
-  it('should be ', () => {
+  it('should be', () => {
     const editor = createEditor();
     editor.children = nodesFixture1;
     expect(getNodeById(editor, '2')).toEqual([nodesFixture1[1], [1]]);
