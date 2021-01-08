@@ -6,6 +6,7 @@ export * from './deserializers';
 export * from './dnd';
 export * from './elements';
 export * from './handlers';
+export * from './hooks';
 export * from './marks';
 export * from './normalizers';
 export * from './plugins';

@@ -1,7 +1,10 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { createEditor } from 'slate';
 
+export type EditorKeyType = string | number;
+
 export type SlatePluginsState = {
+  key: EditorKeyType;
   withPlugins: any[];
   plugins: SlatePlugin[];
   editor: typeof createEditor;
@@ -13,6 +16,7 @@ export type SlatePluginsState = {
 };
 
 export type UseSlatePluginsOptionType = {
+  key: EditorKeyType;
   withPlugins?: any[];
   plugins?: SlatePlugin[];
   editor?: typeof createEditor;

@@ -31,7 +31,6 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "zustand": "^3.2.0",
     "@udecode/slate-plugins-core": "*"
   },
   "publishConfig": {
