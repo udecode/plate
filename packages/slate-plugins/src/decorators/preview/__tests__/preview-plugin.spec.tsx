@@ -12,11 +12,11 @@ import { PreviewPlugin } from '../PreviewPlugin';
 const Editor = () => {
   const [value, setValue] = useState<Node[]>(initialValuePreview);
 
-  const withPlugins = [withReact, withHistory] as const;
+  const editor = useMemo(() => {
+    const withPlugins = [withReact, withHistory] as const;
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
-    withPlugins,
-  ]);
+    return pipe(createEditor(), ...withPlugins);
+  }, []);
 
   return (
     <Slate

@@ -18,11 +18,11 @@ const EditorWithDecorateDeps = ({
 }) => {
   const [value, setValue] = useState<Node[]>([]);
 
-  const withPlugins = [withReact, withHistory] as const;
+  const editor = useMemo(() => {
+    const withPlugins = [withReact, withHistory] as const;
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), [
-    withPlugins,
-  ]);
+    return pipe(createEditor(), ...withPlugins);
+  }, []);
 
   return (
     <Slate
