@@ -1,24 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import { pipe } from '@udecode/slate-plugins-core';
 import type { UseSlatePluginsOptionType } from './types';
-import { useSlatePluginStore } from './useSlatePluginStore';
+import { slatePluginStore } from '.';
 
 /**
- * @description This plugin is the base of your Editor, you can dynamically change the contents as you wish and internally, it will automatically reflect on your editor
+ * @description This plugin is the base of your Editor, you can dynamically change the contents as you wish and internally, it will be automatically reflected on your editor
  * @see @todo LINK TO THE DOCS PAGE
  * @requires key
  * @param options UseSlatePluginsOptionType
  */
 export const useSlatePlugins = (options: UseSlatePluginsOptionType) => {
-  const {
-    editor: stateEditor,
-    withPlugins,
-    plugins,
-    setComponents,
-    setWithPlugins,
-    setEditor,
-    setPlugins,
-  } = useSlatePluginStore();
+  /**
+   * @description This will allow component level store with fallback which allows multiple editor compositions.
+   */
+  const [
+    {
+      editor: stateEditor,
+      withPlugins,
+      plugins,
+      setComponents,
+      setWithPlugins,
+      setEditor,
+      setPlugins,
+    },
+  ] = useState(() => slatePluginStore());
 
   useEffect(() => {
     if (options.editor) setEditor(options.editor);

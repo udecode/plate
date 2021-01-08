@@ -1,4 +1,5 @@
 import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import create from 'zustand';
 import type { SlatePluginsState } from './types';
@@ -9,10 +10,10 @@ import type { SlatePluginsState } from './types';
  * @requires key
  * @param options SlatePluginsState
  */
-export const useSlatePluginStore = create<SlatePluginsState>((set) => ({
-  key: 'main-editor',
+export const slatePluginStore = create<SlatePluginsState>((set) => ({
+  key: 'main-component',
   editor: createEditor,
-  withPlugins: [withReact],
+  withPlugins: [withReact, withHistory],
   plugins: [],
   components: [],
   setComponents: (newComponents: SlatePluginsState['components']) =>
