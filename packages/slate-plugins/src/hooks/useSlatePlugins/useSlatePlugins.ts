@@ -1,55 +1,40 @@
-import { useEffect, useMemo, useState } from 'react';
-import { pipe } from '@udecode/slate-plugins-core';
-import type { UseSlatePluginsOptionType } from './types';
-import { slatePluginStore } from '.';
+import { useEffect } from 'react';
+import { UseSlatePluginsOptions } from './types';
+import { useSlatePluginsActions } from './useSlatePluginsSelectors';
 
 /**
- * @description This plugin is the base of your Editor, you can dynamically change the contents as you wish and internally, it will be automatically reflected on your editor
- * @see @todo LINK TO THE DOCS PAGE
- * @requires key
- * @param options UseSlatePluginsOptionType
+ * Control the editor store in one hook: dynamically change the options as you wish and internally it will be saved in the store.
+ * Use `useSlatePluginsStore` to select state from the store.
  */
-export const useSlatePlugins = (options: UseSlatePluginsOptionType) => {
-  /**
-   * @description This will allow component level store with fallback which allows multiple editor compositions.
-   */
-  const [
-    {
-      editor: stateEditor,
-      withPlugins,
-      plugins,
-      setComponents,
-      setWithPlugins,
-      setEditor,
-      setPlugins,
-    },
-  ] = useState(() => slatePluginStore());
-
-  useEffect(() => {
-    if (options.editor) setEditor(options.editor);
-    if (options.components) setComponents(options.components);
-    if (options.withPlugins) setWithPlugins(options.withPlugins);
-    if (options.plugins) setPlugins(options.plugins);
-  }, [
-    options.editor,
-    options.components,
-    options.withPlugins,
-    options.plugins,
-  ]);
-
-  const [editorValue, setEditorValue] = useState(options.initialValue);
-
-  const editor = useMemo(() => pipe(stateEditor(), ...withPlugins), []);
-
-  return {
-    editor,
-    withPlugins,
+export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
+  const {
+    key = 'main',
+    components,
+    value: editorValue,
     plugins,
+    editor,
+  } = options;
+
+  const {
+    setValue,
     setComponents,
-    setWithPlugins,
     setEditor,
     setPlugins,
-    editorValue,
-    setEditorValue,
-  };
+  } = useSlatePluginsActions();
+
+  useEffect(() => {
+    editorValue && setValue(key, editorValue);
+  }, [editorValue, key, setValue]);
+
+  useEffect(() => {
+    components && setComponents(key, components);
+  }, [components, key, setComponents]);
+
+  useEffect(() => {
+    editor && setEditor(key, editor);
+  }, [editor, key, setEditor]);
+
+  useEffect(() => {
+    plugins && setPlugins(key, plugins);
+  }, [key, plugins, setPlugins]);
 };
