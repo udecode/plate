@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { isNodeTypeIn } from '../../../../common/queries/isNodeTypeIn';
+import { hasNodeByType } from '../../../../common/queries/hasNodeByType';
 import { getPreventDefaultHandler } from '../../../../common/utils/getPreventDefaultHandler';
 import { setDefaults } from '../../../../common/utils/setDefaults';
 import { ToolbarButton } from '../../../../components/ToolbarButton/ToolbarButton';
@@ -14,7 +14,7 @@ export const ToolbarTable = ({ transform, ...props }: ToolbarTableProps) => {
 
   return (
     <ToolbarButton
-      active={isNodeTypeIn(editor, table.type)}
+      active={hasNodeByType(editor, table.type)}
       onMouseDown={getPreventDefaultHandler(transform, editor, props)}
       {...props}
     />

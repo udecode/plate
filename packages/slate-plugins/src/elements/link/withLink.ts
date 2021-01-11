@@ -7,8 +7,8 @@ import {
 } from '../../common/queries/getRangeBefore';
 import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
 import { getText } from '../../common/queries/getText';
+import { hasNodeByType } from '../../common/queries/hasNodeByType';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { isNodeTypeIn } from '../../common/queries/isNodeTypeIn';
 import { unwrapNodesByType } from '../../common/transforms/unwrapNodesByType';
 import { isUrl as isUrlProtocol, setDefaults } from '../../common/utils';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
@@ -117,7 +117,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
     const text = data.getData('text/plain');
 
     if (text) {
-      if (isNodeTypeIn(editor, link.type)) {
+      if (hasNodeByType(editor, link.type)) {
         return insertText(text);
       }
 

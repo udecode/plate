@@ -1,8 +1,9 @@
-import { Node, Path, Point, Range } from 'slate';
+import { Path, Point, Range } from 'slate';
+import { NodeMatch } from './Editor.types';
 
 export interface WrapOptions {
   at?: Path | Point | Range;
-  match?: (node: Node) => boolean;
+  match?: NodeMatch;
   mode?: 'highest' | 'lowest' | 'all';
   split?: boolean;
   voids?: boolean;
@@ -10,7 +11,7 @@ export interface WrapOptions {
 
 export interface InsertNodesOptions {
   at?: Path | Point | Range | undefined;
-  match?: ((node: Node) => boolean) | undefined;
+  match?: NodeMatch | undefined;
   mode?: 'highest' | 'lowest' | undefined;
   hanging?: boolean | undefined;
   select?: boolean | undefined;

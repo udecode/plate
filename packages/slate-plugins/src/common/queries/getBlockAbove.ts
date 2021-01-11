@@ -3,13 +3,12 @@ import { EditorAboveOptions } from '../types/Editor.types';
 
 /**
  * Get the block above a location (default: selection).
- * If not found, return the editor entry.
  */
-export const getBlockAbove = (
+export const getBlockAbove = <T extends Ancestor>(
   editor: Editor,
   options: Omit<EditorAboveOptions, 'match'> = {}
-): NodeEntry<Ancestor> =>
+): NodeEntry<T> =>
   Editor.above(editor, {
     match: (n) => Editor.isBlock(editor, n),
     ...options,
-  }) || [editor, []];
+  }) || [editor as T, []];

@@ -1,7 +1,7 @@
 import { Editor, Location } from 'slate';
 import { getAboveByType } from '../../../common/queries/getAboveByType';
 import { getParent } from '../../../common/queries/getParent';
-import { isNodeTypeIn } from '../../../common/queries/isNodeTypeIn';
+import { hasNodeByType } from '../../../common/queries/hasNodeByType';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
@@ -16,7 +16,7 @@ export const getListItemEntry = (
 ) => {
   const { li } = setDefaults(options, DEFAULTS_LIST);
 
-  if (at && isNodeTypeIn(editor, li.type, { at })) {
+  if (at && hasNodeByType(editor, li.type, { at })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;

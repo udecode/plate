@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useSlate } from 'slate-react';
 import {
   getAboveByType,
+  hasNodeByType,
   isCollapsed,
-  isNodeTypeIn,
 } from '../../../common/queries';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import {
@@ -20,7 +20,7 @@ export const ToolbarLink = ({
 }: ToolbarButtonProps & LinkOptions) => {
   const options = setDefaults({ link }, DEFAULTS_LINK);
   const editor = useSlate();
-  const isLink = isNodeTypeIn(editor, options.link.type);
+  const isLink = hasNodeByType(editor, options.link.type);
   return (
     <ToolbarButton
       active={isLink}

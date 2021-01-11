@@ -4,7 +4,7 @@ export interface QueryOptions {
   // Condition on the node to be valid.
   filter?: (entry: NodeEntry<Node>) => boolean;
   // List of types that are valid. If empty or undefined - allow all.
-  allow?: string[];
+  allow?: string[] | string;
   // List of types that are invalid.
-  exclude?: string[];
+  exclude?: string[] | string;
 }

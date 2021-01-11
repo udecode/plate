@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { isNodeTypeIn } from '../queries';
+import { hasNodeByType } from '../queries';
 import { unwrapNodesByType } from './unwrapNodesByType';
 import { wrapNodes } from './wrapNodes';
 
@@ -8,7 +8,7 @@ import { wrapNodes } from './wrapNodes';
  * Wrap otherwise.
  */
 export const toggleWrapNodes = (editor: Editor, type: string) => {
-  if (isNodeTypeIn(editor, type)) {
+  if (hasNodeByType(editor, type)) {
     unwrapNodesByType(editor, type);
   } else {
     wrapNodes(editor, {

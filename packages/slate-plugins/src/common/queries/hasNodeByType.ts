@@ -3,9 +3,9 @@ import { EditorNodesOptions } from '../types/Editor.types';
 import { getNodesByType } from './getNodesByType';
 
 /**
- * Is there a node with a type included in `types` at a location (default: selection).
+ * Has any node with a type included in `types` at a location (default: selection).
  */
-export const isNodeTypeIn = (
+export const hasNodeByType = (
   editor: Editor,
   types: string[] | string,
   options: Omit<EditorNodesOptions, 'match'> = {}

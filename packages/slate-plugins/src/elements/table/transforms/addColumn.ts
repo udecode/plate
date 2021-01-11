@@ -1,5 +1,5 @@
 import { Editor, Path, Transforms } from 'slate';
-import { getAboveByType, isNodeTypeIn } from '../../../common/queries';
+import { getAboveByType, hasNodeByType } from '../../../common/queries';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
@@ -8,7 +8,7 @@ import { getEmptyCellNode } from '../utils';
 export const addColumn = (editor: Editor, options?: TableOptions) => {
   const { table, td, th } = setDefaults(options, DEFAULTS_TABLE);
 
-  if (isNodeTypeIn(editor, table.type)) {
+  if (hasNodeByType(editor, table.type)) {
     const currentCellItem = getAboveByType(editor, [td.type, th.type]);
 
     const currentTableItem = getAboveByType(editor, table.type);

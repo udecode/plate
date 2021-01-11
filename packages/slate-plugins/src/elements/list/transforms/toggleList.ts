@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { getNodesByType, isNodeTypeIn } from '../../../common/queries';
+import { getNodesByType, hasNodeByType } from '../../../common/queries';
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
@@ -19,7 +19,7 @@ export const toggleList = (
 
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
-  const isActive = isNodeTypeIn(editor, typeList);
+  const isActive = hasNodeByType(editor, typeList);
 
   unwrapList(editor, options);
 

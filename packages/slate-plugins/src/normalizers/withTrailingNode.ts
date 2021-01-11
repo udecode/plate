@@ -1,5 +1,5 @@
 import { Editor, Path, Transforms } from 'slate';
-import { isNodeType, QueryOptions } from '../common';
+import { isNode, QueryOptions } from '../common';
 import { getLastNode } from '../common/queries';
 import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
@@ -29,7 +29,7 @@ export const withTrailingNode = ({
       const entry = getLastNode(editor, level);
       const [lastNode, lastPath] = entry;
 
-      if (lastNode.type !== type && isNodeType(entry, query)) {
+      if (lastNode.type !== type && isNode(entry, query)) {
         Transforms.insertNodes(
           editor,
           {

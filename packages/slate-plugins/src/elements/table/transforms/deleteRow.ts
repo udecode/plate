@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { getAboveByType, isNodeTypeIn } from '../../../common/queries';
+import { getAboveByType, hasNodeByType } from '../../../common/queries';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
@@ -7,7 +7,7 @@ import { TableOptions } from '../types';
 export const deleteRow = (editor: Editor, options?: TableOptions) => {
   const { table, tr } = setDefaults(options, DEFAULTS_TABLE);
 
-  if (isNodeTypeIn(editor, table.type)) {
+  if (hasNodeByType(editor, table.type)) {
     const currentTableItem = getAboveByType(editor, table.type);
     const currentRowItem = getAboveByType(editor, tr.type);
     if (

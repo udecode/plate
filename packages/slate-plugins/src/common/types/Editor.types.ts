@@ -1,8 +1,10 @@
 import { Node, Path, Point, Range, Span } from 'slate';
 
+export type NodeMatch<T extends Node = Node> = (node: T) => boolean;
+
 export interface EditorNodesOptions {
   at?: Range | Path | Point | Span;
-  match?: (node: Node) => boolean;
+  match?: NodeMatch;
   mode?: 'highest' | 'lowest' | 'all';
   universal?: boolean;
   reverse?: boolean;
@@ -11,7 +13,7 @@ export interface EditorNodesOptions {
 
 export interface EditorAboveOptions {
   at?: Range | Path | Point;
-  match?: (node: Node) => boolean;
+  match?: NodeMatch;
   mode?: 'highest' | 'lowest';
   voids?: boolean;
 }
