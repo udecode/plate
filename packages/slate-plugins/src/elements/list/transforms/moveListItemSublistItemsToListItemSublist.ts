@@ -1,10 +1,9 @@
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { findDescendantByType } from '../../../common/queries/findDescendant';
+import { findDescendant } from '../../../common/queries/findDescendant';
 import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { getParent } from '../../../common/queries/getParent';
 import { moveChildren } from '../../../common/transforms/moveChildren';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { DEFAULTS_LIST } from '../defaults';
+import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
@@ -37,29 +36,25 @@ export const moveListItemSublistItemsToListItemSublist = (
   }: MoveListItemSublistItemsToListItemSublistOptions,
   options?: ListOptions
 ) => {
-  const { ul, ol } = setDefaults(options, DEFAULTS_LIST);
-
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
 
-  const fromListItemSublist = findDescendantByType<Ancestor>(
-    editor,
-    [ol.type, ul.type],
-    {
-      at: fromListItemPath,
-    }
-  );
+  const fromListItemSublist = findDescendant<Ancestor>(editor, {
+    at: fromListItemPath,
+    match: {
+      type: getListTypes(options),
+    },
+  });
   if (!fromListItemSublist) return 0;
 
   const [, fromListItemSublistPath] = fromListItemSublist;
 
-  const toListItemSublist = findDescendantByType<Ancestor>(
-    editor,
-    [ol.type, ul.type],
-    {
-      at: toListItemPath,
-    }
-  );
+  const toListItemSublist = findDescendant<Ancestor>(editor, {
+    at: toListItemPath,
+    match: {
+      type: getListTypes(options),
+    },
+  });
 
   let to: Path;
 

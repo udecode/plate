@@ -1,7 +1,7 @@
 import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
 import { getPreviousPath } from '../../../common/queries/getPreviousPath';
 import { isExpanded } from '../../../common/queries/isExpanded';
-import { hasListInListItem } from '../queries/hasListInListItem';
+import { hasListChild } from '../queries/hasListChild';
 import { ListOptions } from '../types';
 import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -23,7 +23,7 @@ export const removeRootListItem = (
 ) => {
   const [listItemNode, listItemPath] = listItem;
 
-  if (!hasListInListItem(listItemNode, options)) {
+  if (!hasListChild(listItemNode, options)) {
     // No sub-lists to move over
     return false;
   }

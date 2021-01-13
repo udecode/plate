@@ -2,7 +2,6 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
-import castArray from 'lodash/castArray';
 import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { match } from '../utils/match';
 import { FindNodeOptions } from './findNode';
@@ -56,20 +55,4 @@ export const findDescendant = <T extends Node = Node>(
   } catch (error) {
     return undefined;
   }
-};
-
-/**
- * Get the first descendant node matching the types.
- */
-export const findDescendantByType = <T extends Node>(
-  editor: Editor,
-  types: string[] | string,
-  options: Omit<FindNodeOptions<T>, 'match'> = {}
-): NodeEntry<T> | undefined => {
-  types = castArray<string>(types);
-
-  return findDescendant(editor, {
-    match: (n) => types.includes(n.type as string),
-    ...options,
-  });
 };
