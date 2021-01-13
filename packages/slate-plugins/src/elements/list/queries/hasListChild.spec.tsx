@@ -2,7 +2,7 @@
 
 import { jsx } from '../../../__test-utils__/jsx';
 import { findNode } from '../../../common/queries/findNode';
-import { hasListInListItem } from './hasListInListItem';
+import { hasListChild } from './hasListChild';
 
 describe('when there is a sublist', () => {
   const input = (
@@ -29,7 +29,7 @@ describe('when there is a sublist', () => {
   it('should be', () => {
     const listItem = findNode(input, { match: { id: '2' } });
 
-    expect(hasListInListItem(listItem?.[0] as any)).toBeTruthy();
+    expect(hasListChild(listItem?.[0] as any)).toBeTruthy();
   });
 });
 
@@ -47,6 +47,6 @@ describe('when there is no sublist', () => {
   it('should be', () => {
     const listItem = findNode(input, { match: { id: '2' } });
 
-    expect(hasListInListItem(listItem?.[0] as any)).toBeFalsy();
+    expect(hasListChild(listItem?.[0] as any)).toBeFalsy();
   });
 });

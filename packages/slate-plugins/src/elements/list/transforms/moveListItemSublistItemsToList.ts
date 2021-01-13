@@ -1,5 +1,5 @@
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { findDescendantByType } from '../../../common/queries/findDescendant';
+import { findDescendant } from '../../../common/queries/findDescendant';
 import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { moveChildren } from '../../../common/transforms/moveChildren';
 import { getListTypes } from '../queries/getListTypes';
@@ -30,13 +30,12 @@ export const moveListItemSublistItemsToList = (
   { fromListItem, toList, start }: MergeListItemIntoListOptions,
   options?: ListOptions
 ) => {
-  const fromListItemSublist = findDescendantByType(
-    editor,
-    getListTypes(options),
-    {
-      at: fromListItem[1],
-    }
-  );
+  const fromListItemSublist = findDescendant(editor, {
+    at: fromListItem[1],
+    match: {
+      type: getListTypes(options),
+    },
+  });
   if (!fromListItemSublist) return 0;
 
   const [, fromListItemSublistPath] = fromListItemSublist;

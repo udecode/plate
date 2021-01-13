@@ -14,6 +14,7 @@ export * from './getRenderElement';
 export * from './getRenderLeaf';
 export * from './getRenderLeafDefault';
 export * from './isUrl';
+export * from './match';
 export * from './normalizeDescendantsToDocumentFragment';
 export * from './pipe';
 export * from './setDefaults';

@@ -7,7 +7,7 @@ import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListItemEntry } from './queries/getListItemEntry';
-import { hasListInListItem } from './queries/hasListInListItem';
+import { hasListChild } from './queries/hasListChild';
 import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
@@ -43,7 +43,7 @@ export const withList = ({
 
       const cursor = editor.selection.focus;
 
-      if (hasListInListItem(listItemNode)) {
+      if (hasListChild(listItemNode)) {
         /**
          * If selection is at the end of li,
          * insert below li where children will be moved.
@@ -135,7 +135,7 @@ export const withList = ({
         if (moved) return;
       }
 
-      if (hasListInListItem(listItemNode) && isCollapsed(editor.selection)) {
+      if (hasListChild(listItemNode) && isCollapsed(editor.selection)) {
         return deleteBackward(unit);
       }
     }

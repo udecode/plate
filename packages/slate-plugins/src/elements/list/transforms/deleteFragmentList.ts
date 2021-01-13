@@ -7,7 +7,7 @@ import { moveChildren } from '../../../common/transforms/moveChildren';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { getHighestEmptyList } from '../queries/getHighestEmptyList';
-import { hasListInListItem } from '../queries/hasListInListItem';
+import { hasListChild } from '../queries/hasListChild';
 import { isAcrossListItems } from '../queries/isAcrossListItems';
 import { ListOptions } from '../types';
 
@@ -23,7 +23,7 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
    */
   const end = Editor.end(editor, editor.selection as Range);
   const liEnd = getAbove(editor, { at: end, match: { type: li.type } });
-  const liEndCanBeDeleted = liEnd && !hasListInListItem(liEnd[0]);
+  const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0]);
   const liEndPathRef = liEndCanBeDeleted
     ? Editor.pathRef(editor, liEnd![1])
     : undefined;
