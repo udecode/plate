@@ -4,10 +4,15 @@ import { DEFAULTS_ALIGN } from './defaults';
 import { AlignRenderElementOptions } from './types';
 
 export const renderElementAlign = (options?: AlignRenderElementOptions) => {
-  const { align_left, align_center, align_right } = setDefaults(
+  const { align_left, align_center, align_right, align_justify } = setDefaults(
     options,
     DEFAULTS_ALIGN
   );
 
-  return getRenderElements([{ ...align_left }, align_center, align_right]);
+  return getRenderElements([
+    { ...align_left },
+    align_center,
+    align_right,
+    align_justify,
+  ]);
 };

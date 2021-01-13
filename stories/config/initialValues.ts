@@ -34,7 +34,7 @@ import {
   SlateDocumentDescendant,
   SlateDocumentFragment,
 } from '@udecode/slate-plugins';
-import faker from 'faker';
+// import faker from 'faker';
 import { Descendant, Text } from 'slate';
 
 export const headingTypes = [
@@ -253,16 +253,20 @@ const HEADINGS = 100;
 const PARAGRAPHS = 7;
 export const initialValueHugeDocument: Descendant[] = [{ children: [] }];
 
+const lorem =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum';
+
 for (let h = 0; h < HEADINGS; h++) {
   (initialValueHugeDocument[0] as any).children.push({
     type: options.h1.type,
-    children: [{ text: faker.lorem.sentence() }],
+    // children: [{ text: faker.lorem.sentence() }],
+    children: [{ text: lorem }],
   });
 
   for (let p = 0; p < PARAGRAPHS; p++) {
     (initialValueHugeDocument[0] as any).children.push({
       type: options.p.type,
-      children: [{ text: faker.lorem.paragraph() }],
+      children: [{ text: lorem }],
     });
   }
 }
@@ -789,6 +793,43 @@ export const initialValueList: SlateDocument = [
             type: options.li.type,
             children: [
               { type: options.p.type, children: [{ text: 'Bulleted list' }] },
+              {
+                type: options.ul.type,
+                children: [
+                  {
+                    type: options.li.type,
+                    children: [
+                      {
+                        type: options.p.type,
+                        children: [{ text: 'support' }],
+                      },
+                    ],
+                  },
+                  {
+                    type: options.li.type,
+                    children: [
+                      {
+                        type: options.p.type,
+                        children: [{ text: 'nesting' }],
+                      },
+                      {
+                        type: options.ul.type,
+                        children: [
+                          {
+                            type: options.li.type,
+                            children: [
+                              {
+                                type: options.p.type,
+                                children: [{ text: 'limitless' }],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -954,8 +995,8 @@ const createSpanningTable = () => ({
       children: [
         {
           type: options.th.type,
-          attributes: { colspan: "2" },
-          children: [createParagraph("Heading", options.bold.type)],
+          attributes: { colspan: '2' },
+          children: [createParagraph('Heading', options.bold.type)],
         },
       ],
     },
@@ -964,11 +1005,11 @@ const createSpanningTable = () => ({
       children: [
         {
           type: options.td.type,
-          children: [createParagraph("Cell 1", options.bold.type)],
+          children: [createParagraph('Cell 1', options.bold.type)],
         },
         {
           type: options.td.type,
-          children: [createParagraph("Cell 2")],
+          children: [createParagraph('Cell 2')],
         },
       ],
     },
@@ -1011,7 +1052,7 @@ export const initialValueTables: SlateDocument = [
         children: [
           {
             text:
-              "This table is an example of rendering a table spanning multiple columns.",
+              'This table is an example of rendering a table spanning multiple columns.',
           },
         ],
       },

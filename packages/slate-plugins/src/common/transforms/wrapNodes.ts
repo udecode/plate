@@ -3,7 +3,7 @@ import { WrapOptions } from '../types/Transforms.types';
 import { unhangRange, UnhangRangeOptions } from './unhangRange';
 
 /**
- * {@link Transforms.wrapNodes} with more options.
+ * {@link Transforms.wrapNodes}.
  */
 export const wrapNodes = (
   editor: Editor,
@@ -12,5 +12,5 @@ export const wrapNodes = (
 ) => {
   unhangRange(editor, options);
 
-  Transforms.wrapNodes(editor, element, options);
+  Transforms.wrapNodes(editor, element, options as any);
 };

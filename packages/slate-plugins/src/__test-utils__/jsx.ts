@@ -39,6 +39,7 @@ export const jsx = createHyperscript({
     hh5: { type: options.h5.type },
     hh6: { type: options.h6.type },
     hcenter: { type: options.align_center.type },
+    hjustify: { type: options.align_justify.type },
     inline: { inline: true },
     block: {},
   },

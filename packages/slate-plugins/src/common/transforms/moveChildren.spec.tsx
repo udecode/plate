@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { Ancestor, Editor, NodeEntry, Path } from 'slate';
+import { Editor, Path } from 'slate';
 import { jsx } from '../../__test-utils__/jsx';
-import { getNodeById } from '../queries/getNodeById';
+import { findNode } from '../queries/findNode';
 import { moveChildren } from './moveChildren';
 
 const input = ((
@@ -49,10 +49,13 @@ const output = ((
 ) as any) as Editor;
 
 it('should be', () => {
-  const [, atPath] = getNodeById(input, '2') as NodeEntry<Ancestor>;
-  const [, toPath] = getNodeById(input, '12') as any;
+  const atPath = findNode(input, { match: { id: '2' } })?.[1];
+  const toPath = findNode(input, { match: { id: '12' } })?.[1];
 
-  const moved = moveChildren(input, { at: atPath, to: Path.next(toPath) });
+  const moved =
+    atPath &&
+    toPath &&
+    moveChildren(input, { at: atPath, to: Path.next(toPath) });
 
   expect(input.children).toEqual(output.children);
   expect(moved).toBe(2);

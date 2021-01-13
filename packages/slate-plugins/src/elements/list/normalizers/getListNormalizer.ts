@@ -1,6 +1,8 @@
-import { Editor, NodeEntry } from 'slate';
+import { Descendant, Editor, NodeEntry, Transforms } from 'slate';
+import { match } from '../../../common/utils/match';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
+import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions, ListOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 
@@ -17,6 +19,12 @@ export const getListNormalizer = (
   const { normalizeNode } = editor;
 
   return ([node, path]: NodeEntry) => {
+    if (match(node, { type: getListTypes(options) })) {
+      if (!(node.children as Descendant[]).length) {
+        Transforms.removeNodes(editor, { at: path });
+      }
+    }
+
     if (node.type === li.type) {
       if (
         normalizeListItem(

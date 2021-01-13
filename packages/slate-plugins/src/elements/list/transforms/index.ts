@@ -1,4 +1,4 @@
-export * from './deleteListFragment';
+export * from './deleteFragmentList';
 export * from './insertListItem';
 export * from './moveListItemDown';
 export * from './moveListItemSublistItemsToList';

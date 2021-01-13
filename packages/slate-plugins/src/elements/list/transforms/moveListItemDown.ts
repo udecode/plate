@@ -1,5 +1,6 @@
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
-import { isNodeTypeList } from '../queries/isNodeTypeList';
+import { match } from '../../../common/utils/match';
+import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 
 export interface MoveListItemDownOptions {
@@ -25,7 +26,7 @@ export const moveListItemDown = (
     const [previousNode, previousPath] = previousSiblingItem;
 
     const sublist = previousNode.children.find((n) =>
-      isNodeTypeList(n, options)
+      match(n, { type: getListTypes(options) })
     ) as Element | undefined;
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]

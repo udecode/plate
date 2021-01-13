@@ -1,9 +1,9 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
 import { Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { findNode } from '../../common/queries/findNode';
 import { isExpanded } from '../../common/queries/isExpanded';
 import { DragItemBlock } from '../components/Selectable.types';
-import { getBlockPathById } from '../utils/getBlockPathById';
 import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
 
@@ -27,21 +27,22 @@ export const useDropBlockOnEditor = (
       const direction = getHoverDirection(dragItem, monitor, blockRef, id);
       if (!direction) return;
 
-      const dragPath = getBlockPathById(editor, dragItem.id);
-      if (!dragPath) return;
+      const dragEntry = findNode(editor, { match: { id: dragItem.id } });
+      if (!dragEntry) return;
+      const [, dragPath] = dragEntry;
 
       ReactEditor.focus(editor);
 
       let dropPath: Path | undefined;
       if (direction === 'bottom') {
-        dropPath = getBlockPathById(editor, id);
+        dropPath = findNode(editor, { match: { id } })?.[1];
         if (!dropPath) return;
 
         if (Path.equals(dragPath, Path.next(dropPath))) return;
       }
 
       if (direction === 'top') {
-        const nodePath = getBlockPathById(editor, id) as Path;
+        const nodePath = findNode(editor, { match: { id } })?.[1];
 
         if (!nodePath) return;
         dropPath = [

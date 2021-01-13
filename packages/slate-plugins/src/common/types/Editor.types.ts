@@ -1,17 +1,23 @@
-import { Node, Path, Point, Range, Span } from 'slate';
+import { Ancestor, Node, Path, Point, Range, Span } from 'slate';
+import { Predicate } from '../utils/match';
 
-export interface EditorNodesOptions {
+export type NodeMatch<T = Node> = Predicate<T>;
+
+export interface MatchOptions<T = Node> {
+  match?: NodeMatch<T>;
+  block?: boolean;
+}
+
+export interface EditorNodesOptions<T = Node> extends MatchOptions<T> {
   at?: Range | Path | Point | Span;
-  match?: (node: Node) => boolean;
   mode?: 'highest' | 'lowest' | 'all';
   universal?: boolean;
   reverse?: boolean;
   voids?: boolean;
 }
 
-export interface EditorAboveOptions {
+export interface EditorAboveOptions<T = Ancestor> extends MatchOptions<T> {
   at?: Range | Path | Point;
-  match?: (node: Node) => boolean;
   mode?: 'highest' | 'lowest';
   voids?: boolean;
 }

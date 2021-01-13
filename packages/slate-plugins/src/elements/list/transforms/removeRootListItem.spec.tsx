@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
-import { getNodeById } from '../../../common/queries/getNodeById';
+import { findNode } from '../../../common/queries/findNode';
 import { removeRootListItem } from './removeRootListItem';
 
 const input = ((
@@ -83,8 +83,8 @@ const output = ((
 it('should', () => {
   const editor = input;
 
-  const list = getNodeById(editor, '1') as NodeEntry<Ancestor>;
-  const listItem = getNodeById(editor, '13') as NodeEntry<Ancestor>;
+  const list = findNode(input, { match: { id: '1' } }) as any;
+  const listItem = findNode(input, { match: { id: '13' } }) as any;
 
   if (list && listItem) {
     removeRootListItem(editor, { list, listItem });

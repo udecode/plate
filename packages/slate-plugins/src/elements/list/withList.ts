@@ -7,8 +7,8 @@ import { setDefaults } from '../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListItemEntry } from './queries/getListItemEntry';
-import { hasListInListItem } from './queries/hasListInListItem';
-import { deleteListFragment } from './transforms/deleteListFragment';
+import { hasListChild } from './queries/hasListChild';
+import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
@@ -43,7 +43,7 @@ export const withList = ({
 
       const cursor = editor.selection.focus;
 
-      if (hasListInListItem(listItemNode)) {
+      if (hasListChild(listItemNode)) {
         /**
          * If selection is at the end of li,
          * insert below li where children will be moved.
@@ -135,7 +135,7 @@ export const withList = ({
         if (moved) return;
       }
 
-      if (hasListInListItem(listItemNode) && isCollapsed(editor.selection)) {
+      if (hasListChild(listItemNode) && isCollapsed(editor.selection)) {
         return deleteBackward(unit);
       }
     }
@@ -155,15 +155,7 @@ export const withList = ({
   };
 
   editor.deleteFragment = () => {
-    const { selection } = editor;
-
-    if (selection) {
-      let deleted;
-      Editor.withoutNormalizing(editor, () => {
-        deleted = deleteListFragment(editor, selection, options);
-      });
-      if (deleted !== undefined) return;
-    }
+    if (deleteFragmentList(editor, options)) return;
 
     deleteFragment();
   };

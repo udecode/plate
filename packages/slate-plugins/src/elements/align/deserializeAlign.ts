@@ -7,7 +7,10 @@ import { AlignDeserializeOptions } from './types';
 export const deserializeAlign = (
   options?: AlignDeserializeOptions
 ): DeserializeHtml => {
-  const { align_center, align_right } = setDefaults(options, DEFAULTS_ALIGN);
+  const { align_center, align_right, align_justify } = setDefaults(
+    options,
+    DEFAULTS_ALIGN
+  );
 
   return {
     element: [
@@ -36,6 +39,19 @@ export const deserializeAlign = (
           },
         ],
         ...options?.align_right?.deserialize,
+      }),
+      ...getElementDeserializer({
+        type: align_justify.type,
+        rules: [
+          { className: align_justify.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'justify',
+            },
+          },
+        ],
+        ...options?.align_justify?.deserialize,
       }),
     ],
   };

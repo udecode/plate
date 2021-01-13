@@ -14,7 +14,7 @@ Get a deserializer by type, node names, class names and styles.
 export const deserializeAlign = (
   options?: AlignDeserializeOptions
 ): DeserializeHtml => {
-  const { align_center, align_right } = setDefaults(options, DEFAULTS_ALIGN);
+  const { align_center, align_right, align_justify } = setDefaults(options, DEFAULTS_ALIGN);
 
   return {
     element: [
@@ -38,6 +38,18 @@ export const deserializeAlign = (
             nodeNames: 'DIV',
             style: {
               textAlign: 'right',
+            },
+          },
+        ],
+      }),
+      ...getElementDeserializer({
+        type: align_justify.type,
+        rules: [
+          { className: align_justify.rootProps.className },
+          {
+            nodeNames: 'DIV',
+            style: {
+              textAlign: 'justify',
             },
           },
         ],

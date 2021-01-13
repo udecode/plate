@@ -1,5 +1,6 @@
 import { Editor, Transforms } from 'slate';
-import { getAboveByType, isNodeTypeIn } from '../../../common/queries';
+import { getAbove } from '../../../common/queries';
+import { someNode } from '../../../common/queries/someNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
@@ -7,10 +8,12 @@ import { TableOptions } from '../types';
 export const deleteColumn = (editor: Editor, options?: TableOptions) => {
   const { table, tr, td, th } = setDefaults(options, DEFAULTS_TABLE);
 
-  if (isNodeTypeIn(editor, table.type)) {
-    const currentCellItem = getAboveByType(editor, [td.type, th.type]);
-    const currentRowItem = getAboveByType(editor, tr.type);
-    const currentTableItem = getAboveByType(editor, table.type);
+  if (someNode(editor, { match: { type: table.type } })) {
+    const currentCellItem = getAbove(editor, {
+      match: { type: [td.type, th.type] },
+    });
+    const currentRowItem = getAbove(editor, { match: { type: tr.type } });
+    const currentTableItem = getAbove(editor, { match: { type: table.type } });
 
     if (
       currentCellItem &&

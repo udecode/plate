@@ -8,8 +8,8 @@ import {
 import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
 import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { isNodeTypeIn } from '../../common/queries/isNodeTypeIn';
-import { unwrapNodesByType } from '../../common/transforms/unwrapNodesByType';
+import { someNode } from '../../common/queries/someNode';
+import { unwrapNodes } from '../../common/transforms/unwrapNodes';
 import { isUrl as isUrlProtocol, setDefaults } from '../../common/utils';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { DEFAULTS_LINK } from './defaults';
@@ -28,7 +28,7 @@ const upsertLink = (
 ) => {
   const { link } = setDefaults(options, DEFAULTS_LINK);
 
-  unwrapNodesByType(editor, link.type, { at });
+  unwrapNodes(editor, { at, match: { type: link.type } });
 
   const newSelection = editor.selection as Range;
 
@@ -117,7 +117,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
     const text = data.getData('text/plain');
 
     if (text) {
-      if (isNodeTypeIn(editor, link.type)) {
+      if (someNode(editor, { match: { type: link.type } })) {
         return insertText(text);
       }
 

@@ -37,6 +37,8 @@ module.exports = {
       'error',
       { extensions: ['.js', '.jsx', '.ts', '.tsx', 'mdx'] },
     ],
+
+    '@typescript-eslint/no-non-null-assertion': 'off',
   },
   overrides: [
     {

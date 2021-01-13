@@ -1,5 +1,5 @@
 import { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
-import { getAboveByType, setDefaults } from '../../../common';
+import { getAbove, setDefaults } from '../../../common';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 
@@ -15,7 +15,10 @@ export const getListRoot = (
 
   const { ol, ul } = setDefaults(options, DEFAULTS_LIST);
 
-  const parentList = getAboveByType(editor, [ul.type, ol.type], { at });
+  const parentList = getAbove(editor, {
+    at,
+    match: { type: [ul.type, ol.type] },
+  });
 
   if (parentList) {
     const [, parentListPath] = parentList;
