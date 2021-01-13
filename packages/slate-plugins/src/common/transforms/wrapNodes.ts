@@ -1,10 +1,9 @@
 import { Editor, Element, Transforms } from 'slate';
 import { WrapOptions } from '../types/Transforms.types';
-import { getQueryOptions } from '../utils/match';
 import { unhangRange, UnhangRangeOptions } from './unhangRange';
 
 /**
- * {@link Transforms.wrapNodes} with more options.
+ * {@link Transforms.wrapNodes}.
  */
 export const wrapNodes = (
   editor: Editor,
@@ -13,5 +12,5 @@ export const wrapNodes = (
 ) => {
   unhangRange(editor, options);
 
-  Transforms.wrapNodes(editor, element, getQueryOptions(editor, options));
+  Transforms.wrapNodes(editor, element, options as any);
 };
