@@ -1,7 +1,7 @@
 import isHotkey from 'is-hotkey';
 import { Editor, Transforms } from 'slate';
-import { hasNodeByType } from '../../common/queries/hasNodeByType';
 import { isCollapsed } from '../../common/queries/isCollapsed';
+import { someNode } from '../../common/queries/someNode';
 import { ResetBlockTypePluginOptions } from './types';
 
 export const onKeyDownResetBlockType = ({
@@ -15,7 +15,7 @@ export const onKeyDownResetBlockType = ({
   if (editor.selection && isCollapsed(editor.selection)) {
     rules.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
       if (!event || (hotkey && isHotkey(hotkey, event))) {
-        if (predicate(editor) && hasNodeByType(editor, types)) {
+        if (predicate(editor) && someNode(editor, { match: { type: types } })) {
           event?.preventDefault();
 
           Transforms.setNodes(editor, { type: defaultType });

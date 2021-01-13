@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
 import { isCollapsed } from '../../../common/queries';
-import { unwrapNodesByType } from '../../../common/transforms/unwrapNodesByType';
+import { unwrapNodes } from '../../../common/transforms/unwrapNodes';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LINK } from '../defaults';
 import { LinkOptions } from '../types';
@@ -40,7 +40,7 @@ export const upsertLinkAtSelection = (
     Transforms.select(editor, inlinePath);
   }
 
-  unwrapNodesByType(editor, link.type, { at: editor.selection });
+  unwrapNodes(editor, { at: editor.selection, match: { type: link.type } });
 
   wrapLink(editor, url, {
     link,

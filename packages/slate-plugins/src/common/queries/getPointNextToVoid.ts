@@ -22,19 +22,21 @@ export const getPointNextToVoid = (
   if (startVoid) {
     const blockAbove = getBlockAbove(editor, { at });
 
-    let nextPoint: Point | undefined;
-    if (after) {
-      nextPoint = Editor.after(editor, at);
-    } else {
-      nextPoint = Editor.before(editor, at);
-    }
+    if (blockAbove) {
+      let nextPoint: Point | undefined;
+      if (after) {
+        nextPoint = Editor.after(editor, at);
+      } else {
+        nextPoint = Editor.before(editor, at);
+      }
 
-    if (
-      nextPoint &&
-      blockAbove &&
-      Path.isAncestor(blockAbove[1], nextPoint.path)
-    ) {
-      at = nextPoint;
+      if (
+        nextPoint &&
+        blockAbove &&
+        Path.isAncestor(blockAbove[1], nextPoint.path)
+      ) {
+        at = nextPoint;
+      }
     }
   }
 

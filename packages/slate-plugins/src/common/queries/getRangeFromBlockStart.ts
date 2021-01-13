@@ -10,7 +10,8 @@ export const getRangeFromBlockStart = (
   editor: Editor,
   options: Omit<EditorAboveOptions, 'match'> = {}
 ) => {
-  const [, path] = getBlockAbove(editor, options);
+  const path = getBlockAbove(editor, options)?.[1];
+  if (!path) return;
 
   const start = Editor.start(editor, path);
 

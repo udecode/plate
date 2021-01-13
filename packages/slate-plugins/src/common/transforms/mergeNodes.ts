@@ -9,10 +9,8 @@ import {
   Text,
   Transforms,
 } from 'slate';
-import { NodeMatch } from '../../../common/types/Editor.types';
 
 /**
- * TODO: move to common.
  * Merge a node at a location with the previous node of the same depth,
  * removing any empty containing nodes after the merge if necessary.
  */
@@ -20,7 +18,8 @@ export const mergeNodes = (
   editor: Editor,
   options: {
     at?: Location;
-    match?: NodeMatch;
+    // match?: NodeMatch;
+    match?: (n: Node) => boolean;
     mode?: 'highest' | 'lowest';
     hanging?: boolean;
     voids?: boolean;

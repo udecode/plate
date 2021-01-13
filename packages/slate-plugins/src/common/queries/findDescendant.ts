@@ -2,31 +2,28 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
-import { Editor, Location, Node, NodeEntry, Path, Range, Span } from 'slate';
-import { MatchOptions } from '../types/Editor.types';
+import castArray from 'lodash/castArray';
+import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { match } from '../utils/match';
-
-export type FindNodeOptions<T extends Node = Node> = {
-  at?: Location | Span;
-  reverse?: boolean;
-  voids?: boolean;
-} & MatchOptions<T>;
+import { FindNodeOptions } from './findNode';
 
 /**
- * Find node matching the condition.
+ * Get the first descendant node matching the condition.
  */
-export const findNode = <T extends Node = Node>(
+export const findDescendant = <T extends Node = Node>(
   editor: Editor,
   options: FindNodeOptions<T>
 ): NodeEntry<T> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const {
-      match: _match = () => true,
-      at = editor.selection || [],
+      match: _match,
+      at = editor.selection,
       reverse = false,
       voids = false,
     } = options;
+
+    if (!at) return;
 
     let from;
     let to;
@@ -44,7 +41,7 @@ export const findNode = <T extends Node = Node>(
       root = Editor.node(editor, at);
     }
 
-    const nodeEntries = Node.nodes(root[0], {
+    const nodeEntries = Node.descendants(root[0], {
       reverse,
       from,
       to,
@@ -53,10 +50,26 @@ export const findNode = <T extends Node = Node>(
 
     for (const [node, path] of nodeEntries) {
       if (match<Node>(node, _match)) {
-        return [node as any, path];
+        return [node as any, (at as Path).concat(path)];
       }
     }
   } catch (error) {
     return undefined;
   }
+};
+
+/**
+ * Get the first descendant node matching the types.
+ */
+export const findDescendantByType = <T extends Node>(
+  editor: Editor,
+  types: string[] | string,
+  options: Omit<FindNodeOptions<T>, 'match'> = {}
+): NodeEntry<T> | undefined => {
+  types = castArray<string>(types);
+
+  return findDescendant(editor, {
+    match: (n) => types.includes(n.type as string),
+    ...options,
+  });
 };

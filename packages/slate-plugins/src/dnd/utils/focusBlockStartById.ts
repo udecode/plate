@@ -1,12 +1,12 @@
 import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getBlockPathById } from './getBlockPathById';
+import { findNode } from '../../common/queries/findNode';
 
 /**
  * Select the start of a block by id and focus the editor.
  */
 export const focusBlockStartById = (editor: ReactEditor, id: string) => {
-  const path = getBlockPathById(editor, id);
+  const path = findNode(editor, { match: { id } })?.[1];
   if (!path) return;
 
   Transforms.select(editor, Editor.start(editor, path));

@@ -1,9 +1,11 @@
 import { createEditor } from 'slate';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/index';
-import { getNodesByType } from '../../../queries/index';
+import { getNodes } from '../../../queries/getNodes';
 
 it('should be', () => {
   const editor = createEditor();
 
-  expect(getNodesByType(editor, ELEMENT_PARAGRAPH)).toBeDefined();
+  expect(
+    getNodes(editor, { match: { type: ELEMENT_PARAGRAPH } })
+  ).toBeDefined();
 });

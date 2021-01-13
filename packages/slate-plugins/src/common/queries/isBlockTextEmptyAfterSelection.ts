@@ -12,6 +12,7 @@ export const isBlockTextEmptyAfterSelection = (editor: Editor) => {
   if (!editor.selection) return false;
 
   const blockAbove = getBlockAbove(editor);
+  if (!blockAbove) return false;
 
   const cursor = editor.selection.focus;
 

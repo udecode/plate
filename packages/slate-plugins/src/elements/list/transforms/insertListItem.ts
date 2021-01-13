@@ -1,5 +1,5 @@
 import { Editor, Path, Range, Transforms } from 'slate';
-import { getAboveByType } from '../../../common/queries/getAboveByType';
+import { getAbove } from '../../../common/queries/getAbove';
 import { getParent } from '../../../common/queries/getParent';
 import { isBlockTextEmptyAfterSelection } from '../../../common/queries/isBlockTextEmptyAfterSelection';
 import { setDefaults } from '../../../common/utils/setDefaults';
@@ -14,7 +14,7 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
   if (editor.selection) {
-    const paragraphEntry = getAboveByType(editor, p.type);
+    const paragraphEntry = getAbove(editor, { match: { type: p.type } });
     if (!paragraphEntry) return;
     const [, paragraphPath] = paragraphEntry;
 

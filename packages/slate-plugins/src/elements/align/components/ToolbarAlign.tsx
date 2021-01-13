@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { hasNodeByType } from '../../../common/queries/hasNodeByType';
+import { someNode } from '../../../common/queries/someNode';
 import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
 import { ToolbarButton } from '../../../components/ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
@@ -31,7 +31,7 @@ export const ToolbarAlign = ({
 
   return (
     <ToolbarButton
-      active={!!type && hasNodeByType(editor, type)}
+      active={!!type && someNode(editor, { match: { type } })}
       onMouseDown={getPreventDefaultHandler(upsertAlign, editor, {
         type,
         unwrapTypes,

@@ -1,8 +1,8 @@
 import { Editor, Location } from 'slate';
 import { setDefaults } from '../../../common';
-import { getAboveByType } from '../../../common/queries/getAboveByType';
+import { getAbove } from '../../../common/queries/getAbove';
 import { getParent } from '../../../common/queries/getParent';
-import { hasNodeByType } from '../../../common/queries/hasNodeByType';
+import { someNode } from '../../../common/queries/someNode';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
 
@@ -17,13 +17,13 @@ export const getTableCellEntry = (
 ) => {
   const { td, tr, table } = setDefaults(options, DEFAULTS_TABLE);
 
-  if (at && hasNodeByType(editor, td.type, { at })) {
+  if (at && someNode(editor, { at, match: { type: td.type } })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
 
     const tableCell =
-      getAboveByType(editor, td.type, { at }) ||
+      getAbove(editor, { at, match: { type: td.type } }) ||
       getParent(editor, paragraphPath);
 
     if (!tableCell) return;

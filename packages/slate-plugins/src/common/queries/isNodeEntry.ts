@@ -1,12 +1,12 @@
 import castArray from 'lodash/castArray';
-import { Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 import { QueryOptions } from '../types/QueryOptions.types';
 
 /**
  * Is the node entry filling a condition.
  */
-export const isNode = (
-  entry?: NodeEntry<Node>,
+export const isNodeEntry = (
+  entry?: NodeEntry,
   { filter = () => true, allow = [], exclude = [] }: QueryOptions = {}
 ) => {
   const allows = castArray(allow);

@@ -2,7 +2,7 @@ import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
 import {
   getBlockAbove,
-  isNode,
+  isNodeEntry,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
 } from '../../common/queries';
@@ -61,6 +61,7 @@ export const onKeyDownExitBreak = ({
   editor: Editor
 ) => {
   const entry = getBlockAbove(editor);
+  if (!entry) return;
 
   rules.forEach(
     ({
@@ -70,7 +71,7 @@ export const onKeyDownExitBreak = ({
       before,
       defaultType = DEFAULT_ELEMENT,
     }) => {
-      if (isHotkey(hotkey, event) && isNode(entry, query)) {
+      if (isHotkey(hotkey, event) && isNodeEntry(entry, query)) {
         if (!editor.selection) return;
 
         const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, {

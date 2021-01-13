@@ -7,7 +7,7 @@ import {
   Range,
   Transforms,
 } from 'slate';
-import { mergeNodes } from '../../elements/list/transforms/mergeNodes';
+import { mergeNodes } from './mergeNodes';
 
 export const deleteFragment = (
   editor: Editor,

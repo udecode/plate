@@ -1,5 +1,5 @@
 import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
-import { findNodeByType } from '../../../common/queries/findNodeByType';
+import { findDescendantByType } from '../../../common/queries/findDescendant';
 import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { getNode } from '../../../common/queries/getNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
@@ -81,7 +81,7 @@ export const deleteListFragmentDeprecated = (
       if (!listStart) return;
 
       const { listItem: listItemStart } = listStart;
-      const listItemSublist = findNodeByType<Ancestor>(
+      const listItemSublist = findDescendantByType<Ancestor>(
         editor,
         getListTypes(options),
         {

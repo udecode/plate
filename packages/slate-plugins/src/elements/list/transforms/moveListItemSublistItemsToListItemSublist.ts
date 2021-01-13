@@ -1,5 +1,5 @@
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { findNodeByType } from '../../../common/queries/findNodeByType';
+import { findDescendantByType } from '../../../common/queries/findDescendant';
 import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { getParent } from '../../../common/queries/getParent';
 import { moveChildren } from '../../../common/transforms/moveChildren';
@@ -42,7 +42,7 @@ export const moveListItemSublistItemsToListItemSublist = (
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
 
-  const fromListItemSublist = findNodeByType<Ancestor>(
+  const fromListItemSublist = findDescendantByType<Ancestor>(
     editor,
     [ol.type, ul.type],
     {
@@ -53,7 +53,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
   const [, fromListItemSublistPath] = fromListItemSublist;
 
-  const toListItemSublist = findNodeByType<Ancestor>(
+  const toListItemSublist = findDescendantByType<Ancestor>(
     editor,
     [ol.type, ul.type],
     {

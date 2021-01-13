@@ -1,5 +1,5 @@
 import { Editor, Transforms } from 'slate';
-import { hasNodeByType } from '../queries/hasNodeByType';
+import { someNode } from '../queries/someNode';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { DEFAULT_ELEMENT } from '../types/node.types';
 
@@ -26,7 +26,12 @@ export const toggleNodeType = (
 ) => {
   const { activeType, inactiveType = DEFAULT_ELEMENT } = options;
 
-  const isActive = hasNodeByType(editor, activeType, editorNodesOptions);
+  const isActive = someNode(editor, {
+    ...editorNodesOptions,
+    match: {
+      type: activeType,
+    },
+  });
 
   if (isActive && activeType === inactiveType) return;
 
