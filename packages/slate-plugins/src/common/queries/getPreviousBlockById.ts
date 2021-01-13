@@ -48,7 +48,9 @@ export const getPreviousBlockById = (
     ...Editor.nodes(editor, {
       mode: 'highest',
       match: (n) => {
-        return Editor.isBlock(editor, n) && n.id && isNodeEntry([n, []], query);
+        return (
+          Editor.isBlock(editor, n) && !!n.id && isNodeEntry([n, []], query)
+        );
       },
       at: [],
     }),

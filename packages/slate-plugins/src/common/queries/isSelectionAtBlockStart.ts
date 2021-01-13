@@ -8,5 +8,5 @@ import { isStart } from './isStart';
 export const isSelectionAtBlockStart = (editor: Editor) => {
   const path = getBlockAbove(editor)?.[1];
 
-  return path && isStart(editor, editor.selection?.focus, path);
+  return !!path && isStart(editor, editor.selection?.focus, path);
 };
