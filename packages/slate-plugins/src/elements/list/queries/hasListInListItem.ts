@@ -3,11 +3,9 @@ import { ListOptions } from '../types';
 import { isNodeTypeList } from './isNodeTypeList';
 
 /**
- * Is there a list in `listItemNode`. Assuming li>p+ul structure is used.
+ * Is there a list in `listItemNode`.
  */
 export const hasListInListItem = (
   listItemNode: Ancestor,
   options?: ListOptions
-) =>
-  listItemNode.children.length > 1 &&
-  isNodeTypeList(listItemNode.children[1], options);
+) => listItemNode.children.some((n) => isNodeTypeList(n, options));

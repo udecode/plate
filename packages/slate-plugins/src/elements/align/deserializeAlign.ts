@@ -7,11 +7,10 @@ import { AlignDeserializeOptions } from './types';
 export const deserializeAlign = (
   options?: AlignDeserializeOptions
 ): DeserializeHtml => {
-  const {
-    align_center,
-    align_right,
-    align_justify
-  } = setDefaults(options, DEFAULTS_ALIGN);
+  const { align_center, align_right, align_justify } = setDefaults(
+    options,
+    DEFAULTS_ALIGN
+  );
 
   return {
     element: [

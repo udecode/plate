@@ -7,7 +7,7 @@ export const renderLeafPlugins = (
   renderLeafList: RenderLeaf[]
 ) => {
   const Tag = (props: RenderLeafProps) => {
-    const leafProps: RenderLeafProps = {...props}; // workaround for children readonly error.
+    const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
     renderLeafList.forEach((renderLeaf) => {
       leafProps.children = renderLeaf(leafProps);
     });

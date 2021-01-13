@@ -1,15 +1,15 @@
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { Ancestor, Editor } from 'slate';
 import { EditorAboveOptions } from '../types/Editor.types';
+import { getAbove } from './getAbove';
 
 /**
  * Get the block above a location (default: selection).
- * If not found, return the editor entry.
  */
-export const getBlockAbove = (
+export const getBlockAbove = <T = Ancestor>(
   editor: Editor,
-  options: Omit<EditorAboveOptions, 'match'> = {}
-): NodeEntry<Ancestor> =>
-  Editor.above(editor, {
-    match: (n) => Editor.isBlock(editor, n),
+  options: EditorAboveOptions<T> = {}
+) =>
+  getAbove<T>(editor, {
     ...options,
-  }) || [editor, []];
+    block: true,
+  });

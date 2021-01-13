@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '../../../__test-utils__/jsx';
-import { getNodeById } from '../../../common/queries/getNodeById';
+import { findNode } from '../../../common/queries/findNode';
 import { isListNested } from './isListNested';
 
 describe('when the list is nested', () => {
@@ -27,9 +27,9 @@ describe('when the list is nested', () => {
   ) as any;
 
   it('should be', () => {
-    const list = getNodeById(input, '21');
+    const list = findNode(input, { match: { id: '21' } });
 
-    expect(isListNested(input, list[1] as any)).toBeTruthy();
+    expect(isListNested(input, list?.[1] as any)).toBeTruthy();
   });
 });
 
@@ -45,8 +45,8 @@ describe('when the list is not nested', () => {
   ) as any;
 
   it('should be', () => {
-    const list = getNodeById(input, '1');
+    const list = findNode(input, { match: { id: '1' } });
 
-    expect(isListNested(input, list[1] as any)).toBeFalsy();
+    expect(isListNested(input, list?.[1] as any)).toBeFalsy();
   });
 });

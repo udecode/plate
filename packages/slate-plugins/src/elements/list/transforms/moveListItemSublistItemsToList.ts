@@ -1,7 +1,8 @@
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { findDescendantByType } from '../../../common/queries/findDescendant';
 import { getLastChildPath } from '../../../common/queries/getLastChild';
 import { moveChildren } from '../../../common/transforms/moveChildren';
-import { getListItemSublist } from '../queries/getListItemSublist';
+import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 
 export interface MergeListItemIntoListOptions {
@@ -29,7 +30,13 @@ export const moveListItemSublistItemsToList = (
   { fromListItem, toList, start }: MergeListItemIntoListOptions,
   options?: ListOptions
 ) => {
-  const fromListItemSublist = getListItemSublist(fromListItem, options);
+  const fromListItemSublist = findDescendantByType(
+    editor,
+    getListTypes(options),
+    {
+      at: fromListItem[1],
+    }
+  );
   if (!fromListItemSublist) return 0;
 
   const [, fromListItemSublistPath] = fromListItemSublist;

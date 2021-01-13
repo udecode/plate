@@ -6,7 +6,7 @@ import { isStart } from './isStart';
  * Is the selection focus at the start of its parent block.
  */
 export const isSelectionAtBlockStart = (editor: Editor) => {
-  const [, path] = getBlockAbove(editor);
+  const path = getBlockAbove(editor)?.[1];
 
-  return isStart(editor, editor.selection?.focus, path);
+  return !!path && isStart(editor, editor.selection?.focus, path);
 };

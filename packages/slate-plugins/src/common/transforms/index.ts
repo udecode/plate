@@ -8,5 +8,5 @@ export * from './toggleMark';
 export * from './toggleNodeType';
 export * from './toggleWrapNodes';
 export * from './unhangRange';
-export * from './unwrapNodesByType';
+export * from './unwrapNodes';
 export * from './wrapNodes';

@@ -1,6 +1,5 @@
 export * from './focusBlockStartById';
-export * from './getBlockPathById';
-export * from './getBlocks';
+export * from './getBlocksWithId';
 export * from './getHoverDirection';
 export * from './getNewDirection';
 export * from './getNodesRange';

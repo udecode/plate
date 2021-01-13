@@ -8,7 +8,7 @@ import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDo
 import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { hasListInListItem } from './queries/hasListInListItem';
-import { deleteListFragment } from './transforms/deleteListFragment';
+import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
@@ -155,15 +155,7 @@ export const withList = ({
   };
 
   editor.deleteFragment = () => {
-    const { selection } = editor;
-
-    if (selection) {
-      let deleted;
-      Editor.withoutNormalizing(editor, () => {
-        deleted = deleteListFragment(editor, selection, options);
-      });
-      if (deleted !== undefined) return;
-    }
+    if (deleteFragmentList(editor, options)) return;
 
     deleteFragment();
   };

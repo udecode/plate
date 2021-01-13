@@ -1,10 +1,7 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import {
-  getAboveByType,
-  isCollapsed,
-  isNodeTypeIn,
-} from '../../../common/queries';
+import { getAbove, isCollapsed } from '../../../common/queries';
+import { someNode } from '../../../common/queries/someNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import {
   ToolbarButton,
@@ -20,7 +17,8 @@ export const ToolbarLink = ({
 }: ToolbarButtonProps & LinkOptions) => {
   const options = setDefaults({ link }, DEFAULTS_LINK);
   const editor = useSlate();
-  const isLink = isNodeTypeIn(editor, options.link.type);
+  const isLink = someNode(editor, { match: { type: options.link.type } });
+
   return (
     <ToolbarButton
       active={isLink}
@@ -28,7 +26,9 @@ export const ToolbarLink = ({
         event.preventDefault();
         let prevUrl = '';
 
-        const linkNode = getAboveByType(editor, options.link.type);
+        const linkNode = getAbove(editor, {
+          match: { type: options.link.type },
+        });
         if (linkNode) {
           prevUrl = linkNode[0].url as string;
         }

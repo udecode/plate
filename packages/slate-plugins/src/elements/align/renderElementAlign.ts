@@ -9,5 +9,10 @@ export const renderElementAlign = (options?: AlignRenderElementOptions) => {
     DEFAULTS_ALIGN
   );
 
-  return getRenderElements([{ ...align_left }, align_center, align_right, align_justify]);
+  return getRenderElements([
+    { ...align_left },
+    align_center,
+    align_right,
+    align_justify,
+  ]);
 };
