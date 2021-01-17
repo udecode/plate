@@ -21,7 +21,7 @@ export const getListNormalizer = (
   return ([node, path]: NodeEntry) => {
     if (match(node, { type: getListTypes(options) })) {
       if (!(node.children as Descendant[]).length) {
-        Transforms.removeNodes(editor, { at: path });
+        return Transforms.removeNodes(editor, { at: path });
       }
     }
 
