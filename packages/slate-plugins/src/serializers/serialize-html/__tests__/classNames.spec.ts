@@ -107,3 +107,45 @@ it('serialize with slate classNames: multiple tags', () => {
     '<div class="slate-align-center">I am centered text!</div><div class="slate-align-center">I am centered text!</div>'
   );
 });
+
+it('serialize with custom preserved classname: a+custom', () => {
+  expect(
+    serializeHTMLFromNodes({
+      plugins: [
+        AlignPlugin({
+          align_center: {
+            rootProps: {
+              className: 'a custom-align-center slate-align-center',
+            },
+          },
+        }),
+      ],
+      nodes: [
+        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+      ],
+      preserveClassNames: ['custom-'],
+    })
+  ).toBe('<div class="custom-align-center">I am centered text!</div>');
+});
+
+it('serialize with multiple custom classname: a+custom+slate', () => {
+  expect(
+    serializeHTMLFromNodes({
+      plugins: [
+        AlignPlugin({
+          align_center: {
+            rootProps: {
+              className: 'a custom-align-center slate-align-center',
+            },
+          },
+        }),
+      ],
+      nodes: [
+        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+      ],
+      preserveClassNames: ['custom-', 'slate-'],
+    })
+  ).toBe(
+    '<div class="custom-align-center slate-align-center">I am centered text!</div>'
+  );
+});
