@@ -16,9 +16,12 @@ const stripSlateDataAttributes = (rawHtml: string): string =>
     .replace(/( data-testid)="[^"]+"/gm, '');
 
 /**
- * Remove all class names that are not starting with `slate-`
+ * Remove all class names that do not start with one of preserveClassNames (`slate-` by default)
  */
-const stripClassNames = (html: string) => {
+const stripClassNames = (
+  html: string,
+  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] }
+) => {
   const allClasses = html.split(/(class="[^"]*")/g);
 
   let filteredHtml = '';
@@ -26,7 +29,11 @@ const stripClassNames = (html: string) => {
     if (index % 2 === 0) {
       return (filteredHtml += item);
     }
-    const slateClassNames = item.match(/(slate-[^"\s]*)/g);
+    const preserveRegExp = new RegExp(
+      preserveClassNames.map((cn) => `${cn}[^"\\s]*`).join('|'),
+      'g'
+    );
+    const slateClassNames = item.match(preserveRegExp);
     if (slateClassNames) {
       filteredHtml += `class="${slateClassNames.join(' ')}"`;
     }
@@ -39,10 +46,12 @@ const getNode = ({
   plugins,
   elementProps,
   slateProps,
+  preserveClassNames,
 }: {
   plugins: SlatePlugin[];
   elementProps: RenderElementProps;
   slateProps?: Partial<SlateProps>;
+  preserveClassNames?: string[];
 }) => {
   // If no type provided we wrap children with div tag
   if (!elementProps.element.type) {
@@ -73,7 +82,7 @@ const getNode = ({
       })
     );
 
-    html = stripClassNames(html);
+    html = stripClassNames(html, { preserveClassNames });
 
     return true;
   });
@@ -85,10 +94,12 @@ const getLeaf = ({
   plugins,
   leafProps,
   slateProps,
+  preserveClassNames,
 }: {
   plugins: SlatePlugin[];
   leafProps: RenderLeafProps;
   slateProps?: Partial<SlateProps>;
+  preserveClassNames?: string[];
 }) => {
   const { children } = leafProps;
 
@@ -116,7 +127,7 @@ const getLeaf = ({
       )
     );
 
-    html = stripClassNames(html);
+    html = stripClassNames(html, { preserveClassNames });
 
     return html;
   }, children);
@@ -138,6 +149,7 @@ export const serializeHTMLFromNodes = ({
   nodes,
   slateProps,
   stripDataAttributes = true,
+  preserveClassNames,
 }: {
   /**
    * Plugins with renderElement or renderLeaf.
@@ -153,6 +165,11 @@ export const serializeHTMLFromNodes = ({
    * Enable stripping data attributes
    */
   stripDataAttributes?: boolean;
+
+  /**
+   * List of className prefixes to preserve from being stripped out
+   */
+  preserveClassNames?: string[];
 
   /**
    * Slate props to provide if the rendering depends on slate hooks
@@ -173,6 +190,7 @@ export const serializeHTMLFromNodes = ({
             attributes: { 'data-slate-leaf': true },
           },
           slateProps,
+          preserveClassNames,
         });
       }
       return getNode({
@@ -188,6 +206,7 @@ export const serializeHTMLFromNodes = ({
           attributes: { 'data-slate-node': 'element', ref: null },
         },
         slateProps,
+        preserveClassNames,
       });
     })
     .join('');
