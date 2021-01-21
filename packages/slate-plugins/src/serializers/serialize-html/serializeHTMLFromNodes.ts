@@ -201,6 +201,7 @@ export const serializeHTMLFromNodes = ({
             serializeHTMLFromNodes({
               plugins,
               nodes: node.children,
+              preserveClassNames,
             })
           ),
           attributes: { 'data-slate-node': 'element', ref: null },
