@@ -61,6 +61,9 @@ export interface CodeBlockRenderElementOptions
 export interface CodeBlockDeserializeOptions
   extends CodeBlockPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
+export interface CodeBlockDecorateOptions
+  extends CodeBlockPluginOptions<'type'> {}
+
 export interface CodeBlockElementStyles {
   /**
    * Style for the root element.

@@ -45,13 +45,18 @@
 // import 'prismjs/components/prism-yaml';
 import { languages, Token, tokenize } from 'prismjs';
 import { Node, NodeEntry } from 'slate';
-import { ELEMENT_CODE_BLOCK } from './defaults';
+import { setDefaults } from '../../common/utils/setDefaults';
+import { DEFAULTS_CODE_BLOCK } from './defaults';
+import { CodeBlockDecorateOptions } from './types';
 
-export const decorateCodeBlock = () => (entry: NodeEntry) => {
+export const decorateCodeBlock = (options?: CodeBlockDecorateOptions) => (
+  entry: NodeEntry
+) => {
   const ranges: any = [];
   const [node, path] = entry;
+  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  if (node.type === ELEMENT_CODE_BLOCK) {
+  if (node.type === code_block.type) {
     const text = Node.string(node);
     // const langName: any = parent.lang || 'markup';
     const langName: any = 'javascript';
