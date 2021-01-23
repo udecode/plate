@@ -47,9 +47,9 @@ import { languages, Token, tokenize } from 'prismjs';
 import { Node, NodeEntry } from 'slate';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
-import { CodeBlockDeserializeOptions } from './types';
+import { CodeBlockDecorateOptions } from './types';
 
-export const decorateCodeBlock = (options?: CodeBlockDeserializeOptions) => (
+export const decorateCodeBlock = (options?: CodeBlockDecorateOptions) => (
   entry: NodeEntry
 ) => {
   const ranges: any = [];
