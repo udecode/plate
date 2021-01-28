@@ -1,12 +1,4 @@
-import {
-  AutoformatRule,
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  toggleList,
-  unwrapList,
-} from '@udecode/slate-plugins';
+import { AutoformatRule, toggleList, unwrapList } from '@udecode/slate-plugins';
 import { Editor } from 'slate';
 import { options } from './initialValues';
 
@@ -69,44 +61,44 @@ export const autoformatRules: AutoformatRule[] = [
     preFormat,
   },
   {
-    type: MARK_BOLD,
+    type: options.bold.type,
     between: ['**', '**'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_BOLD,
+    type: options.bold.type,
     between: ['__', '__'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_ITALIC,
+    type: options.italic.type,
     between: ['*', '*'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_ITALIC,
+    type: options.italic.type,
     between: ['_', '_'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_CODE,
+    type: options.code.type,
     between: ['`', '`'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_STRIKETHROUGH,
+    type: options.strikethrough.type,
     between: ['~~', '~~'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    trigger: '`',
     type: options.code_block.type,
+    trigger: '`',
     markup: '``',
     mode: 'inline-block',
     preFormat: (editor) => unwrapList(editor, options),
