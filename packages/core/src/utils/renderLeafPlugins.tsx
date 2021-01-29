@@ -6,22 +6,26 @@ export const renderLeafPlugins = (
   plugins: SlatePlugin[],
   renderLeafList: RenderLeaf[]
 ) => {
-  const Tag = (props: RenderLeafProps) => {
-    const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
-    renderLeafList.forEach((renderLeaf) => {
-      leafProps.children = renderLeaf(leafProps);
-    });
+  const Tag = (leafProps: RenderLeafProps) => {
+    let leaf;
 
-    plugins.forEach(({ renderLeaf }) => {
-      if (!renderLeaf) return;
-      leafProps.children = renderLeaf(leafProps);
+    renderLeafList.some((renderLeaf) => {
+      leaf = renderLeaf(leafProps);
+      return !!leaf;
     });
+    if (leaf) return leaf;
+
+    plugins.some(({ renderLeaf }) => {
+      leaf = renderLeaf && renderLeaf(leafProps);
+      return !!leaf;
+    });
+    if (leaf) return leaf;
 
     return <span {...leafProps.attributes}>{leafProps.children}</span>;
   };
 
-  return (leafProps: RenderLeafProps) => {
+  return (elementProps: RenderLeafProps) => {
     // XXX: A wrapper tag component to make useContext get correct value inside.
-    return <Tag {...leafProps} />;
+    return <Tag {...elementProps} />;
   };
 };
