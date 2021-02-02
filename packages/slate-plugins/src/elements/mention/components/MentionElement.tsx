@@ -1,14 +1,14 @@
-import * as React from "react";
-import { classNamesFunction, styled } from "@uifabric/utilities";
-import { useFocused, useSelected } from "slate-react";
-import { getHandler } from "../../../common/utils";
+import * as React from 'react';
+import { classNamesFunction, styled } from '@uifabric/utilities';
+import { useFocused, useSelected } from 'slate-react';
+import { getHandler } from '../../../common/utils';
 import {
   MentionElementProps,
   MentionElementStyleProps,
   MentionElementStyles,
   MentionNodeData,
-} from "../types";
-import { getMentionElementStyles } from "./MentionElement.styles";
+} from '../types';
+import { getMentionElementStyles } from './MentionElement.styles';
 
 const getClassNames = classNamesFunction<
   MentionElementStyleProps,
@@ -27,7 +27,7 @@ export const MentionElementBase = ({
   className,
   styles,
   htmlAttributes,
-  as: Tag = "span",
+  as: Tag = 'span',
   onClick,
   renderLabel = (mentionable: MentionNodeData) => mentionable.value,
 }: MentionElementProps) => {
@@ -65,5 +65,5 @@ export const MentionElement = styled<
   MentionElementStyleProps,
   MentionElementStyles
 >(MentionElementBase, getMentionElementStyles, undefined, {
-  scope: "MentionElement",
+  scope: 'MentionElement',
 });

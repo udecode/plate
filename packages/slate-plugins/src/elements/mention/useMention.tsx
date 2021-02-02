@@ -1,16 +1,16 @@
-import { useCallback, useState } from "react";
-import { Editor, Range, Transforms } from "slate";
-import { isPointAtWordEnd, isWordAfterTrigger } from "../../common/queries";
-import { isCollapsed } from "../../common/queries/isCollapsed";
-import { insertMention } from "./transforms";
-import { MentionNodeData, UseMentionOptions } from "./types";
-import { getNextIndex, getPreviousIndex } from "./utils";
+import { useCallback, useState } from 'react';
+import { Editor, Range, Transforms } from 'slate';
+import { isPointAtWordEnd, isWordAfterTrigger } from '../../common/queries';
+import { isCollapsed } from '../../common/queries/isCollapsed';
+import { insertMention } from './transforms';
+import { MentionNodeData, UseMentionOptions } from './types';
+import { getNextIndex, getPreviousIndex } from './utils';
 
 export const useMention = (
   mentionables: MentionNodeData[] = [],
   {
     maxSuggestions = 10,
-    trigger = "@",
+    trigger = '@',
     mentionableFilter = (search: string) => (c: MentionNodeData) =>
       c.value.toLowerCase().includes(search.toLowerCase()),
     ...options
@@ -18,7 +18,7 @@ export const useMention = (
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const values = mentionables
     .filter(mentionableFilter(search))
     .slice(0, maxSuggestions);
@@ -37,20 +37,20 @@ export const useMention = (
   const onKeyDownMention = useCallback(
     (e: any, editor: Editor) => {
       if (targetRange) {
-        if (e.key === "ArrowDown") {
+        if (e.key === 'ArrowDown') {
           e.preventDefault();
           return setValueIndex(getNextIndex(valueIndex, values.length - 1));
         }
-        if (e.key === "ArrowUp") {
+        if (e.key === 'ArrowUp') {
           e.preventDefault();
           return setValueIndex(getPreviousIndex(valueIndex, values.length - 1));
         }
-        if (e.key === "Escape") {
+        if (e.key === 'Escape') {
           e.preventDefault();
           return setTargetRange(null);
         }
 
-        if (["Tab", "Enter"].includes(e.key)) {
+        if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
           onAddMention(editor, values[valueIndex]);
           return false;

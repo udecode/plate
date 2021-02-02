@@ -1,8 +1,8 @@
-import { IStyle } from "@uifabric/styling";
-import { IStyleFunctionOrObject } from "@uifabric/utilities";
-import { Range } from "slate";
-import { ReactEditor } from "slate-react";
-import { MentionNodeData } from "../types";
+import { IStyle } from '@uifabric/styling';
+import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { Range } from 'slate';
+import { ReactEditor } from 'slate-react';
+import { MentionNodeData } from '../types';
 
 export interface MentionSelectProps {
   /**
