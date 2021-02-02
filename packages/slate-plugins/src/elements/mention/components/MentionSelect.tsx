@@ -1,15 +1,16 @@
-import * as React from 'react';
-import { useEffect, useRef } from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
-import { ReactEditor, useSlate } from 'slate-react';
-import { getPreventDefaultHandler } from '../../../common/utils';
-import { PortalBody } from '../../../components/PortalBody';
-import { getMentionSelectStyles } from './MentionSelect.styles';
+import * as React from "react";
+import { useEffect, useRef } from "react";
+import { classNamesFunction, styled } from "@uifabric/utilities";
+import { ReactEditor, useSlate } from "slate-react";
+import { getPreventDefaultHandler } from "../../../common/utils";
+import { PortalBody } from "../../../components/PortalBody";
+import { getMentionSelectStyles } from "./MentionSelect.styles";
 import {
   MentionSelectProps,
   MentionSelectStyleProps,
   MentionSelectStyles,
-} from './MentionSelect.types';
+} from "./MentionSelect.types";
+import { MentionNodeData } from "../types";
 
 const getClassNames = classNamesFunction<
   MentionSelectStyleProps,
@@ -23,6 +24,7 @@ export const MentionSelectBase = ({
   options,
   valueIndex,
   onClickMention,
+  renderLabel = (mentionable: MentionNodeData) => mentionable.value,
   ...props
 }: MentionSelectProps) => {
   const classNames = getClassNames(styles, {
@@ -65,7 +67,7 @@ export const MentionSelectBase = ({
               option
             )}
           >
-            {option.value}
+            {renderLabel(option)}
           </div>
         ))}
       </div>
@@ -78,5 +80,5 @@ export const MentionSelect = styled<
   MentionSelectStyleProps,
   MentionSelectStyles
 >(MentionSelectBase, getMentionSelectStyles, undefined, {
-  scope: 'MentionSelect',
+  scope: "MentionSelect",
 });
