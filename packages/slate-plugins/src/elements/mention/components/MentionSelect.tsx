@@ -4,6 +4,7 @@ import { classNamesFunction, styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
 import { getPreventDefaultHandler } from '../../../common/utils';
 import { PortalBody } from '../../../components/PortalBody';
+import { MentionNodeData } from '../types';
 import { getMentionSelectStyles } from './MentionSelect.styles';
 import {
   MentionSelectProps,
@@ -23,6 +24,7 @@ export const MentionSelectBase = ({
   options,
   valueIndex,
   onClickMention,
+  renderLabel = (mentionable: MentionNodeData) => mentionable.value,
   ...props
 }: MentionSelectProps) => {
   const classNames = getClassNames(styles, {
@@ -65,7 +67,7 @@ export const MentionSelectBase = ({
               option
             )}
           >
-            {option.value}
+            {renderLabel(option)}
           </div>
         ))}
       </div>

@@ -8,13 +8,19 @@ import { getNextIndex, getPreviousIndex } from './utils';
 
 export const useMention = (
   mentionables: MentionNodeData[] = [],
-  { maxSuggestions = 10, trigger = '@', ...options }: UseMentionOptions = {}
+  {
+    maxSuggestions = 10,
+    trigger = '@',
+    mentionableFilter = (search: string) => (c: MentionNodeData) =>
+      c.value.toLowerCase().includes(search.toLowerCase()),
+    ...options
+  }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
   const [search, setSearch] = useState('');
   const values = mentionables
-    .filter((c) => c.value.toLowerCase().includes(search.toLowerCase()))
+    .filter(mentionableFilter(search))
     .slice(0, maxSuggestions);
 
   const onAddMention = useCallback(

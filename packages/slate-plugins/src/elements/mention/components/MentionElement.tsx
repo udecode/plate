@@ -6,6 +6,7 @@ import {
   MentionElementProps,
   MentionElementStyleProps,
   MentionElementStyles,
+  MentionNodeData,
 } from '../types';
 import { getMentionElementStyles } from './MentionElement.styles';
 
@@ -28,6 +29,7 @@ export const MentionElementBase = ({
   htmlAttributes,
   as: Tag = 'span',
   onClick,
+  renderLabel = (mentionable: MentionNodeData) => mentionable.value,
 }: MentionElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
@@ -49,7 +51,7 @@ export const MentionElementBase = ({
       {...htmlAttributes}
     >
       {prefix}
-      {element.value}
+      {renderLabel(element)}
       {children}
     </Tag>
   );
