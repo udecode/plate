@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { Transforms } from 'slate';
 import { useSlate } from 'slate-react';
+import { unwrapNodes } from '../../../common';
 import { getAbove, isCollapsed } from '../../../common/queries';
 import { someNode } from '../../../common/queries/someNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
@@ -33,7 +35,16 @@ export const ToolbarLink = ({
           prevUrl = linkNode[0].url as string;
         }
         const url = window.prompt(`Enter the URL of the link:`, prevUrl);
-        if (!url) return;
+        if (!url) {
+          linkNode &&
+            editor.selection &&
+            unwrapNodes(editor, {
+              at: editor.selection,
+              match: { type: options.link.type },
+            });
+
+          return;
+        }
 
         // If our cursor is in middle of a link, then we don't want to inser it inline
         const shouldWrap: boolean =
