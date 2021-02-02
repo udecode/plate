@@ -17,6 +17,10 @@ export interface UseMentionOptions extends MentionPluginOptions {
   trigger?: string;
   // Maximum number of suggestions
   maxSuggestions?: number;
+  // Function to match mentionnables for a given search
+  mentionableFilter?: (
+    search: string
+  ) => (mentionable: MentionNodeData) => boolean;
 }
 
 // Data of Element node
@@ -42,6 +46,7 @@ export interface MentionRenderElementPropsOptions {
    */
   prefix?: string;
   onClick?: (mentionNode: MentionNode) => void;
+  renderLabel?: (mentionable: MentionNodeData) => string;
 }
 
 // renderElement props

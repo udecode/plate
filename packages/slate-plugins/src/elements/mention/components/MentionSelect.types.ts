@@ -34,6 +34,8 @@ export interface MentionSelectProps {
    * Callback called when clicking on a mention option
    */
   onClickMention?: (editor: ReactEditor, option: MentionNodeData) => void;
+
+  renderLabel?: (mentionable: MentionNodeData) => string;
 }
 
 export interface MentionSelectStyleProps {
