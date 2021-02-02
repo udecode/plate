@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Transforms } from 'slate';
 import { useSlate } from 'slate-react';
 import { unwrapNodes } from '../../../common';
 import { getAbove, isCollapsed } from '../../../common/queries';
