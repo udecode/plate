@@ -24,16 +24,10 @@ export const MatchesTriggerAndPattern = (
   // Before text
   const beforeText = getText(editor, beforeRange);
 
-  // // Starts with char and ends with word characters
+  // Starts with char and ends with word characters
   const escapedTrigger = escapeRegExp(trigger);
 
   const beforeRegex = new RegExp(`(?:^|\\s)${escapedTrigger}(${pattern})$`);
-  console.log(
-    "🚀 ~ file: useMention.tsx ~ line 26 ~ beforeText",
-    beforeText,
-    beforeText.match(beforeRegex),
-    beforeRegex
-  );
 
   // Match regex on before text
   const match = !!beforeText && beforeText.match(beforeRegex);
@@ -124,49 +118,28 @@ export const useMention = (
       if (selection && isCollapsed(selection)) {
         const cursor = Range.start(selection);
 
-        if (!mentionableSearchPattern) {
-          // previous behavior. searches for a word after typing the first letter. Kept for backward compatibility.
-
-          const { range, match: beforeMatch } = isWordAfterTrigger(editor, {
-            at: cursor,
-            trigger,
-          });
-
-          console.log(range, beforeMatch);
-
-          if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
-            setTargetRange(range as Range);
-            const [, word] = beforeMatch;
-            setSearch(word);
-            setValueIndex(0);
-            return;
-          }
-
-          setTargetRange(null);
-        } else {
-          // new behavior, searches for matching string against pattern right after the trigger
-
-          const { range, match: beforeMatch } = MatchesTriggerAndPattern(
-            editor,
-            {
+        const { range, match: beforeMatch } = mentionableSearchPattern
+          ? //new behavior, searches for matching string against pattern right after the trigger
+            MatchesTriggerAndPattern(editor, {
               at: cursor,
               trigger,
               pattern: mentionableSearchPattern,
-            }
-          );
+            })
+          : // previous behavior. searches for a word after typing the first letter. Kept for backward compatibility.
+            isWordAfterTrigger(editor, {
+              at: cursor,
+              trigger,
+            });
 
-          console.log(range, beforeMatch);
-
-          if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
-            setTargetRange(range as Range);
-            const [, word] = beforeMatch;
-            setSearch(word);
-            setValueIndex(0);
-            return;
-          }
-
-          setTargetRange(null);
+        if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
+          setTargetRange(range as Range);
+          const [, word] = beforeMatch;
+          setSearch(word);
+          setValueIndex(0);
+          return;
         }
+
+        setTargetRange(null);
       }
     },
     [setTargetRange, setSearch, setValueIndex, trigger]

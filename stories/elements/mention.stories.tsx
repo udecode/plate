@@ -58,7 +58,6 @@ export const Example = () => {
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValueMentions);
-    console.log(value);
 
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
