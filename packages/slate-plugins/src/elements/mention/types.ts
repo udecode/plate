@@ -1,6 +1,6 @@
-import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderElementProps } from 'slate-react';
+import { IStyle } from "@uifabric/styling";
+import { IStyleFunctionOrObject } from "@uifabric/utilities";
+import { RenderElementProps } from "slate-react";
 import {
   Deserialize,
   ElementWithAttributes,
@@ -9,7 +9,7 @@ import {
   RenderNodeOptions,
   RenderNodePropsOptions,
   RootProps,
-} from '../../common/types/PluginOptions.types';
+} from "../../common/types/PluginOptions.types";
 
 // useMention options
 export interface UseMentionOptions extends MentionPluginOptions {
@@ -21,6 +21,8 @@ export interface UseMentionOptions extends MentionPluginOptions {
   mentionableFilter?: (
     search: string
   ) => (mentionable: MentionNodeData) => boolean;
+  // Regex Pattern of a mentionable. Some may want to match emails, so default \W is not enough
+  mentionableSearchPattern?: string;
 }
 
 // Data of Element node
@@ -58,7 +60,7 @@ export interface MentionElementProps
   element: MentionNode;
 }
 
-export type MentionKeyOption = 'mention';
+export type MentionKeyOption = "mention";
 
 // Plugin options
 export type MentionPluginOptionsValues = RenderNodeOptions &
@@ -77,9 +79,9 @@ export interface MentionRenderElementOptions
 
 // deserialize options
 export interface MentionDeserializeOptions
-  extends MentionPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+  extends MentionPluginOptions<"type" | "rootProps" | "deserialize"> {}
 
-export interface WithMentionOptions extends MentionPluginOptions<'type'> {}
+export interface WithMentionOptions extends MentionPluginOptions<"type"> {}
 
 export interface MentionElementStyles {
   /**

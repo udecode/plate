@@ -1,24 +1,74 @@
-import { useCallback, useState } from 'react';
-import { Editor, Range, Transforms } from 'slate';
-import { isPointAtWordEnd, isWordAfterTrigger } from '../../common/queries';
-import { isCollapsed } from '../../common/queries/isCollapsed';
-import { insertMention } from './transforms';
-import { MentionNodeData, UseMentionOptions } from './types';
-import { getNextIndex, getPreviousIndex } from './utils';
+import { useCallback, useState } from "react";
+import { Editor, Point, Range, Transforms } from "slate";
+import { escapeRegExp } from "../../common";
+import {
+  getText,
+  isPointAtWordEnd,
+  isWordAfterTrigger,
+} from "../../common/queries";
+import { isCollapsed } from "../../common/queries/isCollapsed";
+import { insertMention } from "./transforms";
+import { MentionNodeData, UseMentionOptions } from "./types";
+import { getNextIndex, getPreviousIndex } from "./utils";
+
+export const MatchesTriggerAndPattern = (
+  editor: Editor,
+  { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
+) => {
+  // Point at the start of line
+  const lineStart = Editor.before(editor, at, { unit: "line" });
+
+  // Range from before to start
+  const beforeRange = lineStart && Editor.range(editor, lineStart, at);
+
+  // Before text
+  const beforeText = getText(editor, beforeRange);
+
+  // // Starts with char and ends with word characters
+  const escapedTrigger = escapeRegExp(trigger);
+
+  const beforeRegex = new RegExp(`(?:^|\\s)${escapedTrigger}(${pattern})$`);
+  console.log(
+    "🚀 ~ file: useMention.tsx ~ line 26 ~ beforeText",
+    beforeText,
+    beforeText.match(beforeRegex),
+    beforeRegex
+  );
+
+  // Match regex on before text
+  const match = !!beforeText && beforeText.match(beforeRegex);
+
+  // Point at the start of mention
+  const mentionStart = match
+    ? Editor.before(editor, at, {
+        unit: "character",
+        distance: match[1].length + trigger.length,
+      })
+    : null;
+
+  // Range from mention to start
+  const mentionRange = mentionStart && Editor.range(editor, mentionStart, at);
+
+  return {
+    range: mentionRange,
+    match,
+  };
+};
 
 export const useMention = (
   mentionables: MentionNodeData[] = [],
   {
     maxSuggestions = 10,
-    trigger = '@',
+    trigger = "@",
     mentionableFilter = (search: string) => (c: MentionNodeData) =>
       c.value.toLowerCase().includes(search.toLowerCase()),
+    mentionableSearchPattern,
     ...options
   }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const values = mentionables
     .filter(mentionableFilter(search))
     .slice(0, maxSuggestions);
@@ -37,20 +87,20 @@ export const useMention = (
   const onKeyDownMention = useCallback(
     (e: any, editor: Editor) => {
       if (targetRange) {
-        if (e.key === 'ArrowDown') {
+        if (e.key === "ArrowDown") {
           e.preventDefault();
           return setValueIndex(getNextIndex(valueIndex, values.length - 1));
         }
-        if (e.key === 'ArrowUp') {
+        if (e.key === "ArrowUp") {
           e.preventDefault();
           return setValueIndex(getPreviousIndex(valueIndex, values.length - 1));
         }
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           e.preventDefault();
           return setTargetRange(null);
         }
 
-        if (['Tab', 'Enter'].includes(e.key)) {
+        if (["Tab", "Enter"].includes(e.key)) {
           e.preventDefault();
           onAddMention(editor, values[valueIndex]);
           return false;
@@ -74,21 +124,50 @@ export const useMention = (
       if (selection && isCollapsed(selection)) {
         const cursor = Range.start(selection);
 
-        const { range, match: beforeMatch } = isWordAfterTrigger(editor, {
-          at: cursor,
-          trigger,
-        });
+        if (!mentionableSearchPattern) {
+          // previous behavior. searches for a word after typing the first letter. Kept for backward compatibility.
 
-        if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
-          setTargetRange(range as Range);
-          const [, word] = beforeMatch;
-          setSearch(word);
-          setValueIndex(0);
-          return;
+          const { range, match: beforeMatch } = isWordAfterTrigger(editor, {
+            at: cursor,
+            trigger,
+          });
+
+          console.log(range, beforeMatch);
+
+          if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
+            setTargetRange(range as Range);
+            const [, word] = beforeMatch;
+            setSearch(word);
+            setValueIndex(0);
+            return;
+          }
+
+          setTargetRange(null);
+        } else {
+          // new behavior, searches for matching string against pattern right after the trigger
+
+          const { range, match: beforeMatch } = MatchesTriggerAndPattern(
+            editor,
+            {
+              at: cursor,
+              trigger,
+              pattern: mentionableSearchPattern,
+            }
+          );
+
+          console.log(range, beforeMatch);
+
+          if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
+            setTargetRange(range as Range);
+            const [, word] = beforeMatch;
+            setSearch(word);
+            setValueIndex(0);
+            return;
+          }
+
+          setTargetRange(null);
         }
       }
-
-      setTargetRange(null);
     },
     [setTargetRange, setSearch, setValueIndex, trigger]
   );
