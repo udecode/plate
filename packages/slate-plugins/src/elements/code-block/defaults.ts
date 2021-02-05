@@ -1,9 +1,10 @@
 import { CodeBlockElement } from './components/CodeBlockElement';
+import { CodeBlockLineElement } from './components/CodeBlockLineElement';
 import { CodeBlockKeyOption, CodeBlockPluginOptionsValues } from './types';
 
 export const MARK_PRISM = 'prism';
 export const ELEMENT_CODE_BLOCK = 'code_block';
-
+export const ELEMENT_CODE_BLOCK_LINE = 'code_block_line';
 export const DEFAULTS_CODE_BLOCK: Record<
   CodeBlockKeyOption,
   CodeBlockPluginOptionsValues
@@ -14,6 +15,13 @@ export const DEFAULTS_CODE_BLOCK: Record<
     hotkey: ['mod+opt+8', 'mod+shift+8'],
     rootProps: {
       className: 'slate-code-block',
+    },
+  },
+  code_block_line: {
+    component: CodeBlockLineElement,
+    type: ELEMENT_CODE_BLOCK_LINE,
+    rootProps: {
+      className: 'slate-code-block-line',
     },
   },
 };
