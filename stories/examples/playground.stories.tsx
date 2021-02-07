@@ -83,6 +83,7 @@ import {
   withMarks,
   withNormalizeTypes,
   withTable,
+  withBlockquote,
   withTrailingNode,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
@@ -213,6 +214,7 @@ export const Plugins = () => {
     withDeserializeHTML({ plugins }),
     withMarks(),
     withImageUpload(),
+    withBlockquote({ rules: autoformatRules }),
     withAutoformat({ rules: autoformatRules }),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: options.h1.type }],
