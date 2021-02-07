@@ -21,6 +21,8 @@ export interface UseMentionOptions extends MentionPluginOptions {
   mentionableFilter?: (
     search: string
   ) => (mentionable: MentionNodeData) => boolean;
+  // Regex Pattern of a mentionable. Some may want to match emails, so default \W is not enough
+  mentionableSearchPattern?: string;
 }
 
 // Data of Element node
