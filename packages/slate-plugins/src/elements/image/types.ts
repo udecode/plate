@@ -46,7 +46,15 @@ export type ImageKeyOption = 'img';
 export type ImagePluginOptionsValues = RenderNodeOptions &
   RootProps<ImageRenderElementPropsOptions> &
   NodeToProps<ImageNode, ImageRenderElementPropsOptions> &
-  Deserialize;
+  Deserialize & {
+    /**
+     * An optional method that will upload the image to a server.
+     * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+     */
+    uploadImage?: (
+      dataUrl: string | ArrayBuffer
+    ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+  };
 export type ImagePluginOptionsKeys = keyof ImagePluginOptionsValues;
 export type ImagePluginOptions<
   Value extends ImagePluginOptionsKeys = ImagePluginOptionsKeys

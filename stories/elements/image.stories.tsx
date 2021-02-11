@@ -53,7 +53,7 @@ export const Example = () => {
         value={value}
         onChange={(newValue) => setValue(newValue as SlateDocument)}
       >
-        <HeadingToolbar>
+        <HeadingToolbar>/Users/guypinchuk/Projects/slate-plugins/packages/slate-plugins/src/elements/image/types.ts
           <ToolbarImage {...options} icon={<Image />} />
         </HeadingToolbar>
         <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
