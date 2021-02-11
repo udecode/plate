@@ -1,14 +1,15 @@
 import { ReactEditor } from 'slate-react';
 import { insertImage } from '../transforms';
 import { ImagePluginOptions } from '../types';
-import { isImageUrl, onImageLoad } from '../utils';
+import { isImageUrl } from '../utils';
 
 /**
  * Allows for pasting images from clipboard.
  * Not yet: dragging and dropping images, selecting them through a file system dialog.
- * @param img.type
+ * @param options.type
+ * @param options.uploadImage
  */
-export const withImageUpload = (options?: ImagePluginOptions<'type'>) => <
+export const withImageUpload = (options?: ImagePluginOptions) => <
   T extends ReactEditor
 >(
   editor: T
@@ -22,8 +23,19 @@ export const withImageUpload = (options?: ImagePluginOptions<'type'>) => <
       for (const file of files) {
         const reader = new FileReader();
         const [mime] = file.type.split('/');
+
         if (mime === 'image') {
-          reader.addEventListener('load', onImageLoad(editor, reader));
+          reader.addEventListener('load', async () => {
+            if (!reader.result) {
+              return;
+            }
+            const uploadedUrl = options?.img?.uploadImage
+              ? await options.img.uploadImage(reader.result)
+              : reader.result;
+
+            insertImage(editor, uploadedUrl);
+          });
+
           reader.readAsDataURL(file);
         }
       }
