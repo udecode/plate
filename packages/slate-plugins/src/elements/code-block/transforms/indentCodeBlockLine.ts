@@ -14,5 +14,6 @@ export const indentCodeBlockLine = (
   const [codeBlockNode] = codeBlock;
   const [, codeBlockLinePath] = codeBlockLine;
 
-  // do some magic to indent
+  // get the selection
+  // for each code_block_line in the selection, add two spaces to the start of the line
 };

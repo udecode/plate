@@ -23,10 +23,10 @@ export const DEFAULTS_CODE_BLOCK: Record<
   },
   code_block_line: {
     component: CodeBlockLineElement,
-    /* type: ELEMENT_CODE_BLOCK_LINE,
+    type: ELEMENT_CODE_BLOCK_LINE,
     rootProps: {
       className: 'slate-code-block-line',
-    }, */
+    },
   },
 };
 
