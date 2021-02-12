@@ -76,6 +76,16 @@ export type CodeBlockPluginOptions<
 > = Partial<
   Record<CodeBlockKeyOption, Pick<CodeBlockPluginOptionsValues, Value>>
 >;
+export type CodeBlockLinePluginOptionsValues = RenderNodeOptions &
+  RootProps<CodeBlockLineRenderElementPropsOptions> &
+  NodeToProps<CodeBlockLineNode, CodeBlockLineRenderElementPropsOptions> &
+  Deserialize;
+export type CodeBlockLinePluginOptionsKeys = keyof CodeBlockLinePluginOptionsValues;
+export type CodeBlockLinePluginOptions<
+  Value extends CodeBlockLinePluginOptionsKeys = CodeBlockLinePluginOptionsKeys
+> = Partial<
+  Record<CodeBlockLineKeyOption, Pick<CodeBlockLinePluginOptionsValues, Value>>
+>;
 
 // renderElement options
 export type CodeBlockRenderElementOptionsKeys = CodeBlockPluginOptionsKeys;
@@ -93,6 +103,9 @@ export interface CodeBlockOnKeyDownOptions
   extends CodeBlockPluginOptions<'type'> {}
 
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
+
+export interface CodeBlockLineOptions
+  extends CodeBlockLinePluginOptions<'type'> {}
 
 export interface CodeBlockElementStyles {
   /**

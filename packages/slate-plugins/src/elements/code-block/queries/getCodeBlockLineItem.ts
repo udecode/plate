@@ -4,7 +4,7 @@ import { getParent } from '../../../common/queries/getParent';
 import { someNode } from '../../../common/queries/someNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockOptions } from '../types';
+import { CodeBlockLineOptions } from '../types';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
@@ -12,7 +12,7 @@ import { CodeBlockOptions } from '../types';
 export const getCodeBlockLineItemEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: CodeBlockOptions
+  options?: CodeBlockLineOptions
 ) => {
   const { code_block_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 

@@ -1,12 +1,16 @@
 import { CodeBlockElement } from './components/CodeBlockElement';
 import { CodeBlockLineElement } from './components/CodeBlockLineElement';
-import { CodeBlockKeyOption, CodeBlockPluginOptionsValues } from './types';
+import {
+  CodeBlockKeyOption,
+  CodeBlockLineKeyOption,
+  CodeBlockPluginOptionsValues,
+} from './types';
 
 export const MARK_PRISM = 'prism';
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_BLOCK_LINE = 'code_block_line';
 export const DEFAULTS_CODE_BLOCK: Record<
-  CodeBlockKeyOption,
+  CodeBlockKeyOption & CodeBlockLineKeyOption,
   CodeBlockPluginOptionsValues
 > = {
   code_block: {
@@ -19,10 +23,10 @@ export const DEFAULTS_CODE_BLOCK: Record<
   },
   code_block_line: {
     component: CodeBlockLineElement,
-    type: ELEMENT_CODE_BLOCK_LINE,
+    /* type: ELEMENT_CODE_BLOCK_LINE,
     rootProps: {
       className: 'slate-code-block-line',
-    },
+    }, */
   },
 };
 
