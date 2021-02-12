@@ -1,13 +1,15 @@
 import { Editor } from 'slate';
-import { getCodeBlockLineItemEntry } from './queries/getCodeBlockLineItem';
+import { getCodeBlockLineItemEntry } from './queries/getCodeBlockLineItemEnrty';
 import { indentCodeBlockLine } from './transforms/indentCodeBlockLine';
 import { outdentCodeBlockLine } from './transforms/outdentCodeBlockLine';
-import { CodeBlockOnKeyDownOptions } from './types';
+import {
+  CodeBlockLineOnKeyDownOptions,
+  CodeBlockOnKeyDownOptions,
+} from './types';
 
-export const onKeyDownCodeBlock = (options?: CodeBlockOnKeyDownOptions) => (
-  e: KeyboardEvent,
-  editor: Editor
-) => {
+export const onKeyDownCodeBlock = (
+  options?: CodeBlockOnKeyDownOptions & CodeBlockLineOnKeyDownOptions
+) => (e: KeyboardEvent, editor: Editor) => {
   let moved: boolean | undefined = false;
 
   if (e.key === 'Tab') {
@@ -31,7 +33,7 @@ export const onKeyDownCodeBlock = (options?: CodeBlockOnKeyDownOptions) => (
     // indent with tab
     const tab = !e.shiftKey;
     if (tab) {
-      indentCodeBlockLine(editor, { codeBlock, codeBlockLineItem }, options);
+      indentCodeBlockLine(editor, { codeBlock, codeBlockLineItem });
     }
   }
 };

@@ -19,11 +19,11 @@ export const getCodeBlockLineItemEntry = (
   if (at && someNode(editor, { at, match: { type: code_block_line.type } })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
-    const [, paragraphPath] = selectionParent;
+    const [, parentPath] = selectionParent;
 
     const codeBlockLineItem =
       getAbove(editor, { at, match: { type: code_block_line.type } }) ||
-      getParent(editor, paragraphPath);
+      getParent(editor, parentPath);
 
     if (!codeBlockLineItem) return;
     const [codeBlockLineItemNode, codeBlockLineItemPath] = codeBlockLineItem;

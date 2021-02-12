@@ -1,18 +1,20 @@
-import { Ancestor, Editor, NodeEntry } from 'slate';
-import { CodeBlockOptions } from '../types';
+import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
+import { getText } from '../../../common';
 
 export interface OutdentCodeBlockLineOptions {
   codeBlock: NodeEntry<Ancestor>;
-  codeBlockLine: NodeEntry<Ancestor>;
+  codeBlockLineItem: NodeEntry<Ancestor>;
 }
 
 export const outdentCodeBlockLine = (
   editor: Editor,
-  { codeBlock, codeBlockLine }: OutdentCodeBlockLineOptions,
-  options?: CodeBlockOptions
+  { codeBlockLineItem }: OutdentCodeBlockLineOptions
 ) => {
-  const [codeBlockNode] = codeBlock;
-  const [, codeBlockLinePath] = codeBlockLine;
-
-  // do some magic to outdent
+  const [, codeBlockLinePath] = codeBlockLineItem;
+  const text = getText(editor, codeBlockLinePath);
+  if (text.substring(0, 2) === `  `) {
+    Transforms.insertText(editor, text.substring(2), { at: codeBlockLinePath });
+  } else if (text.substring(0, 1) === ` `) {
+    Transforms.insertText(editor, text.substring(1), { at: codeBlockLinePath });
+  }
 };

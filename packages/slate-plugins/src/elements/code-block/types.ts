@@ -92,6 +92,10 @@ export type CodeBlockRenderElementOptionsKeys = CodeBlockPluginOptionsKeys;
 export interface CodeBlockRenderElementOptions
   extends CodeBlockPluginOptions<CodeBlockRenderElementOptionsKeys> {}
 
+export type CodeBlockLineRenderElementOptionsKeys = CodeBlockLinePluginOptionsKeys;
+export interface CodeBlockLineRenderElementOptions
+  extends CodeBlockLinePluginOptions<CodeBlockLineRenderElementOptionsKeys> {}
+
 // deserialize options
 export interface CodeBlockDeserializeOptions
   extends CodeBlockPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
@@ -101,6 +105,9 @@ export interface CodeBlockDecorateOptions
 
 export interface CodeBlockOnKeyDownOptions
   extends CodeBlockPluginOptions<'type'> {}
+
+export interface CodeBlockLineOnKeyDownOptions
+  extends CodeBlockLinePluginOptions<'type'> {}
 
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 

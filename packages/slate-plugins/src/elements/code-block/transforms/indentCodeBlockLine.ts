@@ -1,19 +1,16 @@
-import { Ancestor, Editor, NodeEntry } from 'slate';
-import { CodeBlockOptions } from '../types';
+import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
+import { getText } from '../../../common';
 
 export interface IndentCodeBlockLineOptions {
   codeBlock: NodeEntry<Ancestor>;
-  codeBlockLine: NodeEntry<Ancestor>;
+  codeBlockLineItem: NodeEntry<Ancestor>;
 }
 
 export const indentCodeBlockLine = (
   editor: Editor,
-  { codeBlock, codeBlockLine }: IndentCodeBlockLineOptions,
-  options?: CodeBlockOptions
+  { codeBlockLineItem }: IndentCodeBlockLineOptions
 ) => {
-  const [codeBlockNode] = codeBlock;
-  const [, codeBlockLinePath] = codeBlockLine;
-
-  // get the selection
-  // for each code_block_line in the selection, add two spaces to the start of the line
+  const [, codeBlockLinePath] = codeBlockLineItem;
+  const text = getText(editor, codeBlockLinePath);
+  Transforms.insertText(editor, `  ${text}`, { at: codeBlockLinePath });
 };
