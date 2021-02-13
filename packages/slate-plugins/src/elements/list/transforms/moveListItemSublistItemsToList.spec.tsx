@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { getNodeById } from '@udecode/slate-plugins-common';
-import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { Editor } from 'slate';
+import { jsx } from '../../../__test-utils__/jsx';
+import { findNode } from '../../../common/queries/findNode';
 import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
 
 const input = ((
@@ -52,11 +52,11 @@ const output = ((
 it('should', () => {
   const editor = input;
 
-  const fromListItem = getNodeById(editor, '2') as NodeEntry<Ancestor>;
-  const toList = getNodeById(editor, '1') as NodeEntry<Ancestor>;
+  const fromListItem = findNode(input, { match: { id: '2' } }) as any;
+  const toList = findNode(input, { match: { id: '1' } }) as any;
 
   if (fromListItem && toList) {
-    moveListItemSublistItemsToList(editor, { fromListItem, toList });
+    moveListItemSublistItemsToList(editor, { fromListItem, toList }, {});
   }
 
   expect(input.children).toEqual(output.children);

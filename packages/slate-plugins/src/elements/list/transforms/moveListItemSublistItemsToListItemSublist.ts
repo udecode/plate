@@ -1,10 +1,10 @@
-import {
-  getLastChildPath,
-  getParent,
-  moveChildren,
-} from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { getListItemSublist } from '../queries/getListItemSublist';
+import { findDescendant } from '../../../common/queries/findDescendant';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
+import { getParent } from '../../../common/queries/getParent';
+import { moveChildren } from '../../../common/transforms/moveChildren';
+import { getListTypes } from '../queries/getListTypes';
+import { ListOptions } from '../types';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
@@ -33,16 +33,28 @@ export const moveListItemSublistItemsToListItemSublist = (
     fromListItem,
     toListItem,
     start,
-  }: MoveListItemSublistItemsToListItemSublistOptions
+  }: MoveListItemSublistItemsToListItemSublistOptions,
+  options?: ListOptions
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
 
-  const fromListItemSublist = getListItemSublist(fromListItem);
+  const fromListItemSublist = findDescendant<Ancestor>(editor, {
+    at: fromListItemPath,
+    match: {
+      type: getListTypes(options),
+    },
+  });
   if (!fromListItemSublist) return 0;
+
   const [, fromListItemSublistPath] = fromListItemSublist;
 
-  const toListItemSublist = getListItemSublist(toListItem);
+  const toListItemSublist = findDescendant<Ancestor>(editor, {
+    at: toListItemPath,
+    match: {
+      type: getListTypes(options),
+    },
+  });
 
   let to: Path;
 

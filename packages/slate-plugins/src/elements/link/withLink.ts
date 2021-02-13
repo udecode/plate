@@ -1,17 +1,16 @@
-import {
-  getRangeBefore,
-  getRangeFromBlockStart,
-  getText,
-  isCollapsed,
-  isNodeTypeIn,
-  isUrl as isUrlProtocol,
-  RangeBeforeOptions,
-  setDefaults,
-  unwrapNodesByType,
-} from '@udecode/slate-plugins-common';
 import get from 'lodash/get';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
+import {
+  getRangeBefore,
+  RangeBeforeOptions,
+} from '../../common/queries/getRangeBefore';
+import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
+import { getText } from '../../common/queries/getText';
+import { isCollapsed } from '../../common/queries/isCollapsed';
+import { someNode } from '../../common/queries/someNode';
+import { unwrapNodes } from '../../common/transforms/unwrapNodes';
+import { isUrl as isUrlProtocol, setDefaults } from '../../common/utils';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { DEFAULTS_LINK } from './defaults';
 import { upsertLinkAtSelection, wrapLink } from './transforms';
@@ -29,7 +28,7 @@ const upsertLink = (
 ) => {
   const { link } = setDefaults(options, DEFAULTS_LINK);
 
-  unwrapNodesByType(editor, link.type, { at });
+  unwrapNodes(editor, { at, match: { type: link.type } });
 
   const newSelection = editor.selection as Range;
 
@@ -118,7 +117,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
     const text = data.getData('text/plain');
 
     if (text) {
-      if (isNodeTypeIn(editor, link.type)) {
+      if (someNode(editor, { match: { type: link.type } })) {
         return insertText(text);
       }
 

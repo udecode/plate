@@ -4,6 +4,9 @@ import {
   setDefaults,
 } from '@udecode/slate-plugins-common';
 import { Editor, Path, Transforms } from 'slate';
+import { getAbove } from '../../../common/queries';
+import { someNode } from '../../../common/queries/someNode';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
 import { getEmptyCellNode } from '../utils';
@@ -11,10 +14,12 @@ import { getEmptyCellNode } from '../utils';
 export const addColumn = (editor: Editor, options?: TableOptions) => {
   const { table, td, th } = setDefaults(options, DEFAULTS_TABLE);
 
-  if (isNodeTypeIn(editor, table.type)) {
-    const currentCellItem = getAboveByType(editor, [td.type, th.type]);
+  if (someNode(editor, { match: { type: table.type } })) {
+    const currentCellItem = getAbove(editor, {
+      match: { type: [td.type, th.type] },
+    });
 
-    const currentTableItem = getAboveByType(editor, table.type);
+    const currentTableItem = getAbove(editor, { match: { type: table.type } });
 
     if (currentCellItem && currentTableItem) {
       const nextCellPath = Path.next(currentCellItem[1]);

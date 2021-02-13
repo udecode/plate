@@ -1,10 +1,8 @@
 import * as React from 'react';
-import {
-  getPreventDefaultHandler,
-  isNodeTypeIn,
-  toggleNodeType,
-} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
+import { someNode } from '../../common/queries/someNode';
+import { toggleNodeType } from '../../common/transforms/toggleNodeType';
+import { getPreventDefaultHandler } from '../../common/utils/index';
 import { ToolbarButton } from '../ToolbarButton/index';
 import { ToolbarElementProps } from './ToolbarElement.types';
 
@@ -20,7 +18,7 @@ export const ToolbarElement = ({
 
   return (
     <ToolbarButton
-      active={isNodeTypeIn(editor, type)}
+      active={someNode(editor, { match: { type } })}
       onMouseDown={getPreventDefaultHandler(toggleNodeType, editor, {
         activeType: type,
         inactiveType,

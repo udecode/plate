@@ -3,6 +3,7 @@ import markdown from 'remark-parse';
 import slate from 'remark-slate';
 import unified from 'unified';
 import { ELEMENT_BLOCKQUOTE } from '../../../elements/blockquote/defaults';
+import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/defaults';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -11,7 +12,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '../../../elements/heading/defaults';
-import { ELEMENT_LINK } from '../../../elements/link/defaults';
+import { ATTRIBUTE_LINK, ELEMENT_LINK } from '../../../elements/link/defaults';
 import {
   ELEMENT_LI,
   ELEMENT_OL,
@@ -24,6 +25,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
     p,
     blockquote,
     link,
+    code,
     ul,
     ol,
     li,
@@ -36,7 +38,8 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
   } = setDefaults(options, {
     p: { type: ELEMENT_PARAGRAPH },
     blockquote: { type: ELEMENT_BLOCKQUOTE },
-    link: { type: ELEMENT_LINK },
+    link: { type: ELEMENT_LINK, attribute: ATTRIBUTE_LINK },
+    code: { type: ELEMENT_CODE_BLOCK },
     ul: { type: ELEMENT_UL },
     ol: { type: ELEMENT_OL },
     li: { type: ELEMENT_LI },
@@ -55,6 +58,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
         paragraph: p.type,
         block_quote: blockquote.type,
         link: link.type,
+        code_block: code.type,
         ul_list: ul.type,
         ol_list: ol.type,
         listItem: li.type,
@@ -67,6 +71,7 @@ export const parseMD = (options?: Record<string, any>) => (content: string) => {
           6: h6.type,
         },
       },
+      linkDestinationKey: link.attribute,
     })
     .processSync(content);
 

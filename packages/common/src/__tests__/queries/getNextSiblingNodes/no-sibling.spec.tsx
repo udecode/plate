@@ -24,7 +24,7 @@ const output: Descendant[] = [];
 it('should be', () => {
   const above = getBlockAbove(
     withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)
-  );
+  ) as any;
   expect(
     getNextSiblingNodes(above, (input.selection as Range).anchor.path)
   ).toEqual(output);

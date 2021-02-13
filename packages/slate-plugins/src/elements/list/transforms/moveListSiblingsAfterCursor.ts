@@ -1,6 +1,7 @@
-import { moveChildren } from '@udecode/slate-plugins-common';
 import { Editor, Node, NodeEntry, Path } from 'slate';
-import { isNodeTypeList } from '../queries/isNodeTypeList';
+import { moveChildren } from '../../../common/transforms/moveChildren';
+import { match } from '../../../common/utils/match';
+import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 
 export const moveListSiblingsAfterCursor = (
@@ -20,7 +21,7 @@ export const moveListSiblingsAfterCursor = (
   const listEntry: NodeEntry = [listNode, at];
 
   if (
-    !isNodeTypeList(listNode, options) ||
+    !match(listNode, { type: getListTypes(options) }) ||
     Path.isParent(at, to) // avoid moving nodes within its own list
   ) {
     return 0;

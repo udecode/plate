@@ -29,12 +29,14 @@ const output = (
   </editor>
 ) as any;
 
-it('should do nothing', () => {
-  const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
-    withReact(input)
-  );
+describe('when inserting empty html', () => {
+  it('should do nothing', () => {
+    const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
+      withReact(input)
+    );
 
-  editor.insertData(data as any);
+    editor.insertData(data as any);
 
-  expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(output.children);
+  });
 });

@@ -28,7 +28,11 @@ export interface AlignElementProps
   element: AlignNode;
 }
 
-export type AlignKeyOption = 'align_left' | 'align_center' | 'align_right';
+export type AlignKeyOption =
+  | 'align_left'
+  | 'align_center'
+  | 'align_justify'
+  | 'align_right';
 
 // Plugin options
 export type AlignPluginOptionsValues = RenderNodeOptions &

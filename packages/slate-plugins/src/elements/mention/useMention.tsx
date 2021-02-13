@@ -1,23 +1,70 @@
 import { useCallback, useState } from 'react';
+import { Editor, Point, Range, Transforms } from 'slate';
+import { escapeRegExp } from '../../common';
 import {
-  isCollapsed,
+  getText,
   isPointAtWordEnd,
   isWordAfterTrigger,
-} from '@udecode/slate-plugins-common';
-import { Editor, Range, Transforms } from 'slate';
+} from '../../common/queries';
+import { isCollapsed } from '../../common/queries/isCollapsed';
 import { insertMention } from './transforms';
 import { MentionNodeData, UseMentionOptions } from './types';
 import { getNextIndex, getPreviousIndex } from './utils';
 
+export const matchesTriggerAndPattern = (
+  editor: Editor,
+  { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
+) => {
+  // Point at the start of line
+  const lineStart = Editor.before(editor, at, { unit: 'line' });
+
+  // Range from before to start
+  const beforeRange = lineStart && Editor.range(editor, lineStart, at);
+
+  // Before text
+  const beforeText = getText(editor, beforeRange);
+
+  // Starts with char and ends with word characters
+  const escapedTrigger = escapeRegExp(trigger);
+
+  const beforeRegex = new RegExp(`(?:^|\\s)${escapedTrigger}(${pattern})$`);
+
+  // Match regex on before text
+  const match = !!beforeText && beforeText.match(beforeRegex);
+
+  // Point at the start of mention
+  const mentionStart = match
+    ? Editor.before(editor, at, {
+        unit: 'character',
+        distance: match[1].length + trigger.length,
+      })
+    : null;
+
+  // Range from mention to start
+  const mentionRange = mentionStart && Editor.range(editor, mentionStart, at);
+
+  return {
+    range: mentionRange,
+    match,
+  };
+};
+
 export const useMention = (
   mentionables: MentionNodeData[] = [],
-  { maxSuggestions = 10, trigger = '@', ...options }: UseMentionOptions = {}
+  {
+    maxSuggestions = 10,
+    trigger = '@',
+    mentionableFilter = (search: string) => (c: MentionNodeData) =>
+      c.value.toLowerCase().includes(search.toLowerCase()),
+    mentionableSearchPattern,
+    ...options
+  }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
   const [search, setSearch] = useState('');
   const values = mentionables
-    .filter((c) => c.value.toLowerCase().includes(search.toLowerCase()))
+    .filter(mentionableFilter(search))
     .slice(0, maxSuggestions);
 
   const onAddMention = useCallback(
@@ -71,10 +118,18 @@ export const useMention = (
       if (selection && isCollapsed(selection)) {
         const cursor = Range.start(selection);
 
-        const { range, match: beforeMatch } = isWordAfterTrigger(editor, {
-          at: cursor,
-          trigger,
-        });
+        const { range, match: beforeMatch } = mentionableSearchPattern
+          ? // new behavior, searches for matching string against pattern right after the trigger
+            matchesTriggerAndPattern(editor, {
+              at: cursor,
+              trigger,
+              pattern: mentionableSearchPattern,
+            })
+          : // previous behavior. searches for a word after typing the first letter. Kept for backward compatibility.
+            isWordAfterTrigger(editor, {
+              at: cursor,
+              trigger,
+            });
 
         if (beforeMatch && isPointAtWordEnd(editor, { at: cursor })) {
           setTargetRange(range as Range);
@@ -83,9 +138,9 @@ export const useMention = (
           setValueIndex(0);
           return;
         }
-      }
 
-      setTargetRange(null);
+        setTargetRange(null);
+      }
     },
     [setTargetRange, setSearch, setValueIndex, trigger]
   );

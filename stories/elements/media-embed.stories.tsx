@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
+  ELEMENT_IMAGE,
   HeadingPlugin,
   MediaEmbedPlugin,
   ParagraphPlugin,
@@ -9,6 +10,7 @@ import {
   renderElementMediaEmbed,
   SlateDocument,
   withInlineVoid,
+  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -32,6 +34,7 @@ export const Example = () => {
     withReact,
     withHistory,
     withInlineVoid({ plugins }),
+    withSelectOnBackspace({ allow: [ELEMENT_IMAGE] }),
   ] as const;
 
   const createReactEditor = () => () => {

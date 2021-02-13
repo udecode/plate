@@ -24,7 +24,8 @@ export const isWordAfterTrigger = (
 
   // Starts with char and ends with word characters
   const escapedTrigger = escapeRegExp(trigger);
-  const beforeRegex = new RegExp(`^${escapedTrigger}(\\w+)$`);
+
+  const beforeRegex = new RegExp(`^${escapedTrigger}([\\w|À-ÖØ-öø-ÿ]+)$`);
 
   // Match regex on before text
   const match = !!beforeText && beforeText.match(beforeRegex);

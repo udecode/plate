@@ -1,13 +1,13 @@
-import {
-  DEFAULT_ELEMENT,
-  getBlockAbove,
-  isExpanded,
-  isNodeType,
-  isSelectionAtBlockEnd,
-  isSelectionAtBlockStart,
-} from '@udecode/slate-plugins-common';
 import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
+import {
+  getBlockAbove,
+  isNodeEntry,
+  isSelectionAtBlockEnd,
+  isSelectionAtBlockStart,
+} from '../../common/queries';
+import { isExpanded } from '../../common/queries/isExpanded';
+import { DEFAULT_ELEMENT } from '../../common/types/node.types';
 import { ExitBreakOnKeyDownOptions } from './types';
 
 /**
@@ -61,6 +61,7 @@ export const onKeyDownExitBreak = ({
   editor: Editor
 ) => {
   const entry = getBlockAbove(editor);
+  if (!entry) return;
 
   rules.forEach(
     ({
@@ -70,7 +71,7 @@ export const onKeyDownExitBreak = ({
       before,
       defaultType = DEFAULT_ELEMENT,
     }) => {
-      if (isHotkey(hotkey, event) && isNodeType(entry, query)) {
+      if (isHotkey(hotkey, event) && isNodeEntry(entry, query)) {
         if (!editor.selection) return;
 
         const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, {

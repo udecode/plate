@@ -1,10 +1,8 @@
-import {
-  getAboveByType,
-  getParent,
-  isBlockTextEmptyAfterSelection,
-  setDefaults,
-} from '@udecode/slate-plugins-common';
 import { Editor, Path, Range, Transforms } from 'slate';
+import { getAbove } from '../../../common/queries/getAbove';
+import { getParent } from '../../../common/queries/getParent';
+import { isBlockTextEmptyAfterSelection } from '../../../common/queries/isBlockTextEmptyAfterSelection';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 
@@ -16,7 +14,7 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
   if (editor.selection) {
-    const paragraphEntry = getAboveByType(editor, p.type);
+    const paragraphEntry = getAbove(editor, { match: { type: p.type } });
     if (!paragraphEntry) return;
     const [, paragraphPath] = paragraphEntry;
 
@@ -59,18 +57,20 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
     if (!isEnd) {
-      Transforms.splitNodes(editor, { at: editor.selection });
-      Transforms.wrapNodes(
-        editor,
-        {
-          type: li.type,
-          children: [],
-        },
-        { at: nextParagraphPath }
-      );
-      Transforms.moveNodes(editor, {
-        at: nextParagraphPath,
-        to: nextListItemPath,
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.splitNodes(editor);
+        Transforms.wrapNodes(
+          editor,
+          {
+            type: li.type,
+            children: [],
+          },
+          { at: nextParagraphPath }
+        );
+        Transforms.moveNodes(editor, {
+          at: nextParagraphPath,
+          to: nextListItemPath,
+        });
       });
     } else {
       /**

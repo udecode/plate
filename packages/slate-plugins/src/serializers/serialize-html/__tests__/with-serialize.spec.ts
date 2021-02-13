@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { RenderElementProps, RenderLeafProps } from 'slate-react';
 import {
   BoldPlugin,
   htmlStringToDOMNode,
@@ -15,7 +16,7 @@ it('custom serialize image to html', () => {
           {
             ...ImagePlugin(),
             serialize: {
-              element: ({ element }) =>
+              element: ({ element }: RenderElementProps) =>
                 React.createElement('img', { src: element.url }),
             },
           },
@@ -42,7 +43,7 @@ it('custom serialize bold to html', () => {
         {
           ...BoldPlugin(),
           serialize: {
-            leaf: ({ leaf, children }) =>
+            leaf: ({ leaf, children }: RenderLeafProps) =>
               leaf[MARK_BOLD] && !!leaf.text
                 ? React.createElement('b', {}, children)
                 : children,

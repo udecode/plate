@@ -1,11 +1,9 @@
 import * as React from 'react';
-import {
-  getAboveByType,
-  isCollapsed,
-  isNodeTypeIn,
-  setDefaults,
-} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
+import { unwrapNodes } from '../../../common';
+import { getAbove, isCollapsed } from '../../../common/queries';
+import { someNode } from '../../../common/queries/someNode';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import {
   ToolbarButton,
   ToolbarButtonProps,
@@ -20,7 +18,8 @@ export const ToolbarLink = ({
 }: ToolbarButtonProps & LinkOptions) => {
   const options = setDefaults({ link }, DEFAULTS_LINK);
   const editor = useSlate();
-  const isLink = isNodeTypeIn(editor, options.link.type);
+  const isLink = someNode(editor, { match: { type: options.link.type } });
+
   return (
     <ToolbarButton
       active={isLink}
@@ -28,12 +27,23 @@ export const ToolbarLink = ({
         event.preventDefault();
         let prevUrl = '';
 
-        const linkNode = getAboveByType(editor, options.link.type);
+        const linkNode = getAbove(editor, {
+          match: { type: options.link.type },
+        });
         if (linkNode) {
           prevUrl = linkNode[0].url as string;
         }
         const url = window.prompt(`Enter the URL of the link:`, prevUrl);
-        if (!url) return;
+        if (!url) {
+          linkNode &&
+            editor.selection &&
+            unwrapNodes(editor, {
+              at: editor.selection,
+              match: { type: options.link.type },
+            });
+
+          return;
+        }
 
         // If our cursor is in middle of a link, then we don't want to inser it inline
         const shouldWrap: boolean =

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { getNodeById } from '@udecode/slate-plugins-common';
-import { jsx } from '@udecode/slate-plugins-test-utils';
-import { hasListInListItem } from './hasListInListItem';
+import { jsx } from '../../../__test-utils__/jsx';
+import { findNode } from '../../../common/queries/findNode';
+import { hasListChild } from './hasListChild';
 
 describe('when there is a sublist', () => {
   const input = (
@@ -27,9 +27,9 @@ describe('when there is a sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const listItem = getNodeById(input, '2');
+    const listItem = findNode(input, { match: { id: '2' } });
 
-    expect(hasListInListItem(listItem[0] as any)).toBeTruthy();
+    expect(hasListChild(listItem?.[0] as any)).toBeTruthy();
   });
 });
 
@@ -45,8 +45,8 @@ describe('when there is no sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const listItem = getNodeById(input, '2');
+    const listItem = findNode(input, { match: { id: '2' } });
 
-    expect(hasListInListItem(listItem[0] as any)).toBeFalsy();
+    expect(hasListChild(listItem?.[0] as any)).toBeFalsy();
   });
 });

@@ -1,10 +1,8 @@
-import {
-  getNodesByType,
-  isNodeTypeIn,
-  setDefaults,
-  wrapNodes,
-} from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
+import { getNodes } from '../../../common/queries';
+import { someNode } from '../../../common/queries/someNode';
+import { wrapNodes } from '../../../common/transforms/wrapNodes';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 import { unwrapList } from './unwrapList';
@@ -22,7 +20,7 @@ export const toggleList = (
 
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
 
-  const isActive = isNodeTypeIn(editor, typeList);
+  const isActive = someNode(editor, { match: { type: typeList } });
 
   unwrapList(editor, options);
 
@@ -34,7 +32,7 @@ export const toggleList = (
     const list = { type: typeList, children: [] };
     wrapNodes(editor, list);
 
-    const nodes = [...getNodesByType(editor, p.type)];
+    const nodes = [...getNodes(editor, { match: { type: p.type } })];
 
     const listItem = { type: li.type, children: [] };
 

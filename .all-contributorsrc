@@ -105,6 +105,18 @@
         "plugin",
         "test"
       ]
+    },
+    {
+      "login": "romansky",
+      "name": "Roman Landenband",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/616961?v=4",
+      "profile": "https://github.com/romansky",
+      "contributions": [
+        "code",
+        "plugin",
+        "test",
+        "example"
+      ]
     }
   ],
   "contributorsPerLine": 7,

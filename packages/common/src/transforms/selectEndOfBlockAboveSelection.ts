@@ -5,7 +5,7 @@ import { getBlockAbove } from '../queries';
  * Select the end point of the block above the selection.
  */
 export const selectEndOfBlockAboveSelection = (editor: Editor) => {
-  const [, path] = getBlockAbove(editor);
+  const path = getBlockAbove(editor)?.[1];
 
-  Transforms.select(editor, Editor.end(editor, path as Path));
+  path && Transforms.select(editor, Editor.end(editor, path as Path));
 };

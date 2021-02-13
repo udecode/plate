@@ -7,20 +7,22 @@ import {
 import { Editor, Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { onKeyDownResetBlockType } from '../../handlers/reset-block-type/onKeyDownResetBlockType';
+import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListItemEntry } from './queries/getListItemEntry';
-import { hasListInListItem } from './queries/hasListInListItem';
-import { deleteListFragment } from './transforms/deleteListFragment';
+import { hasListChild } from './queries/hasListChild';
+import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeRootListItem } from './transforms/removeRootListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { DEFAULTS_LIST } from './defaults';
-import { ListOptions } from './types';
+import { WithListOptions } from './types';
 
-export const withList = (options?: ListOptions) => <T extends ReactEditor>(
-  editor: T
-) => {
+export const withList = ({
+  validLiChildrenTypes,
+  ...options
+}: WithListOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const { p, li } = setDefaults(options, DEFAULTS_LIST);
   const { insertBreak, deleteBackward, deleteFragment } = editor;
 
@@ -43,7 +45,7 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
 
       const cursor = editor.selection.focus;
 
-      if (hasListInListItem(listItemNode)) {
+      if (hasListChild(listItemNode)) {
         /**
          * If selection is at the end of li,
          * insert below li where children will be moved.
@@ -123,17 +125,19 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
       const [listItemNode] = listItem;
 
       if (isSelectionAtBlockStart(editor)) {
-        moved = removeFirstListItem(editor, { list, listItem }, options);
-        if (moved) return;
+        Editor.withoutNormalizing(editor, () => {
+          moved = removeFirstListItem(editor, { list, listItem }, options);
+          if (moved) return;
 
-        moved = removeRootListItem(editor, { list, listItem }, options);
-        if (moved) return;
+          moved = removeRootListItem(editor, { list, listItem }, options);
+          if (moved) return;
 
-        moved = moveListItemUp(editor, { list, listItem }, options);
+          moved = moveListItemUp(editor, { list, listItem }, options);
+        });
         if (moved) return;
       }
 
-      if (hasListInListItem(listItemNode) && isCollapsed(editor.selection)) {
+      if (hasListChild(listItemNode) && isCollapsed(editor.selection)) {
         return deleteBackward(unit);
       }
     }
@@ -153,14 +157,16 @@ export const withList = (options?: ListOptions) => <T extends ReactEditor>(
   };
 
   editor.deleteFragment = () => {
-    const { selection } = editor;
-
-    if (selection && deleteListFragment(editor, selection, options)) {
-      return;
-    }
+    if (deleteFragmentList(editor, options)) return;
 
     deleteFragment();
   };
+
+  editor.normalizeNode = getListNormalizer(
+    editor,
+    { validLiChildrenTypes },
+    options
+  );
 
   return editor;
 };

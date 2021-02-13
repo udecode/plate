@@ -1,6 +1,9 @@
-import { getLastChildPath, moveChildren } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { getListItemSublist } from '../queries/getListItemSublist';
+import { findDescendant } from '../../../common/queries/findDescendant';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
+import { moveChildren } from '../../../common/transforms/moveChildren';
+import { getListTypes } from '../queries/getListTypes';
+import { ListOptions } from '../types';
 
 export interface MergeListItemIntoListOptions {
   /**
@@ -24,9 +27,15 @@ export interface MergeListItemIntoListOptions {
  */
 export const moveListItemSublistItemsToList = (
   editor: Editor,
-  { fromListItem, toList, start }: MergeListItemIntoListOptions
+  { fromListItem, toList, start }: MergeListItemIntoListOptions,
+  options?: ListOptions
 ) => {
-  const fromListItemSublist = getListItemSublist(fromListItem);
+  const fromListItemSublist = findDescendant(editor, {
+    at: fromListItem[1],
+    match: {
+      type: getListTypes(options),
+    },
+  });
   if (!fromListItemSublist) return 0;
 
   const [, fromListItemSublistPath] = fromListItemSublist;

@@ -1,10 +1,25 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { getInlineTypes, SlatePlugin } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
+import { SlateDocumentFragment } from '../../common/types/SlateDocument.types';
 import { deserializeHTMLToDocumentFragment } from './utils';
 
 export interface WithDeserializeHTMLOptions {
   plugins?: SlatePlugin[];
+
+  /**
+   * Function called before inserting the deserialized html.
+   * Default: if the block above is empty and the first fragment node type is not inline,
+   * set the selected node type to the first fragment node type.
+   */
+  preInsert?: (fragment: SlateDocumentFragment) => SlateDocumentFragment;
+
+  /**
+   * Function called to insert the deserialized html.
+   * Default: {@link Transforms.insertFragment}.
+   */
+  insert?: (fragment: SlateDocumentFragment) => void;
 }
 
 /**
@@ -12,32 +27,46 @@ export interface WithDeserializeHTMLOptions {
  */
 export const withDeserializeHTML = ({
   plugins = [],
+  ...options
 }: WithDeserializeHTMLOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const { insertData } = editor;
 
-  const inlineTypes = plugins.reduce((arr: string[], plugin) => {
-    const types = plugin.inlineTypes || [];
-    return arr.concat(types);
-  }, []);
+  const {
+    preInsert = (fragment) => {
+      const inlineTypes = getInlineTypes(plugins);
+
+      const firstNodeType = fragment[0].type as string | undefined;
+
+      // replace the selected node type by the first block type
+      if (
+        isBlockAboveEmpty(editor) &&
+        firstNodeType &&
+        !inlineTypes.includes(firstNodeType)
+      ) {
+        Transforms.setNodes(editor, { type: fragment[0].type });
+      }
+
+      return fragment;
+    },
+
+    insert = (fragment) => {
+      Transforms.insertFragment(editor, fragment);
+    },
+  } = options;
 
   editor.insertData = (data: DataTransfer) => {
     const html = data.getData('text/html');
 
     if (html) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
-      const fragment = deserializeHTMLToDocumentFragment({
+      let fragment = deserializeHTMLToDocumentFragment({
         plugins,
         element: body,
       });
 
-      const firstNodeType = fragment[0].type as string | undefined;
+      fragment = preInsert(fragment);
 
-      // replace the selected node type by the first block type
-      if (firstNodeType && !inlineTypes.includes(firstNodeType)) {
-        Transforms.setNodes(editor, { type: fragment[0].type });
-      }
-
-      Transforms.insertFragment(editor, fragment);
+      insert(fragment);
       return;
     }
 

@@ -1,19 +1,18 @@
-import {
-  getLastChildPath,
-  getNode,
-  setDefaults,
-} from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
+import { findDescendant } from '../../../common/queries/findDescendant';
+import { getLastChildPath } from '../../../common/queries/getLastChild';
+import { getNode } from '../../../common/queries/getNode';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries';
-import { getListItemSublist } from '../queries/getListItemSublist';
 import { getListRoot } from '../queries/getListRoot';
+import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
-export const deleteListFragment = (
+export const deleteListFragmentDeprecated = (
   editor: Editor,
   selection: Range,
   options: ListOptions = {}
@@ -31,6 +30,7 @@ export const deleteListFragment = (
   const [rootNode, rootPath] = root;
   const { li } = setDefaults(options, DEFAULTS_LIST);
   let moved = 0;
+  let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {
     const listEnd = getListItemEntry(editor, { at: endSelection }, options);
@@ -56,12 +56,16 @@ export const deleteListFragment = (
       );
 
       const toListNode = getNode(editor, next);
-      if (!toListNode) return 0;
+      if (!toListNode) return;
 
-      childrenMoved = moveListItemSublistItemsToList(editor, {
-        fromListItem: listItemEnd,
-        toList: [toListNode as Ancestor, next],
-      });
+      childrenMoved = moveListItemSublistItemsToList(
+        editor,
+        {
+          fromListItem: listItemEnd,
+          toList: [toListNode as Ancestor, next],
+        },
+        options
+      );
 
       // next is the first list item of the root copy.
       next = [...next, 0];
@@ -77,12 +81,21 @@ export const deleteListFragment = (
       if (!listStart) return;
 
       const { listItem: listItemStart } = listStart;
-      const listItemSublist = getListItemSublist(listItemStart, options);
-
-      childrenMoved = moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem: listItemEnd,
-        toListItem: listItemStart,
+      const listItemSublist = findDescendant<Ancestor>(editor, {
+        at: listItemStart[1],
+        match: {
+          type: getListTypes(options),
+        },
       });
+
+      childrenMoved = moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem: listItemEnd,
+          toListItem: listItemStart,
+        },
+        options
+      );
 
       next = listItemSublist
         ? Path.next(getLastChildPath(listItemSublist))
@@ -109,8 +122,9 @@ export const deleteListFragment = (
     // Move done. We can delete the fragment.
     Transforms.delete(editor, { at: selection });
 
+    deleted = true;
     moved = siblingsMoved + childrenMoved;
   });
 
-  return moved;
+  return deleted ? moved : undefined;
 };

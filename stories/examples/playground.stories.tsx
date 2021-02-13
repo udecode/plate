@@ -8,6 +8,7 @@ import {
   FormatAlignCenter,
   FormatAlignLeft,
   FormatAlignRight,
+  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -34,6 +35,7 @@ import {
   CodePlugin,
   decorateSearchHighlight,
   EditablePlugins,
+  ELEMENT_IMAGE,
   ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
@@ -82,6 +84,7 @@ import {
   withNormalizeTypes,
   withTable,
   withTrailingNode,
+  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -216,6 +219,7 @@ export const Plugins = () => {
     }),
     withTrailingNode({ type: options.p.type, level: 1 }),
     withInlineVoid({ plugins }),
+    withSelectOnBackspace({ allow: [ELEMENT_IMAGE] }),
   ] as const;
 
   const createReactEditor = () => () => {
@@ -307,6 +311,10 @@ export const Plugins = () => {
           <ToolbarAlign
             type={options.align_right.type}
             icon={<FormatAlignRight />}
+          />
+          <ToolbarAlign
+            type={options.align_justify.type}
+            icon={<FormatAlignJustify />}
           />
           <ToolbarLink {...options} icon={<Link />} />
           <ToolbarImage {...options} icon={<Image />} />

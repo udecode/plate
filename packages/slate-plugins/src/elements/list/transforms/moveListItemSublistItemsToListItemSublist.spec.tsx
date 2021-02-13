@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { getNodeById } from '@udecode/slate-plugins-common';
-import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { Editor } from 'slate';
+import { jsx } from '../../../__test-utils__/jsx';
+import { findNode } from '../../../common/queries/findNode';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 describe('when there is toListItem sublist', () => {
@@ -65,14 +65,18 @@ describe('when there is toListItem sublist', () => {
   it('should', () => {
     const editor = input;
 
-    const fromListItem = getNodeById(editor, '12') as NodeEntry<Ancestor>;
-    const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
+    const fromListItem = findNode(input, { match: { id: '12' } }) as any;
+    const toListItem = findNode(input, { match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
-      });
+      moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem,
+          toListItem,
+        },
+        {}
+      );
     }
 
     expect(input.children).toEqual(output.children);
@@ -125,14 +129,18 @@ describe('when there is no list in toListItem', () => {
   it('should', () => {
     const editor = input;
 
-    const fromListItem = getNodeById(editor, '12') as NodeEntry<Ancestor>;
-    const toListItem = getNodeById(editor, '11') as NodeEntry<Ancestor>;
+    const fromListItem = findNode(input, { match: { id: '12' } }) as any;
+    const toListItem = findNode(input, { match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem,
-        toListItem,
-      });
+      moveListItemSublistItemsToListItemSublist(
+        editor,
+        {
+          fromListItem,
+          toListItem,
+        },
+        {}
+      );
     }
 
     expect(input.children).toEqual(output.children);

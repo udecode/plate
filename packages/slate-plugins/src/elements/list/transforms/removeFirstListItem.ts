@@ -1,6 +1,7 @@
-import { isFirstChild, moveChildren } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { hasListInListItem } from '../queries/hasListInListItem';
+import { isFirstChild } from '../../../common/queries/isFirstChild';
+import { moveChildren } from '../../../common/transforms/moveChildren';
+import { hasListChild } from '../queries/hasListChild';
 import { isListNested } from '../queries/isListNested';
 import { ListOptions } from '../types';
 
@@ -27,7 +28,7 @@ export const removeFirstListItem = (
   if (
     !isListNested(editor, listPath, options) &&
     listNode.children.length <= 1 &&
-    hasListInListItem(listItemNode) &&
+    hasListChild(listItemNode) &&
     isFirstChild(listItemPath)
   ) {
     // move all children to the container

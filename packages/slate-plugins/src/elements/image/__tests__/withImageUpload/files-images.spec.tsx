@@ -32,3 +32,26 @@ it('should insert image from the file(s)', () => {
 
   expect(input.children).toEqual(output.children);
 });
+
+it('should call uploadImage when provided', async () => {
+  const uploadSpy = jest.fn();
+  const editor = pipe(
+    input,
+    withReact,
+    withImageUpload({ img: { uploadImage: uploadSpy } })
+  );
+
+  const data = {
+    getData: () => 'test',
+    files: [
+      new File(['test'], 'test.png', {
+        type: 'image/png',
+      }),
+    ],
+  };
+  editor.insertData(data as any);
+
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  expect(uploadSpy).toHaveBeenCalled();
+});

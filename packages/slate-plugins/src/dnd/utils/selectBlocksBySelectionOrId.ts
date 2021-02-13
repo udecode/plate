@@ -1,6 +1,6 @@
 import { Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { getBlocks } from './getBlocks';
+import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 import { selectBlockById } from './selectBlockById';
 
@@ -15,7 +15,7 @@ export const selectBlocksBySelectionOrId = (
 ) => {
   if (!editor.selection) return;
 
-  const blockEntries = getBlocks(editor, { at: editor.selection });
+  const blockEntries = getBlocksWithId(editor, { at: editor.selection });
   const isBlockSelected = blockEntries.some(
     (blockEntry) => blockEntry[0].id === id
   );
