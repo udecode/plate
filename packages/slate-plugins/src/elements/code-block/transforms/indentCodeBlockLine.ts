@@ -1,5 +1,4 @@
 import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
-import { getText } from '../../../common';
 
 export interface IndentCodeBlockLineOptions {
   codeBlock: NodeEntry<Ancestor>;
@@ -11,6 +10,6 @@ export const indentCodeBlockLine = (
   { codeBlockLineItem }: IndentCodeBlockLineOptions
 ) => {
   const [, codeBlockLinePath] = codeBlockLineItem;
-  const text = getText(editor, codeBlockLinePath);
-  Transforms.insertText(editor, `  ${text}`, { at: codeBlockLinePath });
+  const codeBlockLineStart = Editor.start(editor, codeBlockLinePath);
+  Transforms.insertText(editor, '  ', { at: codeBlockLineStart });
 };
