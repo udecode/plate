@@ -29,9 +29,9 @@ export const CodeBlockElementBase = ({
   });
 
   return (
-    <pre {...attributes} className={classNames.root} {...htmlAttributes}>
-      <code>{children}</code>
-    </pre>
+    <div {...attributes} className={classNames.root} {...htmlAttributes}>
+      {children}
+    </div>
   );
 };
 
