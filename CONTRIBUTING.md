@@ -282,7 +282,7 @@ are on the latest versions (yarn at least v1.3.2).
    _bonus_: use your own fork for this step
 3. `cd slate-plugins`
 4. `yarn`
-5. `yarn build`
+5. `yarn build` or `yarn build:w1`, `yarn build:w2` for watch mode
 6. `yarn test` (optional)
 7. `yarn storybook`
 

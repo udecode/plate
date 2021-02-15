@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { SlatePluginsStore } from './types';
-import { defaultEditor, useSlatePluginsStore } from './useSlatePluginsStore';
+import { defaultEditor } from './slatePluginsStore';
+import { SlatePluginsState } from './types';
+import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 export const useSlatePluginsEditor = <TEditor = typeof defaultEditor>(
   key = 'main'
@@ -20,7 +21,7 @@ export const useSlatePluginsComponent = <TNodeType extends string>(
     ])
   );
 
-const selActions = (state: SlatePluginsStore) => ({
+const selActions = (state: SlatePluginsState) => ({
   setValue: state.setValue,
   setComponents: state.setComponents,
   setEditor: state.setEditor,

@@ -9,12 +9,11 @@
     "packages/slate-plugins-components"
   ],
   "scripts": {
-    "build": "lerna run build --since",
-    "build:w": "lerna run build --parallel -- -w ",
-    "build:wa": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
-    "build:core": "lerna exec --scope @udecode/slate-plugins-core -- yarn build",
-    "build:common": "lerna exec --scope @udecode/slate-plugins-common -- yarn build",
-    "build:plugins": "lerna exec --ignore @udecode/slate-plugins-core --parallel -- yarn build",
+    "build": "yarn build:1 && yarn build:2",
+    "build:1": "lerna exec --scope \"@udecode/slate-plugins-{core,common}\" --parallel -- yarn build",
+    "build:2": "lerna exec --ignore \"@udecode/slate-plugins-{core,common}\" --parallel -- yarn build",
+    "build:w1": "yarn build:1 -w",
+    "build:w2": "yarn build:2 -w",
     "build-storybook": "build-storybook",
     "clean": "rimraf dist",
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",

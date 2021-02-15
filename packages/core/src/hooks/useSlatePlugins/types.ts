@@ -1,7 +1,7 @@
 import { FunctionComponent } from 'react';
 import { SlatePlugin } from '../../types';
 
-export type SlatePluginsState = {
+export type State = {
   /**
    * Components by type rendered by plugins `renderElement` and `renderLeaf`. Default is {}.
    * TODO: typed key
@@ -24,18 +24,18 @@ export type SlatePluginsState = {
   value: Node[];
 };
 
-export type SlatePluginsStateById = { byId: Record<string, SlatePluginsState> };
+export type StateById = { byId: Record<string, State> };
 
-export type SlatePluginsActions = {
-  setComponents: (key: string, value: SlatePluginsState['components']) => void;
-  setEditor: (key: string, value: SlatePluginsState['editor']) => void;
-  setPlugins: (key: string, value: SlatePluginsState['plugins']) => void;
-  setValue: (key: string, value: SlatePluginsState['value']) => void;
+export type Actions = {
+  setComponents: (key: string, value: State['components']) => void;
+  setEditor: (key: string, value: State['editor']) => void;
+  setPlugins: (key: string, value: State['plugins']) => void;
+  setValue: (key: string, value: State['value']) => void;
 };
 
-export type SlatePluginsStore = SlatePluginsStateById & SlatePluginsActions;
+export type SlatePluginsState = StateById & Actions;
 
-export type UseSlatePluginsOptions = Partial<SlatePluginsState> & {
+export type UseSlatePluginsOptions = Partial<State> & {
   /**
    * Unique key to store multiple editor states. Default is 'main'.
    */
