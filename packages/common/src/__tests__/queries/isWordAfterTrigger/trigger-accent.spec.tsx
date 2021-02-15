@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Range } from 'slate';
-import { jsx } from '../../../../__test-utils__/jsx';
 import { isWordAfterTrigger } from '../../../queries/index';
 
 const input = ((

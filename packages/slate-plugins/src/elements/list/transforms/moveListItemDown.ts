@@ -1,5 +1,5 @@
+import { match } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
-import { match } from '../../../common/utils/match';
 import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 

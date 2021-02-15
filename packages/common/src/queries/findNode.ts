@@ -4,7 +4,7 @@
  */
 import { Editor, Location, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { MatchOptions } from '../types/Editor.types';
-import { match } from '../utils/match';
+import { match } from './match';
 
 export type FindNodeOptions<T extends Node = Node> = {
   at?: Location | Span;

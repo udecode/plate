@@ -43,9 +43,9 @@
 // import 'prismjs/components/prism-typescript';
 // import 'prismjs/components/prism-wasm';
 // import 'prismjs/components/prism-yaml';
+import { setDefaults } from '@udecode/slate-plugins-common';
 import { languages, Token, tokenize } from 'prismjs';
 import { Node, NodeEntry } from 'slate';
-import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
 import { CodeBlockDecorateOptions } from './types';
 

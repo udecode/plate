@@ -1,8 +1,10 @@
+import {
+  isBlockAboveEmpty,
+  SlateDocumentFragment,
+} from '@udecode/slate-plugins-common';
 import { getInlineTypes, SlatePlugin } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { isBlockAboveEmpty } from '../../common/queries/isBlockAboveEmpty';
-import { SlateDocumentFragment } from '../../common/types/SlateDocument.types';
 import { deserializeHTMLToDocumentFragment } from './utils';
 
 export interface WithDeserializeHTMLOptions {

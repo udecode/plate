@@ -1,6 +1,5 @@
+import { setDefaults, someNode } from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { someNode } from '../../../common/queries/someNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
 import { getEmptyTableNode } from '../utils';

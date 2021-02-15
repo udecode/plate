@@ -1,7 +1,9 @@
+import {
+  getChildren,
+  insertEmptyElement,
+  setDefaults,
+} from '@udecode/slate-plugins-common';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
-import { getChildren } from '../../../common/queries/getChildren';
-import { insertEmptyElement } from '../../../common/transforms/insertEmptyElement';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListNormalizerOptions, ListOptions } from '../types';
 

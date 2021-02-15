@@ -1,8 +1,8 @@
-import { pipe } from '@udecode/slate-plugins-core';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import create, { SetState } from 'zustand';
+import { pipe } from '../../utils/pipe';
 import { SlatePluginsState, SlatePluginsStore } from './types';
 
 const defaultWithPlugins = [withReact, withHistory] as const;

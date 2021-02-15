@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import { Editor, Point, Range, Transforms } from 'slate';
-import { escapeRegExp } from '../../common';
 import {
+  escapeRegExp,
   getText,
+  isCollapsed,
   isPointAtWordEnd,
   isWordAfterTrigger,
-} from '../../common/queries';
-import { isCollapsed } from '../../common/queries/isCollapsed';
+} from '@udecode/slate-plugins-common';
+import { Editor, Point, Range, Transforms } from 'slate';
 import { insertMention } from './transforms';
 import { MentionNodeData, UseMentionOptions } from './types';
 import { getNextIndex, getPreviousIndex } from './utils';
@@ -142,7 +142,7 @@ export const useMention = (
         setTargetRange(null);
       }
     },
-    [setTargetRange, setSearch, setValueIndex, trigger]
+    [mentionableSearchPattern, trigger]
   );
 
   return {

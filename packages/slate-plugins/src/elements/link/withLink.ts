@@ -1,16 +1,17 @@
+import {
+  getRangeBefore,
+  getRangeFromBlockStart,
+  getText,
+  isCollapsed,
+  isUrl as isUrlProtocol,
+  RangeBeforeOptions,
+  setDefaults,
+  someNode,
+  unwrapNodes,
+} from '@udecode/slate-plugins-common';
 import get from 'lodash/get';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import {
-  getRangeBefore,
-  RangeBeforeOptions,
-} from '../../common/queries/getRangeBefore';
-import { getRangeFromBlockStart } from '../../common/queries/getRangeFromBlockStart';
-import { getText } from '../../common/queries/getText';
-import { isCollapsed } from '../../common/queries/isCollapsed';
-import { someNode } from '../../common/queries/someNode';
-import { unwrapNodes } from '../../common/transforms/unwrapNodes';
-import { isUrl as isUrlProtocol, setDefaults } from '../../common/utils';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { DEFAULTS_LINK } from './defaults';
 import { upsertLinkAtSelection, wrapLink } from './transforms';

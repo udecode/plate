@@ -4,6 +4,7 @@ import { createText } from './hyperscript/creators';
 // const ELEMENT_ALIGN_LEFT = 'align_left';
 // const ELEMENT_ALIGN_RIGHT = 'align_right';
 const ELEMENT_ALIGN_CENTER = 'align_center';
+const ELEMENT_ALIGN_JUSTIFY = 'align_justify';
 const ELEMENT_H1 = 'h1';
 const ELEMENT_H2 = 'h2';
 const ELEMENT_H3 = 'h3';
@@ -63,6 +64,7 @@ export const jsx = createHyperscript({
     hh5: { type: ELEMENT_H5 },
     hh6: { type: ELEMENT_H6 },
     hcenter: { type: ELEMENT_ALIGN_CENTER },
+    hjustify: { type: ELEMENT_ALIGN_JUSTIFY },
     inline: { inline: true },
     block: {},
   },

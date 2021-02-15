@@ -1,7 +1,9 @@
 import * as React from 'react';
+import {
+  getPreventDefaultHandler,
+  someNode,
+} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
-import { someNode } from '../../../common/queries/someNode';
-import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
 import { ToolbarButton } from '../../../components/ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
 import {

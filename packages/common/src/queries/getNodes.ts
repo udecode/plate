@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 import { unhangRange, UnhangRangeOptions } from '../transforms/unhangRange';
 import { EditorNodesOptions } from '../types/Editor.types';
-import { getQueryOptions } from '../utils/match';
+import { getQueryOptions } from './match';
 
 export const getNodes = (
   editor: Editor,

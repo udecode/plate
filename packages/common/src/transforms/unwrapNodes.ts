@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
+import { getQueryOptions } from '../queries/match';
 import { WrapOptions } from '../types/Transforms.types';
-import { getQueryOptions } from '../utils/match';
 
 /**
  * Unwrap nodes with extended options.

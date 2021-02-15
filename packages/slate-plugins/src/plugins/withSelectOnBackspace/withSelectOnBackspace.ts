@@ -1,6 +1,9 @@
+import {
+  isCollapsed,
+  isNodeEntry,
+  QueryOptions,
+} from '@udecode/slate-plugins-common';
 import Slate, { Editor, Transforms } from 'slate';
-import { isCollapsed, isNodeEntry } from '../../queries';
-import { QueryOptions } from '../../types';
 
 export interface WithSelectOnBackspaceOptions extends QueryOptions {}
 

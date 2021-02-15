@@ -3,8 +3,8 @@
  * no match is found, return undefined.
  */
 import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
-import { match } from '../utils/match';
 import { FindNodeOptions } from './findNode';
+import { match } from './match';
 
 /**
  * Get the first descendant node matching the condition.

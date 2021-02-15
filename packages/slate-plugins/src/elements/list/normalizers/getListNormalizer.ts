@@ -1,6 +1,5 @@
+import { match, setDefaults } from '@udecode/slate-plugins-common';
 import { Descendant, Editor, NodeEntry, Transforms } from 'slate';
-import { match } from '../../../common/utils/match';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions, ListOptions } from '../types';

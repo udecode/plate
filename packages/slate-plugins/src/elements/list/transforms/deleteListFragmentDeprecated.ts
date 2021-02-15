@@ -1,8 +1,10 @@
+import {
+  findDescendant,
+  getLastChildPath,
+  getNode,
+  setDefaults,
+} from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
-import { findDescendant } from '../../../common/queries/findDescendant';
-import { getLastChildPath } from '../../../common/queries/getLastChild';
-import { getNode } from '../../../common/queries/getNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries';
 import { getListRoot } from '../queries/getListRoot';

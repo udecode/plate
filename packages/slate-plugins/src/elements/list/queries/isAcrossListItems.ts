@@ -1,8 +1,10 @@
+import {
+  isCollapsed,
+  isRangeAcrossBlocks,
+  setDefaults,
+  someNode,
+} from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { isCollapsed } from '../../../common/queries/isCollapsed';
-import { isRangeAcrossBlocks } from '../../../common/queries/isRangeAcrossBlocks';
-import { someNode } from '../../../common/queries/someNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 

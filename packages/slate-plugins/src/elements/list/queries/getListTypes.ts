@@ -1,4 +1,4 @@
-import { setDefaults } from '../../../common/utils/setDefaults';
+import { setDefaults } from '@udecode/slate-plugins-common';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 

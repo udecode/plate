@@ -1,6 +1,5 @@
+import { getPreviousPath, isExpanded } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
-import { getPreviousPath } from '../../../common/queries/getPreviousPath';
-import { isExpanded } from '../../../common/queries/isExpanded';
 import { hasListChild } from '../queries/hasListChild';
 import { ListOptions } from '../types';
 import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';

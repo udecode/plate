@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Range } from 'slate';
 import { withHistory } from 'slate-history';

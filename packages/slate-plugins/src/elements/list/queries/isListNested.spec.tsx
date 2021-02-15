@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { jsx } from '../../../__test-utils__/jsx';
-import { findNode } from '../../../common/queries/findNode';
+import { findNode } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
 import { isListNested } from './isListNested';
 
 describe('when the list is nested', () => {

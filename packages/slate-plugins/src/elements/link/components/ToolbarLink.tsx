@@ -1,9 +1,12 @@
 import * as React from 'react';
+import {
+  getAbove,
+  isCollapsed,
+  setDefaults,
+  someNode,
+  unwrapNodes,
+} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
-import { unwrapNodes } from '../../../common';
-import { getAbove, isCollapsed } from '../../../common/queries';
-import { someNode } from '../../../common/queries/someNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import {
   ToolbarButton,
   ToolbarButtonProps,

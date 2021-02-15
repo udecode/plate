@@ -1,6 +1,5 @@
+import { unwrapNodes, wrapNodes } from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { unwrapNodes } from '../../../common/transforms/unwrapNodes';
-import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,

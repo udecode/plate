@@ -1,5 +1,5 @@
+import { getAbove, setDefaults } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
-import { getAbove, setDefaults } from '../../../common';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 

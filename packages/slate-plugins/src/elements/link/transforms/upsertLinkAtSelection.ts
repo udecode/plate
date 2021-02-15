@@ -1,7 +1,9 @@
+import {
+  isCollapsed,
+  setDefaults,
+  unwrapNodes,
+} from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { isCollapsed } from '../../../common/queries';
-import { unwrapNodes } from '../../../common/transforms/unwrapNodes';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LINK } from '../defaults';
 import { LinkOptions } from '../types';
 import { wrapLink } from './wrapLink';

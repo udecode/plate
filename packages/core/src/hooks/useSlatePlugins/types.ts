@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { SlatePlugin } from '../../types';
 
 export type SlatePluginsState = {
   /**

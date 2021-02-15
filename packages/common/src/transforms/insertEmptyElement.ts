@@ -1,6 +1,6 @@
 import { Editor, Transforms } from 'slate';
+import { getQueryOptions } from '../queries/match';
 import { InsertNodesOptions } from '../types/Transforms.types';
-import { getQueryOptions } from '../utils/match';
 
 export const insertEmptyElement = (
   editor: Editor,

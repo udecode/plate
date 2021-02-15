@@ -1,7 +1,6 @@
+import { EditorNodesOptions, unhangRange } from '@udecode/slate-plugins-common';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { unhangRange } from '../../common/transforms/unhangRange';
-import { EditorNodesOptions } from '../../common/types/Editor.types';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 

@@ -5,9 +5,10 @@ export function getCellInNextTableRow(
   currentRowPath: Path
 ): NodeEntry | undefined {
   try {
-    const nextRow = Editor.node(editor, Path.next(currentRowPath)) as NodeEntry<
-      Ancestor
-    >;
+    const nextRow = Editor.node(
+      editor,
+      Path.next(currentRowPath)
+    ) as NodeEntry<Ancestor>;
     // TODO: Many tables in rich text editors (Google Docs, Word),
     // add a new row if we're in the last cell. Should we do the same?
     const [nextRowNode, nextRowPath] = nextRow;

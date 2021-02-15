@@ -3,6 +3,6 @@ export * from './getInlineTypes';
 export * from './getVoidTypes';
 export * from './onDOMBeforeInputPlugins';
 export * from './onKeyDownPlugins';
-export * from './pipe';
+// export * from './pipe';
 export * from './renderElementPlugins';
 export * from './renderLeafPlugins';

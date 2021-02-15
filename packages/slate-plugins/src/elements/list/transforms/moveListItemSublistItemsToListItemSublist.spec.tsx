@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { findNode } from '@udecode/slate-plugins-common';
+import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { jsx } from '../../../__test-utils__/jsx';
-import { findNode } from '../../../common/queries/findNode';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 describe('when there is toListItem sublist', () => {

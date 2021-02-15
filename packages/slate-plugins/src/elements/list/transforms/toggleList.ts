@@ -1,8 +1,10 @@
+import {
+  getNodes,
+  setDefaults,
+  someNode,
+  wrapNodes,
+} from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { getNodes } from '../../../common/queries';
-import { someNode } from '../../../common/queries/someNode';
-import { wrapNodes } from '../../../common/transforms/wrapNodes';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 import { unwrapList } from './unwrapList';

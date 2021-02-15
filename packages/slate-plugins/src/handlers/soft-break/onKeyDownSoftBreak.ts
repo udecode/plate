@@ -1,6 +1,6 @@
+import { getBlockAbove, isNodeEntry } from '@udecode/slate-plugins-common';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { getBlockAbove, isNodeEntry } from '../../common/queries';
 import { SoftBreakOnKeyDownOptions } from './types';
 
 export const onKeyDownSoftBreak = ({

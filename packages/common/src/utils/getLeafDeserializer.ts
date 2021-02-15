@@ -1,5 +1,16 @@
-import { GetLeafDeserializerOptions } from '../types/PluginOptions.types';
-import { getNodeDeserializer } from './getNodeDeserializer';
+import { WithOptional } from '../types/PluginOptions.types';
+import {
+  getNodeDeserializer,
+  GetNodeDeserializerOptions,
+} from './getNodeDeserializer';
+
+export interface GetLeafDeserializerOptions
+  extends WithOptional<
+    Omit<GetNodeDeserializerOptions, 'withoutChildren'>,
+    'node'
+  > {
+  type: string;
+}
 
 /**
  * See {@link getNodeDeserializer}.

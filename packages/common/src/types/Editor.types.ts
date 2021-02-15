@@ -1,5 +1,5 @@
 import { Ancestor, Node, Path, Point, Range, Span } from 'slate';
-import { Predicate } from '../utils/match';
+import { Predicate } from '../queries/match';
 
 export type NodeMatch<T = Node> = Predicate<T>;
 

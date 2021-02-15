@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { text, boolean } from "@storybook/addon-knobs";
+import React, { useMemo, useState } from 'react';
+import { boolean, text } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
   HeadingPlugin,
@@ -11,15 +11,15 @@ import {
   SlateDocument,
   useMention,
   withInlineVoid,
-} from "@udecode/slate-plugins";
-import { createEditor } from "slate";
-import { withHistory } from "slate-history";
-import { Slate, withReact } from "slate-react";
-import { initialValueMentions, options } from "../config/initialValues";
-import { MENTIONABLES } from "../config/mentionables";
+} from '@udecode/slate-plugins';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
+import { initialValueMentions, options } from '../config/initialValues';
+import { MENTIONABLES } from '../config/mentionables';
 
 export default {
-  title: "Elements/Mention",
+  title: 'Elements/Mention',
   component: MentionPlugin,
   subcomponents: {
     useMention,
@@ -29,7 +29,7 @@ export default {
 
 const renderLabel = (mentionable: MentionNodeData) => {
   const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
-  if (!entry) return "unknown option";
+  if (!entry) return 'unknown option';
   return `${entry.name} - ${entry.email}`;
 };
 
@@ -43,7 +43,7 @@ export const Example = () => {
         rootProps: {
           onClick: (mentionable: MentionNodeData) =>
             console.info(`Hello, I'm ${mentionable.value}`),
-          prefix: text("prefix", "@"),
+          prefix: text('prefix', '@'),
           renderLabel,
         },
       },
@@ -71,15 +71,17 @@ export const Example = () => {
       values,
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
-      trigger: "@",
-      mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
-        mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
-        mentionable.name.toLowerCase().includes(search.toLowerCase()),
+      trigger: '@',
+      mentionableFilter: (searchValue: string) => (
+        mentionable: MentionNodeData
+      ) =>
+        mentionable.email.toLowerCase().includes(searchValue.toLowerCase()) ||
+        mentionable.name.toLowerCase().includes(searchValue.toLowerCase()),
       mentionableSearchPattern: boolean(
-        "useCustomMentionableSearchPattern",
+        'useCustomMentionableSearchPattern',
         true
       )
-        ? text("mentionableSearchPattern", "\\S*")
+        ? text('mentionableSearchPattern', '\\S*')
         : undefined,
     });
 

@@ -1,6 +1,5 @@
+import { match, moveChildren } from '@udecode/slate-plugins-common';
 import { Editor, Node, NodeEntry, Path } from 'slate';
-import { moveChildren } from '../../../common/transforms/moveChildren';
-import { match } from '../../../common/utils/match';
 import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
 

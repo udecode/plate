@@ -1,6 +1,6 @@
 import { Ancestor, Editor } from 'slate';
 import { EditorAboveOptions } from '../types/Editor.types';
-import { getQueryOptions } from '../utils/match';
+import { getQueryOptions } from './match';
 
 /**
  * Get node above a location (default: selection).

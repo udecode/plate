@@ -1,8 +1,10 @@
+import {
+  getAbove,
+  getParent,
+  isBlockTextEmptyAfterSelection,
+  setDefaults,
+} from '@udecode/slate-plugins-common';
 import { Editor, Path, Range, Transforms } from 'slate';
-import { getAbove } from '../../../common/queries/getAbove';
-import { getParent } from '../../../common/queries/getParent';
-import { isBlockTextEmptyAfterSelection } from '../../../common/queries/isBlockTextEmptyAfterSelection';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 

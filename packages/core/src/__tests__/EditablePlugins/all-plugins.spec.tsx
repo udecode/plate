@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
+import { SlateDocument } from '@udecode/slate-plugins-common';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
@@ -21,7 +22,6 @@ import {
   options,
   optionsResetBlockTypes,
 } from '../../../../../stories/config/initialValues';
-import { SlateDocument } from '../../../../common/src/types/SlateDocument.types';
 import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
 import { BalloonToolbar } from '../../../../slate-plugins/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../slate-plugins/src/components/Toolbar/HeadingToolbar/HeadingToolbar';

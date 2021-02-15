@@ -6,9 +6,9 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatAlignCenter,
+  FormatAlignJustify,
   FormatAlignLeft,
   FormatAlignRight,
-  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -82,9 +82,9 @@ import {
   withList,
   withMarks,
   withNormalizeTypes,
+  withSelectOnBackspace,
   withTable,
   withTrailingNode,
-  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';

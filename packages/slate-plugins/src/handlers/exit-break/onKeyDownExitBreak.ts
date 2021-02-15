@@ -1,13 +1,13 @@
-import isHotkey from 'is-hotkey';
-import { Editor, Path, Transforms } from 'slate';
 import {
+  DEFAULT_ELEMENT,
   getBlockAbove,
+  isExpanded,
   isNodeEntry,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
-} from '../../common/queries';
-import { isExpanded } from '../../common/queries/isExpanded';
-import { DEFAULT_ELEMENT } from '../../common/types/node.types';
+} from '@udecode/slate-plugins-common';
+import isHotkey from 'is-hotkey';
+import { Editor, Path, Transforms } from 'slate';
 import { ExitBreakOnKeyDownOptions } from './types';
 
 /**

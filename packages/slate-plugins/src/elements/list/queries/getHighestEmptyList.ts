@@ -1,6 +1,5 @@
+import { getAbove, setDefaults } from '@udecode/slate-plugins-common';
 import { Editor, Path } from 'slate';
-import { getAbove } from '../../../common/queries/getAbove';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { ListOptions } from '../types';
 import { getListTypes } from './getListTypes';
