@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
-import { pipe } from '@udecode/slate-plugins-core';
 import { createEditor, Node, Point } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { Decorate } from '../..';
 import { EditablePlugins, EditablePluginsProps } from '../../components';
+import { pipe } from '../../utils/pipe';
 
 const EditorWithDecorateDeps = ({
   decorate,

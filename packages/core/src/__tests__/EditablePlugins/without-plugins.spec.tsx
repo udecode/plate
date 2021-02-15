@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { render } from '@testing-library/react';
-import { pipe } from '@udecode/slate-plugins-core';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { EditablePlugins } from '../../components';
+import { pipe } from '../../utils/pipe';
 
 const EditorEmpty = () => {
   const [value, setValue] = useState<Node[]>([]);

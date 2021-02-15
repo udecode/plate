@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { pipe } from '@udecode/slate-plugins-core';
 import * as SlateReact from 'slate-react';
 import { withReact } from 'slate-react';
 import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
+import { pipe } from '../../../../utils/pipe';
 import { ToolbarLink } from '../../components/ToolbarLink';
 import { ELEMENT_LINK } from '../../defaults';
 import { withLink } from '../../withLink';

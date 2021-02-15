@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
@@ -8,6 +7,7 @@ import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
 import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
 import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
+import { pipe } from '../../../../utils/pipe';
 import { withDeserializeHTML } from '../../withDeserializeHTML';
 
 const input = ((

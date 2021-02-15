@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
+import { withInlineVoid } from '../../plugins/withInlineVoid/withInlineVoid';
 import { ELEMENT_LINK } from '../link/defaults';
 import { withList } from './index';
 

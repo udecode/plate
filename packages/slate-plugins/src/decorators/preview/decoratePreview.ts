@@ -1,5 +1,6 @@
-import 'prismjs/components/prism-markdown';
+/* eslint-disable simple-import-sort/imports */
 import Prism from 'prismjs';
+import 'prismjs/components/prism-markdown';
 import { NodeEntry, Text } from 'slate'; // noinspection CommaExpressionJS
 
 /**

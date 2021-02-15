@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { withInlineVoid } from '../../../plugins/withInlineVoid/withInlineVoid';
+import { pipe } from '../../../utils/pipe';
 import { ELEMENT_MENTION } from '../defaults';
 
 const input = (

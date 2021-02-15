@@ -1,4 +1,4 @@
-import { pipe } from '@udecode/slate-plugins-core';
+import { pipe } from './pipe';
 
 const input = 1;
 

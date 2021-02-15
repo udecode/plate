@@ -8,7 +8,7 @@ export * from './elements';
 export * from './handlers';
 export * from './marks';
 export * from './normalizers';
-export * from './pipe';
+export * from './utils/pipe';
 export * from './plugins';
 export * from './serializers';
 export * from './widgets';

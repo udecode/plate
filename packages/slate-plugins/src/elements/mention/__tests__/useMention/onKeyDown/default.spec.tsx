@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
-import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { pipe } from '../../../../../utils/pipe';
 import { useMention } from '../../../index';
 import { mentionables } from './mentionables.fixture';
 

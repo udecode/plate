@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
+import { pipe } from '../../../../utils/pipe';
 import { withImageUpload } from '../../../index';
 
 const input = (
