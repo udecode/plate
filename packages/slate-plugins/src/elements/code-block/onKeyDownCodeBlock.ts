@@ -1,6 +1,8 @@
 import { Editor } from 'slate';
-import { getCodeBlockLineItemEntry } from './queries/getCodeBlockLineItemEnrty';
+import { getCodeBlockLineItemEntry } from './queries/getCodeBlockLineItemEntry';
+import { getIndentDepth } from './queries/getIndentDepth';
 import { indentCodeBlockLine } from './transforms/indentCodeBlockLine';
+import { insertCodeBlockLine } from './transforms/insertCodeBlockLine';
 import { outdentCodeBlockLine } from './transforms/outdentCodeBlockLine';
 import {
   CodeBlockLineOnKeyDownOptions,
@@ -10,8 +12,6 @@ import {
 export const onKeyDownCodeBlock = (
   options?: CodeBlockOnKeyDownOptions & CodeBlockLineOnKeyDownOptions
 ) => (e: KeyboardEvent, editor: Editor) => {
-  let moved: boolean | undefined = false;
-
   if (e.key === 'Tab') {
     const res = getCodeBlockLineItemEntry(editor, {}, options);
     if (!res) return;
@@ -22,12 +22,7 @@ export const onKeyDownCodeBlock = (
     // outdent with shift+tab
     const shiftTab = e.shiftKey;
     if (shiftTab) {
-      moved = outdentCodeBlockLine(
-        editor,
-        { codeBlock, codeBlockLineItem },
-        options
-      );
-      if (moved) e.preventDefault();
+      outdentCodeBlockLine(editor, { codeBlock, codeBlockLineItem });
     }
 
     // indent with tab
@@ -35,5 +30,18 @@ export const onKeyDownCodeBlock = (
     if (tab) {
       indentCodeBlockLine(editor, { codeBlock, codeBlockLineItem });
     }
+  }
+
+  if (e.key === 'Enter') {
+    const res = getCodeBlockLineItemEntry(editor, {}, options);
+    if (!res) return;
+    e.preventDefault();
+    const { codeBlock, codeBlockLineItem } = res;
+    const indentDepth = getIndentDepth(editor, {
+      codeBlock,
+      codeBlockLineItem,
+    });
+    // fixme pass the depth as part of the options object or a separate field?
+    insertCodeBlockLine(editor, options, indentDepth);
   }
 };
