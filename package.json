@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "build": "lerna run build --since",
-    "build:w": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
+    "build:w": "lerna run build --parallel -- -w ",
+    "build:wa": "concurrently \"yarn build:core -w\" \"yarn build:plugins -w\"",
     "build:core": "lerna exec --scope @udecode/slate-plugins-core -- yarn build",
     "build:common": "lerna exec --scope @udecode/slate-plugins-common -- yarn build",
     "build:plugins": "lerna exec --ignore @udecode/slate-plugins-core --parallel -- yarn build",
@@ -39,7 +40,6 @@
     "@babel/cli": "^7.12.16",
     "@babel/core": "^7.12.16",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.13",
-    "@babel/plugin-proposal-optional-chaining": "^7.12.16",
     "@babel/preset-env": "^7.12.16",
     "@babel/preset-react": "^7.12.13",
     "@babel/preset-typescript": "^7.12.16",
@@ -122,6 +122,7 @@
     "typescript": "^4.1.5"
   },
   "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.12.16",
     "styled-icons": "^10.27.0"
   },
   "resolutions": {
@@ -130,5 +131,6 @@
     "react": "17.0.1",
     "react-dom": "17.0.1"
   },
-  "snyk": true
+  "snyk": true,
+  "version": "0.0.0"
 }
