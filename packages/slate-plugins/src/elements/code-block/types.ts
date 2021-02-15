@@ -10,6 +10,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
+import { ListOptions } from '../list';
 
 // Data of Element node
 export interface CodeBlockNodeData {}
@@ -108,6 +109,13 @@ export interface CodeBlockOnKeyDownOptions
 
 export interface CodeBlockLineOnKeyDownOptions
   extends CodeBlockLinePluginOptions<'type'> {}
+
+export interface WithCodeBlockOptions extends CodeBlockOptions {
+  /**
+   * Valid children types for code-block, in addition to code-block-line types.
+   */
+  validCodeBlockChildrenTypes?: string[];
+}
 
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 
