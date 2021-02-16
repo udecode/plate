@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useEditablePlugins } from '../useEditablePlugins';
 import { UseSlatePluginsOptions } from './types';
 import { useSlatePluginsActions } from './useSlatePluginsSelectors';
 
@@ -13,6 +14,7 @@ export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
     value: editorValue,
     plugins,
     editor,
+    ...editableProps
   } = options;
 
   const {
@@ -37,4 +39,10 @@ export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
   useEffect(() => {
     plugins && setPlugins(key, plugins);
   }, [key, plugins, setPlugins]);
+
+  const getEditableProps = useEditablePlugins(editableProps);
+
+  return {
+    getEditableProps,
+  };
 };

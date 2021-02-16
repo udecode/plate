@@ -1,27 +1,30 @@
 import * as React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { RenderLeaf, SlatePlugin } from '../types';
+import { DefaultLeaf, RenderLeafProps } from 'slate-react';
+import { RenderLeaf } from '../types/RenderLeaf';
 
+/**
+ * @see {@link RenderLeaf}
+ */
 export const renderLeafPlugins = (
-  plugins: SlatePlugin[],
-  renderLeafList: RenderLeaf[]
+  renderLeafList: (RenderLeaf | undefined)[]
 ) => {
   const Tag = (props: RenderLeafProps) => {
     const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
+
     renderLeafList.forEach((renderLeaf) => {
-      leafProps.children = renderLeaf(leafProps);
-    });
-
-    plugins.forEach(({ renderLeaf }) => {
       if (!renderLeaf) return;
-      leafProps.children = renderLeaf(leafProps);
+
+      const newChildren = renderLeaf(leafProps);
+      if (newChildren !== undefined) {
+        leafProps.children = newChildren;
+      }
     });
 
-    return <span {...leafProps.attributes}>{leafProps.children}</span>;
+    return <DefaultLeaf {...leafProps} />;
   };
 
   return (leafProps: RenderLeafProps) => {
-    // XXX: A wrapper tag component to make useContext get correct value inside.
+    // A wrapper tag component to make useContext get correct value inside.
     return <Tag {...leafProps} />;
   };
 };

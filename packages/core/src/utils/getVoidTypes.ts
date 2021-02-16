@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../types';
+import { SlatePlugin } from '../types/SlatePlugin';
 
 /**
  * Get void types from the plugins

@@ -1,5 +1,7 @@
 import { FunctionComponent } from 'react';
-import { SlatePlugin } from '../../types';
+import { Node } from 'slate';
+import { SlatePlugin } from '../../types/SlatePlugin';
+import { UseEditablePluginsOptions } from '../../types/UseEditablePluginsOptions';
 
 export type State = {
   /**
@@ -35,9 +37,10 @@ export type Actions = {
 
 export type SlatePluginsState = StateById & Actions;
 
-export type UseSlatePluginsOptions = Partial<State> & {
-  /**
-   * Unique key to store multiple editor states. Default is 'main'.
-   */
-  key?: string;
-};
+export type UseSlatePluginsOptions = Partial<State> &
+  UseEditablePluginsOptions & {
+    /**
+     * Unique key to store multiple editor states. Default is 'main'.
+     */
+    key?: string;
+  };

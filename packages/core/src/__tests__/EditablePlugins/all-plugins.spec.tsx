@@ -86,6 +86,11 @@ import { withInlineVoid } from '../../../../slate-plugins/src/plugins/withInline
 import { withNodeID } from '../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
 import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
+import { useSlatePlugins } from '../../hooks/useSlatePlugins/useSlatePlugins';
+import {
+  useSlatePluginsSetValue,
+  useSlatePluginsValue,
+} from '../../hooks/useSlatePlugins/useSlatePluginsSelectors';
 import { pipe } from '../../utils/pipe';
 
 const plugins = [
@@ -162,16 +167,22 @@ const Editor = () => {
   const decorate: any = [];
   const onKeyDown: any = [];
 
-  const [value, setValue] = useState(initialValue);
-
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
+  useSlatePlugins({
+    editor,
+  });
+
+  const value = useSlatePluginsValue();
+  const setValue = useSlatePluginsSetValue();
+  // const value = useSlate
 
   return (
     <Slate
       editor={editor}
       value={value}
       onChange={(newValue) => {
-        setValue(newValue as SlateDocument);
+        setValue(newValue);
       }}
     >
       <HeadingToolbar>

@@ -1,5 +1,5 @@
 import { NodeEntry } from 'slate';
-import { Decorate } from '../../types';
+import { Decorate } from '../../types/Decorate';
 import { decoratePlugins } from '../../utils';
 
 const nodeEntry: NodeEntry = [{ text: 'test' }, [0, 0]];

@@ -1,31 +1,27 @@
 import * as React from 'react';
-import { RenderElementProps } from 'slate-react';
-import { RenderElement, SlatePlugin } from '../types';
+import { DefaultElement, RenderElementProps } from 'slate-react';
+import { RenderElement } from '../types/RenderElement';
 
+/**
+ * @see {@link RenderElement}
+ */
 export const renderElementPlugins = (
-  plugins: SlatePlugin[],
-  renderElementList: RenderElement[]
+  renderElementList: (RenderElement | undefined)[]
 ) => {
   const Tag = (elementProps: RenderElementProps) => {
     let element;
 
     renderElementList.some((renderElement) => {
-      element = renderElement(elementProps);
+      element = renderElement?.(elementProps);
       return !!element;
     });
     if (element) return element;
 
-    plugins.some(({ renderElement }) => {
-      element = renderElement && renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
-
-    return <div {...elementProps.attributes}>{elementProps.children}</div>;
+    return <DefaultElement {...elementProps} />;
   };
 
   return (elementProps: RenderElementProps) => {
-    // XXX: A wrapper tag component to make useContext get correct value inside.
+    // A wrapper tag component to make useContext get correct value inside.
     return <Tag {...elementProps} />;
   };
 };

@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../types';
+import { SlatePlugin } from '../types/SlatePlugin';
 
 /**
  * Get inline types from the plugins

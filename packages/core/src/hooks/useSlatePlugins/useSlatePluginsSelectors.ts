@@ -1,19 +1,43 @@
 import { useCallback } from 'react';
 import { defaultEditor } from './slatePluginsStore';
-import { SlatePluginsState } from './types';
+import { SlatePluginsState, State } from './types';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
-export const useSlatePluginsEditor = <TEditor = typeof defaultEditor>(
-  key = 'main'
-) =>
+export const useSlatePluginsEditor = <TEditor = typeof defaultEditor>({
+  key = 'main',
+}: {
+  key?: string;
+} = {}) =>
   useSlatePluginsStore(
     useCallback((state) => state.byId[key]?.editor as TEditor, [key])
   );
 
-export const useSlatePluginsComponent = <TNodeType extends string>(
-  nodeType: TNodeType,
-  key = 'main'
-) =>
+export const useSlatePluginsValue = ({
+  key = 'main',
+}: {
+  key?: string;
+} = {}) =>
+  useSlatePluginsStore(useCallback((state) => state.byId[key]?.value, [key]));
+
+export const useSlatePluginsSetValue = ({
+  key = 'main',
+}: {
+  key?: string;
+} = {}) =>
+  useSlatePluginsStore(
+    useCallback(
+      (state) => (value: State['value']) => state.setValue(key, value),
+      [key]
+    )
+  );
+
+export const useSlatePluginsComponent = <TNodeType extends string>({
+  nodeType,
+  key = 'main',
+}: {
+  nodeType: TNodeType;
+  key?: string;
+}) =>
   useSlatePluginsStore(
     useCallback((state) => state.byId[key]?.components[nodeType], [
       key,

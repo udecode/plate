@@ -4,7 +4,7 @@ import { createEditor, Node, Point } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import { Decorate, SlatePlugin } from '../..';
-import { EditablePlugins, EditablePluginsProps } from '../../components';
+import { EditablePlugins } from '../../components';
 import { pipe } from '../../utils/pipe';
 
 const EditorWithDecorateDeps = ({
@@ -12,9 +12,9 @@ const EditorWithDecorateDeps = ({
   decorateDeps,
   plugins,
 }: {
-  decorate: EditablePluginsProps['decorate'];
-  decorateDeps: EditablePluginsProps['decorateDeps'];
-  plugins: EditablePluginsProps['plugins'];
+  decorate: UseEditablePluginsOptions['decorate'];
+  decorateDeps: UseEditablePluginsOptions['decorateDeps'];
+  plugins: UseEditablePluginsOptions['plugins'];
 }) => {
   const [value, setValue] = useState<Node[]>([]);
 
