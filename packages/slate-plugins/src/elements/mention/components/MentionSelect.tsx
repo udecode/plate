@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
-import { PortalBody } from '../../../components/PortalBody';
+import { PortalBody } from '../../../components/PortalBody/PortalBody';
 import { MentionNodeData } from '../types';
 import { getMentionSelectStyles } from './MentionSelect.styles';
 import {

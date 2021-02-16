@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { options } from '../../../../../../stories/config/initialValues';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
+import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
 import { withNormalizeTypes } from '../../index';
 
 const input = (

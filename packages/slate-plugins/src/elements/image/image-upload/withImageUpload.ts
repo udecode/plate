@@ -1,7 +1,7 @@
 import { ReactEditor } from 'slate-react';
-import { insertImage } from '../transforms';
+import { insertImage } from '../transforms/insertImage';
 import { ImagePluginOptions } from '../types';
-import { isImageUrl } from '../utils';
+import { isImageUrl } from '../utils/isImageUrl';
 
 /**
  * Allows for pasting images from clipboard.

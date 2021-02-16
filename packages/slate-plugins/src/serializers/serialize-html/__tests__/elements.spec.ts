@@ -7,9 +7,9 @@ import {
   LinkPlugin,
   ListPlugin,
   ParagraphPlugin,
+  serializeHTMLFromNodes,
   TablePlugin,
 } from '../../../index';
-import { serializeHTMLFromNodes } from '../index';
 
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(

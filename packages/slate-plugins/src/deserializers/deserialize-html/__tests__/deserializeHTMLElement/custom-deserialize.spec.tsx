@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { ImagePlugin } from '../../../../elements/image/index';
-import { LinkPlugin } from '../../../../elements/link/index';
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { TablePlugin } from '../../../../elements/table/index';
+import { ImagePlugin } from '../../../../elements/image/ImagePlugin';
+import { LinkPlugin } from '../../../../elements/link/LinkPlugin';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { TablePlugin } from '../../../../elements/table/TablePlugin';
 import { deserializeBold } from '../../../../marks/bold/deserializeBold';
 import { deserializeHTMLElement } from '../../../index';
 

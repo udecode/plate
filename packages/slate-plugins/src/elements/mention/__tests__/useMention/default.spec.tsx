@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { useMention } from '../../index';
+import { useMention } from '../../useMention';
 
 it('should accept arbirtrary data with value field', () => {
   const { result } = renderHook(() =>

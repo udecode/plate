@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { BoldPlugin } from '../../../../marks/bold/index';
+import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
-} from '../../utils/index';
+} from '../../utils/deserializeHTMLToMarks';
 
 const input: DeserializeMarksProps = {
   plugins: [BoldPlugin()],

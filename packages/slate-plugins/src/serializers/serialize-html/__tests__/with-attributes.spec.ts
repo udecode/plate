@@ -1,5 +1,9 @@
-import { htmlStringToDOMNode, ImagePlugin, LinkPlugin } from '../../../index';
-import { serializeHTMLFromNodes } from '../index';
+import {
+  htmlStringToDOMNode,
+  ImagePlugin,
+  LinkPlugin,
+  serializeHTMLFromNodes,
+} from '../../../index';
 
 it('serialize link to html with attributes', () => {
   expect(

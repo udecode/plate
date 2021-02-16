@@ -3,8 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { BoldPlugin } from '../../../../marks/bold/index';
-import { withDeserializeHTML } from '../../index';
+import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
+import { withDeserializeHTML } from '../../withDeserializeHTML';
 
 const input = ((
   <editor>

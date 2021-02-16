@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { onKeyDownSoftBreak } from '../../index';
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 const input = (
   <editor>

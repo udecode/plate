@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { ToolbarButton } from '../../ToolbarButton/index';
+import { ToolbarButton } from '../../ToolbarButton/ToolbarButton';
 
 it('should render', () => {
   const { getByTestId } = render(

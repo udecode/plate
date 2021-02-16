@@ -1,4 +1,4 @@
-import { deserializeHTMLToBreak } from '../../utils/index';
+import { deserializeHTMLToBreak } from '../../utils/deserializeHTMLToBreak';
 
 const input = document.createElement('br');
 

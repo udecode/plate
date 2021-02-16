@@ -2,7 +2,7 @@ import { getAbove, setDefaults, someNode } from '@udecode/slate-plugins-common';
 import { Editor, Path, Transforms } from 'slate';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';
-import { getEmptyRowNode } from '../utils';
+import { getEmptyRowNode } from '../utils/getEmptyRowNode';
 
 export const addRow = (editor: Editor, options?: TableOptions) => {
   const { table, tr } = setDefaults(options, DEFAULTS_TABLE);

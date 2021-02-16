@@ -4,7 +4,7 @@ import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { DEFAULTS_PARAGRAPH } from '../../elements/paragraph';
+import { DEFAULTS_PARAGRAPH } from '../../elements/paragraph/defaults';
 import { getSelectableElement } from '..';
 
 it('should render draggable component', () => {

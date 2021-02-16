@@ -1,11 +1,7 @@
-export type DeserializeNode = {
-  type: string;
-  deserialize: (
-    el: HTMLElement
-  ) =>
-    | {
-        [key: string]: unknown;
-      }
-    | undefined;
-  withoutChildren?: boolean;
-};
+import { RenderElement } from './RenderElement';
+import { RenderLeaf } from './RenderLeaf';
+
+export interface SerializeHtml {
+  element?: RenderElement;
+  leaf?: RenderLeaf;
+}

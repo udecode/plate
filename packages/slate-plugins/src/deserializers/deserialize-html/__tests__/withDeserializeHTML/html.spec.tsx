@@ -3,8 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { HeadingPlugin } from '../../../../elements/heading/index';
-import { withDeserializeHTML } from '../../index';
+import { HeadingPlugin } from '../../../../elements/heading/HeadingPlugin';
+import { withDeserializeHTML } from '../../withDeserializeHTML';
 
 // noinspection CheckTagEmptyBody
 const data = {

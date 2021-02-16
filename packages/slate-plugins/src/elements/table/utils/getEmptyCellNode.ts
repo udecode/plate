@@ -1,5 +1,5 @@
 import { setDefaults } from '@udecode/slate-plugins-common';
-import { DEFAULTS_PARAGRAPH } from '../../paragraph';
+import { DEFAULTS_PARAGRAPH } from '../../paragraph/defaults';
 import { ParagraphPluginOptions } from '../../paragraph/types';
 import { DEFAULTS_TABLE } from '../defaults';
 import { TableOptions } from '../types';

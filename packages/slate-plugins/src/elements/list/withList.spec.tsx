@@ -5,7 +5,7 @@ import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { withInlineVoid } from '../../plugins/withInlineVoid/withInlineVoid';
 import { ELEMENT_LINK } from '../link/defaults';
-import { withList } from './index';
+import { withList } from './withList';
 
 describe('normalizeList', () => {
   describe('when there is no p in li', () => {

@@ -1,4 +1,4 @@
-import { isImageUrl } from '../../utils/index';
+import { isImageUrl } from '../../utils/isImageUrl';
 
 const input = 'hello';
 

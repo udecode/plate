@@ -1,11 +1,11 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { BoldPlugin } from '../bold';
-import { CodePlugin } from '../code';
-import { ItalicPlugin } from '../italic';
-import { StrikethroughPlugin } from '../strikethrough';
+import { BoldPlugin } from '../bold/BoldPlugin';
+import { CodePlugin } from '../code/CodePlugin';
+import { ItalicPlugin } from '../italic/ItalicPlugin';
+import { StrikethroughPlugin } from '../strikethrough/StrikethroughPlugin';
 import { SubscriptPlugin } from '../subsupscript/subscript/SubscriptPlugin';
 import { SuperscriptPlugin } from '../subsupscript/superscript/SuperscriptPlugin';
-import { UnderlinePlugin } from '../underline';
+import { UnderlinePlugin } from '../underline/UnderlinePlugin';
 import { BasicMarkPluginsOptions } from './types';
 
 /**

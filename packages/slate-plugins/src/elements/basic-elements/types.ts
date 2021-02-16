@@ -1,9 +1,9 @@
-import { BlockquotePluginOptions } from '../blockquote';
-import { CodeBlockPluginOptions } from '../code-block';
-import { HeadingPluginOptions } from '../heading';
-import { ParagraphPluginOptions } from '../paragraph';
-
+import { BlockquotePluginOptions } from '../blockquote/types';
+import { CodeBlockPluginOptions } from '../code-block/types';
+import { HeadingPluginOptions } from '../heading/types';
 // Plugin options
+import { ParagraphPluginOptions } from '../paragraph/types';
+
 export interface BasicElementPluginsOptions
   extends BlockquotePluginOptions,
     CodeBlockPluginOptions,

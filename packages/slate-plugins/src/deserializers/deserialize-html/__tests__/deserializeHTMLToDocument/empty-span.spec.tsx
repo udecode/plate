@@ -2,7 +2,7 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core/src';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { deserializeHTMLToDocument } from '../../index';
+import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
 const plugins: SlatePlugin[] = [];
 const body = document.createElement('span');

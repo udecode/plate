@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
-import { MentionSelect } from '../../../components/index';
+import { MentionSelect } from '../../../components/MentionSelect';
 import { mentionables } from '../../useMention/onKeyDown/mentionables.fixture';
 
 it('should render null', () => {

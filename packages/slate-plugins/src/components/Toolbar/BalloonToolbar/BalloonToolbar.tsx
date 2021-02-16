@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
-import { PortalBody } from '../../PortalBody';
+import { PortalBody } from '../../PortalBody/PortalBody';
 import { Toolbar } from '../Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';

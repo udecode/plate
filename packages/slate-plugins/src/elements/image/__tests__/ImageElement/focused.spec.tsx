@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import * as SlateReact from 'slate-react';
-import { ImageElement } from '../../components/index';
-import { ELEMENT_IMAGE } from '../../index';
+import { ImageElement } from '../../components/ImageElement';
+import { ELEMENT_IMAGE } from '../../defaults';
 
 it('should render', () => {
   jest.spyOn(SlateReact, 'useSelected').mockReturnValue(true);

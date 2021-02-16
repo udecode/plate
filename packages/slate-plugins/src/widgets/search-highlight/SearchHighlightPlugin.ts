@@ -1,6 +1,6 @@
 import { setDefaults } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { HighlightPlugin } from '../../marks/highlight';
+import { HighlightPlugin } from '../../marks/highlight/HighlightPlugin';
 import { DEFAULTS_SEARCH_HIGHLIGHT } from './defaults';
 import { SearchHighlightPluginOptions } from './types';
 

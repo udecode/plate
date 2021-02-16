@@ -1,5 +1,5 @@
 import { createEditor } from 'slate';
-import { withTable } from '..';
+import { withTable } from '../withTable';
 import { content, out, output2 } from './fixtures';
 
 describe('withTable', () => {

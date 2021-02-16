@@ -1,4 +1,4 @@
-import { deserializeHTMLToFragment } from '../../utils/index';
+import { deserializeHTMLToFragment } from '../../utils/deserializeHTMLToFragment';
 
 const input = {
   element: document.createElement('div'),

@@ -6,7 +6,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, Node, Path, Range, Transforms } from 'slate';
 import { DEFAULTS_LIST } from '../defaults';
-import { getListItemEntry } from '../queries';
+import { getListItemEntry } from '../queries/getListItemEntry';
 import { getListRoot } from '../queries/getListRoot';
 import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';

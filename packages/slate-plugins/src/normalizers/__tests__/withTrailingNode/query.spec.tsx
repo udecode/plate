@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../elements/heading/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
+import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
 import { withTrailingNode } from '../../index';
 
 const input = (

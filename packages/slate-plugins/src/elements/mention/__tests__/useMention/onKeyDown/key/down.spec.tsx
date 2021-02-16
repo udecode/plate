@@ -5,7 +5,7 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { pipe } from '../../../../../../utils/pipe';
-import { useMention } from '../../../../index';
+import { useMention } from '../../../../useMention';
 import { mentionables } from '../mentionables.fixture';
 
 const input = ((

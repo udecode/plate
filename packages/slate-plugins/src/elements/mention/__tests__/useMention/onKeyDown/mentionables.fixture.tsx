@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { MentionNodeData } from '../../../index';
+import { MentionNodeData } from '../../../types';
 
 export const editorWithMentionable = ((
   <editor>

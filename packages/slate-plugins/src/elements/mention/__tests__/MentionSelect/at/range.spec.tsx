@@ -3,8 +3,8 @@ import { render } from '@testing-library/react';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { ELEMENT_PARAGRAPH } from '../../../../paragraph/index';
-import { MentionSelect } from '../../../components/index';
+import { ELEMENT_PARAGRAPH } from '../../../../paragraph/defaults';
+import { MentionSelect } from '../../../components/MentionSelect';
 import { mentionables } from '../../useMention/onKeyDown/mentionables.fixture';
 
 it('should render null', () => {

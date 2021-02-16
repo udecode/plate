@@ -2,32 +2,32 @@
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
 import { AlignPlugin } from '../../../../elements/align/AlignPlugin';
-import { BlockquotePlugin } from '../../../../elements/blockquote/index';
-import { CodeBlockPlugin } from '../../../../elements/code-block/index';
-import { HeadingPlugin } from '../../../../elements/heading/index';
-import { ImagePlugin } from '../../../../elements/image/index';
-import { LinkPlugin } from '../../../../elements/link/index';
-import { ListPlugin } from '../../../../elements/list/index';
-import { MediaEmbedPlugin } from '../../../../elements/media-embed/index';
-import { MentionPlugin } from '../../../../elements/mention/index';
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { TablePlugin } from '../../../../elements/table/index';
+import { BlockquotePlugin } from '../../../../elements/blockquote/BlockquotePlugin';
+import { CodeBlockPlugin } from '../../../../elements/code-block/CodeBlockPlugin';
+import { HeadingPlugin } from '../../../../elements/heading/HeadingPlugin';
+import { ImagePlugin } from '../../../../elements/image/ImagePlugin';
+import { LinkPlugin } from '../../../../elements/link/LinkPlugin';
+import { ListPlugin } from '../../../../elements/list/ListPlugin';
+import { MediaEmbedPlugin } from '../../../../elements/media-embed/MediaEmbedPlugin';
+import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { TablePlugin } from '../../../../elements/table/TablePlugin';
 import {
   CLASS_TODO_LIST,
   CLASS_TODO_LIST_CHECKED,
-  TodoListPlugin,
-} from '../../../../elements/todo-list/index';
-import { SoftBreakPlugin } from '../../../../handlers/soft-break/index';
+} from '../../../../elements/todo-list/constants';
+import { TodoListPlugin } from '../../../../elements/todo-list/TodoListPlugin';
+import { SoftBreakPlugin } from '../../../../handlers/soft-break/SoftBreakPlugin';
 import { deserializeBold } from '../../../../marks/bold/deserializeBold';
-import { deserializeCode } from '../../../../marks/code/index';
+import { deserializeCode } from '../../../../marks/code/deserializeCode';
 import { deserializeHighlight } from '../../../../marks/highlight/deserializeHighlight';
 import { deserializeItalic } from '../../../../marks/italic/deserializeItalic';
-import { deserializeKbd } from '../../../../marks/kbd/index';
+import { deserializeKbd } from '../../../../marks/kbd/deserializeKbd';
 import { deserializeStrikethrough } from '../../../../marks/strikethrough/deserializeStrikethrough';
 import { deserializeSubscript } from '../../../../marks/subsupscript/subscript/deserializeSubscript';
 import { deserializeSuperscript } from '../../../../marks/subsupscript/superscript/deserializeSuperscript';
 import { deserializeUnderline } from '../../../../marks/underline/deserializeUnderline';
-import { SearchHighlightPlugin } from '../../../../widgets/search-highlight/index';
+import { SearchHighlightPlugin } from '../../../../widgets/search-highlight/SearchHighlightPlugin';
 import { deserializeHTMLElement } from '../../../index';
 
 const textTags = [

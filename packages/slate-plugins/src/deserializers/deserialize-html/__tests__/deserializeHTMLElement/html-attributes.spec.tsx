@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { TablePlugin } from '../../../../elements/table/index';
+import { TablePlugin } from '../../../../elements/table/TablePlugin';
 import { deserializeHTMLElement } from '../../../index';
 
 const html =

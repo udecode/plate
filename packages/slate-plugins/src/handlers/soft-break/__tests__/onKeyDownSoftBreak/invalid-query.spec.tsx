@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_CODE_BLOCK } from '../../../../elements/code-block/index';
-import { onKeyDownSoftBreak } from '../../index';
+import { ELEMENT_CODE_BLOCK } from '../../../../elements/code-block/defaults';
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 const input = (
   <editor>

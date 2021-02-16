@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { useMention } from '../../../../index';
+import { useMention } from '../../../../useMention';
 
 const input = ((
   <editor>

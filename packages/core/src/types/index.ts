@@ -8,6 +8,6 @@ export * from './OnDOMBeforeInput';
 export * from './OnKeyDown';
 export * from './RenderElement';
 export * from './RenderLeaf';
-export * from './SerializeHtml';
+export * from './DeserializeNode';
 export * from './SlatePlugin';
 export * from './UseEditablePluginsOptions';

@@ -13,8 +13,9 @@ import get from 'lodash/get';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
+import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
+import { wrapLink } from './transforms/wrapLink';
 import { DEFAULTS_LINK } from './defaults';
-import { upsertLinkAtSelection, wrapLink } from './transforms';
 import { LinkOptions, WithLinkOptions } from './types';
 
 const upsertLink = (

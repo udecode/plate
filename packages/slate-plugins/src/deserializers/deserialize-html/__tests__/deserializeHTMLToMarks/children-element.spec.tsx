@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { BoldPlugin } from '../../../../marks/bold/index';
-import { ItalicPlugin } from '../../../../marks/italic/index';
-import { deserializeHTMLToMarks } from '../../utils/index';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
+import { ItalicPlugin } from '../../../../marks/italic/ItalicPlugin';
+import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
   plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],

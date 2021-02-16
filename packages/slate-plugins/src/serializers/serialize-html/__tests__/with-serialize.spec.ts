@@ -5,8 +5,8 @@ import {
   htmlStringToDOMNode,
   ImagePlugin,
   MARK_BOLD,
+  serializeHTMLFromNodes,
 } from '../../../index';
-import { serializeHTMLFromNodes } from '../index';
 
 it('custom serialize image to html', () => {
   expect(

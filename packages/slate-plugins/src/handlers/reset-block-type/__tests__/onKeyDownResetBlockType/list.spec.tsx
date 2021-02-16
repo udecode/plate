@@ -11,7 +11,7 @@ import {
   ELEMENT_PARAGRAPH,
   unwrapList,
 } from '../../../../elements/index';
-import { onKeyDownResetBlockType } from '../../index';
+import { onKeyDownResetBlockType } from '../../onKeyDownResetBlockType';
 
 const input = (
   <editor>

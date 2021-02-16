@@ -7,12 +7,10 @@ import {
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '../../../components/ToolbarButton';
+import { ToolbarButton } from '../../../components/ToolbarButton/ToolbarButton';
+import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
 import { DEFAULTS_LINK } from '../defaults';
-import { upsertLinkAtSelection } from '../transforms';
+import { upsertLinkAtSelection } from '../transforms/upsertLinkAtSelection';
 import { LinkOptions } from '../types';
 
 export const ToolbarLink = ({

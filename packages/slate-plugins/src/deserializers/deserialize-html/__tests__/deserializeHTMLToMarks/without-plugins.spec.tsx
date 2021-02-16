@@ -1,4 +1,4 @@
-import { deserializeHTMLToMarks } from '../../utils/index';
+import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
   plugins: [{}],

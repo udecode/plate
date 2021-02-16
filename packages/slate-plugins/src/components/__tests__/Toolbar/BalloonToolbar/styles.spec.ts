@@ -1,4 +1,4 @@
-import { getBalloonToolbarStyles } from '../../../Toolbar/index';
+import { getBalloonToolbarStyles } from '../../../Toolbar/BalloonToolbar/BalloonToolbar.styles';
 
 it('should render', () => {
   // default

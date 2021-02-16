@@ -1,6 +1,6 @@
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { parseMD } from './utils';
+import { parseMD } from './utils/parseMD';
 
 /**
  * Enables support for deserializing content

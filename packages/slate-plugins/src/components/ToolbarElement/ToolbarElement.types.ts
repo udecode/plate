@@ -1,4 +1,4 @@
-import { ToolbarButtonProps } from '../ToolbarButton/index';
+import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
 export interface ToolbarElementProps extends ToolbarButtonProps {
   type: string;

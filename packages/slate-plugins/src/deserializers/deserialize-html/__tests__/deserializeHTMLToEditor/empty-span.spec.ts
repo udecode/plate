@@ -1,6 +1,6 @@
 import { SlateDocument } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { deserializeHTMLToDocument } from '../../index';
+import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
 const plugins: SlatePlugin[] = [];
 const body = document.createElement('span');

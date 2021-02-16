@@ -3,9 +3,9 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { MediaEmbedPlugin } from '../../../../elements/media-embed/index';
+import { MediaEmbedPlugin } from '../../../../elements/media-embed/MediaEmbedPlugin';
 import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
-import { withDeserializeHTML } from '../../index';
+import { withDeserializeHTML } from '../../withDeserializeHTML';
 
 const input = ((
   <editor>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Search } from '@styled-icons/material';
 import { fireEvent, render } from '@testing-library/react';
-import { ToolbarSearchHighlight } from '../components/index';
+import { ToolbarSearchHighlight } from '../components/ToolbarSearchHighlight';
 
 it('should render', () => {
   const setSearch = jest.fn();

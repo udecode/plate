@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { onKeyDownExitBreak } from '../../index';
+import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 const input = (
   <editor>

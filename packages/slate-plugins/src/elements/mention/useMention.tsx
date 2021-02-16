@@ -7,9 +7,10 @@ import {
   isWordAfterTrigger,
 } from '@udecode/slate-plugins-common';
 import { Editor, Point, Range, Transforms } from 'slate';
-import { insertMention } from './transforms';
+import { insertMention } from './transforms/insertMention';
+import { getNextIndex } from './utils/getNextIndex';
+import { getPreviousIndex } from './utils/getPreviousIndex';
 import { MentionNodeData, UseMentionOptions } from './types';
-import { getNextIndex, getPreviousIndex } from './utils';
 
 export const matchesTriggerAndPattern = (
   editor: Editor,

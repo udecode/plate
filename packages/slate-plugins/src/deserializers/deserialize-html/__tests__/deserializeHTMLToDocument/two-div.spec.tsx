@@ -2,7 +2,7 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { deserializeHTMLToDocument } from '../../index';
+import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
 const html = '<div>first</div><div>second</div>';
 const input1: SlatePlugin[] = [];

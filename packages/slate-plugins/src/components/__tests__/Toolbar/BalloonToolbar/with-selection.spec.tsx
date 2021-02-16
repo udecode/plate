@@ -5,7 +5,7 @@ import { SlateDocument } from '@udecode/slate-plugins-common';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { BalloonToolbar } from '../../../Toolbar/index';
+import { BalloonToolbar } from '../../../Toolbar/BalloonToolbar/BalloonToolbar';
 
 const Editor = () => {
   const [value, setValue] = useState<SlateDocument>([

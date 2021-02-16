@@ -51,7 +51,8 @@ export interface ElementNode<T = Element> {
 export interface NodeToPropsOptions<
   ElementType = Element,
   RootPropsType = RenderNodePropsOptions
-> extends Omit<RenderElementPropsWithAttributes, 'element'>,
+>
+  extends Omit<RenderElementPropsWithAttributes, 'element'>,
     RootProps<RootPropsType> {
   element: ElementType;
 }

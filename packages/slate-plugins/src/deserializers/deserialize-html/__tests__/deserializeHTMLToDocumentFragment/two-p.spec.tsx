@@ -2,8 +2,8 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { deserializeHTMLToDocumentFragment } from '../../utils/index';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = '<p>first</p><p>second</p>';
 const input1: SlatePlugin[] = [ParagraphPlugin()];

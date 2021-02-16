@@ -1,5 +1,5 @@
-import { ParagraphPlugin } from '../../../../elements/paragraph/index';
-import { deserializeHTMLToElement } from '../../utils/index';
+import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 
 const input = {
   plugins: [ParagraphPlugin({ p: { type: 'p' } })],

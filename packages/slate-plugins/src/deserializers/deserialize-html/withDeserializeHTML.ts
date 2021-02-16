@@ -5,7 +5,7 @@ import {
 import { getInlineTypes, SlatePlugin } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { deserializeHTMLToDocumentFragment } from './utils';
+import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
 export interface WithDeserializeHTMLOptions {
   plugins?: SlatePlugin[];

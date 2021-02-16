@@ -5,7 +5,7 @@ import {
   toggleMark,
 } from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
-import { ToolbarButton } from '../ToolbarButton/index';
+import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarMarkProps } from './ToolbarMark.types';
 
 /**
