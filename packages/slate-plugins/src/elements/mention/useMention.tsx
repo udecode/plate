@@ -1,22 +1,22 @@
-import { useCallback, useState } from 'react';
-import { Editor, Point, Range, Transforms } from 'slate';
-import { escapeRegExp } from '../../common';
+import { useCallback, useState } from "react";
+import { Editor, Point, Range, Transforms } from "slate";
+import { escapeRegExp } from "../../common";
 import {
   getText,
   isPointAtWordEnd,
   isWordAfterTrigger,
-} from '../../common/queries';
-import { isCollapsed } from '../../common/queries/isCollapsed';
-import { insertMention } from './transforms';
-import { MentionNodeData, UseMentionOptions } from './types';
-import { getNextIndex, getPreviousIndex } from './utils';
+} from "../../common/queries";
+import { isCollapsed } from "../../common/queries/isCollapsed";
+import { insertMention } from "./transforms";
+import { MentionNodeData, UseMentionOptions } from "./types";
+import { getNextIndex, getPreviousIndex } from "./utils";
 
 export const matchesTriggerAndPattern = (
   editor: Editor,
   { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
 ) => {
   // Point at the start of line
-  const lineStart = Editor.before(editor, at, { unit: 'line' });
+  const lineStart = Editor.before(editor, at, { unit: "line" });
 
   // Range from before to start
   const beforeRange = lineStart && Editor.range(editor, lineStart, at);
@@ -35,7 +35,7 @@ export const matchesTriggerAndPattern = (
   // Point at the start of mention
   const mentionStart = match
     ? Editor.before(editor, at, {
-        unit: 'character',
+        unit: "character",
         distance: match[1].length + trigger.length,
       })
     : null;
@@ -53,16 +53,17 @@ export const useMention = (
   mentionables: MentionNodeData[] = [],
   {
     maxSuggestions = 10,
-    trigger = '@',
+    trigger = "@",
     mentionableFilter = (search: string) => (c: MentionNodeData) =>
       c.value.toLowerCase().includes(search.toLowerCase()),
     mentionableSearchPattern,
+    insertSpaceAfterMention,
     ...options
   }: UseMentionOptions = {}
 ) => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const values = mentionables
     .filter(mentionableFilter(search))
     .slice(0, maxSuggestions);
@@ -71,7 +72,7 @@ export const useMention = (
     (editor: Editor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, data, options);
+        insertMention(editor, data, options, insertSpaceAfterMention);
         return setTargetRange(null);
       }
     },
@@ -81,20 +82,20 @@ export const useMention = (
   const onKeyDownMention = useCallback(
     (e: any, editor: Editor) => {
       if (targetRange) {
-        if (e.key === 'ArrowDown') {
+        if (e.key === "ArrowDown") {
           e.preventDefault();
           return setValueIndex(getNextIndex(valueIndex, values.length - 1));
         }
-        if (e.key === 'ArrowUp') {
+        if (e.key === "ArrowUp") {
           e.preventDefault();
           return setValueIndex(getPreviousIndex(valueIndex, values.length - 1));
         }
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           e.preventDefault();
           return setTargetRange(null);
         }
 
-        if (['Tab', 'Enter'].includes(e.key)) {
+        if (["Tab", "Enter"].includes(e.key)) {
           e.preventDefault();
           onAddMention(editor, values[valueIndex]);
           return false;

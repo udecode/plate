@@ -71,6 +71,7 @@ export const Example = () => {
       values,
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
+      insertSpaceAfterMention: boolean("insert Space After Mention", false),
       trigger: "@",
       mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
         mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
