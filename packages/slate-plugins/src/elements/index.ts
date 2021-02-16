@@ -1,4 +1,4 @@
-export * from './todo-list';
+export * from './align';
 export * from './basic-elements';
 export * from './blockquote';
 export * from './code-block';
@@ -6,8 +6,8 @@ export * from './heading';
 export * from './image';
 export * from './link';
 export * from './list';
+export * from './media-embed';
 export * from './mention';
 export * from './paragraph';
 export * from './table';
-export * from './media-embed';
-export * from './align';
+export * from './todo-list';

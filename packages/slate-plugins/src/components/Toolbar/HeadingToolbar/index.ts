@@ -1,2 +1,2 @@
-export * from './HeadingToolbar';
 export * from './HeadingToolbar.styles';
+export * from './HeadingToolbar';

@@ -1,4 +1,4 @@
-import { DeserializeNode } from '../DeserializeNode/SerializeHtml';
+import { DeserializeNode } from './SerializeHtml';
 
 export interface DeserializeHtml {
   element?: DeserializeNode[];
