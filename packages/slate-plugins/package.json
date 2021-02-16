@@ -19,6 +19,7 @@
     "dist"
   ],
   "scripts": {
+    "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "rollup -c=../../rollup.config.js",
     "prepublish": "npm run snyk-protect",
