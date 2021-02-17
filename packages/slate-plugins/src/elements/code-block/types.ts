@@ -10,7 +10,6 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
-import { ListOptions } from '../list';
 
 // Data of Element node
 export interface CodeBlockNodeData {}

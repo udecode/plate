@@ -1,8 +1,8 @@
+/* import { ReactEditor } from 'slate-react';
 import { setDefaults } from '../../common';
-import { DEFAULTS_CODE_BLOCK } from './defaults';
 import { getListItemEntry } from '../list';
 import { getCodeBlockLineEntry } from './queries/getCodeBlockLineEntry';
-import { ReactEditor } from 'slate-react';
+import { DEFAULTS_CODE_BLOCK } from './defaults';
 import { WithCodeBlockOptions } from './types';
 
 export const withCodeBlock = ({
@@ -19,3 +19,7 @@ export const withCodeBlock = ({
     // fixme: :move code from onKeyDownCodeBlock to here
   }
 }
+
+ */
+
+export const withCodeBlock = {};
