@@ -6,7 +6,8 @@ import { MentionNode, MentionNodeData, MentionPluginOptions } from '../types';
 export const insertMention = (
   editor: Editor,
   mentionable: MentionNodeData,
-  options?: MentionPluginOptions
+  options?: MentionPluginOptions,
+  insertSpaceAfterMention?: boolean
 ) => {
   const { mention } = setDefaults(options, DEFAULTS_MENTION);
 
@@ -15,6 +16,11 @@ export const insertMention = (
     children: [{ text: '' }],
     ...mentionable,
   };
+
   Transforms.insertNodes(editor, mentionNode);
   Transforms.move(editor);
+  if (insertSpaceAfterMention) {
+    Transforms.insertText(editor, ' ');
+    Transforms.move(editor);
+  }
 };

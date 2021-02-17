@@ -57,6 +57,7 @@ export const useMention = (
     mentionableFilter = (search: string) => (c: MentionNodeData) =>
       c.value.toLowerCase().includes(search.toLowerCase()),
     mentionableSearchPattern,
+    insertSpaceAfterMention,
     ...options
   }: UseMentionOptions = {}
 ) => {
@@ -71,11 +72,11 @@ export const useMention = (
     (editor: Editor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, data, options);
+        insertMention(editor, data, options, insertSpaceAfterMention);
         return setTargetRange(null);
       }
     },
-    [options, targetRange]
+    [options, targetRange, insertSpaceAfterMention]
   );
 
   const onKeyDownMention = useCallback(
@@ -142,7 +143,13 @@ export const useMention = (
         setTargetRange(null);
       }
     },
-    [setTargetRange, setSearch, setValueIndex, trigger]
+    [
+      setTargetRange,
+      setSearch,
+      setValueIndex,
+      trigger,
+      mentionableSearchPattern,
+    ]
   );
 
   return {
