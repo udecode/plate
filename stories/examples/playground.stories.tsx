@@ -6,9 +6,9 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatAlignCenter,
+  FormatAlignJustify,
   FormatAlignLeft,
   FormatAlignRight,
-  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -66,6 +66,7 @@ import {
   TablePlugin,
   TodoListPlugin,
   ToolbarAlign,
+  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -82,9 +83,9 @@ import {
   withList,
   withMarks,
   withNormalizeTypes,
+  withSelectOnBackspace,
   withTable,
   withTrailingNode,
-  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -281,7 +282,7 @@ export const Plugins = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <ToolbarCodeBlock icon={<CodeBlock />} />
 
           {/* Marks */}
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
