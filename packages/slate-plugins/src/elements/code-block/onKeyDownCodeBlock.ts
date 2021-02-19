@@ -33,8 +33,6 @@ export const onKeyDownCodeBlock = (
     return;
   }
 
-  // FIXME: Or should this override insertBreak as part of withCodeBlock?
-
   if (e.key === 'Enter') {
     const res = getCodeBlockLineEntry(editor, {}, options);
     if (!res) return;

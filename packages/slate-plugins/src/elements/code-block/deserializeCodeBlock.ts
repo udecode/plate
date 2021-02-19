@@ -4,6 +4,8 @@ import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
 import { CodeBlockDeserializeOptions } from './types';
 
+// FIXME Handle code_block_line
+
 export const deserializeCodeBlock = (
   options?: CodeBlockDeserializeOptions
 ): DeserializeHtml => {
