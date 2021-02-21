@@ -1,14 +1,14 @@
-import "tippy.js/dist/tippy.css";
-import React, { useMemo, useState } from "react";
-import { boolean } from "@storybook/addon-knobs";
-import { CodeAlt } from "@styled-icons/boxicons-regular/CodeAlt";
-import { CodeBlock } from "@styled-icons/boxicons-regular/CodeBlock";
-import { Subscript, Superscript } from "@styled-icons/foundation";
+import 'tippy.js/dist/tippy.css';
+import React, { useMemo, useState } from 'react';
+import { boolean } from '@storybook/addon-knobs';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatAlignCenter,
+  FormatAlignJustify,
   FormatAlignLeft,
   FormatAlignRight,
-  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -25,7 +25,7 @@ import {
   LooksOne,
   LooksTwo,
   Search,
-} from "@styled-icons/material";
+} from '@styled-icons/material';
 import {
   AlignPlugin,
   BalloonToolbar,
@@ -52,6 +52,7 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   MediaEmbedPlugin,
+  MentionNodeData,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
@@ -82,15 +83,14 @@ import {
   withList,
   withMarks,
   withNormalizeTypes,
+  withSelectOnBackspace,
   withTable,
   withTrailingNode,
-  withSelectOnBackspace,
-  MentionNodeData,
-} from "@udecode/slate-plugins";
-import { createEditor, Node } from "slate";
-import { withHistory } from "slate-history";
-import { Slate, withReact } from "slate-react";
-import { autoformatRules } from "../config/autoformatRules";
+} from '@udecode/slate-plugins';
+import { createEditor, Node } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
+import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
   initialValueAutoformat,
@@ -109,11 +109,11 @@ import {
   initialValueTables,
   options,
   optionsResetBlockTypes,
-} from "../config/initialValues";
-import { MENTIONABLES } from "../config/mentionables";
+} from '../config/initialValues';
+import { MENTIONABLES } from '../config/mentionables';
 
 export default {
-  title: "Examples/Playground",
+  title: 'Examples/Playground',
 };
 
 const initialValue: Node[] = [
@@ -135,22 +135,22 @@ const initialValue: Node[] = [
 
 const renderLabel = (mentionable: MentionNodeData) => {
   const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
-  if (!entry) return "unknown option";
+  if (!entry) return 'unknown option';
   return `${entry.name} - ${entry.email}`;
 };
 
 export const Plugins = () => {
   const plugins: any[] = [];
 
-  if (boolean("ParagraphPlugin", true)) plugins.push(ParagraphPlugin(options));
-  if (boolean("BlockquotePlugin", true))
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
+  if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
-  if (boolean("TodoListPlugin", true)) plugins.push(TodoListPlugin(options));
-  if (boolean("HeadingPlugin", true)) plugins.push(HeadingPlugin(options));
-  if (boolean("ImagePlugin", true)) plugins.push(ImagePlugin(options));
-  if (boolean("LinkPlugin", true)) plugins.push(LinkPlugin(options));
-  if (boolean("ListPlugin", true)) plugins.push(ListPlugin(options));
-  if (boolean("MentionPlugin", true))
+  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
+  if (boolean('MentionPlugin', true))
     plugins.push(
       MentionPlugin({
         mention: {
@@ -158,38 +158,38 @@ export const Plugins = () => {
           rootProps: {
             onClick: (mentionable: MentionNodeData) =>
               console.info(`Hello, I'm ${mentionable.value}`),
-            prefix: "@",
+            prefix: '@',
             renderLabel,
           },
         },
       })
     );
-  if (boolean("TablePlugin", true)) plugins.push(TablePlugin(options));
-  if (boolean("MediaEmbedPlugin", true))
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
+  if (boolean('MediaEmbedPlugin', true))
     plugins.push(MediaEmbedPlugin(options));
-  if (boolean("CodeBlockPlugin", true)) plugins.push(CodeBlockPlugin(options));
-  if (boolean("AlignPlugin", true)) plugins.push(AlignPlugin(options));
-  if (boolean("BoldPlugin", true)) plugins.push(BoldPlugin(options));
-  if (boolean("CodePlugin", true)) plugins.push(CodePlugin(options));
-  if (boolean("ItalicPlugin", true)) plugins.push(ItalicPlugin(options));
-  if (boolean("HighlightPlugin", true)) plugins.push(HighlightPlugin(options));
-  if (boolean("SearchHighlightPlugin", true))
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(options));
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(options));
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
+  if (boolean('SearchHighlightPlugin', true))
     plugins.push(SearchHighlightPlugin(options));
-  if (boolean("UnderlinePlugin", true)) plugins.push(UnderlinePlugin(options));
-  if (boolean("StrikethroughPlugin", true))
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin(options));
+  if (boolean('StrikethroughPlugin', true))
     plugins.push(StrikethroughPlugin(options));
-  if (boolean("SubscriptPlugin", true)) plugins.push(SubscriptPlugin(options));
-  if (boolean("SuperscriptPlugin", true))
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin(options));
+  if (boolean('SuperscriptPlugin', true))
     plugins.push(SuperscriptPlugin(options));
-  if (boolean("ResetBlockTypePlugin", true))
+  if (boolean('ResetBlockTypePlugin', true))
     plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
-  if (boolean("SoftBreakPlugin", true))
+  if (boolean('SoftBreakPlugin', true))
     plugins.push(
       SoftBreakPlugin({
         rules: [
-          { hotkey: "shift+enter" },
+          { hotkey: 'shift+enter' },
           {
-            hotkey: "enter",
+            hotkey: 'enter',
             query: {
               allow: [
                 options.code_block.type,
@@ -201,19 +201,19 @@ export const Plugins = () => {
         ],
       })
     );
-  if (boolean("ExitBreakPlugin", true))
+  if (boolean('ExitBreakPlugin', true))
     plugins.push(
       ExitBreakPlugin({
         rules: [
           {
-            hotkey: "mod+enter",
+            hotkey: 'mod+enter',
           },
           {
-            hotkey: "mod+shift+enter",
+            hotkey: 'mod+shift+enter',
             before: true,
           },
           {
-            hotkey: "enter",
+            hotkey: 'enter',
             query: {
               start: true,
               end: true,
@@ -250,9 +250,9 @@ export const Plugins = () => {
 
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
-    const [search, setSearchHighlight] = useState("");
+    const [search, setSearchHighlight] = useState('');
 
-    if (boolean("decorateSearchHighlight", true))
+    if (boolean('decorateSearchHighlight', true))
       decorate.push(decorateSearchHighlight({ search }));
 
     const {
@@ -264,15 +264,15 @@ export const Plugins = () => {
       onKeyDownMention,
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
-      trigger: "@",
+      trigger: '@',
       insertSpaceAfterMention: false,
       mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
         mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
         mentionable.name.toLowerCase().includes(search.toLowerCase()),
-      mentionableSearchPattern: "\\S*",
+      mentionableSearchPattern: '\\S*',
     });
 
-    if (boolean("onKeyDownMentions", true)) onKeyDown.push(onKeyDownMention);
+    if (boolean('onKeyDownMentions', true)) onKeyDown.push(onKeyDownMention);
 
     return (
       <Slate
@@ -285,7 +285,7 @@ export const Plugins = () => {
         }}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
-        <HeadingToolbar styles={{ root: { flexWrap: "wrap" } }}>
+        <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
           {/* Elements */}
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
           <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
@@ -350,19 +350,19 @@ export const Plugins = () => {
             reversed
             type={MARK_BOLD}
             icon={<FormatBold />}
-            tooltip={{ content: "Bold (⌘B)" }}
+            tooltip={{ content: 'Bold (⌘B)' }}
           />
           <ToolbarMark
             reversed
             type={MARK_ITALIC}
             icon={<FormatItalic />}
-            tooltip={{ content: "Italic (⌘I)" }}
+            tooltip={{ content: 'Italic (⌘I)' }}
           />
           <ToolbarMark
             reversed
             type={MARK_UNDERLINE}
             icon={<FormatUnderlined />}
-            tooltip={{ content: "Underline (⌘U)" }}
+            tooltip={{ content: 'Underline (⌘U)' }}
           />
         </BalloonToolbar>
         <MentionSelect
