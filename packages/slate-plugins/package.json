@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "rollup -c=../../rollup.config.js",
+    "build": "rollup -c=../../rollup.config.js"
   },
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.0",
