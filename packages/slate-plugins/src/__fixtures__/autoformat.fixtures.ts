@@ -102,7 +102,7 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     trigger: '`',
     type: options.code_block.type,
     markup: '``',
-    mode: 'inline-block',
-    preFormat: (editor) => unwrapList(editor, options),
+    triggerAtBlockStart: false,
+    preFormat,
   },
 ];

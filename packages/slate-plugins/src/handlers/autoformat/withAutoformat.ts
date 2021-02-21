@@ -1,18 +1,15 @@
 import castArray from 'lodash/castArray';
 import { Editor, Range } from 'slate';
 import {
-  findNode,
   getBlockAbove,
-  getNodes,
+  getRangeBefore,
   getRangeFromBlockStart,
   someNode,
 } from '../../common/queries';
 import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
-import { queryEditor } from '../../common/queries/queryEditor';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatInline } from './transforms/autoformatInline';
-import { autoformatInlineBlock } from './transforms/autoformatInlineBlock';
 import { WithAutoformatOptions } from './types';
 
 /**
@@ -34,6 +31,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
         trigger = ' ',
         mode = 'block',
         allowSameTypeAbove = false,
+        triggerAtBlockStart = true,
         type,
         markup,
         preFormat,
@@ -54,40 +52,52 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
 
       if (mode === 'block') {
         const markups: string[] = castArray(markup);
-        const rangeFromBlockStart = getRangeFromBlockStart(editor) as Range;
+        let markupRange: Range | undefined;
 
-        // Don't autoformat if there is void nodes.
-        const hasVoidNode = someNode(editor, {
-          at: rangeFromBlockStart,
-          match: (n) => Editor.isVoid(editor, n),
-        });
-        if (hasVoidNode) continue;
+        if (triggerAtBlockStart) {
+          markupRange = getRangeFromBlockStart(editor) as Range;
 
-        const textFromBlockStart = getText(editor, rangeFromBlockStart);
-
-        if (markups.includes(textFromBlockStart)) {
-          if (!allowSameTypeAbove) {
-            // Don't autoformat if already in a block of the same type.
-            const isBelowSameBlockType = someNode(editor, { match: { type } });
-            if (isBelowSameBlockType) continue;
-          }
-
-          // Start of the block
-          autoformatBlock(editor, type, rangeFromBlockStart, {
-            preFormat,
-            format,
+          // Don't autoformat if there is void nodes.
+          const hasVoidNode = someNode(editor, {
+            at: markupRange,
+            match: (n) => Editor.isVoid(editor, n),
           });
-          return valid();
+          if (hasVoidNode) continue;
+
+          const textFromBlockStart = getText(editor, markupRange);
+
+          if (!markups.includes(textFromBlockStart)) continue;
+        } else {
+          markupRange = getRangeBefore(editor, editor.selection as Range, {
+            matchString: markup,
+            skipInvalid: true,
+          });
+          if (!markupRange) continue;
+
+          const blockAbovePath = getBlockAbove(editor)?.[1];
+          if (!blockAbovePath) continue;
+
+          // If the markup is not at the start, insert break before autoformatting.
+          if (!Editor.isStart(editor, markupRange.anchor, blockAbovePath)) {
+            editor.insertBreak();
+          }
         }
+
+        if (!allowSameTypeAbove) {
+          // Don't autoformat if already in a block of the same type.
+          const isBelowSameBlockType = someNode(editor, { match: { type } });
+          if (isBelowSameBlockType) continue;
+        }
+
+        // Start of the block
+        autoformatBlock(editor, type, markupRange, {
+          preFormat,
+          format,
+        });
+        return valid();
       }
 
-      if (mode === 'inline-block') {
-        if (
-          autoformatInlineBlock(editor, { preFormat, markup, format, type })
-        ) {
-          return valid();
-        }
-      } else if (mode === 'inline') {
+      if (mode === 'inline') {
         if (
           autoformatInline(editor, {
             type,
