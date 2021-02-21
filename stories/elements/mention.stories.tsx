@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { text } from "@storybook/addon-knobs";
+import { text, boolean } from "@storybook/addon-knobs";
 import {
   EditablePlugins,
   HeadingPlugin,
@@ -71,10 +71,17 @@ export const Example = () => {
       values,
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
+      insertSpaceAfterMention: boolean("insert Space After Mention", false),
       trigger: "@",
       mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
         mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
         mentionable.name.toLowerCase().includes(search.toLowerCase()),
+      mentionableSearchPattern: boolean(
+        "useCustomMentionableSearchPattern",
+        true
+      )
+        ? text("mentionableSearchPattern", "\\S*")
+        : undefined,
     });
 
     return (
