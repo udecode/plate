@@ -21,8 +21,6 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rollup -c=../../rollup.config.js",
-    "prepublish": "npm run snyk-protect",
-    "snyk-protect": "snyk protect"
   },
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.0",
