@@ -39,8 +39,6 @@ export const exitBreakAtEdges = (
       isEdge = true;
     }
 
-    console.log(isEdge);
-
     if (isEdge && isExpanded(editor.selection)) {
       editor.deleteFragment();
     }
