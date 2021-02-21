@@ -1,9 +1,9 @@
 import { Editor, Path, Transforms } from 'slate';
-import { isNodeEntry, QueryOptions } from '../common';
+import { queryNode, QueryNodeOptions } from '../common';
 import { getLastNode } from '../common/queries';
 import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
-export interface WithTrailingNode extends QueryOptions {
+export interface WithTrailingNode extends QueryNodeOptions {
   /**
    * Type of the trailing block
    */
@@ -29,7 +29,7 @@ export const withTrailingNode = ({
       const entry = getLastNode(editor, level);
       const [lastNode, lastPath] = entry;
 
-      if (lastNode.type !== type && isNodeEntry(entry, query)) {
+      if (lastNode.type !== type && queryNode(entry, query)) {
         Transforms.insertNodes(
           editor,
           {

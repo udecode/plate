@@ -1,15 +1,16 @@
 import { Editor } from 'slate';
+import { QueryEditorOptions } from '../../common/types/QueryEditorOptions';
 
 export interface AutoformatRule {
-  /**
-   * Triggering character to autoformat. Default is space.
-   */
-  trigger?: string | string[];
-
   /**
    * Block type to autoformat.
    */
   type: string;
+
+  /**
+   * Triggering character to autoformat. Default is space.
+   */
+  trigger?: string | string[];
 
   /**
    * One or more markup that should be before the triggering character to autoformat.
@@ -33,13 +34,10 @@ export interface AutoformatRule {
   format?: (editor: Editor) => void;
 
   /**
-   * block (default) – update the selected block. Should be used with `markup`.
-   *
-   * inline-block – insert a block below the cursor. Should be used with `markup`.
-   *
-   * inline – add a mark between markups. Should be used with `between`.
+   * - block (default) – set/insert block. Should be used with `markup`.
+   * - inline – insert mark between markups. Should be used with `between`.
    */
-  mode?: 'block' | 'inline-block' | 'inline';
+  mode?: 'block' | 'inline';
 
   /**
    * When using `inline` mode – if false, do not format when the string can be trimmed.
@@ -50,6 +48,24 @@ export interface AutoformatRule {
    * If true, insert the triggering character after autoformatting.
    */
   insertTrigger?: boolean;
+
+  /**
+   * If true, allow to autoformat even if there is a block of the same type above the selected block.
+   * Should be used with 'block' mode. Default is false.
+   */
+  allowSameTypeAbove?: boolean;
+
+  /**
+   * If true, the trigger should be at block start to allow autoformatting.
+   * Should be used with 'block' mode.
+   * Default is true.
+   */
+  triggerAtBlockStart?: boolean;
+
+  /**
+   * Query to allow autoformat.
+   */
+  query?: (editor: Editor, rule: Omit<AutoformatRule, 'query'>) => boolean;
 }
 
 export interface WithAutoformatOptions {

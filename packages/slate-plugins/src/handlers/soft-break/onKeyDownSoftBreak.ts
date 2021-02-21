@@ -1,6 +1,6 @@
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { getBlockAbove, isNodeEntry } from '../../common/queries';
+import { getBlockAbove, queryNode } from '../../common/queries';
 import { SoftBreakOnKeyDownOptions } from './types';
 
 export const onKeyDownSoftBreak = ({
@@ -13,7 +13,7 @@ export const onKeyDownSoftBreak = ({
   if (!entry) return;
 
   rules.forEach(({ hotkey, query }) => {
-    if (isHotkey(hotkey, event) && isNodeEntry(entry, query)) {
+    if (isHotkey(hotkey, event) && queryNode(entry, query)) {
       event.preventDefault();
 
       editor.insertText('\n');

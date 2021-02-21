@@ -1,6 +1,6 @@
 import { Descendant, Node, NodeEntry } from 'slate';
-import { isAncestor, isNodeEntry } from '../queries';
-import { QueryOptions } from '../types/QueryOptions.types';
+import { isAncestor, queryNode } from '../queries';
+import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 export interface ApplyDeepToNodesOptions {
   // The destination node object.
@@ -13,7 +13,7 @@ export interface ApplyDeepToNodesOptions {
     source: Record<string, any> | (() => Record<string, any>)
   ) => void;
   // Query to filter the nodes.
-  query?: QueryOptions;
+  query?: QueryNodeOptions;
 }
 
 /**
@@ -27,7 +27,7 @@ export const applyDeepToNodes = ({
 }: ApplyDeepToNodesOptions) => {
   const entry: NodeEntry<Node> = [node, []];
 
-  if (isNodeEntry(entry, query)) {
+  if (queryNode(entry, query)) {
     if (source instanceof Function) {
       apply(node, source());
     } else {

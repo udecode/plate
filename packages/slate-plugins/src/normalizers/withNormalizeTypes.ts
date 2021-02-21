@@ -1,6 +1,6 @@
 import { Editor, Path, Transforms } from 'slate';
 import { getNode } from '../common/queries';
-import { ErrorHandler } from '../common/types/ErrorHandler.types';
+import { ErrorHandler } from '../common/types/ErrorHandler';
 
 interface Rule {
   /**
