@@ -74,7 +74,6 @@ export const onKeyDownExitBreak = ({
       if (isHotkey(hotkey, event) && queryNode(entry, query)) {
         if (!editor.selection) return;
 
-        console.log(query);
         const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, query);
         if (isStart) before = true;
 
