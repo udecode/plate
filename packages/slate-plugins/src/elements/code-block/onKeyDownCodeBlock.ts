@@ -1,49 +1,56 @@
 import { Editor } from 'slate';
 import { getCodeBlockLineEntry } from './queries/getCodeBlockLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
-import { indentCodeBlockLine } from './transforms/indentCodeBlockLine';
-import { insertCodeBlockLine } from './transforms/insertCodeBlockLine';
-import { outdentCodeBlockLine } from './transforms/outdentCodeBlockLine';
-import {
-  CodeBlockLineOnKeyDownOptions,
-  CodeBlockOnKeyDownOptions,
-} from './types';
+import { indentCodeLine } from './transforms/indentCodeLine';
+import { insertCodeLine } from './transforms/insertCodeLine';
+import { outdentCodeLine } from './transforms/outdentCodeLine';
+import { CodeBlockOnKeyDownOptions, CodeLineOnKeyDownOptions } from './types';
 
+/**
+ * - Shift+Tab: outdent code line.
+ * - Tab: indent code line.
+ */
 export const onKeyDownCodeBlock = (
-  options?: CodeBlockOnKeyDownOptions & CodeBlockLineOnKeyDownOptions
+  options?: CodeBlockOnKeyDownOptions & CodeLineOnKeyDownOptions
 ) => (e: KeyboardEvent, editor: Editor) => {
   if (e.key === 'Tab') {
     const res = getCodeBlockLineEntry(editor, {}, options);
     if (!res) return;
-    const { codeBlock, codeBlockLineItem } = res;
+    const { codeBlock, codeLine } = res;
 
     e.preventDefault();
 
     // outdent with shift+tab
     const shiftTab = e.shiftKey;
     if (shiftTab) {
-      outdentCodeBlockLine(editor, { codeBlock, codeBlockLineItem });
+      // TODO: outdent multiple lines
+      outdentCodeLine(editor, { codeBlock, codeLine });
     }
 
     // indent with tab
     const tab = !e.shiftKey;
     if (tab) {
-      indentCodeBlockLine(editor, { codeBlock, codeBlockLineItem });
+      // TODO: indent multiple lines
+      indentCodeLine(editor, { codeBlock, codeLine });
     }
     return;
   }
 
+  // TODO: move this to withCodeBlock.insertFragment
   if (e.key === 'Enter') {
     const res = getCodeBlockLineEntry(editor, {}, options);
     if (!res) return;
+
     e.preventDefault();
-    const { codeBlock, codeBlockLineItem } = res;
+
+    const { codeBlock, codeLine } = res;
     const indentDepth = getIndentDepth(editor, {
       codeBlock,
-      codeBlockLineItem,
+      codeLine,
     });
+
     // fixme pass the depth as part of the options object or a separate field?
-    insertCodeBlockLine(editor, options, indentDepth);
+    insertCodeLine(editor, indentDepth, options);
     return;
   }
 

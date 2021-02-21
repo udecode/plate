@@ -4,7 +4,7 @@ import { getParent } from '../../../common/queries/getParent';
 import { someNode } from '../../../common/queries/someNode';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockLineOptions } from '../types';
+import { CodeLineOptions } from '../types';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
@@ -12,30 +12,30 @@ import { CodeBlockLineOptions } from '../types';
 export const getCodeBlockLineEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: CodeBlockLineOptions
+  options?: CodeLineOptions
 ) => {
-  const { code_block_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  if (at && someNode(editor, { at, match: { type: code_block_line.type } })) {
+  if (at && someNode(editor, { at, match: { type: code_line.type } })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
     const [, parentPath] = selectionParent;
 
-    const codeBlockLineItem =
-      getAbove(editor, { at, match: { type: code_block_line.type } }) ||
+    const codeLine =
+      getAbove(editor, { at, match: { type: code_line.type } }) ||
       getParent(editor, parentPath);
 
-    if (!codeBlockLineItem) return;
-    const [codeBlockLineItemNode, codeBlockLineItemPath] = codeBlockLineItem;
+    if (!codeLine) return;
+    const [codeLineNode, codeLinePath] = codeLine;
 
-    if (codeBlockLineItemNode.type !== code_block_line.type) return;
+    if (codeLineNode.type !== code_line.type) return;
 
-    const codeBlock = getParent(editor, codeBlockLineItemPath);
+    const codeBlock = getParent(editor, codeLinePath);
     if (!codeBlock) return;
 
     return {
       codeBlock,
-      codeBlockLineItem,
+      codeLine,
     };
   }
 };

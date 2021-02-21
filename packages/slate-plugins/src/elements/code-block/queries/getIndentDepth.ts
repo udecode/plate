@@ -1,12 +1,12 @@
 import { Editor } from 'slate';
 import { getText } from '../../../common';
-import { IndentCodeBlockLineOptions } from '../transforms/indentCodeBlockLine';
+import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = (
   editor: Editor,
-  { codeBlockLineItem }: IndentCodeBlockLineOptions
+  { codeLine }: IndentCodeLineOptions
 ) => {
-  const [, codeBlockLinePath] = codeBlockLineItem;
-  const text = getText(editor, codeBlockLinePath);
+  const [, codeLinePath] = codeLine;
+  const text = getText(editor, codeLinePath);
   return text.search(/\S|$/);
 };

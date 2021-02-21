@@ -2,17 +2,14 @@ import { getRenderElements } from '../../common/utils/getRenderElement';
 import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
 import {
-  CodeBlockLineRenderElementOptions,
   CodeBlockRenderElementOptions,
+  CodeLineRenderElementOptions,
 } from './types';
 
 export const renderElementCodeBlock = (
-  options?: CodeBlockRenderElementOptions & CodeBlockLineRenderElementOptions
+  options?: CodeBlockRenderElementOptions & CodeLineRenderElementOptions
 ) => {
-  const { code_block, code_block_line } = setDefaults(
-    options,
-    DEFAULTS_CODE_BLOCK
-  );
+  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  return getRenderElements([code_block, code_block_line]);
+  return getRenderElements([code_block, code_line]);
 };

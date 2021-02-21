@@ -13,15 +13,13 @@ import {
 
 // Data of Element node
 export interface CodeBlockNodeData {}
-export interface CodeBlockLineNodeData {}
+export interface CodeLineNodeData {}
 // Element node
 export interface CodeBlockNode
   extends ElementWithAttributes,
     CodeBlockNodeData {}
 
-export interface CodeBlockLineNode
-  extends ElementWithAttributes,
-    CodeBlockLineNodeData {}
+export interface CodeLineNode extends ElementWithAttributes, CodeLineNodeData {}
 
 // renderElement options given as props
 export interface CodeBlockRenderElementPropsOptions {
@@ -34,13 +32,13 @@ export interface CodeBlockRenderElementPropsOptions {
   >;
 }
 
-export interface CodeBlockLineRenderElementPropsOptions {
+export interface CodeLineRenderElementPropsOptions {
   /**
    * Call to provide customized styling that will layer on top of the variant rules.
    */
   styles?: IStyleFunctionOrObject<
-    CodeBlockLineElementStyleProps,
-    CodeBlockLineElementStyles
+    CodeLineElementStyleProps,
+    CodeLineElementStyles
   >;
 }
 
@@ -54,16 +52,16 @@ export interface CodeBlockElementProps
 }
 
 // renderElement props
-export interface CodeBlockLineElementProps
+export interface CodeLineElementProps
   extends RenderElementProps,
     RenderNodePropsOptions,
     HtmlAttributesProps,
-    CodeBlockLineRenderElementPropsOptions {
-  element: CodeBlockLineNode;
+    CodeLineRenderElementPropsOptions {
+  element: CodeLineNode;
 }
 
 export type CodeBlockKeyOption = 'code_block';
-export type CodeBlockLineKeyOption = 'code_block_line';
+export type CodeLineKeyOption = 'code_line';
 
 // Plugin options
 export type CodeBlockPluginOptionsValues = RenderNodeOptions &
@@ -76,15 +74,16 @@ export type CodeBlockPluginOptions<
 > = Partial<
   Record<CodeBlockKeyOption, Pick<CodeBlockPluginOptionsValues, Value>>
 >;
-export type CodeBlockLinePluginOptionsValues = RenderNodeOptions &
-  RootProps<CodeBlockLineRenderElementPropsOptions> &
-  NodeToProps<CodeBlockLineNode, CodeBlockLineRenderElementPropsOptions> &
+
+export type CodeLinePluginOptionsValues = RenderNodeOptions &
+  RootProps<CodeLineRenderElementPropsOptions> &
+  NodeToProps<CodeLineNode, CodeLineRenderElementPropsOptions> &
   Deserialize;
-export type CodeBlockLinePluginOptionsKeys = keyof CodeBlockLinePluginOptionsValues;
-export type CodeBlockLinePluginOptions<
-  Value extends CodeBlockLinePluginOptionsKeys = CodeBlockLinePluginOptionsKeys
+export type CodeLinePluginOptionsKeys = keyof CodeLinePluginOptionsValues;
+export type CodeLinePluginOptions<
+  Value extends CodeLinePluginOptionsKeys = CodeLinePluginOptionsKeys
 > = Partial<
-  Record<CodeBlockLineKeyOption, Pick<CodeBlockLinePluginOptionsValues, Value>>
+  Record<CodeLineKeyOption, Pick<CodeLinePluginOptionsValues, Value>>
 >;
 
 // renderElement options
@@ -92,9 +91,9 @@ export type CodeBlockRenderElementOptionsKeys = CodeBlockPluginOptionsKeys;
 export interface CodeBlockRenderElementOptions
   extends CodeBlockPluginOptions<CodeBlockRenderElementOptionsKeys> {}
 
-export type CodeBlockLineRenderElementOptionsKeys = CodeBlockLinePluginOptionsKeys;
-export interface CodeBlockLineRenderElementOptions
-  extends CodeBlockLinePluginOptions<CodeBlockLineRenderElementOptionsKeys> {}
+export type CodeLineRenderElementOptionsKeys = CodeLinePluginOptionsKeys;
+export interface CodeLineRenderElementOptions
+  extends CodeLinePluginOptions<CodeLineRenderElementOptionsKeys> {}
 
 // deserialize options
 export interface CodeBlockDeserializeOptions
@@ -106,8 +105,8 @@ export interface CodeBlockDecorateOptions
 export interface CodeBlockOnKeyDownOptions
   extends CodeBlockPluginOptions<'type'> {}
 
-export interface CodeBlockLineOnKeyDownOptions
-  extends CodeBlockLinePluginOptions<'type'> {}
+export interface CodeLineOnKeyDownOptions
+  extends CodeLinePluginOptions<'type'> {}
 
 export interface WithCodeBlockOptions extends CodeBlockOptions {
   /**
@@ -118,8 +117,7 @@ export interface WithCodeBlockOptions extends CodeBlockOptions {
 
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 
-export interface CodeBlockLineOptions
-  extends CodeBlockLinePluginOptions<'type'> {}
+export interface CodeLineOptions extends CodeLinePluginOptions<'type'> {}
 
 export interface CodeBlockElementStyles {
   /**
@@ -139,20 +137,20 @@ export interface CodeBlockElementStyleProps {
   // Insert CodeBlockElement style props below
 }
 
-export interface CodeBlockLineElementStyles {
+export interface CodeLineElementStyles {
   /**
    * Style for the root element.
    */
   root?: IStyle;
 
-  // Insert CodeBlockLineElement classNames below
+  // Insert CodeLineElement classNames below
 }
 
-export interface CodeBlockLineElementStyleProps {
+export interface CodeLineElementStyleProps {
   /**
    * Accept custom classNames
    */
   className?: string;
 
-  // Insert CodeBlockLineElement style props below
+  // Insert CodeLineElement style props below
 }

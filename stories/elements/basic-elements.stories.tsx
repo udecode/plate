@@ -118,7 +118,7 @@ export const Example = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          {/* <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} /> */}
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
