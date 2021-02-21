@@ -28,7 +28,7 @@ export * from './isEnd';
 export * from './isExpanded';
 export * from './isFirstChild';
 export * from './isMarkActive';
-export * from './isNodeEntry';
+export * from './queryNode';
 export * from './isPointAtWordEnd';
 export * from './isRangeAcrossBlocks';
 export * from './isRangeInSingleText';

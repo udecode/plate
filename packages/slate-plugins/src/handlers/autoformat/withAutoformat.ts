@@ -1,8 +1,15 @@
 import castArray from 'lodash/castArray';
 import { Editor, Range } from 'slate';
-import { getRangeFromBlockStart } from '../../common/queries';
+import {
+  findNode,
+  getBlockAbove,
+  getNodes,
+  getRangeFromBlockStart,
+  someNode,
+} from '../../common/queries';
 import { getText } from '../../common/queries/getText';
 import { isCollapsed } from '../../common/queries/isCollapsed';
+import { queryEditor } from '../../common/queries/queryEditor';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatInline } from './transforms/autoformatInline';
 import { autoformatInlineBlock } from './transforms/autoformatInlineBlock';
@@ -22,36 +29,56 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
   editor.insertText = (text) => {
     if (!isCollapsed(editor.selection)) return insertText(text);
 
-    for (const {
-      trigger = ' ',
-      type,
-      markup,
-      preFormat,
-      format,
-      mode,
-      between,
-      ignoreTrim,
-      insertTrigger,
-    } of rules) {
+    for (const { query, ...rule } of rules) {
+      const {
+        trigger = ' ',
+        mode = 'block',
+        allowSameTypeAbove = false,
+        type,
+        markup,
+        preFormat,
+        format,
+        between,
+        ignoreTrim,
+        insertTrigger,
+      } = rule;
+
+      if (query && !query(editor, rule)) continue;
+
       const triggers: string[] = castArray(trigger);
 
       // Check trigger
       if (!triggers.includes(text)) continue;
 
-      const markups: string[] = castArray(markup);
-
-      const rangeFromBlockStart = getRangeFromBlockStart(editor) as Range;
-      const textFromBlockStart = getText(editor, rangeFromBlockStart);
-
       const valid = () => insertTrigger && insertText(text);
 
-      if (markups.includes(textFromBlockStart)) {
-        // Start of the block
-        autoformatBlock(editor, type, rangeFromBlockStart, {
-          preFormat,
-          format,
+      if (mode === 'block') {
+        const markups: string[] = castArray(markup);
+        const rangeFromBlockStart = getRangeFromBlockStart(editor) as Range;
+
+        // Don't autoformat if there is void nodes.
+        const hasVoidNode = someNode(editor, {
+          at: rangeFromBlockStart,
+          match: (n) => Editor.isVoid(editor, n),
         });
-        return valid();
+        if (hasVoidNode) continue;
+
+        const textFromBlockStart = getText(editor, rangeFromBlockStart);
+
+        if (markups.includes(textFromBlockStart)) {
+          if (!allowSameTypeAbove) {
+            // Don't autoformat if already in a block of the same type.
+            const isBelowSameBlockType = someNode(editor, { match: { type } });
+            if (isBelowSameBlockType) continue;
+          }
+
+          // Start of the block
+          autoformatBlock(editor, type, rangeFromBlockStart, {
+            preFormat,
+            format,
+          });
+          return valid();
+        }
       }
 
       if (mode === 'inline-block') {
@@ -60,9 +87,7 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
         ) {
           return valid();
         }
-      }
-
-      if (mode === 'inline') {
+      } else if (mode === 'inline') {
         if (
           autoformatInline(editor, {
             type,

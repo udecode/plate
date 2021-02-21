@@ -1,7 +1,3 @@
-/**
- * Iterate through all of the nodes in the editor and return the first match. If
- * no match is found, return undefined.
- */
 import { Editor, Location, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { MatchOptions } from '../types/Editor.types';
 import { match } from '../utils/match';

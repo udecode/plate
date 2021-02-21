@@ -1,4 +1,5 @@
 import { Editor } from 'slate';
+import { QueryEditorOptions } from '../../common/types/QueryEditorOptions';
 
 export interface AutoformatRule {
   /**
@@ -50,6 +51,17 @@ export interface AutoformatRule {
    * If true, insert the triggering character after autoformatting.
    */
   insertTrigger?: boolean;
+
+  /**
+   * If true, allow to autoformat even if there is a block of the same type above the selected block.
+   * Should be used with for 'block' mode. Default is false.
+   */
+  allowSameTypeAbove?: boolean;
+
+  /**
+   * Query to allow autoformat.
+   */
+  query?: (editor: Editor, rule: Omit<AutoformatRule, 'query'>) => boolean;
 }
 
 export interface WithAutoformatOptions {
