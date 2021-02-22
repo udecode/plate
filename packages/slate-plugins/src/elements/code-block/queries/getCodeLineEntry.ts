@@ -9,7 +9,7 @@ import { CodeLineOptions } from '../types';
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
  */
-export const getCodeBlockLineEntry = (
+export const getCodeLineEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
   options?: CodeLineOptions

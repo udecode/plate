@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { getCodeBlockLineEntry } from './queries/getCodeBlockLineEntry';
+import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { insertCodeLine } from './transforms/insertCodeLine';
@@ -14,7 +14,7 @@ export const onKeyDownCodeBlock = (
   options?: CodeBlockOnKeyDownOptions & CodeLineOnKeyDownOptions
 ) => (e: KeyboardEvent, editor: Editor) => {
   if (e.key === 'Tab') {
-    const res = getCodeBlockLineEntry(editor, {}, options);
+    const res = getCodeLineEntry(editor, {}, options);
     if (!res) return;
     const { codeBlock, codeLine } = res;
 
@@ -33,24 +33,6 @@ export const onKeyDownCodeBlock = (
       // TODO: indent multiple lines
       indentCodeLine(editor, { codeBlock, codeLine });
     }
-    return;
-  }
-
-  // TODO: move this to withCodeBlock.insertFragment
-  if (e.key === 'Enter') {
-    const res = getCodeBlockLineEntry(editor, {}, options);
-    if (!res) return;
-
-    e.preventDefault();
-
-    const { codeBlock, codeLine } = res;
-    const indentDepth = getIndentDepth(editor, {
-      codeBlock,
-      codeLine,
-    });
-
-    // fixme pass the depth as part of the options object or a separate field?
-    insertCodeLine(editor, indentDepth, options);
     return;
   }
 

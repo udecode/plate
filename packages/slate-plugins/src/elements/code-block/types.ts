@@ -99,6 +99,9 @@ export interface CodeLineRenderElementOptions
 export interface CodeBlockDeserializeOptions
   extends CodeBlockPluginOptions<'type' | 'rootProps' | 'deserialize'> {}
 
+export interface CodeLineDeserializeOptions
+  extends CodeLinePluginOptions<'type' | 'rootProps' | 'deserialize'> {}
+
 export interface CodeBlockDecorateOptions
   extends CodeBlockPluginOptions<'type'> {}
 
@@ -110,7 +113,7 @@ export interface CodeLineOnKeyDownOptions
 
 export interface WithCodeBlockOptions extends CodeBlockOptions {
   /**
-   * Valid children types for code-block, in addition to code-block-line types.
+   * Valid children types for code_block, in addition to code_line types.
    */
   validCodeBlockChildrenTypes?: string[];
 }
@@ -154,3 +157,6 @@ export interface CodeLineElementStyleProps {
 
   // Insert CodeLineElement style props below
 }
+
+export interface CodeBlockNormalizerOptions
+  extends Pick<WithCodeBlockOptions, 'validCodeBlockChildrenTypes'> {}

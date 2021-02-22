@@ -7,6 +7,7 @@ import { MARK_BOLD } from '../marks/bold/defaults';
 import { MARK_CODE } from '../marks/code/defaults';
 import { MARK_ITALIC } from '../marks/italic/defaults';
 import { MARK_STRIKETHROUGH } from '../marks/strikethrough/defaults';
+import { insertCodeLine } from '../elements';
 
 const preFormat = (editor: Editor) => unwrapList(editor, options);
 
@@ -104,5 +105,8 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     markup: '``',
     mode: 'inline-block',
     preFormat: (editor) => unwrapList(editor, options),
+    format: (editor) => {
+      insertCodeLine(editor);
+    },
   },
 ];

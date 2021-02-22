@@ -1,2 +1,2 @@
-export * from './getCodeBlockLineEntry';
+export * from './getCodeLineEntry';
 export * from './getIndentDepth';
