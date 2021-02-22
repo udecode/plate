@@ -28,8 +28,7 @@ export const insertCodeBlock = (
       type: typeCodeBlock,
       children: [{ type: code_line.type, children: [{ text: '' }] }],
     },
-    // FIXME: Should be after not before the selectionParentPath
-    { at: selectionParentPath }
+    { at: selectionParentPath, select: true }
   );
   // FIXME: Move cursor/selection into the code-block element
   // Transforms.select(editor);
