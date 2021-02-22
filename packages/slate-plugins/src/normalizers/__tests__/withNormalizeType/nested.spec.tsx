@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { Editor } from 'slate';
-import { jsx } from '../../../__test-utils__/jsx';
 import { options } from '../../../../../../stories/config/initialValues';
+import { jsx } from '../../../__test-utils__/jsx';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/index';
 import { withNormalizeTypes } from '../../index';
 

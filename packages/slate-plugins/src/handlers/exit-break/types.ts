@@ -1,25 +1,29 @@
-import { QueryOptions } from '../../common';
+import { QueryNodeOptions } from '../../common';
 
 export interface ExitBreakRule {
   hotkey: string;
   defaultType?: string;
+
   /**
-   * Filter the block types where the rule applies.
+   * @see {@link QueryNodeOptions}
    */
-  query?: QueryOptions & {
+  query?: QueryNodeOptions & {
     /**
-     * When the selection is at the start of the block.
+     * When the selection is at the start of the block above.
      */
     start?: boolean;
+
     /**
-     * When the selection is at the end of the block.
+     * When the selection is at the end of the block above.
      */
     end?: boolean;
   };
+
   /**
    * Path level where to exit. Default is 1.
    */
   level?: number;
+
   /**
    * Exit before the selected block if true.
    */

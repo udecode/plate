@@ -6,9 +6,9 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatAlignCenter,
+  FormatAlignJustify,
   FormatAlignLeft,
   FormatAlignRight,
-  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
@@ -52,6 +52,7 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   MediaEmbedPlugin,
+  MentionNodeData,
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
@@ -82,9 +83,9 @@ import {
   withList,
   withMarks,
   withNormalizeTypes,
+  withSelectOnBackspace,
   withTable,
   withTrailingNode,
-  withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { createEditor, Node } from 'slate';
 import { withHistory } from 'slate-history';
@@ -132,6 +133,12 @@ const initialValue: Node[] = [
   ...initialValuePasteHtml,
 ];
 
+const renderLabel = (mentionable: MentionNodeData) => {
+  const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
+  if (!entry) return 'unknown option';
+  return `${entry.name} - ${entry.email}`;
+};
+
 export const Plugins = () => {
   const plugins: any[] = [];
 
@@ -143,7 +150,20 @@ export const Plugins = () => {
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
-  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin(options));
+  if (boolean('MentionPlugin', true))
+    plugins.push(
+      MentionPlugin({
+        mention: {
+          ...options.mention,
+          rootProps: {
+            onClick: (mentionable: MentionNodeData) =>
+              console.info(`Hello, I'm ${mentionable.value}`),
+            prefix: '@',
+            renderLabel,
+          },
+        },
+      })
+    );
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
   if (boolean('MediaEmbedPlugin', true))
     plugins.push(MediaEmbedPlugin(options));
@@ -244,6 +264,12 @@ export const Plugins = () => {
       onKeyDownMention,
     } = useMention(MENTIONABLES, {
       maxSuggestions: 10,
+      trigger: '@',
+      insertSpaceAfterMention: false,
+      mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
+        mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
+        mentionable.name.toLowerCase().includes(search.toLowerCase()),
+      mentionableSearchPattern: '\\S*',
     });
 
     if (boolean('onKeyDownMentions', true)) onKeyDown.push(onKeyDownMention);
@@ -339,7 +365,12 @@ export const Plugins = () => {
             tooltip={{ content: 'Underline (⌘U)' }}
           />
         </BalloonToolbar>
-        <MentionSelect at={target} valueIndex={index} options={values} />
+        <MentionSelect
+          at={target}
+          valueIndex={index}
+          options={values}
+          renderLabel={renderLabel}
+        />
         <EditablePlugins
           plugins={plugins}
           decorate={decorate}

@@ -1,7 +1,7 @@
 import { Editor, Node, NodeEntry } from 'slate';
-import { QueryOptions } from '../types/QueryOptions.types';
+import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
-import { isNodeEntry } from './isNodeEntry';
+import { queryNode } from './queryNode';
 
 /**
  * Find the block before a block by id.
@@ -10,7 +10,7 @@ import { isNodeEntry } from './isNodeEntry';
 export const getPreviousBlockById = (
   editor: Editor,
   id: string,
-  query?: QueryOptions
+  query?: QueryNodeOptions
 ): NodeEntry<Node> | undefined => {
   const entry = findNode(editor, { match: { id } });
   if (entry) {
@@ -34,7 +34,7 @@ export const getPreviousBlockById = (
           return false;
         }
 
-        return found && n.id !== id && isNodeEntry([n, []], query);
+        return found && n.id !== id && queryNode([n, []], query);
       },
       at: [],
     }),
@@ -48,9 +48,7 @@ export const getPreviousBlockById = (
     ...Editor.nodes(editor, {
       mode: 'highest',
       match: (n) => {
-        return (
-          Editor.isBlock(editor, n) && !!n.id && isNodeEntry([n, []], query)
-        );
+        return Editor.isBlock(editor, n) && !!n.id && queryNode([n, []], query);
       },
       at: [],
     }),

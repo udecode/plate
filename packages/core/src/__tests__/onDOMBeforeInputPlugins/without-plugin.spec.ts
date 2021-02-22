@@ -3,7 +3,7 @@ import { onDOMBeforeInputPlugins } from '../../utils';
 
 const event = {} as Event;
 
-it('should ', () => {
+it('should', () => {
   const editor = createEditor();
   const onDOMBeforeInput = jest.fn();
 

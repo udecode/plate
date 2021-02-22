@@ -49,8 +49,8 @@ export const DEFAULTS_TABLE: Record<
       },
     },
     nodeToProps: ({ element }) => ({
-      colSpan: element?.attributes?.['colspan'],
-      rowSpan: element?.attributes?.['rowspan'],
+      colSpan: element?.attributes?.colspan,
+      rowSpan: element?.attributes?.rowspan,
     }),
   },
   td: {
@@ -74,8 +74,8 @@ export const DEFAULTS_TABLE: Record<
       },
     },
     nodeToProps: ({ element }) => ({
-      colSpan: element?.attributes?.['colspan'],
-      rowSpan: element?.attributes?.['rowspan'],
+      colSpan: element?.attributes?.colspan,
+      rowSpan: element?.attributes?.rowspan,
     }),
   },
 };
