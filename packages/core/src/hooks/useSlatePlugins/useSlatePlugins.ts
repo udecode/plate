@@ -20,7 +20,6 @@ export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
 
   // Slate.value
   useEffect(() => {
-    console.log('yep');
     value && setValue(value, key);
   }, [value, key, setValue]);
 

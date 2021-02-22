@@ -18,8 +18,6 @@ export const useSlateProps = ({
   const editor = useSlatePluginsEditor(key);
   const value = useSlatePluginsValue(key);
 
-  console.log(value);
-
   const onChange = useMemo(() => {
     if (controlledOnChange) return controlledOnChange;
     return (v: Node[]) => setValue(v, key);
