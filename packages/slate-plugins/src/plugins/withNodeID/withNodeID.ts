@@ -7,8 +7,12 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
+import { isDescendant } from '../../queries/index';
+import { defaultsDeepToNodes } from '../../transforms/defaultsDeepToNodes';
+import { mergeDeepToNodes } from '../../transforms/mergeDeepToNodes';
+import { QueryNodeOptions } from '../../types/QueryNodeOptions';
 
-export interface WithNodeIDProps extends QueryOptions {
+export interface WithNodeIDProps extends QueryNodeOptions {
   // Key used for the id. Default is `id`.
   idKey?: string;
   // ID factory, e.g. `uuid`

@@ -1,4 +1,4 @@
-import { getBlockAbove, isNodeEntry } from '@udecode/slate-plugins-common';
+import { getBlockAbove, queryNode } from '@udecode/slate-plugins-common';
 import isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { SoftBreakOnKeyDownOptions } from './types';
@@ -13,7 +13,7 @@ export const onKeyDownSoftBreak = ({
   if (!entry) return;
 
   rules.forEach(({ hotkey, query }) => {
-    if (isHotkey(hotkey, event) && isNodeEntry(entry, query)) {
+    if (isHotkey(hotkey, event) && queryNode(entry, query)) {
       event.preventDefault();
 
       editor.insertText('\n');

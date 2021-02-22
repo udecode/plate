@@ -1,12 +1,12 @@
 import {
   getLastNode,
-  isNodeEntry,
-  QueryOptions,
+  queryNode,
+  QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import { Editor, Path, Transforms } from 'slate';
 import { ELEMENT_PARAGRAPH } from '../elements/paragraph/defaults';
 
-export interface WithTrailingNode extends QueryOptions {
+export interface WithTrailingNode extends QueryNodeOptions {
   /**
    * Type of the trailing block
    */
@@ -32,7 +32,7 @@ export const withTrailingNode = ({
       const entry = getLastNode(editor, level);
       const [lastNode, lastPath] = entry;
 
-      if (lastNode.type !== type && isNodeEntry(entry, query)) {
+      if (lastNode.type !== type && queryNode(entry, query)) {
         Transforms.insertNodes(
           editor,
           {

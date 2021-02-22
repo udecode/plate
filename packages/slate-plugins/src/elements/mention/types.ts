@@ -23,6 +23,9 @@ export interface UseMentionOptions extends MentionPluginOptions {
   ) => (mentionable: MentionNodeData) => boolean;
   // Regex Pattern of a mentionable. Some may want to match emails, so default \W is not enough
   mentionableSearchPattern?: string;
+
+  // Insert space after mention (defaults to false)
+  insertSpaceAfterMention?: boolean;
 }
 
 // Data of Element node

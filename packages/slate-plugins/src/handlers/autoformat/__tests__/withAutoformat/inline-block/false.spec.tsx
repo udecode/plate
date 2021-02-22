@@ -28,7 +28,6 @@ it('should run default', () => {
         trigger: '`',
         type: ELEMENT_CODE_BLOCK,
         markup: '///',
-        mode: 'inline-block',
       },
     ],
   })(withReact(input));
