@@ -24,6 +24,7 @@ import {
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
+  ToolbarCodeBlock,
   ToolbarElement,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -118,7 +119,10 @@ export const Example = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          {/* <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} /> */}
+          <ToolbarCodeBlock
+            type={options.code_block.type}
+            icon={<CodeBlock />}
+          />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

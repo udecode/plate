@@ -111,13 +111,6 @@ export interface CodeBlockOnKeyDownOptions
 export interface CodeLineOnKeyDownOptions
   extends CodeLinePluginOptions<'type'> {}
 
-export interface WithCodeBlockOptions extends CodeBlockOptions {
-  /**
-   * Valid children types for code_block, in addition to code_line types.
-   */
-  validCodeBlockChildrenTypes?: string[];
-}
-
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 
 export interface CodeLineOptions extends CodeLinePluginOptions<'type'> {}
@@ -157,6 +150,15 @@ export interface CodeLineElementStyleProps {
 
   // Insert CodeLineElement style props below
 }
+
+export interface WithCodeBlockOptions extends CodeBlockOptions {
+  /**
+   * Valid children types for code_block, in addition to code_line types.
+   */
+  validCodeBlockChildrenTypes?: string[];
+}
+
+export interface WithCodeLineOptions extends CodeLineOptions {}
 
 export interface CodeBlockNormalizerOptions
   extends Pick<WithCodeBlockOptions, 'validCodeBlockChildrenTypes'> {}
