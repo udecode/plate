@@ -2,8 +2,8 @@
 
 import * as isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { jsx } from '../../../../__test-utils__/jsx';
 import { options } from '../../../../../../../stories/config/initialValues';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { isBlockAboveEmpty } from '../../../../common/queries/isBlockAboveEmpty';
 import { ELEMENT_BLOCKQUOTE } from '../../../../elements/blockquote/defaults';
 import { onKeyDownResetBlockType } from '../../onKeyDownResetBlockType';
