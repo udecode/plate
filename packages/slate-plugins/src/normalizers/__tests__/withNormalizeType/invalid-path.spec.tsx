@@ -3,7 +3,6 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { options } from '../../../../../../stories/config/initialValues';
-import { jsx } from '../../../__test-utils__/jsx';
 import { withNormalizeTypes } from '../../index';
 
 const input = (<editor />) as any;

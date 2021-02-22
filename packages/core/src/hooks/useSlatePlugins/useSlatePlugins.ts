@@ -1,48 +1,46 @@
 import { useEffect } from 'react';
-import { useEditablePlugins } from '../useEditablePlugins';
-import { UseSlatePluginsOptions } from './types';
-import { useSlatePluginsActions } from './useSlatePluginsSelectors';
+import { useSlatePluginsActions } from '../../store/useSlatePluginsSelectors';
+import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
+import { useEditableProps } from './useEditableProps';
+import { useSlateProps } from './useSlateProps';
 
 /**
- * Control the editor store in one hook: dynamically change the options as you wish and internally it will be saved in the store.
- * Use `useSlatePluginsStore` to select state from the store.
+ * Dynamically updating the options will update the store state.
+ * Use `useSlatePluginsStore` to select the state from the store.
  */
 export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
-  const {
-    key = 'main',
-    components,
-    value: editorValue,
-    plugins,
-    editor,
-    ...editableProps
-  } = options;
+  const { key, editor, value, components, plugins } = options;
 
   const {
     setValue,
-    setComponents,
     setEditor,
     setPlugins,
+    setComponents,
   } = useSlatePluginsActions();
 
+  // Slate.value
   useEffect(() => {
-    editorValue && setValue(key, editorValue);
-  }, [editorValue, key, setValue]);
+    console.log('yep');
+    value && setValue(value, key);
+  }, [value, key, setValue]);
 
+  // Slate.editor
   useEffect(() => {
-    components && setComponents(key, components);
-  }, [components, key, setComponents]);
-
-  useEffect(() => {
-    editor && setEditor(key, editor);
+    editor && setEditor(editor, key);
   }, [editor, key, setEditor]);
 
+  // Slate plugins components
   useEffect(() => {
-    plugins && setPlugins(key, plugins);
+    components && setComponents(components, key);
+  }, [components, key, setComponents]);
+
+  // Slate plugins
+  useEffect(() => {
+    plugins && setPlugins(plugins, key);
   }, [key, plugins, setPlugins]);
 
-  const getEditableProps = useEditablePlugins(editableProps);
-
   return {
-    getEditableProps,
+    getSlateProps: useSlateProps(options),
+    getEditableProps: useEditableProps(options),
   };
 };

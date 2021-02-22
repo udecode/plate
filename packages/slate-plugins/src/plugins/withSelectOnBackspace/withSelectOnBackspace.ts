@@ -1,7 +1,7 @@
 import {
   isCollapsed,
-  isNodeEntry,
-  QueryOptions,
+  queryNode,
+  QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import Slate, { Editor, Transforms } from 'slate';
 

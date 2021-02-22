@@ -1,9 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { render } from '@testing-library/react';
-import { SlateDocument } from '@udecode/slate-plugins-common';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   initialValueAutoformat,
   initialValueBasicElements,
@@ -86,11 +85,8 @@ import { withInlineVoid } from '../../../../slate-plugins/src/plugins/withInline
 import { withNodeID } from '../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
 import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
+import { SlatePlugins } from '../../components/SlatePlugins';
 import { useSlatePlugins } from '../../hooks/useSlatePlugins/useSlatePlugins';
-import {
-  useSlatePluginsSetValue,
-  useSlatePluginsValue,
-} from '../../hooks/useSlatePlugins/useSlatePluginsSelectors';
 import { pipe } from '../../utils/pipe';
 
 const plugins = [
@@ -167,24 +163,10 @@ const Editor = () => {
   const decorate: any = [];
   const onKeyDown: any = [];
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-  useSlatePlugins({
-    editor,
-  });
-
-  const value = useSlatePluginsValue();
-  const setValue = useSlatePluginsSetValue();
-  // const value = useSlate
+  useSlatePlugins();
 
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => {
-        setValue(newValue);
-      }}
-    >
+    <>
       <HeadingToolbar>
         <ToolbarElement type={options.h1.type} icon={null} />
         <ToolbarElement type={options.h2.type} icon={null} />
@@ -237,12 +219,22 @@ const Editor = () => {
         ]}
         placeholder="Enter some plain text..."
       />
-    </Slate>
+    </>
+  );
+};
+
+const SlatePluginsContainer = () => {
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
+  return (
+    <SlatePlugins editor={editor}>
+      <Editor />
+    </SlatePlugins>
   );
 };
 
 it('should render', () => {
-  const { getAllByTestId } = render(<Editor />);
+  const { getAllByTestId } = render(<SlatePluginsContainer />);
 
   expect(getAllByTestId('EditablePlugins').length).toBeGreaterThan(0);
 });

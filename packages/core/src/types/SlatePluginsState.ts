@@ -1,7 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Node } from 'slate';
-import { SlatePlugin } from '../../types/SlatePlugin';
-import { UseEditablePluginsOptions } from '../../types/UseEditablePluginsOptions';
+import { SlatePlugin } from './SlatePlugin';
 
 export type State = {
   /**
@@ -29,18 +28,10 @@ export type State = {
 export type StateById = { byId: Record<string, State> };
 
 export type Actions = {
-  setComponents: (key: string, value: State['components']) => void;
-  setEditor: (key: string, value: State['editor']) => void;
-  setPlugins: (key: string, value: State['plugins']) => void;
-  setValue: (key: string, value: State['value']) => void;
+  setComponents: (value: State['components'], key?: string) => void;
+  setEditor: (value: State['editor'], key?: string) => void;
+  setPlugins: (value: State['plugins'], key?: string) => void;
+  setValue: (value: State['value'], key?: string) => void;
 };
 
 export type SlatePluginsState = StateById & Actions;
-
-export type UseSlatePluginsOptions = Partial<State> &
-  UseEditablePluginsOptions & {
-    /**
-     * Unique key to store multiple editor states. Default is 'main'.
-     */
-    key?: string;
-  };

@@ -6,7 +6,6 @@ export * from './autoformat/types';
 export * from './autoformat/withAutoformat';
 export * from './autoformat/transforms/autoformatBlock';
 export * from './autoformat/transforms/autoformatInline';
-export * from './autoformat/transforms/autoformatInlineBlock';
 export * from './exit-break/ExitBreakPlugin';
 export * from './exit-break/onKeyDownExitBreak';
 export * from './exit-break/types';

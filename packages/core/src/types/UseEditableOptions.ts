@@ -5,14 +5,24 @@ import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
 import { SlatePlugin } from './SlatePlugin';
+import { State } from './SlatePluginsState';
 
 // TODO: duplicate
 
-export interface UseEditablePluginsOptions
+/**
+ * Options related to Editable component
+ */
+export interface UseEditableOptions
   extends Omit<
-    React.TextareaHTMLAttributes<HTMLDivElement>,
-    'value' | 'onChange' | 'onKeyDown'
-  > {
+      React.TextareaHTMLAttributes<HTMLDivElement>,
+      'value' | 'onChange' | 'onKeyDown'
+    >,
+    Partial<Pick<State, 'components' | 'plugins'>> {
+  /**
+   * Unique key to store multiple editor states. Default is 'main'.
+   */
+  key?: string;
+
   /**
    * @see {@link Decorate}
    */

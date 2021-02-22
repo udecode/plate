@@ -1,7 +1,10 @@
 import {
+  getBlockAbove,
+  getRangeBefore,
   getRangeFromBlockStart,
   getText,
   isCollapsed,
+  someNode,
 } from '@udecode/slate-plugins-common';
 import castArray from 'lodash/castArray';
 import { Editor, Range } from 'slate';

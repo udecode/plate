@@ -4,10 +4,14 @@
 
 export * from './Decorate';
 export * from './DeserializeHtml';
+export * from './DeserializeNode';
 export * from './OnDOMBeforeInput';
 export * from './OnKeyDown';
 export * from './RenderElement';
 export * from './RenderLeaf';
-export * from './DeserializeNode';
+export * from './SerializeHtml';
 export * from './SlatePlugin';
-export * from './UseEditablePluginsOptions';
+export * from './SlatePluginsState';
+export * from './UseEditableOptions';
+export * from './UseSlateOptions';
+export * from './UseSlatePluginsOptions';

@@ -2,15 +2,11 @@ import {
   defaultsDeepToNodes,
   isDescendant,
   mergeDeepToNodes,
-  QueryOptions,
+  QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import cloneDeep from 'lodash/cloneDeep';
 import { Element, Node, NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
-import { isDescendant } from '../../queries/index';
-import { defaultsDeepToNodes } from '../../transforms/defaultsDeepToNodes';
-import { mergeDeepToNodes } from '../../transforms/mergeDeepToNodes';
-import { QueryNodeOptions } from '../../types/QueryNodeOptions';
 
 export interface WithNodeIDProps extends QueryNodeOptions {
   // Key used for the id. Default is `id`.

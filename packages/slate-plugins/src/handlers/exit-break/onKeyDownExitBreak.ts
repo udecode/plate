@@ -2,9 +2,9 @@ import {
   DEFAULT_ELEMENT,
   getBlockAbove,
   isExpanded,
-  queryNode,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
+  queryNode,
 } from '@udecode/slate-plugins-common';
 import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';

@@ -3,10 +3,10 @@
  */
 
 export * from './Editor.types';
-export * from './ErrorHandler.types';
+export * from './ErrorHandler';
 export * from './PluginOptions.types';
+export * from './QueryEditorOptions';
 export * from './QueryNodeOptions';
-export * from './QueryOptions.types';
 export * from './Slate.types';
 export * from './SlateDocument.types';
 export * from './Transforms.types';

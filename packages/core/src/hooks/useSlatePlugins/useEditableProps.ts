@@ -1,13 +1,15 @@
 import { useCallback } from 'react';
 import { useSlate } from 'slate-react';
-import { UseEditablePluginsOptions } from '../types/UseEditablePluginsOptions';
-import { decoratePlugins } from '../utils/decoratePlugins';
-import { onDOMBeforeInputPlugins } from '../utils/onDOMBeforeInputPlugins';
-import { onKeyDownPlugins } from '../utils/onKeyDownPlugins';
-import { renderElementPlugins } from '../utils/renderElementPlugins';
-import { renderLeafPlugins } from '../utils/renderLeafPlugins';
+import { useSlatePluginsEditor } from '../../store/useSlatePluginsSelectors';
+import { UseEditableOptions } from '../../types/UseEditableOptions';
+import { decoratePlugins } from '../../utils/decoratePlugins';
+import { onDOMBeforeInputPlugins } from '../../utils/onDOMBeforeInputPlugins';
+import { onKeyDownPlugins } from '../../utils/onKeyDownPlugins';
+import { renderElementPlugins } from '../../utils/renderElementPlugins';
+import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
 
-export const useEditablePlugins = ({
+export const useEditableProps = ({
+  key,
   plugins = [],
   decorate: decorateList = [],
   decorateDeps = [],
@@ -20,8 +22,8 @@ export const useEditablePlugins = ({
   onKeyDown: onKeyDownList = [],
   onKeyDownDeps = [],
   ...props
-}: UseEditablePluginsOptions) => {
-  const editor = useSlate();
+}: UseEditableOptions) => {
+  const editor = useSlatePluginsEditor(key);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const renderElement = useCallback(

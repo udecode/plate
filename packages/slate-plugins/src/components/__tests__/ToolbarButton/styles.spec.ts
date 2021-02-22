@@ -1,4 +1,4 @@
-import { getToolbarButtonStyles } from '../../ToolbarButton/ToolbarButton';
+import { getToolbarButtonStyles } from '../../ToolbarButton/ToolbarButton.styles';
 
 it('should be', () => {
   getToolbarButtonStyles();

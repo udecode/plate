@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { createEditor, Node, Point } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { Decorate } from '../..';
+import { Decorate, UseEditableOptions } from '../..';
 import { EditablePlugins } from '../../components';
 import { pipe } from '../../utils/pipe';
 
@@ -11,8 +11,8 @@ const EditorWithDecorateDeps = ({
   decorate,
   decorateDeps,
 }: {
-  decorate: UseEditablePluginsOptions['decorate'];
-  decorateDeps: UseEditablePluginsOptions['decorateDeps'];
+  decorate: UseEditableOptions['decorate'];
+  decorateDeps: UseEditableOptions['decorateDeps'];
 }) => {
   const [value, setValue] = useState<Node[]>([]);
 

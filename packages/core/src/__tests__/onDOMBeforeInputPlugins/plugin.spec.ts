@@ -6,11 +6,7 @@ const event = {} as Event;
 it('should', () => {
   const editor = createEditor();
   const onDOMBeforeInput = jest.fn();
-  onDOMBeforeInputPlugins(
-    editor,
-    [{ onDOMBeforeInput }],
-    [onDOMBeforeInput]
-  )(event);
+  onDOMBeforeInputPlugins(editor, [onDOMBeforeInput])(event);
 
-  expect(onDOMBeforeInput).toHaveBeenCalledTimes(2);
+  expect(onDOMBeforeInput).toHaveBeenCalledTimes(1);
 });

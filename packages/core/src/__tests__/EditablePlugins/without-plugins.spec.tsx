@@ -1,30 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { render } from '@testing-library/react';
-import { createEditor, Node } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import { EditablePlugins } from '../../components';
-import { pipe } from '../../utils/pipe';
+import { SlatePlugins } from '../../components/SlatePlugins';
 
 const EditorEmpty = () => {
-  const [value, setValue] = useState<Node[]>([]);
-
-  const editor = useMemo(() => {
-    const withPlugins = [withReact, withHistory] as const;
-
-    return pipe(createEditor(), ...withPlugins);
-  }, []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => {
-        setValue(newValue);
-      }}
-    >
+    <SlatePlugins>
       <EditablePlugins data-testid="EditablePlugins" />
-    </Slate>
+    </SlatePlugins>
   );
 };
 
