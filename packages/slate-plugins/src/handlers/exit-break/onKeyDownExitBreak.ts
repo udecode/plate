@@ -2,9 +2,9 @@ import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
 import {
   getBlockAbove,
-  isNodeEntry,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
+  queryNode,
 } from '../../common/queries';
 import { isExpanded } from '../../common/queries/isExpanded';
 import { DEFAULT_ELEMENT } from '../../common/types/node.types';
@@ -66,18 +66,15 @@ export const onKeyDownExitBreak = ({
   rules.forEach(
     ({
       hotkey,
-      query: { start, end, ...query } = {},
+      query = {},
       level = 1,
       before,
       defaultType = DEFAULT_ELEMENT,
     }) => {
-      if (isHotkey(hotkey, event) && isNodeEntry(entry, query)) {
+      if (isHotkey(hotkey, event) && queryNode(entry, query)) {
         if (!editor.selection) return;
 
-        const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, {
-          start,
-          end,
-        });
+        const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, query);
         if (isStart) before = true;
 
         if (queryEdge && !isEdge) return;

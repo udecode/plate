@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { Editor } from 'slate';
-import { jsx } from '../../../../__test-utils__/jsx';
 import { options } from '../../../../../../../stories/config/initialValues';
+import { jsx } from '../../../../__test-utils__/jsx';
 import { withNormalizeTypes } from '../../../index';
 
 const input = (

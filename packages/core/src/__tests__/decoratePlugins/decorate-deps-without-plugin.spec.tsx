@@ -3,8 +3,8 @@ import { render } from '@testing-library/react';
 import { createEditor, Node, Point } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { Decorate } from '../..';
 import { pipe } from '../../../../slate-plugins/src/common/utils/pipe';
+import { Decorate } from '../..';
 import { EditablePlugins, EditablePluginsProps } from '../../components';
 
 const EditorWithDecorateDeps = ({

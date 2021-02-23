@@ -267,9 +267,9 @@ export const Plugins = () => {
       maxSuggestions: 10,
       trigger: '@',
       insertSpaceAfterMention: false,
-      mentionableFilter: (s: string) => (mentionable: MentionNodeData) =>
-        mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
-        mentionable.name.toLowerCase().includes(s.toLowerCase()),
+      mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
+        mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
+        mentionable.name.toLowerCase().includes(search.toLowerCase()),
       mentionableSearchPattern: '\\S*',
     });
 

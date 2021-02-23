@@ -55,7 +55,7 @@ const nodesFixtureWithList = [
 
 describe('when getPreviousNodeById', () => {
   describe('when not first block', () => {
-    it('should be ', () => {
+    it('should be', () => {
       const e = createEditor();
       e.children = nodesFixture5;
       expect(getPreviousBlockById(e, '3')?.[0]).toEqual(nodesFixture5[1]);
@@ -63,7 +63,7 @@ describe('when getPreviousNodeById', () => {
   });
 
   describe('when first block', () => {
-    it('should be ', () => {
+    it('should be', () => {
       const e = createEditor();
       e.children = nodesFixture5;
       expect(getPreviousBlockById(e, '1')).toEqual([null, [-1]]);

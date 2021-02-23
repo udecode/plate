@@ -1,8 +1,8 @@
 import Slate, { Editor, Transforms } from 'slate';
-import { isCollapsed, isNodeEntry } from '../../queries';
-import { QueryOptions } from '../../types';
+import { isCollapsed, queryNode } from '../../queries';
+import { QueryNodeOptions } from '../../types';
 
-export interface WithSelectOnBackspaceOptions extends QueryOptions {}
+export interface WithSelectOnBackspaceOptions extends QueryNodeOptions {}
 
 // Set a list of element types to select on backspace
 export const withSelectOnBackspace = (query: WithSelectOnBackspaceOptions) => <
@@ -20,7 +20,7 @@ export const withSelectOnBackspace = (query: WithSelectOnBackspaceOptions) => <
       });
       if (prevNode) {
         const [prevCell] = Editor.nodes(editor, {
-          match: (node) => isNodeEntry([node, prevNode.path], query),
+          match: (node) => queryNode([node, prevNode.path], query),
           at: prevNode,
         });
 

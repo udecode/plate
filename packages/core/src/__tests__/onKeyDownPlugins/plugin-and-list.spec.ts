@@ -3,7 +3,7 @@ import { onKeyDownPlugins } from '../../utils';
 
 const event = {} as Event;
 
-it('should ', () => {
+it('should', () => {
   const editor = createEditor();
   const onKeyDown = jest.fn();
   onKeyDownPlugins(editor, [{ onKeyDown }], [onKeyDown])(event);

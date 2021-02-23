@@ -8,9 +8,9 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript, Superscript } from '@styled-icons/foundation';
 import {
   FormatAlignCenter,
+  FormatAlignJustify,
   FormatAlignLeft,
   FormatAlignRight,
-  FormatAlignJustify,
   FormatBold,
   FormatItalic,
   FormatListBulleted,
