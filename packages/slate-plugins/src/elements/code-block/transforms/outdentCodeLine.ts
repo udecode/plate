@@ -1,9 +1,9 @@
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { Ancestor, Editor, Node, NodeEntry } from 'slate';
 import { deleteStartSpace } from './deleteStartSpace';
 
 export interface OutdentCodeLineOptions {
   codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor>;
+  codeLine: NodeEntry<Ancestor | Node>;
 }
 
 /**

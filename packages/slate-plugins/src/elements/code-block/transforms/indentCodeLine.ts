@@ -1,9 +1,9 @@
-import { Ancestor, Editor, NodeEntry, Transforms } from 'slate';
+import { Ancestor, Editor, Node, NodeEntry, Transforms } from 'slate';
 import { isExpanded } from '../../../common/queries/isExpanded';
 
 export interface IndentCodeLineOptions {
   codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor>;
+  codeLine: NodeEntry<Ancestor | Node>;
 }
 
 /**

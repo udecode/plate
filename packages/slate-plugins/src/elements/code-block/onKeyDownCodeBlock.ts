@@ -1,9 +1,11 @@
 import { Editor, Transforms } from 'slate';
+import { getParent } from '../../common';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { insertCodeLine } from './transforms/insertCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
+import { getCodeLines } from './queries';
 import { CodeBlockOnKeyDownOptions, CodeLineOnKeyDownOptions } from './types';
 
 /**
@@ -15,36 +17,55 @@ export const onKeyDownCodeBlock = (
 ) => (e: KeyboardEvent, editor: Editor) => {
   console.log(e);
   if (e.key === 'Tab') {
-    const res = getCodeLineEntry(editor, {}, options);
-    if (!res) return;
-    const { codeBlock, codeLine } = res;
-
-    e.preventDefault();
-
-    // outdent with shift+tab
     const shiftTab = e.shiftKey;
-    if (shiftTab) {
-      // TODO: outdent multiple lines
-      outdentCodeLine(editor, { codeBlock, codeLine });
-    }
+    const res = getCodeLineEntry(editor, {}, options);
+    if (res) {
+      const { codeBlock, codeLine } = res;
 
-    // indent with tab
-    const tab = !e.shiftKey;
-    if (tab) {
-      // TODO: indent multiple lines
-      indentCodeLine(editor, { codeBlock, codeLine });
+      e.preventDefault();
+
+      // outdent with shift+tab
+
+      if (shiftTab) {
+        // TODO: outdent multiple lines
+        outdentCodeLine(editor, { codeBlock, codeLine });
+      }
+
+      // indent with tab
+      const tab = !e.shiftKey;
+      if (tab) {
+        // TODO: indent multiple lines
+        indentCodeLine(editor, { codeBlock, codeLine });
+      }
+      return;
     }
-    return;
+    const codeLines = getCodeLines(editor, {}, options);
+    if (codeLines && codeLines?.[0]) {
+      e.preventDefault();
+      const [, firstLinePath] = codeLines[0];
+      const codeBlock = getParent(editor, firstLinePath)!;
+      for (const codeLine of codeLines) {
+        if (shiftTab) {
+          // TODO: outdent multiple lines
+          outdentCodeLine(editor, { codeBlock, codeLine });
+        }
+
+        // indent with tab
+        const tab = !e.shiftKey;
+        if (tab) {
+          // TODO: indent multiple lines
+          indentCodeLine(editor, { codeBlock, codeLine });
+        }
+      }
+    }
   }
 
   // FIXME: would prefer this as mod+a, but doesn't work
   if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-    console.log(e);
     e.preventDefault();
     e.stopPropagation();
     const res = getCodeLineEntry(editor, {}, options);
     if (!res) return;
-    console.log(res);
     const { codeBlock } = res;
     const [, codeBlockPath] = codeBlock;
     Transforms.select(editor, codeBlockPath);
