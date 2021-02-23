@@ -15,7 +15,6 @@ import { CodeBlockOnKeyDownOptions, CodeLineOnKeyDownOptions } from './types';
 export const onKeyDownCodeBlock = (
   options?: CodeBlockOnKeyDownOptions & CodeLineOnKeyDownOptions
 ) => (e: KeyboardEvent, editor: Editor) => {
-  console.log(e);
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
     const res = getCodeLineEntry(editor, {}, options);
