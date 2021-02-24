@@ -30,17 +30,17 @@ For additional help, join us in our
 Now, let's create a simple editor with 3 plugins: 
 
 ```js
-import React, { useMemo, useState } from 'react';
-import { createEditor, Node } from 'slate';
+import React from 'react';
+import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  SlatePlugins,
   ParagraphPlugin,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
-  pipe,
 } from '@udecode/slate-plugins';
 
 const initialValue: Node[] = [
@@ -62,15 +62,10 @@ const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugi
 const withPlugins = [withReact, withHistory] as const;
 
 export const Editor = () => {
-  const [value, setValue] = useState(initialValue);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      initialValue={initialValue}
+      withPlugins={withPlugins}
     >
       <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
     </Slate>

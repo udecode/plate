@@ -26,8 +26,8 @@
   "dependencies": {
     "@react-hook/merged-ref": "^1.3.0",
     "@tippyjs/react": "^4.2.0",
-    "@udecode/slate-plugins-common": "^0.72.10",
-    "@udecode/slate-plugins-core": "^0.72.10",
+    "@udecode/slate-plugins-common": "^0.73.0",
+    "@udecode/slate-plugins-core": "^0.73.0",
     "@uifabric/styling": "^7.18.0",
     "@uifabric/utilities": "^7.33.4",
     "image-extensions": "^1.1.0",
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@types/marked": "^1.2.2",
-    "@udecode/slate-plugins-test-utils": "^0.72.10",
+    "@udecode/slate-plugins-test-utils": "^0.73.0",
     "eslint-plugin-prettier": "^3.3.1",
     "react-dnd-test-backend": "^11.1.3"
   },

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -10,17 +10,15 @@ import {
   ItalicPlugin,
   ListPlugin,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
+  SlatePlugins,
   SoftBreakPlugin,
   StrikethroughPlugin,
   withAutoformat,
   withList,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
@@ -29,8 +27,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Handlers/Autoformat';
+
 export default {
-  title: 'Handlers/Autoformat',
+  title: id,
   component: withAutoformat,
 };
 
@@ -43,68 +43,65 @@ const withPlugins = [
   }),
 ] as const;
 
+const plugins = [
+  ParagraphPlugin(options),
+  BoldPlugin(),
+  ItalicPlugin(),
+  CodePlugin(),
+  StrikethroughPlugin(),
+  BlockquotePlugin(options),
+  ListPlugin(options),
+  HeadingPlugin(options),
+  CodeBlockPlugin(options),
+  ResetBlockTypePlugin(optionsResetBlockTypes),
+  SoftBreakPlugin({
+    rules: [
+      { hotkey: 'shift+enter' },
+      {
+        hotkey: 'enter',
+        query: {
+          allow: [options.code_block.type, options.blockquote.type],
+        },
+      },
+    ],
+  }),
+  ExitBreakPlugin({
+    rules: [
+      {
+        hotkey: 'mod+enter',
+      },
+      {
+        hotkey: 'mod+shift+enter',
+        before: true,
+      },
+      {
+        hotkey: 'enter',
+        query: {
+          start: true,
+          end: true,
+          allow: headingTypes,
+        },
+      },
+    ],
+  }),
+];
+
 export const Example = () => {
-  const plugins = [
-    ParagraphPlugin(options),
-    BoldPlugin(),
-    ItalicPlugin(),
-    CodePlugin(),
-    StrikethroughPlugin(),
-    BlockquotePlugin(options),
-    ListPlugin(options),
-    HeadingPlugin(options),
-    CodeBlockPlugin(options),
-    ResetBlockTypePlugin(optionsResetBlockTypes),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [options.code_block.type, options.blockquote.type],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: headingTypes,
-          },
-        },
-      ],
-    }),
-  ];
-
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueAutoformat);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueAutoformat}
+        withPlugins={withPlugins}
       >
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Write some markdown..."
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

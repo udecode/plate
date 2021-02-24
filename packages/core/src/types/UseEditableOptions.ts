@@ -19,9 +19,9 @@ export interface UseEditableOptions
     >,
     Partial<Pick<State, 'components' | 'plugins'>> {
   /**
-   * Unique key to store multiple editor states. Default is 'main'.
+   * Unique id to store multiple editor states. Default is 'main'.
    */
-  key?: string;
+  id?: string;
 
   /**
    * @see {@link Decorate}

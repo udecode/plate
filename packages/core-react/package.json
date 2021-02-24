@@ -1,9 +1,9 @@
 {
-  "name": "@udecode/slate-plugins-common",
+  "name": "@udecode/slate-plugins-core-react",
   "version": "0.73.0",
-  "description": "Slate plugins common",
+  "description": "Slate plugins core react",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/common#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/core-react#readme",
   "bugs": {
     "url": "https://github.com/udecode/slate-plugins/issues"
   },
@@ -30,14 +30,6 @@
     "slate": ">=0.58.0",
     "slate-hyperscript": ">=0.58.0",
     "slate-react": ">=0.58.0"
-  },
-  "devDependencies": {
-    "@udecode/slate-plugins-test-utils": "^0.73.0"
-  },
-  "dependencies": {
-    "@udecode/slate-plugins-core": "^0.72.10",
-    "lodash": "^4.17.20",
-    "utility-types": "^3.10.0"
   },
   "publishConfig": {
     "access": "public"

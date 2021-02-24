@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
 import {
@@ -9,18 +9,16 @@ import {
   ImagePlugin,
   ListPlugin,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
+  SlatePlugins,
   SoftBreakPlugin,
   TodoListPlugin,
   ToolbarList,
   withImageUpload,
   withList,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueList,
@@ -28,8 +26,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Elements/List';
+
 export default {
-  title: 'Elements/List',
+  title: id,
   component: ListPlugin,
   subcomponents: {
     TodoListPlugin,
@@ -89,15 +89,11 @@ export const Example = () => {
     plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueList);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueList}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarList
@@ -112,12 +108,13 @@ export const Example = () => {
           />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

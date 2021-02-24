@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
@@ -7,19 +7,22 @@ import {
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
-  pipe,
   SlateDocument,
+  SlatePlugins,
   useMention,
+  useSlatePluginsActions,
+  useSlatePluginsEditor,
   withInlineVoid,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueMentions, options } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
+const id = 'Elements/Mention';
+
 export default {
-  title: 'Elements/Mention',
+  title: id,
   component: MentionPlugin,
   subcomponents: {
     useMention,
@@ -57,10 +60,6 @@ export const Example = () => {
   ] as const;
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueMentions);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     const {
       onAddMention,
       onChangeMention,
@@ -84,10 +83,14 @@ export const Example = () => {
         : undefined,
     });
 
+    const { setValue } = useSlatePluginsActions(id);
+    const editor = useSlatePluginsEditor(id);
+
     return (
-      <Slate
-        editor={editor}
-        value={value}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueMentions}
+        withPlugins={withPlugins}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
 
@@ -95,6 +98,7 @@ export const Example = () => {
         }}
       >
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some text..."
           onKeyDown={[onKeyDownMention]}
@@ -108,7 +112,7 @@ export const Example = () => {
           onClickMention={onAddMention}
           renderLabel={renderLabel}
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

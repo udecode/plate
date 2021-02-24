@@ -1,11 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { render } from '@testing-library/react';
-import { createEditor, Node, Point } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { Decorate, SlatePlugin, UseEditableOptions } from '../..';
+import { Point } from 'slate';
+import { Decorate, SlatePlugin, SlatePlugins, UseEditableOptions } from '../..';
 import { EditablePlugins } from '../../components';
-import { pipe } from '../../utils/pipe';
 
 const EditorWithDecorateDeps = ({
   decorate,
@@ -16,29 +13,15 @@ const EditorWithDecorateDeps = ({
   decorateDeps: UseEditableOptions['decorateDeps'];
   plugins: UseEditableOptions['plugins'];
 }) => {
-  const [value, setValue] = useState<Node[]>([]);
-
-  const editor = useMemo(() => {
-    const withPlugins = [withReact, withHistory] as const;
-
-    return pipe(createEditor(), ...withPlugins);
-  }, []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => {
-        setValue(newValue);
-      }}
-    >
+    <SlatePlugins>
       <EditablePlugins
         data-testid="DecorateDeps"
         decorate={decorate}
         decorateDeps={decorateDeps}
         plugins={plugins}
       />
-    </Slate>
+    </SlatePlugins>
   );
 };
 

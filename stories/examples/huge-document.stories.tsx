@@ -1,18 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueHugeDocument, options } from '../config/initialValues';
 
+const id = 'Examples/Huge Document';
+
 export default {
-  title: 'Examples/Huge Document',
+  title: id,
 };
 
 const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
@@ -20,17 +20,13 @@ const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
 const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
-  const [value, setValue] = useState(initialValueHugeDocument);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      id={id}
+      initialValue={initialValueHugeDocument}
+      withPlugins={withPlugins}
     >
-      <EditablePlugins plugins={plugins} spellCheck autoFocus />
-    </Slate>
+      <EditablePlugins id={id} plugins={plugins} spellCheck autoFocus />
+    </SlatePlugins>
   );
 };

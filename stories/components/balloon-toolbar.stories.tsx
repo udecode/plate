@@ -1,6 +1,6 @@
 import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean, number, object, select } from '@storybook/addon-knobs';
 import {
   FormatBold,
@@ -17,19 +17,19 @@ import {
   MARK_BOLD,
   MARK_ITALIC,
   MARK_UNDERLINE,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
   ToolbarMark,
   UnderlinePlugin,
   withList,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueBalloonToolbar, options } from '../config/initialValues';
 
+const id = 'Components/Balloon Toolbar';
+
 export default {
-  title: 'Components/Balloon Toolbar',
+  title: id,
   component: BalloonToolbar,
 };
 
@@ -43,8 +43,6 @@ const plugins = [
 const withPlugins = [withReact, withHistory, withList(options)] as const;
 
 export const Example = () => {
-  const [value, setValue] = useState(initialValueBalloonToolbar);
-
   const arrow = boolean('arrow', false);
   const theme = select('theme', { dark: 'dark', light: 'light' }, 'dark');
   const direction = select(
@@ -62,13 +60,11 @@ export const Example = () => {
     placement: 'top',
   });
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      id={id}
+      initialValue={initialValueBalloonToolbar}
+      withPlugins={withPlugins}
     >
       <BalloonToolbar
         direction={direction}
@@ -92,7 +88,11 @@ export const Example = () => {
           tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
         />
       </BalloonToolbar>
-      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-    </Slate>
+      <EditablePlugins
+        id={id}
+        plugins={plugins}
+        placeholder="Enter some text..."
+      />
+    </SlatePlugins>
   );
 };

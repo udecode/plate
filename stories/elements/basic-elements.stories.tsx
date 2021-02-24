@@ -1,5 +1,5 @@
 import 'prismjs/themes/prism.css';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import {
@@ -19,16 +19,12 @@ import {
   HeadingPlugin,
   HeadingToolbar,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
   SlatePlugin,
+  SlatePlugins,
   SoftBreakPlugin,
   ToolbarElement,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,
@@ -36,8 +32,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Elements/Basic Elements';
+
 export default {
-  title: 'Elements/Basic Elements',
+  title: id,
   subcomponents: {
     BlockquotePlugin,
     CodeBlockPlugin,
@@ -45,8 +43,6 @@ export default {
     ParagraphPlugin,
   },
 };
-
-const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
@@ -95,18 +91,8 @@ export const Example = () => {
     );
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueBasicElements);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => {
-          setValue(newValue as SlateDocument);
-        }}
-      >
+      <SlatePlugins id={id} initialValue={initialValueBasicElements}>
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
           <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
@@ -121,12 +107,13 @@ export const Example = () => {
           <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

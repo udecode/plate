@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
   FormatAlignCenter,
@@ -15,16 +15,12 @@ import {
   HeadingPlugin,
   HeadingToolbar,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
   SlatePlugin,
+  SlatePlugins,
   SoftBreakPlugin,
   ToolbarAlign,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,
@@ -32,8 +28,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Elements/Alignment';
+
 export default {
-  title: 'Elements/Alignment',
+  title: id,
   subcomponents: {
     AlignPlugin,
     BlockquotePlugin,
@@ -42,8 +40,6 @@ export default {
     ParagraphPlugin,
   },
 };
-
-const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [ResetBlockTypePlugin(optionsResetBlockTypes)];
@@ -92,18 +88,8 @@ export const Example = () => {
     );
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueBasicElements);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => {
-          setValue(newValue as SlateDocument);
-        }}
-      >
+      <SlatePlugins id={id} initialValue={initialValueBasicElements}>
         <HeadingToolbar>
           <ToolbarAlign icon={<FormatAlignLeft />} />
           <ToolbarAlign
@@ -120,12 +106,13 @@ export const Example = () => {
           />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

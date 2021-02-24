@@ -11,7 +11,7 @@
   "scripts": {
     "build": "lerna run build --since",
     "build:1": "lerna exec --scope \"@udecode/slate-plugins-core\" --parallel -- yarn build",
-    "build:2": "lerna exec --ignore \"@udecode/slate-plugins-common\" --parallel -- yarn build",
+    "build:2": "lerna exec --scope \"@udecode/slate-plugins-common\" --parallel -- yarn build",
     "build:3": "lerna exec --ignore \"@udecode/slate-plugins-{core,common}\" --parallel -- yarn build",
     "build:w1": "yarn build:1 -w",
     "build:w2": "yarn build:2 -w",

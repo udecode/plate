@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
@@ -12,18 +12,16 @@ import {
   HeadingToolbar,
   ListPlugin,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
   SlatePlugin,
+  SlatePlugins,
   SoftBreakPlugin,
   ToolbarElement,
   withList,
   withTrailingNode,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueSoftBreak,
@@ -31,8 +29,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Handlers/Soft Break';
+
 export default {
-  title: 'Handlers/Soft Break',
+  title: id,
   component: SoftBreakPlugin,
 };
 
@@ -91,15 +91,11 @@ export const BlockPlugins = () => {
     );
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueSoftBreak);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueSoftBreak}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
@@ -111,12 +107,13 @@ export const BlockPlugins = () => {
           <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

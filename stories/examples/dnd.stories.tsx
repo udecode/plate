@@ -1,5 +1,5 @@
 import 'tippy.js/dist/tippy.css';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { boolean } from '@storybook/addon-knobs';
@@ -58,10 +58,10 @@ import {
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
   SearchHighlightPlugin,
   SlateDocument,
+  SlatePlugins,
   SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
@@ -77,6 +77,8 @@ import {
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
+  useSlatePluginsActions,
+  useSlatePluginsEditor,
   withAutoformat,
   withDeserializeHTML,
   withImageUpload,
@@ -89,9 +91,8 @@ import {
   withTable,
   withTrailingNode,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
@@ -114,8 +115,10 @@ import {
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
+const id = 'Examples/Drag & Drop';
+
 export default {
-  title: 'Examples/Drag & Drop',
+  title: id,
 };
 
 const draggableComponentOptions = [
@@ -205,12 +208,12 @@ const initialValue: any[] = [
 ];
 
 const setNodeId = (nodes: any[]) => {
-  let id = 10000;
+  let _id = 10000;
   nodes.forEach((node) => {
     const children = node.children as any[];
     children?.forEach((block) => {
-      block.id = id;
-      id++;
+      block.id = _id;
+      _id++;
     });
   });
 };
@@ -311,9 +314,8 @@ export const Example = () => {
     const decorate: any = [];
     const onKeyDown: any = [];
 
-    const [value, setValue] = useState(initialValue);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+    const { setValue } = useSlatePluginsActions(id);
+    const editor = useSlatePluginsEditor(id);
 
     const [search, setSearchHighlight] = useState('');
 
@@ -335,9 +337,10 @@ export const Example = () => {
 
     return (
       <DndProvider backend={HTML5Backend}>
-        <Slate
-          editor={editor}
-          value={value}
+        <SlatePlugins
+          id={id}
+          initialValue={initialValue}
+          withPlugins={withPlugins}
           onChange={(newValue) => {
             setValue(newValue as SlateDocument);
 
@@ -433,6 +436,7 @@ export const Example = () => {
           </BalloonToolbar>
           <MentionSelect at={target} valueIndex={index} options={values} />
           <EditablePlugins
+            id={id}
             style={{
               padding: 20,
             }}
@@ -445,7 +449,7 @@ export const Example = () => {
             onKeyDownDeps={[index, mentionSearch, target]}
             placeholder="Enter some plain text..."
           />
-        </Slate>
+        </SlatePlugins>
       </DndProvider>
     );
   };

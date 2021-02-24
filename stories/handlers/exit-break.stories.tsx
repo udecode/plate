@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
@@ -12,19 +12,17 @@ import {
   HeadingToolbar,
   ListPlugin,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
-  SlateDocument,
   SlatePlugin,
+  SlatePlugins,
   SoftBreakPlugin,
   TablePlugin,
   ToolbarElement,
   withList,
   withTrailingNode,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueExitBreak,
@@ -32,8 +30,10 @@ import {
   optionsResetBlockTypes,
 } from '../config/initialValues';
 
+const id = 'Handlers/Exit Break';
+
 export default {
-  title: 'Handlers/Exit Break',
+  title: id,
   component: ExitBreakPlugin,
 };
 
@@ -93,15 +93,11 @@ export const Example = () => {
     );
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueExitBreak);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueExitBreak}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
@@ -113,12 +109,13 @@ export const Example = () => {
           <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

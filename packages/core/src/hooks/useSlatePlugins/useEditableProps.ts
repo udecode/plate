@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { useSlate } from 'slate-react';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsSelectors';
+import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseEditableOptions } from '../../types/UseEditableOptions';
 import { decoratePlugins } from '../../utils/decoratePlugins';
 import { onDOMBeforeInputPlugins } from '../../utils/onDOMBeforeInputPlugins';
@@ -9,7 +8,7 @@ import { renderElementPlugins } from '../../utils/renderElementPlugins';
 import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
 
 export const useEditableProps = ({
-  key,
+  id,
   plugins = [],
   decorate: decorateList = [],
   decorateDeps = [],
@@ -23,7 +22,7 @@ export const useEditableProps = ({
   onKeyDownDeps = [],
   ...props
 }: UseEditableOptions) => {
-  const editor = useSlatePluginsEditor(key);
+  const editor = useSlatePluginsEditor(id);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const renderElement = useCallback(

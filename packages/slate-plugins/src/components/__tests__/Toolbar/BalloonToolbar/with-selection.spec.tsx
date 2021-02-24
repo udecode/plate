@@ -1,31 +1,13 @@
 import * as React from 'react';
-import { useState } from 'react';
 import { render } from '@testing-library/react';
-import { SlateDocument } from '@udecode/slate-plugins-common';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { SlatePlugins } from '@udecode/slate-plugins-core';
 import { BalloonToolbar } from '../../../Toolbar/BalloonToolbar/BalloonToolbar';
 
-const Editor = () => {
-  const [value, setValue] = useState<SlateDocument>([
-    { children: [{ text: 'test' }] },
-  ]);
-
-  const editor = withHistory(withReact(createEditor()));
-
-  return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => {
-        setValue(newValue as SlateDocument);
-      }}
-    >
-      <BalloonToolbar>test</BalloonToolbar>
-    </Slate>
-  );
-};
+const Editor = () => (
+  <SlatePlugins>
+    <BalloonToolbar>test</BalloonToolbar>
+  </SlatePlugins>
+);
 
 it('should not be visible', () => {
   const { getByTestId } = render(<Editor />);

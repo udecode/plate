@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { Link } from '@styled-icons/material';
 import {
@@ -7,20 +7,20 @@ import {
   HeadingToolbar,
   LinkPlugin,
   ParagraphPlugin,
-  pipe,
   renderElementLink,
-  SlateDocument,
+  SlatePlugins,
   ToolbarLink,
   withInlineVoid,
   withLink,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueLinks, options } from '../config/initialValues';
 
+const id = 'Elements/Link';
+
 export default {
-  title: 'Elements/Link',
+  title: id,
   component: LinkPlugin,
   subcomponents: {
     renderElementLink,
@@ -40,21 +40,21 @@ export const Example = () => {
   ] as const;
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueLinks);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueLinks}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarLink {...options} icon={<Link />} />
         </HeadingToolbar>
-        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-      </Slate>
+        <EditablePlugins
+          id={id}
+          plugins={plugins}
+          placeholder="Enter some text..."
+        />
+      </SlatePlugins>
     );
   };
 

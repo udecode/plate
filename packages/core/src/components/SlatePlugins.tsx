@@ -10,5 +10,13 @@ export interface SlatePluginsProps extends UseSlateOptions {
 export const SlatePlugins = ({ children, ...options }: SlatePluginsProps) => {
   const { getSlateProps } = useSlatePlugins(options);
 
-  return <Slate {...getSlateProps()}>{children}</Slate>;
+  const slateProps = getSlateProps();
+
+  if (!slateProps.editor) return null;
+
+  return (
+    <Slate key={slateProps.editor.key} {...slateProps}>
+      {children}
+    </Slate>
+  );
 };

@@ -7,12 +7,24 @@ import { State } from './SlatePluginsState';
 export interface UseSlateOptions
   extends Pick<Partial<State>, 'value' | 'editor'> {
   /**
-   * Unique key to store multiple editor states. Default is 'main'.
+   * Unique id to store multiple editor states. Default is 'main'.
    */
-  key?: string;
+  id?: string;
 
   /**
-   * Controlled callback called when the editor state changes
+   * Initial value of the editor.
+   * Default is `[{children: [{text: ''}]}]`.
+   */
+  initialValue?: Node[];
+
+  /**
+   * Apply the plugins to the editor singleton.
+   * Default is `[withReact, withHistory, withRandomKey]`.
+   */
+  withPlugins?: any;
+
+  /**
+   * Controlled callback called when the editor state changes.
    */
   onChange?: (value: Node[]) => void;
 }

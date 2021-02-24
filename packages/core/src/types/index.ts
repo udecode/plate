@@ -5,6 +5,7 @@
 export * from './Decorate';
 export * from './DeserializeHtml';
 export * from './DeserializeNode';
+export * from './FunctionProperties';
 export * from './OnDOMBeforeInput';
 export * from './OnKeyDown';
 export * from './RenderElement';
@@ -15,3 +16,4 @@ export * from './SlatePluginsState';
 export * from './UseEditableOptions';
 export * from './UseSlateOptions';
 export * from './UseSlatePluginsOptions';
+export * from './WithPlugin';

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { Subscript, Superscript } from '@styled-icons/foundation';
@@ -24,21 +24,21 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
   ToolbarMark,
   UnderlinePlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueHighlight, options } from '../config/initialValues';
 
+const id = 'Marks/Highlight';
+
 export default {
-  title: 'Marks/Highlight',
+  title: id,
   subcomponents: {
     BoldPlugin,
     ItalicPlugin,
@@ -58,15 +58,11 @@ export const All = () => {
   if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueHighlight);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueHighlight}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
@@ -89,12 +85,13 @@ export const All = () => {
           />
         </HeadingToolbar>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter some rich text…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

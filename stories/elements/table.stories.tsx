@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
   BorderAll,
@@ -23,26 +23,26 @@ import {
   insertTable,
   MARK_BOLD,
   ParagraphPlugin,
-  pipe,
   renderElementTable,
-  SlateDocument,
+  SlatePlugins,
   SoftBreakPlugin,
   TablePlugin,
   ToolbarMark,
   ToolbarTable,
   withTable,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueTables,
   options,
 } from '../config/initialValues';
 
+const id = 'Elements/Table';
+
 export default {
-  title: 'Elements/Table',
+  title: id,
   component: TablePlugin,
   subcomponents: { renderElementTable },
 };
@@ -92,15 +92,11 @@ export const Example = () => {
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueTables);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueTables}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
@@ -135,8 +131,8 @@ export const Example = () => {
             transform={deleteColumn}
           />
         </HeadingToolbar>
-        <EditablePlugins plugins={plugins} />
-      </Slate>
+        <EditablePlugins id={id} plugins={plugins} />
+      </SlatePlugins>
     );
   };
 

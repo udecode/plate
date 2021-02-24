@@ -1,5 +1,5 @@
 import 'tippy.js/dist/tippy.css';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
@@ -56,10 +56,10 @@ import {
   MentionPlugin,
   MentionSelect,
   ParagraphPlugin,
-  pipe,
   ResetBlockTypePlugin,
   SearchHighlightPlugin,
   SlateDocument,
+  SlatePlugins,
   SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
@@ -75,6 +75,8 @@ import {
   ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
+  useSlatePluginsActions,
+  useSlatePluginsEditor,
   withAutoformat,
   withDeserializeHTML,
   withImageUpload,
@@ -87,9 +89,9 @@ import {
   withTable,
   withTrailingNode,
 } from '@udecode/slate-plugins';
-import { createEditor, Node } from 'slate';
+import { Node } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
 import {
   headingTypes,
@@ -112,8 +114,10 @@ import {
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
+const id = 'Examples/Playground';
+
 export default {
-  title: 'Examples/Playground',
+  title: id,
 };
 
 const initialValue: Node[] = [
@@ -246,9 +250,8 @@ export const Plugins = () => {
     const decorate: any = [];
     const onKeyDown: any = [];
 
-    const [value, setValue] = useState(initialValue);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+    const { setValue } = useSlatePluginsActions(id);
+    const editor = useSlatePluginsEditor(id);
 
     const [search, setSearchHighlight] = useState('');
 
@@ -275,12 +278,12 @@ export const Plugins = () => {
     if (boolean('onKeyDownMentions', true)) onKeyDown.push(onKeyDownMention);
 
     return (
-      <Slate
-        editor={editor}
-        value={value}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValue}
+        withPlugins={withPlugins}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
-
           onChangeMention(editor);
         }}
       >
@@ -372,6 +375,7 @@ export const Plugins = () => {
           renderLabel={renderLabel}
         />
         <EditablePlugins
+          id={id}
           plugins={plugins}
           decorate={decorate}
           decorateDeps={[search]}
@@ -380,7 +384,7 @@ export const Plugins = () => {
           onKeyDownDeps={[index, mentionSearch, target]}
           placeholder="Enter some plain text..."
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

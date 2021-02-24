@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { Image } from '@styled-icons/material';
 import {
@@ -7,21 +7,21 @@ import {
   HeadingToolbar,
   ImagePlugin,
   ParagraphPlugin,
-  pipe,
   renderElementImage,
-  SlateDocument,
+  SlatePlugins,
   ToolbarImage,
   withImageUpload,
   withInlineVoid,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueImages, options } from '../config/initialValues';
 
+const id = 'Elements/Image';
+
 export default {
-  title: 'Elements/Image',
+  title: id,
   component: ImagePlugin,
   subcomponents: {
     renderElementImage,
@@ -43,21 +43,21 @@ export const Example = () => {
   ] as const;
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueImages);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueImages}
+        withPlugins={withPlugins}
       >
         <HeadingToolbar>
           <ToolbarImage {...options} icon={<Image />} />
         </HeadingToolbar>
-        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-      </Slate>
+        <EditablePlugins
+          id={id}
+          plugins={plugins}
+          placeholder="Enter some text..."
+        />
+      </SlatePlugins>
     );
   };
 

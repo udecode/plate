@@ -1,20 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
   withNormalizeTypes,
   withTrailingNode,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueForcedLayout, options } from '../config/initialValues';
 
+const id = 'Normalizers/Forced Layout';
+
 export default {
-  title: 'Normalizers/Forced Layout',
+  title: id,
   component: withNormalizeTypes,
   subcomponents: { withTrailingNode },
 };
@@ -32,23 +32,20 @@ const withPlugins = [
 
 export const Example = () => {
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueForcedLayout);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueForcedLayout}
+        withPlugins={withPlugins}
       >
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Enter a title…"
           spellCheck
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

@@ -1,21 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
   ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
   withInlineVoid,
 } from '@udecode/slate-plugins';
-import { createEditor, Node } from 'slate';
+import { Node } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { options } from '../../config/initialValues';
 import { EditableVoidPlugin } from './EditableVoidPlugin';
 import { EDITABLE_VOID } from './types';
 
+const id = 'Elements/Editable Voids';
+
 export default {
-  title: 'Elements/Editable Voids',
+  title: id,
 };
 
 const initialValueVoids: Node[] = [
@@ -55,23 +56,20 @@ const withPlugins = [
 ] as const;
 
 export const Example = () => {
-  const [value, setValue] = useState(initialValueVoids);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      id={id}
+      initialValue={initialValueVoids}
+      withPlugins={withPlugins}
     >
       <EditablePlugins
+        id={id}
         readOnly={boolean('readOnly', false)}
         plugins={plugins}
         placeholder={text('placeholder', 'Enter some text...')}
         spellCheck={boolean('spellCheck', true)}
         autoFocus
       />
-    </Slate>
+    </SlatePlugins>
   );
 };

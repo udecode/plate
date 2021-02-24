@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -11,8 +11,7 @@ import {
   LinkPlugin,
   ListPlugin,
   ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  SlatePlugins,
   StrikethroughPlugin,
   TablePlugin,
   UnderlinePlugin,
@@ -23,13 +22,14 @@ import {
   withList,
   withTable,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValuePasteMd, options } from '../config/initialValues';
 
+const id = 'Deserializers/Markdown';
+
 export default {
-  title: 'Deserializers/Markdown',
+  title: id,
   component: withDeserializeMd,
 };
 
@@ -62,21 +62,18 @@ const withPlugins = [
 
 export const Example = () => {
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValuePasteMd);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValuePasteMd}
+        withPlugins={withPlugins}
       >
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Paste in some Markdown..."
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

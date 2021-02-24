@@ -1,22 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
   decoratePreview,
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
-  pipe,
   PreviewPlugin,
   renderLeafPreview,
-  SlateDocument,
+  SlatePlugins,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
 import { initialValuePreview, options } from '../config/initialValues';
 
+const id = 'Decorators/Preview Markdown';
+
 export default {
-  title: 'Decorators/Preview Markdown',
+  title: id,
   component: PreviewPlugin,
   subcomponents: {
     decoratePreview,
@@ -24,29 +22,20 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory] as const;
-
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
 
   if (boolean('PreviewPlugin', true)) plugins.push(PreviewPlugin());
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValuePreview);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
+      <SlatePlugins id={id} initialValue={initialValuePreview}>
         <EditablePlugins
+          id={id}
           plugins={plugins}
           placeholder="Write some markdown..."
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

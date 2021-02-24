@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
@@ -6,19 +6,19 @@ import {
   HeadingPlugin,
   MediaEmbedPlugin,
   ParagraphPlugin,
-  pipe,
   renderElementMediaEmbed,
-  SlateDocument,
+  SlatePlugins,
   withInlineVoid,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueEmbeds, options } from '../config/initialValues';
 
+const id = 'Elements/Media Embed';
+
 export default {
-  title: 'Elements/Media Embed',
+  title: id,
   component: MediaEmbedPlugin,
   subcomponents: {
     renderElementMediaEmbed,
@@ -38,18 +38,18 @@ export const Example = () => {
   ] as const;
 
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueEmbeds);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
     return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueEmbeds}
+        withPlugins={withPlugins}
       >
-        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-      </Slate>
+        <EditablePlugins
+          id={id}
+          plugins={plugins}
+          placeholder="Enter some text..."
+        />
+      </SlatePlugins>
     );
   };
 

@@ -10,7 +10,7 @@ export type State = {
   components: Record<string, FunctionComponent>;
 
   /**
-   * Slate editor. Default uses `withReact` and `withHistory` plugins.
+   * Slate editor. Default uses `withReact`, `withHistoryPersist` and `withRandomKey` plugins.
    */
   editor?: unknown;
 
@@ -20,7 +20,7 @@ export type State = {
   plugins: SlatePlugin[];
 
   /**
-   * Editor value. Default is [].
+   * Editor value. Default is `[{children: [{text: ''}]}]`.
    */
   value: Node[];
 };
@@ -28,10 +28,12 @@ export type State = {
 export type StateById = { byId: Record<string, State> };
 
 export type Actions = {
-  setComponents: (value: State['components'], key?: string) => void;
-  setEditor: (value: State['editor'], key?: string) => void;
-  setPlugins: (value: State['plugins'], key?: string) => void;
-  setValue: (value: State['value'], key?: string) => void;
+  setInitialState: (id?: string) => void;
+  setComponents: (value: State['components'], id?: string) => void;
+  setEditor: (value: State['editor'], id?: string) => void;
+  setPlugins: (value: State['plugins'], id?: string) => void;
+  setWithPlugins: (value: any[], id?: string) => void;
+  setValue: (value: State['value'], id?: string) => void;
 };
 
 export type SlatePluginsState = StateById & Actions;
