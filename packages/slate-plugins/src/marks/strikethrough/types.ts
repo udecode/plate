@@ -7,7 +7,6 @@ import {
 } from '@udecode/slate-plugins-common';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface StrikethroughNodeData {}
@@ -15,8 +14,7 @@ export interface StrikethroughNodeData {}
 export interface StrikethroughNode extends Text, StrikethroughNodeData {}
 
 // renderLeaf options given as props
-export interface StrikethroughRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+export interface StrikethroughRenderLeafPropsOptions {}
 
 // Leaf props
 export interface StrikethroughLeafProps

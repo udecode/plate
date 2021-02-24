@@ -9,8 +9,8 @@ import {
   renderLeafHighlight,
   SearchHighlightPlugin,
   SlatePlugins,
-  ToolbarSearchHighlight,
 } from '@udecode/slate-plugins';
+import { ToolbarSearchHighlight } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {

@@ -9,17 +9,19 @@ import {
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
-  HeadingToolbar,
   ListPlugin,
   ParagraphPlugin,
   ResetBlockTypePlugin,
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
-  ToolbarElement,
   withList,
   withTrailingNode,
 } from '@udecode/slate-plugins';
+import {
+  HeadingToolbar,
+  ToolbarElement,
+} from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {

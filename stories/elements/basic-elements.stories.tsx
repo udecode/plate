@@ -17,14 +17,16 @@ import {
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
-  HeadingToolbar,
   ParagraphPlugin,
   ResetBlockTypePlugin,
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
-  ToolbarElement,
 } from '@udecode/slate-plugins';
+import {
+  HeadingToolbar,
+  ToolbarElement,
+} from '@udecode/slate-plugins-components';
 import {
   headingTypes,
   initialValueBasicElements,

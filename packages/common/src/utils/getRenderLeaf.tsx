@@ -1,6 +1,6 @@
 import * as React from 'react';
 import pickBy from 'lodash/pickBy';
-import { RenderLeafProps } from 'slate-react';
+import { DefaultLeaf, RenderLeafProps } from 'slate-react';
 import { RenderNodeOptions } from '../types/PluginOptions.types';
 
 /**
@@ -8,14 +8,14 @@ import { RenderNodeOptions } from '../types/PluginOptions.types';
  */
 export const getRenderLeaf = ({
   type,
-  component: Component,
+  component: Leaf = DefaultLeaf,
   rootProps,
 }: Required<RenderNodeOptions>) => ({ children, leaf }: RenderLeafProps) => {
   if (leaf[type] && !!leaf.text) {
     return (
-      <Component leaf={leaf} {...pickBy(rootProps)}>
+      <Leaf leaf={leaf} {...pickBy(rootProps)}>
         {children}
-      </Component>
+      </Leaf>
     );
   }
 

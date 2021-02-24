@@ -129,12 +129,12 @@ For additional help, join us in our
 
 | Decorator Plugins                                         |                                 |
 |:----------------------------------------------------------|:--------------------------------|
-| [Preview](packages/slate-plugins/src/decorators/preview/) | Enables support for previewing. |
+| [Preview](stories/decorators/plugin) | Enables support for previewing. |
 
 | Toolbar                                                          |                                                                |
 |:-----------------------------------------------------------------|:---------------------------------------------------------------|
-| [BalloonToolbar](packages/slate-plugins/src/components/Toolbar/) | Provides a toolbar, pointing at a particular element or range. |
-| [Toolbar](packages/slate-plugins/src/components/Toolbar/)        | Provides a toolbar with buttons.                               |
+| [BalloonToolbar](packages/components/src/components/Toolbar) | Provides a toolbar, pointing at a particular element or range. |
+| [Toolbar](packages/components/src/components/Toolbar)        | Provides a toolbar with buttons.                               |
 
 | Utility Plugins                                                |                                                     |
 |:---------------------------------------------------------------|:----------------------------------------------------|

@@ -31,7 +31,6 @@ import {
 import { DragIndicator } from '@styled-icons/material/DragIndicator';
 import {
   AlignPlugin,
-  BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
@@ -39,9 +38,7 @@ import {
   decorateSearchHighlight,
   EditablePlugins,
   ExitBreakPlugin,
-  getSelectableElement,
   HeadingPlugin,
-  HeadingToolbar,
   HighlightPlugin,
   ImagePlugin,
   ItalicPlugin,
@@ -56,7 +53,6 @@ import {
   MARK_UNDERLINE,
   MediaEmbedPlugin,
   MentionPlugin,
-  MentionSelect,
   ParagraphPlugin,
   ResetBlockTypePlugin,
   SearchHighlightPlugin,
@@ -68,13 +64,6 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   TodoListPlugin,
-  ToolbarAlign,
-  ToolbarElement,
-  ToolbarImage,
-  ToolbarLink,
-  ToolbarList,
-  ToolbarMark,
-  ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
   useSlatePluginsActions,
@@ -91,6 +80,19 @@ import {
   withTable,
   withTrailingNode,
 } from '@udecode/slate-plugins';
+import {
+  BalloonToolbar,
+  getSelectableElement,
+  HeadingToolbar,
+  MentionSelect,
+  ToolbarAlign,
+  ToolbarElement,
+  ToolbarImage,
+  ToolbarLink,
+  ToolbarList,
+  ToolbarMark,
+  ToolbarSearchHighlight,
+} from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
@@ -152,27 +154,27 @@ const draggableComponentOptions = [
     type,
     {
       ...options,
-      component: getSelectableElement({
-        component,
-        level,
-        dragIcon: (
-          <DragIndicator
-            style={{
-              width: 18,
-              height: 18,
-              color: 'rgba(55, 53, 47, 0.3)',
-            }}
-          />
-        ),
-        styles: {
-          blockAndGutter: {
-            padding: '4px 0',
-          },
-          blockToolbarWrapper: {
-            height: '1.5em',
-          },
-        },
-      }),
+      // component: getSelectableElement({
+      //   component,
+      //   level,
+      //   dragIcon: (
+      //     <DragIndicator
+      //       style={{
+      //         width: 18,
+      //         height: 18,
+      //         color: 'rgba(55, 53, 47, 0.3)',
+      //       }}
+      //     />
+      //   ),
+      //   styles: {
+      //     blockAndGutter: {
+      //       padding: '4px 0',
+      //     },
+      //     blockToolbarWrapper: {
+      //       height: '1.5em',
+      //     },
+      //   },
+      // }),
       rootProps: {
         styles: {
           root: {

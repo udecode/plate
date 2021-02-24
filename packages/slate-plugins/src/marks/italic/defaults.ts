@@ -1,5 +1,4 @@
 import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { ItalicKeyOption, ItalicPluginOptionsValues } from './types';
 
 export const MARK_ITALIC = 'italic';
@@ -9,7 +8,7 @@ export const DEFAULTS_ITALIC: Record<
   ItalicPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   italic: {
-    component: StyledLeaf,
+    // component: StyledLeaf,
     type: MARK_ITALIC,
     hotkey: 'mod+i',
     rootProps: {

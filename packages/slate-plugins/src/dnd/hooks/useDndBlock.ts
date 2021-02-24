@@ -25,6 +25,7 @@ export const useDndBlock = ({
     setDropLine,
   });
 
+  // TODO: previewElement option
   if (removePreview) {
     drop(blockRef);
     preview(getEmptyImage(), { captureDraggingState: true });

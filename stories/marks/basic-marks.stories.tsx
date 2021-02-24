@@ -14,7 +14,6 @@ import {
   CodePlugin,
   EditablePlugins,
   HeadingPlugin,
-  HeadingToolbar,
   ItalicPlugin,
   KbdPlugin,
   MARK_BOLD,
@@ -30,9 +29,9 @@ import {
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
-  ToolbarMark,
   UnderlinePlugin,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar, ToolbarMark } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueBasicMarks, options } from '../config/initialValues';
@@ -50,7 +49,6 @@ export default {
     SuperscriptPlugin,
     CodePlugin,
     KbdPlugin,
-    ToolbarMark,
   },
 };
 

@@ -1,5 +1,5 @@
 import { DropTargetMonitor, XYCoord } from 'react-dnd';
-import { DragItemBlock, DropDirection } from '../components/Selectable.types';
+import { DragItemBlock, DropDirection } from '../types';
 
 /**
  * If dragging a block A over another block B:

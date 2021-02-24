@@ -48,25 +48,17 @@ export interface ElementNode<T = Element> {
   element: T;
 }
 
-export interface NodeToPropsOptions<
-  ElementType = Element,
-  RootPropsType = RenderNodePropsOptions
->
+export interface NodeToPropsOptions<ElementType = Element>
   extends Omit<RenderElementPropsWithAttributes, 'element'>,
-    RootProps<RootPropsType> {
+    RootProps<any> {
   element: ElementType;
 }
 
-export interface NodeToProps<
-  ElementType = Element & { [key: string]: any },
-  RootPropsType = RenderNodePropsOptions & { [key: string]: any }
-> {
+export interface NodeToProps<ElementType = Element & { [key: string]: any }> {
   /**
    * Function to evaluate a node's attributes, element, children, and rootProps to generate new props
    */
-  nodeToProps?: (
-    options: NodeToPropsOptions<ElementType, RootPropsType>
-  ) => HtmlAttributes;
+  nodeToProps?: (options: NodeToPropsOptions<ElementType>) => HtmlAttributes;
 }
 
 export type HtmlAttributes = { [key: string]: any } | undefined;

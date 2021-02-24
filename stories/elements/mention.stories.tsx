@@ -5,7 +5,6 @@ import {
   HeadingPlugin,
   MentionNodeData,
   MentionPlugin,
-  MentionSelect,
   ParagraphPlugin,
   SlateDocument,
   SlatePlugins,
@@ -14,6 +13,7 @@ import {
   useSlatePluginsEditor,
   withInlineVoid,
 } from '@udecode/slate-plugins';
+import { MentionSelect } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueMentions, options } from '../config/initialValues';

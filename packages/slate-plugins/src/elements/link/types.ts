@@ -1,20 +1,10 @@
 import {
   Deserialize,
   ElementWithAttributes,
-  HtmlAttributesProps,
   NodeToProps,
   RangeBeforeOptions,
   RenderNodeOptions,
-  RenderNodePropsOptions,
-  RootProps,
 } from '@udecode/slate-plugins-common';
-import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderElementProps } from 'slate-react';
-import {
-  StyledComponentStyleProps,
-  StyledComponentStyles,
-} from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface LinkNodeData {
@@ -23,32 +13,11 @@ export interface LinkNodeData {
 // Element node
 export interface LinkNode extends ElementWithAttributes, LinkNodeData {}
 
-// renderElement options given as props
-export interface LinkRenderElementPropsOptions {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<
-    StyledComponentStyleProps,
-    StyledComponentStyles
-  >;
-}
-
-// renderElement props
-export interface LinkElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    LinkRenderElementPropsOptions {
-  element: LinkNode;
-}
-
 export type LinkKeyOption = 'link';
 
 // Plugin options
 export type LinkPluginOptionsValues = RenderNodeOptions &
-  RootProps<LinkRenderElementPropsOptions> &
-  NodeToProps<LinkNode, LinkRenderElementPropsOptions> &
+  NodeToProps<LinkNode> &
   Deserialize & {
     /**
      * Callback to validate an url.
@@ -80,21 +49,3 @@ export interface WithLinkOptions extends LinkPluginOptions<'type' | 'isUrl'> {
 }
 
 export interface LinkOptions extends LinkPluginOptions<'type'> {}
-
-export interface LinkElementStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert LinkElement classNames below
-}
-
-export interface LinkElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert LinkElement style props below
-}

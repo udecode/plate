@@ -8,7 +8,7 @@ import { RenderLeaf } from '../types/RenderLeaf';
 export const renderLeafPlugins = (
   renderLeafList: (RenderLeaf | undefined)[]
 ) => {
-  const Tag = (props: RenderLeafProps) => {
+  return (props: RenderLeafProps) => {
     const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
 
     renderLeafList.forEach((renderLeaf) => {
@@ -21,10 +21,5 @@ export const renderLeafPlugins = (
     });
 
     return <DefaultLeaf {...leafProps} />;
-  };
-
-  return (leafProps: RenderLeafProps) => {
-    // A wrapper tag component to make useContext get correct value inside.
-    return <Tag {...leafProps} />;
   };
 };

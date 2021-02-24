@@ -1,5 +1,6 @@
 import * as React from 'react';
 import pickBy from 'lodash/pickBy';
+import { DefaultElement } from 'slate-react';
 import {
   NodeToProps,
   RenderElementPropsWithAttributes,
@@ -8,7 +9,7 @@ import {
 
 export interface GetRenderElementOptions
   extends Required<RenderNodeOptions>,
-    NodeToProps<any, any> {}
+    NodeToProps<any> {}
 
 /**
  * Get a `renderElement` handler for a single type.
@@ -17,7 +18,7 @@ export interface GetRenderElementOptions
  */
 export const getRenderElement = ({
   type,
-  component: Component,
+  component: Element = DefaultElement,
   rootProps,
   nodeToProps,
 }: GetRenderElementOptions) => ({
@@ -30,14 +31,14 @@ export const getRenderElement = ({
       nodeToProps?.({ attributes, element, children, rootProps }) ??
       element?.attributes;
     return (
-      <Component
+      <Element
         attributes={attributes}
         htmlAttributes={htmlAttributes}
         element={element}
         {...pickBy(rootProps)}
       >
         {children}
-      </Component>
+      </Element>
     );
   }
 };
@@ -52,7 +53,7 @@ export const getRenderElements = (options: GetRenderElementOptions[]) => ({
 }: RenderElementPropsWithAttributes) => {
   for (const {
     type,
-    component: Component,
+    component: Element = DefaultElement,
     rootProps,
     nodeToProps,
   } of options) {
@@ -61,14 +62,14 @@ export const getRenderElements = (options: GetRenderElementOptions[]) => ({
         nodeToProps?.({ attributes, element, children, rootProps }) ??
         element?.attributes;
       return (
-        <Component
+        <Element
           attributes={attributes}
           htmlAttributes={htmlAttributes}
           element={element}
           {...pickBy(rootProps)}
         >
           {children}
-        </Component>
+        </Element>
       );
     }
   }

@@ -19,7 +19,6 @@ import {
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
-  HeadingToolbar,
   insertTable,
   MARK_BOLD,
   ParagraphPlugin,
@@ -27,10 +26,13 @@ import {
   SlatePlugins,
   SoftBreakPlugin,
   TablePlugin,
-  ToolbarMark,
-  ToolbarTable,
   withTable,
 } from '@udecode/slate-plugins';
+import {
+  HeadingToolbar,
+  ToolbarMark,
+  ToolbarTable,
+} from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {

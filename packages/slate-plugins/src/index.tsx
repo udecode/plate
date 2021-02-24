@@ -4,8 +4,6 @@
 
 export * from '@udecode/slate-plugins-core';
 export * from '@udecode/slate-plugins-common';
-export * from './components/index';
-export * from './decorators/index';
 export * from './deserializers/index';
 export * from './dnd/index';
 export * from './elements/index';

@@ -1,4 +1,3 @@
-import { CodeBlockElement } from './components/CodeBlockElement';
 import { CodeBlockKeyOption, CodeBlockPluginOptionsValues } from './types';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
@@ -8,7 +7,7 @@ export const DEFAULTS_CODE_BLOCK: Record<
   CodeBlockPluginOptionsValues
 > = {
   code_block: {
-    component: CodeBlockElement,
+    // component: CodeBlockElement,
     type: ELEMENT_CODE_BLOCK,
     hotkey: ['mod+opt+8', 'mod+shift+8'],
     rootProps: {

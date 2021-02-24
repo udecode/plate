@@ -13,7 +13,6 @@ import {
   CodePlugin,
   EditablePlugins,
   HeadingPlugin,
-  HeadingToolbar,
   HighlightPlugin,
   ItalicPlugin,
   MARK_BOLD,
@@ -28,9 +27,9 @@ import {
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
-  ToolbarMark,
   UnderlinePlugin,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar, ToolbarMark } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueHighlight, options } from '../config/initialValues';

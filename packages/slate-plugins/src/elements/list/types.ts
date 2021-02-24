@@ -1,18 +1,9 @@
 import {
   Deserialize,
   ElementWithAttributes,
-  HtmlAttributesProps,
   NodeToProps,
   RenderNodeOptions,
-  RenderNodePropsOptions,
-  RootProps,
 } from '@udecode/slate-plugins-common';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderElementProps } from 'slate-react';
-import {
-  StyledComponentStyleProps,
-  StyledComponentStyles,
-} from '../../components/StyledComponent/StyledComponent.types';
 
 export const ListHotkey = {
   TAB: 'Tab',
@@ -25,32 +16,11 @@ export interface ListNodeData {}
 // Element node
 export interface ListNode extends ElementWithAttributes, ListNodeData {}
 
-// renderElement options given as props
-export interface ListRenderElementPropsOptions {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<
-    StyledComponentStyleProps,
-    StyledComponentStyles
-  >;
-}
-
-// renderElement props
-export interface ListElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    ListRenderElementPropsOptions {
-  element: ListNode;
-}
-
 export type ListKeyOption = 'ul' | 'ol' | 'li' | 'p';
 
 // Plugin options
 export type ListPluginOptionsValues = RenderNodeOptions &
-  RootProps<ListRenderElementPropsOptions> &
-  NodeToProps<ListNode, ListRenderElementPropsOptions> &
+  NodeToProps<ListNode> &
   Deserialize;
 export type ListPluginOptionsKeys = keyof ListPluginOptionsValues;
 export type ListPluginOptions<

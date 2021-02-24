@@ -28,7 +28,6 @@ import {
 } from '@styled-icons/material';
 import {
   AlignPlugin,
-  BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
@@ -38,7 +37,6 @@ import {
   ELEMENT_IMAGE,
   ExitBreakPlugin,
   HeadingPlugin,
-  HeadingToolbar,
   HighlightPlugin,
   ImagePlugin,
   ItalicPlugin,
@@ -54,7 +52,6 @@ import {
   MediaEmbedPlugin,
   MentionNodeData,
   MentionPlugin,
-  MentionSelect,
   ParagraphPlugin,
   ResetBlockTypePlugin,
   SearchHighlightPlugin,
@@ -66,13 +63,6 @@ import {
   SuperscriptPlugin,
   TablePlugin,
   TodoListPlugin,
-  ToolbarAlign,
-  ToolbarElement,
-  ToolbarImage,
-  ToolbarLink,
-  ToolbarList,
-  ToolbarMark,
-  ToolbarSearchHighlight,
   UnderlinePlugin,
   useMention,
   useSlatePluginsActions,
@@ -89,6 +79,18 @@ import {
   withTable,
   withTrailingNode,
 } from '@udecode/slate-plugins';
+import {
+  BalloonToolbar,
+  HeadingToolbar,
+  MentionSelect,
+  ToolbarAlign,
+  ToolbarElement,
+  ToolbarImage,
+  ToolbarLink,
+  ToolbarList,
+  ToolbarMark,
+  ToolbarSearchHighlight,
+} from '@udecode/slate-plugins-components';
 import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';

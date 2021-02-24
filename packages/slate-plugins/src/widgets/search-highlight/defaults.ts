@@ -13,11 +13,11 @@ export const DEFAULTS_SEARCH_HIGHLIGHT: Record<
     rootProps: {
       as: 'span',
       className: 'slate-search-highlight',
-      styles: {
-        root: {
-          backgroundColor: '#fff59d',
-        },
-      },
+      // styles: {
+      //   root: {
+      //     backgroundColor: '#fff59d',
+      //   },
+      // },
     },
   },
 };

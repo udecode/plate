@@ -105,9 +105,9 @@ const Editor = ({
   plugins,
 }: {
   id?: string;
-  initialValue: Node[];
-  plugins: SlatePlugin[];
-  withPlugins?: any[];
+  initialValue?: Node[];
+  plugins?: SlatePlugin[];
+  withPlugins?: any;
 }) => {
   return (
     <WrapperEditor>

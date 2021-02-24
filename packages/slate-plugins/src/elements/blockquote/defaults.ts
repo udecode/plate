@@ -1,4 +1,3 @@
-import { BlockquoteElement } from './components/BlockquoteElement';
 import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
@@ -8,7 +7,7 @@ export const DEFAULTS_BLOCKQUOTE: Record<
   BlockquotePluginOptionsValues
 > = {
   blockquote: {
-    component: BlockquoteElement,
+    // component: BlockquoteElement,
     type: ELEMENT_BLOCKQUOTE,
     hotkey: 'mod+shift+.',
     rootProps: {

@@ -7,7 +7,6 @@ import {
 } from '@udecode/slate-plugins-common';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
-import { StyledComponentPropsOptions } from '../../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface SuperscriptNodeData {}
@@ -15,8 +14,7 @@ export interface SuperscriptNodeData {}
 export interface SuperscriptNode extends Text, SuperscriptNodeData {}
 
 // renderLeaf options given as props
-export interface SuperscriptRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+export interface SuperscriptRenderLeafPropsOptions {}
 
 // Leaf props
 export interface SuperscriptLeafProps

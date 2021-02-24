@@ -1,17 +1,17 @@
 import React from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import {
-  decoratePreview,
   EditablePlugins,
   HeadingPlugin,
   ParagraphPlugin,
-  PreviewPlugin,
-  renderLeafPreview,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValuePreview, options } from '../config/initialValues';
+import { decoratePreview } from './plugin/decoratePreview';
+import { PreviewPlugin } from './plugin/PreviewPlugin';
+import { renderLeafPreview } from './plugin/renderLeafPreview';
 
-const id = 'Decorators/Preview Markdown';
+const id = 'Examples/Preview Markdown';
 
 export default {
   title: id,

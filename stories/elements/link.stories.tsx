@@ -4,15 +4,14 @@ import { Link } from '@styled-icons/material';
 import {
   EditablePlugins,
   HeadingPlugin,
-  HeadingToolbar,
   LinkPlugin,
   ParagraphPlugin,
   renderElementLink,
   SlatePlugins,
-  ToolbarLink,
   withInlineVoid,
   withLink,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar, ToolbarLink } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueLinks, options } from '../config/initialValues';

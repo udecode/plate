@@ -1,5 +1,4 @@
 import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import {
   SubscriptKeyOption,
   SubscriptPluginOptionsValues,
@@ -19,7 +18,7 @@ export const DEFAULTS_SUBSUPSCRIPT: Record<
     GetOnHotkeyToggleMarkOptions
 > = {
   subscript: {
-    component: StyledLeaf,
+    // component: StyledLeaf,
     type: MARK_SUBSCRIPT,
     hotkey: 'mod+,',
     clear: MARK_SUPERSCRIPT,
@@ -29,7 +28,6 @@ export const DEFAULTS_SUBSUPSCRIPT: Record<
     },
   },
   superscript: {
-    component: StyledLeaf,
     type: MARK_SUPERSCRIPT,
     hotkey: 'mod+.',
     clear: MARK_SUBSCRIPT,

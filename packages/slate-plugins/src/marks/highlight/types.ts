@@ -7,7 +7,6 @@ import {
 } from '@udecode/slate-plugins-common';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Text node
 export interface HighlightNodeData {}
@@ -15,8 +14,7 @@ export interface HighlightNodeData {}
 export interface HighlightNode extends Text, HighlightNodeData {}
 
 // renderLeaf options given as props
-export interface HighlightRenderLeafPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
+export interface HighlightRenderLeafPropsOptions {}
 
 // Leaf props
 export interface HighlightLeafProps

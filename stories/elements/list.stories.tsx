@@ -5,7 +5,6 @@ import {
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
-  HeadingToolbar,
   ImagePlugin,
   ListPlugin,
   ParagraphPlugin,
@@ -13,10 +12,10 @@ import {
   SlatePlugins,
   SoftBreakPlugin,
   TodoListPlugin,
-  ToolbarList,
   withImageUpload,
   withList,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar, ToolbarList } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {

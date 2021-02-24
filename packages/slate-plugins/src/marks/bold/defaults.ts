@@ -1,5 +1,4 @@
 import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import { StyledLeaf } from '../../components/StyledComponent/StyledLeaf';
 import { BoldKeyOption, BoldPluginOptionsValues } from './types';
 
 export const MARK_BOLD = 'bold';
@@ -9,7 +8,7 @@ export const DEFAULTS_BOLD: Record<
   BoldPluginOptionsValues & GetOnHotkeyToggleMarkOptions
 > = {
   bold: {
-    component: StyledLeaf,
+    // component: StyledLeaf,
     type: MARK_BOLD,
     hotkey: 'mod+b',
     rootProps: {

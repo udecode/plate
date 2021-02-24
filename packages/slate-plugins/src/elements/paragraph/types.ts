@@ -8,7 +8,6 @@ import {
   RootProps,
 } from '@udecode/slate-plugins-common';
 import { RenderElementProps } from 'slate-react';
-import { StyledComponentPropsOptions } from '../../components/StyledComponent/StyledComponent.types';
 
 // Data of Element node
 export interface ParagraphNodeData {}
@@ -17,25 +16,11 @@ export interface ParagraphNode
   extends ElementWithAttributes,
     ParagraphNodeData {}
 
-// renderElement options given as props
-export interface ParagraphRenderElementPropsOptions
-  extends Omit<StyledComponentPropsOptions, 'children'> {}
-
-// renderElement props
-export interface ParagraphElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    ParagraphRenderElementPropsOptions {
-  element: ParagraphNode;
-}
-
 export type ParagraphKeyOption = 'p';
 
 // Plugin options
 export type ParagraphPluginOptionsValues = RenderNodeOptions &
-  RootProps<ParagraphRenderElementPropsOptions> &
-  NodeToProps<ParagraphNode, ParagraphRenderElementPropsOptions> &
+  NodeToProps<ParagraphNode> &
   Deserialize;
 export type ParagraphPluginOptionsKeys = keyof ParagraphPluginOptionsValues;
 export type ParagraphPluginOptions<

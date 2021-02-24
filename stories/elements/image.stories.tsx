@@ -4,16 +4,18 @@ import { Image } from '@styled-icons/material';
 import {
   EditablePlugins,
   HeadingPlugin,
-  HeadingToolbar,
   ImagePlugin,
   ParagraphPlugin,
   renderElementImage,
   SlatePlugins,
-  ToolbarImage,
   withImageUpload,
   withInlineVoid,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
+import {
+  HeadingToolbar,
+  ToolbarImage,
+} from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueImages, options } from '../config/initialValues';

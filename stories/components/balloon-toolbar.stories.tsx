@@ -9,7 +9,6 @@ import {
 } from '@styled-icons/material';
 import { TippyProps } from '@tippyjs/react';
 import {
-  BalloonToolbar,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
@@ -18,10 +17,10 @@ import {
   MARK_ITALIC,
   MARK_UNDERLINE,
   SlatePlugins,
-  ToolbarMark,
   UnderlinePlugin,
   withList,
 } from '@udecode/slate-plugins';
+import { BalloonToolbar, ToolbarMark } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { initialValueBalloonToolbar, options } from '../config/initialValues';

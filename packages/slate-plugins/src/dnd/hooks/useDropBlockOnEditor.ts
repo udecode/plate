@@ -2,7 +2,7 @@ import { DropTargetMonitor, useDrop } from 'react-dnd';
 import { findNode, isExpanded } from '@udecode/slate-plugins-common';
 import { Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { DragItemBlock } from '../components/Selectable.types';
+import { DragItemBlock } from '../types';
 import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
 

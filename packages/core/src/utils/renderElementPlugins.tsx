@@ -8,7 +8,7 @@ import { RenderElement } from '../types/RenderElement';
 export const renderElementPlugins = (
   renderElementList: (RenderElement | undefined)[]
 ) => {
-  const Tag = (elementProps: RenderElementProps) => {
+  return (elementProps: RenderElementProps) => {
     let element;
 
     renderElementList.some((renderElement) => {
@@ -18,10 +18,5 @@ export const renderElementPlugins = (
     if (element) return element;
 
     return <DefaultElement {...elementProps} />;
-  };
-
-  return (elementProps: RenderElementProps) => {
-    // A wrapper tag component to make useContext get correct value inside.
-    return <Tag {...elementProps} />;
   };
 };
