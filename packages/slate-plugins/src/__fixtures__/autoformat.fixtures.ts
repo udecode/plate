@@ -106,7 +106,7 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     triggerAtBlockStart: false,
     preFormat,
     format: (editor) => {
-      insertCodeBlock(editor, options);
+      insertCodeBlock(editor, { select: true }, options);
     },
   },
 ];

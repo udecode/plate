@@ -19,7 +19,12 @@ export const ToolbarCodeBlock = ({
   return (
     <ToolbarElement
       type={code_block.type}
-      onMouseDown={getPreventDefaultHandler(insertCodeBlock, editor, options)}
+      onMouseDown={getPreventDefaultHandler(
+        insertCodeBlock,
+        editor,
+        { select: true },
+        options
+      )}
       {...props}
     />
   );

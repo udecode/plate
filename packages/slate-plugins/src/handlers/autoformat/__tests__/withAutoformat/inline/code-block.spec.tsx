@@ -19,11 +19,8 @@ const output = (
   <editor>
     <hp>hello</hp>
     <hcode>
-      <hcodeline>
-        <cursor />
-      </hcodeline>
+      <hcodeline>world</hcodeline>
     </hcode>
-    <hp>world</hp>
   </editor>
 ) as any;
 

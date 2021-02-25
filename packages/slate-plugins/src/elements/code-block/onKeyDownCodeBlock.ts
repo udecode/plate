@@ -1,9 +1,7 @@
 import { Editor, Transforms } from 'slate';
 import { getParent } from '../../common';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
-import { getIndentDepth } from './queries/getIndentDepth';
 import { indentCodeLine } from './transforms/indentCodeLine';
-import { insertCodeLine } from './transforms/insertCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
 import { getCodeLines } from './queries';
 import { CodeBlockOnKeyDownOptions, CodeLineOnKeyDownOptions } from './types';
@@ -61,14 +59,17 @@ export const onKeyDownCodeBlock = (
 
   // FIXME: would prefer this as mod+a, but doesn't work
   if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-    e.preventDefault();
-    e.stopPropagation();
     const res = getCodeLineEntry(editor, {}, options);
     if (!res) return;
+
     const { codeBlock } = res;
     const [, codeBlockPath] = codeBlock;
+
+    // select the whole code block
     Transforms.select(editor, codeBlockPath);
-    // select all text
+
+    e.preventDefault();
+    e.stopPropagation();
     return;
   }
 
