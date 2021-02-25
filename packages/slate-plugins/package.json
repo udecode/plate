@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.73.0",
+  "version": "0.74.0",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -29,8 +29,8 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.1.6",
     "prismjs": "^1.23.0",
-    "react-dnd": "^13.1.0",
-    "react-dnd-html5-backend": "^12.1.0",
+    "react-dnd": "^13.1.1",
+    "react-dnd-html5-backend": "^12.1.1",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"

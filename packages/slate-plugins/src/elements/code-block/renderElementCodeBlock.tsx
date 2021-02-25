@@ -1,11 +1,14 @@
 import { getRenderElement, setDefaults } from '@udecode/slate-plugins-common';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
-import { CodeBlockRenderElementOptions } from './types';
+import {
+  CodeBlockRenderElementOptions,
+  CodeLineRenderElementOptions,
+} from './types';
 
 export const renderElementCodeBlock = (
-  options?: CodeBlockRenderElementOptions
+  options?: CodeBlockRenderElementOptions & CodeLineRenderElementOptions
 ) => {
-  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  return getRenderElement(code_block);
+  return getRenderElements([code_block, code_line]);
 };

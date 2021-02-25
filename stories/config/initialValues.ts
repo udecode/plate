@@ -73,7 +73,7 @@ export const options = {
 export const inlineTypes = [options.mention.type, options.link.type];
 
 const resetBlockTypesCommonRule = {
-  types: [options.bold.type, options.code_block.type, options.todo_li.type],
+  types: [options.blockquote.type, options.todo_li.type],
   defaultType: options.p.type,
 };
 
@@ -773,7 +773,24 @@ export const initialValueBasicElements: SlateDocument = [
       },
       {
         type: options.code_block.type,
-        children: [{ text: 'Code block' }],
+        children: [
+          {
+            type: options.code_line.type,
+            children: [
+              {
+                text: "const a = 'Hello';",
+              },
+            ],
+          },
+          {
+            type: options.code_line.type,
+            children: [
+              {
+                text: "const b = 'World';",
+              },
+            ],
+          },
+        ],
       },
     ],
   },

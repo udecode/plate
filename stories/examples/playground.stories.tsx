@@ -85,6 +85,7 @@ import {
   MentionSelect,
   ToolbarAlign,
   ToolbarElement,
+  ToolbarCodeBlock,
   ToolbarImage,
   ToolbarLink,
   ToolbarList,
@@ -312,7 +313,11 @@ export const Plugins = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <ToolbarCodeBlock
+            type={options.code_block.type}
+            icon={<CodeBlock />}
+            options={options}
+          />
 
           {/* Marks */}
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />

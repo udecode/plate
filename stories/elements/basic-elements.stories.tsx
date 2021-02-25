@@ -22,10 +22,12 @@ import {
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
+
 } from '@udecode/slate-plugins';
 import {
   HeadingToolbar,
   ToolbarElement,
+  ToolbarCodeBlock,
 } from '@udecode/slate-plugins-components';
 import {
   headingTypes,
@@ -106,7 +108,11 @@ export const Example = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <ToolbarCodeBlock
+            type={options.code_block.type}
+            icon={<CodeBlock />}
+            options={options}
+          />
         </HeadingToolbar>
         <EditablePlugins
           id={id}

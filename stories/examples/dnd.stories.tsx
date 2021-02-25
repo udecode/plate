@@ -88,6 +88,7 @@ import {
   ToolbarAlign,
   ToolbarElement,
   ToolbarImage,
+  ToolbarCodeBlock,
   ToolbarLink,
   ToolbarList,
   ToolbarMark,
@@ -375,9 +376,10 @@ export const Example = () => {
               type={options.blockquote.type}
               icon={<FormatQuote />}
             />
-            <ToolbarElement
+            <ToolbarCodeBlock
               type={options.code_block.type}
               icon={<CodeBlock />}
+              options={options}
             />
 
             {/* Marks */}

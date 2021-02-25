@@ -1,5 +1,4 @@
 import {
-  getBlockAbove,
   getRangeBefore,
   getRangeFromBlockStart,
   getText,
@@ -70,17 +69,8 @@ export const withAutoformat = ({ rules }: WithAutoformatOptions) => <
         } else {
           markupRange = getRangeBefore(editor, editor.selection as Range, {
             matchString: markup,
-            skipInvalid: true,
           });
           if (!markupRange) continue;
-
-          const blockAbovePath = getBlockAbove(editor)?.[1];
-          if (!blockAbovePath) continue;
-
-          // If the markup is not at the start, insert break before autoformatting.
-          if (!Editor.isStart(editor, markupRange.anchor, blockAbovePath)) {
-            editor.insertBreak();
-          }
         }
 
         if (!allowSameTypeAbove) {

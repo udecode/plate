@@ -18,7 +18,9 @@ const input = (
 const output = (
   <editor>
     <hp>hello</hp>
-    <hcode>world</hcode>
+    <hcode>
+      <hcodeline>world</hcodeline>
+    </hcode>
   </editor>
 ) as any;
 
