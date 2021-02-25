@@ -12,7 +12,8 @@ export const getCodeLines = (
   { at = editor.selection }: { at?: Location | null } = {},
   options?: CodeLineOptions
 ) => {
+  if (!at) return;
   const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  return [...getNodes(editor, { match: { type: code_line.type } })];
+  return [...getNodes(editor, { at, match: { type: code_line.type } })];
 };

@@ -17,7 +17,9 @@ import {
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
+  ToolbarCodeBlock,
   ToolbarElement,
+  withCodeBlock,
   withList,
   withTrailingNode,
 } from '@udecode/slate-plugins';
@@ -40,6 +42,7 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
+  withCodeBlock(options),
   withTrailingNode({ type: options.p.type }),
 ] as const;
 
@@ -108,7 +111,11 @@ export const BlockPlugins = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <ToolbarCodeBlock
+            type={options.code_block.type}
+            icon={<CodeBlock />}
+            options={options}
+          />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}
