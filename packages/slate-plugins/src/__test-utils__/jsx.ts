@@ -21,6 +21,7 @@ export const jsx = createHyperscript({
     hmention: { type: options.mention.type },
     hblockquote: { type: options.blockquote.type },
     hcode: { type: options.code_block.type },
+    hcodeline: { type: options.code_line.type },
     ha: { type: options.link.type },
     himg: { type: options.img.type },
     hembed: { type: options.media_embed.type },

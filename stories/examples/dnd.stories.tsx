@@ -69,6 +69,7 @@ import {
   TablePlugin,
   TodoListPlugin,
   ToolbarAlign,
+  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -370,9 +371,10 @@ export const Example = () => {
               type={options.blockquote.type}
               icon={<FormatQuote />}
             />
-            <ToolbarElement
+            <ToolbarCodeBlock
               type={options.code_block.type}
               icon={<CodeBlock />}
+              options={options}
             />
 
             {/* Marks */}

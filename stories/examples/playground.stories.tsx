@@ -67,6 +67,7 @@ import {
   TablePlugin,
   TodoListPlugin,
   ToolbarAlign,
+  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -266,9 +267,9 @@ export const Plugins = () => {
       maxSuggestions: 10,
       trigger: '@',
       insertSpaceAfterMention: false,
-      mentionableFilter: (search: string) => (mentionable: MentionNodeData) =>
-        mentionable.email.toLowerCase().includes(search.toLowerCase()) ||
-        mentionable.name.toLowerCase().includes(search.toLowerCase()),
+      mentionableFilter: (s: string) => (mentionable: MentionNodeData) =>
+        mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
+        mentionable.name.toLowerCase().includes(s.toLowerCase()),
       mentionableSearchPattern: '\\S*',
     });
 
@@ -307,7 +308,11 @@ export const Plugins = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
+          <ToolbarCodeBlock
+            type={options.code_block.type}
+            icon={<CodeBlock />}
+            options={options}
+          />
 
           {/* Marks */}
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />
