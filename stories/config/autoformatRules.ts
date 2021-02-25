@@ -1,4 +1,9 @@
-import { AutoformatRule, toggleList, unwrapList } from '@udecode/slate-plugins';
+import {
+  AutoformatRule,
+  insertCodeBlock,
+  toggleList,
+  unwrapList,
+} from '@udecode/slate-plugins';
 import { Editor } from 'slate';
 import { options } from './initialValues';
 
@@ -98,9 +103,12 @@ export const autoformatRules: AutoformatRule[] = [
   },
   {
     type: options.code_block.type,
-    trigger: '`',
     markup: '``',
+    trigger: '`',
     triggerAtBlockStart: false,
-    preFormat: (editor) => unwrapList(editor, options),
+    preFormat,
+    format: (editor) => {
+      insertCodeBlock(editor, { select: true }, options);
+    },
   },
 ];

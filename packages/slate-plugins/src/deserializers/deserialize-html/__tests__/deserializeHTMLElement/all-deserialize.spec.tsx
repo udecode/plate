@@ -55,7 +55,7 @@ const inlineTags = [
 ];
 
 const elementTags = [
-  '<pre><code>code</code></pre>',
+  '<pre><code><div class="slate-code-line">code 1</div><div class="slate-code-line">code 2</div></code></pre>',
   '<ul><li><p>ul-li-p</p></li></ul>',
   '<ol><li><p>ol-li-p</p></li></ol>',
   '<img alt="" src="https://i.imgur.com/removed.png" />',
@@ -123,7 +123,8 @@ const output = (
       </hmention>
     </hp>
     <hcode>
-      <htext>code</htext>
+      <hcodeline>code 1</hcodeline>
+      <hcodeline>code 2</hcodeline>
     </hcode>
     <hul>
       <hli>

@@ -133,7 +133,7 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
 
   // editor.insertBreak = () => {
   //   if (upsertLinkIfValid(editor, { link, isUrl })) {
-  //     console.log('fix cursor');
+  //     console.info('fix cursor');
   //   }
   //
   //   insertBreak();

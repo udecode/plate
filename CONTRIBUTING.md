@@ -139,13 +139,13 @@ folder structure and naming convention, as defined below.
 Write your tests using the following convention:
 
 ```ts
-const input = 1
+const input = 1;
 
-const output = 1
+const output = 1;
 
 it("should be", () => {
-  expect(input).toEqual(output)
-})
+  expect(input).toEqual(output);
+});
 ```
 
 When using `slate-hyperscript`, include this at the top of the file:
@@ -153,7 +153,7 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
-import { jsx } from "../../../../__test-utils__/jsx"
+import { jsx } from "../../../../__test-utils__/jsx";
 ```
 
 Example of `input` and `output` being an editor containing one
@@ -164,13 +164,13 @@ const input = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor
+) as any) as Editor;
 
 const output = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor
+) as any) as Editor;
 ```
 
 ## Pull Requests (PRs)
