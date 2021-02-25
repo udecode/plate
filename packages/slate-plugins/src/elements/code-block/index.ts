@@ -8,3 +8,4 @@ export * from './renderElementCodeBlock';
 export * from './renderLeafCodeBlock';
 export * from './transforms';
 export * from './types';
+export * from './withCodeBlock';
