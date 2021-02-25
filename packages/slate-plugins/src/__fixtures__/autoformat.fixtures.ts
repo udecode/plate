@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { options } from '../../../../stories/config/initialValues';
-import { insertCodeBlock } from '../elements';
+import { insertCodeBlock } from '../elements/code-block';
 import { toggleList } from '../elements/list/transforms/toggleList';
 import { unwrapList } from '../elements/list/transforms/unwrapList';
 import { AutoformatRule } from '../handlers/autoformat/types';

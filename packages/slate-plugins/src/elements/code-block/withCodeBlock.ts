@@ -24,4 +24,6 @@ export const withCodeBlock = (
     if (insertBreakCodeBlock()) return;
     insertBreak();
   };
+
+  return editor;
 };

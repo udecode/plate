@@ -36,6 +36,7 @@ import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/compo
 import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
 import { BlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/BlockquotePlugin';
 import { CodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockPlugin';
+import { withCodeBlock } from '../../../../slate-plugins/src/elements/code-block/withCodeBlock';
 import { HeadingPlugin } from '../../../../slate-plugins/src/elements/heading/HeadingPlugin';
 import { ToolbarImage } from '../../../../slate-plugins/src/elements/image/components/ToolbarImage';
 import { withImageUpload } from '../../../../slate-plugins/src/elements/image/image-upload/withImageUpload';
@@ -147,6 +148,7 @@ const withPlugins = [
   withHistory,
   withTable(options),
   withLink(),
+  withCodeBlock(options),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
   withAutoformat({ rules: autoformatRulesFixtures }),
