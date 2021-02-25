@@ -9,19 +9,13 @@ import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (
   editor: Editor,
-  {
-    typeCodeBlock,
-    ...options
-  }: {
-    typeCodeBlock: string;
-  } & CodeBlockOptions &
-    CodeLineOptions
+  options: CodeBlockOptions & CodeLineOptions
 ) => {
   if (!editor.selection) return;
 
   const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
-  const isActive = someNode(editor, { match: { type: typeCodeBlock } });
+  const isActive = someNode(editor, { match: { type: code_block.type } });
 
   unwrapCodeBlock(editor, options);
 
@@ -30,7 +24,7 @@ export const toggleCodeBlock = (
   });
 
   if (!isActive) {
-    const codeBlock = { type: typeCodeBlock, children: [] };
+    const codeBlock = { type: code_block.type, children: [] };
     wrapNodes(editor, codeBlock);
 
     const nodes = [...getNodes(editor, { match: { type: code_line.type } })];

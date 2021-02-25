@@ -1,24 +1,25 @@
 import * as React from 'react';
 import { useSlate } from 'slate-react';
 import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
+import { setDefaults } from '../../../common/utils/setDefaults';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
 import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
-import { ELEMENT_CODE_BLOCK } from '../defaults';
+import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { insertCodeBlock } from '../transforms/insertCodeBlock';
+import { CodeBlockOptions, CodeLineOptions } from '../types';
 
 export const ToolbarCodeBlock = ({
-  typeCodeBlock = ELEMENT_CODE_BLOCK,
+  options,
   ...props
-}: ToolbarButtonProps) => {
+}: ToolbarButtonProps & { options: CodeBlockOptions & CodeLineOptions }) => {
+  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+
   const editor = useSlate();
 
   return (
     <ToolbarElement
-      type={typeCodeBlock}
-      onMouseDown={getPreventDefaultHandler(insertCodeBlock, editor, {
-        ...props,
-        typeCodeBlock,
-      })}
+      type={code_block.type}
+      onMouseDown={getPreventDefaultHandler(insertCodeBlock, editor, options)}
       {...props}
     />
   );

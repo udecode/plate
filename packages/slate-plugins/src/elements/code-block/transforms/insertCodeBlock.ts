@@ -6,17 +6,11 @@ import { CodeBlockOptions, CodeLineOptions } from '../types';
 
 export const insertCodeBlock = (
   editor: Editor,
-  {
-    typeCodeBlock,
-    ...options
-  }: {
-    typeCodeBlock: string;
-  } & CodeBlockOptions &
-    CodeLineOptions
+  options: CodeBlockOptions & CodeLineOptions
 ) => {
   if (!editor.selection) return;
 
-  const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_line, code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
   const selectionParentEntry = getParent(editor, editor.selection);
   if (!selectionParentEntry) return false;
@@ -25,11 +19,9 @@ export const insertCodeBlock = (
   Transforms.insertNodes(
     editor,
     {
-      type: typeCodeBlock,
+      type: code_block.type,
       children: [{ type: code_line.type, children: [{ text: '' }] }],
     },
     { at: selectionParentPath, select: true }
   );
-  // FIXME: Move cursor/selection into the code-block element
-  // Transforms.select(editor);
 };

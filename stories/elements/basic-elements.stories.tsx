@@ -122,6 +122,7 @@ export const Example = () => {
           <ToolbarCodeBlock
             type={options.code_block.type}
             icon={<CodeBlock />}
+            options={options}
           />
         </HeadingToolbar>
         <EditablePlugins

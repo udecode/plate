@@ -18,12 +18,15 @@ export const deserializeCodeBlock = (
     element: [
       ...getElementDeserializer({
         type: code_block.type,
-        rules: [{ nodeNames: 'PRE' }],
+        rules: [
+          { nodeNames: 'PRE' },
+          { className: code_block.rootProps.className },
+        ],
         ...options?.code_block?.deserialize,
       }),
       ...getElementDeserializer({
         type: code_line.type,
-        rules: [{ nodeNames: 'DIV' }],
+        rules: [{ className: code_line.rootProps.className }],
         ...options?.code_line?.deserialize,
       }),
     ],

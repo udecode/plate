@@ -17,7 +17,12 @@ const input = (
 
 const output = (
   <editor>
-    <hcode>hello</hcode>
+    <hcode>
+      <hcodeline>
+        <cursor />
+      </hcodeline>
+    </hcode>
+    <hp>hello</hp>
   </editor>
 ) as any;
 

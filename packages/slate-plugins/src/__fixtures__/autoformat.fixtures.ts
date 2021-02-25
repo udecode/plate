@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { options } from '../../../../stories/config/initialValues';
-import { insertCodeLine } from '../elements';
+import { insertCodeBlock } from '../elements';
 import { toggleList } from '../elements/list/transforms/toggleList';
 import { unwrapList } from '../elements/list/transforms/unwrapList';
 import { AutoformatRule } from '../handlers/autoformat/types';
@@ -100,13 +100,13 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     insertTrigger: true,
   },
   {
-    trigger: '`',
     type: options.code_block.type,
     markup: '``',
-    format: (editor) => {
-      insertCodeLine(editor);
-    },
+    trigger: '`',
     triggerAtBlockStart: false,
     preFormat,
+    format: (editor) => {
+      insertCodeBlock(editor, options);
+    },
   },
 ];
