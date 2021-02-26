@@ -3,6 +3,7 @@ export * from './CodeBlockPlugin';
 export * from './decorateCodeBlock';
 export * from './defaults';
 export * from './deserializeCodeBlock';
+export * from './onKeyDownCodeBlock';
 export * from './queries';
 export * from './renderElementCodeBlock';
 export * from './renderLeafCodeBlock';
