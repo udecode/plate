@@ -36,6 +36,7 @@ import {
 } from '@udecode/slate-plugins';
 // import faker from 'faker';
 import { Descendant, Text } from 'slate';
+import { DEFAULTS_TAG } from '../examples/tag/defaults';
 
 export const headingTypes = [
   ELEMENT_H1,
@@ -68,6 +69,7 @@ export const options = {
   ...setDefaults(DEFAULTS_SUBSUPSCRIPT, {}),
   ...setDefaults(DEFAULTS_HIGHLIGHT, {}),
   ...setDefaults(DEFAULTS_SEARCH_HIGHLIGHT, {}),
+  ...setDefaults(DEFAULTS_TAG, {}),
 };
 
 export const inlineTypes = [options.mention.type, options.link.type];
@@ -606,6 +608,21 @@ export const initialValuePlainText: SlateDocument = [
         type: options.p.type,
         children: [
           { text: 'This is editable plain text, just like a <textarea>!' },
+        ],
+      },
+    ],
+  },
+];
+
+export const initialValueCombobox: SlateDocument = [
+  {
+    children: [
+      {
+        type: options.p.type,
+        children: [
+          { text: 'Example using useCombobox from downshift with # trigger: ' },
+          { type: options.tag.type, children: [{ text: '' }], value: 'tag' },
+          { text: '' },
         ],
       },
     ],
