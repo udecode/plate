@@ -75,8 +75,16 @@ export const withTable = (options?: WithTableOptions) => <T extends Editor>(
 
   editor.insertText = (text) => {
     const { selection } = editor;
+    const [start] = Editor.nodes(editor, {
+      match: matchCells,
+      at: selection?.anchor.path,
+    });
+    const [end] = Editor.nodes(editor, {
+      match: matchCells,
+      at: selection?.focus.path,
+    });
     // Collapse selection if multiple cells are selected to avoid breaking the table
-    if (!isCollapsed(selection)) {
+    if (!isCollapsed(selection) && (start || end) && start?.[0] !== end?.[0]) {
       const [cell] = Editor.nodes(editor, { match: matchCells });
       if (cell) {
         Transforms.collapse(editor, { edge: 'end' });
