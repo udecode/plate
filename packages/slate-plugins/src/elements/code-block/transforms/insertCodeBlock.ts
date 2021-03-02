@@ -1,4 +1,5 @@
-import { Editor, Transforms } from 'slate';
+import { Editor, Node, Transforms } from 'slate';
+import { someNode } from '../../../common';
 import { isExpanded } from '../../../common/queries/isExpanded';
 import { isSelectionAtBlockStart } from '../../../common/queries/isSelectionAtBlockStart';
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
@@ -22,6 +23,17 @@ export const insertCodeBlock = (
     pluginsOptions,
     DEFAULTS_CODE_BLOCK
   );
+
+  const matchCodeElements = (node: Node) =>
+    node.type === code_block.type || node.type === code_line.type;
+
+  if (
+    someNode(editor, {
+      match: matchCodeElements,
+    })
+  ) {
+    return;
+  }
 
   if (!isSelectionAtBlockStart(editor)) {
     editor.insertBreak();
