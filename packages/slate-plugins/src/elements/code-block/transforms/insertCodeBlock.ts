@@ -1,7 +1,7 @@
 import { Editor, Node, Transforms } from 'slate';
-import { someNode } from '../../../common';
 import { isExpanded } from '../../../common/queries/isExpanded';
 import { isSelectionAtBlockStart } from '../../../common/queries/isSelectionAtBlockStart';
+import { someNode } from '../../../common/queries/someNode';
 import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import { InsertNodesOptions } from '../../../common/types/Transforms.types';
 import { setDefaults } from '../../../common/utils/setDefaults';
