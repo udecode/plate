@@ -27,7 +27,10 @@ export const useDropBlockOnEditor = (
       const direction = getHoverDirection(dragItem, monitor, blockRef, id);
       if (!direction) return;
 
-      const dragEntry = findNode(editor, { match: { id: dragItem.id } });
+      const dragEntry = findNode(editor, {
+        at: [],
+        match: { id: dragItem.id },
+      });
       if (!dragEntry) return;
       const [, dragPath] = dragEntry;
 
@@ -35,14 +38,14 @@ export const useDropBlockOnEditor = (
 
       let dropPath: Path | undefined;
       if (direction === 'bottom') {
-        dropPath = findNode(editor, { match: { id } })?.[1];
+        dropPath = findNode(editor, { at: [], match: { id } })?.[1];
         if (!dropPath) return;
 
         if (Path.equals(dragPath, Path.next(dropPath))) return;
       }
 
       if (direction === 'top') {
-        const nodePath = findNode(editor, { match: { id } })?.[1];
+        const nodePath = findNode(editor, { at: [], match: { id } })?.[1];
 
         if (!nodePath) return;
         dropPath = [
