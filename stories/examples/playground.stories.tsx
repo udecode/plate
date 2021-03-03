@@ -148,7 +148,24 @@ export const Plugins = () => {
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
   if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
+  if (boolean('HeadingPlugin', true))
+    plugins.push(
+      HeadingPlugin({
+        ...options,
+        h1: {
+          ...options.h1,
+          hotkey: ['mod+opt+1', 'mod+shift+1'],
+        },
+        h2: {
+          ...options.h2,
+          hotkey: ['mod+opt+2', 'mod+shift+2'],
+        },
+        h3: {
+          ...options.h3,
+          hotkey: ['mod+opt+3', 'mod+shift+3'],
+        },
+      })
+    );
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
   if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));

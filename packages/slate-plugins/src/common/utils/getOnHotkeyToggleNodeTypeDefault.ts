@@ -1,8 +1,10 @@
+import castArray from 'lodash/castArray';
+import { Editor } from 'slate';
 import { getOnHotkeyToggleNodeType } from './getOnHotkeyToggleNodeType';
 import { setDefaults } from './setDefaults';
 
 interface GetOnHotkeyToggleNodeTypeDefaultOptions {
-  key: string;
+  key: string | string[];
   defaultOptions: Record<string, any>;
   options?: any;
 }
@@ -15,7 +17,11 @@ export const getOnHotkeyToggleNodeTypeDefault = ({
   defaultOptions,
   options,
 }: GetOnHotkeyToggleNodeTypeDefaultOptions) => {
-  const keyOptions = setDefaults(options, defaultOptions)[key];
-
-  return getOnHotkeyToggleNodeType(keyOptions);
+  const keys = castArray(key);
+  return (e: any, editor: Editor) => {
+    keys.forEach((keyItem) => {
+      const keyOptions = setDefaults(options, defaultOptions)[keyItem];
+      return getOnHotkeyToggleNodeType(keyOptions)?.(e, editor);
+    });
+  };
 };
