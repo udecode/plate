@@ -1,20 +1,39 @@
+import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 import { QueryEditorOptions } from '../types/QueryEditorOptions';
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
+import { someNode } from './someNode';
 
 /**
  * Query the editor state.
  */
 export const queryEditor = (
   editor: Editor,
-  { filter, start, end }: QueryEditorOptions = {}
+  {
+    filter,
+    selectionAtBlockStart,
+    selectionAtBlockEnd,
+    allow,
+    exclude,
+    at = editor.selection || [],
+  }: QueryEditorOptions = {}
 ) => {
   if (
     (filter && !filter(editor)) ||
-    (start && !isSelectionAtBlockStart(editor)) ||
-    (end && !isSelectionAtBlockEnd(editor))
+    (selectionAtBlockStart && !isSelectionAtBlockStart(editor)) ||
+    (selectionAtBlockEnd && !isSelectionAtBlockEnd(editor))
   ) {
+    return false;
+  }
+
+  const allows = castArray(allow);
+  if (allows.length && !someNode(editor, { at, match: { type: allows } })) {
+    return false;
+  }
+
+  const excludes = castArray(exclude);
+  if (excludes.length && someNode(editor, { at, match: { type: excludes } })) {
     return false;
   }
 

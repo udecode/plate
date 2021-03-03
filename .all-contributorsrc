@@ -117,6 +117,19 @@
         "test",
         "example"
       ]
+    },
+    {
+      "login": "dylans",
+      "name": "Dylan Schiemann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97291?v=4",
+      "profile": "https://github.com/dylans",
+      "contributions": [
+        "code",
+        "plugin",
+        "example",
+        "bug",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
