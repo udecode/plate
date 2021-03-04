@@ -103,3 +103,4 @@ storybook-static/
 
 # Local
 packages/slate-plugins/docs/
+/docs
