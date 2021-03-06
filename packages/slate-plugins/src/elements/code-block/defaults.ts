@@ -1,3 +1,4 @@
+import { DEFAULT_ELEMENT } from '../../common';
 import { CodeBlockElement } from './components/CodeBlockElement';
 import { CodeLineElement } from './components/CodeLineElement';
 import {

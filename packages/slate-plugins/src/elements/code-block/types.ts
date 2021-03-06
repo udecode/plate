@@ -115,6 +115,11 @@ export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 
 export interface CodeLineOptions extends CodeLinePluginOptions<'type'> {}
 
+export interface CodeBlockInsertOptions {
+  defaultType: string;
+  level: number;
+}
+
 export interface CodeBlockElementStyles {
   /**
    * Style for the root element.
