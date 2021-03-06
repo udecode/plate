@@ -5,7 +5,7 @@ import { setDefaults } from '../../../common/utils/setDefaults';
 import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
 import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { insertCodeBlock } from '../transforms/insertCodeBlock';
+import { insertEmptyCodeBlock } from '../transforms/insertEmptyCodeBlock';
 import { CodeBlockOptions, CodeLineOptions } from '../types';
 
 export const ToolbarCodeBlock = ({
@@ -20,7 +20,7 @@ export const ToolbarCodeBlock = ({
     <ToolbarElement
       type={code_block.type}
       onMouseDown={getPreventDefaultHandler(
-        insertCodeBlock,
+        insertEmptyCodeBlock,
         editor,
         { select: true },
         options
