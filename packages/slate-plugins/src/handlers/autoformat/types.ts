@@ -1,5 +1,4 @@
 import { Editor } from 'slate';
-import { QueryEditorOptions } from '../../common/types/QueryEditorOptions';
 
 export interface AutoformatRule {
   /**

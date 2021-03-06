@@ -3,7 +3,7 @@
 import { Editor } from 'slate';
 import { jsx } from '../../../__test-utils__/jsx';
 import { findNode } from '../../../common/queries/findNode';
-import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
+import { moveListItemsToList } from './moveListItemsToList';
 
 const input = ((
   <editor>
@@ -56,7 +56,7 @@ it('should', () => {
   const toList = findNode(input, { match: { id: '1' } }) as any;
 
   if (fromListItem && toList) {
-    moveListItemSublistItemsToList(editor, { fromListItem, toList }, {});
+    moveListItemsToList(editor, { fromListItem, toList }, {});
   }
 
   expect(input.children).toEqual(output.children);
