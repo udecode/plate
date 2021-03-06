@@ -1,5 +1,4 @@
 import { Editor, Location } from 'slate';
-import { getNodes } from '../../../common';
 import { getAbove } from '../../../common/queries/getAbove';
 import { getParent } from '../../../common/queries/getParent';
 import { someNode } from '../../../common/queries/someNode';

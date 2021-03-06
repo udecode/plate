@@ -820,6 +820,7 @@ export const initialValueList: SlateDocument = [
         type: options.h2.type,
         children: [{ text: '✍️ List' }],
       },
+      { type: options.p.type, children: [{ text: '' }] },
       {
         type: options.ul.type,
         children: [
@@ -836,6 +837,20 @@ export const initialValueList: SlateDocument = [
                       {
                         type: options.p.type,
                         children: [{ text: 'support' }],
+                      },
+                      {
+                        type: options.ul.type,
+                        children: [
+                          {
+                            type: options.li.type,
+                            children: [
+                              {
+                                type: options.p.type,
+                                children: [{ text: 'a' }],
+                              },
+                            ],
+                          },
+                        ],
                       },
                     ],
                   },
@@ -854,7 +869,7 @@ export const initialValueList: SlateDocument = [
                             children: [
                               {
                                 type: options.p.type,
-                                children: [{ text: 'limitless' }],
+                                children: [{ text: 'b' }],
                               },
                             ],
                           },
@@ -863,6 +878,15 @@ export const initialValueList: SlateDocument = [
                     ],
                   },
                 ],
+              },
+            ],
+          },
+          {
+            type: options.li.type,
+            children: [
+              {
+                type: options.p.type,
+                children: [{ text: 'c' }],
               },
             ],
           },
