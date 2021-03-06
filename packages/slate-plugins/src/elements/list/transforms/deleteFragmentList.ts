@@ -17,11 +17,11 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
   Editor.withoutNormalizing(editor, () => {
     const { li } = setDefaults(options, DEFAULTS_LIST);
 
+    // Selection should be across list items
     if (!isAcrossListItems(editor, options)) return;
 
     /**
-     * Check if the end li can be deleted.
-     * True if it has no sublist.
+     * Check if the end li can be deleted (if it has no sublist).
      * Store the path ref to delete it after deleteFragment.
      */
     const end = Editor.end(editor, editor.selection as Range);
@@ -31,12 +31,13 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
       ? Editor.pathRef(editor, liEnd![1])
       : undefined;
 
+    /**
+     * Delete fragment and move end block children to start block
+     */
     deleteFragment(editor, {
-      /**
-       * Move end block children to start block
-       */
       moveNode: (_editor, { at }) => {
         if (!editor.selection) return;
+
         const [, path] = Editor.node(editor, at);
 
         const blockAbove = getBlockAbove(editor, {

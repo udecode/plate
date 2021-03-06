@@ -1,15 +1,11 @@
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Ancestor, Editor, NodeEntry } from 'slate';
 import { isFirstChild } from '../../../common/queries/isFirstChild';
-import { moveChildren } from '../../../common/transforms/moveChildren';
-import { hasListChild } from '../queries/hasListChild';
 import { isListNested } from '../queries/isListNested';
 import { ListOptions } from '../types';
+import { moveListItemUp } from './moveListItemUp';
 
 /**
- * If the list is not nested and
- * if the list has one child and
- * if there is a sublist in `listItem` and
- * if `listItem` is the first child of `list`
+ * If list is not nested and if li is not the first child, move li up.
  */
 export const removeFirstListItem = (
   editor: Editor,
@@ -22,21 +18,12 @@ export const removeFirstListItem = (
   },
   options?: ListOptions
 ) => {
-  const [listNode, listPath] = list;
-  const [listItemNode, listItemPath] = listItem;
+  const [, listPath] = list;
+  const [, listItemPath] = listItem;
 
-  if (
-    !isListNested(editor, listPath, options) &&
-    listNode.children.length <= 1 &&
-    hasListChild(listItemNode) &&
-    isFirstChild(listItemPath)
-  ) {
-    // move all children to the container
-    moveChildren(editor, {
-      at: [listItemNode, listItemPath],
-      to: Path.next(listPath),
-    });
-    Transforms.removeNodes(editor, { at: listPath });
+  if (!isListNested(editor, listPath, options) && isFirstChild(listItemPath)) {
+    moveListItemUp(editor, { list, listItem }, options);
+
     return true;
   }
 

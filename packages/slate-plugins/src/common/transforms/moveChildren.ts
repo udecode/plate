@@ -16,7 +16,7 @@ export interface MoveChildrenOptions {
    * Start index of the children to move.
    * Example: 1 means children[0] will not be moved.
    */
-  start?: number;
+  fromStartIndex?: number;
 
   /**
    * Condition for the child to be moved
@@ -30,7 +30,7 @@ export interface MoveChildrenOptions {
  */
 export const moveChildren = (
   editor: Editor,
-  { at, to, match, start = 0 }: MoveChildrenOptions
+  { at, to, match, fromStartIndex = 0 }: MoveChildrenOptions
 ) => {
   let moved = 0;
   const parentPath = Path.isPath(at) ? at : at[1];
@@ -38,7 +38,7 @@ export const moveChildren = (
 
   if (!Editor.isBlock(editor, parentNode)) return moved;
 
-  for (let i = parentNode.children.length - 1; i >= start; i--) {
+  for (let i = parentNode.children.length - 1; i >= fromStartIndex; i--) {
     const childPath = [...parentPath, i];
     const childNode = getNode(editor, childPath);
 

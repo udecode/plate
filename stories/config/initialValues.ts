@@ -47,6 +47,22 @@ export const headingTypes = [
   ELEMENT_H6,
 ];
 
+export const headingOptions = {
+  ...DEFAULTS_HEADING,
+  h1: {
+    ...DEFAULTS_HEADING.h1,
+    hotkey: ['mod+opt+1', 'mod+shift+1'],
+  },
+  h2: {
+    ...DEFAULTS_HEADING.h2,
+    hotkey: ['mod+opt+2', 'mod+shift+2'],
+  },
+  h3: {
+    ...DEFAULTS_HEADING.h3,
+    hotkey: ['mod+opt+3', 'mod+shift+3'],
+  },
+};
+
 export const options = {
   ...setDefaults(DEFAULTS_PARAGRAPH, {}),
   ...setDefaults(DEFAULTS_MENTION, {}),
@@ -58,7 +74,7 @@ export const options = {
   ...setDefaults(DEFAULTS_TODO_LIST, {}),
   ...setDefaults(DEFAULTS_TABLE, {}),
   ...setDefaults(DEFAULTS_LIST, {}),
-  ...setDefaults(DEFAULTS_HEADING, {}),
+  ...setDefaults(headingOptions, {}),
   ...setDefaults(DEFAULTS_ALIGN, {}),
   ...setDefaults(DEFAULTS_BOLD, {}),
   ...setDefaults(DEFAULTS_ITALIC, {}),
@@ -820,6 +836,7 @@ export const initialValueList: SlateDocument = [
         type: options.h2.type,
         children: [{ text: '✍️ List' }],
       },
+      { type: options.p.type, children: [{ text: '' }] },
       {
         type: options.ul.type,
         children: [
@@ -836,6 +853,20 @@ export const initialValueList: SlateDocument = [
                       {
                         type: options.p.type,
                         children: [{ text: 'support' }],
+                      },
+                      {
+                        type: options.ul.type,
+                        children: [
+                          {
+                            type: options.li.type,
+                            children: [
+                              {
+                                type: options.p.type,
+                                children: [{ text: 'a' }],
+                              },
+                            ],
+                          },
+                        ],
                       },
                     ],
                   },
@@ -854,7 +885,7 @@ export const initialValueList: SlateDocument = [
                             children: [
                               {
                                 type: options.p.type,
-                                children: [{ text: 'limitless' }],
+                                children: [{ text: 'b' }],
                               },
                             ],
                           },
@@ -863,6 +894,15 @@ export const initialValueList: SlateDocument = [
                     ],
                   },
                 ],
+              },
+            ],
+          },
+          {
+            type: options.li.type,
+            children: [
+              {
+                type: options.p.type,
+                children: [{ text: 'c' }],
               },
             ],
           },
