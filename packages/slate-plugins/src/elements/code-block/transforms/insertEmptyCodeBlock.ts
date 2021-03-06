@@ -1,9 +1,15 @@
 import { Editor, Path, Transforms } from 'slate';
-import { InsertNodesOptions, setDefaults } from '../../../common';
+import {
+  InsertNodesOptions,
+  isBlockAboveEmpty,
+  isExpanded,
+} from '../../../common';
 import { DEFAULT_ELEMENT } from '../../../common/types/node.types';
-import { exitBreakAtEdges } from '../../../handlers';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockOptions, CodeLineOptions } from '../types';
+import {
+  CodeBlockInsertOptions,
+  CodeBlockOptions,
+  CodeLineOptions,
+} from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
 
 /**
@@ -13,20 +19,29 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = (
   editor: Editor,
   options: Omit<InsertNodesOptions, 'match'> = {},
-  pluginsOptions: CodeBlockOptions & CodeLineOptions = {},
-  defaultType: string = DEFAULT_ELEMENT,
-  level = 1
+  pluginsOptions: CodeBlockInsertOptions &
+    CodeBlockOptions &
+    CodeLineOptions = {
+    defaultType: DEFAULT_ELEMENT,
+    level: 1,
+  }
 ) => {
   if (!editor.selection) return;
-  const selectionPath = Editor.path(editor, editor.selection);
-  const insertPath = Path.next(selectionPath.slice(0, level + 1));
-  Transforms.insertNodes(
-    editor,
-    { type: defaultType, children: [{ text: '' }] },
-    {
-      at: insertPath,
-      select: true,
-    }
-  );
+
+  const defaultType = pluginsOptions.defaultType || DEFAULT_ELEMENT;
+  const level = pluginsOptions.level || 1;
+
+  if (isExpanded(editor.selection) || isBlockAboveEmpty(editor)) {
+    const selectionPath = Editor.path(editor, editor.selection);
+    const insertPath = Path.next(selectionPath.slice(0, level + 1));
+    Transforms.insertNodes(
+      editor,
+      { type: defaultType, children: [{ text: '' }] },
+      {
+        at: insertPath,
+        select: true,
+      }
+    );
+  }
   insertCodeBlock(editor, options, pluginsOptions);
 };
