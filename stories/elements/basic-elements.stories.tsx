@@ -55,6 +55,7 @@ export const Example = () => {
   if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
   if (boolean('ResetBlockTypePlugin', true))
     plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
