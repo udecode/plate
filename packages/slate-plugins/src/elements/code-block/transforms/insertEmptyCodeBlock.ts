@@ -31,7 +31,7 @@ export const insertEmptyCodeBlock = (
   const defaultType = pluginsOptions.defaultType || DEFAULT_ELEMENT;
   const level = pluginsOptions.level || 1;
 
-  if (isExpanded(editor.selection) || isBlockAboveEmpty(editor)) {
+  if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
     const selectionPath = Editor.path(editor, editor.selection);
     const insertPath = Path.next(selectionPath.slice(0, level + 1));
     Transforms.insertNodes(
