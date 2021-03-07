@@ -41,6 +41,7 @@ export const withTrailingNode = ({
           },
           { at: Path.next(lastPath) }
         );
+        return;
       }
     }
 

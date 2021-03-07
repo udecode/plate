@@ -76,6 +76,9 @@ const output = ((
           </hli>
         </hul>
       </hli>
+      <hli id="13">
+        <hp>3</hp>
+      </hli>
     </hul>
   </editor>
 ) as any) as Editor;
@@ -87,7 +90,7 @@ it('should', () => {
   const listItem = findNode(input, { match: { id: '13' } }) as any;
 
   if (list && listItem) {
-    removeRootListItem(editor, { list, listItem });
+    removeListItem(editor, { list, listItem });
   }
 
   expect(input.children).toEqual(output.children);

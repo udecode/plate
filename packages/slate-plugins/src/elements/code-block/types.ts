@@ -79,3 +79,8 @@ export interface WithCodeLineOptions extends CodeLineOptions {}
 
 export interface CodeBlockNormalizerOptions
   extends Pick<WithCodeBlockOptions, 'validCodeBlockChildrenTypes'> {}
+
+export interface CodeBlockInsertOptions {
+  defaultType: string;
+  level: number;
+}

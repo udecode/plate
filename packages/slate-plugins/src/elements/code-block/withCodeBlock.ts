@@ -8,26 +8,22 @@ export const withCodeBlock = (
   options: WithCodeBlockOptions & WithCodeLineOptions = {}
 ) => <T extends ReactEditor>(editor: T) => {
   const { insertBreak } = editor;
-
   const insertBreakCodeBlock = () => {
     if (editor.selection) return;
     const res = getCodeLineEntry(editor, {}, options);
     if (!res) return;
-
     const { codeBlock, codeLine } = res;
     const indentDepth = getIndentDepth(editor, {
       codeBlock,
       codeLine,
     });
-
     insertCodeLine(editor, indentDepth, options);
-
     return true;
   };
-
   editor.insertBreak = () => {
     if (insertBreakCodeBlock()) return;
-
     insertBreak();
   };
+
+  return editor;
 };

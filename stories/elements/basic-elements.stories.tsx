@@ -22,12 +22,16 @@ import {
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
+  withCodeBlock,
 } from '@udecode/slate-plugins';
 import {
   HeadingToolbar,
   ToolbarCodeBlock,
   ToolbarElement,
 } from '@udecode/slate-plugins-components';
+import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { Slate, withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,
@@ -47,12 +51,14 @@ export default {
   },
 };
 
+const withPlugins = [withReact, withHistory, withCodeBlock(options)] as const;
+
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
   if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
-  if (boolean('CodePlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
   if (boolean('ResetBlockTypePlugin', true))
     plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));

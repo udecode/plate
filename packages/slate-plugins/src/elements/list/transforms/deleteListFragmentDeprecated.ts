@@ -10,7 +10,7 @@ import { getListItemEntry } from '../queries/getListItemEntry';
 import { getListRoot } from '../queries/getListRoot';
 import { getListTypes } from '../queries/getListTypes';
 import { ListOptions } from '../types';
-import { moveListItemSublistItemsToList } from './moveListItemSublistItemsToList';
+import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 
@@ -60,7 +60,7 @@ export const deleteListFragmentDeprecated = (
       const toListNode = getNode(editor, next);
       if (!toListNode) return;
 
-      childrenMoved = moveListItemSublistItemsToList(
+      childrenMoved = moveListItemsToList(
         editor,
         {
           fromListItem: listItemEnd,

@@ -70,11 +70,9 @@ export const onKeyDownCodeBlock = (
 
     e.preventDefault();
     e.stopPropagation();
-    return;
   }
 
-  if (e.key === 'mod+enter') {
-    // FIXME: this already works, verify if we need to add something specific here
-    // exit code block, move cursor to block after current code-block
-  }
+  // Note: rather than handling mod+enter/mod+shift+enter here, we recommend
+  // using the exit-break plugin/ If not using exit-break, follow similar logic
+  // to exit-break to add behavior to exit the code-block
 };

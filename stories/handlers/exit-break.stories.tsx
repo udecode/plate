@@ -16,6 +16,7 @@ import {
   SlatePlugins,
   SoftBreakPlugin,
   TablePlugin,
+  withCodeBlock,
   withList,
   withTrailingNode,
 } from '@udecode/slate-plugins';
@@ -43,6 +44,7 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
+  withCodeBlock(options),
   withTrailingNode({ type: options.p.type }),
 ] as const;
 

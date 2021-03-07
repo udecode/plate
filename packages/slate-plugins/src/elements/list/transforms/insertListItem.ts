@@ -73,6 +73,10 @@ export const insertListItem = (editor: Editor, options?: ListOptions) => {
           at: nextParagraphPath,
           to: nextListItemPath,
         });
+        Transforms.select(editor, nextListItemPath);
+        Transforms.collapse(editor, {
+          edge: 'start',
+        });
       });
     } else {
       /**

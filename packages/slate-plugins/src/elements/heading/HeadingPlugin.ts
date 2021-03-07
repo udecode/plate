@@ -13,7 +13,7 @@ export const HeadingPlugin = (options?: HeadingPluginOptions): SlatePlugin => ({
   renderElement: renderElementHeading(options),
   deserialize: deserializeHeading(options),
   onKeyDown: getOnHotkeyToggleNodeTypeDefault({
-    key: 'h1',
+    key: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
     defaultOptions: DEFAULTS_HEADING,
     options,
   }),

@@ -37,28 +37,38 @@ export const withNormalizeTypes = ({ rules, onError }: WithNormalizeTypes) => <
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
-      rules.forEach(({ strictType, type, path }) => {
-        const node = getNode(editor, path);
+      const endCurrentNormalizationPass = rules.some(
+        ({ strictType, type, path }) => {
+          const node = getNode(editor, path);
 
-        if (node) {
-          if (strictType && node.type !== strictType) {
-            Transforms.setNodes(editor, { type: strictType }, { at: path });
+          if (node) {
+            if (strictType && node.type !== strictType) {
+              Transforms.setNodes(editor, { type: strictType }, { at: path });
+              return true;
+            }
+          } else {
+            try {
+              Transforms.insertNodes(
+                editor,
+                {
+                  type: strictType ?? type,
+                  children: [{ text: '' }],
+                },
+                { at: path }
+              );
+              return true;
+            } catch (err) {
+              onError?.(err);
+            }
           }
-        } else {
-          try {
-            Transforms.insertNodes(
-              editor,
-              {
-                type: strictType ?? type,
-                children: [{ text: '' }],
-              },
-              { at: path }
-            );
-          } catch (err) {
-            onError?.(err);
-          }
+
+          return false;
         }
-      });
+      );
+
+      if (endCurrentNormalizationPass) {
+        return;
+      }
     }
 
     return normalizeNode([currentNode, currentPath]);

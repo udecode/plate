@@ -1,0 +1,17 @@
+{
+  "exclude": [
+    "**/*test*/**",
+    "**/*fixture*/**",
+    "**/*template*/**",
+    "**/*stories*/**",
+    "**/*.development.*"
+  ],
+  "excludeNotExported": true,
+  "excludeExternals": false,
+  "ignoreCompilerErrors": true,
+  "includeVersion": true,
+  "mode": "file",
+  "name": "@udecode/slate-plugins",
+  "out": "./docs",
+  "readme": "./README.md"
+}

@@ -155,23 +155,22 @@ export const mergeNodes = (
     // of merging the two. This is a common rich text editor behavior to
     // prevent losing formatting when deleting entire nodes when you have a
     // hanging selection.
-    if (
+    // DIFF: start
+    if (mergeNode) {
+      mergeNode(editor, { at: path, to: newPath });
+      // DIFF: end
+    } else if (
       (Element.isElement(prevNode) && Editor.isEmpty(editor, prevNode)) ||
       (Text.isText(prevNode) && prevNode.text === '')
     ) {
       Transforms.removeNodes(editor, { at: prevPath, voids });
-    }
-    // DIFF
-    else if (!mergeNode) {
+    } else {
       editor.apply({
         type: 'merge_node',
         path: newPath,
         position,
         properties,
       });
-    } else {
-      // DIFF
-      mergeNode(editor, { at: path, to: newPath });
     }
 
     if (emptyRef) {

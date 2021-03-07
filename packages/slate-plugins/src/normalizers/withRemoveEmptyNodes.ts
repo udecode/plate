@@ -20,6 +20,7 @@ export const withRemoveEmptyNodes = (options: { type: string | string[] }) => <
       Node.string(node) === ''
     ) {
       Transforms.removeNodes(editor, { at: path });
+      return;
     }
 
     normalizeNode([node, path]);

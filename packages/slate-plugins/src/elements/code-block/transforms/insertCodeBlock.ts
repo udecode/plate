@@ -25,6 +25,17 @@ export const insertCodeBlock = (
     DEFAULTS_CODE_BLOCK
   );
 
+  const matchCodeElements = (node: Node) =>
+    node.type === code_block.type || node.type === code_line.type;
+
+  if (
+    someNode(editor, {
+      match: matchCodeElements,
+    })
+  ) {
+    return;
+  }
+
   if (!isSelectionAtBlockStart(editor)) {
     editor.insertBreak();
   }
