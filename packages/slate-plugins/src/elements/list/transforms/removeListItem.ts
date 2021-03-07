@@ -1,8 +1,10 @@
+import {
+  deleteFragment,
+  getPreviousPath,
+  isExpanded,
+  setDefaults,
+} from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { getPreviousPath } from '../../../common/queries/getPreviousPath';
-import { isExpanded } from '../../../common/queries/isExpanded';
-import { deleteFragment } from '../../../common/transforms/deleteFragment';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_LIST } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
 import { ListOptions } from '../types';

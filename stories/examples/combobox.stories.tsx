@@ -4,6 +4,9 @@ import {
   EditablePlugins,
   pipe,
   SlateDocument,
+  SlatePlugins,
+  useSlatePluginsActions,
+  useSlatePluginsEditor,
   withInlineVoid,
 } from '@udecode/slate-plugins';
 import { createEditor, Editor } from 'slate';
@@ -20,8 +23,10 @@ import { useTagOnChange } from './tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './tag/hooks/useTagOnSelectItem';
 import { TagPlugin } from './tag/TagPlugin';
 
+const id = 'Examples/Combobox';
+
 export default {
-  title: 'Examples/Combobox',
+  title: id,
 };
 
 const useComboboxOnChange = (editor: Editor) => {
@@ -57,9 +62,8 @@ const ComboboxContainer = () => {
 
 export const Example = () => {
   const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueCombobox);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+    const editor = useSlatePluginsEditor(id);
+    const { setValue } = useSlatePluginsActions(id);
 
     const comboboxOnChange = useComboboxOnChange(editor);
 
@@ -74,9 +78,10 @@ export const Example = () => {
     });
 
     return (
-      <Slate
-        editor={editor}
-        value={value}
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueCombobox}
+        withPlugins={withPlugins}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
           comboboxOnChange();
@@ -84,6 +89,7 @@ export const Example = () => {
       >
         <ComboboxContainer />
         <EditablePlugins
+          id={id}
           plugins={plugins}
           onKeyDown={[comboboxOnKeyDown]}
           onKeyDownDeps={[
@@ -98,7 +104,7 @@ export const Example = () => {
           spellCheck={boolean('spellCheck', true)}
           autoFocus
         />
-      </Slate>
+      </SlatePlugins>
     );
   };
 

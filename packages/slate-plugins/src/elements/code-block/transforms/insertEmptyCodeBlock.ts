@@ -1,10 +1,10 @@
-import { Editor, Path, Transforms } from 'slate';
 import {
+  DEFAULT_ELEMENT,
   InsertNodesOptions,
   isBlockAboveEmpty,
   isExpanded,
-} from '../../../common';
-import { DEFAULT_ELEMENT } from '../../../common/types/node.types';
+} from '@udecode/slate-plugins-common';
+import { Editor, Path, Transforms } from 'slate';
 import {
   CodeBlockInsertOptions,
   CodeBlockOptions,

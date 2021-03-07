@@ -23,6 +23,7 @@ export * from './TodoListElement/index';
 export * from './Toolbar/index';
 export * from './ToolbarAlign/index';
 export * from './ToolbarButton/index';
+export * from './ToolbarCodeBlock/index';
 export * from './ToolbarElement/index';
 export * from './ToolbarImage/index';
 export * from './ToolbarLink/index';

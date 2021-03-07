@@ -3,9 +3,10 @@ import {
   isExpanded,
   isSelectionAtBlockStart,
   setDefaults,
+  someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { Editor, Transforms } from 'slate';
+import { Editor, Node, Transforms } from 'slate';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { CodeBlockOptions, CodeLineOptions } from '../types';
 

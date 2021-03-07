@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {
+  CodeBlockInsertOptions,
   CodeBlockOptions,
   CodeLineOptions,
   DEFAULTS_CODE_BLOCK,
   getPreventDefaultHandler,
-  insertCodeBlock,
+  insertEmptyCodeBlock,
   setDefaults,
 } from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';

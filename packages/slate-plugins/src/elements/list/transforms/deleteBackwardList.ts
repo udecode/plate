@@ -1,8 +1,10 @@
+import {
+  deleteFragment,
+  isCollapsed,
+  isSelectionAtBlockStart,
+  setDefaults,
+} from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { isCollapsed } from '../../../common/queries/isCollapsed';
-import { isSelectionAtBlockStart } from '../../../common/queries/isSelectionAtBlockStart';
-import { deleteFragment } from '../../../common/transforms/deleteFragment';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';

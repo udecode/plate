@@ -1,6 +1,5 @@
+import { isBlockAboveEmpty, setDefaults } from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { isBlockAboveEmpty } from '../../../common/queries/isBlockAboveEmpty';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
 import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';
