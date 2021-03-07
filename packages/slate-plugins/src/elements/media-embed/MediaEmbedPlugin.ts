@@ -1,6 +1,6 @@
 import { setDefaults } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_MEDIA_EMBED } from './defaults';
+import { DEFAULTS_MEDIA_EMBED, ELEMENT_MEDIA_EMBED } from './defaults';
 import { deserializeIframe } from './deserializeIframe';
 import { renderElementMediaEmbed } from './renderElementMediaEmbed';
 import { MediaEmbedPluginOptions } from './types';
@@ -15,6 +15,7 @@ export const MediaEmbedPlugin = (
   const { media_embed } = setDefaults(options, DEFAULTS_MEDIA_EMBED);
 
   return {
+    elementKeys: ELEMENT_MEDIA_EMBED,
     renderElement: renderElementMediaEmbed(options),
     deserialize: deserializeIframe(options),
     voidTypes: [media_embed.type],

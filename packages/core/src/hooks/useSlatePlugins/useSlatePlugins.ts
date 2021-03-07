@@ -12,7 +12,7 @@ import { useSlateProps } from './useSlateProps';
  * Dynamically updating the options will update the store state.
  * Use `useSlatePluginsStore` to select the state from the store.
  */
-export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
+export const useSlatePlugins = (options: UseSlatePluginsOptions) => {
   const {
     id,
     editor,
@@ -71,11 +71,27 @@ export const useSlatePlugins = (options: UseSlatePluginsOptions = {}) => {
 
   // Slate plugins
   useEffect(() => {
+    console.log('setPlugins');
     plugins && setPlugins(plugins);
   }, [plugins, setPlugins]);
 
   return {
     getSlateProps: useSlateProps(options),
-    getEditableProps: useEditableProps(options),
+    getEditableProps: useEditableProps({
+      components,
+      decorate,
+      decorateDeps,
+      editableProps,
+      id,
+      onDOMBeforeInput,
+      onDOMBeforeInputDeps,
+      onKeyDown,
+      onKeyDownDeps,
+      plugins,
+      renderElement,
+      renderElementDeps,
+      renderLeaf,
+      renderLeafDeps,
+    }),
   };
 };

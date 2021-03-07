@@ -1,11 +1,11 @@
-import * as React from 'react';
+import { EditableProps } from 'slate-react/dist/components/editable';
 import { Decorate } from './Decorate';
 import { OnDOMBeforeInput } from './OnDOMBeforeInput';
 import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
 import { SlatePlugin } from './SlatePlugin';
-import { State } from './SlatePluginsState';
+import { State } from './SlatePluginsStore';
 
 // TODO: duplicate
 
@@ -13,11 +13,7 @@ import { State } from './SlatePluginsState';
  * Options related to Editable component
  */
 export interface UseEditableOptions
-  extends Omit<
-      React.TextareaHTMLAttributes<HTMLDivElement>,
-      'value' | 'onChange' | 'onKeyDown'
-    >,
-    Partial<Pick<State, 'components' | 'plugins'>> {
+  extends Partial<Pick<State, 'components' | 'plugins'>> {
   /**
    * Unique id to store multiple editor states. Default is 'main'.
    */
@@ -78,7 +74,5 @@ export interface UseEditableOptions
    */
   plugins?: SlatePlugin[];
 
-  as?: React.ElementType;
-
-  [key: string]: any;
+  editableProps?: EditableProps;
 }

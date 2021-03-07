@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import * as React from 'react';
 import { Editable } from 'slate-react';
 import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
@@ -9,6 +10,10 @@ import { UseEditableOptions } from '../types/UseEditableOptions';
  */
 export const EditablePlugins = (props: UseEditableOptions) => {
   const { id } = props;
+
+  useEffect(() => {
+    console.log(props);
+  }, [props]);
 
   const { getEditableProps } = useSlatePlugins(props);
 

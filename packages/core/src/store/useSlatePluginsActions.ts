@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Actions } from '../types/SlatePluginsState';
+import { SlatePluginsActions } from '../types/SlatePluginsStore';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 const getSetterById = <T extends (...args: any) => any>(
@@ -8,7 +8,9 @@ const getSetterById = <T extends (...args: any) => any>(
 ) => (value: Parameters<T>[0], id: Parameters<T>[1]) =>
   action(value, id ?? storeId);
 
-export const useSlatePluginsActions = (storeId?: string): Actions => {
+export const useSlatePluginsActions = (
+  storeId?: string
+): SlatePluginsActions => {
   const store = useSlatePluginsStore;
 
   return useMemo(
@@ -20,6 +22,7 @@ export const useSlatePluginsActions = (storeId?: string): Actions => {
       setEditor: getSetterById(store.getState().setEditor, storeId),
       setPlugins: getSetterById(store.getState().setPlugins, storeId),
       setWithPlugins: getSetterById(store.getState().setWithPlugins, storeId),
+      setElementKeys: getSetterById(store.getState().setElementKeys, storeId),
     }),
     [store, storeId]
   );

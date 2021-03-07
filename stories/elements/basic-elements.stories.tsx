@@ -1,5 +1,5 @@
 import 'prismjs/themes/prism.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import {
@@ -29,9 +29,8 @@ import {
   ToolbarCodeBlock,
   ToolbarElement,
 } from '@udecode/slate-plugins-components';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
   headingTypes,
   initialValueBasicElements,

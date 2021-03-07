@@ -165,7 +165,7 @@ const Editor = () => {
   const decorate: any = [];
   const onKeyDown: any = [];
 
-  useSlatePlugins();
+  useSlatePlugins({});
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { getOnHotkeyToggleNodeTypeDefault } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_PARAGRAPH } from './defaults';
+import { DEFAULTS_PARAGRAPH, ELEMENT_PARAGRAPH } from './defaults';
 import { deserializeParagraph } from './deserializeParagraph';
 import { renderElementParagraph } from './renderElementParagraph';
 import { ParagraphPluginOptions } from './types';
@@ -18,4 +18,5 @@ export const ParagraphPlugin = (
     defaultOptions: DEFAULTS_PARAGRAPH,
     options,
   }),
+  elementKeys: ELEMENT_PARAGRAPH,
 });

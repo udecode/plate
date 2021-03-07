@@ -12,7 +12,7 @@ export * from './RenderElement';
 export * from './RenderLeaf';
 export * from './SerializeHtml';
 export * from './SlatePlugin';
-export * from './SlatePluginsState';
+export * from './SlatePluginsStore';
 export * from './UseEditableOptions';
 export * from './UseSlateOptions';
 export * from './UseSlatePluginsOptions';

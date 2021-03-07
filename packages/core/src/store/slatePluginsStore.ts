@@ -1,18 +1,16 @@
 import { createEditor } from 'slate';
 import { StoreApi } from 'zustand';
 import createVanillaStore from 'zustand/vanilla';
-import { SlatePluginsState, State } from '../types/SlatePluginsState';
+import { SlatePluginsStore, State } from '../types/SlatePluginsStore';
 import { pipe } from '../utils/pipe';
 import { withRandomKey } from '../with/randomKeyEditor';
 import { getInitialState } from './getInitialState';
 import { getSetter } from './getSetter';
 
-export type SlatePluginsStore = StoreApi<SlatePluginsState>;
-
 /**
  * Slate plugins zustand store.
  */
-export const slatePluginsStore = createVanillaStore<SlatePluginsState>(
+export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
   (set, get) => ({
     byId: {},
     setComponents: getSetter<State['components']>({
@@ -30,6 +28,10 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsState>(
     setValue: getSetter<State['value']>({
       set,
       key: 'value',
+    }),
+    setElementKeys: getSetter<State['elementKeys']>({
+      set,
+      key: 'elementKeys',
     }),
     setInitialState: (id = 'main') =>
       set((state) => {

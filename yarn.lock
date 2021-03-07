@@ -16337,6 +16337,11 @@ use-latest@^1.0.0:
   dependencies:
     use-isomorphic-layout-effect "^1.0.0"
 
+use-why-did-you-update@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/use-why-did-you-update/-/use-why-did-you-update-0.1.0.tgz#908f1dcc92299e1f1429f96503ac42fff6b5bdaf"
+  integrity sha512-kRbJFxdJYh3kMF3+mbLh7EPoDzQJFhKkzonv1TgxfuKtNnc8mH0w/vUQSY1DJ2xqry/ifUyE8sa4ELObIBsOng==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"

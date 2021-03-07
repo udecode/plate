@@ -12,6 +12,8 @@ import { SerializeHtml } from './SerializeHtml';
 export interface SlatePlugin {
   deserialize?: DeserializeHtml;
 
+  elementKeys?: string | string[];
+
   serialize?: SerializeHtml;
 
   inlineTypes?: string[];

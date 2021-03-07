@@ -1,6 +1,6 @@
 // TODO: use immer, except for editor as it should be mutable.
 import { SetState } from 'zustand';
-import { SlatePluginsState } from '../types/SlatePluginsState';
+import { SlatePluginsStore } from '../types/SlatePluginsStore';
 import { getInitialState } from './getInitialState';
 
 const setStateById = ({
@@ -9,7 +9,7 @@ const setStateById = ({
   value,
   id,
 }: {
-  set: SetState<SlatePluginsState>;
+  set: SetState<SlatePluginsStore>;
   key: string;
   value: any;
   id: string;
@@ -32,6 +32,6 @@ export const getSetter = <T>({
   set,
   key,
 }: {
-  set: SetState<SlatePluginsState>;
+  set: SetState<SlatePluginsStore>;
   key: string;
 }) => (value: T, id = 'main') => setStateById({ set, key, value, id });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Slate } from 'slate-react';
 import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
 import { UseSlateOptions } from '../types/UseSlateOptions';

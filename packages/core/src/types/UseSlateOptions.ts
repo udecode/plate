@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { State } from './SlatePluginsState';
+import { State } from './SlatePluginsStore';
 
 /**
  * Options related to Slate component

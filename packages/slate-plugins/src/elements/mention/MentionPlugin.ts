@@ -1,6 +1,6 @@
 import { setDefaults } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_MENTION } from './defaults';
+import { DEFAULTS_MENTION, ELEMENT_MENTION } from './defaults';
 import { deserializeMention } from './deserializeMention';
 import { renderElementMention } from './renderElementMention';
 import { MentionPluginOptions } from './types';
@@ -14,6 +14,7 @@ export const MentionPlugin = (options?: MentionPluginOptions): SlatePlugin => {
   const { mention } = setDefaults(options, DEFAULTS_MENTION);
 
   return {
+    elementKeys: ELEMENT_MENTION,
     renderElement: renderElementMention(options),
     deserialize: deserializeMention(options),
     inlineTypes: [mention.type],
