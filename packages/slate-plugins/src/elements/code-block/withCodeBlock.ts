@@ -1,22 +1,16 @@
 import { ReactEditor } from 'slate-react';
-import { setDefaults } from '../../common';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
-import { DEFAULTS_CODE_BLOCK } from './defaults';
-import { getIndentDepth } from './queries';
-import { insertCodeLine } from './transforms';
+import { getIndentDepth } from './queries/getIndentDepth';
+import { insertCodeLine } from './transforms/insertCodeLine';
 import { WithCodeBlockOptions, WithCodeLineOptions } from './types';
 
-export const withCodeBlock = ({
-  validCodeBlockChildrenTypes,
-  ...options
-}: WithCodeBlockOptions & WithCodeLineOptions = {}) => <T extends ReactEditor>(
-  editor: T
-) => {
-  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+export const withCodeBlock = (
+  options: WithCodeBlockOptions & WithCodeLineOptions = {}
+) => <T extends ReactEditor>(editor: T) => {
   const { insertBreak } = editor;
 
-  editor.insertBreak = () => {
-    if (!editor.selection) return;
+  const insertBreakCodeBlock = () => {
+    if (editor.selection) return;
     const res = getCodeLineEntry(editor, {}, options);
     if (!res) return;
 
@@ -27,5 +21,13 @@ export const withCodeBlock = ({
     });
 
     insertCodeLine(editor, indentDepth, options);
+
+    return true;
+  };
+
+  editor.insertBreak = () => {
+    if (insertBreakCodeBlock()) return;
+
+    insertBreak();
   };
 };

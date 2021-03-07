@@ -1,5 +1,5 @@
+import { getText } from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { getText } from '../../../common';
 import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = (

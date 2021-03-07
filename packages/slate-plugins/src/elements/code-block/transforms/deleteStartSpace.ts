@@ -1,5 +1,5 @@
+import { getText } from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { getText } from '../../../common';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
 /**

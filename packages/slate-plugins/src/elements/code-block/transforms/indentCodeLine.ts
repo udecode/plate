@@ -1,5 +1,5 @@
+import { isExpanded } from '@udecode/slate-plugins-common';
 import { Ancestor, Editor, Node, NodeEntry, Transforms } from 'slate';
-import { isExpanded } from '../../../common/queries/isExpanded';
 
 export interface IndentCodeLineOptions {
   codeBlock: NodeEntry<Ancestor>;

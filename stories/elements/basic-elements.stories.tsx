@@ -22,12 +22,11 @@ import {
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
-
 } from '@udecode/slate-plugins';
 import {
   HeadingToolbar,
-  ToolbarElement,
   ToolbarCodeBlock,
+  ToolbarElement,
 } from '@udecode/slate-plugins-components';
 import {
   headingTypes,

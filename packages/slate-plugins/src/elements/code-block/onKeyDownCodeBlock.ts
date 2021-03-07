@@ -1,9 +1,9 @@
+import { getParent } from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { getParent } from '../../common';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
+import { getCodeLines } from './queries/getCodeLines';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
-import { getCodeLines } from './queries';
 import { CodeBlockOnKeyDownOptions, CodeLineOnKeyDownOptions } from './types';
 
 /**

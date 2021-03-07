@@ -1,4 +1,4 @@
-import { getRenderElement, setDefaults } from '@udecode/slate-plugins-common';
+import { getRenderElements, setDefaults } from '@udecode/slate-plugins-common';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
 import {
   CodeBlockRenderElementOptions,

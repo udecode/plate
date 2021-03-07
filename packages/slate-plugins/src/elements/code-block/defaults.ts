@@ -1,12 +1,9 @@
-import { CodeBlockElement } from './components/CodeBlockElement';
-import { CodeLineElement } from './components/CodeLineElement';
 import {
   CodeBlockKeyOption,
   CodeBlockPluginOptionsValues,
   CodeLineKeyOption,
 } from './types';
 
-export const MARK_PRISM = 'prism';
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
 export const DEFAULTS_CODE_BLOCK: Record<

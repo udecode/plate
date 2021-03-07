@@ -1,13 +1,9 @@
 import {
   Deserialize,
   ElementWithAttributes,
-  HtmlAttributesProps,
   NodeToProps,
   RenderNodeOptions,
-  RenderNodePropsOptions,
-  RootProps,
 } from '@udecode/slate-plugins-common';
-import { RenderElementProps } from 'slate-react';
 
 // Data of Element node
 export interface ParagraphNodeData {}

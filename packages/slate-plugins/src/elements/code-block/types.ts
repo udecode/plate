@@ -15,45 +15,6 @@ export interface CodeBlockNode
 
 export interface CodeLineNode extends ElementWithAttributes, CodeLineNodeData {}
 
-// renderElement options given as props
-export interface CodeBlockRenderElementPropsOptions {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<
-    CodeBlockElementStyleProps,
-    CodeBlockElementStyles
-  >;
-}
-
-export interface CodeLineRenderElementPropsOptions {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<
-    CodeLineElementStyleProps,
-    CodeLineElementStyles
-  >;
-}
-
-// renderElement props
-export interface CodeBlockElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    CodeBlockRenderElementPropsOptions {
-  element: CodeBlockNode;
-}
-
-// renderElement props
-export interface CodeLineElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    CodeLineRenderElementPropsOptions {
-  element: CodeLineNode;
-}
-
 export type CodeBlockKeyOption = 'code_block';
 export type CodeLineKeyOption = 'code_line';
 
@@ -69,8 +30,7 @@ export type CodeBlockPluginOptions<
 >;
 
 export type CodeLinePluginOptionsValues = RenderNodeOptions &
-  RootProps<CodeLineRenderElementPropsOptions> &
-  NodeToProps<CodeLineNode, CodeLineRenderElementPropsOptions> &
+  NodeToProps<CodeLineNode> &
   Deserialize;
 export type CodeLinePluginOptionsKeys = keyof CodeLinePluginOptionsValues;
 export type CodeLinePluginOptions<
@@ -107,42 +67,6 @@ export interface CodeLineOnKeyDownOptions
 export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 
 export interface CodeLineOptions extends CodeLinePluginOptions<'type'> {}
-
-export interface CodeBlockElementStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert CodeBlockElement classNames below
-}
-
-export interface CodeBlockElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert CodeBlockElement style props below
-}
-
-export interface CodeLineElementStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert CodeLineElement classNames below
-}
-
-export interface CodeLineElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert CodeLineElement style props below
-}
 
 export interface WithCodeBlockOptions extends CodeBlockOptions {
   /**

@@ -1,9 +1,11 @@
+import {
+  InsertNodesOptions,
+  isExpanded,
+  isSelectionAtBlockStart,
+  setDefaults,
+  wrapNodes,
+} from '@udecode/slate-plugins-common';
 import { Editor, Transforms } from 'slate';
-import { isExpanded } from '../../../common/queries/isExpanded';
-import { isSelectionAtBlockStart } from '../../../common/queries/isSelectionAtBlockStart';
-import { wrapNodes } from '../../../common/transforms/wrapNodes';
-import { InsertNodesOptions } from '../../../common/types/Transforms.types';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { CodeBlockOptions, CodeLineOptions } from '../types';
 

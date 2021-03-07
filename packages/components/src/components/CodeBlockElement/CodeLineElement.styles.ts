@@ -1,4 +1,7 @@
-import { CodeLineElementStyleProps, CodeLineElementStyles } from '../types';
+import {
+  CodeLineElementStyleProps,
+  CodeLineElementStyles,
+} from './CodeLineElement.types';
 
 export const getCodeLineElementStyles = ({
   className,

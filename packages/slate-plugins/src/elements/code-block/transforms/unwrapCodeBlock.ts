@@ -1,6 +1,5 @@
+import { setDefaults, unwrapNodes } from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
-import { unwrapNodes } from '../../../common/transforms';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { CodeBlockOptions, CodeLineOptions } from '../types';
 

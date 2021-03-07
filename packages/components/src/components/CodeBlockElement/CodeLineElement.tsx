@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { classNamesFunction, styled } from '@uifabric/utilities';
+import { getCodeLineElementStyles } from './CodeLineElement.styles';
 import {
   CodeLineElementProps,
   CodeLineElementStyleProps,
   CodeLineElementStyles,
-} from '../types';
-import { getCodeLineElementStyles } from './CodeLineElement.styles';
+} from './CodeLineElement.types';
 
 const getClassNames = classNamesFunction<
   CodeLineElementStyleProps,

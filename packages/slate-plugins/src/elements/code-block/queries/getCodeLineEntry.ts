@@ -1,9 +1,10 @@
+import {
+  getAbove,
+  getParent,
+  setDefaults,
+  someNode,
+} from '@udecode/slate-plugins-common';
 import { Editor, Location } from 'slate';
-import { getNodes } from '../../../common';
-import { getAbove } from '../../../common/queries/getAbove';
-import { getParent } from '../../../common/queries/getParent';
-import { someNode } from '../../../common/queries/someNode';
-import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { CodeLineOptions } from '../types';
 

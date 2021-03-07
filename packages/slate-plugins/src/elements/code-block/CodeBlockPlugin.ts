@@ -1,7 +1,6 @@
 /**
  * Enables support for pre-formatted code blocks.
  */
-import { getOnHotkeyToggleNodeTypeDefault } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { decorateCodeBlock } from './decorateCodeBlock';
 import { deserializeCodeBlock } from './deserializeCodeBlock';

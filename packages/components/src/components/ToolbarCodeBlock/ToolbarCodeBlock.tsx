@@ -1,12 +1,15 @@
 import * as React from 'react';
+import {
+  CodeBlockOptions,
+  CodeLineOptions,
+  DEFAULTS_CODE_BLOCK,
+  getPreventDefaultHandler,
+  insertCodeBlock,
+  setDefaults,
+} from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';
-import { getPreventDefaultHandler } from '../../../common/utils/getPreventDefaultHandler';
-import { setDefaults } from '../../../common/utils/setDefaults';
-import { ToolbarButtonProps } from '../../../components/ToolbarButton/ToolbarButton.types';
-import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElement';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { insertCodeBlock } from '../transforms/insertCodeBlock';
-import { CodeBlockOptions, CodeLineOptions } from '../types';
+import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
+import { ToolbarElement } from '../ToolbarElement/ToolbarElement';
 
 export const ToolbarCodeBlock = ({
   options,
