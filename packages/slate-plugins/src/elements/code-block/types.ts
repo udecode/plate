@@ -116,8 +116,15 @@ export interface CodeBlockOptions extends CodeBlockPluginOptions<'type'> {}
 export interface CodeLineOptions extends CodeLinePluginOptions<'type'> {}
 
 export interface CodeBlockInsertOptions {
-  defaultType: string;
-  level: number;
+  /**
+   * @default 'p'
+   */
+  defaultType?: string;
+
+  /**
+   * @default 1
+   */
+  level?: number;
 }
 
 export interface CodeBlockElementStyles {
