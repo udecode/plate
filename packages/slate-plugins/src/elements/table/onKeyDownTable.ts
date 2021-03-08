@@ -1,7 +1,6 @@
 import { Editor, Transforms } from 'slate';
 import { setDefaults } from '../../common';
 import { getAbove } from '../../common/queries';
-import { DEFAULTS_LIST } from '../list';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
@@ -54,8 +53,7 @@ export const onKeyDownTable = (options?: TableOnKeyDownOptions) => (
     const res = getAbove(editor, { match: { type: table.type } });
     if (!res) return;
 
-    const tableElement = res;
-    const [, tablePath] = tableElement;
+    const [, tablePath] = res;
 
     // select the whole table
     Transforms.select(editor, tablePath);
