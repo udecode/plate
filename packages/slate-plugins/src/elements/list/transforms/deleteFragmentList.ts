@@ -26,7 +26,7 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
      */
     const end = Editor.end(editor, editor.selection as Range);
     const liEnd = getAbove(editor, { at: end, match: { type: li.type } });
-    const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0]);
+    const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0], options);
     const liEndPathRef = liEndCanBeDeleted
       ? Editor.pathRef(editor, liEnd![1])
       : undefined;

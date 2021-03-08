@@ -1,6 +1,7 @@
 import { Editor } from 'slate';
 import { isFirstChild } from '../../common/queries';
 import { getListItemEntry } from './queries/getListItemEntry';
+import { isAcrossListItems } from './queries/isAcrossListItems';
 import { moveListItemDown } from './transforms/moveListItemDown';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { ListOnKeyDownOptions } from './types';
@@ -14,6 +15,10 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
   if (e.key === 'Tab') {
     const res = getListItemEntry(editor, {}, options);
     if (!res) return;
+
+    // TODO: handle multiple li
+    if (isAcrossListItems(editor, options)) return;
+
     const { list, listItem } = res;
     const [, listItemPath] = listItem;
 

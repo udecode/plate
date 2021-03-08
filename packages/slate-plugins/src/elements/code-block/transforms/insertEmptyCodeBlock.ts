@@ -21,10 +21,7 @@ export const insertEmptyCodeBlock = (
   options: Omit<InsertNodesOptions, 'match'> = {},
   pluginsOptions: CodeBlockInsertOptions &
     CodeBlockOptions &
-    CodeLineOptions = {
-    defaultType: DEFAULT_ELEMENT,
-    level: 1,
-  }
+    CodeLineOptions = {}
 ) => {
   if (!editor.selection) return;
 
