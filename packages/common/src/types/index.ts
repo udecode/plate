@@ -7,7 +7,6 @@ export * from './ErrorHandler';
 export * from './PluginOptions.types';
 export * from './QueryEditorOptions';
 export * from './QueryNodeOptions';
-export * from './Slate.types';
 export * from './SlateDocument.types';
 export * from './Transforms.types';
 export * from './node.types';

@@ -13,10 +13,6 @@ import { getSetter } from './getSetter';
 export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
   (set, get) => ({
     byId: {},
-    setComponents: getSetter<State['components']>({
-      set,
-      key: 'components',
-    }),
     setEditor: getSetter<State['editor']>({
       set,
       key: 'editor',
@@ -41,6 +37,35 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
           byId: {
             ...state.byId,
             [id]: getInitialState(),
+          },
+        };
+      }),
+    setOptions: getSetter<State['options']>({
+      set,
+      key: 'options',
+    }),
+    setOption: ({ value, optionKey, pluginKey }, id = 'main') =>
+      set((state) => {
+        let rest = state.byId[id];
+        if (!rest) {
+          rest = getInitialState();
+        }
+        const { options } = rest;
+        const optionsByKey = options[pluginKey];
+
+        return {
+          byId: {
+            ...state.byId,
+            [id]: {
+              ...rest,
+              options: {
+                ...options,
+                [pluginKey]: {
+                  ...optionsByKey,
+                  [optionKey]: value,
+                },
+              },
+            },
           },
         };
       }),
@@ -77,7 +102,8 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
 
       const editorSingleton = createEditor();
 
-      const editor = pipe(editorSingleton, withRandomKey, ...value);
+      const editor = pipe(editorSingleton, withRandomKey, ...value) as any;
+      editor.id = id;
 
       get().setEditor(editor, id);
     },

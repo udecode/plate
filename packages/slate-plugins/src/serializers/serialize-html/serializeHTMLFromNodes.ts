@@ -1,9 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import {
-  createElementWithSlate,
-  SlateProps,
-} from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { createElementWithSlate } from '@udecode/slate-plugins-common';
+import { SlatePlugin, SlateProps } from '@udecode/slate-plugins-core';
 import { Node as SlateNode, Text as SlateText } from 'slate';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 

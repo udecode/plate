@@ -3,7 +3,7 @@
 import { findNode } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { removeRootListItem } from './removeRootListItem';
+import { removeListItem } from './removeListItem';
 
 const input = ((
   <editor>

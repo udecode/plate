@@ -1,23 +1,16 @@
-import { useEffect } from 'react';
 import * as React from 'react';
-import { Editable } from 'slate-react';
+import { Editable, useEditor } from 'slate-react';
 import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
-import { useSlatePluginsEditor } from '../store/useSlatePluginsEditor';
-import { UseEditableOptions } from '../types/UseEditableOptions';
+import { UseEditablePropsOptions } from '../types/UseEditablePropsOptions';
 
 /**
  * {@link Editable} with plugins support.
  */
-export const EditablePlugins = (props: UseEditableOptions) => {
-  const { id } = props;
+export const EditablePlugins = (props: Omit<UseEditablePropsOptions, 'id'>) => {
+  const editor = useEditor();
+  const id = (editor.id as string) ?? 'main';
 
-  useEffect(() => {
-    console.log(props);
-  }, [props]);
-
-  const { getEditableProps } = useSlatePlugins(props);
-
-  const editor = useSlatePluginsEditor(id);
+  const { getEditableProps } = useSlatePlugins({ ...props, id });
 
   if (!editor) return null;
 

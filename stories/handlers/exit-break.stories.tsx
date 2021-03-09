@@ -113,11 +113,12 @@ export const Example = () => {
           <ToolbarElement type={options.code_block.type} icon={<CodeBlock />} />
         </HeadingToolbar>
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
+          editableProps={{
+            placeholder: 'Enter some rich text...',
+            spellCheck: true,
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     );

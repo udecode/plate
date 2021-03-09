@@ -133,7 +133,7 @@ export const Example = () => {
             transform={deleteColumn}
           />
         </HeadingToolbar>
-        <EditablePlugins id={id} plugins={plugins} />
+        <EditablePlugins plugins={plugins} />
       </SlatePlugins>
     );
   };

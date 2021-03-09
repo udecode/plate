@@ -8,5 +8,7 @@ export * from './slatePluginsStore';
 export * from './useSlatePluginsActions';
 export * from './useSlatePluginsComponent';
 export * from './useSlatePluginsEditor';
+export * from './useSlatePluginsElementKeys';
+export * from './useSlatePluginsOptions';
 export * from './useSlatePluginsStore';
 export * from './useSlatePluginsValue';

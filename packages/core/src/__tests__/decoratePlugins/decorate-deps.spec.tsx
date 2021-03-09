@@ -1,7 +1,12 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { Point } from 'slate';
-import { Decorate, SlatePlugin, SlatePlugins, UseEditableOptions } from '../..';
+import {
+  Decorate,
+  SlatePlugin,
+  SlatePlugins,
+  UseEditablePropsOptions,
+} from '../..';
 import { EditablePlugins } from '../../components';
 
 const EditorWithDecorateDeps = ({
@@ -9,9 +14,9 @@ const EditorWithDecorateDeps = ({
   decorateDeps,
   plugins,
 }: {
-  decorate: UseEditableOptions['decorate'];
-  decorateDeps: UseEditableOptions['decorateDeps'];
-  plugins: UseEditableOptions['plugins'];
+  decorate: UseEditablePropsOptions['decorate'];
+  decorateDeps: UseEditablePropsOptions['decorateDeps'];
+  plugins: UseEditablePropsOptions['plugins'];
 }) => {
   return (
     <SlatePlugins>

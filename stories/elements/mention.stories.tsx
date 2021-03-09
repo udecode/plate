@@ -98,11 +98,12 @@ export const Example = () => {
         }}
       >
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some text..."
           onKeyDown={[onKeyDownMention]}
           onKeyDownDeps={[index, search, target]}
+          editableProps={{
+            placeholder: 'Enter some text...',
+          }}
         />
 
         <MentionSelect

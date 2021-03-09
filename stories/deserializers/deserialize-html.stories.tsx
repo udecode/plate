@@ -41,59 +41,54 @@ export default {
   component: withDeserializeHTML,
 };
 
-const plugins = [
-  ParagraphPlugin(options),
-  BlockquotePlugin(options),
-  CodeBlockPlugin(options),
-  HeadingPlugin(options),
-  ImagePlugin(options),
-  LinkPlugin(options),
-  ListPlugin(options),
-  TablePlugin(options),
-  TodoListPlugin(options),
-  MentionPlugin(options),
-  MediaEmbedPlugin(options),
-  BoldPlugin(options),
-  CodePlugin(options),
-  ItalicPlugin(options),
-  StrikethroughPlugin(options),
-  HighlightPlugin(options),
-  UnderlinePlugin(options),
-  SubscriptPlugin(options),
-  SuperscriptPlugin(options),
-  SoftBreakPlugin(),
-];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withTable(options),
-  withLink(options),
-  withCodeBlock(options),
-  withList(options),
-  withDeserializeHTML({ plugins }),
-  withImageUpload(),
-  withInlineVoid({ plugins }),
-] as const;
-
 export const Example = () => {
-  const createReactEditor = () => () => {
-    return (
-      <SlatePlugins
-        id={id}
-        initialValue={initialValuePasteHtml}
-        withPlugins={withPlugins}
-      >
-        <EditablePlugins
-          id={id}
-          plugins={plugins}
-          placeholder="Paste in some HTML..."
-        />
-      </SlatePlugins>
-    );
-  };
+  const plugins = [
+    ParagraphPlugin(options),
+    BlockquotePlugin(options),
+    CodeBlockPlugin(options),
+    HeadingPlugin(options),
+    ImagePlugin(options),
+    LinkPlugin(options),
+    ListPlugin(options),
+    TablePlugin(options),
+    TodoListPlugin(options),
+    MentionPlugin(options),
+    MediaEmbedPlugin(options),
+    BoldPlugin(options),
+    CodePlugin(options),
+    ItalicPlugin(options),
+    StrikethroughPlugin(options),
+    HighlightPlugin(options),
+    UnderlinePlugin(options),
+    SubscriptPlugin(options),
+    SuperscriptPlugin(options),
+    SoftBreakPlugin(),
+  ];
 
-  const Editor = createReactEditor();
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withTable(options),
+    withLink(options),
+    withCodeBlock(options),
+    withList(options),
+    withDeserializeHTML({ plugins }),
+    withImageUpload(),
+    withInlineVoid({ plugins }),
+  ] as const;
 
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      initialValue={initialValuePasteHtml}
+      withPlugins={withPlugins}
+    >
+      <EditablePlugins
+        plugins={plugins}
+        editableProps={{
+          placeholder: 'Paste in some HTML...',
+        }}
+      />
+    </SlatePlugins>
+  );
 };

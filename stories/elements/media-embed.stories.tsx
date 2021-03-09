@@ -45,9 +45,10 @@ export const Example = () => {
         withPlugins={withPlugins}
       >
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some text..."
+          editableProps={{
+            placeholder: 'Enter some text...',
+          }}
         />
       </SlatePlugins>
     );

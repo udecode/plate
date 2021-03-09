@@ -1,5 +1,5 @@
 import 'prismjs/themes/prism.css';
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { boolean } from '@storybook/addon-knobs';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import {
@@ -15,11 +15,14 @@ import {
   BlockquotePlugin,
   CodeBlockPlugin,
   EditablePlugins,
+  ELEMENT_PARAGRAPH,
   ExitBreakPlugin,
   HeadingPlugin,
   ParagraphPlugin,
   ResetBlockTypePlugin,
   SlatePlugin,
+  SlatePluginOptions,
+  SlatePluginOptionsByKey,
   SlatePlugins,
   SoftBreakPlugin,
   withCodeBlock,
@@ -99,8 +102,23 @@ export const Example = () => {
     );
 
   const createReactEditor = () => () => {
+    const slatePluginsOptions: SlatePluginOptions = useMemo(
+      () => ({
+        [ELEMENT_PARAGRAPH]: {
+          type: ELEMENT_PARAGRAPH,
+        },
+      }),
+      []
+    );
+
     return (
-      <SlatePlugins id={id} initialValue={initialValueBasicElements}>
+      <SlatePlugins
+        id={id}
+        initialValue={initialValueBasicElements}
+        withPlugins={withPlugins}
+        // components
+        // options={slatePluginsOptions}
+      >
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
           <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
@@ -115,15 +133,16 @@ export const Example = () => {
           <ToolbarCodeBlock
             type={options.code_block.type}
             icon={<CodeBlock />}
-            options={options}
+            // options={options}
           />
         </HeadingToolbar>
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
+          editableProps={{
+            placeholder: 'Enter some rich text…',
+            spellCheck: true,
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     );

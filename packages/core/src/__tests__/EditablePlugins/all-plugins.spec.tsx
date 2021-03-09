@@ -46,7 +46,7 @@ import { ListPlugin } from '../../../../slate-plugins/src/elements/list/ListPlug
 import { MediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/MediaEmbedPlugin';
 import { MentionPlugin } from '../../../../slate-plugins/src/elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/ParagraphPlugin';
-import { renderElementParagraph } from '../../../../slate-plugins/src/elements/paragraph/renderElementParagraph';
+import { useRenderElementParagraph } from '../../../../slate-plugins/src/elements/paragraph/useRenderElementParagraph';
 import { TablePlugin } from '../../../../slate-plugins/src/elements/table/TablePlugin';
 import { withTable } from '../../../../slate-plugins/src/elements/table/withTable';
 import { TodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/TodoListPlugin';
@@ -208,7 +208,7 @@ const Editor = () => {
         plugins={plugins}
         decorate={decorate}
         onKeyDown={onKeyDown}
-        renderElement={[renderElementParagraph()]}
+        renderElement={[useRenderElementParagraph()]}
         renderLeaf={[
           renderLeafHighlight(),
           renderLeafBold(),
@@ -219,7 +219,9 @@ const Editor = () => {
           renderLeafSuperscript(),
           renderLeafUnderline(),
         ]}
-        placeholder="Enter some plain text..."
+        editableProps={{
+          placeholder: 'Enter some plain text...',
+        }}
       />
     </>
   );

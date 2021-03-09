@@ -49,9 +49,10 @@ export const Example = () => {
           <ToolbarLink {...options} icon={<Link />} />
         </HeadingToolbar>
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some text..."
+          editableProps={{
+            placeholder: 'Enter some text...',
+          }}
         />
       </SlatePlugins>
     );

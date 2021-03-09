@@ -6,83 +6,54 @@ import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
 import { withRandomKey } from '../../with/randomKeyEditor';
 import { useEditableProps } from './useEditableProps';
+import { useSlatePluginsEffects } from './useSlatePluginsEffects';
 import { useSlateProps } from './useSlateProps';
 
 /**
- * Dynamically updating the options will update the store state.
- * Use `useSlatePluginsStore` to select the state from the store.
+ * Run `useSlatePluginsEffects` and props getter for `Slate` and `Editable` components.
+ * Use `useSlatePluginsStore` to select store state.
  */
-export const useSlatePlugins = (options: UseSlatePluginsOptions) => {
-  const {
+export const useSlatePlugins = ({
+  id,
+  editor,
+  initialValue,
+  value,
+  options,
+  plugins,
+  withPlugins,
+  onChange,
+  onDOMBeforeInput,
+  renderElement,
+  decorate,
+  decorateDeps,
+  editableProps,
+  onDOMBeforeInputDeps,
+  onKeyDown,
+  onKeyDownDeps,
+  renderElementDeps,
+  renderLeaf,
+  renderLeafDeps,
+}: UseSlatePluginsOptions) => {
+  useSlatePluginsEffects({
     id,
-    editor,
-    initialValue,
-    value,
-    components,
     plugins,
     withPlugins,
-  } = options;
-
-  const {
-    setInitialState,
-    setValue,
-    setEditor,
-    setPlugins,
-    setComponents,
-    setWithPlugins,
-  } = useSlatePluginsActions(id);
-
-  const storeEditor = useSlatePluginsEditor(id);
-
-  useEffect(() => {
-    setInitialState();
-  }, [id, setInitialState]);
-
-  // Slate.value
-  useEffect(() => {
-    initialValue && setValue(initialValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
-
-  // Slate.value
-  useEffect(() => {
-    value && setValue(value);
-  }, [value, setValue]);
-
-  // Slate.editor
-  useEffect(() => {
-    editor && setEditor(editor);
-  }, [editor, setEditor]);
-
-  useEffect(() => {
-    withPlugins && setWithPlugins(withPlugins);
-  }, [setWithPlugins, withPlugins]);
-
-  useEffect(() => {
-    if (!editor && !withPlugins && !storeEditor) {
-      setWithPlugins([withReact, withHistory, withRandomKey]);
-    }
-  }, [editor, setWithPlugins, storeEditor, withPlugins]);
-
-  // Slate plugins components
-  useEffect(() => {
-    components && setComponents(components);
-  }, [components, setComponents]);
-
-  // Slate plugins
-  useEffect(() => {
-    console.log('setPlugins');
-    plugins && setPlugins(plugins);
-  }, [plugins, setPlugins]);
+    initialValue,
+    editor,
+    value,
+    options,
+  });
 
   return {
-    getSlateProps: useSlateProps(options),
+    getSlateProps: useSlateProps({
+      id,
+      onChange,
+    }),
     getEditableProps: useEditableProps({
-      components,
+      id,
       decorate,
       decorateDeps,
       editableProps,
-      id,
       onDOMBeforeInput,
       onDOMBeforeInputDeps,
       onKeyDown,

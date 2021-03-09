@@ -4,4 +4,5 @@
 
 export * from './useEditableProps';
 export * from './useSlatePlugins';
+export * from './useSlatePluginsEffects';
 export * from './useSlateProps';

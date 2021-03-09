@@ -2,18 +2,19 @@
   "private": true,
   "license": "MIT",
   "workspaces": [
-    "packages/test-utils",
-    "packages/common",
     "packages/core",
+    "packages/common",
     "packages/slate-plugins",
-    "packages/components"
+    "packages/components",
+    "packages/test-utils"
   ],
   "scripts": {
-    "build": "lerna run build --since",
-    "build:1": "lerna exec --scope \"@udecode/slate-plugins-core\" --parallel -- yarn build",
-    "build:2": "lerna exec --scope \"@udecode/slate-plugins-common\" --parallel -- yarn build",
-    "build:3": "lerna exec --ignore \"@udecode/slate-plugins-{core,common,components}\" --parallel -- yarn build",
-    "build:4": "lerna exec --scope \"@udecode/slate-plugins-components\" --parallel -- yarn build",
+    "build": "yarn build:1 && yarn build:2 && yarn build:3 && yarn build:4 && yarn build:5",
+    "build:1": "yarn workspace @udecode/slate-plugins-core build",
+    "build:2": "yarn workspace @udecode/slate-plugins-common build",
+    "build:3": "yarn workspace @udecode/slate-plugins build",
+    "build:4": "yarn workspace @udecode/slate-plugins-components build",
+    "build:5": "lerna exec --scope \"@udecode/slate-plugins-test-utils\" --parallel -- yarn build",
     "build:w1": "yarn build:1 -w",
     "build:w2": "yarn build:2 -w",
     "build:w3": "yarn build:3 -w",

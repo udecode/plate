@@ -107,11 +107,12 @@ export const Example = () => {
           />
         </HeadingToolbar>
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
+          editableProps={{
+            placeholder: 'Enter some rich text...',
+            spellCheck: true,
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     );

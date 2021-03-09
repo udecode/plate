@@ -1,11 +1,12 @@
 import { Node } from 'slate';
+import { SlatePlugin } from './SlatePlugin';
 import { State } from './SlatePluginsStore';
 
 /**
- * Options related to Slate component
+ * `useSlatePluginsEffects` options
  */
-export interface UseSlateOptions
-  extends Pick<Partial<State>, 'value' | 'editor'> {
+export interface UseSlatePluginsEffectsOptions
+  extends Partial<Pick<State, 'editor' | 'options' | 'value'>> {
   /**
    * Unique id to store multiple editor states. Default is 'main'.
    */
@@ -24,7 +25,7 @@ export interface UseSlateOptions
   withPlugins?: any;
 
   /**
-   * Controlled callback called when the editor state changes.
+   * The plugins are applied in the order they are specified.
    */
-  onChange?: (value: Node[]) => void;
+  plugins?: SlatePlugin[];
 }

@@ -46,58 +46,6 @@ const WrapperEditor = styled.div`
   //width: 50%;
 `;
 
-const mainPlugins: SlatePlugin[] = [
-  ParagraphPlugin(options),
-  BlockquotePlugin(options),
-  CodeBlockPlugin(options),
-  HeadingPlugin(options),
-  ResetBlockTypePlugin(optionsResetBlockTypes),
-  SoftBreakPlugin({
-    rules: [
-      { hotkey: 'shift+enter' },
-      {
-        hotkey: 'enter',
-        query: {
-          allow: [options.code_block.type, options.blockquote.type],
-        },
-      },
-    ],
-  }),
-  ExitBreakPlugin({
-    rules: [
-      {
-        hotkey: 'mod+enter',
-      },
-      {
-        hotkey: 'mod+shift+enter',
-        before: true,
-      },
-      {
-        hotkey: 'enter',
-        query: {
-          start: true,
-          end: true,
-          allow: headingTypes,
-        },
-      },
-    ],
-  }),
-];
-
-const imagePlugins = [
-  ParagraphPlugin(options),
-  HeadingPlugin(options),
-  ImagePlugin(options),
-];
-
-const imageWithPlugins = [
-  withReact,
-  withHistory,
-  withImageUpload(),
-  withInlineVoid({ plugins: imagePlugins }),
-  withSelectOnBackspace({ allow: [options.img.type] }),
-] as const;
-
 const Editor = ({
   id,
   withPlugins,
@@ -117,11 +65,12 @@ const Editor = ({
         withPlugins={withPlugins}
       >
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
+          editableProps={{
+            placeholder: 'Enter some rich text…',
+            spellCheck: true,
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     </WrapperEditor>
@@ -129,6 +78,58 @@ const Editor = ({
 };
 
 export const Example = () => {
+  const mainPlugins: SlatePlugin[] = [
+    ParagraphPlugin(options),
+    BlockquotePlugin(options),
+    CodeBlockPlugin(options),
+    HeadingPlugin(options),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
+    SoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [options.code_block.type, options.blockquote.type],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: headingTypes,
+          },
+        },
+      ],
+    }),
+  ];
+
+  const imagePlugins = [
+    ParagraphPlugin(options),
+    HeadingPlugin(options),
+    ImagePlugin(options),
+  ];
+
+  const imageWithPlugins = [
+    withReact,
+    withHistory,
+    withImageUpload(),
+    withInlineVoid({ plugins: imagePlugins }),
+    withSelectOnBackspace({ allow: [options.img.type] }),
+  ] as const;
+
   return (
     <Wrapper>
       <Editor plugins={mainPlugins} initialValue={initialValueBasicElements} />

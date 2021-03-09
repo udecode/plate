@@ -31,9 +31,10 @@ export const Example = () => {
     return (
       <SlatePlugins id={id} initialValue={initialValuePreview}>
         <EditablePlugins
-          id={id}
           plugins={plugins}
-          placeholder="Write some markdown..."
+          editableProps={{
+            placeholder: 'Write some markdown...',
+          }}
         />
       </SlatePlugins>
     );

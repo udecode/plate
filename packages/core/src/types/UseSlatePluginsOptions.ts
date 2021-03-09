@@ -1,4 +1,10 @@
-import { UseEditableOptions } from './UseEditableOptions';
-import { UseSlateOptions } from './UseSlateOptions';
+import { UseEditablePropsOptions } from './UseEditablePropsOptions';
+import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
+import { UseSlatePropsOptions } from './UseSlatePropsOptions';
 
-export type UseSlatePluginsOptions = UseSlateOptions & UseEditableOptions;
+/**
+ * `useSlatePlugins` options
+ */
+export type UseSlatePluginsOptions = UseSlatePropsOptions &
+  UseEditablePropsOptions &
+  UseSlatePluginsEffectsOptions;

@@ -4,21 +4,13 @@ import { OnDOMBeforeInput } from './OnDOMBeforeInput';
 import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
-import { SlatePlugin } from './SlatePlugin';
-import { State } from './SlatePluginsStore';
-
-// TODO: duplicate
+import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
 
 /**
  * Options related to Editable component
  */
-export interface UseEditableOptions
-  extends Partial<Pick<State, 'components' | 'plugins'>> {
-  /**
-   * Unique id to store multiple editor states. Default is 'main'.
-   */
-  id?: string;
-
+export interface UseEditablePropsOptions
+  extends Pick<UseSlatePluginsEffectsOptions, 'id' | 'plugins'> {
   /**
    * @see {@link Decorate}
    */
@@ -68,11 +60,6 @@ export interface UseEditableOptions
    * Dependencies for `onKeyDown`
    */
   onKeyDownDeps?: any[];
-
-  /**
-   * The plugins are applied in the order they are specified.
-   */
-  plugins?: SlatePlugin[];
 
   editableProps?: EditableProps;
 }

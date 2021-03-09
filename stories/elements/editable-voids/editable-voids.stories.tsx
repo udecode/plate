@@ -47,28 +47,34 @@ const initialValueVoids: Node[] = [
   },
 ];
 
-const plugins = [ParagraphPlugin(options), EditableVoidPlugin()];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withInlineVoid({ plugins }),
-] as const;
-
 export const Example = () => {
+  const plugins = [ParagraphPlugin(options), EditableVoidPlugin()];
+
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withInlineVoid({ plugins }),
+  ] as const;
+
   return (
     <SlatePlugins
       id={id}
       initialValue={initialValueVoids}
       withPlugins={withPlugins}
+      options={{
+        p: {
+          type: 'p',
+        },
+      }}
     >
       <EditablePlugins
-        id={id}
-        readOnly={boolean('readOnly', false)}
         plugins={plugins}
-        placeholder={text('placeholder', 'Enter some text...')}
-        spellCheck={boolean('spellCheck', true)}
-        autoFocus
+        editableProps={{
+          readOnly: boolean('readOnly', false),
+          placeholder: text('placeholder', 'Enter some text...'),
+          spellCheck: boolean('spellCheck', true),
+          autoFocus: true,
+        }}
       />
     </SlatePlugins>
   );

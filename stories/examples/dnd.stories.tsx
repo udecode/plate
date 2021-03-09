@@ -442,18 +442,19 @@ export const Example = () => {
           </BalloonToolbar>
           <MentionSelect at={target} valueIndex={index} options={values} />
           <EditablePlugins
-            id={id}
-            style={{
-              padding: 20,
-            }}
-            readOnly={boolean('readOnly', false)}
             plugins={plugins}
             decorate={decorate}
             decorateDeps={[search]}
             renderLeafDeps={[search]}
             onKeyDown={onKeyDown}
             onKeyDownDeps={[index, mentionSearch, target]}
-            placeholder="Enter some plain text..."
+            editableProps={{
+              placeholder: 'Enter some plain text...',
+              readOnly: boolean('readOnly', false),
+              style: {
+                padding: 20,
+              },
+            }}
           />
         </SlatePlugins>
       </DndProvider>

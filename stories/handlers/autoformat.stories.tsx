@@ -35,79 +35,74 @@ export default {
   component: withAutoformat,
 };
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withList(options),
-  withCodeBlock(options),
-  withAutoformat({
-    rules: autoformatRules,
-  }),
-] as const;
-
-const plugins = [
-  ParagraphPlugin(options),
-  BoldPlugin(),
-  ItalicPlugin(),
-  CodePlugin(),
-  StrikethroughPlugin(),
-  BlockquotePlugin(options),
-  ListPlugin(options),
-  HeadingPlugin(options),
-  CodeBlockPlugin(options),
-  ResetBlockTypePlugin(optionsResetBlockTypes),
-  SoftBreakPlugin({
-    rules: [
-      { hotkey: 'shift+enter' },
-      {
-        hotkey: 'enter',
-        query: {
-          allow: [options.code_block.type, options.blockquote.type],
-        },
-      },
-    ],
-  }),
-  ExitBreakPlugin({
-    rules: [
-      {
-        hotkey: 'mod+enter',
-      },
-      {
-        hotkey: 'mod+shift+enter',
-        before: true,
-      },
-      {
-        hotkey: 'enter',
-        query: {
-          start: true,
-          end: true,
-          allow: headingTypes,
-        },
-      },
-    ],
-  }),
-];
-
 export const Example = () => {
-  const createReactEditor = () => () => {
-    return (
-      <SlatePlugins
-        id={id}
-        initialValue={initialValueAutoformat}
-        withPlugins={withPlugins}
-      >
-        <EditablePlugins
-          id={id}
-          plugins={plugins}
-          placeholder="Write some markdown..."
-          spellCheck
-          autoFocus
-        />
-      </SlatePlugins>
-    );
-  };
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withList(options),
+    withCodeBlock(options),
+    withAutoformat({
+      rules: autoformatRules,
+    }),
+  ] as const;
 
-  const Editor = createReactEditor();
+  const plugins = [
+    ParagraphPlugin(options),
+    BoldPlugin(),
+    ItalicPlugin(),
+    CodePlugin(),
+    StrikethroughPlugin(),
+    BlockquotePlugin(options),
+    ListPlugin(options),
+    HeadingPlugin(options),
+    CodeBlockPlugin(options),
+    ResetBlockTypePlugin(optionsResetBlockTypes),
+    SoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [options.code_block.type, options.blockquote.type],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: headingTypes,
+          },
+        },
+      ],
+    }),
+  ];
 
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      initialValue={initialValueAutoformat}
+      withPlugins={withPlugins}
+    >
+      <EditablePlugins
+        plugins={plugins}
+        editableProps={{
+          placeholder: 'Write some markdown...',
+          spellCheck: true,
+          autoFocus: true,
+        }}
+      />
+    </SlatePlugins>
+  );
 };

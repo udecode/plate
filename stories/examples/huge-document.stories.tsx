@@ -15,18 +15,25 @@ export default {
   title: id,
 };
 
-const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
-
-const withPlugins = [withReact, withHistory] as const;
-
 export const Example = () => {
+  const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
+
+  const withPlugins = [withReact, withHistory] as const;
+
   return (
     <SlatePlugins
       id={id}
       initialValue={initialValueHugeDocument}
       withPlugins={withPlugins}
     >
-      <EditablePlugins id={id} plugins={plugins} spellCheck autoFocus />
+      <EditablePlugins
+        plugins={plugins}
+        editableProps={{
+          placeholder: 'Enter some text...',
+          spellCheck: true,
+          autoFocus: true,
+        }}
+      />
     </SlatePlugins>
   );
 };

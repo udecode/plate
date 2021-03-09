@@ -4,7 +4,8 @@ import { ReactEditor } from 'slate-react';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { useSlatePluginsValue } from '../../store/useSlatePluginsValue';
-import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
+import { SlateProps } from '../../types/SlateProps';
+import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { RandomKeyEditor } from '../../with/randomKeyEditor';
 
 /**
@@ -13,7 +14,7 @@ import { RandomKeyEditor } from '../../with/randomKeyEditor';
 export const useSlateProps = ({
   id,
   onChange: controlledOnChange,
-}: UseSlatePluginsOptions = {}) => {
+}: UseSlatePropsOptions = {}): (() => Omit<SlateProps, 'children'>) => {
   const { setValue } = useSlatePluginsActions(id);
   const editor = useSlatePluginsEditor<ReactEditor & RandomKeyEditor>(id);
   const value = useSlatePluginsValue(id);

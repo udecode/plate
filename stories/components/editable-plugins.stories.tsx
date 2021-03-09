@@ -14,11 +14,12 @@ export const Example = () => {
   return (
     <SlatePlugins id={id} initialValue={initialValuePlainText}>
       <EditablePlugins
-        id={id}
-        readOnly={boolean('readOnly', false)}
-        placeholder={text('placeholder', 'Enter some plain text...')}
-        spellCheck={boolean('spellCheck', true)}
-        autoFocus
+        editableProps={{
+          readOnly: boolean('readOnly', false),
+          placeholder: text('placeholder', 'Enter some plain text...'),
+          spellCheck: boolean('spellCheck', true),
+          autoFocus: true,
+        }}
       />
     </SlatePlugins>
   );

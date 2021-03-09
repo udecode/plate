@@ -13,6 +13,7 @@ export interface SlatePlugin {
   deserialize?: DeserializeHtml;
 
   elementKeys?: string | string[];
+  // elementKeys?: T | T[];
 
   serialize?: SerializeHtml;
 

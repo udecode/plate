@@ -1,5 +1,5 @@
 export const getInitialState = () => ({
-  components: {},
+  options: {},
   plugins: [],
   value: [{ children: [{ text: '' }] }],
   elementKeys: [],

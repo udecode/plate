@@ -1,7 +1,7 @@
+import { StyledComponentStyles } from '@udecode/slate-plugins-components';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { RenderLeafProps } from 'slate-react';
-import { StyledComponentStyles } from '../../../../packages/components/src/components/StyledComponent/StyledComponent.types';
 
 export interface PreviewLeafProps extends RenderLeafProps {
   /**

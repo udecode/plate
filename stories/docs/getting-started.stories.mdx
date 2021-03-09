@@ -67,7 +67,7 @@ export const Editor = () => {
       initialValue={initialValue}
       withPlugins={withPlugins}
     >
-      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} editableProps={{ placeholder: 'Enter some text...' }} />
     </Slate>
   );
 };

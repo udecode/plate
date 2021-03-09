@@ -19,37 +19,32 @@ export default {
   subcomponents: { withTrailingNode },
 };
 
-const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withNormalizeTypes({
-    rules: [{ path: [0, 0], strictType: options.h1.type }],
-  }),
-  withTrailingNode({ type: options.h3.type, level: 1 }),
-] as const;
-
 export const Example = () => {
-  const createReactEditor = () => () => {
-    return (
-      <SlatePlugins
-        id={id}
-        initialValue={initialValueForcedLayout}
-        withPlugins={withPlugins}
-      >
-        <EditablePlugins
-          id={id}
-          plugins={plugins}
-          placeholder="Enter a title…"
-          spellCheck
-          autoFocus
-        />
-      </SlatePlugins>
-    );
-  };
+  const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
 
-  const Editor = createReactEditor();
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withNormalizeTypes({
+      rules: [{ path: [0, 0], strictType: options.h1.type }],
+    }),
+    withTrailingNode({ type: options.h3.type, level: 1 }),
+  ] as const;
 
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      initialValue={initialValueForcedLayout}
+      withPlugins={withPlugins}
+    >
+      <EditablePlugins
+        plugins={plugins}
+        editableProps={{
+          placeholder: 'Enter a title...',
+          spellCheck: true,
+          autoFocus: true,
+        }}
+      />
+    </SlatePlugins>
+  );
 };

@@ -34,52 +34,47 @@ export default {
   component: withDeserializeMd,
 };
 
-const plugins = [
-  ParagraphPlugin(options),
-  BlockquotePlugin(options),
-  CodeBlockPlugin(options),
-  HeadingPlugin(options),
-  ImagePlugin(options),
-  LinkPlugin(options),
-  ListPlugin(options),
-  TablePlugin(options),
-  BoldPlugin(options),
-  CodePlugin(options),
-  ItalicPlugin(options),
-  StrikethroughPlugin(options),
-  UnderlinePlugin(options),
-];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withLink(options),
-  withList(options),
-  withCodeBlock(options),
-  withDeserializeMd(options),
-  withImageUpload(options),
-  withTable(options),
-  withInlineVoid({ plugins }),
-] as const;
-
 export const Example = () => {
-  const createReactEditor = () => () => {
-    return (
-      <SlatePlugins
-        id={id}
-        initialValue={initialValuePasteMd}
-        withPlugins={withPlugins}
-      >
-        <EditablePlugins
-          id={id}
-          plugins={plugins}
-          placeholder="Paste in some Markdown..."
-        />
-      </SlatePlugins>
-    );
-  };
+  const plugins = [
+    ParagraphPlugin(options),
+    BlockquotePlugin(options),
+    CodeBlockPlugin(options),
+    HeadingPlugin(options),
+    ImagePlugin(options),
+    LinkPlugin(options),
+    ListPlugin(options),
+    TablePlugin(options),
+    BoldPlugin(options),
+    CodePlugin(options),
+    ItalicPlugin(options),
+    StrikethroughPlugin(options),
+    UnderlinePlugin(options),
+  ];
 
-  const Editor = createReactEditor();
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withLink(options),
+    withList(options),
+    withCodeBlock(options),
+    withDeserializeMd(options),
+    withImageUpload(options),
+    withTable(options),
+    withInlineVoid({ plugins }),
+  ] as const;
 
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      initialValue={initialValuePasteMd}
+      withPlugins={withPlugins}
+    >
+      <EditablePlugins
+        plugins={plugins}
+        editableProps={{
+          placeholder: 'Paste in some Markdown...',
+        }}
+      />
+    </SlatePlugins>
+  );
 };

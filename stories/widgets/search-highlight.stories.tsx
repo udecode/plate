@@ -54,11 +54,15 @@ export const Example = () => {
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <EditablePlugins
-          id={id}
           plugins={plugins}
           decorate={decorate}
           decorateDeps={[search]}
           renderLeafDeps={[search]}
+          editableProps={{
+            placeholder: 'Enter some text...',
+            spellCheck: true,
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     );

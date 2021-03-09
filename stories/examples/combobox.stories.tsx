@@ -89,7 +89,6 @@ export const Example = () => {
       >
         <ComboboxContainer />
         <EditablePlugins
-          id={id}
           plugins={plugins}
           onKeyDown={[comboboxOnKeyDown]}
           onKeyDownDeps={[
@@ -99,10 +98,12 @@ export const Example = () => {
             tagTargetRange,
             comboboxOnKeyDown,
           ]}
-          readOnly={boolean('readOnly', false)}
-          placeholder={text('placeholder', 'Enter some plain text...')}
-          spellCheck={boolean('spellCheck', true)}
-          autoFocus
+          editableProps={{
+            readOnly: boolean('readOnly', false),
+            placeholder: text('placeholder', 'Enter some plain text...'),
+            spellCheck: boolean('spellCheck', true),
+            autoFocus: true,
+          }}
         />
       </SlatePlugins>
     );

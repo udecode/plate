@@ -384,14 +384,15 @@ export const Plugins = () => {
           renderLabel={renderLabel}
         />
         <EditablePlugins
-          id={id}
           plugins={plugins}
           decorate={decorate}
           decorateDeps={[search]}
           renderLeafDeps={[search]}
           onKeyDown={onKeyDown}
           onKeyDownDeps={[index, mentionSearch, target]}
-          placeholder="Enter some plain text..."
+          editableProps={{
+            placeholder: 'Enter some plain text...',
+          }}
         />
       </SlatePlugins>
     );
