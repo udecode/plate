@@ -1,7 +1,10 @@
 import { Editor, Transforms } from 'slate';
+import { setDefaults } from '../../common';
+import { getAbove } from '../../common/queries';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
+import { DEFAULTS_TABLE } from './defaults';
 import { TableHotKey, TableOnKeyDownOptions } from './types';
 
 export const onKeyDownTable = (options?: TableOnKeyDownOptions) => (
@@ -41,5 +44,21 @@ export const onKeyDownTable = (options?: TableOnKeyDownOptions) => (
         Transforms.select(editor, nextCellPath);
       }
     }
+  }
+
+  // FIXME: would prefer this as mod+a, but doesn't work
+  if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+    const { table } = setDefaults(options, DEFAULTS_TABLE);
+
+    const res = getAbove(editor, { match: { type: table.type } });
+    if (!res) return;
+
+    const [, tablePath] = res;
+
+    // select the whole table
+    Transforms.select(editor, tablePath);
+
+    e.preventDefault();
+    e.stopPropagation();
   }
 };
