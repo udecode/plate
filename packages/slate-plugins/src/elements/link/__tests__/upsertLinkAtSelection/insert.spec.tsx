@@ -34,7 +34,7 @@ it('should run default insertText', () => {
   const editor = withLink()(
     withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)
   );
-  upsertLinkAtSelection(editor, url);
+  upsertLinkAtSelection(editor, { url });
 
   expect(input.children).toEqual(output.children);
 });

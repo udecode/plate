@@ -1,5 +1,4 @@
 import { createEditor } from 'slate';
-import { StoreApi } from 'zustand';
 import createVanillaStore from 'zustand/vanilla';
 import { SlatePluginsStore, State } from '../types/SlatePluginsStore';
 import { pipe } from '../utils/pipe';

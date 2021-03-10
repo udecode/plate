@@ -1,13 +1,13 @@
 import {
   ImageElementStyleProps,
-  ImageElementStyles,
+  ImageElementStyleSet,
 } from './ImageElement.types';
 
 export const getImageElementStyles = ({
   className,
   focused,
   selected,
-}: ImageElementStyleProps): ImageElementStyles => {
+}: ImageElementStyleProps): ImageElementStyleSet => {
   return {
     root: [
       {

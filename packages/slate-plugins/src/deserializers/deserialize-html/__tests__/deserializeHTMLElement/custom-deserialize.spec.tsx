@@ -5,7 +5,7 @@ import { ImagePlugin } from '../../../../elements/image/ImagePlugin';
 import { LinkPlugin } from '../../../../elements/link/LinkPlugin';
 import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
 import { TablePlugin } from '../../../../elements/table/TablePlugin';
-import { deserializeBold } from '../../../../marks/bold/deserializeBold';
+import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
 import { deserializeHTMLElement } from '../../../index';
 
 const textTags = ['<b>strong</b>'];
@@ -49,7 +49,7 @@ const input1 = [
     },
   }),
   {
-    deserialize: deserializeBold({
+    deserialize: useDeserializeBold({
       bold: { deserialize: { rules: [{ nodeNames: ['B'] }] } },
     }),
   },

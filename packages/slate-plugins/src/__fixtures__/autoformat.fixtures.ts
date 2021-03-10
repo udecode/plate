@@ -47,7 +47,7 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     markup: ['*', '-', '+'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...options, typeList: options.ul.type });
+      toggleList(editor, { typeList: options.ul.type }, options);
     },
   },
   {
@@ -55,7 +55,7 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     markup: ['1.', '1)'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...options, typeList: options.ol.type });
+      toggleList(editor, { typeList: options.ol.type }, options);
     },
   },
   {

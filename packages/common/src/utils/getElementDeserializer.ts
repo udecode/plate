@@ -1,4 +1,4 @@
-import { GetElementDeserializerOptions } from '../types/PluginOptions.types';
+import { GetElementDeserializerOptions } from '../types/Deserialize';
 import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**

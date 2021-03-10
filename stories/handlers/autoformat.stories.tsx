@@ -22,10 +22,11 @@ import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
 import {
-  headingTypes,
   initialValueAutoformat,
   options,
+  optionsExitBreak,
   optionsResetBlockTypes,
+  optionsSoftBreak,
 } from '../config/initialValues';
 
 const id = 'Handlers/Autoformat';
@@ -39,54 +40,26 @@ export const Example = () => {
   const withPlugins = [
     withReact,
     withHistory,
-    withList(options),
-    withCodeBlock(options),
+    withList({}, options),
+    withCodeBlock({}, options),
     withAutoformat({
       rules: autoformatRules,
     }),
   ] as const;
 
   const plugins = [
-    ParagraphPlugin(options),
+    ParagraphPlugin(),
     BoldPlugin(),
     ItalicPlugin(),
     CodePlugin(),
     StrikethroughPlugin(),
-    BlockquotePlugin(options),
-    ListPlugin(options),
-    HeadingPlugin(options),
-    CodeBlockPlugin(options),
+    BlockquotePlugin(),
+    ListPlugin(),
+    HeadingPlugin(),
+    CodeBlockPlugin(),
     ResetBlockTypePlugin(optionsResetBlockTypes),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [options.code_block.type, options.blockquote.type],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: headingTypes,
-          },
-        },
-      ],
-    }),
+    SoftBreakPlugin(optionsSoftBreak),
+    ExitBreakPlugin(optionsExitBreak),
   ];
 
   return (

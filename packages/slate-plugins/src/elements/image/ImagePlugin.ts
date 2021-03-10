@@ -1,20 +1,14 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_IMAGE, ELEMENT_IMAGE } from './defaults';
-import { deserializeImage } from './deserializeImage';
-import { renderElementImage } from './renderElementImage';
-import { ImagePluginOptions } from './types';
+import { useRenderElement } from '@udecode/slate-plugins-common';
+import { SlatePlugin, useEditorType } from '@udecode/slate-plugins-core';
+import { ELEMENT_IMAGE } from './defaults';
+import { useDeserializeImage } from './useDeserializeImage';
 
 /**
  * Enables support for images.
  */
-export const ImagePlugin = (options?: ImagePluginOptions): SlatePlugin => {
-  const { img } = setDefaults(options, DEFAULTS_IMAGE);
-
-  return {
-    elementKeys: ELEMENT_IMAGE,
-    renderElement: renderElementImage(options),
-    deserialize: deserializeImage(options),
-    voidTypes: [img.type],
-  };
-};
+export const ImagePlugin = (): SlatePlugin => ({
+  elementKeys: ELEMENT_IMAGE,
+  renderElement: useRenderElement(ELEMENT_IMAGE),
+  deserialize: useDeserializeImage(),
+  voidTypes: [useEditorType(ELEMENT_IMAGE)],
+});

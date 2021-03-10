@@ -1,8 +1,6 @@
 import { IStyle } from '@uifabric/styling';
-import {
-  MentionSelectStyleProps,
-  MentionSelectStyles,
-} from './MentionSelect.types';
+import { NodeStyleProps } from '../../types';
+import { MentionSelectStyleSet } from './MentionSelect.types';
 
 const classNames = {
   root: 'slate-MentionSelect',
@@ -12,7 +10,7 @@ const classNames = {
 
 export const getMentionSelectStyles = ({
   className,
-}: MentionSelectStyleProps = {}): MentionSelectStyles => {
+}: NodeStyleProps = {}): MentionSelectStyleSet => {
   const mentionItem: IStyle = [
     classNames.mentionItem,
     {

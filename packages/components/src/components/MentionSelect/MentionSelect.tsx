@@ -4,19 +4,19 @@ import {
   getPreventDefaultHandler,
   MentionNodeData,
 } from '@udecode/slate-plugins';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
+import { getRootClassNames, NodeStyleProps } from '../../types';
 import { PortalBody } from '../PortalBody/PortalBody';
 import { getMentionSelectStyles } from './MentionSelect.styles';
 import {
   MentionSelectProps,
-  MentionSelectStyleProps,
-  MentionSelectStyles,
+  MentionSelectStyleSet,
 } from './MentionSelect.types';
 
-const getClassNames = classNamesFunction<
-  MentionSelectStyleProps,
-  MentionSelectStyles
+const getClassNames = getRootClassNames<
+  NodeStyleProps,
+  MentionSelectStyleSet
 >();
 
 export const MentionSelectBase = ({
@@ -79,8 +79,8 @@ export const MentionSelectBase = ({
 
 export const MentionSelect = styled<
   MentionSelectProps,
-  MentionSelectStyleProps,
-  MentionSelectStyles
+  NodeStyleProps,
+  NonNullable<MentionSelectProps['styles']>
 >(MentionSelectBase, getMentionSelectStyles, undefined, {
   scope: 'MentionSelect',
 });

@@ -1,11 +1,9 @@
-import {
-  MediaEmbedElementStyleProps,
-  MediaEmbedElementStyles,
-} from './MediaEmbedElement.types';
+import { NodeStyleProps } from '../../types';
+import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
 
 export const getMediaEmbedElementStyles = ({
   className,
-}: MediaEmbedElementStyleProps): MediaEmbedElementStyles => {
+}: NodeStyleProps): MediaEmbedElementStyleSet => {
   return {
     root: [
       {

@@ -1,19 +1,13 @@
-import { getOnHotkeyToggleMarkDefault } from '@udecode/slate-plugins-common';
+import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_ITALIC } from './defaults';
-import { deserializeItalic } from './deserializeItalic';
-import { renderLeafItalic } from './renderLeafItalic';
-import { ItalicPluginOptions } from './types';
+import { useDeserializeCode } from '../code/useDeserializeCode';
+import { MARK_ITALIC } from './defaults';
 
 /**
  * Enables support for italic formatting.
  */
-export const ItalicPlugin = (options?: ItalicPluginOptions): SlatePlugin => ({
-  renderLeaf: renderLeafItalic(options),
-  deserialize: deserializeItalic(options),
-  onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: 'italic',
-    defaultOptions: DEFAULTS_ITALIC,
-    options,
-  }),
+export const ItalicPlugin = (): SlatePlugin => ({
+  renderLeaf: useRenderLeaf(MARK_ITALIC),
+  deserialize: useDeserializeCode(),
+  onKeyDown: useOnKeyDownMark(MARK_ITALIC),
 });

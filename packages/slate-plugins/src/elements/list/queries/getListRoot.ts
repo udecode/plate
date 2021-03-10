@@ -1,7 +1,6 @@
-import { getAbove, setDefaults } from '@udecode/slate-plugins-common';
+import { getAbove } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
 /**
  * Searches upward for the root list element
@@ -9,11 +8,11 @@ import { ListOptions } from '../types';
 export const getListRoot = (
   editor: Editor,
   at: Path | Range | Point | null = editor.selection,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ): NodeEntry<Ancestor> | undefined => {
   if (!at) return;
 
-  const { ol, ul } = setDefaults(options, DEFAULTS_LIST);
+  const { ol, ul } = options;
 
   const parentList = getAbove(editor, {
     at,

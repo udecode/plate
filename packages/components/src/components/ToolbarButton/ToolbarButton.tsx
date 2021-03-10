@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react'; // optional
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { getRootClassNames } from '../../types';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';
 import {
   ToolbarButtonProps,
@@ -8,7 +9,7 @@ import {
   ToolbarButtonStyles,
 } from './ToolbarButton.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   ToolbarButtonStyleProps,
   ToolbarButtonStyles
 >();
@@ -56,7 +57,7 @@ export const ToolbarButtonBase = ({
 export const ToolbarButton = styled<
   ToolbarButtonProps,
   ToolbarButtonStyleProps,
-  ToolbarButtonStyles
+  NonNullable<ToolbarButtonProps['styles']>
 >(ToolbarButtonBase, getToolbarButtonStyles, undefined, {
   scope: 'ToolbarButton',
 });

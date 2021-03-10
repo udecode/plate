@@ -1,16 +1,15 @@
+import { useRenderElements } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
-import { deserializeList } from './deserializeList';
-import { onKeyDownList } from './onKeyDownList';
-import { renderElementList } from './renderElementList';
-import { ListPluginOptions } from './types';
+import { KEYS_LIST } from './defaults';
+import { useDeserializeList } from './useDeserializeList';
+import { useOnKeyDownList } from './useOnKeyDownList';
 
 /**
  * Enables support for bulleted, numbered and to-do lists.
  */
-export const ListPlugin = (options?: ListPluginOptions): SlatePlugin => ({
-  elementKeys: [ELEMENT_UL, ELEMENT_OL, ELEMENT_LI],
-  renderElement: renderElementList(options),
-  deserialize: deserializeList(options),
-  onKeyDown: onKeyDownList(options),
+export const ListPlugin = (): SlatePlugin => ({
+  elementKeys: KEYS_LIST,
+  renderElement: useRenderElements(KEYS_LIST),
+  deserialize: useDeserializeList(),
+  onKeyDown: useOnKeyDownList(),
 });

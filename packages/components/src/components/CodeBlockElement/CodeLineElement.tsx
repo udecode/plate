@@ -1,16 +1,9 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
 import { getCodeLineElementStyles } from './CodeLineElement.styles';
-import {
-  CodeLineElementProps,
-  CodeLineElementStyleProps,
-  CodeLineElementStyles,
-} from './CodeLineElement.types';
 
-const getClassNames = classNamesFunction<
-  CodeLineElementStyleProps,
-  CodeLineElementStyles
->();
+const getClassNames = getRootClassNames();
 
 /**
  *   CodeLineElement with no default styles.
@@ -22,7 +15,7 @@ export const CodeLineElementBase = ({
   className,
   styles,
   htmlAttributes,
-}: CodeLineElementProps) => {
+}: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -39,9 +32,9 @@ export const CodeLineElementBase = ({
  * CodeBlockElement
  */
 export const CodeLineElement = styled<
-  CodeLineElementProps,
-  CodeLineElementStyleProps,
-  CodeLineElementStyles
+  ElementProps,
+  NodeStyleProps,
+  NonNullable<ElementProps['styles']>
 >(CodeLineElementBase, getCodeLineElementStyles, undefined, {
   scope: 'CodeBlockElement',
 });

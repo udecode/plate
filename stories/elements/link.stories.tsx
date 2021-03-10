@@ -6,7 +6,6 @@ import {
   HeadingPlugin,
   LinkPlugin,
   ParagraphPlugin,
-  renderElementLink,
   SlatePlugins,
   withInlineVoid,
   withLink,
@@ -21,20 +20,16 @@ const id = 'Elements/Link';
 export default {
   title: id,
   component: LinkPlugin,
-  subcomponents: {
-    renderElementLink,
-    LinkButton: ToolbarLink,
-  },
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
+  const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
 
   const withPlugins = [
     withReact,
     withHistory,
-    withLink(options),
+    withLink({}, options),
     withInlineVoid({ plugins }),
   ] as const;
 

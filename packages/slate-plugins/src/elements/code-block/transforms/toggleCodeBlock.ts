@@ -1,21 +1,15 @@
-import {
-  getNodes,
-  setDefaults,
-  someNode,
-  wrapNodes,
-} from '@udecode/slate-plugins-common';
+import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockOptions, CodeLineOptions } from '../types';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (
   editor: Editor,
-  options: CodeBlockOptions & CodeLineOptions
+  options: SlatePluginsOptions
 ) => {
-  if (!editor.selection) return;
+  const { code_block, code_line } = options;
 
-  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  if (!editor.selection) return;
 
   const isActive = someNode(editor, { match: { type: code_block.type } });
 

@@ -1,18 +1,20 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor, useReadOnly } from 'slate-react';
+import { ElementProps, getRootClassNames } from '../../types';
 import { getTodoListElementStyles } from './TodoListElement.styles';
 import {
-  TodoListElementProps,
   TodoListElementStyleProps,
   TodoListElementStyles,
 } from './TodoListElement.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   TodoListElementStyleProps,
   TodoListElementStyles
 >();
+
+type Props = ElementProps<{ checked?: boolean }>;
 
 /**
  * TodoListElement with no default styles.
@@ -25,7 +27,7 @@ export const TodoListElementBase = ({
   className,
   styles,
   htmlAttributes,
-}: TodoListElementProps) => {
+}: Props) => {
   const editor = useEditor();
   const readOnly = useReadOnly();
 
@@ -70,9 +72,9 @@ export const TodoListElementBase = ({
  * TodoListElement
  */
 export const TodoListElement = styled<
-  TodoListElementProps,
+  Props,
   TodoListElementStyleProps,
-  TodoListElementStyles
+  NonNullable<Props['styles']>
 >(TodoListElementBase, getTodoListElementStyles, undefined, {
   scope: 'TodoListElement',
 });

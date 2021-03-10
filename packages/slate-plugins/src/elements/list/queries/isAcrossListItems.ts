@@ -1,18 +1,19 @@
 import {
   isCollapsed,
   isRangeAcrossBlocks,
-  setDefaults,
   someNode,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
 /**
  * Is selection across blocks with list items
  */
-export const isAcrossListItems = (editor: Editor, options?: ListOptions) => {
-  const { li } = setDefaults(options, DEFAULTS_LIST);
+export const isAcrossListItems = (
+  editor: Editor,
+  options: SlatePluginsOptions
+) => {
+  const { li } = options;
 
   const { selection } = editor;
 

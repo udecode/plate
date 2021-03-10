@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { getRootClassNames } from '@udecode/slate-plugins-components';
+import { styled } from '@uifabric/utilities';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
 import {
   PreviewLeafProps,
@@ -7,7 +8,7 @@ import {
   PreviewLeafStyles,
 } from './PreviewLeaf.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   PreviewLeafStyleProps,
   PreviewLeafStyles
 >();

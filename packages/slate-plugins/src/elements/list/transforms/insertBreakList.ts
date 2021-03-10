@@ -1,17 +1,19 @@
-import { isBlockAboveEmpty, setDefaults } from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
-import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';
-import { ListOptions } from '../types';
 import { insertListItem } from './insertListItem';
 import { moveListItemUp } from './moveListItemUp';
 import { unwrapList } from './unwrapList';
 
-export const insertBreakList = (editor: Editor, options?: ListOptions) => {
-  if (!editor.selection) return;
+export const insertBreakList = (
+  editor: Editor,
+  options: SlatePluginsOptions
+) => {
+  const { p, li } = options;
 
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+  if (!editor.selection) return;
 
   const res = getListItemEntry(editor, {}, options);
   let moved: boolean | undefined;

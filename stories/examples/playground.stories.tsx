@@ -32,7 +32,6 @@ import {
   BoldPlugin,
   CodeBlockPlugin,
   CodePlugin,
-  decorateSearchHighlight,
   EditablePlugins,
   ELEMENT_IMAGE,
   ExitBreakPlugin,
@@ -64,6 +63,7 @@ import {
   TablePlugin,
   TodoListPlugin,
   UnderlinePlugin,
+  useDecorateSearchHighlight,
   useMention,
   useSlatePluginsActions,
   useSlatePluginsEditor,
@@ -98,7 +98,6 @@ import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { autoformatRules } from '../config/autoformatRules';
 import {
-  headingTypes,
   initialValueAutoformat,
   initialValueBasicElements,
   initialValueBasicMarks,
@@ -114,7 +113,9 @@ import {
   initialValueSoftBreak,
   initialValueTables,
   options,
+  optionsExitBreak,
   optionsResetBlockTypes,
+  optionsSoftBreak,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
@@ -150,98 +151,45 @@ const renderLabel = (mentionable: MentionNodeData) => {
 export const Plugins = () => {
   const plugins: any[] = [];
 
-  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
-  if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin(options));
-  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
-  if (boolean('MentionPlugin', true))
-    plugins.push(
-      MentionPlugin({
-        mention: {
-          ...options.mention,
-          rootProps: {
-            onClick: (mentionable: MentionNodeData) =>
-              console.info(`Hello, I'm ${mentionable.value}`),
-            prefix: '@',
-            renderLabel,
-          },
-        },
-      })
-    );
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
-  if (boolean('MediaEmbedPlugin', true))
-    plugins.push(MediaEmbedPlugin(options));
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
-  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(options));
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin(options));
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
+  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
+  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin());
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
+  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
+  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
+  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
+  if (boolean('MediaEmbedPlugin', true)) plugins.push(MediaEmbedPlugin());
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin());
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin());
+  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
+  if (boolean('CodePlugin', true)) plugins.push(CodePlugin());
+  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin(options));
-  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin(options));
-  if (boolean('StrikethroughPlugin', true))
-    plugins.push(StrikethroughPlugin(options));
-  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin(options));
-  if (boolean('SuperscriptPlugin', true))
-    plugins.push(SuperscriptPlugin(options));
+    plugins.push(SearchHighlightPlugin());
+  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
+  if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
+  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
+  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
   if (boolean('ResetBlockTypePlugin', true))
     plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
   if (boolean('SoftBreakPlugin', true))
-    plugins.push(
-      SoftBreakPlugin({
-        rules: [
-          { hotkey: 'shift+enter' },
-          {
-            hotkey: 'enter',
-            query: {
-              allow: [
-                options.code_block.type,
-                options.blockquote.type,
-                options.td.type,
-              ],
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(SoftBreakPlugin(optionsSoftBreak));
   if (boolean('ExitBreakPlugin', true))
-    plugins.push(
-      ExitBreakPlugin({
-        rules: [
-          {
-            hotkey: 'mod+enter',
-          },
-          {
-            hotkey: 'mod+shift+enter',
-            before: true,
-          },
-          {
-            hotkey: 'enter',
-            query: {
-              start: true,
-              end: true,
-              allow: headingTypes,
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(ExitBreakPlugin(optionsExitBreak));
 
   const withPlugins = [
     withReact,
     withHistory,
     withTable(options),
-    withLink(),
-    withList(options),
-    withCodeBlock(options),
+    withLink({}, options),
+    withList({}, options),
+    withCodeBlock({}, options),
     withDeserializeHTML({ plugins }),
     withMarks(),
-    withImageUpload(),
+    withImageUpload({}, options),
     withAutoformat({ rules: autoformatRules }),
     withNormalizeTypes({
       rules: [{ path: [0, 0], strictType: options.h1.type }],
@@ -261,7 +209,7 @@ export const Plugins = () => {
     const [search, setSearchHighlight] = useState('');
 
     if (boolean('decorateSearchHighlight', true))
-      decorate.push(decorateSearchHighlight({ search }));
+      decorate.push(useDecorateSearchHighlight({ search }));
 
     const {
       index,

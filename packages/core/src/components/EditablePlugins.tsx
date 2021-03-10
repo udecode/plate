@@ -8,7 +8,7 @@ import { UseEditablePropsOptions } from '../types/UseEditablePropsOptions';
  */
 export const EditablePlugins = (props: Omit<UseEditablePropsOptions, 'id'>) => {
   const editor = useEditor();
-  const id = (editor.id as string) ?? 'main';
+  const id = editor.id as string | undefined;
 
   const { getEditableProps } = useSlatePlugins({ ...props, id });
 

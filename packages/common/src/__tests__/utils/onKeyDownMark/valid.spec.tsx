@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
-import { getOnHotkeyToggleMark } from '../../../transforms/getOnHotkeyToggleMark';
+import { getOnKeyDownMark } from '../../../utils/getOnKeyDownMark';
 
 const input = (
   <editor>
@@ -32,7 +32,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: 'ctrl+b' })?.(event, input);
+  getOnKeyDownMark({ type: MARK_BOLD, hotkey: 'ctrl+b' })?.(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

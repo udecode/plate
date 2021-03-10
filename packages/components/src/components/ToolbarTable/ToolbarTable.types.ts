@@ -1,7 +1,16 @@
-import { TableOptions } from '@udecode/slate-plugins';
+import {
+  SlatePluginsOptions,
+  TablePluginOptions,
+} from '@udecode/slate-plugins';
 import { Editor } from 'slate';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
-export interface ToolbarTableProps extends ToolbarButtonProps, TableOptions {
-  transform: (editor: Editor, options?: TableOptions) => void;
+export interface ToolbarTableProps
+  extends ToolbarButtonProps,
+    TablePluginOptions {
+  transform: (
+    editor: Editor,
+    pluginOptions: { header?: boolean },
+    options: SlatePluginsOptions
+  ) => void;
 }

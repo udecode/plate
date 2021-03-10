@@ -32,7 +32,11 @@ import {
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { initialValuePasteHtml, options } from '../config/initialValues';
+import {
+  initialValuePasteHtml,
+  options,
+  optionsSoftBreak,
+} from '../config/initialValues';
 
 const id = 'Deserializers/HTML';
 
@@ -43,37 +47,37 @@ export default {
 
 export const Example = () => {
   const plugins = [
-    ParagraphPlugin(options),
-    BlockquotePlugin(options),
-    CodeBlockPlugin(options),
-    HeadingPlugin(options),
-    ImagePlugin(options),
-    LinkPlugin(options),
-    ListPlugin(options),
-    TablePlugin(options),
-    TodoListPlugin(options),
-    MentionPlugin(options),
-    MediaEmbedPlugin(options),
-    BoldPlugin(options),
-    CodePlugin(options),
-    ItalicPlugin(options),
-    StrikethroughPlugin(options),
-    HighlightPlugin(options),
-    UnderlinePlugin(options),
-    SubscriptPlugin(options),
-    SuperscriptPlugin(options),
-    SoftBreakPlugin(),
+    ParagraphPlugin(),
+    BlockquotePlugin(),
+    CodeBlockPlugin(),
+    HeadingPlugin(),
+    ImagePlugin(),
+    LinkPlugin(),
+    ListPlugin(),
+    TablePlugin(),
+    TodoListPlugin(),
+    MentionPlugin(),
+    MediaEmbedPlugin(),
+    BoldPlugin(),
+    CodePlugin(),
+    ItalicPlugin(),
+    StrikethroughPlugin(),
+    HighlightPlugin(),
+    UnderlinePlugin(),
+    SubscriptPlugin(),
+    SuperscriptPlugin(),
+    SoftBreakPlugin(optionsSoftBreak),
   ];
 
   const withPlugins = [
     withReact,
     withHistory,
     withTable(options),
-    withLink(options),
-    withCodeBlock(options),
-    withList(options),
+    withLink({}, options),
+    withCodeBlock({}, options),
+    withList({}, options),
     withDeserializeHTML({ plugins }),
-    withImageUpload(),
+    withImageUpload({}, options),
     withInlineVoid({ plugins }),
   ] as const;
 

@@ -1,10 +1,4 @@
-import { useEffect } from 'react';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
-import { withRandomKey } from '../../with/randomKeyEditor';
 import { useEditableProps } from './useEditableProps';
 import { useSlatePluginsEffects } from './useSlatePluginsEffects';
 import { useSlateProps } from './useSlateProps';
@@ -15,6 +9,7 @@ import { useSlateProps } from './useSlateProps';
  */
 export const useSlatePlugins = ({
   id,
+  components,
   editor,
   initialValue,
   value,
@@ -36,6 +31,7 @@ export const useSlatePlugins = ({
 }: UseSlatePluginsOptions) => {
   useSlatePluginsEffects({
     id,
+    components,
     plugins,
     withPlugins,
     initialValue,

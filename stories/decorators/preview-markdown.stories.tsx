@@ -6,7 +6,7 @@ import {
   ParagraphPlugin,
   SlatePlugins,
 } from '@udecode/slate-plugins';
-import { initialValuePreview, options } from '../config/initialValues';
+import { initialValuePreview } from '../config/initialValues';
 import { decoratePreview } from './plugin/decoratePreview';
 import { PreviewPlugin } from './plugin/PreviewPlugin';
 import { renderLeafPreview } from './plugin/renderLeafPreview';
@@ -23,7 +23,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
+  const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
 
   if (boolean('PreviewPlugin', true)) plugins.push(PreviewPlugin());
 

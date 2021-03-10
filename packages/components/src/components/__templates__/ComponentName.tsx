@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { getRootClassNames } from '../../types';
 import { getComponentNameStyles } from './ComponentName.styles';
 import {
   ComponentNameProps,
@@ -7,7 +8,7 @@ import {
   ComponentNameStyles,
 } from './ComponentName.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   ComponentNameStyleProps,
   ComponentNameStyles
 >();

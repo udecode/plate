@@ -18,15 +18,15 @@ import {
 } from '../../../../elements/todo-list/constants';
 import { TodoListPlugin } from '../../../../elements/todo-list/TodoListPlugin';
 import { SoftBreakPlugin } from '../../../../handlers/soft-break/SoftBreakPlugin';
-import { deserializeBold } from '../../../../marks/bold/deserializeBold';
-import { deserializeCode } from '../../../../marks/code/deserializeCode';
-import { deserializeHighlight } from '../../../../marks/highlight/deserializeHighlight';
-import { deserializeItalic } from '../../../../marks/italic/deserializeItalic';
-import { deserializeKbd } from '../../../../marks/kbd/deserializeKbd';
-import { deserializeStrikethrough } from '../../../../marks/strikethrough/deserializeStrikethrough';
-import { deserializeSubscript } from '../../../../marks/subsupscript/subscript/deserializeSubscript';
-import { deserializeSuperscript } from '../../../../marks/subsupscript/superscript/deserializeSuperscript';
-import { deserializeUnderline } from '../../../../marks/underline/deserializeUnderline';
+import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
+import { useDeserializeCode } from '../../../../marks/code/useDeserializeCode';
+import { useDeserializeHighlight } from '../../../../marks/highlight/useDeserializeHighlight';
+import { useDeserializeItalic } from '../../../../marks/italic/useDeserializeItalic';
+import { useDeserializeKbd } from '../../../../marks/kbd/useDeserializeKbd';
+import { useDeserializeStrikethrough } from '../../../../marks/strikethrough/useDeserializeStrikethrough';
+import { useDeserializeSubscript } from '../../../../marks/subsupscript/subscript/useDeserializeSubscript';
+import { useDeserializeSuperscript } from '../../../../marks/subsupscript/superscript/useDeserializeSuperscript';
+import { useDeserializeUnderline } from '../../../../marks/underline/useDeserializeUnderline';
 import { SearchHighlightPlugin } from '../../../../widgets/search-highlight/SearchHighlightPlugin';
 import { deserializeHTMLElement } from '../../../index';
 
@@ -84,15 +84,15 @@ const input1 = [
   SearchHighlightPlugin(),
   SoftBreakPlugin(),
   AlignPlugin(),
-  { deserialize: deserializeBold() },
-  { deserialize: deserializeHighlight() },
-  { deserialize: deserializeCode() },
-  { deserialize: deserializeKbd() },
-  { deserialize: deserializeItalic() },
-  { deserialize: deserializeStrikethrough() },
-  { deserialize: deserializeSubscript() },
-  { deserialize: deserializeSuperscript() },
-  { deserialize: deserializeUnderline() },
+  { deserialize: useDeserializeBold() },
+  { deserialize: useDeserializeHighlight() },
+  { deserialize: useDeserializeCode() },
+  { deserialize: useDeserializeKbd() },
+  { deserialize: useDeserializeItalic() },
+  { deserialize: useDeserializeStrikethrough() },
+  { deserialize: useDeserializeSubscript() },
+  { deserialize: useDeserializeSuperscript() },
+  { deserialize: useDeserializeUnderline() },
 ];
 const input2 = getHtmlDocument(html).body;
 

@@ -1,21 +1,6 @@
-import {
-  HtmlAttributesProps,
-  MentionNode,
-  MentionNodeData,
-  RenderNodePropsOptions,
-} from '@udecode/slate-plugins';
-import { IStyle } from '@uifabric/styling';
+import { MentionNode, MentionNodeData } from '@udecode/slate-plugins';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderElementProps } from 'slate-react';
-
-export interface MentionElementStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert MentionElement classNames below
-}
+import { ElementProps, NodeStyleSet } from '../../types';
 
 export interface MentionElementStyleProps {
   /**
@@ -28,15 +13,14 @@ export interface MentionElementStyleProps {
   focused?: boolean;
 }
 
-// renderElement options given as props
-export interface MentionRenderElementPropsOptions {
+// renderElement props
+export interface MentionElementProps extends ElementProps<MentionNode> {
   /**
    * Call to provide customized styling that will layer on top of the variant rules.
    */
-  styles?: IStyleFunctionOrObject<
-    MentionElementStyleProps,
-    MentionElementStyles
-  >;
+  styles?: IStyleFunctionOrObject<MentionElementStyleProps, NodeStyleSet>;
+
+  as?: any;
 
   /**
    * Prefix rendered before mention
@@ -44,13 +28,4 @@ export interface MentionRenderElementPropsOptions {
   prefix?: string;
   onClick?: (mentionNode: MentionNode) => void;
   renderLabel?: (mentionable: MentionNodeData) => string;
-}
-
-// renderElement props
-export interface MentionElementProps
-  extends RenderElementProps,
-    RenderNodePropsOptions,
-    HtmlAttributesProps,
-    MentionRenderElementPropsOptions {
-  element: MentionNode;
 }

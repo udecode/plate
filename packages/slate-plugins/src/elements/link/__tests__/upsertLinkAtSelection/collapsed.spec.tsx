@@ -20,7 +20,7 @@ const output = (
 
 it('should run default insertText', () => {
   const editor = withLink()(input);
-  upsertLinkAtSelection(editor, url);
+  upsertLinkAtSelection(editor, { url });
 
   expect(input.children).toEqual(output.children);
 });

@@ -1,12 +1,6 @@
-import {
-  getAbove,
-  getParent,
-  setDefaults,
-  someNode,
-} from '@udecode/slate-plugins-common';
+import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
-import { DEFAULTS_TABLE } from '../defaults';
-import { TableOptions } from '../types';
 
 /**
  * If at (default = selection) is in table>tr>td, return table, tr, and td
@@ -15,9 +9,9 @@ import { TableOptions } from '../types';
 export const getTableCellEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: TableOptions
+  options: SlatePluginsOptions
 ) => {
-  const { td, tr, table } = setDefaults(options, DEFAULTS_TABLE);
+  const { td, tr, table } = options;
 
   if (at && someNode(editor, { at, match: { type: td.type } })) {
     const selectionParent = getParent(editor, at);

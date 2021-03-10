@@ -1,7 +1,6 @@
 import {
   RenderNodeOptions,
   RenderNodePropsOptions,
-  RootProps,
   StyledComponentStyleProps,
   StyledComponentStyles,
 } from '@udecode/slate-plugins';
@@ -47,8 +46,7 @@ export interface TagElementProps
 export type TagKeyOption = 'tag';
 
 // Plugin options
-export type TagPluginOptionsValues = RenderNodeOptions &
-  RootProps<TagRenderElementPropsOptions>;
+export type TagPluginOptionsValues = RenderNodeOptions;
 export type TagPluginOptionsKeys = keyof TagPluginOptionsValues;
 export type TagPluginOptions<
   Value extends TagPluginOptionsKeys = TagPluginOptionsKeys
@@ -57,11 +55,10 @@ export type TagPluginOptions<
 // renderElement options
 export type TagRenderElementOptionsKeys = TagPluginOptionsKeys;
 export interface TagRenderElementOptions
-  extends TagPluginOptions<'type' | 'component' | 'rootProps'> {}
+  extends TagPluginOptions<'type' | 'component'> {}
 
 // deserialize options
-export interface TagDeserializeOptions
-  extends TagPluginOptions<'type' | 'rootProps'> {}
+export interface TagDeserializeOptions extends TagPluginOptions<'type'> {}
 
 export interface WithTagOptions extends TagPluginOptions<'type'> {}
 

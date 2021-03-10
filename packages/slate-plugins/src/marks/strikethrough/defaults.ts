@@ -1,22 +1,7 @@
-import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import {
-  StrikethroughKeyOption,
-  StrikethroughPluginOptionsValues,
-} from './types';
+import { MarkPluginOptions } from '@udecode/slate-plugins-common';
 
 export const MARK_STRIKETHROUGH = 'strikethrough';
 
-export const DEFAULTS_STRIKETHROUGH: Record<
-  StrikethroughKeyOption,
-  StrikethroughPluginOptionsValues & GetOnHotkeyToggleMarkOptions
-> = {
-  strikethrough: {
-    // component: StyledLeaf,
-    type: MARK_STRIKETHROUGH,
-    hotkey: 'mod+shift+s',
-    rootProps: {
-      className: `slate-strikethrough`,
-      as: 's',
-    },
-  },
+export const DEFAULTS_STRIKETHROUGH: MarkPluginOptions = {
+  hotkey: 'mod+shift+s',
 };

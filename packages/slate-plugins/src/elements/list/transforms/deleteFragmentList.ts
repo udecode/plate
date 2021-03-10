@@ -4,21 +4,21 @@ import {
   getBlockAbove,
   getParent,
   moveChildren,
-  setDefaults,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
 import { getHighestEmptyList } from '../queries/getHighestEmptyList';
 import { hasListChild } from '../queries/hasListChild';
 import { isAcrossListItems } from '../queries/isAcrossListItems';
-import { ListOptions } from '../types';
 
-export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
+export const deleteFragmentList = (
+  editor: Editor,
+  options: SlatePluginsOptions
+) => {
+  const { li } = options;
   let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {
-    const { li } = setDefaults(options, DEFAULTS_LIST);
-
     // Selection should be across list items
     if (!isAcrossListItems(editor, options)) return;
 
@@ -28,7 +28,7 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
      */
     const end = Editor.end(editor, editor.selection as Range);
     const liEnd = getAbove(editor, { at: end, match: { type: li.type } });
-    const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0]);
+    const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0], options);
     const liEndPathRef = liEndCanBeDeleted
       ? Editor.pathRef(editor, liEnd![1])
       : undefined;
@@ -66,8 +66,10 @@ export const deleteFragmentList = (editor: Editor, options?: ListOptions) => {
 
       const deletePath = getHighestEmptyList(
         editor,
-        liEndPath,
-        listStart?.[1],
+        {
+          liPath: liEndPath,
+          diffListPath: listStart?.[1],
+        },
         options
       );
 

@@ -22,7 +22,6 @@ import {
   insertTable,
   MARK_BOLD,
   ParagraphPlugin,
-  renderElementTable,
   SlatePlugins,
   SoftBreakPlugin,
   TablePlugin,
@@ -36,9 +35,10 @@ import {
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {
-  headingTypes,
   initialValueTables,
   options,
+  optionsExitBreak,
+  optionsSoftBreak,
 } from '../config/initialValues';
 
 const id = 'Elements/Table';
@@ -46,52 +46,19 @@ const id = 'Elements/Table';
 export default {
   title: id,
   component: TablePlugin,
-  subcomponents: { renderElementTable },
 };
 
 const withPlugins = [withReact, withHistory, withTable(options)] as const;
 
 export const Example = () => {
   const plugins = [
-    ParagraphPlugin(options),
-    HeadingPlugin(options),
-    BoldPlugin(options),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [
-              options.code_block.type,
-              options.blockquote.type,
-              options.td.type,
-            ],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: headingTypes,
-          },
-        },
-      ],
-    }),
+    ParagraphPlugin(),
+    HeadingPlugin(),
+    BoldPlugin(),
+    SoftBreakPlugin(optionsSoftBreak),
+    ExitBreakPlugin(optionsExitBreak),
   ];
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
+  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
 
   const createReactEditor = () => () => {
     return (

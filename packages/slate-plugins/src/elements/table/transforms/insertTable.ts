@@ -1,13 +1,17 @@
-import { setDefaults, someNode } from '@udecode/slate-plugins-common';
+import { someNode } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_TABLE } from '../defaults';
-import { TableOptions } from '../types';
+import { TablePluginOptions } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export const insertTable = (editor: Editor, options?: TableOptions) => {
-  const { table } = setDefaults(options, DEFAULTS_TABLE);
+export const insertTable = (
+  editor: Editor,
+  { header }: TablePluginOptions,
+  options: SlatePluginsOptions
+) => {
+  const { table } = options;
 
   if (!someNode(editor, { match: { type: table.type } })) {
-    Transforms.insertNodes(editor, getEmptyTableNode(options));
+    Transforms.insertNodes(editor, getEmptyTableNode({ header }, options));
   }
 };

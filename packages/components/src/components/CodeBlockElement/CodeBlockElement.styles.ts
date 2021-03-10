@@ -1,11 +1,8 @@
-import {
-  CodeBlockElementStyleProps,
-  CodeBlockElementStyles,
-} from './CodeBlockElement.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getCodeBlockElementStyles = ({
   className,
-}: CodeBlockElementStyleProps): CodeBlockElementStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       {

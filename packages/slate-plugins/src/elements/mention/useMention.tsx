@@ -6,10 +6,12 @@ import {
   isPointAtWordEnd,
   isWordAfterTrigger,
 } from '@udecode/slate-plugins-common';
+import { useEditorOptions } from '@udecode/slate-plugins-core';
 import { Editor, Point, Range, Transforms } from 'slate';
 import { insertMention } from './transforms/insertMention';
 import { getNextIndex } from './utils/getNextIndex';
 import { getPreviousIndex } from './utils/getPreviousIndex';
+import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData, UseMentionOptions } from './types';
 
 export const matchesTriggerAndPattern = (
@@ -59,9 +61,10 @@ export const useMention = (
       c.value.toLowerCase().includes(search.toLowerCase()),
     mentionableSearchPattern,
     insertSpaceAfterMention,
-    ...options
   }: UseMentionOptions = {}
 ) => {
+  const options = useEditorOptions(ELEMENT_MENTION);
+
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
   const [search, setSearch] = useState('');
@@ -73,7 +76,7 @@ export const useMention = (
     (editor: Editor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, data, options, insertSpaceAfterMention);
+        insertMention(editor, { data, insertSpaceAfterMention }, options);
         return setTargetRange(null);
       }
     },

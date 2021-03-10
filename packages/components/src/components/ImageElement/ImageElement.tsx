@@ -1,17 +1,23 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
+import { ElementProps, getRootClassNames } from '../../types';
 import { getImageElementStyles } from './ImageElement.styles';
 import {
-  ImageElementProps,
   ImageElementStyleProps,
-  ImageElementStyles,
+  ImageElementStyleSet,
 } from './ImageElement.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   ImageElementStyleProps,
-  ImageElementStyles
+  ImageElementStyleSet
 >();
+
+type Props = ElementProps<
+  { url: string },
+  ImageElementStyleProps,
+  ImageElementStyleSet
+>;
 
 /**
  * ImageElement with no default styles.
@@ -24,7 +30,7 @@ export const ImageElementBase = ({
   className,
   styles,
   htmlAttributes,
-}: ImageElementProps) => {
+}: Props) => {
   const { url } = element;
   const focused = useFocused();
   const selected = useSelected();
@@ -56,9 +62,9 @@ export const ImageElementBase = ({
  * ImageElement
  */
 export const ImageElement = styled<
-  ImageElementProps,
+  Props,
   ImageElementStyleProps,
-  ImageElementStyles
+  NonNullable<Props['styles']>
 >(ImageElementBase, getImageElementStyles, undefined, {
   scope: 'ImageElement',
 });

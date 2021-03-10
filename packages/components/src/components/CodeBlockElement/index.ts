@@ -4,7 +4,5 @@
 
 export * from './CodeBlockElement.styles';
 export * from './CodeBlockElement';
-export * from './CodeBlockElement.types';
 export * from './CodeLineElement.styles';
 export * from './CodeLineElement';
-export * from './CodeLineElement.types';

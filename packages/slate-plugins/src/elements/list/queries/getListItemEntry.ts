@@ -1,12 +1,6 @@
-import {
-  getAbove,
-  getParent,
-  setDefaults,
-  someNode,
-} from '@udecode/slate-plugins-common';
+import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
@@ -14,10 +8,8 @@ import { ListOptions } from '../types';
 export const getListItemEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: ListOptions
+  { li }: SlatePluginsOptions
 ) => {
-  const { li } = setDefaults(options, DEFAULTS_LIST);
-
   if (at && someNode(editor, { at, match: { type: li.type } })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;

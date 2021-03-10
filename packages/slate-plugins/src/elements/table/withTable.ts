@@ -1,12 +1,12 @@
-import { isCollapsed, setDefaults } from '@udecode/slate-plugins-common';
+import { isCollapsed } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Node, Point, Transforms } from 'slate';
-import { DEFAULTS_TABLE } from './defaults';
-import { WithTableOptions } from './types';
 
-export const withTable = (options?: WithTableOptions) => <T extends Editor>(
+export const withTable = (options: SlatePluginsOptions) => <T extends Editor>(
   editor: T
 ) => {
-  const { td, th } = setDefaults(options, DEFAULTS_TABLE);
+  const { td, th } = options;
+
   const matchCells = (node: Node) =>
     node.type === td.type || node.type === th.type;
 

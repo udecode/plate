@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { concatStyleSets } from '@uifabric/styling';
-import { classNamesFunction } from '@uifabric/utilities';
+import { getRootClassNames } from '../../types';
 import { getToolbarStyles } from './Toolbar.styles';
 import {
   ToolbarProps,
@@ -8,7 +8,7 @@ import {
   ToolbarStyles,
 } from './Toolbar.types';
 
-const getClassNames = classNamesFunction<ToolbarStyleProps, ToolbarStyles>();
+const getClassNames = getRootClassNames<ToolbarStyleProps, ToolbarStyles>();
 
 export const ToolbarBase = React.forwardRef<HTMLDivElement, ToolbarProps>(
   ({ className, styles, children }, ref) => {

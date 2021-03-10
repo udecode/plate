@@ -2,18 +2,19 @@ import {
   getAbove,
   getParent,
   isBlockTextEmptyAfterSelection,
-  setDefaults,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
 /**
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (editor: Editor, options?: ListOptions) => {
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+export const insertListItem = (
+  editor: Editor,
+  options: SlatePluginsOptions
+) => {
+  const { p, li } = options;
 
   if (editor.selection) {
     const paragraphEntry = getAbove(editor, { match: { type: p.type } });

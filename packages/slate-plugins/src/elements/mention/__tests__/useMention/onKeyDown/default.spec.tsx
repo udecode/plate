@@ -4,7 +4,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { pipe } from '../../../../../utils/pipe';
+import { pipe } from '../../../../../pipe/pipe';
 import { useMention } from '../../../useMention';
 import { mentionables } from './mentionables.fixture';
 

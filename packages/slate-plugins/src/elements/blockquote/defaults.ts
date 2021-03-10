@@ -1,18 +1,7 @@
-import { BlockquoteKeyOption, BlockquotePluginOptionsValues } from './types';
+import { ElementPluginOptions } from '@udecode/slate-plugins-common';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
-export const DEFAULTS_BLOCKQUOTE: Record<
-  BlockquoteKeyOption,
-  BlockquotePluginOptionsValues
-> = {
-  blockquote: {
-    // component: BlockquoteElement,
-    type: ELEMENT_BLOCKQUOTE,
-    hotkey: 'mod+shift+.',
-    rootProps: {
-      className: 'slate-blockquote',
-      as: 'blockquote',
-    },
-  },
+export const DEFAULTS_BLOCKQUOTE: ElementPluginOptions = {
+  hotkey: 'mod+shift+.',
 };

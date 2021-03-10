@@ -1,13 +1,7 @@
-import {
-  getAbove,
-  getNode,
-  isLastChild,
-  setDefaults,
-} from '@udecode/slate-plugins-common';
+import { getAbove, getNode, isLastChild } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
-import { ListOptions } from '../types';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
@@ -22,11 +16,11 @@ export interface MoveListItemUpOptions {
 export const moveListItemUp = (
   editor: Editor,
   { list, listItem }: MoveListItemUpOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
-  const move = () => {
-    const { li } = setDefaults(options, DEFAULTS_LIST);
+  const { li } = options;
 
+  const move = () => {
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
@@ -97,7 +91,7 @@ export const moveListItemUp = (
     // If li has next siblings, we need to move them.
     if (!isLastChild(list, liPath)) {
       // If li has no sublist, insert one.
-      if (!hasListChild(liNode)) {
+      if (!hasListChild(liNode, options)) {
         Transforms.insertNodes(
           editor,
           {

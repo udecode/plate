@@ -1,20 +1,22 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_MENTION } from '../defaults';
-import { MentionNode, MentionNodeData, MentionPluginOptions } from '../types';
+import { MentionNode, MentionNodeData } from '../types';
 
 export const insertMention = (
   editor: Editor,
-  mentionable: MentionNodeData,
-  options?: MentionPluginOptions,
-  insertSpaceAfterMention?: boolean
+  {
+    insertSpaceAfterMention,
+    data,
+  }: {
+    data: MentionNodeData;
+    insertSpaceAfterMention?: boolean;
+  },
+  options: SlatePluginOptions
 ) => {
-  const { mention } = setDefaults(options, DEFAULTS_MENTION);
-
   const mentionNode: MentionNode = {
-    type: mention.type,
+    type: options.type,
     children: [{ text: '' }],
-    ...mentionable,
+    ...data,
   };
 
   Transforms.insertNodes(editor, mentionNode);

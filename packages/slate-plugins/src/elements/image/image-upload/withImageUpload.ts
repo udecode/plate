@@ -1,6 +1,7 @@
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
 import { insertImage } from '../transforms/insertImage';
-import { ImagePluginOptions } from '../types';
+import { WithImageUploadOptions } from '../types';
 import { isImageUrl } from '../utils/isImageUrl';
 
 /**
@@ -9,11 +10,10 @@ import { isImageUrl } from '../utils/isImageUrl';
  * @param options.type
  * @param options.uploadImage
  */
-export const withImageUpload = (options?: ImagePluginOptions) => <
-  T extends ReactEditor
->(
-  editor: T
-) => {
+export const withImageUpload = (
+  { uploadImage }: WithImageUploadOptions = {},
+  options: SlatePluginsOptions
+) => <T extends ReactEditor>(editor: T) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {
@@ -29,11 +29,11 @@ export const withImageUpload = (options?: ImagePluginOptions) => <
             if (!reader.result) {
               return;
             }
-            const uploadedUrl = options?.img?.uploadImage
-              ? await options.img.uploadImage(reader.result)
+            const uploadedUrl = uploadImage
+              ? await uploadImage(reader.result)
               : reader.result;
 
-            insertImage(editor, uploadedUrl);
+            insertImage(editor, uploadedUrl, options);
           });
 
           reader.readAsDataURL(file);

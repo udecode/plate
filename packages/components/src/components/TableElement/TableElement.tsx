@@ -1,16 +1,9 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
 import { getTableElementStyles } from './TableElement.styles';
-import {
-  TableElementProps,
-  TableElementStyleProps,
-  TableElementStyles,
-} from './TableElement.types';
 
-const getClassNames = classNamesFunction<
-  TableElementStyleProps,
-  TableElementStyles
->();
+const getClassNames = getRootClassNames();
 
 /**
  * TableElement with no default styles.
@@ -22,7 +15,7 @@ export const TableElementBase = ({
   className,
   styles,
   htmlAttributes,
-}: TableElementProps) => {
+}: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -39,9 +32,9 @@ export const TableElementBase = ({
  * TableElement
  */
 export const TableElement = styled<
-  TableElementProps,
-  TableElementStyleProps,
-  TableElementStyles
+  ElementProps,
+  NodeStyleProps,
+  NonNullable<ElementProps['styles']>
 >(TableElementBase, getTableElementStyles, undefined, {
   scope: 'TableElement',
 });

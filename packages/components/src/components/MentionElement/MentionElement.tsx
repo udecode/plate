@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { getHandler, MentionNodeData } from '@udecode/slate-plugins';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
+import { getRootClassNames, NodeStyleSet } from '../../types';
 import { getMentionElementStyles } from './MentionElement.styles';
 import {
   MentionElementProps,
   MentionElementStyleProps,
-  MentionElementStyles,
 } from './MentionElement.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   MentionElementStyleProps,
-  MentionElementStyles
+  NodeStyleSet
 >();
 
 /**
@@ -62,7 +62,7 @@ export const MentionElementBase = ({
 export const MentionElement = styled<
   MentionElementProps,
   MentionElementStyleProps,
-  MentionElementStyles
+  NonNullable<MentionElementProps['styles']>
 >(MentionElementBase, getMentionElementStyles, undefined, {
   scope: 'MentionElement',
 });

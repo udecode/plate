@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
 import { getLinkElementStyles } from './LinkElement.styles';
-import {
-  LinkElementProps,
-  LinkElementStyleProps,
-  LinkElementStyles,
-} from './LinkElement.types';
 
-const getClassNames = classNamesFunction<
-  LinkElementStyleProps,
-  LinkElementStyles
->();
+const getClassNames = getRootClassNames();
+
+type Props = ElementProps<{
+  url: string;
+}>;
 
 /**
  * LinkElement with no default styles.
@@ -23,7 +20,7 @@ export const LinkElementBase = ({
   styles,
   className,
   htmlAttributes,
-}: LinkElementProps) => {
+}: Props) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -45,9 +42,9 @@ export const LinkElementBase = ({
  * LinkElement
  */
 export const LinkElement = styled<
-  LinkElementProps,
-  LinkElementStyleProps,
-  LinkElementStyles
+  Props,
+  NodeStyleProps,
+  NonNullable<Props['styles']>
 >(LinkElementBase, getLinkElementStyles, undefined, {
   scope: 'LinkElement',
 });

@@ -5,13 +5,7 @@ import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 it('serialize with slate className', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [
-        AlignPlugin({
-          align_center: {
-            rootProps: { className: 'slate-align-center' },
-          },
-        }),
-      ],
+      plugins: [AlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],

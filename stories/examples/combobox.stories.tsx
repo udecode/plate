@@ -1,17 +1,16 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback } from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
-  pipe,
   SlateDocument,
   SlatePlugins,
   useSlatePluginsActions,
   useSlatePluginsEditor,
   withInlineVoid,
 } from '@udecode/slate-plugins';
-import { createEditor, Editor } from 'slate';
+import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import { initialValueCombobox, options } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 import { useComboboxControls } from './combobox/hooks/useComboboxControls';

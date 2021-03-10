@@ -4,9 +4,9 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
-import { ListOptions } from '../types';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
@@ -36,7 +36,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     toListItem,
     start,
   }: MoveListItemSublistItemsToListItemSublistOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;

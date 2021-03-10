@@ -7,7 +7,7 @@ import {
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { initialValueHugeDocument, options } from '../config/initialValues';
+import { initialValueHugeDocument } from '../config/initialValues';
 
 const id = 'Examples/Huge Document';
 
@@ -16,7 +16,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
+  const plugins = [ParagraphPlugin(), HeadingPlugin()];
 
   const withPlugins = [withReact, withHistory] as const;
 

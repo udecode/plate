@@ -2,14 +2,12 @@ import {
   deleteFragment,
   isCollapsed,
   isSelectionAtBlockStart,
-  setDefaults,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
-import { DEFAULTS_LIST } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';
 import { hasListChild } from '../queries/hasListChild';
-import { ListOptions } from '../types';
 import { removeFirstListItem } from './removeFirstListItem';
 import { removeListItem } from './removeListItem';
 import { unwrapList } from './unwrapList';
@@ -17,9 +15,9 @@ import { unwrapList } from './unwrapList';
 export const deleteBackwardList = (
   editor: Editor,
   unit: 'character' | 'word' | 'line' | 'block',
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+  const { p, li } = options;
 
   const res = getListItemEntry(editor, {}, options);
 
@@ -51,7 +49,7 @@ export const deleteBackwardList = (
       if (moved) return true;
     }
 
-    if (hasListChild(listItemNode) && isCollapsed(editor.selection)) {
+    if (hasListChild(listItemNode, options) && isCollapsed(editor.selection)) {
       return;
     }
   }

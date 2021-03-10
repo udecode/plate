@@ -1,16 +1,9 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
 import { getBlockquoteElementStyles } from './BlockquoteElement.styles';
-import {
-  BlockquoteElementProps,
-  BlockquoteElementStyleProps,
-  BlockquoteElementStyles,
-} from './BlockquoteElement.types';
 
-const getClassNames = classNamesFunction<
-  BlockquoteElementStyleProps,
-  BlockquoteElementStyles
->();
+const getClassNames = getRootClassNames();
 
 /**
  * BlockquoteElement with no default styles.
@@ -22,7 +15,7 @@ export const BlockquoteElementBase = ({
   className,
   styles,
   htmlAttributes,
-}: BlockquoteElementProps) => {
+}: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -39,9 +32,9 @@ export const BlockquoteElementBase = ({
  * BlockquoteElement
  */
 export const BlockquoteElement = styled<
-  BlockquoteElementProps,
-  BlockquoteElementStyleProps,
-  BlockquoteElementStyles
+  ElementProps,
+  NodeStyleProps,
+  NonNullable<ElementProps['styles']>
 >(BlockquoteElementBase, getBlockquoteElementStyles, undefined, {
   scope: 'BlockquoteElement',
 });

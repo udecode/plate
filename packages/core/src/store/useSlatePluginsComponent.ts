@@ -1,6 +1,3 @@
-import { useCallback } from 'react';
-import { useSlatePluginsStore } from './useSlatePluginsStore';
-
 export const abc = 1;
 
 // export const useSlatePluginsComponent = <TNodeType extends string>(

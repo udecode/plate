@@ -1,19 +1,7 @@
-import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import { ItalicKeyOption, ItalicPluginOptionsValues } from './types';
+import { MarkPluginOptions } from '@udecode/slate-plugins-common';
 
 export const MARK_ITALIC = 'italic';
 
-export const DEFAULTS_ITALIC: Record<
-  ItalicKeyOption,
-  ItalicPluginOptionsValues & GetOnHotkeyToggleMarkOptions
-> = {
-  italic: {
-    // component: StyledLeaf,
-    type: MARK_ITALIC,
-    hotkey: 'mod+i',
-    rootProps: {
-      className: `slate-italic`,
-      as: 'em',
-    },
-  },
+export const DEFAULTS_ITALIC: MarkPluginOptions = {
+  hotkey: 'mod+i',
 };

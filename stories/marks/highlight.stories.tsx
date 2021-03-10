@@ -32,7 +32,7 @@ import {
 import { HeadingToolbar, ToolbarMark } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { initialValueHighlight, options } from '../config/initialValues';
+import { initialValueHighlight } from '../config/initialValues';
 
 const id = 'Marks/Highlight';
 
@@ -53,8 +53,8 @@ export default {
 const withPlugins = [withReact, withHistory] as const;
 
 export const All = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin(options));
+  const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
+  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
 
   const createReactEditor = () => () => {
     return (

@@ -20,7 +20,7 @@ export default {
 };
 
 export const Example = () => {
-  const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
+  const plugins = [ParagraphPlugin(), HeadingPlugin()];
 
   const withPlugins = [
     withReact,

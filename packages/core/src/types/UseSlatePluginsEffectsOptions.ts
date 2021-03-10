@@ -28,4 +28,6 @@ export interface UseSlatePluginsEffectsOptions
    * The plugins are applied in the order they are specified.
    */
   plugins?: SlatePlugin[];
+
+  components?: Record<string, any>;
 }

@@ -1,11 +1,6 @@
-import {
-  isCollapsed,
-  setDefaults,
-  unwrapNodes,
-} from '@udecode/slate-plugins-common';
+import { isCollapsed, unwrapNodes } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_LINK } from '../defaults';
-import { LinkOptions } from '../types';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -15,17 +10,21 @@ import { wrapLink } from './wrapLink';
  */
 export const upsertLinkAtSelection = (
   editor: Editor,
-  url: string,
-  options?: {
+  {
+    url,
+    wrap,
+  }: {
+    url: string;
     /**
      * If true, wrap the link at the location (default: selection) even if the selection is collapsed.
      */
     wrap?: boolean;
-  } & LinkOptions
+  },
+  options: SlatePluginsOptions
 ) => {
-  if (!editor.selection) return;
+  const { link } = options;
 
-  const { link, wrap } = setDefaults(options, DEFAULTS_LINK);
+  if (!editor.selection) return;
 
   if (!wrap && isCollapsed(editor.selection)) {
     return Transforms.insertNodes(editor, {
@@ -44,10 +43,7 @@ export const upsertLinkAtSelection = (
 
   unwrapNodes(editor, { at: editor.selection, match: { type: link.type } });
 
-  wrapLink(editor, url, {
-    link,
-    at: editor.selection,
-  });
+  wrapLink(editor, { at: editor.selection, url }, options);
 
   Transforms.collapse(editor, { edge: 'end' });
 };

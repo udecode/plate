@@ -12,11 +12,11 @@ import { HeadingPlugin } from '../heading/HeadingPlugin';
 import { ParagraphPlugin } from '../paragraph/ParagraphPlugin';
 import { BasicElementPluginsOptions } from './types';
 
-export const BasicElementPlugins = (
-  options?: BasicElementPluginsOptions
-): SlatePlugin[] => [
-  BlockquotePlugin(options),
-  CodeBlockPlugin(options),
-  HeadingPlugin(options),
-  ParagraphPlugin(options),
+export const BasicElementPlugins = ({
+  heading,
+}: BasicElementPluginsOptions = {}): SlatePlugin[] => [
+  BlockquotePlugin(),
+  CodeBlockPlugin(),
+  HeadingPlugin(heading),
+  ParagraphPlugin(),
 ];

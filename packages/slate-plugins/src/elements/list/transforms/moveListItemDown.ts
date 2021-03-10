@@ -1,7 +1,7 @@
 import { match } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
-import { ListOptions } from '../types';
 
 export interface MoveListItemDownOptions {
   list: NodeEntry<Ancestor>;
@@ -11,7 +11,7 @@ export interface MoveListItemDownOptions {
 export const moveListItemDown = (
   editor: Editor,
   { list, listItem }: MoveListItemDownOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
   const [listNode] = list;
   const [, listItemPath] = listItem;

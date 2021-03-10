@@ -3,3 +3,4 @@
  */
 
 export * from './StyledLeaf';
+export * from './StyledLeaf.types';

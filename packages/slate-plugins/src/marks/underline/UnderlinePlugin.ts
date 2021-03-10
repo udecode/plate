@@ -1,21 +1,13 @@
-import { getOnHotkeyToggleMarkDefault } from '@udecode/slate-plugins-common';
+import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_UNDERLINE } from './defaults';
-import { deserializeUnderline } from './deserializeUnderline';
-import { renderLeafUnderline } from './renderLeafUnderline';
-import { UnderlinePluginOptions } from './types';
+import { MARK_UNDERLINE } from './defaults';
+import { useDeserializeUnderline } from './useDeserializeUnderline';
 
 /**
  * Enables support for underline formatting.
  */
-export const UnderlinePlugin = (
-  options?: UnderlinePluginOptions
-): SlatePlugin => ({
-  renderLeaf: renderLeafUnderline(options),
-  deserialize: deserializeUnderline(options),
-  onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: 'underline',
-    defaultOptions: DEFAULTS_UNDERLINE,
-    options,
-  }),
+export const UnderlinePlugin = (): SlatePlugin => ({
+  renderLeaf: useRenderLeaf(MARK_UNDERLINE),
+  deserialize: useDeserializeUnderline(),
+  onKeyDown: useOnKeyDownMark(MARK_UNDERLINE),
 });

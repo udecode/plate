@@ -1,7 +1,5 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockOptions, CodeLineOptions } from '../types';
 
 /**
  * Insert a code line starting with indentation.
@@ -9,9 +7,10 @@ import { CodeBlockOptions, CodeLineOptions } from '../types';
 export const insertCodeLine = (
   editor: Editor,
   indentDepth = 0,
-  options?: CodeBlockOptions & CodeLineOptions
+  options: SlatePluginsOptions
 ) => {
-  const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_line } = options;
+
   if (editor.selection) {
     const indent = ' '.repeat(indentDepth);
 

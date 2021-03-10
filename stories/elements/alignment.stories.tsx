@@ -18,20 +18,19 @@ import {
   SlatePlugin,
   SlatePlugins,
   SoftBreakPlugin,
-  withCodeBlock,
 } from '@udecode/slate-plugins';
 import {
   HeadingToolbar,
   ToolbarAlign,
 } from '@udecode/slate-plugins-components';
-import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { withReact } from 'slate-react';
 import {
-  headingTypes,
   initialValueBasicElements,
   options,
+  optionsExitBreak,
   optionsResetBlockTypes,
+  optionsSoftBreak,
 } from '../config/initialValues';
 
 const id = 'Elements/Alignment';
@@ -47,53 +46,18 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory] as const;
-
 export const Example = () => {
   const plugins: SlatePlugin[] = [ResetBlockTypePlugin(optionsResetBlockTypes)];
 
-  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
-  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
-  if (boolean('BlockquotePlugin', true))
-    plugins.push(BlockquotePlugin(options));
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
+  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
+  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin());
+  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
+  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin());
+  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
   if (boolean('SoftBreakPlugin', true))
-    plugins.push(
-      SoftBreakPlugin({
-        rules: [
-          { hotkey: 'shift+enter' },
-          {
-            hotkey: 'enter',
-            query: {
-              allow: [options.code_block.type, options.blockquote.type],
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(SoftBreakPlugin(optionsSoftBreak));
   if (boolean('ExitBreakPlugin', true))
-    plugins.push(
-      ExitBreakPlugin({
-        rules: [
-          {
-            hotkey: 'mod+enter',
-          },
-          {
-            hotkey: 'mod+shift+enter',
-            before: true,
-          },
-          {
-            hotkey: 'enter',
-            query: {
-              start: true,
-              end: true,
-              allow: headingTypes,
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(ExitBreakPlugin(optionsExitBreak));
 
   const createReactEditor = () => () => {
     return (

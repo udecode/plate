@@ -48,7 +48,7 @@ const initialValueVoids: Node[] = [
 ];
 
 export const Example = () => {
-  const plugins = [ParagraphPlugin(options), EditableVoidPlugin()];
+  const plugins = [ParagraphPlugin(), EditableVoidPlugin()];
 
   const withPlugins = [
     withReact,

@@ -6,7 +6,6 @@ import { StrikethroughPlugin } from '../strikethrough/StrikethroughPlugin';
 import { SubscriptPlugin } from '../subsupscript/subscript/SubscriptPlugin';
 import { SuperscriptPlugin } from '../subsupscript/superscript/SuperscriptPlugin';
 import { UnderlinePlugin } from '../underline/UnderlinePlugin';
-import { BasicMarkPluginsOptions } from './types';
 
 /**
  * Enables support for basic marks:
@@ -18,14 +17,12 @@ import { BasicMarkPluginsOptions } from './types';
  * - Superscript
  * - Underline
  */
-export const BasicMarkPlugins = (
-  options?: BasicMarkPluginsOptions
-): SlatePlugin[] => [
-  BoldPlugin(options),
-  CodePlugin(options),
-  ItalicPlugin(options),
-  StrikethroughPlugin(options),
-  SubscriptPlugin(options),
-  SuperscriptPlugin(options),
-  UnderlinePlugin(options),
+export const BasicMarkPlugins = (): SlatePlugin[] => [
+  BoldPlugin(),
+  CodePlugin(),
+  ItalicPlugin(),
+  StrikethroughPlugin(),
+  SubscriptPlugin(),
+  SuperscriptPlugin(),
+  UnderlinePlugin(),
 ];

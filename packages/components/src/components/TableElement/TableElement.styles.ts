@@ -1,11 +1,8 @@
-import {
-  TableElementStyleProps,
-  TableElementStyles,
-} from './TableElement.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getTableElementStyles = ({
   className,
-}: TableElementStyleProps): TableElementStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       {

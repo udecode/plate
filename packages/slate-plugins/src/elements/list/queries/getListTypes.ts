@@ -1,9 +1,5 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 
-export const getListTypes = (options?: ListOptions) => {
-  const { ul, ol } = setDefaults(options, DEFAULTS_LIST);
-
+export const getListTypes = ({ ul, ol }: SlatePluginsOptions) => {
   return [ol.type, ul.type];
 };

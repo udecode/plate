@@ -1,8 +1,8 @@
-import { LinkElementStyleProps, LinkElementStyles } from './LinkElement.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getLinkElementStyles = ({
   className,
-}: LinkElementStyleProps): LinkElementStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       {

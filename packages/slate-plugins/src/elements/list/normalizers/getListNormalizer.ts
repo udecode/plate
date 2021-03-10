@@ -1,8 +1,8 @@
-import { match, setDefaults } from '@udecode/slate-plugins-common';
+import { match } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Descendant, Editor, NodeEntry, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
-import { ListNormalizerOptions, ListOptions } from '../types';
+import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 
 /**
@@ -11,10 +11,9 @@ import { normalizeListItem } from './normalizeListItem';
 export const getListNormalizer = (
   editor: Editor,
   { validLiChildrenTypes }: ListNormalizerOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
-  const { li } = setDefaults(options, DEFAULTS_LIST);
-
+  const { li } = options;
   const { normalizeNode } = editor;
 
   return ([node, path]: NodeEntry) => {

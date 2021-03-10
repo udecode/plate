@@ -1,11 +1,8 @@
-import {
-  StyledComponentStyleProps,
-  StyledComponentStyles,
-} from './StyledComponent.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getStyledComponentStyles = ({
   className,
-}: StyledComponentStyleProps): StyledComponentStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       className,

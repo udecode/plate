@@ -1,10 +1,9 @@
-import { setDefaults, unwrapNodes } from '@udecode/slate-plugins-common';
+import { unwrapNodes } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
-export const unwrapList = (editor: Editor, options?: ListOptions) => {
-  const { li, ul, ol } = setDefaults(options, DEFAULTS_LIST);
+export const unwrapList = (editor: Editor, options: SlatePluginsOptions) => {
+  const { li, ul, ol } = options;
 
   unwrapNodes(editor, { match: { type: li.type } });
   unwrapNodes(editor, { match: { type: [ul.type, ol.type] }, split: true });

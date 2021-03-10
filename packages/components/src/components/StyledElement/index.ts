@@ -3,3 +3,4 @@
  */
 
 export * from './StyledElement';
+export * from './StyledElement.types';

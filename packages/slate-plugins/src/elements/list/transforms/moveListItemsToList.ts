@@ -4,9 +4,9 @@ import {
   moveChildren,
   MoveChildrenOptions,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
-import { ListOptions } from '../types';
 
 export interface MergeListItemIntoListOptions {
   /**
@@ -55,7 +55,7 @@ export const moveListItemsToList = (
     toListIndex = null,
     deleteFromList = true,
   }: MergeListItemIntoListOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
   let fromListPath: Path | undefined;
 

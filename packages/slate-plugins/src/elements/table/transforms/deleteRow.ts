@@ -1,10 +1,9 @@
-import { getAbove, setDefaults, someNode } from '@udecode/slate-plugins-common';
+import { getAbove, someNode } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_TABLE } from '../defaults';
-import { TableOptions } from '../types';
 
-export const deleteRow = (editor: Editor, options?: TableOptions) => {
-  const { table, tr } = setDefaults(options, DEFAULTS_TABLE);
+export const deleteRow = (editor: Editor, options: SlatePluginsOptions) => {
+  const { table, tr } = options;
 
   if (someNode(editor, { match: { type: table.type } })) {
     const currentTableItem = getAbove(editor, { match: { type: table.type } });

@@ -1,7 +1,7 @@
 import { match, moveChildren } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
-import { ListOptions } from '../types';
 
 export const moveListSiblingsAfterCursor = (
   editor: Editor,
@@ -12,7 +12,7 @@ export const moveListSiblingsAfterCursor = (
     at: Path;
     to: Path;
   },
-  options?: ListOptions
+  options: SlatePluginsOptions
 ): number => {
   const offset = at[at.length - 1];
   at = Path.parent(at);

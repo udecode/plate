@@ -6,29 +6,24 @@ import {
   HeadingPlugin,
   MediaEmbedPlugin,
   ParagraphPlugin,
-  renderElementMediaEmbed,
   SlatePlugins,
   withInlineVoid,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { initialValueEmbeds, options } from '../config/initialValues';
+import { initialValueEmbeds } from '../config/initialValues';
 
 const id = 'Elements/Media Embed';
 
 export default {
   title: id,
   component: MediaEmbedPlugin,
-  subcomponents: {
-    renderElementMediaEmbed,
-  },
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('MediaEmbedPlugin', true))
-    plugins.push(MediaEmbedPlugin(options));
+  const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
+  if (boolean('MediaEmbedPlugin', true)) plugins.push(MediaEmbedPlugin());
 
   const withPlugins = [
     withReact,

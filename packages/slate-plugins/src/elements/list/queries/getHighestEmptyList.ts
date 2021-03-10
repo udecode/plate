@@ -1,7 +1,6 @@
-import { getAbove, setDefaults } from '@udecode/slate-plugins-common';
+import { getAbove } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Path } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 import { getListTypes } from './getListTypes';
 
 /**
@@ -14,11 +13,16 @@ import { getListTypes } from './getListTypes';
  */
 export const getHighestEmptyList = (
   editor: Editor,
-  liPath: Path,
-  diffListPath?: Path,
-  options?: ListOptions
+  {
+    diffListPath,
+    liPath,
+  }: {
+    liPath: Path;
+    diffListPath?: Path;
+  },
+  options: SlatePluginsOptions
 ): Path | undefined => {
-  const { li } = setDefaults(options, DEFAULTS_LIST);
+  const { li } = options;
 
   const list = getAbove(editor, {
     at: liPath,
@@ -36,8 +40,11 @@ export const getHighestEmptyList = (
 
       if (liParent) {
         return (
-          getHighestEmptyList(editor, liParent[1], diffListPath, options) ||
-          listPath
+          getHighestEmptyList(
+            editor,
+            { liPath: liParent[1], diffListPath },
+            options
+          ) || listPath
         );
       }
     }

@@ -1,12 +1,6 @@
-import {
-  getAbove,
-  getParent,
-  setDefaults,
-  someNode,
-} from '@udecode/slate-plugins-common';
+import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeLineOptions } from '../types';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
@@ -14,9 +8,9 @@ import { CodeLineOptions } from '../types';
 export const getCodeLineEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: CodeLineOptions
+  options: SlatePluginsOptions
 ) => {
-  const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_line } = options;
 
   if (at && someNode(editor, { at, match: { type: code_line.type } })) {
     const selectionParent = getParent(editor, at);

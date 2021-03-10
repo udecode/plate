@@ -1,16 +1,10 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { getRootClassNames, NodeStyleProps } from '../../types';
 import { getStyledComponentStyles } from './StyledComponent.styles';
-import {
-  StyledComponentProps,
-  StyledComponentStyleProps,
-  StyledComponentStyles,
-} from './StyledComponent.types';
+import { StyledComponentProps } from './StyledComponent.types';
 
-const getClassNames = classNamesFunction<
-  StyledComponentStyleProps,
-  StyledComponentStyles
->();
+const getClassNames = getRootClassNames();
 
 /**
  * StyledComponent with no default styles.
@@ -37,8 +31,8 @@ export const StyledComponentBase = ({
  */
 export const StyledComponent = styled<
   StyledComponentProps,
-  StyledComponentStyleProps,
-  StyledComponentStyles
+  NodeStyleProps,
+  NonNullable<StyledComponentProps['styles']>
 >(StyledComponentBase, getStyledComponentStyles, undefined, {
   scope: 'StyledComponent',
 });

@@ -1,3 +1,4 @@
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
 import { getListNormalizer } from './normalizers/getListNormalizer';
 import { deleteBackwardList } from './transforms/deleteBackwardList';
@@ -5,10 +6,10 @@ import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertBreakList } from './transforms/insertBreakList';
 import { WithListOptions } from './types';
 
-export const withList = ({
-  validLiChildrenTypes,
-  ...options
-}: WithListOptions = {}) => <T extends ReactEditor>(editor: T) => {
+export const withList = (
+  { validLiChildrenTypes }: WithListOptions = {},
+  options: SlatePluginsOptions
+) => <T extends ReactEditor>(editor: T) => {
   const { insertBreak, deleteBackward, deleteFragment } = editor;
 
   editor.insertBreak = () => {

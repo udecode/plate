@@ -1,25 +1,21 @@
 import * as React from 'react';
-import pickBy from 'lodash/pickBy';
 import { DefaultElement } from 'slate-react';
-import {
-  NodeToProps,
-  RenderElementPropsWithAttributes,
-  RenderNodeOptions,
-} from '../types/PluginOptions.types';
+import { ElementToProps } from '../types/NodeToProps';
+import { RenderElementPropsWithAttributes } from '../types/RenderElementPropsWithAttributes';
+import { RenderNodeOptions } from '../types/RenderNodeOptions';
+import { getSlateClass } from './getSlateClass';
 
 export interface GetRenderElementOptions
-  extends Required<RenderNodeOptions>,
-    NodeToProps<any> {}
+  extends RenderNodeOptions,
+    ElementToProps {}
 
 /**
  * Get a `renderElement` handler for a single type.
  * If the given `type` is equals to the slate element type, render the given `component`.
- * You can pass props by using `rootProps`. Falsy props are ignored.
  */
 export const getRenderElement = ({
   type,
   component: Element = DefaultElement,
-  rootProps,
   nodeToProps,
 }: GetRenderElementOptions) => ({
   attributes,
@@ -28,14 +24,14 @@ export const getRenderElement = ({
 }: RenderElementPropsWithAttributes) => {
   if (element.type === type) {
     const htmlAttributes =
-      nodeToProps?.({ attributes, element, children, rootProps }) ??
-      element?.attributes;
+      nodeToProps?.({ attributes, element, children }) ?? element?.attributes;
+
     return (
       <Element
         attributes={attributes}
         htmlAttributes={htmlAttributes}
         element={element}
-        {...pickBy(rootProps)}
+        className={getSlateClass(type)}
       >
         {children}
       </Element>
@@ -54,19 +50,18 @@ export const getRenderElements = (options: GetRenderElementOptions[]) => ({
   for (const {
     type,
     component: Element = DefaultElement,
-    rootProps,
     nodeToProps,
   } of options) {
     if (element.type === type) {
       const htmlAttributes =
-        nodeToProps?.({ attributes, element, children, rootProps }) ??
-        element?.attributes;
+        nodeToProps?.({ attributes, element, children }) ?? element?.attributes;
+
       return (
         <Element
           attributes={attributes}
           htmlAttributes={htmlAttributes}
           element={element}
-          {...pickBy(rootProps)}
+          className={getSlateClass(type)}
         >
           {children}
         </Element>

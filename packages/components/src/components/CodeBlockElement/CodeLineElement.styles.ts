@@ -1,11 +1,8 @@
-import {
-  CodeLineElementStyleProps,
-  CodeLineElementStyles,
-} from './CodeLineElement.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getCodeLineElementStyles = ({
   className,
-}: CodeLineElementStyleProps): CodeLineElementStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       {

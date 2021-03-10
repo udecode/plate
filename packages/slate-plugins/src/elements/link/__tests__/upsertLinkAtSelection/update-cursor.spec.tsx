@@ -46,6 +46,6 @@ it('should run default insertText', () => {
   };
   Transforms.select(editor, selection);
 
-  upsertLinkAtSelection(editor, urlOutput, { wrap: true });
+  upsertLinkAtSelection(editor, { url: urlOutput, wrap: true });
   expect(input.children).toEqual(output.children);
 });

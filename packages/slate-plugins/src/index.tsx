@@ -12,5 +12,5 @@ export * from './marks/index';
 export * from './normalizers/index';
 export * from './plugins/index';
 export * from './serializers/index';
-// export * from './utils/index';
+export * from './utils/index';
 export * from './widgets/index';

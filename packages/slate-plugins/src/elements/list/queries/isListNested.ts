@@ -1,7 +1,5 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Path } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 
 /**
  * Is the list nested, i.e. its parent is a list item.
@@ -9,10 +7,8 @@ import { ListOptions } from '../types';
 export const isListNested = (
   editor: Editor,
   listPath: Path,
-  options?: ListOptions
+  { li }: SlatePluginsOptions
 ) => {
-  const { li } = setDefaults(options, DEFAULTS_LIST);
-
   const [listParentNode] = Editor.parent(editor, listPath);
 
   return listParentNode.type === li.type;

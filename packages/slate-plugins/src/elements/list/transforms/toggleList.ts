@@ -1,26 +1,16 @@
-import {
-  getNodes,
-  setDefaults,
-  someNode,
-  wrapNodes,
-} from '@udecode/slate-plugins-common';
+import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListOptions } from '../types';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (
   editor: Editor,
-  {
-    typeList,
-    ...options
-  }: {
-    typeList: string;
-  } & ListOptions
+  { typeList }: { typeList: string },
+  options: SlatePluginsOptions
 ) => {
-  if (!editor.selection) return;
+  const { p, li } = options;
 
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+  if (!editor.selection) return;
 
   const isActive = someNode(editor, { match: { type: typeList } });
 

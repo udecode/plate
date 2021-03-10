@@ -46,7 +46,6 @@ import { ListPlugin } from '../../../../slate-plugins/src/elements/list/ListPlug
 import { MediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/MediaEmbedPlugin';
 import { MentionPlugin } from '../../../../slate-plugins/src/elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/ParagraphPlugin';
-import { useRenderElementParagraph } from '../../../../slate-plugins/src/elements/paragraph/useRenderElementParagraph';
 import { TablePlugin } from '../../../../slate-plugins/src/elements/table/TablePlugin';
 import { withTable } from '../../../../slate-plugins/src/elements/table/withTable';
 import { TodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/TodoListPlugin';
@@ -57,28 +56,20 @@ import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-bre
 import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
 import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
 import { MARK_BOLD } from '../../../../slate-plugins/src/marks/bold/defaults';
-import { renderLeafBold } from '../../../../slate-plugins/src/marks/bold/renderLeafBold';
 import { CodePlugin } from '../../../../slate-plugins/src/marks/code/CodePlugin';
 import { MARK_CODE } from '../../../../slate-plugins/src/marks/code/defaults';
-import { renderLeafCode } from '../../../../slate-plugins/src/marks/code/renderLeafCode';
 import { HighlightPlugin } from '../../../../slate-plugins/src/marks/highlight/HighlightPlugin';
-import { renderLeafHighlight } from '../../../../slate-plugins/src/marks/highlight/renderLeafHighlight';
 import { MARK_ITALIC } from '../../../../slate-plugins/src/marks/italic/defaults';
 import { ItalicPlugin } from '../../../../slate-plugins/src/marks/italic/ItalicPlugin';
-import { renderLeafItalic } from '../../../../slate-plugins/src/marks/italic/renderLeafItalic';
 import { MARK_STRIKETHROUGH } from '../../../../slate-plugins/src/marks/strikethrough/defaults';
-import { renderLeafStrikethrough } from '../../../../slate-plugins/src/marks/strikethrough/renderLeafStrikethrough';
 import { StrikethroughPlugin } from '../../../../slate-plugins/src/marks/strikethrough/StrikethroughPlugin';
 import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
 } from '../../../../slate-plugins/src/marks/subsupscript/defaults';
-import { renderLeafSubscript } from '../../../../slate-plugins/src/marks/subsupscript/subscript/renderLeafSubscript';
 import { SubscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/subscript/SubscriptPlugin';
-import { renderLeafSuperscript } from '../../../../slate-plugins/src/marks/subsupscript/superscript/renderLeafSuperscript';
 import { SuperscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/superscript/SuperscriptPlugin';
 import { MARK_UNDERLINE } from '../../../../slate-plugins/src/marks/underline/defaults';
-import { renderLeafUnderline } from '../../../../slate-plugins/src/marks/underline/renderLeafUnderline';
 import { UnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/UnderlinePlugin';
 import { withNormalizeTypes } from '../../../../slate-plugins/src/normalizers/withNormalizeTypes';
 import { withRemoveEmptyNodes } from '../../../../slate-plugins/src/normalizers/withRemoveEmptyNodes';
@@ -93,33 +84,25 @@ import { pipe } from '../../utils/pipe';
 const plugins = [
   ...BasicElementPlugins(),
   ...BasicMarkPlugins(),
-  BlockquotePlugin(options),
-  TodoListPlugin(options),
-  HeadingPlugin({ ...options, levels: 5 }),
-  ImagePlugin(options),
-  LinkPlugin(options),
-  ListPlugin(options),
-  MentionPlugin(options),
-  ParagraphPlugin(options),
-  TablePlugin(options),
-  MediaEmbedPlugin(options),
-  CodeBlockPlugin(options),
-  AlignPlugin(options),
-  BoldPlugin(options),
+  BlockquotePlugin(),
+  TodoListPlugin(),
+  HeadingPlugin({ levels: 5 }),
+  ImagePlugin(),
+  LinkPlugin(),
+  ListPlugin(),
+  MentionPlugin(),
+  ParagraphPlugin(),
+  TablePlugin(),
+  MediaEmbedPlugin(),
+  CodeBlockPlugin(),
+  AlignPlugin(),
   BoldPlugin(),
-  CodePlugin(options),
   CodePlugin(),
-  ItalicPlugin(options),
   ItalicPlugin(),
-  StrikethroughPlugin(options),
   StrikethroughPlugin(),
-  HighlightPlugin({ ...options, highlight: { hotkey: '' } }),
   HighlightPlugin(),
-  UnderlinePlugin(options),
   UnderlinePlugin(),
-  SubscriptPlugin(options),
   SubscriptPlugin(),
-  SuperscriptPlugin(options),
   SuperscriptPlugin(),
   SearchHighlightPlugin(),
   ResetBlockTypePlugin(optionsResetBlockTypes),
@@ -148,10 +131,10 @@ const withPlugins = [
   withReact,
   withHistory,
   withTable(options),
-  withLink(),
-  withCodeBlock(options),
+  withLink({}, options),
+  withCodeBlock({}, options),
   withDeserializeHTML({ plugins }),
-  withImageUpload(),
+  withImageUpload({}, options),
   withAutoformat({ rules: autoformatRulesFixtures }),
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: options.h1.type }],
@@ -208,17 +191,6 @@ const Editor = () => {
         plugins={plugins}
         decorate={decorate}
         onKeyDown={onKeyDown}
-        renderElement={[useRenderElementParagraph()]}
-        renderLeaf={[
-          renderLeafHighlight(),
-          renderLeafBold(),
-          renderLeafCode(),
-          renderLeafItalic(),
-          renderLeafStrikethrough(),
-          renderLeafSubscript(),
-          renderLeafSuperscript(),
-          renderLeafUnderline(),
-        ]}
         editableProps={{
           placeholder: 'Enter some plain text...',
         }}

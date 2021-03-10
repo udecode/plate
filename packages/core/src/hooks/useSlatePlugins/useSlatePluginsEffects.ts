@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { useWhyDidYouUpdate } from 'use-why-did-you-update';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
@@ -14,6 +15,7 @@ export const useSlatePluginsEffects = ({
   id,
   value,
   editor,
+  components,
   options,
   initialValue,
   withPlugins,
@@ -25,6 +27,7 @@ export const useSlatePluginsEffects = ({
     setEditor,
     setPlugins,
     setOptions,
+    setOption,
     setWithPlugins,
     setElementKeys,
   } = useSlatePluginsActions(id);
@@ -63,6 +66,22 @@ export const useSlatePluginsEffects = ({
       setWithPlugins([withReact, withHistory, withRandomKey]);
     }
   }, [editor, setWithPlugins, storeEditor, withPlugins]);
+
+  useEffect(() => {
+    console.log('aaa');
+  }, []);
+
+  useEffect(() => {
+    if (!components) return;
+
+    Object.keys(components).forEach((key) => {
+      setOption({
+        pluginKey: key,
+        optionKey: 'component',
+        value: components[key],
+      });
+    });
+  }, [components, setOption]);
 
   // Slate plugins components
   useEffect(() => {

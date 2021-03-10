@@ -1,13 +1,11 @@
-import {
-  MentionElementStyleProps,
-  MentionElementStyles,
-} from './MentionElement.types';
+import { NodeStyleSet } from '../../types';
+import { MentionElementStyleProps } from './MentionElement.types';
 
 export const getMentionElementStyles = ({
   className,
   focused,
   selected,
-}: MentionElementStyleProps): MentionElementStyles => {
+}: MentionElementStyleProps): NodeStyleSet => {
   return {
     root: [
       {

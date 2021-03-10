@@ -2,27 +2,33 @@ import { FunctionComponent } from 'react';
 import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin';
 
-export interface SlatePluginOptionsByKey {
+export interface SlatePluginOptions {
+  [key: string]: any;
+
   /**
    * Element or mark type.
    */
-  type?: string;
+  type: string;
 
   /**
    * Element or mark React component.
    */
   component?: FunctionComponent;
+
+  // nodeToProps
+  // defaultType
+  // hotkey
 }
 
-export type SlatePluginOptionKey = keyof SlatePluginOptionsByKey;
+export type SlatePluginOptionKey = keyof SlatePluginOptions;
 
-export type SlatePluginOptions = Record<string, SlatePluginOptionsByKey>;
+export type SlatePluginsOptions = Record<string, SlatePluginOptions>;
 
 export type State = {
   /**
    * Options for each key.
    */
-  options: SlatePluginOptions;
+  options: SlatePluginsOptions;
 
   /**
    * Slate editor. Default uses `withReact`, `withHistoryPersist` and `withRandomKey` plugins.
@@ -52,7 +58,7 @@ export type SlatePluginsActions = {
   setOption: (
     value: {
       pluginKey: string;
-      optionKey: string;
+      optionKey: SlatePluginOptionKey;
       value: any;
     },
     id?: string

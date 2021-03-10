@@ -1,20 +1,16 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_LINK, ELEMENT_LINK } from './defaults';
-import { deserializeLink } from './deserializeLink';
-import { renderElementLink } from './renderElementLink';
-import { LinkPluginOptions } from './types';
+import { useRenderElement } from '@udecode/slate-plugins-common';
+import { SlatePlugin, useEditorType } from '@udecode/slate-plugins-core';
+import { ELEMENT_LINK } from './defaults';
+import { useDeserializeLink } from './useDeserializeLink';
 
 /**
  * Enables support for hyperlinks.
  */
-export const LinkPlugin = (options?: LinkPluginOptions): SlatePlugin => {
-  const { link } = setDefaults(options, DEFAULTS_LINK);
-
+export const LinkPlugin = (): SlatePlugin => {
   return {
     elementKeys: ELEMENT_LINK,
-    renderElement: renderElementLink(options),
-    deserialize: deserializeLink(options),
-    inlineTypes: [link.type],
+    renderElement: useRenderElement(ELEMENT_LINK),
+    deserialize: useDeserializeLink(),
+    inlineTypes: [useEditorType(ELEMENT_LINK)],
   };
 };

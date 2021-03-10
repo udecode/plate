@@ -1,11 +1,8 @@
-import {
-  BlockquoteElementStyleProps,
-  BlockquoteElementStyles,
-} from './BlockquoteElement.types';
+import { NodeStyleProps, NodeStyleSet } from '../../types';
 
 export const getBlockquoteElementStyles = ({
   className,
-}: BlockquoteElementStyleProps): BlockquoteElementStyles => {
+}: NodeStyleProps): NodeStyleSet => {
   return {
     root: [
       {

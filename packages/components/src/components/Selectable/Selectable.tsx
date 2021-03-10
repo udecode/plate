@@ -3,7 +3,8 @@ import useMergedRef from '@react-hook/merged-ref';
 import Tippy from '@tippyjs/react';
 import { useDndBlock } from '@udecode/slate-plugins';
 import { mergeStyles } from '@uifabric/styling';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { styled } from '@uifabric/utilities';
+import { getRootClassNames } from '../../types';
 import { grabberTooltipProps } from './grabberTooltipProps';
 import { getSelectableStyles } from './Selectable.styles';
 import {
@@ -12,7 +13,7 @@ import {
   SelectableStyles,
 } from './Selectable.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   SelectableStyleProps,
   SelectableStyles
 >();
@@ -86,7 +87,7 @@ const SelectableBase = ({
 export const Selectable = styled<
   SelectableProps,
   SelectableStyleProps,
-  SelectableStyles
+  NonNullable<SelectableProps['styles']>
 >(SelectableBase, getSelectableStyles, undefined, {
   scope: 'Selectable',
 });

@@ -1,10 +1,7 @@
 import * as React from 'react';
 import {
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_LEFT,
-  ELEMENT_ALIGN_RIGHT,
   getPreventDefaultHandler,
+  KEYS_ALIGN,
   someNode,
   upsertAlign,
 } from '@udecode/slate-plugins';
@@ -19,12 +16,7 @@ export interface ToolbarAlignProps extends ToolbarButtonProps {
 
 export const ToolbarAlign = ({
   type,
-  unwrapTypes = [
-    ELEMENT_ALIGN_LEFT,
-    ELEMENT_ALIGN_CENTER,
-    ELEMENT_ALIGN_RIGHT,
-    ELEMENT_ALIGN_JUSTIFY,
-  ],
+  unwrapTypes = KEYS_ALIGN,
   ...props
 }: ToolbarAlignProps) => {
   const editor = useSlate();

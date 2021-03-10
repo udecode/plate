@@ -21,11 +21,12 @@ import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import styled from 'styled-components';
 import {
-  headingTypes,
   initialValueBasicElements,
   initialValueImages,
   options,
+  optionsExitBreak,
   optionsResetBlockTypes,
+  optionsSoftBreak,
 } from '../config/initialValues';
 
 export default {
@@ -79,53 +80,21 @@ const Editor = ({
 
 export const Example = () => {
   const mainPlugins: SlatePlugin[] = [
-    ParagraphPlugin(options),
-    BlockquotePlugin(options),
-    CodeBlockPlugin(options),
-    HeadingPlugin(options),
+    ParagraphPlugin(),
+    BlockquotePlugin(),
+    CodeBlockPlugin(),
+    HeadingPlugin(),
     ResetBlockTypePlugin(optionsResetBlockTypes),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [options.code_block.type, options.blockquote.type],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: headingTypes,
-          },
-        },
-      ],
-    }),
+    SoftBreakPlugin(optionsSoftBreak),
+    ExitBreakPlugin(optionsExitBreak),
   ];
 
-  const imagePlugins = [
-    ParagraphPlugin(options),
-    HeadingPlugin(options),
-    ImagePlugin(options),
-  ];
+  const imagePlugins = [ParagraphPlugin(), HeadingPlugin(), ImagePlugin()];
 
   const imageWithPlugins = [
     withReact,
     withHistory,
-    withImageUpload(),
+    withImageUpload({}, options),
     withInlineVoid({ plugins: imagePlugins }),
     withSelectOnBackspace({ allow: [options.img.type] }),
   ] as const;

@@ -4,57 +4,61 @@ import {
   getText,
   isCollapsed,
   isUrl as isUrlProtocol,
-  RangeBeforeOptions,
-  setDefaults,
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import get from 'lodash/get';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
-import { DEFAULTS_LINK } from './defaults';
-import { LinkOptions, WithLinkOptions } from './types';
+import { WithLinkOptions } from './types';
 
 const upsertLink = (
   editor: Editor,
-  url: string,
   {
+    url,
     at,
-    ...options
   }: {
+    url: string;
     at: Range;
-  } & LinkOptions
+  },
+  options: SlatePluginsOptions
 ) => {
-  const { link } = setDefaults(options, DEFAULTS_LINK);
+  const { link } = options;
 
   unwrapNodes(editor, { at, match: { type: link.type } });
 
   const newSelection = editor.selection as Range;
 
-  wrapLink(editor, url, {
-    link,
-    at: {
-      ...at,
-      focus: newSelection.focus,
+  wrapLink(
+    editor,
+    {
+      at: {
+        ...at,
+        focus: newSelection.focus,
+      },
+      url,
     },
-  });
+    options
+  );
 };
 
 const upsertLinkIfValid = (
   editor: ReactEditor,
-  { link, isUrl }: { link: any; isUrl: any }
+  { isUrl }: { isUrl: any },
+  options: SlatePluginsOptions
 ) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-    upsertLink(editor, textFromBlockStart, {
-      at: rangeFromBlockStart,
-      link,
-    });
+    upsertLink(
+      editor,
+      { url: textFromBlockStart, at: rangeFromBlockStart },
+      options
+    );
     return true;
   }
 };
@@ -68,46 +72,45 @@ const upsertLinkIfValid = (
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
-  editor: T
-) => {
-  const { link, isUrl } = setDefaults(options, {
-    ...DEFAULTS_LINK,
-    isUrl: isUrlProtocol,
-  });
+export const withLink = (
+  {
+    isUrl = isUrlProtocol,
+    rangeBeforeOptions = {
+      matchString: ' ',
+      skipInvalid: true,
+      afterMatch: true,
+      multiPaths: true,
+    },
+  }: WithLinkOptions = {},
+  options: SlatePluginsOptions
+) => <T extends ReactEditor>(editor: T) => {
+  const { link } = options;
 
   const { insertData, insertText } = editor;
-
-  const DEFAULT_RANGE_BEFORE_OPTIONS: RangeBeforeOptions = {
-    matchString: ' ',
-    skipInvalid: true,
-    afterMatch: true,
-    multiPaths: true,
-  };
-
-  const rangeOptions: RangeBeforeOptions = {
-    ...DEFAULT_RANGE_BEFORE_OPTIONS,
-    ...get(options, 'rangeBeforeOptions', {}),
-  };
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
-      if (upsertLinkIfValid(editor, { link, isUrl })) {
+      if (upsertLinkIfValid(editor, { isUrl }, options)) {
         return insertText(text);
       }
 
-      const beforeWordRange = getRangeBefore(editor, selection, rangeOptions);
+      const beforeWordRange = getRangeBefore(
+        editor,
+        selection,
+        rangeBeforeOptions
+      );
 
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
 
         if (isUrl(beforeWordText)) {
-          upsertLink(editor, beforeWordText, {
-            at: beforeWordRange,
-            link,
-          });
+          upsertLink(
+            editor,
+            { url: beforeWordText, at: beforeWordRange },
+            options
+          );
         }
       }
     }
@@ -124,9 +127,13 @@ export const withLink = (options?: WithLinkOptions) => <T extends ReactEditor>(
       }
 
       if (isUrl(text)) {
-        return upsertLinkAtSelection(editor, text, {
-          link,
-        });
+        return upsertLinkAtSelection(
+          editor,
+          { url: text },
+          {
+            link,
+          }
+        );
       }
     }
 

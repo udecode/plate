@@ -16,7 +16,7 @@ import {
 import { MentionSelect } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { initialValueMentions, options } from '../config/initialValues';
+import { initialValueMentions } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
 const id = 'Elements/Mention';
@@ -37,21 +37,7 @@ const renderLabel = (mentionable: MentionNodeData) => {
 };
 
 export const Example = () => {
-  const plugins = [
-    ParagraphPlugin(options),
-    HeadingPlugin(options),
-    MentionPlugin({
-      mention: {
-        ...options.mention,
-        rootProps: {
-          onClick: (mentionable: MentionNodeData) =>
-            console.info(`Hello, I'm ${mentionable.value}`),
-          prefix: text('prefix', '@'),
-          renderLabel,
-        },
-      },
-    }),
-  ];
+  const plugins = [ParagraphPlugin(), HeadingPlugin(), MentionPlugin()];
 
   const withPlugins = [
     withReact,

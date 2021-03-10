@@ -1,3 +1,4 @@
+import { Editor } from 'slate';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
 import { OnDOMBeforeInput } from './OnDOMBeforeInput';
@@ -16,6 +17,11 @@ export interface SlatePlugin {
   // elementKeys?: T | T[];
 
   serialize?: SerializeHtml;
+
+  /**
+   * Editor method overriders
+   */
+  withOverride?: (<T extends Editor>(editor: T) => T)[];
 
   inlineTypes?: string[];
 

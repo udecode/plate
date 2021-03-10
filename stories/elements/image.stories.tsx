@@ -6,7 +6,6 @@ import {
   HeadingPlugin,
   ImagePlugin,
   ParagraphPlugin,
-  renderElementImage,
   SlatePlugins,
   withImageUpload,
   withInlineVoid,
@@ -25,21 +24,16 @@ const id = 'Elements/Image';
 export default {
   title: id,
   component: ImagePlugin,
-  subcomponents: {
-    renderElementImage,
-    ToolbarImage,
-    withImageUpload,
-  },
 };
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
+  const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
+  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
 
   const withPlugins = [
     withReact,
     withHistory,
-    withImageUpload(),
+    withImageUpload({}, options),
     withInlineVoid({ plugins }),
     withSelectOnBackspace({ allow: [options.img.type] }),
   ] as const;

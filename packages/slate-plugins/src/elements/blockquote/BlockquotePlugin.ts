@@ -1,23 +1,18 @@
-import { getOnHotkeyToggleNodeTypeDefault } from '@udecode/slate-plugins-common';
+import {
+  useOnKeyDownElement,
+  useRenderElement,
+} from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_BLOCKQUOTE, ELEMENT_BLOCKQUOTE } from './defaults';
-import { deserializeBlockquote } from './deserializeBlockquote';
-import { renderElementBlockquote } from './renderElementBlockquote';
-import { BlockquotePluginOptions } from './types';
+import { ELEMENT_BLOCKQUOTE } from './defaults';
+import { useDeserializeBlockquote } from './useDeserializeBlockquote';
 
 /**
  * Enables support for block quotes, useful for
  * quotations and passages.
  */
-export const BlockquotePlugin = (
-  options?: BlockquotePluginOptions
-): SlatePlugin => ({
+export const BlockquotePlugin = (): SlatePlugin => ({
   elementKeys: ELEMENT_BLOCKQUOTE,
-  renderElement: renderElementBlockquote(options),
-  deserialize: deserializeBlockquote(options),
-  onKeyDown: getOnHotkeyToggleNodeTypeDefault({
-    key: 'blockquote',
-    defaultOptions: DEFAULTS_BLOCKQUOTE,
-    options,
-  }),
+  renderElement: useRenderElement(ELEMENT_BLOCKQUOTE),
+  deserialize: useDeserializeBlockquote(),
+  onKeyDown: useOnKeyDownElement(ELEMENT_BLOCKQUOTE),
 });

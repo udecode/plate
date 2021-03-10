@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { getRootClassNames } from '@udecode/slate-plugins-components';
+import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { useEditor, useFocused, useSelected } from 'slate-react';
 import { useHotkeys } from '../hooks/useHotkeys';
@@ -11,7 +12,7 @@ import {
 } from '../types';
 import { getTagElementStyles } from './TagElement.styles';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   TagElementStyleProps,
   TagElementStyles
 >();

@@ -27,10 +27,11 @@ import {
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {
-  headingTypes,
   initialValueExitBreak,
   options,
+  optionsExitBreak,
   optionsResetBlockTypes,
+  optionsSoftBreak,
 } from '../config/initialValues';
 
 const id = 'Handlers/Exit Break';
@@ -43,58 +44,26 @@ export default {
 const withPlugins = [
   withReact,
   withHistory,
-  withList(options),
-  withCodeBlock(options),
+  withList({}, options),
+  withCodeBlock({}, options),
   withTrailingNode({ type: options.p.type }),
 ] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [
-    ParagraphPlugin(options),
-    HeadingPlugin(options),
-    CodeBlockPlugin(options),
-    BlockquotePlugin(options),
-    CodePlugin(options),
-    ListPlugin(options),
-    TablePlugin(options),
+    ParagraphPlugin(),
+    HeadingPlugin(),
+    CodeBlockPlugin(),
+    BlockquotePlugin(),
+    CodePlugin(),
+    ListPlugin(),
+    TablePlugin(),
     ResetBlockTypePlugin(optionsResetBlockTypes),
   ];
   if (boolean('SoftBreakPlugin', true))
-    plugins.push(
-      SoftBreakPlugin({
-        rules: [
-          { hotkey: 'shift+enter' },
-          {
-            hotkey: 'enter',
-            query: {
-              allow: [options.code_block.type, options.blockquote.type],
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(SoftBreakPlugin(optionsSoftBreak));
   if (boolean('ExitBreakPlugin', true))
-    plugins.push(
-      ExitBreakPlugin({
-        rules: [
-          {
-            hotkey: 'mod+enter',
-          },
-          {
-            hotkey: 'mod+shift+enter',
-            before: true,
-          },
-          {
-            hotkey: 'enter',
-            query: {
-              start: true,
-              end: true,
-              allow: headingTypes,
-            },
-          },
-        ],
-      })
-    );
+    plugins.push(ExitBreakPlugin(optionsExitBreak));
 
   const createReactEditor = () => () => {
     return (

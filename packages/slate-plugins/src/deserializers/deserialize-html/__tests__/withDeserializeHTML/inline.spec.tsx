@@ -6,8 +6,8 @@ import { withReact } from 'slate-react';
 import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
 import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
 import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { pipe } from '../../../../pipe/pipe';
 import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
-import { pipe } from '../../../../utils/pipe';
 import { withDeserializeHTML } from '../../withDeserializeHTML';
 
 const input = ((

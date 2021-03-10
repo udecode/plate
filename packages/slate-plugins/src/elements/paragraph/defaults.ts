@@ -1,19 +1,8 @@
-import { ParagraphKeyOption, ParagraphPluginOptionsValues } from './types';
+import { ElementPluginOptions } from '@udecode/slate-plugins-common';
 
 export type KEY_PARAGRAPH = 'p';
 export const ELEMENT_PARAGRAPH = 'p';
 
-export const DEFAULTS_PARAGRAPH: Record<
-  ParagraphKeyOption,
-  ParagraphPluginOptionsValues
-> = {
-  p: {
-    // component: StyledElement,
-    type: ELEMENT_PARAGRAPH,
-    hotkey: ['mod+opt+0', 'mod+shift+0'],
-    rootProps: {
-      className: `slate-${ELEMENT_PARAGRAPH}`,
-      as: 'p',
-    },
-  },
+export const DEFAULTS_PARAGRAPH: ElementPluginOptions = {
+  hotkey: ['mod+opt+0', 'mod+shift+0'],
 };

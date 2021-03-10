@@ -1,12 +1,10 @@
 import * as React from 'react';
 import {
   CodeBlockInsertOptions,
-  CodeBlockOptions,
-  CodeLineOptions,
-  DEFAULTS_CODE_BLOCK,
   getPreventDefaultHandler,
   insertEmptyCodeBlock,
-  setDefaults,
+  KEYS_CODE_BLOCK,
+  useEditorMultiOptions,
 } from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
@@ -16,20 +14,20 @@ export const ToolbarCodeBlock = ({
   options,
   ...props
 }: ToolbarButtonProps & {
-  options: CodeBlockOptions & CodeLineOptions & CodeBlockInsertOptions;
+  options?: CodeBlockInsertOptions;
 }) => {
-  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const pluginOptions = useEditorMultiOptions(KEYS_CODE_BLOCK);
 
   const editor = useSlate();
 
   return (
     <ToolbarElement
-      type={code_block.type}
+      type={pluginOptions.code_block.type}
       onMouseDown={getPreventDefaultHandler(
         insertEmptyCodeBlock,
         editor,
-        { select: true },
-        options
+        { insertNodesOptions: { select: true }, ...options },
+        pluginOptions
       )}
       {...props}
     />

@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
-import { getOnHotkeyToggleMark } from '../../../transforms/getOnHotkeyToggleMark';
+import { getOnKeyDownMark } from '../../../utils/getOnKeyDownMark';
 
 const input = (
   <editor>
@@ -27,7 +27,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  getOnHotkeyToggleMark({ type: MARK_BOLD, hotkey: 'enter' })?.(event, input);
+  getOnKeyDownMark({ type: MARK_BOLD, hotkey: 'enter' })?.(event, input);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

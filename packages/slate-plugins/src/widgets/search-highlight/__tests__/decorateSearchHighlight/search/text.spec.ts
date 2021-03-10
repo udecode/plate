@@ -1,7 +1,7 @@
 import { Range } from 'slate';
 import {
-  decorateSearchHighlight,
   SearchHighlightDecorateOptions,
+  useDecorateSearchHighlight,
 } from '../../../../../index';
 
 const input: SearchHighlightDecorateOptions = { search: 'test' };
@@ -21,7 +21,7 @@ const output: Range[] = [
 ];
 
 it('should be', () => {
-  expect(decorateSearchHighlight(input)([{ text: 'test' }, [0, 0]])).toEqual(
+  expect(useDecorateSearchHighlight(input)([{ text: 'test' }, [0, 0]])).toEqual(
     output
   );
 });

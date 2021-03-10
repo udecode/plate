@@ -1,30 +1,12 @@
-import {
-  CodeBlockKeyOption,
-  CodeBlockPluginOptionsValues,
-  CodeLineKeyOption,
-} from './types';
+import { ElementPluginOptions } from '@udecode/slate-plugins-common';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
-export const DEFAULTS_CODE_BLOCK: Record<
-  CodeBlockKeyOption | CodeLineKeyOption,
-  CodeBlockPluginOptionsValues
-> = {
-  code_block: {
-    // component: CodeBlockElement,
-    type: ELEMENT_CODE_BLOCK,
-    hotkey: ['mod+opt+8', 'mod+shift+8'],
-    rootProps: {
-      className: 'slate-code-block',
-    },
-  },
-  code_line: {
-    // component: CodeLineElement,
-    type: ELEMENT_CODE_LINE,
-    rootProps: {
-      className: 'slate-code-line',
-    },
-  },
+
+export const KEYS_CODE_BLOCK = [ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE];
+
+export const DEFAULTS_CODE_BLOCK: ElementPluginOptions = {
+  hotkey: ['mod+opt+8', 'mod+shift+8'],
 };
 
 // `

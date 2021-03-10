@@ -1,11 +1,7 @@
-import {
-  getChildren,
-  insertEmptyElement,
-  setDefaults,
-} from '@udecode/slate-plugins-common';
+import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
-import { ListNormalizerOptions, ListOptions } from '../types';
+import { ListNormalizerOptions } from '../types';
 
 /**
  * If the list item has no child: insert an empty paragraph.
@@ -17,9 +13,9 @@ export const normalizeListItem = (
     nodeEntry,
     validLiChildrenTypes = [],
   }: { nodeEntry: NodeEntry } & ListNormalizerOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
-  const { p, ul, ol } = setDefaults(options, DEFAULTS_LIST);
+  const { p, ul, ol } = options;
 
   const allValidLiChildrenTypes = [
     ul.type,

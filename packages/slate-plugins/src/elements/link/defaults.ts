@@ -1,17 +1,7 @@
-import { isUrl } from '@udecode/slate-plugins-common';
-import { LinkKeyOption, LinkPluginOptionsValues } from './types';
+import { ElementPluginOptions } from '@udecode/slate-plugins-common';
 
 export const ELEMENT_LINK = 'a';
-export const ATTRIBUTE_LINK = 'url';
 
-export const DEFAULTS_LINK: Record<LinkKeyOption, LinkPluginOptionsValues> = {
-  link: {
-    // component: LinkElement,
-    type: ELEMENT_LINK,
-    attribute: ATTRIBUTE_LINK,
-    isUrl,
-    rootProps: {
-      className: 'slate-link',
-    },
-  },
+export const DEFAULTS_LINK: ElementPluginOptions = {
+  nodeToProps: ({ element }) => ({ url: element.url }),
 };

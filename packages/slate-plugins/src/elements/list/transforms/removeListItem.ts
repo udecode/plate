@@ -2,12 +2,10 @@ import {
   deleteFragment,
   getPreviousPath,
   isExpanded,
-  setDefaults,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
-import { DEFAULTS_LIST } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
-import { ListOptions } from '../types';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -22,9 +20,9 @@ export interface RemoveListItemOptions {
 export const removeListItem = (
   editor: Editor,
   { list, listItem }: RemoveListItemOptions,
-  options?: ListOptions
+  options: SlatePluginsOptions
 ) => {
-  const { p, li } = setDefaults(options, DEFAULTS_LIST);
+  const { p, li } = options;
   const [liNode, liPath] = listItem;
 
   // Stop if the list item has no sublist

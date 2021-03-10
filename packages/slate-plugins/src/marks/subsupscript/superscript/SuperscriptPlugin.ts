@@ -1,21 +1,13 @@
-import { getOnHotkeyToggleMarkDefault } from '@udecode/slate-plugins-common';
+import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { DEFAULTS_SUBSUPSCRIPT } from '../defaults';
-import { deserializeSuperscript } from './deserializeSuperscript';
-import { renderLeafSuperscript } from './renderLeafSuperscript';
-import { SuperscriptPluginOptions } from './types';
+import { useDeserializeUnderline } from '../../underline/useDeserializeUnderline';
+import { MARK_SUPERSCRIPT } from '../defaults';
 
 /**
  * Enables support for superscript formatting.
  */
-export const SuperscriptPlugin = (
-  options?: SuperscriptPluginOptions
-): SlatePlugin => ({
-  renderLeaf: renderLeafSuperscript(options),
-  deserialize: deserializeSuperscript(options),
-  onKeyDown: getOnHotkeyToggleMarkDefault({
-    key: 'superscript',
-    defaultOptions: DEFAULTS_SUBSUPSCRIPT,
-    options,
-  }),
+export const SuperscriptPlugin = (): SlatePlugin => ({
+  renderLeaf: useRenderLeaf(MARK_SUPERSCRIPT),
+  deserialize: useDeserializeUnderline(),
+  onKeyDown: useOnKeyDownMark(MARK_SUPERSCRIPT),
 });

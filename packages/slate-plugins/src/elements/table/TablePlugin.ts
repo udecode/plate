@@ -1,16 +1,15 @@
+import { useRenderElements } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from './defaults';
-import { deserializeTable } from './deserializeTable';
-import { onKeyDownTable } from './onKeyDownTable';
-import { renderElementTable } from './renderElementTable';
-import { TablePluginOptions } from './types';
+import { KEYS_TABLE } from './defaults';
+import { useDeserializeTable } from './useDeserializeTable';
+import { useOnKeyDownTable } from './useOnKeyDownTable';
 
 /**
  * Enables support for tables.
  */
-export const TablePlugin = (options?: TablePluginOptions): SlatePlugin => ({
-  elementKeys: [ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR, ELEMENT_TD],
-  renderElement: renderElementTable(options),
-  deserialize: deserializeTable(options),
-  onKeyDown: onKeyDownTable(options),
+export const TablePlugin = (): SlatePlugin => ({
+  elementKeys: KEYS_TABLE,
+  renderElement: useRenderElements(KEYS_TABLE),
+  deserialize: useDeserializeTable(),
+  onKeyDown: useOnKeyDownTable(),
 });

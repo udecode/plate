@@ -1,13 +1,18 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
-import { DEFAULTS_TABLE } from '../defaults';
-import { TableOptions } from '../types';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from './getEmptyRowNode';
 
-export const getEmptyTableNode = (options?: TableOptions) => {
-  const { table } = setDefaults(options, DEFAULTS_TABLE);
+export const getEmptyTableNode = (
+  { header }: TablePluginOptions,
+  options: SlatePluginsOptions
+) => {
+  const { table } = options;
 
   return {
     type: table.type,
-    children: [getEmptyRowNode(2, options), getEmptyRowNode(2, options)],
+    children: [
+      getEmptyRowNode({ header, colCount: 2 }, options),
+      getEmptyRowNode({ header, colCount: 2 }, options),
+    ],
   };
 };

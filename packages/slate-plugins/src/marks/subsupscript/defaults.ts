@@ -1,39 +1,14 @@
-import { GetOnHotkeyToggleMarkOptions } from '@udecode/slate-plugins-common';
-import {
-  SubscriptKeyOption,
-  SubscriptPluginOptionsValues,
-} from './subscript/types';
-import {
-  SuperscriptKeyOption,
-  SuperscriptPluginOptionsValues,
-} from './superscript/types';
+import { MarkPluginOptions } from '@udecode/slate-plugins-common';
 
 export const MARK_SUPERSCRIPT = 'superscript';
 export const MARK_SUBSCRIPT = 'subscript';
 
-export const DEFAULTS_SUBSUPSCRIPT: Record<
-  SubscriptKeyOption | SuperscriptKeyOption,
-  SubscriptPluginOptionsValues &
-    SuperscriptPluginOptionsValues &
-    GetOnHotkeyToggleMarkOptions
-> = {
-  subscript: {
-    // component: StyledLeaf,
-    type: MARK_SUBSCRIPT,
-    hotkey: 'mod+,',
-    clear: MARK_SUPERSCRIPT,
-    rootProps: {
-      className: `slate-subscript`,
-      as: 'sub',
-    },
-  },
-  superscript: {
-    type: MARK_SUPERSCRIPT,
-    hotkey: 'mod+.',
-    clear: MARK_SUBSCRIPT,
-    rootProps: {
-      className: `slate-superscript`,
-      as: 'sup',
-    },
-  },
+export const DEFAULTS_SUPERSCRIPT: MarkPluginOptions = {
+  hotkey: 'mod+,',
+  clear: MARK_SUPERSCRIPT,
+};
+
+export const DEFAULTS_SUBSCRIPT: MarkPluginOptions = {
+  hotkey: 'mod+.',
+  clear: MARK_SUBSCRIPT,
 };

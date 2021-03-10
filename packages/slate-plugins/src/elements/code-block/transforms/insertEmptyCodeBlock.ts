@@ -1,15 +1,11 @@
 import {
   DEFAULT_ELEMENT,
-  InsertNodesOptions,
   isBlockAboveEmpty,
   isExpanded,
 } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Path, Transforms } from 'slate';
-import {
-  CodeBlockInsertOptions,
-  CodeBlockOptions,
-  CodeLineOptions,
-} from '../types';
+import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
 
 /**
@@ -18,18 +14,14 @@ import { insertCodeBlock } from './insertCodeBlock';
  */
 export const insertEmptyCodeBlock = (
   editor: Editor,
-  options: Omit<InsertNodesOptions, 'match'> = {},
-  pluginsOptions: CodeBlockInsertOptions &
-    CodeBlockOptions &
-    CodeLineOptions = {
-    defaultType: DEFAULT_ELEMENT,
-    level: 1,
-  }
+  {
+    defaultType = DEFAULT_ELEMENT,
+    insertNodesOptions,
+    level = 1,
+  }: CodeBlockInsertOptions,
+  options: SlatePluginsOptions
 ) => {
   if (!editor.selection) return;
-
-  const defaultType = pluginsOptions.defaultType || DEFAULT_ELEMENT;
-  const level = pluginsOptions.level || 1;
 
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
     const selectionPath = Editor.path(editor, editor.selection);
@@ -43,5 +35,5 @@ export const insertEmptyCodeBlock = (
       }
     );
   }
-  insertCodeBlock(editor, options, pluginsOptions);
+  insertCodeBlock(editor, insertNodesOptions, options);
 };

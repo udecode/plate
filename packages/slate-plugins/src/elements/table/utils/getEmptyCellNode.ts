@@ -1,16 +1,11 @@
-import { setDefaults } from '@udecode/slate-plugins-common';
-import { DEFAULTS_PARAGRAPH } from '../../paragraph/defaults';
-import { ParagraphPluginOptions } from '../../paragraph/types';
-import { DEFAULTS_TABLE } from '../defaults';
-import { TableOptions } from '../types';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { TablePluginOptions } from '../types';
 
 export const getEmptyCellNode = (
-  options?: TableOptions & ParagraphPluginOptions & { header?: boolean }
+  { header }: TablePluginOptions,
+  options: SlatePluginsOptions
 ) => {
-  const { th, td, header, p } = setDefaults(options, {
-    ...DEFAULTS_TABLE,
-    ...DEFAULTS_PARAGRAPH,
-  });
+  const { th, td, p } = options;
 
   return {
     type: header ? th.type : td.type,

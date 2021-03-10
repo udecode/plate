@@ -1,7 +1,6 @@
-import { getNodes, setDefaults } from '@udecode/slate-plugins-common';
+import { getNodes } from '@udecode/slate-plugins-common';
+import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
-import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeLineOptions } from '../types';
 
 /**
  * Get code line entries
@@ -9,11 +8,11 @@ import { CodeLineOptions } from '../types';
 export const getCodeLines = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {},
-  options?: CodeLineOptions
+  options: SlatePluginsOptions
 ) => {
-  if (!at) return;
+  const { code_line } = options;
 
-  const { code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  if (!at) return;
 
   return [...getNodes(editor, { at, match: { type: code_line.type } })];
 };
