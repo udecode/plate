@@ -95,7 +95,7 @@ export const moveListItemUp = (
     // If li has next siblings, we need to move them.
     if (!isLastChild(list, liPath)) {
       // If li has no sublist, insert one.
-      if (!hasListChild(liNode)) {
+      if (!hasListChild(liNode, options)) {
         Transforms.insertNodes(
           editor,
           {

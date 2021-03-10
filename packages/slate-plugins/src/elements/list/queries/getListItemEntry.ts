@@ -1,4 +1,5 @@
-import { Editor, Location } from 'slate';
+import { Editor, Location, Range } from 'slate';
+import { isCollapsed } from '../../../common';
 import { getAbove } from '../../../common/queries/getAbove';
 import { getParent } from '../../../common/queries/getParent';
 import { someNode } from '../../../common/queries/someNode';
@@ -20,6 +21,11 @@ export const getListItemEntry = (
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
+
+    // If selection range includes root list item
+    if (Range.isRange(at) && !isCollapsed(at) && paragraphPath.length === 1) {
+      at = at.focus.path;
+    }
 
     const listItem =
       getAbove(editor, { at, match: { type: li.type } }) ||

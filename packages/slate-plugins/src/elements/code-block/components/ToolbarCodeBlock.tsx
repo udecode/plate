@@ -13,13 +13,12 @@ import {
 } from '../types';
 
 export const ToolbarCodeBlock = ({
-  options,
+  options = {},
   ...props
 }: ToolbarButtonProps & {
-  options: CodeBlockOptions & CodeLineOptions & CodeBlockInsertOptions;
+  options?: CodeBlockOptions & CodeLineOptions & CodeBlockInsertOptions;
 }) => {
   const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
-
   const editor = useSlate();
 
   return (
