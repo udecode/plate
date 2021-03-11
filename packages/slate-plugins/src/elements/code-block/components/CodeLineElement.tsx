@@ -29,7 +29,12 @@ export const CodeLineElementBase = ({
   });
 
   return (
-    <div {...attributes} className={classNames.root} {...htmlAttributes}>
+    <div
+      {...attributes}
+      contentEditable
+      className={classNames.root}
+      {...htmlAttributes}
+    >
       {children}
     </div>
   );
