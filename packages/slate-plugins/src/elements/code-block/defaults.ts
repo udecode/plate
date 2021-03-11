@@ -1,19 +1,26 @@
 import { DEFAULT_ELEMENT } from '../../common';
+import { CodeBlockContainerElement } from './components/CodeBlockContainerElement';
 import { CodeBlockElement } from './components/CodeBlockElement';
 import { CodeLineElement } from './components/CodeLineElement';
 import {
+  CodeBlockContainerKeyOption,
   CodeBlockKeyOption,
   CodeBlockPluginOptionsValues,
   CodeLineKeyOption,
 } from './types';
 
 export const MARK_PRISM = 'prism';
+export const ELEMENT_CODE_BLOCK_CONTAINER = 'code_block_container';
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
 export const DEFAULTS_CODE_BLOCK: Record<
-  CodeBlockKeyOption | CodeLineKeyOption,
+  CodeBlockKeyOption | CodeLineKeyOption | CodeBlockContainerKeyOption,
   CodeBlockPluginOptionsValues
 > = {
+  code_block_container: {
+    component: CodeBlockContainerElement,
+    type: ELEMENT_CODE_BLOCK_CONTAINER,
+  },
   code_block: {
     component: CodeBlockElement,
     type: ELEMENT_CODE_BLOCK,

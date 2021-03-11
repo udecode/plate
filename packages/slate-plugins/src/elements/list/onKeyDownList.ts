@@ -1,9 +1,12 @@
 import { Editor } from 'slate';
+import { getOnHotkeyToggleNodeTypeDefault } from '../../common';
 import { isFirstChild } from '../../common/queries';
+import { DEFAULTS_HEADING } from '../heading';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 import { moveListItemDown } from './transforms/moveListItemDown';
 import { moveListItemUp } from './transforms/moveListItemUp';
+import { DEFAULTS_LIST } from './defaults';
 import { ListOnKeyDownOptions } from './types';
 
 export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
@@ -37,4 +40,9 @@ export const onKeyDownList = (options?: ListOnKeyDownOptions) => (
       moveListItemDown(editor, { list, listItem }, options);
     }
   }
+  getOnHotkeyToggleNodeTypeDefault({
+    key: ['ol', 'ul'],
+    defaultOptions: DEFAULTS_LIST,
+    options,
+  });
 };

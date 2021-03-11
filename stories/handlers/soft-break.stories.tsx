@@ -112,7 +112,7 @@ export const BlockPlugins = () => {
             icon={<FormatQuote />}
           />
           <ToolbarCodeBlock
-            type={options.code_block.type}
+            type={options.code_block_container.type}
             icon={<CodeBlock />}
             options={options}
           />

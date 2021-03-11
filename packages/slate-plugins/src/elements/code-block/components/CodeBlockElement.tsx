@@ -31,7 +31,7 @@ export const CodeBlockElementBase = ({
   return (
     <pre
       {...attributes}
-      contentEditable={false}
+      contentEditable
       className={classNames.root}
       {...htmlAttributes}
     >

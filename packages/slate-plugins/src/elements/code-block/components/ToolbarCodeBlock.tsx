@@ -7,7 +7,8 @@ import { ToolbarElement } from '../../../components/ToolbarElement/ToolbarElemen
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
 import { insertEmptyCodeBlock } from '../transforms/insertEmptyCodeBlock';
 import {
-  CodeBlockInsertOptions,
+  CodeBlockContainerInsertOptions,
+  CodeBlockContainerOptions,
   CodeBlockOptions,
   CodeLineOptions,
 } from '../types';
@@ -16,14 +17,17 @@ export const ToolbarCodeBlock = ({
   options = {},
   ...props
 }: ToolbarButtonProps & {
-  options?: CodeBlockOptions & CodeLineOptions & CodeBlockInsertOptions;
+  options?: CodeBlockOptions &
+    CodeLineOptions &
+    CodeBlockContainerOptions &
+    CodeBlockContainerInsertOptions;
 }) => {
-  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_block_container } = setDefaults(options, DEFAULTS_CODE_BLOCK);
   const editor = useSlate();
 
   return (
     <ToolbarElement
-      type={code_block.type}
+      type={code_block_container.type}
       onMouseDown={getPreventDefaultHandler(
         insertEmptyCodeBlock,
         editor,

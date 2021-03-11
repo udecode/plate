@@ -6,7 +6,7 @@ import {
 } from '../../../common';
 import { DEFAULT_ELEMENT } from '../../../common/types/node.types';
 import {
-  CodeBlockInsertOptions,
+  CodeBlockContainerInsertOptions,
   CodeBlockOptions,
   CodeLineOptions,
 } from '../types';
@@ -19,7 +19,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = (
   editor: Editor,
   options: Omit<InsertNodesOptions, 'match'> = {},
-  pluginsOptions: CodeBlockInsertOptions &
+  pluginsOptions: CodeBlockContainerInsertOptions &
     CodeBlockOptions &
     CodeLineOptions = {}
 ) => {

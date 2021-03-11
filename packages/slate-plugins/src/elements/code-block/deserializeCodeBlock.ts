@@ -3,6 +3,7 @@ import { getElementDeserializer } from '../../common/utils/getElementDeserialize
 import { setDefaults } from '../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from './defaults';
 import {
+  CodeBlockContainerDeserializeOptions,
   CodeBlockDeserializeOptions,
   CodeLineDeserializeOptions,
 } from './types';
@@ -10,9 +11,14 @@ import {
 // FIXME Handle code_line
 
 export const deserializeCodeBlock = (
-  options?: CodeBlockDeserializeOptions & CodeLineDeserializeOptions
+  options?: CodeBlockDeserializeOptions &
+    CodeBlockContainerDeserializeOptions &
+    CodeLineDeserializeOptions
 ): DeserializeHtml => {
-  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_block, code_block_container, code_line } = setDefaults(
+    options,
+    DEFAULTS_CODE_BLOCK
+  );
 
   return {
     element: [
@@ -21,6 +27,14 @@ export const deserializeCodeBlock = (
         rules: [
           { nodeNames: 'PRE' },
           { className: code_block.rootProps.className },
+        ],
+        ...options?.code_block?.deserialize,
+      }),
+      ...getElementDeserializer({
+        type: code_block_container.type,
+        rules: [
+          { nodeNames: 'DIV' },
+          { className: code_block_container.rootProps.className },
         ],
         ...options?.code_block?.deserialize,
       }),

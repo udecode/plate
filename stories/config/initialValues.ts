@@ -63,6 +63,18 @@ export const headingOptions = {
   },
 };
 
+export const listOptions = {
+  ...DEFAULTS_LIST,
+  ol: {
+    ...DEFAULTS_LIST.ol,
+    hotkey: ['mod+opt+7', 'mod+shift+7'],
+  },
+  ul: {
+    ...DEFAULTS_LIST.ul,
+    hotkey: ['mod+opt+8', 'mod+shift+8'],
+  },
+};
+
 export const options = {
   ...setDefaults(DEFAULTS_PARAGRAPH, {}),
   ...setDefaults(DEFAULTS_MENTION, {}),
@@ -73,7 +85,7 @@ export const options = {
   ...setDefaults(DEFAULTS_MEDIA_EMBED, {}),
   ...setDefaults(DEFAULTS_TODO_LIST, {}),
   ...setDefaults(DEFAULTS_TABLE, {}),
-  ...setDefaults(DEFAULTS_LIST, {}),
+  ...setDefaults(listOptions, {}),
   ...setDefaults(headingOptions, {}),
   ...setDefaults(DEFAULTS_ALIGN, {}),
   ...setDefaults(DEFAULTS_BOLD, {}),
@@ -805,21 +817,26 @@ export const initialValueBasicElements: SlateDocument = [
         children: [{ text: 'Blockquote' }],
       },
       {
-        type: options.code_block.type,
+        type: options.code_block_container.type,
         children: [
           {
-            type: options.code_line.type,
+            type: options.code_block.type,
             children: [
               {
-                text: "const a = 'Hello';",
+                type: options.code_line.type,
+                children: [
+                  {
+                    text: "const a = 'Hello';",
+                  },
+                ],
               },
-            ],
-          },
-          {
-            type: options.code_line.type,
-            children: [
               {
-                text: "const b = 'World';",
+                type: options.code_line.type,
+                children: [
+                  {
+                    text: "const b = 'World';",
+                  },
+                ],
               },
             ],
           },

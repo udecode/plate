@@ -9,18 +9,21 @@ import { deserializeCodeBlock } from './deserializeCodeBlock';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 import { renderElementCodeBlock } from './renderElementCodeBlock';
 import { renderLeafCodeBlock } from './renderLeafCodeBlock';
-import { CodeBlockPluginOptions } from './types';
+import {
+  CodeBlockContainerPluginOptions,
+  CodeBlockPluginOptions,
+} from './types';
 
 export const CodeBlockPlugin = (
-  options?: CodeBlockPluginOptions
+  options?: CodeBlockPluginOptions & CodeBlockContainerPluginOptions
 ): SlatePlugin => {
-  const { code_block } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_block_container } = setDefaults(options, DEFAULTS_CODE_BLOCK);
   return {
     renderElement: renderElementCodeBlock(options),
     renderLeaf: renderLeafCodeBlock(),
     deserialize: deserializeCodeBlock(options),
     decorate: decorateCodeBlock(),
     onKeyDown: onKeyDownCodeBlock(options),
-    voidTypes: [code_block.type],
+    voidTypes: [code_block_container.type],
   };
 };
