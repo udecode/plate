@@ -9,15 +9,8 @@ import {
 import { useEditorId } from './useEditorId';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
-// const pick = <T>(obj: T, keys: string[] = []) => {
-//   const filtered = {};
-//   keys.forEach((key) => {
-//     if (obj.hasOwnProperty(key)) {
-//       filtered[key] = obj[key];
-//     }
-//   });
-//   return filtered;
-// };
+export const useSlatePluginsOptions = (id = 'main') =>
+  useSlatePluginsStore(useCallback((state) => state.byId[id]?.options, [id]));
 
 export const getOptions = (
   state: SlatePluginsStore,
@@ -25,7 +18,7 @@ export const getOptions = (
   pluginKey: string,
   optionKey?: SlatePluginOptionKey | SlatePluginOptionKey[]
 ): SlatePluginOptions => {
-  const options = state.byId[id]?.options[pluginKey];
+  const options = state.byId[id]?.options[pluginKey] ?? {};
   if (!options.type) options.type = pluginKey;
 
   return optionKey ? (pick(options, optionKey) as SlatePluginOptions) : options;
@@ -77,11 +70,6 @@ export const useRenderElementOptions = (pluginKey: string) =>
 export const useRenderLeafOptions = (pluginKey: string) =>
   useEditorOptions(pluginKey, ['type', 'component', 'nodeToProps']);
 
-export const useHotkeyOptions = (pluginKey: string) =>
-  useEditorOptions(pluginKey, ['type', 'hotkey', 'clear']);
-
-export const useEditorComponent = (pluginKey: string) =>
-  useEditorOptions(pluginKey, 'component');
-
-export const useEditorType = (pluginKey: string) =>
-  useEditorOptions(pluginKey, 'type').type;
+export const useEditorType = (pluginKey: string) => {
+  return useEditorOptions(pluginKey, 'type')?.type ?? 'none';
+};

@@ -4,7 +4,7 @@ import { isSelectionAtBlockStart } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
-import { options } from '../../../../../../../stories/config/initialValues';
+import { options } from '../../../../../../../stories-2/config/initialValues';
 import { ELEMENT_BLOCKQUOTE } from '../../../../elements/blockquote/defaults';
 import { onKeyDownResetBlockType } from '../../onKeyDownResetBlockType';
 

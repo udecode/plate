@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Slate } from 'slate-react';
 import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
+import { useSlatePluginsOptions } from '../store/useEditorOption';
 import { SlateProps } from '../types/SlateProps';
 import { UseSlatePluginsEffectsOptions } from '../types/UseSlatePluginsEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
@@ -15,6 +16,15 @@ export const SlatePlugins = ({ children, ...options }: SlatePluginsProps) => {
   const { getSlateProps } = useSlatePlugins(options);
 
   const slateProps = getSlateProps() as SlateProps;
+
+  // const opt = useSlatePluginsOptions(options.id);
+
+  // const [key, setKey] = useState(1);
+  //
+  // useEffect(() => {
+  //   console.log('changed');
+  //   setKey(Math.random());
+  // }, [opt]);
 
   if (!slateProps.editor) return null;
 

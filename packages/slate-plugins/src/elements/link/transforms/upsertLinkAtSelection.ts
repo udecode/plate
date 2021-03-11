@@ -22,13 +22,13 @@ export const upsertLinkAtSelection = (
   },
   options: SlatePluginsOptions
 ) => {
-  const { link } = options;
+  const { a } = options;
 
   if (!editor.selection) return;
 
   if (!wrap && isCollapsed(editor.selection)) {
     return Transforms.insertNodes(editor, {
-      type: link.type,
+      type: a.type,
       url,
       children: [{ text: url }],
     });
@@ -41,7 +41,7 @@ export const upsertLinkAtSelection = (
     Transforms.select(editor, inlinePath);
   }
 
-  unwrapNodes(editor, { at: editor.selection, match: { type: link.type } });
+  unwrapNodes(editor, { at: editor.selection, match: { type: a.type } });
 
   wrapLink(editor, { at: editor.selection, url }, options);
 

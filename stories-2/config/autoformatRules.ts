@@ -1,17 +1,15 @@
+import {
+  AutoformatRule,
+  insertCodeBlock,
+  toggleList,
+  unwrapList,
+} from '@udecode/slate-plugins';
 import { Editor } from 'slate';
-import { options } from '../../../../stories-2/config/initialValues';
-import { insertCodeBlock } from '../elements/code-block/transforms/insertCodeBlock';
-import { toggleList } from '../elements/list/transforms/toggleList';
-import { unwrapList } from '../elements/list/transforms/unwrapList';
-import { AutoformatRule } from '../handlers/autoformat/types';
-import { MARK_BOLD } from '../marks/bold/defaults';
-import { MARK_CODE } from '../marks/code/defaults';
-import { MARK_ITALIC } from '../marks/italic/defaults';
-import { MARK_STRIKETHROUGH } from '../marks/strikethrough/defaults';
+import { options } from './initialValues';
 
 const preFormat = (editor: Editor) => unwrapList(editor, options);
 
-export const autoformatRulesFixtures: AutoformatRule[] = [
+export const autoformatRules: AutoformatRule[] = [
   {
     type: options.h1.type,
     markup: '#',
@@ -44,10 +42,10 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
   },
   {
     type: options.li.type,
-    markup: ['*', '-', '+'],
+    markup: ['*', '-'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { typeList: options.ul.type }, options);
+      toggleList(editor, { ...options, typeList: options.ul.type });
     },
   },
   {
@@ -55,8 +53,12 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     markup: ['1.', '1)'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { typeList: options.ol.type }, options);
+      toggleList(editor, { ...options, typeList: options.ol.type });
     },
+  },
+  {
+    type: options.todo_li.type,
+    markup: ['[]'],
   },
   {
     type: options.blockquote.type,
@@ -64,37 +66,37 @@ export const autoformatRulesFixtures: AutoformatRule[] = [
     preFormat,
   },
   {
-    type: MARK_BOLD,
+    type: options.bold.type,
     between: ['**', '**'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_BOLD,
+    type: options.bold.type,
     between: ['__', '__'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_ITALIC,
+    type: options.italic.type,
     between: ['*', '*'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_ITALIC,
+    type: options.italic.type,
     between: ['_', '_'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_CODE,
+    type: options.code.type,
     between: ['`', '`'],
     mode: 'inline',
     insertTrigger: true,
   },
   {
-    type: MARK_STRIKETHROUGH,
+    type: options.strikethrough.type,
     between: ['~~', '~~'],
     mode: 'inline',
     insertTrigger: true,

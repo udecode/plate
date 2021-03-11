@@ -1,0 +1,90 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Guide"/>
+
+# Guide
+
+## Atomic Design
+
+`EditablePlugins` is using the [Atomic Design](http://atomicdesign.bradfrost.com/chapter-2/).
+
+> **Atomic design** refers to the creation of a system of pieces that can come together to create elements and templates that can be reused.
+>
+> Think of an **atom** as the smallest piece of functionality. These come together to form molecules.
+>
+> **Molecules** are a combination of different individual elements (atoms).
+>
+> The molecules and atoms can be combined to create **organisms**. At this level, functional editor component can be seen come to life.
+
+
+## Organisms
+
+`EditablePlugins` is a wrapper around `Editable` from `slate-react`:
+
+```typescript
+// organism
+interface EditablePluginsProps extends EditableProps {
+  // molecules
+  plugins?: SlatePlugin[];
+
+  // atoms
+  decorate?: Decorate[];
+  renderElement?: RenderElement[];
+  renderLeaf?: RenderLeaf[];
+  onKeyDown?: OnKeyDown[];
+  onDOMBeforeInput?: OnDOMBeforeInput[];
+}
+```
+
+You can pass a list of molecules but also a list of atoms: it's an *organism*.
+
+- `EditablePlugins` will run each `decorate`, `renderLeaf`, `onKeyDown`, `onDOMBeforeInput`.
+- `EditablePlugins` will run each `renderElement` until one returns a `JSX.Element`. Default element is `<div>`.
+
+## Molecules
+
+`plugins` is a list of `SlatePlugin`:
+
+```js
+export interface SlatePlugin {
+  decorate?: Decorate;
+  deserialize?: DeserializeHtml;
+  renderElement?: RenderElement;
+  renderLeaf?: RenderLeaf;
+  onKeyDown?: OnKeyDown;
+  onDOMBeforeInput?: OnDOMBeforeInput;
+}
+```
+
+You can pass different *atoms*, which form a *molecule*.
+
+## Atoms
+
+### Native Atoms
+
+These are the atoms that the Slate framework uses.
+
+```js
+type Decorate = (entry: NodeEntry) => Range[];
+type RenderElement = (
+  props: RenderElementProps
+) => JSX.Element | undefined;
+type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
+type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
+type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
+```
+
+You can find its documentation at [https://docs.slatejs.org/](https://docs.slatejs.org/).
+
+### Notice
+
+- Atoms and molecules are designed to accept *optional parameters*.
+The idea behind is that you can add parameters for future customization without any breaking change.
+- Each plugin has default options out-of-the-box. You can find these in the API.
+- If you don't use atoms like `deserialize`, the bundle size grows for nothing.
+Sometimes, you just want an atom from a molecule, and not the whole molecule.
+That's why `@udecode/slate-plugins` also exports the **atoms** of all the plugins 😎.
+You can just import them and create your own custom editor.
+
+
+

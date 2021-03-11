@@ -1,5 +1,4 @@
 import {
-  ELEMENT_TODO_LI,
   ExitBreakPluginOptions,
   getSlatePluginsOptions,
   isBlockAboveEmpty,
@@ -13,14 +12,13 @@ import {
 } from '@udecode/slate-plugins';
 // import faker from 'faker';
 import { Descendant, Text } from 'slate';
-import { ELEMENT_TAG } from '../../stories-2/examples/tag/defaults';
 
 export const options = getSlatePluginsOptions();
 
 export const inlineTypes = [options.mention.type, options.a.type];
 
 const resetBlockTypesCommonRule = {
-  types: [options.blockquote.type, options[ELEMENT_TODO_LI].type],
+  types: [options.blockquote.type, options.todo_li.type],
   defaultType: options.p.type,
 };
 
@@ -38,7 +36,6 @@ export const optionsResetBlockTypes: ResetBlockTypePluginOptions = {
     },
   ],
 };
-
 export const optionsSoftBreak: SoftBreakPluginOptions = {
   rules: [
     { hotkey: 'shift+enter' },
@@ -602,7 +599,7 @@ export const initialValueCombobox: SlateDocument = [
         type: options.p.type,
         children: [
           { text: 'Example using useCombobox from downshift with # trigger: ' },
-          { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
+          { type: options.tag.type, children: [{ text: '' }], value: 'tag' },
           { text: '' },
         ],
       },
@@ -894,32 +891,32 @@ export const initialValueList: SlateDocument = [
         ],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Slide to the left.' }],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Slide to the right.' }],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: 'Criss-cross.' }],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: true,
         children: [{ text: 'Criss-cross!' }],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: 'Cha cha real smooth…' }],
       },
       {
-        type: options[ELEMENT_TODO_LI].type,
+        type: options.todo_li.type,
         checked: false,
         children: [{ text: "Let's go to work!" }],
       },

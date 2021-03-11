@@ -10,7 +10,7 @@ it('serialize link to html with attributes', () => {
     serializeHTMLFromNodes({
       plugins: [
         LinkPlugin({
-          link: {
+          a: {
             nodeToProps: ({ element }) =>
               /^https?:\/\/slatejs.org\/?/.test(element.url)
                 ? {}

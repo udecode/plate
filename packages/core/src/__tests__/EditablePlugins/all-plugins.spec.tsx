@@ -20,7 +20,7 @@ import {
   initialValueTables,
   options,
   optionsResetBlockTypes,
-} from '../../../../../stories/config/initialValues';
+} from '../../../../../stories-2/config/initialValues';
 import { BalloonToolbar } from '../../../../components/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../components/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
 import { ToolbarAlign } from '../../../../components/src/components/ToolbarAlign/ToolbarAlign';
@@ -141,7 +141,7 @@ const withPlugins = [
   }),
   withNodeID(),
   withInlineVoid({ plugins }),
-  withRemoveEmptyNodes({ type: options.link.type }),
+  withRemoveEmptyNodes({ type: options.a.type }),
 ] as const;
 
 const Editor = () => {

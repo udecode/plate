@@ -21,6 +21,8 @@ export const BlockquoteElementBase = ({
     // Other style props
   });
 
+  console.log('AH');
+
   return (
     <blockquote {...attributes} className={classNames.root} {...htmlAttributes}>
       {children}

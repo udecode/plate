@@ -1,4 +1,7 @@
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import {
+  SlatePluginOptions,
+  SlatePluginsOptions,
+} from '@udecode/slate-plugins-core';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
@@ -70,8 +73,49 @@ import {
 } from '../marks/underline/defaults';
 import { MARK_SEARCH_HIGHLIGHT } from '../widgets/search-highlight/defaults';
 
-export const getSlatePluginsOptions = (): SlatePluginsOptions => {
-  const options: any = {
+type PluginKey =
+  | typeof ELEMENT_ALIGN_CENTER
+  | typeof ELEMENT_ALIGN_JUSTIFY
+  | typeof ELEMENT_ALIGN_LEFT
+  | typeof ELEMENT_ALIGN_RIGHT
+  | typeof ELEMENT_BLOCKQUOTE
+  | typeof ELEMENT_CODE_BLOCK
+  | typeof ELEMENT_CODE_LINE
+  | typeof ELEMENT_H1
+  | typeof ELEMENT_H2
+  | typeof ELEMENT_H3
+  | typeof ELEMENT_H4
+  | typeof ELEMENT_H5
+  | typeof ELEMENT_H6
+  | typeof ELEMENT_IMAGE
+  | typeof ELEMENT_LI
+  | typeof ELEMENT_LINK
+  | typeof ELEMENT_MEDIA_EMBED
+  | typeof ELEMENT_MENTION
+  | typeof ELEMENT_OL
+  | typeof ELEMENT_PARAGRAPH
+  | typeof ELEMENT_TABLE
+  | typeof ELEMENT_TD
+  | typeof ELEMENT_TH
+  | typeof ELEMENT_TODO_LI
+  | typeof ELEMENT_TR
+  | typeof ELEMENT_UL
+  | typeof MARK_BOLD
+  | typeof MARK_CODE
+  | typeof MARK_HIGHLIGHT
+  | typeof MARK_ITALIC
+  | typeof MARK_KBD
+  | typeof MARK_SEARCH_HIGHLIGHT
+  | typeof MARK_STRIKETHROUGH
+  | typeof MARK_SUBSCRIPT
+  | typeof MARK_SUPERSCRIPT
+  | typeof MARK_UNDERLINE;
+
+export const getSlatePluginsOptions = (): Record<
+  PluginKey,
+  SlatePluginOptions
+> => {
+  const options: Record<PluginKey, Partial<SlatePluginOptions>> = {
     [ELEMENT_ALIGN_CENTER]: {},
     [ELEMENT_ALIGN_JUSTIFY]: {},
     [ELEMENT_ALIGN_LEFT]: {},
@@ -114,5 +158,5 @@ export const getSlatePluginsOptions = (): SlatePluginsOptions => {
     options[key].type = key;
   });
 
-  return options;
+  return options as Record<PluginKey, SlatePluginOptions>;
 };

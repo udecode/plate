@@ -26,9 +26,9 @@ const upsertLink = (
   },
   options: SlatePluginsOptions
 ) => {
-  const { link } = options;
+  const { a } = options;
 
-  unwrapNodes(editor, { at, match: { type: link.type } });
+  unwrapNodes(editor, { at, match: { type: a.type } });
 
   const newSelection = editor.selection as Range;
 
@@ -84,7 +84,7 @@ export const withLink = (
   }: WithLinkOptions = {},
   options: SlatePluginsOptions
 ) => <T extends ReactEditor>(editor: T) => {
-  const { link } = options;
+  const { a } = options;
 
   const { insertData, insertText } = editor;
 
@@ -122,18 +122,12 @@ export const withLink = (
     const text = data.getData('text/plain');
 
     if (text) {
-      if (someNode(editor, { match: { type: link.type } })) {
+      if (someNode(editor, { match: { type: a.type } })) {
         return insertText(text);
       }
 
       if (isUrl(text)) {
-        return upsertLinkAtSelection(
-          editor,
-          { url: text },
-          {
-            link,
-          }
-        );
+        return upsertLinkAtSelection(editor, { url: text }, { a });
       }
     }
 
@@ -148,7 +142,7 @@ export const withLink = (
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes({ type: link.type })(editor);
+  editor = withRemoveEmptyNodes({ type: a.type })(editor);
 
   return editor;
 };

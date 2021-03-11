@@ -1,4 +1,7 @@
+import defaultsDeep from 'lodash/defaultsDeep';
 import { createEditor } from 'slate';
+import { withHistory } from 'slate-history';
+import { withReact } from 'slate-react';
 import createVanillaStore from 'zustand/vanilla';
 import { SlatePluginsStore, State } from '../types/SlatePluginsStore';
 import { pipe } from '../utils/pipe';
@@ -39,10 +42,28 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
           },
         };
       }),
-    setOptions: getSetter<State['options']>({
-      set,
-      key: 'options',
-    }),
+    setOptions: (value, id = 'main') =>
+      set((state) => {
+        let rest = state.byId[id];
+        if (!rest) {
+          rest = getInitialState();
+        }
+        const { options } = rest;
+
+        defaultsDeep(options, value);
+
+        console.log(options);
+
+        return {
+          byId: {
+            ...state.byId,
+            [id]: {
+              ...rest,
+              options,
+            },
+          },
+        };
+      }),
     setOption: ({ value, optionKey, pluginKey }, id = 'main') =>
       set((state) => {
         let rest = state.byId[id];
@@ -50,6 +71,7 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
           rest = getInitialState();
         }
         const { options } = rest;
+
         const optionsByKey = options[pluginKey];
 
         return {
@@ -102,6 +124,19 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
       const editorSingleton = createEditor();
 
       const editor = pipe(editorSingleton, withRandomKey, ...value) as any;
+      editor.id = id;
+
+      get().setEditor(editor, id);
+    },
+    resetEditorKey: (id = 'main') => {
+      const editorSingleton = createEditor();
+
+      const editor = pipe(
+        editorSingleton,
+        withRandomKey,
+        withReact,
+        withHistory
+      ) as any;
       editor.id = id;
 
       get().setEditor(editor, id);

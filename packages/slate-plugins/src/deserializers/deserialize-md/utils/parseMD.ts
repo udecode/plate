@@ -7,7 +7,7 @@ export const parseMD = (content: string, options: SlatePluginsOptions) => {
   const {
     p,
     blockquote,
-    link,
+    a,
     code,
     ul,
     ol,
@@ -26,7 +26,7 @@ export const parseMD = (content: string, options: SlatePluginsOptions) => {
       nodeTypes: {
         paragraph: p.type,
         block_quote: blockquote.type,
-        link: link.type,
+        link: a.type,
         code_block: code.type,
         ul_list: ul.type,
         ol_list: ol.type,

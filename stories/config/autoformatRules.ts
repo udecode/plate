@@ -1,5 +1,6 @@
 import {
   AutoformatRule,
+  ELEMENT_TODO_LI,
   insertCodeBlock,
   toggleList,
   unwrapList,
@@ -45,7 +46,7 @@ export const autoformatRules: AutoformatRule[] = [
     markup: ['*', '-'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...options, typeList: options.ul.type });
+      toggleList(editor, { typeList: options.ul.type }, options);
     },
   },
   {
@@ -53,11 +54,11 @@ export const autoformatRules: AutoformatRule[] = [
     markup: ['1.', '1)'],
     preFormat,
     format: (editor) => {
-      toggleList(editor, { ...options, typeList: options.ol.type });
+      toggleList(editor, { typeList: options.ol.type }, options);
     },
   },
   {
-    type: options.todo_li.type,
+    type: options[ELEMENT_TODO_LI].type,
     markup: ['[]'],
   },
   {

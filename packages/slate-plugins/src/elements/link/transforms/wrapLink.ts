@@ -10,12 +10,12 @@ export const wrapLink = (
   { at, url }: { url: string; at?: Location },
   options: SlatePluginsOptions
 ) => {
-  const { link } = options;
+  const { a } = options;
 
   wrapNodes(
     editor,
     {
-      type: link.type,
+      type: a.type,
       url,
       children: [],
     },

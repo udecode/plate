@@ -13,9 +13,9 @@ import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
 export const ToolbarLink = (props: ToolbarButtonProps) => {
-  const link = useEditorOptions(ELEMENT_LINK);
+  const a = useEditorOptions(ELEMENT_LINK);
   const editor = useSlate();
-  const isLink = someNode(editor, { match: { type: link.type } });
+  const isLink = someNode(editor, { match: { type: a.type } });
 
   return (
     <ToolbarButton
@@ -25,7 +25,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
         let prevUrl = '';
 
         const linkNode = getAbove(editor, {
-          match: { type: link.type },
+          match: { type: a.type },
         });
         if (linkNode) {
           prevUrl = linkNode[0].url as string;
@@ -36,7 +36,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
             editor.selection &&
             unwrapNodes(editor, {
               at: editor.selection,
-              match: { type: link.type },
+              match: { type: a.type },
             });
 
           return;
@@ -45,7 +45,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
         // If our cursor is in middle of a link, then we don't want to inser it inline
         const shouldWrap: boolean =
           linkNode !== undefined && isCollapsed(editor.selection);
-        upsertLinkAtSelection(editor, { url, wrap: shouldWrap }, { link });
+        upsertLinkAtSelection(editor, { url, wrap: shouldWrap }, { a });
       }}
       {...props}
     />

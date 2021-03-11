@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../../../stories/config/initialValues';
+import { options } from '../../../../../../../stories-2/config/initialValues';
 import { withNormalizeTypes } from '../../../index';
 
 const input = (

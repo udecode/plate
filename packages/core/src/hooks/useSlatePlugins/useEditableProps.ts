@@ -1,5 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { useWhyDidYouUpdate } from 'use-why-did-you-update';
+import {
+  useEditorOptions,
+  useSlatePluginsOptions,
+} from '../../store/useEditorOption';
 import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { decoratePlugins } from '../../utils/decoratePlugins';
@@ -24,6 +29,7 @@ export const useEditableProps = ({
   editableProps,
 }: UseEditablePropsOptions): (() => EditableProps) => {
   const editor = useSlatePluginsEditor(id);
+  const options = useSlatePluginsOptions(id);
 
   const plugins = useMemo(() => _plugins ?? [], [_plugins]);
   const decorateList = useMemo(() => _decorateList ?? [], [_decorateList]);
@@ -104,22 +110,23 @@ export const useEditableProps = ({
     ]
   );
 
-  return useCallback(
-    () => ({
+  return useCallback(() => {
+    return {
       renderElement,
       renderLeaf,
       onKeyDown,
       decorate,
       onDOMBeforeInput,
       ...editableProps,
-    }),
-    [
-      decorate,
-      editableProps,
-      onDOMBeforeInput,
-      onKeyDown,
-      renderElement,
-      renderLeaf,
-    ]
-  );
+      options,
+    };
+  }, [
+    decorate,
+    editableProps,
+    onDOMBeforeInput,
+    onKeyDown,
+    options,
+    renderElement,
+    renderLeaf,
+  ]);
 };

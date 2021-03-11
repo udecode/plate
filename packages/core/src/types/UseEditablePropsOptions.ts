@@ -10,7 +10,7 @@ import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
  * Options related to Editable component
  */
 export interface UseEditablePropsOptions
-  extends Pick<UseSlatePluginsEffectsOptions, 'id' | 'plugins' | 'components'> {
+  extends Pick<UseSlatePluginsEffectsOptions, 'id' | 'plugins'> {
   /**
    * @see {@link Decorate}
    */

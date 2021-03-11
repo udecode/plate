@@ -69,6 +69,7 @@ export type SlatePluginsActions = {
   setElementKeys: (value: State['elementKeys'], id?: string) => void;
   setWithPlugins: (value: any[], id?: string) => void;
   setValue: (value: State['value'], id?: string) => void;
+  resetEditorKey: (id?: string) => void;
 };
 
 export type SlatePluginsStore = SlatePluginsState & SlatePluginsActions;

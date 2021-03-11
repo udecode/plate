@@ -30,7 +30,7 @@ const input1 = [
     },
   }),
   LinkPlugin({
-    link: {
+    a: {
       deserialize: {
         node: (el) => ({
           type: 'a',

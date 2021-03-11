@@ -14,5 +14,7 @@ export const EditablePlugins = (props: Omit<UseEditablePropsOptions, 'id'>) => {
 
   if (!editor) return null;
 
-  return <Editable {...getEditableProps()} />;
+  const pro = getEditableProps();
+
+  return <Editable {...pro} />;
 };

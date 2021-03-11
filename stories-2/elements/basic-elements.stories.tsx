@@ -70,6 +70,8 @@ const SlateContent = () => {
     ExitBreakPlugin(optionsExitBreak),
   ];
 
+  const components = useMemo(() => getSlatePluginsComponents(), []);
+
   return (
     <>
       <HeadingToolbar>
@@ -88,14 +90,12 @@ const SlateContent = () => {
       </HeadingToolbar>
       <EditablePlugins
         plugins={plugins}
-        editableProps={useMemo(
-          () => ({
-            placeholder: 'Enter some rich text…',
-            spellCheck: true,
-            autoFocus: true,
-          }),
-          []
-        )}
+        components={components}
+        editableProps={{
+          placeholder: 'Enter some rich text…',
+          spellCheck: true,
+          autoFocus: true,
+        }}
       />
     </>
   );
@@ -107,15 +107,12 @@ export const Example = () => {
     []
   );
 
-  const components = useMemo(() => getSlatePluginsComponents(), []);
-
   return (
     <SlatePlugins
       id={id}
       initialValue={initialValueBasicElements}
       withPlugins={withPlugins}
       options={slatePluginsOptions}
-      components={components}
     >
       <SlateContent />
     </SlatePlugins>
