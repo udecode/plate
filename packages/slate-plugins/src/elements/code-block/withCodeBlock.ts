@@ -2,16 +2,10 @@ import { ReactEditor } from 'slate-react';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
 import { insertCodeLine } from './transforms/insertCodeLine';
-import {
-  WithCodeBlockContainerOptions,
-  WithCodeBlockOptions,
-  WithCodeLineOptions,
-} from './types';
+import { WithCodeBlockOptions, WithCodeLineOptions } from './types';
 
 export const withCodeBlock = (
-  options: WithCodeBlockOptions &
-    WithCodeBlockContainerOptions &
-    WithCodeLineOptions = {}
+  options: WithCodeBlockOptions & WithCodeLineOptions = {}
 ) => <T extends ReactEditor>(editor: T) => {
   const { insertBreak } = editor;
   const insertBreakCodeBlock = () => {

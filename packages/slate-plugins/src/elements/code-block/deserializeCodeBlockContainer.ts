@@ -12,22 +12,17 @@ import {
 export const deserializeCodeBlock = (
   options?: CodeBlockDeserializeOptions & CodeLineDeserializeOptions
 ): DeserializeHtml => {
-  const { code_block, code_line } = setDefaults(options, DEFAULTS_CODE_BLOCK);
+  const { code_block_container } = setDefaults(options, DEFAULTS_CODE_BLOCK);
 
   return {
     element: [
       ...getElementDeserializer({
-        type: code_block.type,
+        type: code_block_container.type,
         rules: [
-          { nodeNames: 'PRE' },
-          { className: code_block.rootProps.className },
+          { nodeNames: 'DIV' },
+          { className: code_block_container.rootProps.className },
         ],
         ...options?.code_block?.deserialize,
-      }),
-      ...getElementDeserializer({
-        type: code_line.type,
-        rules: [{ className: code_line.rootProps.className }],
-        ...options?.code_line?.deserialize,
       }),
     ],
   };

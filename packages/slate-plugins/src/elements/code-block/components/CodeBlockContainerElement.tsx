@@ -1,42 +1,45 @@
 import * as React from 'react';
-import { RenderElementProps, withReact } from 'slate-react';
-import { EditorChild } from './EditorChild';
 import { useCallback, useMemo } from 'react';
-import { createEditor, Transforms } from 'slate';
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
+import { createEditor, Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
+import {
+  ReactEditor,
+  RenderElementProps,
+  useEditor,
+  withReact,
+} from 'slate-react';
 import { pipe, withInlineVoid } from '../../../common';
+import { CodeBlockPlugin } from '../CodeBlockPlugin';
+import { EditorChild } from './EditorChild';
 
 export const CodeBlockContainerElement = ({
   attributes,
   children,
-  options
+  element,
 }: RenderElementProps) => {
+  const editor = useEditor();
 
-  // FIXME Do the default options approach here?
+  // FIXME handle non-default options once working
 
-  // FIXME: Invoke these inside the renderElement call or outside?
+  const codeBlockContainerPath = ReactEditor.findPath(editor, element);
 
-  const plugins = [CodeBlockPlugin(options)];
+  // FIXME: This is incorrect
 
-  const withPlugins = [
-    withReact,
-    withHistory,
-    withInlineVoid({ plugins }),
-  ] as const;
+  const onChange = useCallback(
+    (e, _editor) => {
+      Transforms.setNodes(_editor, { value }, { at: codeBlockContainerPath });
+    },
+    // FIXME: This is incorrect
+    [codeBlockContainerPath]
+  );
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-  // FIXME: Is this the right approach? Best way to get the codeBlockContainer path and value here?
-  // FIXME: Where do I pass the child editor
-
-  const onChange = useCallback(editor: Editor, value: any) => {
-    Transforms.setNodes(editor, {value}, {at: codeBlockContainerPath})
-  }
-
+  // FIXME: Is this correct (onChange), if so what should the type be for event
   return (
     <div {...attributes} contentEditable={false}>
-      <EditorChild onChange={(event) => onChange(editor, event.target.value)} initialValue={element.value} />
+      <EditorChild
+        onChange={(event) => onChange(editor, event.target.value)}
+        initialValue={element.value}
+      />
     </div>
   );
 };

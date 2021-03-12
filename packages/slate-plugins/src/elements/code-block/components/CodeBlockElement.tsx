@@ -29,12 +29,7 @@ export const CodeBlockElementBase = ({
   });
 
   return (
-    <pre
-      {...attributes}
-      contentEditable
-      className={classNames.root}
-      {...htmlAttributes}
-    >
+    <pre {...attributes} className={classNames.root} {...htmlAttributes}>
       <code>{children}</code>
     </pre>
   );
