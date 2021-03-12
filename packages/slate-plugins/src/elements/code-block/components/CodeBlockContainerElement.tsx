@@ -1,45 +1,31 @@
 import * as React from 'react';
-import { useCallback, useMemo } from 'react';
-import { createEditor, Editor, Transforms } from 'slate';
-import { withHistory } from 'slate-history';
-import {
-  ReactEditor,
-  RenderElementProps,
-  useEditor,
-  withReact,
-} from 'slate-react';
-import { pipe, withInlineVoid } from '../../../common';
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
+import { useCallback } from 'react';
+import { Transforms } from 'slate';
+import { ReactEditor, RenderElementProps, useEditor } from 'slate-react';
 import { EditorChild } from './EditorChild';
 
 export const CodeBlockContainerElement = ({
   attributes,
-  children,
   element,
 }: RenderElementProps) => {
   const editor = useEditor();
 
   // FIXME handle non-default options once working
 
-  const codeBlockContainerPath = ReactEditor.findPath(editor, element);
-
-  // FIXME: This is incorrect
-
   const onChange = useCallback(
-    (e, _editor) => {
-      Transforms.setNodes(_editor, { value }, { at: codeBlockContainerPath });
+    (value) => {
+      Transforms.setNodes(
+        editor,
+        { children: value },
+        { at: ReactEditor.findPath(editor, element) }
+      );
     },
-    // FIXME: This is incorrect
-    [codeBlockContainerPath]
+    [editor, element]
   );
 
-  // FIXME: Is this correct (onChange), if so what should the type be for event
   return (
     <div {...attributes} contentEditable={false}>
-      <EditorChild
-        onChange={(event) => onChange(editor, event.target.value)}
-        initialValue={element.value}
-      />
+      <EditorChild onChange={onChange} initialValue={element.children} />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { Node } from 'slate';
 import { RenderElementProps } from 'slate-react';
 import {
   Deserialize,
@@ -10,6 +11,7 @@ import {
   RenderNodePropsOptions,
   RootProps,
 } from '../../common/types/PluginOptions.types';
+import { SlateProps } from '../../common/types/Slate.types';
 
 // Data of Element node
 export interface CodeBlockNodeData {}
@@ -267,3 +269,8 @@ export interface CodeBlockContainerNormalizerOptions
     WithCodeBlockContainerOptions,
     'validCodeBlockContainerChildrenTypes'
   > {}
+
+export interface EditorChildProps {
+  onChange?: SlateProps['onChange'];
+  initialValue?: Node[];
+}
