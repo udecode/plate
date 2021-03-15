@@ -7,12 +7,14 @@ import { Slate, withReact } from 'slate-react';
 import { pipe, SlateDocument } from '../../../common';
 import { CodeBlockPlugin } from '../CodeBlockPlugin';
 import { EditorChildProps } from '../types';
+import { withCodeBlock } from '../withCodeBlock';
 
 const plugins = [CodeBlockPlugin];
 
-const withPlugins = [withReact, withHistory] as const;
+// FIXME: pass options into withCodeBlock
+const withPlugins = [withReact, withHistory, withCodeBlock()] as const;
 
-export const EditorChild = ({ initialValue }: EditorChildProps) => {
+export const EditorChild = ({ initialValue, onChange }: EditorChildProps) => {
   const [value, setValue] = useState(initialValue);
 
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
@@ -21,7 +23,10 @@ export const EditorChild = ({ initialValue }: EditorChildProps) => {
     <Slate
       editor={editor}
       value={value!}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
+      onChange={(newValue) => {
+        setValue(newValue as SlateDocument);
+        onChange?.(newValue);
+      }}
     >
       <EditablePlugins plugins={plugins} autoFocus />
     </Slate>
