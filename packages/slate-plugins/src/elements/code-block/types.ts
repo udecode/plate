@@ -283,6 +283,6 @@ export interface CodeBlockContainerNormalizerOptions
   > {}
 
 export interface EditorChildProps {
-  onChange?: SlateProps['onChange'];
-  initialValue?: Node[];
+  initialValue: Node[];
+  onChange: SlateProps['onChange'];
 }

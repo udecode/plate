@@ -4,7 +4,7 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { FormatQuote, LooksOne, LooksTwo } from '@styled-icons/material';
 import {
   BlockquotePlugin,
-  CodeBlockPlugin,
+  CodeBlockContainerPlugin,
   CodePlugin,
   EditablePlugins,
   ExitBreakPlugin,
@@ -42,7 +42,6 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
-  withCodeBlock(options),
   withTrailingNode({ type: options.p.type }),
 ] as const;
 
@@ -50,7 +49,7 @@ export const BlockPlugins = () => {
   const plugins: SlatePlugin[] = [
     ParagraphPlugin(options),
     HeadingPlugin(options),
-    CodeBlockPlugin(options),
+    CodeBlockContainerPlugin(options),
     BlockquotePlugin(options),
     CodePlugin(options),
     ListPlugin(options),

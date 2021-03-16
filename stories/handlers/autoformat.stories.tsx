@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  CodeBlockPlugin,
+  CodeBlockContainerPlugin,
   CodePlugin,
   EditablePlugins,
   ExitBreakPlugin,
@@ -16,7 +16,6 @@ import {
   SoftBreakPlugin,
   StrikethroughPlugin,
   withAutoformat,
-  withCodeBlock,
   withList,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
@@ -39,7 +38,6 @@ const withPlugins = [
   withReact,
   withHistory,
   withList(options),
-  withCodeBlock(options),
   withAutoformat({
     rules: autoformatRules,
   }),
@@ -55,7 +53,7 @@ export const Example = () => {
     BlockquotePlugin(options),
     ListPlugin(options),
     HeadingPlugin(options),
-    CodeBlockPlugin(options),
+    CodeBlockContainerPlugin(options),
     ResetBlockTypePlugin(optionsResetBlockTypes),
     SoftBreakPlugin({
       rules: [

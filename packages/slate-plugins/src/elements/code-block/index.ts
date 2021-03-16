@@ -11,4 +11,3 @@ export * from './renderLeafCodeBlock';
 export * from './transforms';
 export * from './types';
 export * from './withCodeBlock';
-export * from './withCodeBlockContainer';

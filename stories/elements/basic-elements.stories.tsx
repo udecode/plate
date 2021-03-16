@@ -14,7 +14,6 @@ import {
 import {
   BlockquotePlugin,
   CodeBlockContainerPlugin,
-  CodeBlockPlugin,
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
@@ -25,11 +24,8 @@ import {
   SlateDocument,
   SlatePlugin,
   SoftBreakPlugin,
-  ToolbarCodeBlock,
   ToolbarCodeBlockContainer,
   ToolbarElement,
-  withCodeBlock,
-  withCodeBlockContainer,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -51,19 +47,13 @@ export default {
   },
 };
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withCodeBlock(options),
-  withCodeBlockContainer(options),
-] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [];
   if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin(options));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
   if (boolean('CodeBlockContainerPlugin', true))
     plugins.push(CodeBlockContainerPlugin(options));
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
@@ -130,11 +120,7 @@ export const Example = () => {
             type={options.blockquote.type}
             icon={<FormatQuote />}
           />
-          <ToolbarCodeBlockContainer
-            type={options.code_block_container.type}
-            icon={<CodeBlock />}
-            options={options}
-          />
+          <ToolbarCodeBlockContainer icon={<CodeBlock />} options={options} />
         </HeadingToolbar>
         <EditablePlugins
           plugins={plugins}

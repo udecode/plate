@@ -35,8 +35,7 @@ import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignP
 import { ToolbarAlign } from '../../../../slate-plugins/src/elements/align/components/ToolbarAlign';
 import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
 import { BlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/BlockquotePlugin';
-import { CodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockPlugin';
-import { withCodeBlock } from '../../../../slate-plugins/src/elements/code-block/withCodeBlock';
+import { CodeBlockContainerPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockContainerPlugin';
 import { HeadingPlugin } from '../../../../slate-plugins/src/elements/heading/HeadingPlugin';
 import { ToolbarImage } from '../../../../slate-plugins/src/elements/image/components/ToolbarImage';
 import { withImageUpload } from '../../../../slate-plugins/src/elements/image/image-upload/withImageUpload';
@@ -102,7 +101,7 @@ const plugins = [
   ParagraphPlugin(options),
   TablePlugin(options),
   MediaEmbedPlugin(options),
-  CodeBlockPlugin(options),
+  CodeBlockContainerPlugin(options),
   AlignPlugin(options),
   BoldPlugin(options),
   BoldPlugin(),
@@ -148,7 +147,6 @@ const withPlugins = [
   withHistory,
   withTable(options),
   withLink(),
-  withCodeBlock(options),
   withDeserializeHTML({ plugins }),
   withImageUpload(),
   withAutoformat({ rules: autoformatRulesFixtures }),

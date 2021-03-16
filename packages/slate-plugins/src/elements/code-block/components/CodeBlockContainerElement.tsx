@@ -23,9 +23,13 @@ export const CodeBlockContainerElement = ({
     [editor, element]
   );
 
+  // FIXME: use options
   return (
     <div {...attributes} contentEditable={false}>
-      <EditorChild onChange={onChange} initialValue={element.children} />
+      <EditorChild
+        onChange={onChange}
+        initialValue={[{ type: 'code_block', children: element.children }]}
+      />
     </div>
   );
 };

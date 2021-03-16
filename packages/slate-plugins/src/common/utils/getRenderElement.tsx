@@ -60,6 +60,7 @@ export const getRenderElements = (options: GetRenderElementOptions[]) => ({
       const htmlAttributes =
         nodeToProps?.({ attributes, element, children, rootProps }) ??
         element?.attributes;
+
       return (
         <Component
           attributes={attributes}

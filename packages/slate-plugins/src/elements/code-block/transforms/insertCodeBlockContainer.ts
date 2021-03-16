@@ -60,12 +60,7 @@ export const insertCodeBlockContainer = (
     editor,
     {
       type: code_block_container.type,
-      children: [
-        {
-          type: code_block.type,
-          children: [],
-        },
-      ],
+      children: [],
     },
     options
   );

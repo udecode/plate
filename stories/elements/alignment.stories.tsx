@@ -9,7 +9,7 @@ import {
 import {
   AlignPlugin,
   BlockquotePlugin,
-  CodeBlockPlugin,
+  CodeBlockContainerPlugin,
   EditablePlugins,
   ExitBreakPlugin,
   HeadingPlugin,
@@ -21,7 +21,6 @@ import {
   SlatePlugin,
   SoftBreakPlugin,
   ToolbarAlign,
-  withCodeBlock,
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -38,13 +37,12 @@ export default {
   subcomponents: {
     AlignPlugin,
     BlockquotePlugin,
-    CodeBlockPlugin,
     HeadingPlugin,
     ParagraphPlugin,
   },
 };
 
-const withPlugins = [withReact, withHistory, withCodeBlock(options)] as const;
+const withPlugins = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [ResetBlockTypePlugin(optionsResetBlockTypes)];
@@ -53,7 +51,8 @@ export const Example = () => {
   if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
   if (boolean('BlockquotePlugin', true))
     plugins.push(BlockquotePlugin(options));
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('CodeBlockContainerPlugin', true))
+    plugins.push(CodeBlockContainerPlugin(options));
   if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin(options));
   if (boolean('SoftBreakPlugin', true))
     plugins.push(

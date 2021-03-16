@@ -4,7 +4,10 @@ import { getHtmlDocument } from '../../../../__test-utils__/getHtmlDocument';
 import { jsx } from '../../../../__test-utils__/jsx';
 import { AlignPlugin } from '../../../../elements/align/AlignPlugin';
 import { BlockquotePlugin } from '../../../../elements/blockquote/index';
-import { CodeBlockPlugin } from '../../../../elements/code-block/index';
+import {
+  CodeBlockContainerPlugin,
+  CodeBlockPlugin,
+} from '../../../../elements/code-block/index';
 import { HeadingPlugin } from '../../../../elements/heading/index';
 import { ImagePlugin } from '../../../../elements/image/index';
 import { LinkPlugin } from '../../../../elements/link/index';
@@ -79,7 +82,7 @@ const input1 = [
   ListPlugin(),
   MentionPlugin(),
   ParagraphPlugin(),
-  CodeBlockPlugin(),
+  CodeBlockContainerPlugin(),
   TablePlugin(),
   MediaEmbedPlugin(),
   SearchHighlightPlugin(),

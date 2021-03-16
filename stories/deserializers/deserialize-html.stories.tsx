@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   BlockquotePlugin,
   BoldPlugin,
-  CodeBlockPlugin,
+  CodeBlockContainerPlugin,
   CodePlugin,
   EditablePlugins,
   HeadingPlugin,
@@ -23,7 +23,6 @@ import {
   TablePlugin,
   TodoListPlugin,
   UnderlinePlugin,
-  withCodeBlock,
   withDeserializeHTML,
   withImageUpload,
   withInlineVoid,
@@ -44,7 +43,7 @@ export default {
 const plugins = [
   ParagraphPlugin(options),
   BlockquotePlugin(options),
-  CodeBlockPlugin(options),
+  CodeBlockContainerPlugin(options),
   HeadingPlugin(options),
   ImagePlugin(options),
   LinkPlugin(options),
@@ -69,7 +68,6 @@ const withPlugins = [
   withHistory,
   withTable(options),
   withLink(options),
-  withCodeBlock(options),
   withList(options),
   withDeserializeHTML({ plugins }),
   withImageUpload(),

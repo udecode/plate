@@ -31,7 +31,7 @@ import {
   BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
-  CodeBlockPlugin,
+  CodeBlockContainerPlugin,
   CodePlugin,
   decorateSearchHighlight,
   EditablePlugins,
@@ -169,7 +169,8 @@ export const Plugins = () => {
   if (boolean('TablePlugin', true)) plugins.push(TablePlugin(options));
   if (boolean('MediaEmbedPlugin', true))
     plugins.push(MediaEmbedPlugin(options));
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin(options));
+  if (boolean('CodeBlockContainerPlugin', true))
+    plugins.push(CodeBlockContainerPlugin(options));
   if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin(options));
   if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin(options));
   if (boolean('CodePlugin', true)) plugins.push(CodePlugin(options));
@@ -232,7 +233,6 @@ export const Plugins = () => {
     withTable(options),
     withLink(),
     withList(options),
-    withCodeBlock(options),
     withDeserializeHTML({ plugins }),
     withMarks(),
     withImageUpload(),
