@@ -1,4 +1,5 @@
 export * from './components';
+export * from './CodeBlockContainerPlugin';
 export * from './CodeBlockPlugin';
 export * from './decorateCodeBlock';
 export * from './defaults';
@@ -10,3 +11,4 @@ export * from './renderLeafCodeBlock';
 export * from './transforms';
 export * from './types';
 export * from './withCodeBlock';
+export * from './withCodeBlockContainer';

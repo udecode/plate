@@ -6,20 +6,20 @@ import {
 } from '../../../common';
 import { DEFAULT_ELEMENT } from '../../../common/types/node.types';
 import {
-  CodeBlockInsertOptions,
+  CodeBlockContainerInsertOptions,
   CodeBlockOptions,
   CodeLineOptions,
 } from '../types';
-import { insertCodeBlock } from './insertCodeBlock';
+import { insertCodeBlockContainer } from './insertCodeBlockContainer';
 
 /**
- * Called by toolbars to make sure a code-block gets inserted below a paragraph
+ * Called by toolbars to make sure a code-block-container gets inserted below a paragraph
  * rather than awkwardly splitting the current selection.
  */
-export const insertEmptyCodeBlock = (
+export const insertEmptyCodeBlockContainer = (
   editor: Editor,
   options: Omit<InsertNodesOptions, 'match'> = {},
-  pluginsOptions: CodeBlockInsertOptions &
+  pluginsOptions: CodeBlockContainerInsertOptions &
     CodeBlockOptions &
     CodeLineOptions = {}
 ) => {
@@ -40,5 +40,5 @@ export const insertEmptyCodeBlock = (
       }
     );
   }
-  insertCodeBlock(editor, options, pluginsOptions);
+  insertCodeBlockContainer(editor, options, pluginsOptions);
 };

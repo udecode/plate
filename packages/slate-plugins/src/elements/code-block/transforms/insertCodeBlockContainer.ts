@@ -6,26 +6,34 @@ import { wrapNodes } from '../../../common/transforms/wrapNodes';
 import { InsertNodesOptions } from '../../../common/types/Transforms.types';
 import { setDefaults } from '../../../common/utils/setDefaults';
 import { DEFAULTS_CODE_BLOCK } from '../defaults';
-import { CodeBlockOptions, CodeLineOptions } from '../types';
+import {
+  CodeBlockContainerOptions,
+  CodeBlockOptions,
+  CodeLineOptions,
+} from '../types';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
-export const insertCodeBlock = (
+export const insertCodeBlockContainer = (
   editor: Editor,
   options: Omit<InsertNodesOptions, 'match'> = {},
-  pluginsOptions: CodeBlockOptions & CodeLineOptions = {}
+  pluginsOptions: CodeBlockOptions &
+    CodeBlockContainerOptions &
+    CodeLineOptions = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 
-  const { code_line, code_block } = setDefaults(
+  const { code_line, code_block, code_block_container } = setDefaults(
     pluginsOptions,
     DEFAULTS_CODE_BLOCK
   );
 
   const matchCodeElements = (node: Node) =>
-    node.type === code_block.type || node.type === code_line.type;
+    node.type === code_block.type ||
+    node.type === code_line.type ||
+    node.type === code_block_container.type;
 
   if (
     someNode(editor, {
@@ -51,8 +59,13 @@ export const insertCodeBlock = (
   wrapNodes(
     editor,
     {
-      type: code_block.type,
-      children: [],
+      type: code_block_container.type,
+      children: [
+        {
+          type: code_block.type,
+          children: [],
+        },
+      ],
     },
     options
   );

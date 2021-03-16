@@ -817,26 +817,21 @@ export const initialValueBasicElements: SlateDocument = [
         children: [{ text: 'Blockquote' }],
       },
       {
-        type: options.code_block_container.type,
+        type: options.code_block.type,
         children: [
           {
-            type: options.code_block.type,
+            type: options.code_line.type,
             children: [
               {
-                type: options.code_line.type,
-                children: [
-                  {
-                    text: "const a = 'Hello';",
-                  },
-                ],
+                text: "const a = 'Hello';",
               },
+            ],
+          },
+          {
+            type: options.code_line.type,
+            children: [
               {
-                type: options.code_line.type,
-                children: [
-                  {
-                    text: "const b = 'World';",
-                  },
-                ],
+                text: "const b = 'World';",
               },
             ],
           },

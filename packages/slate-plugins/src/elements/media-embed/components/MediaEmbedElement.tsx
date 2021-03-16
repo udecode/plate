@@ -47,7 +47,7 @@ export const MediaEmbedElementBase = ({
             {...htmlAttributes}
           />
         </div>
-
+        <button type="button">do something</button>
         <MediaEmbedUrlInput
           data-testid="MediaEmbedUrlInput"
           className={classNames.input}

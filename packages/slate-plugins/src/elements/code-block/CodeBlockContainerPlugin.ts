@@ -10,7 +10,7 @@ import {
   CodeBlockPluginOptions,
 } from './types';
 
-export const CodeBlockPlugin = (
+export const CodeBlockContainerPlugin = (
   options?: CodeBlockPluginOptions & CodeBlockContainerPluginOptions
 ): SlatePlugin => {
   const { code_block_container } = setDefaults(options, DEFAULTS_CODE_BLOCK);
