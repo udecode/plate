@@ -3,9 +3,11 @@ import {
   isCollapsed,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
+import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
+import { ELEMENT_LI } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';
 import { hasListChild } from '../queries/hasListChild';
 import { removeFirstListItem } from './removeFirstListItem';
@@ -14,12 +16,9 @@ import { unwrapList } from './unwrapList';
 
 export const deleteBackwardList = (
   editor: Editor,
-  unit: 'character' | 'word' | 'line' | 'block',
-  options: SlatePluginsOptions
+  unit: 'character' | 'word' | 'line' | 'block'
 ) => {
-  const { p, li } = options;
-
-  const res = getListItemEntry(editor, {}, options);
+  const res = getListItemEntry(editor, {});
 
   if (res) {
     const { list, listItem } = res;
@@ -29,10 +28,10 @@ export const deleteBackwardList = (
       let moved: boolean | undefined;
 
       Editor.withoutNormalizing(editor, () => {
-        moved = removeFirstListItem(editor, { list, listItem }, options);
+        moved = removeFirstListItem(editor, { list, listItem });
         if (moved) return;
 
-        moved = removeListItem(editor, { list, listItem }, options);
+        moved = removeListItem(editor, { list, listItem });
 
         if (!moved) {
           deleteFragment(editor, {
@@ -43,21 +42,21 @@ export const deleteBackwardList = (
 
         moved = true;
 
-        // moved = moveListItemUp(editor, { list, listItem }, options);
+        // moved = moveListItemUp(editor, { list, listItem });
       });
 
       if (moved) return true;
     }
 
-    if (hasListChild(listItemNode, options) && isCollapsed(editor.selection)) {
+    if (hasListChild(editor, listItemNode) && isCollapsed(editor.selection)) {
       return;
     }
   }
 
   const resetBlockTypesListRule = {
-    types: [li.type],
-    defaultType: p.type,
-    onReset: (_editor: Editor) => unwrapList(_editor, options),
+    types: [getPluginType(editor, ELEMENT_LI)],
+    defaultType: getPluginType(editor, ELEMENT_PARAGRAPH),
+    onReset: (_editor: Editor) => unwrapList(_editor),
   };
 
   return onKeyDownResetBlockType({

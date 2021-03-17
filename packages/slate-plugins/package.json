@@ -21,7 +21,9 @@
   "scripts": {
     "cti": "sh ../../cti.sh below",
     "prebuild": "rimraf dist",
-    "build": "rollup -c=../../rollup.config.js"
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../rollup.config.js"
   },
   "dependencies": {
     "@udecode/slate-plugins-common": "^0.75.0",

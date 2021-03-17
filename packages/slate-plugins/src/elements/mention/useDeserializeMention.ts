@@ -2,11 +2,14 @@ import {
   getNodeDeserializer,
   getSlateClass,
 } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_MENTION } from './defaults';
 
 export const useDeserializeMention = (): DeserializeHtml => {
-  const options = useEditorOptions(ELEMENT_MENTION);
+  const options = useEditorPluginOptions(ELEMENT_MENTION);
 
   return {
     element: getNodeDeserializer({

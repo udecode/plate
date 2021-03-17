@@ -52,7 +52,7 @@ export default {
   },
 };
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 export const All = () => {
   const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
@@ -70,7 +70,7 @@ export const All = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueBasicMarks}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />

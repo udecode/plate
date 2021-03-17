@@ -5,30 +5,30 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
+import { ELEMENT_LI } from '../defaults';
 import { getHighestEmptyList } from '../queries/getHighestEmptyList';
 import { hasListChild } from '../queries/hasListChild';
 import { isAcrossListItems } from '../queries/isAcrossListItems';
 
-export const deleteFragmentList = (
-  editor: Editor,
-  options: SlatePluginsOptions
-) => {
-  const { li } = options;
+export const deleteFragmentList = (editor: Editor) => {
   let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {
     // Selection should be across list items
-    if (!isAcrossListItems(editor, options)) return;
+    if (!isAcrossListItems(editor)) return;
 
     /**
      * Check if the end li can be deleted (if it has no sublist).
      * Store the path ref to delete it after deleteFragment.
      */
     const end = Editor.end(editor, editor.selection as Range);
-    const liEnd = getAbove(editor, { at: end, match: { type: li.type } });
-    const liEndCanBeDeleted = liEnd && !hasListChild(liEnd[0], options);
+    const liEnd = getAbove(editor, {
+      at: end,
+      match: { type: getPluginType(editor, ELEMENT_LI) },
+    });
+    const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
     const liEndPathRef = liEndCanBeDeleted
       ? Editor.pathRef(editor, liEnd![1])
       : undefined;
@@ -57,21 +57,20 @@ export const deleteFragmentList = (
     });
 
     const start = Editor.start(editor, editor.selection as Range);
-    const liStart = getAbove(editor, { at: start, match: { type: li.type } });
+    const liStart = getAbove(editor, {
+      at: start,
+      match: { type: getPluginType(editor, ELEMENT_LI) },
+    });
 
     if (liEndPathRef) {
       const liEndPath = liEndPathRef.unref()!;
 
       const listStart = liStart && getParent(editor, liStart[1]);
 
-      const deletePath = getHighestEmptyList(
-        editor,
-        {
-          liPath: liEndPath,
-          diffListPath: listStart?.[1],
-        },
-        options
-      );
+      const deletePath = getHighestEmptyList(editor, {
+        liPath: liEndPath,
+        diffListPath: listStart?.[1],
+      });
 
       if (deletePath) {
         Transforms.removeNodes(editor, { at: deletePath });

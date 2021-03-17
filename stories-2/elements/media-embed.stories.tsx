@@ -25,7 +25,7 @@ export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
   if (boolean('MediaEmbedPlugin', true)) plugins.push(MediaEmbedPlugin());
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withInlineVoid({ plugins }),
@@ -37,7 +37,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueEmbeds}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <EditablePlugins
           plugins={plugins}

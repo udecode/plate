@@ -1,9 +1,12 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_BLOCKQUOTE } from './defaults';
 
 export const useDeserializeBlockquote = (): DeserializeHtml => {
-  const options = useEditorOptions(ELEMENT_BLOCKQUOTE);
+  const options = useEditorPluginOptions(ELEMENT_BLOCKQUOTE);
 
   return {
     element: getElementDeserializer({

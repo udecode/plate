@@ -20,7 +20,7 @@ export default {
   component: SearchHighlightPlugin,
 };
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 export const Example = () => {
   const plugins: any[] = [ParagraphPlugin()];
@@ -40,7 +40,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueSearchHighlighting}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <EditablePlugins

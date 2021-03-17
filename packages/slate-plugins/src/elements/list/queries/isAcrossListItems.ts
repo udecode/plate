@@ -3,18 +3,14 @@ import {
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
+import { ELEMENT_LI } from '../defaults';
 
 /**
  * Is selection across blocks with list items
  */
-export const isAcrossListItems = (
-  editor: Editor,
-  options: SlatePluginsOptions
-) => {
-  const { li } = options;
-
+export const isAcrossListItems = (editor: Editor) => {
   const { selection } = editor;
 
   if (!selection || isCollapsed(selection)) {
@@ -24,5 +20,7 @@ export const isAcrossListItems = (
   const isAcrossBlocks = isRangeAcrossBlocks(editor);
   if (!isAcrossBlocks) return false;
 
-  return someNode(editor, { match: { type: li.type } });
+  return someNode(editor, {
+    match: { type: getPluginType(editor, ELEMENT_LI) },
+  });
 };

@@ -1,9 +1,12 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { MARK_UNDERLINE } from './defaults';
 
 export const useDeserializeUnderline = (): DeserializeHtml => {
-  const options = useEditorOptions(MARK_UNDERLINE);
+  const options = useEditorPluginOptions(MARK_UNDERLINE);
 
   return {
     leaf: getLeafDeserializer({

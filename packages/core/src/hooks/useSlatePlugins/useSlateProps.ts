@@ -6,7 +6,7 @@ import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { useSlatePluginsValue } from '../../store/useSlatePluginsValue';
 import { SlateProps } from '../../types/SlateProps';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
-import { RandomKeyEditor } from '../../with/randomKeyEditor';
+import { SlatePluginsEditor } from '../../with/withSlatePlugins';
 
 /**
  * Get Slate props stored in a global store.
@@ -16,7 +16,7 @@ export const useSlateProps = ({
   onChange: controlledOnChange,
 }: UseSlatePropsOptions = {}): (() => Omit<SlateProps, 'children'>) => {
   const { setValue } = useSlatePluginsActions(id);
-  const editor = useSlatePluginsEditor<ReactEditor & RandomKeyEditor>(id);
+  const editor = useSlatePluginsEditor<ReactEditor & SlatePluginsEditor>(id);
   const value = useSlatePluginsValue(id);
 
   const onChange = useMemo(() => {

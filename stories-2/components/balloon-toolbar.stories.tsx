@@ -39,7 +39,7 @@ const plugins = [
   ListPlugin(options),
 ];
 
-const withPlugins = [withReact, withHistory, withList(options)] as const;
+const withOverrides = [withReact, withHistory, withList(options)] as const;
 
 export const Example = () => {
   const arrow = boolean('arrow', false);
@@ -63,7 +63,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValueBalloonToolbar}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <BalloonToolbar
         direction={direction}

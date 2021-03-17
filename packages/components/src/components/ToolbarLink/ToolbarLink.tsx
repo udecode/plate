@@ -2,20 +2,20 @@ import * as React from 'react';
 import {
   ELEMENT_LINK,
   getAbove,
+  getPluginType,
   isCollapsed,
   someNode,
   unwrapNodes,
   upsertLinkAtSelection,
-  useEditorOptions,
 } from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
 export const ToolbarLink = (props: ToolbarButtonProps) => {
-  const a = useEditorOptions(ELEMENT_LINK);
   const editor = useSlate();
-  const isLink = someNode(editor, { match: { type: a.type } });
+  const type = getPluginType(editor, ELEMENT_LINK);
+  const isLink = someNode(editor, { match: { type } });
 
   return (
     <ToolbarButton
@@ -25,7 +25,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
         let prevUrl = '';
 
         const linkNode = getAbove(editor, {
-          match: { type: a.type },
+          match: { type },
         });
         if (linkNode) {
           prevUrl = linkNode[0].url as string;
@@ -36,7 +36,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
             editor.selection &&
             unwrapNodes(editor, {
               at: editor.selection,
-              match: { type: a.type },
+              match: { type: getPluginType(editor, ELEMENT_LINK) },
             });
 
           return;
@@ -45,7 +45,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
         // If our cursor is in middle of a link, then we don't want to inser it inline
         const shouldWrap: boolean =
           linkNode !== undefined && isCollapsed(editor.selection);
-        upsertLinkAtSelection(editor, { url, wrap: shouldWrap }, { a });
+        upsertLinkAtSelection(editor, { url, wrap: shouldWrap });
       }}
       {...props}
     />

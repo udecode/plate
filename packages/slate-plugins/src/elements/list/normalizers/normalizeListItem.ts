@@ -1,6 +1,8 @@
 import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
+import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
 
 /**
@@ -12,15 +14,12 @@ export const normalizeListItem = (
   {
     nodeEntry,
     validLiChildrenTypes = [],
-  }: { nodeEntry: NodeEntry } & ListNormalizerOptions,
-  options: SlatePluginsOptions
+  }: { nodeEntry: NodeEntry } & ListNormalizerOptions
 ) => {
-  const { p, ul, ol } = options;
-
   const allValidLiChildrenTypes = [
-    ul.type,
-    ol.type,
-    p.type,
+    getPluginType(editor, ELEMENT_UL),
+    getPluginType(editor, ELEMENT_OL),
+    getPluginType(editor, ELEMENT_PARAGRAPH),
     ...validLiChildrenTypes,
   ];
 
@@ -29,7 +28,9 @@ export const normalizeListItem = (
   const firstChild: Node = (listItemNode.children as Node[])?.[0];
 
   if (!firstChild) {
-    insertEmptyElement(editor, p.type, { at: firstChildPath });
+    insertEmptyElement(editor, getPluginType(editor, ELEMENT_PARAGRAPH), {
+      at: firstChildPath,
+    });
     return true;
   }
 
@@ -42,8 +43,10 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a <p> tag as a first element
-  if (firstChild.type !== p.type) {
-    insertEmptyElement(editor, p.type, { at: firstChildPath });
+  if (firstChild.type !== getPluginType(editor, ELEMENT_PARAGRAPH)) {
+    insertEmptyElement(editor, getPluginType(editor, ELEMENT_PARAGRAPH), {
+      at: firstChildPath,
+    });
   }
 
   // Ensure that any text nodes under the list are inside the <p>

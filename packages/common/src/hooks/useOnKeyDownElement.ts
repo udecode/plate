@@ -1,27 +1,27 @@
 import {
-  useEditorMultiOptions,
   useEditorOptions,
-  useEditorType,
+  useEditorPluginOptions,
+  useEditorPluginType,
 } from '@udecode/slate-plugins-core';
 import { DEFAULT_ELEMENT } from '../types/node.types';
 import { getOnKeyDownElement } from '../utils/getOnKeyDownElement';
 
 export const useOnKeyDownElement = (pluginKey: string) => {
-  const options = useEditorOptions(pluginKey);
+  const options = useEditorPluginOptions(pluginKey);
 
   return getOnKeyDownElement({
     ...options,
-    defaultType: useEditorType(DEFAULT_ELEMENT),
+    defaultType: useEditorPluginType(DEFAULT_ELEMENT),
   });
 };
 
 export const useOnKeyDownElements = (pluginKeys: string[]) => {
-  const optionsByKey = useEditorMultiOptions(pluginKeys);
-  const defaultType = useEditorType(DEFAULT_ELEMENT);
+  const options = useEditorOptions();
+  const defaultType = useEditorPluginType(DEFAULT_ELEMENT);
 
-  const opt = Object.values(optionsByKey).map((options) => {
+  const opt = pluginKeys.map((key) => {
     return {
-      ...options,
+      ...options[key],
       defaultType,
     };
   });

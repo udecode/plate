@@ -41,7 +41,7 @@ export default {
   component: SoftBreakPlugin,
 };
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withList({}, options),
@@ -69,7 +69,7 @@ export const BlockPlugins = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueSoftBreak}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />

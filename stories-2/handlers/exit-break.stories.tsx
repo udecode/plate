@@ -41,7 +41,7 @@ export default {
   component: ExitBreakPlugin,
 };
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withList({}, options),
@@ -70,7 +70,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueExitBreak}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarElement type={options.h1.type} icon={<LooksOne />} />

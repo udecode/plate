@@ -3,21 +3,21 @@ import {
   getParent,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
+import { ELEMENT_LI } from '../defaults';
 
 /**
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (
-  editor: Editor,
-  options: SlatePluginsOptions
-) => {
-  const { p, li } = options;
+export const insertListItem = (editor: Editor) => {
+  const liType = getPluginType(editor, ELEMENT_LI);
+  const pType = getPluginType(editor, ELEMENT_PARAGRAPH);
 
   if (editor.selection) {
-    const paragraphEntry = getAbove(editor, { match: { type: p.type } });
+    const paragraphEntry = getAbove(editor, { match: { type: pType } });
     if (!paragraphEntry) return;
     const [, paragraphPath] = paragraphEntry;
 
@@ -25,7 +25,7 @@ export const insertListItem = (
     if (!listItemEntry) return;
     const [listItemNode, listItemPath] = listItemEntry;
 
-    if (listItemNode.type !== li.type) return;
+    if (listItemNode.type !== liType) return;
 
     if (!Range.isCollapsed(editor.selection)) {
       Transforms.delete(editor);
@@ -48,8 +48,8 @@ export const insertListItem = (
       Transforms.insertNodes(
         editor,
         {
-          type: li.type,
-          children: [{ type: p.type, children: [{ text: '' }] }],
+          type: liType,
+          children: [{ type: pType, children: [{ text: '' }] }],
         },
         { at: listItemPath }
       );
@@ -65,7 +65,7 @@ export const insertListItem = (
         Transforms.wrapNodes(
           editor,
           {
-            type: li.type,
+            type: liType,
             children: [],
           },
           { at: nextParagraphPath }
@@ -87,8 +87,8 @@ export const insertListItem = (
       Transforms.insertNodes(
         editor,
         {
-          type: li.type,
-          children: [{ type: p.type, children: [{ text: '', ...marks }] }],
+          type: liType,
+          children: [{ type: pType, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );

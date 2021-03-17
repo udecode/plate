@@ -69,7 +69,7 @@ export const Example = () => {
     SoftBreakPlugin(optionsSoftBreak),
   ];
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withTable(options),
@@ -85,7 +85,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValuePasteHtml}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins
         plugins={plugins}

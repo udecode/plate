@@ -37,7 +37,7 @@ export default {
 };
 
 export const Example = () => {
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withList({}, options),
@@ -66,7 +66,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValueAutoformat}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins
         plugins={plugins}

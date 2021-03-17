@@ -2,14 +2,14 @@ import { useCallback } from 'react';
 import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import { RandomKeyEditor } from '../with/randomKeyEditor';
+import { SlatePluginsEditor } from '../with/withSlatePlugins';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 /**
  * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
  */
 export const useSlatePluginsEditor = <
-  TEditor extends Editor = ReactEditor & HistoryEditor & RandomKeyEditor
+  TEditor extends Editor = ReactEditor & HistoryEditor & SlatePluginsEditor
 >(
   id = 'main'
 ) =>

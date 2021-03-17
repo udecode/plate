@@ -1,15 +1,12 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorMultiOptions,
-} from '@udecode/slate-plugins-core';
-import { DEFAULT_HEADING_LEVEL, KEYS_HEADING } from './defaults';
+import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import { DEFAULT_HEADING_LEVEL } from './defaults';
 import { HeadingPluginOptions } from './types';
 
 export const useDeserializeHeading = ({
   levels = DEFAULT_HEADING_LEVEL,
 }: HeadingPluginOptions = {}): DeserializeHtml => {
-  const { h1, h2, h3, h4, h5, h6 } = useEditorMultiOptions(KEYS_HEADING);
+  const { h1, h2, h3, h4, h5, h6 } = useEditorOptions();
 
   let deserializers = getElementDeserializer({
     type: h1.type,

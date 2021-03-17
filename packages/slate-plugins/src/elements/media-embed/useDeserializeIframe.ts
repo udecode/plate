@@ -2,11 +2,14 @@ import {
   getNodeDeserializer,
   getSlateClass,
 } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 
 export const useDeserializeIframe = (): DeserializeHtml => {
-  const options = useEditorOptions(ELEMENT_MEDIA_EMBED);
+  const options = useEditorPluginOptions(ELEMENT_MEDIA_EMBED);
 
   return {
     element: getNodeDeserializer({

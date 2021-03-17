@@ -53,11 +53,7 @@ export default {
   },
 };
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withCodeBlock({}, options),
-] as const;
+const withOverrides = [withReact, withHistory, withCodeBlock()] as const;
 
 const SlateContent = () => {
   const plugins: SlatePlugin[] = [
@@ -113,7 +109,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValueBasicElements}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
       options={slatePluginsOptions}
       components={components}
     >

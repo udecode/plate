@@ -1,12 +1,12 @@
 import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin';
-import { State } from './SlatePluginsStore';
+import { SlatePluginsOptions, State } from './SlatePluginsStore';
 
 /**
  * `useSlatePluginsEffects` options
  */
 export interface UseSlatePluginsEffectsOptions
-  extends Partial<Pick<State, 'editor' | 'options' | 'value'>> {
+  extends Partial<Pick<State, 'editor' | 'value'>> {
   /**
    * Unique id to store multiple editor states. Default is 'main'.
    */
@@ -19,15 +19,17 @@ export interface UseSlatePluginsEffectsOptions
   initialValue?: Node[];
 
   /**
-   * Apply the plugins to the editor singleton.
+   * Apply the overrides to the editor singleton.
    * Default is `[withReact, withHistory, withRandomKey]`.
    */
-  withPlugins?: any;
+  withOverrides?: any;
 
   /**
    * The plugins are applied in the order they are specified.
    */
   plugins?: SlatePlugin[];
+
+  options?: SlatePluginsOptions;
 
   components?: Record<string, any>;
 }

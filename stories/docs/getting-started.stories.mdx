@@ -59,13 +59,13 @@ const initialValue: Node[] = [
 
 const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 export const Editor = () => {
   return (
     <SlatePlugins
       initialValue={initialValue}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins plugins={plugins} editableProps={{ placeholder: 'Enter some text...' }} />
     </Slate>

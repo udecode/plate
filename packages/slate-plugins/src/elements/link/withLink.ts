@@ -7,12 +7,13 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
+import { ELEMENT_LINK } from './defaults';
 import { WithLinkOptions } from './types';
 
 const upsertLink = (
@@ -23,42 +24,30 @@ const upsertLink = (
   }: {
     url: string;
     at: Range;
-  },
-  options: SlatePluginsOptions
+  }
 ) => {
-  const { a } = options;
-
-  unwrapNodes(editor, { at, match: { type: a.type } });
+  unwrapNodes(editor, {
+    at,
+    match: { type: getPluginType(editor, ELEMENT_LINK) },
+  });
 
   const newSelection = editor.selection as Range;
 
-  wrapLink(
-    editor,
-    {
-      at: {
-        ...at,
-        focus: newSelection.focus,
-      },
-      url,
+  wrapLink(editor, {
+    at: {
+      ...at,
+      focus: newSelection.focus,
     },
-    options
-  );
+    url,
+  });
 };
 
-const upsertLinkIfValid = (
-  editor: ReactEditor,
-  { isUrl }: { isUrl: any },
-  options: SlatePluginsOptions
-) => {
+const upsertLinkIfValid = (editor: ReactEditor, { isUrl }: { isUrl: any }) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
 
   if (rangeFromBlockStart && isUrl(textFromBlockStart)) {
-    upsertLink(
-      editor,
-      { url: textFromBlockStart, at: rangeFromBlockStart },
-      options
-    );
+    upsertLink(editor, { url: textFromBlockStart, at: rangeFromBlockStart });
     return true;
   }
 };
@@ -72,27 +61,24 @@ const upsertLinkIfValid = (
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = (
-  {
-    isUrl = isUrlProtocol,
-    rangeBeforeOptions = {
-      matchString: ' ',
-      skipInvalid: true,
-      afterMatch: true,
-      multiPaths: true,
-    },
-  }: WithLinkOptions = {},
-  options: SlatePluginsOptions
-) => <T extends ReactEditor>(editor: T) => {
-  const { a } = options;
-
+export const withLink = ({
+  isUrl = isUrlProtocol,
+  rangeBeforeOptions = {
+    matchString: ' ',
+    skipInvalid: true,
+    afterMatch: true,
+    multiPaths: true,
+  },
+}: WithLinkOptions = {}) => <T extends ReactEditor>(editor: T) => {
   const { insertData, insertText } = editor;
+
+  const type = getPluginType(editor, ELEMENT_LINK);
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
-      if (upsertLinkIfValid(editor, { isUrl }, options)) {
+      if (upsertLinkIfValid(editor, { isUrl })) {
         return insertText(text);
       }
 
@@ -106,11 +92,7 @@ export const withLink = (
         const beforeWordText = getText(editor, beforeWordRange);
 
         if (isUrl(beforeWordText)) {
-          upsertLink(
-            editor,
-            { url: beforeWordText, at: beforeWordRange },
-            options
-          );
+          upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
         }
       }
     }
@@ -122,12 +104,12 @@ export const withLink = (
     const text = data.getData('text/plain');
 
     if (text) {
-      if (someNode(editor, { match: { type: a.type } })) {
+      if (someNode(editor, { match: { type } })) {
         return insertText(text);
       }
 
       if (isUrl(text)) {
-        return upsertLinkAtSelection(editor, { url: text }, { a });
+        return upsertLinkAtSelection(editor, { url: text });
       }
     }
 
@@ -142,7 +124,7 @@ export const withLink = (
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes({ type: a.type })(editor);
+  editor = withRemoveEmptyNodes({ type })(editor);
 
   return editor;
 };

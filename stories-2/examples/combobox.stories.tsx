@@ -47,7 +47,7 @@ const useComboboxOnChange = (editor: Editor) => {
 
 const plugins = [TagPlugin(options)];
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withInlineVoid({ plugins }),
@@ -80,7 +80,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueCombobox}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
           comboboxOnChange();

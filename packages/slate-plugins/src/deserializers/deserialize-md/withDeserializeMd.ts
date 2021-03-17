@@ -1,4 +1,3 @@
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { parseMD } from './utils/parseMD';
@@ -7,18 +6,14 @@ import { parseMD } from './utils/parseMD';
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMd = (options: SlatePluginsOptions) => <
-  T extends ReactEditor
->(
-  editor: T
-) => {
+export const withDeserializeMd = () => <T extends ReactEditor>(editor: T) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
     if (content) {
-      const fragment = parseMD(content, options);
+      const fragment = parseMD(editor, content);
 
       if (!fragment.length) return;
 

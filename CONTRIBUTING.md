@@ -279,12 +279,11 @@ are on the latest versions (yarn at least v1.3.2).
    _bonus_: use your own fork for this step
 3. `cd slate-plugins`
 4. `yarn install`
-5. Build the packages:
-   - If editing the stories only: `yarn build`
-   - If editing the packages source, use the watch mode: `yarn
-     build:w1`, `yarn build:w2`, `yarn build:w3`
-
-7. `yarn storybook`
+5. `yarn build` once
+6. Run storybook:
+   7. If editing package source files, watch both these files and the
+      stories: `yarn storybook:w`
+   8. Otherwise, just watch the stories by running: `yarn storybook`
 
 ### Working with Storybook
 

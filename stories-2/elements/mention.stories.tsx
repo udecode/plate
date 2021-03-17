@@ -39,7 +39,7 @@ const renderLabel = (mentionable: MentionNodeData) => {
 export const Example = () => {
   const plugins = [ParagraphPlugin(), HeadingPlugin(), MentionPlugin()];
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withInlineVoid({ plugins }),
@@ -76,7 +76,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueMentions}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
 

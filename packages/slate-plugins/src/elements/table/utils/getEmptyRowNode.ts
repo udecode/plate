@@ -1,17 +1,17 @@
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
+import { ELEMENT_TR } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from './getEmptyCellNode';
 
 export const getEmptyRowNode = (
-  { header, colCount }: TablePluginOptions & { colCount: number },
-  options: SlatePluginsOptions
+  editor: Editor,
+  { header, colCount }: TablePluginOptions & { colCount: number }
 ) => {
-  const { tr } = options;
-
   return {
-    type: tr.type,
+    type: getPluginType(editor, ELEMENT_TR),
     children: Array(colCount)
       .fill(colCount)
-      .map(() => getEmptyCellNode({ header }, options)),
+      .map(() => getEmptyCellNode(editor, { header })),
   };
 };

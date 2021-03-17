@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {
+  ELEMENT_TABLE,
+  getPluginType,
   getPreventDefaultHandler,
-  KEYS_TABLE,
   someNode,
-  useEditorMultiOptions,
 } from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
@@ -14,19 +14,14 @@ export const ToolbarTable = ({
   header,
   ...props
 }: ToolbarTableProps) => {
-  const options = useEditorMultiOptions(KEYS_TABLE);
-
   const editor = useSlate();
 
   return (
     <ToolbarButton
-      active={someNode(editor, { match: { type: options.table.type } })}
-      onMouseDown={getPreventDefaultHandler(
-        transform,
-        editor,
-        { header },
-        options
-      )}
+      active={someNode(editor, {
+        match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      })}
+      onMouseDown={getPreventDefaultHandler(transform, editor, { header })}
       {...props}
     />
   );

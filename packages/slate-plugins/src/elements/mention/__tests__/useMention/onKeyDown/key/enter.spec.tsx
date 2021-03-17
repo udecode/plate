@@ -31,7 +31,7 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withInlineVoid({
@@ -41,7 +41,7 @@ const withPlugins = [
 ] as const;
 
 it('should go down', () => {
-  const editor = pipe(input, ...withPlugins);
+  const editor = pipe(input, ...withOverrides);
 
   const { result } = renderHook(() => useMention(mentionables));
 

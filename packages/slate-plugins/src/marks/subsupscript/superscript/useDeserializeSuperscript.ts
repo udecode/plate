@@ -1,9 +1,12 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { MARK_SUPERSCRIPT } from '../defaults';
 
 export const useDeserializeSuperscript = (): DeserializeHtml => {
-  const options = useEditorOptions(MARK_SUPERSCRIPT);
+  const options = useEditorPluginOptions(MARK_SUPERSCRIPT);
 
   return {
     leaf: getLeafDeserializer({

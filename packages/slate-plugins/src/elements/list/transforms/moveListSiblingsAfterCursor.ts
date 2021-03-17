@@ -1,5 +1,4 @@
 import { match, moveChildren } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
@@ -11,8 +10,7 @@ export const moveListSiblingsAfterCursor = (
   }: {
     at: Path;
     to: Path;
-  },
-  options: SlatePluginsOptions
+  }
 ): number => {
   const offset = at[at.length - 1];
   at = Path.parent(at);
@@ -20,7 +18,7 @@ export const moveListSiblingsAfterCursor = (
   const listEntry: NodeEntry = [listNode, at];
 
   if (
-    !match(listNode, { type: getListTypes(options) }) ||
+    !match(listNode, { type: getListTypes(editor) }) ||
     Path.isParent(at, to) // avoid moving nodes within its own list
   ) {
     return 0;

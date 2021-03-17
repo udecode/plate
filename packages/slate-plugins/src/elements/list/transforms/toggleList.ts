@@ -1,32 +1,35 @@
 import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
+import { ELEMENT_LI } from '../defaults';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (
   editor: Editor,
-  { typeList }: { typeList: string },
-  options: SlatePluginsOptions
+  { typeList }: { typeList: string }
 ) => {
-  const { p, li } = options;
-
   if (!editor.selection) return;
 
   const isActive = someNode(editor, { match: { type: typeList } });
 
-  unwrapList(editor, options);
+  unwrapList(editor);
 
   Transforms.setNodes(editor, {
-    type: p.type,
+    type: getPluginType(editor, ELEMENT_PARAGRAPH),
   });
 
   if (!isActive) {
     const list = { type: typeList, children: [] };
     wrapNodes(editor, list);
 
-    const nodes = [...getNodes(editor, { match: { type: p.type } })];
+    const nodes = [
+      ...getNodes(editor, {
+        match: { type: getPluginType(editor, ELEMENT_PARAGRAPH) },
+      }),
+    ];
 
-    const listItem = { type: li.type, children: [] };
+    const listItem = { type: getPluginType(editor, ELEMENT_LI), children: [] };
 
     for (const [, path] of nodes) {
       Transforms.wrapNodes(editor, listItem, {

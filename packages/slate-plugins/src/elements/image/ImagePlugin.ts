@@ -1,5 +1,5 @@
 import { useRenderElement } from '@udecode/slate-plugins-common';
-import { SlatePlugin, useEditorType } from '@udecode/slate-plugins-core';
+import { SlatePlugin, useEditorPluginType } from '@udecode/slate-plugins-core';
 import { ELEMENT_IMAGE } from './defaults';
 import { useDeserializeImage } from './useDeserializeImage';
 
@@ -10,5 +10,5 @@ export const ImagePlugin = (): SlatePlugin => ({
   elementKeys: ELEMENT_IMAGE,
   renderElement: useRenderElement(ELEMENT_IMAGE),
   deserialize: useDeserializeImage(),
-  voidTypes: [useEditorType(ELEMENT_IMAGE)],
+  voidTypes: [useEditorPluginType(ELEMENT_IMAGE)],
 });

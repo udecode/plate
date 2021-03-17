@@ -5,8 +5,9 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Node, Transforms } from 'slate';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
@@ -14,15 +15,13 @@ import { Editor, Node, Transforms } from 'slate';
  */
 export const insertCodeBlock = (
   editor: Editor,
-  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {},
-  options: SlatePluginsOptions
+  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
-  const { code_line, code_block } = options;
-
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: Node) =>
-    node.type === code_block.type || node.type === code_line.type;
+    node.type === getPluginType(editor, ELEMENT_CODE_BLOCK) ||
+    node.type === getPluginType(editor, ELEMENT_CODE_LINE);
 
   if (
     someNode(editor, {
@@ -39,7 +38,7 @@ export const insertCodeBlock = (
   Transforms.setNodes(
     editor,
     {
-      type: code_line.type,
+      type: getPluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: '' }],
     },
     insertNodesOptions
@@ -48,7 +47,7 @@ export const insertCodeBlock = (
   wrapNodes(
     editor,
     {
-      type: code_block.type,
+      type: getPluginType(editor, ELEMENT_CODE_BLOCK),
       children: [],
     },
     insertNodesOptions

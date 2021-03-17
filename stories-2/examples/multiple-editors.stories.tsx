@@ -49,21 +49,21 @@ const WrapperEditor = styled.div`
 
 const Editor = ({
   id,
-  withPlugins,
+  withOverrides,
   initialValue,
   plugins,
 }: {
   id?: string;
   initialValue?: Node[];
   plugins?: SlatePlugin[];
-  withPlugins?: any;
+  withOverrides?: any;
 }) => {
   return (
     <WrapperEditor>
       <SlatePlugins
         id={id}
         initialValue={initialValue}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <EditablePlugins
           plugins={plugins}
@@ -91,7 +91,7 @@ export const Example = () => {
 
   const imagePlugins = [ParagraphPlugin(), HeadingPlugin(), ImagePlugin()];
 
-  const imageWithPlugins = [
+  const imagewithOverrides = [
     withReact,
     withHistory,
     withImageUpload({}, options),
@@ -105,7 +105,7 @@ export const Example = () => {
       <Editor
         id="image"
         plugins={imagePlugins}
-        withPlugins={imageWithPlugins}
+        withOverrides={imagewithOverrides}
         initialValue={initialValueImages}
       />
       <Editor id="3" />

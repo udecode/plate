@@ -1,9 +1,12 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { MARK_STRIKETHROUGH } from './defaults';
 
 export const useDeserializeStrikethrough = (): DeserializeHtml => {
-  const options = useEditorOptions(MARK_STRIKETHROUGH);
+  const options = useEditorPluginOptions(MARK_STRIKETHROUGH);
 
   return {
     leaf: getLeafDeserializer({

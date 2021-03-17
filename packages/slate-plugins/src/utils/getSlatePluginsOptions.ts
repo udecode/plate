@@ -1,7 +1,4 @@
-import {
-  SlatePluginOptions,
-  SlatePluginsOptions,
-} from '@udecode/slate-plugins-core';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,

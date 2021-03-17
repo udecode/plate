@@ -1,31 +1,39 @@
 import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (
-  editor: Editor,
-  options: SlatePluginsOptions
-) => {
-  const { code_block, code_line } = options;
-
+export const toggleCodeBlock = (editor: Editor) => {
   if (!editor.selection) return;
 
-  const isActive = someNode(editor, { match: { type: code_block.type } });
+  const isActive = someNode(editor, {
+    match: { type: getPluginType(editor, ELEMENT_CODE_BLOCK) },
+  });
 
-  unwrapCodeBlock(editor, options);
+  unwrapCodeBlock(editor);
 
   Transforms.setNodes(editor, {
-    type: code_line.type,
+    type: getPluginType(editor, ELEMENT_CODE_LINE),
   });
 
   if (!isActive) {
-    const codeBlock = { type: code_block.type, children: [] };
+    const codeBlock = {
+      type: getPluginType(editor, ELEMENT_CODE_BLOCK),
+      children: [],
+    };
     wrapNodes(editor, codeBlock);
 
-    const nodes = [...getNodes(editor, { match: { type: code_line.type } })];
+    const nodes = [
+      ...getNodes(editor, {
+        match: { type: getPluginType(editor, ELEMENT_CODE_LINE) },
+      }),
+    ];
 
-    const codeLine = { type: code_block.type, children: [] };
+    const codeLine = {
+      type: getPluginType(editor, ELEMENT_CODE_BLOCK),
+      children: [],
+    };
 
     for (const [, path] of nodes) {
       // Transforms.wrapNodes(editor, codeLine, {

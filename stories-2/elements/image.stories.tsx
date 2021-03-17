@@ -30,7 +30,7 @@ export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
   if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withImageUpload({}, options),
@@ -43,7 +43,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueImages}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarImage {...options} icon={<Image />} />

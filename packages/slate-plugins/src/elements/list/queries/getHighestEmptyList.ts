@@ -1,6 +1,7 @@
 import { getAbove } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Path } from 'slate';
+import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from './getListTypes';
 
 /**
@@ -19,14 +20,11 @@ export const getHighestEmptyList = (
   }: {
     liPath: Path;
     diffListPath?: Path;
-  },
-  options: SlatePluginsOptions
+  }
 ): Path | undefined => {
-  const { li } = options;
-
   const list = getAbove(editor, {
     at: liPath,
-    match: { type: getListTypes(options) },
+    match: { type: getListTypes(editor) },
   });
   if (!list) return;
   const [listNode, listPath] = list;
@@ -35,16 +33,13 @@ export const getHighestEmptyList = (
     if (listNode.children.length < 2) {
       const liParent = getAbove(editor, {
         at: listPath,
-        match: { type: li.type },
+        match: { type: getPluginType(editor, ELEMENT_LI) },
       });
 
       if (liParent) {
         return (
-          getHighestEmptyList(
-            editor,
-            { liPath: liParent[1], diffListPath },
-            options
-          ) || listPath
+          getHighestEmptyList(editor, { liPath: liParent[1], diffListPath }) ||
+          listPath
         );
       }
     }

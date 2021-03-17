@@ -1,5 +1,5 @@
 import { useRenderElement } from '@udecode/slate-plugins-common';
-import { SlatePlugin, useEditorType } from '@udecode/slate-plugins-core';
+import { SlatePlugin, useEditorPluginType } from '@udecode/slate-plugins-core';
 import { ELEMENT_MENTION } from './defaults';
 import { useDeserializeMention } from './useDeserializeMention';
 
@@ -9,7 +9,7 @@ import { useDeserializeMention } from './useDeserializeMention';
  * component appears with autocompleted suggestions.
  */
 export const MentionPlugin = (): SlatePlugin => {
-  const type = useEditorType(ELEMENT_MENTION);
+  const type = useEditorPluginType(ELEMENT_MENTION);
 
   return {
     elementKeys: ELEMENT_MENTION,

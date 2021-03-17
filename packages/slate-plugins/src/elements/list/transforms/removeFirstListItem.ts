@@ -1,5 +1,4 @@
 import { isFirstChild } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry } from 'slate';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
@@ -15,14 +14,13 @@ export const removeFirstListItem = (
   }: {
     list: NodeEntry<Ancestor>;
     listItem: NodeEntry<Ancestor>;
-  },
-  options: SlatePluginsOptions
+  }
 ) => {
   const [, listPath] = list;
   const [, listItemPath] = listItem;
 
-  if (!isListNested(editor, listPath, options) && isFirstChild(listItemPath)) {
-    moveListItemUp(editor, { list, listItem }, options);
+  if (!isListNested(editor, listPath) && isFirstChild(listItemPath)) {
+    moveListItemUp(editor, { list, listItem });
 
     return true;
   }

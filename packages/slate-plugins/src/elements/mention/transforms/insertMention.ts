@@ -1,5 +1,6 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
+import { ELEMENT_MENTION } from '../defaults';
 import { MentionNode, MentionNodeData } from '../types';
 
 export const insertMention = (
@@ -10,11 +11,10 @@ export const insertMention = (
   }: {
     data: MentionNodeData;
     insertSpaceAfterMention?: boolean;
-  },
-  options: SlatePluginOptions
+  }
 ) => {
   const mentionNode: MentionNode = {
-    type: options.type,
+    type: getPluginType(editor, ELEMENT_MENTION),
     children: [{ text: '' }],
     ...data,
   };

@@ -3,8 +3,10 @@ import {
   getPreviousPath,
   isExpanded,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
+import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -19,14 +21,12 @@ export interface RemoveListItemOptions {
  */
 export const removeListItem = (
   editor: Editor,
-  { list, listItem }: RemoveListItemOptions,
-  options: SlatePluginsOptions
+  { list, listItem }: RemoveListItemOptions
 ) => {
-  const { p, li } = options;
   const [liNode, liPath] = listItem;
 
   // Stop if the list item has no sublist
-  if (isExpanded(editor.selection) || !hasListChild(liNode, options)) {
+  if (isExpanded(editor.selection) || !hasListChild(editor, liNode)) {
     return false;
   }
 
@@ -52,8 +52,13 @@ export const removeListItem = (
     Transforms.insertNodes(
       editor,
       {
-        type: li.type,
-        children: [{ type: p.type, children: [{ text: '' }] }],
+        type: getPluginType(editor, ELEMENT_LI),
+        children: [
+          {
+            type: getPluginType(editor, ELEMENT_PARAGRAPH),
+            children: [{ text: '' }],
+          },
+        ],
       },
       { at: tempLiPath }
     );
@@ -62,14 +67,10 @@ export const removeListItem = (
     const tempLiPathRef = Editor.pathRef(editor, tempLi[1]);
 
     // 2
-    moveListItemSublistItemsToListItemSublist(
-      editor,
-      {
-        fromListItem: listItem,
-        toListItem: tempLi,
-      },
-      options
-    );
+    moveListItemSublistItemsToListItemSublist(editor, {
+      fromListItem: listItem,
+      toListItem: tempLi,
+    });
 
     // 3
     deleteFragment(editor, {
@@ -79,14 +80,10 @@ export const removeListItem = (
     tempLiPath = tempLiPathRef.unref()!;
 
     // 4
-    moveListItemSublistItemsToListItemSublist(
-      editor,
-      {
-        fromListItem: [tempLi[0], tempLiPath],
-        toListItem: previousLi,
-      },
-      options
-    );
+    moveListItemSublistItemsToListItemSublist(editor, {
+      fromListItem: [tempLi[0], tempLiPath],
+      toListItem: previousLi,
+    });
 
     // 5
     Transforms.removeNodes(editor, { at: tempLiPath });
@@ -95,13 +92,9 @@ export const removeListItem = (
   }
 
   // If it's the first li, move the sublist to the parent list
-  moveListItemsToList(
-    editor,
-    {
-      fromListItem: listItem,
-      toList: list,
-      toListIndex: 1,
-    },
-    options
-  );
+  moveListItemsToList(editor, {
+    fromListItem: listItem,
+    toList: list,
+    toListIndex: 1,
+  });
 };

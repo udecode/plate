@@ -1,20 +1,15 @@
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
 import { insertCodeLine } from './transforms/insertCodeLine';
-import { WithCodeBlockOptions } from './types';
 
-export const withCodeBlock = (
-  {}: WithCodeBlockOptions = {},
-  options: SlatePluginsOptions
-) => <T extends ReactEditor>(editor: T) => {
+export const withCodeBlock = () => <T extends ReactEditor>(editor: T) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {
     if (editor.selection) return;
 
-    const res = getCodeLineEntry(editor, {}, options);
+    const res = getCodeLineEntry(editor, {});
     if (!res) return;
 
     const { codeBlock, codeLine } = res;
@@ -22,7 +17,7 @@ export const withCodeBlock = (
       codeBlock,
       codeLine,
     });
-    insertCodeLine(editor, indentDepth, options);
+    insertCodeLine(editor, indentDepth);
 
     return true;
   };

@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {
-  ELEMENT_IMAGE,
-  insertImage,
-  useEditorOptions,
-} from '@udecode/slate-plugins';
+import { insertImage } from '@udecode/slate-plugins';
 import { useEditor } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
@@ -16,8 +12,6 @@ export interface ToolbarImageProps extends ToolbarButtonProps {
 }
 
 export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
-  const options = useEditorOptions(ELEMENT_IMAGE);
-
   const editor = useEditor();
 
   return (
@@ -33,7 +27,7 @@ export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
         }
         if (!url) return;
 
-        insertImage(editor, url, { img: options });
+        insertImage(editor, url);
       }}
       {...props}
     />

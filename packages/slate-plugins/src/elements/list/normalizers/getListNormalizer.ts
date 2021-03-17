@@ -1,6 +1,7 @@
 import { match } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Descendant, Editor, NodeEntry, Transforms } from 'slate';
+import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
@@ -10,26 +11,23 @@ import { normalizeListItem } from './normalizeListItem';
  */
 export const getListNormalizer = (
   editor: Editor,
-  { validLiChildrenTypes }: ListNormalizerOptions,
-  options: SlatePluginsOptions
+  { validLiChildrenTypes }: ListNormalizerOptions
 ) => {
-  const { li } = options;
   const { normalizeNode } = editor;
 
   return ([node, path]: NodeEntry) => {
-    if (match(node, { type: getListTypes(options) })) {
+    if (match(node, { type: getListTypes(editor) })) {
       if (!(node.children as Descendant[]).length) {
         return Transforms.removeNodes(editor, { at: path });
       }
     }
 
-    if (node.type === li.type) {
+    if (node.type === getPluginType(editor, ELEMENT_LI)) {
       if (
-        normalizeListItem(
-          editor,
-          { nodeEntry: [node, path], validLiChildrenTypes },
-          options
-        )
+        normalizeListItem(editor, {
+          nodeEntry: [node, path],
+          validLiChildrenTypes,
+        })
       ) {
         // Tree changed - kick off another normalization
         return;

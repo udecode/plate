@@ -6,12 +6,10 @@ import {
   isPointAtWordEnd,
   isWordAfterTrigger,
 } from '@udecode/slate-plugins-common';
-import { useEditorOptions } from '@udecode/slate-plugins-core';
 import { Editor, Point, Range, Transforms } from 'slate';
 import { insertMention } from './transforms/insertMention';
 import { getNextIndex } from './utils/getNextIndex';
 import { getPreviousIndex } from './utils/getPreviousIndex';
-import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData, UseMentionOptions } from './types';
 
 export const matchesTriggerAndPattern = (
@@ -63,8 +61,6 @@ export const useMention = (
     insertSpaceAfterMention,
   }: UseMentionOptions = {}
 ) => {
-  const options = useEditorOptions(ELEMENT_MENTION);
-
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
   const [search, setSearch] = useState('');
@@ -76,11 +72,11 @@ export const useMention = (
     (editor: Editor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, { data, insertSpaceAfterMention }, options);
+        insertMention(editor, { data, insertSpaceAfterMention });
         return setTargetRange(null);
       }
     },
-    [options, targetRange, insertSpaceAfterMention]
+    [targetRange, insertSpaceAfterMention]
   );
 
   const onKeyDownMention = useCallback(

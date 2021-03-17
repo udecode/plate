@@ -259,7 +259,7 @@ export const Example = () => {
   if (boolean('ExitBreakPlugin', true))
     plugins.push(ExitBreakPlugin(optionsExitBreak));
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withTable(options),
@@ -308,7 +308,7 @@ export const Example = () => {
         <SlatePlugins
           id={id}
           initialValue={initialValue}
-          withPlugins={withPlugins}
+          withOverrides={withOverrides}
           onChange={(newValue) => {
             setValue(newValue as SlateDocument);
 

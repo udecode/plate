@@ -1,6 +1,7 @@
 import { isCollapsed, unwrapNodes } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
+import { ELEMENT_LINK } from '../defaults';
 import { wrapLink } from './wrapLink';
 
 /**
@@ -19,16 +20,15 @@ export const upsertLinkAtSelection = (
      * If true, wrap the link at the location (default: selection) even if the selection is collapsed.
      */
     wrap?: boolean;
-  },
-  options: SlatePluginsOptions
+  }
 ) => {
-  const { a } = options;
-
   if (!editor.selection) return;
+
+  const type = getPluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
     return Transforms.insertNodes(editor, {
-      type: a.type,
+      type,
       url,
       children: [{ text: url }],
     });
@@ -41,9 +41,9 @@ export const upsertLinkAtSelection = (
     Transforms.select(editor, inlinePath);
   }
 
-  unwrapNodes(editor, { at: editor.selection, match: { type: a.type } });
+  unwrapNodes(editor, { at: editor.selection, match: { type } });
 
-  wrapLink(editor, { at: editor.selection, url }, options);
+  wrapLink(editor, { at: editor.selection, url });
 
   Transforms.collapse(editor, { edge: 'end' });
 };

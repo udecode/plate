@@ -1,9 +1,12 @@
 import { getNodeDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_IMAGE } from './defaults';
 
 export const useDeserializeImage = (): DeserializeHtml => {
-  const options = useEditorOptions(ELEMENT_IMAGE);
+  const options = useEditorPluginOptions(ELEMENT_IMAGE);
 
   return {
     element: getNodeDeserializer({

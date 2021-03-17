@@ -1,12 +1,8 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorMultiOptions,
-} from '@udecode/slate-plugins-core';
-import { KEYS_LIST } from './defaults';
+import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
 
 export const useDeserializeList = (): DeserializeHtml => {
-  const { li, ul, ol } = useEditorMultiOptions(KEYS_LIST);
+  const { li, ul, ol } = useEditorOptions();
 
   return {
     element: [

@@ -1,5 +1,5 @@
 import { useRenderElement } from '@udecode/slate-plugins-common';
-import { SlatePlugin, useEditorType } from '@udecode/slate-plugins-core';
+import { SlatePlugin, useEditorPluginType } from '@udecode/slate-plugins-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 import { useDeserializeIframe } from './useDeserializeIframe';
 
@@ -11,5 +11,5 @@ export const MediaEmbedPlugin = (): SlatePlugin => ({
   elementKeys: ELEMENT_MEDIA_EMBED,
   renderElement: useRenderElement(ELEMENT_MEDIA_EMBED),
   deserialize: useDeserializeIframe(),
-  voidTypes: [useEditorType(ELEMENT_MEDIA_EMBED)],
+  voidTypes: [useEditorPluginType(ELEMENT_MEDIA_EMBED)],
 });

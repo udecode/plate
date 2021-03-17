@@ -1,12 +1,6 @@
 import { useEffect } from 'react';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { useWhyDidYouUpdate } from 'use-why-did-you-update';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
-import { SlatePluginsOptions } from '../../types/SlatePluginsStore';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
-import { withRandomKey } from '../../with/randomKeyEditor';
 
 /**
  * Effects to update the slate plugins store from the options.
@@ -19,7 +13,7 @@ export const useSlatePluginsEffects = ({
   components,
   options,
   initialValue,
-  withPlugins,
+  withOverrides,
   plugins,
 }: UseSlatePluginsEffectsOptions) => {
   const {
@@ -27,14 +21,8 @@ export const useSlatePluginsEffects = ({
     setValue,
     setEditor,
     setPlugins,
-    setOptions,
-    setOption,
-    setWithPlugins,
     setElementKeys,
-    resetEditorKey,
   } = useSlatePluginsActions(id);
-
-  const storeEditor = useSlatePluginsEditor(id);
 
   useEffect(() => {
     setInitialState();
@@ -53,42 +41,27 @@ export const useSlatePluginsEffects = ({
 
   // Slate.editor
   useEffect(() => {
-    if (editor) {
-      (editor as any).id = id;
-      setEditor(editor);
+    if (editor || withOverrides || options || components) {
+      const _options = options ?? {};
+
+      if (components) {
+        // Merge components into options
+        Object.keys(components).forEach((key) => {
+          _options[key] = {
+            component: components[key],
+            ..._options[key],
+          };
+        });
+      }
+
+      // Default type is the plugin key
+      Object.keys(_options).forEach((key) => {
+        if (!_options[key].type) _options[key].type = key;
+      });
+
+      setEditor({ editor, withOverrides, options: _options });
     }
-  }, [editor, id, setEditor]);
-
-  useEffect(() => {
-    withPlugins && setWithPlugins(withPlugins);
-  }, [setWithPlugins, withPlugins]);
-
-  useEffect(() => {
-    if (!editor && !withPlugins && !storeEditor) {
-      setWithPlugins([withReact, withHistory, withRandomKey]);
-    }
-  }, [editor, setWithPlugins, storeEditor, withPlugins]);
-
-  // Set options then reset the editor
-  useEffect(() => {
-    if (!options) return;
-
-    setOptions(options);
-    resetEditorKey(id);
-  }, [id, options, resetEditorKey, setOptions]);
-
-  useEffect(() => {
-    if (!components) return;
-
-    const _options = {};
-
-    Object.keys(components).forEach((key) => {
-      _options[key] = { type: key, component: components[key] };
-    });
-
-    setOptions(_options);
-    resetEditorKey(id);
-  }, [components, id, resetEditorKey, setOptions]);
+  }, [components, editor, id, options, setEditor, withOverrides]);
 
   // Slate plugins
   useEffect(() => {

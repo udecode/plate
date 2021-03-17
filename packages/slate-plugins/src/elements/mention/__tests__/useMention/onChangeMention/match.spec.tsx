@@ -18,10 +18,10 @@ const input = ((
 
 const output = 't2';
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 it('should do nothing', () => {
-  const editor = pipe(input, ...withPlugins);
+  const editor = pipe(input, ...withOverrides);
 
   const { result } = renderHook(() => useMention());
 

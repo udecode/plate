@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Slate } from 'slate-react';
 import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
-import { useSlatePluginsOptions } from '../store/useEditorOption';
 import { SlateProps } from '../types/SlateProps';
 import { UseSlatePluginsEffectsOptions } from '../types/UseSlatePluginsEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';

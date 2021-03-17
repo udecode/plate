@@ -1,6 +1,6 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor, useEditor } from 'slate-react';
-import { RandomKeyEditor } from '../with/randomKeyEditor';
+import { SlatePluginsEditor } from '../with/withSlatePlugins';
 
 export interface IdEditor {
   id: string;
@@ -10,8 +10,8 @@ export interface IdEditor {
  * Editor id stored in `editor`.
  */
 export const useEditorId = <
-  TEditor extends ReactEditor & IdEditor & RandomKeyEditor = ReactEditor &
+  TEditor extends ReactEditor & IdEditor & SlatePluginsEditor = ReactEditor &
     IdEditor &
     HistoryEditor &
-    RandomKeyEditor
+    SlatePluginsEditor
 >() => (useEditor() as TEditor).id;

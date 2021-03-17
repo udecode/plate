@@ -127,7 +127,7 @@ const initialValue = [
   ...initialValuePasteHtml,
 ];
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withTable(options),
@@ -200,7 +200,7 @@ const Editor = () => {
 };
 
 const SlatePluginsContainer = () => {
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  const editor = useMemo(() => pipe(createEditor(), ...withOverrides), []);
 
   return (
     <SlatePlugins editor={editor}>

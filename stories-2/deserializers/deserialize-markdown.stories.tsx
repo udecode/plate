@@ -51,7 +51,7 @@ export const Example = () => {
     UnderlinePlugin(),
   ];
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withLink({}, options),
@@ -67,7 +67,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValuePasteMd}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins
         plugins={plugins}

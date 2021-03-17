@@ -1,14 +1,12 @@
 import { isCollapsed } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Node, Point, Transforms } from 'slate';
+import { ELEMENT_TD } from './defaults';
 
-export const withTable = (options: SlatePluginsOptions) => <T extends Editor>(
-  editor: T
-) => {
-  const { td, th } = options;
-
+export const withTable = () => <T extends Editor>(editor: T) => {
   const matchCells = (node: Node) =>
-    node.type === td.type || node.type === th.type;
+    node.type === getPluginType(editor, ELEMENT_TD) ||
+    node.type === getPluginType(editor, ELEMENT_TD);
 
   const { deleteBackward, deleteForward, deleteFragment, insertText } = editor;
 

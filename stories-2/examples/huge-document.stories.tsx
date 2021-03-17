@@ -18,13 +18,13 @@ export default {
 export const Example = () => {
   const plugins = [ParagraphPlugin(), HeadingPlugin()];
 
-  const withPlugins = [withReact, withHistory] as const;
+  const withOverrides = [withReact, withHistory] as const;
 
   return (
     <SlatePlugins
       id={id}
       initialValue={initialValueHugeDocument}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins
         plugins={plugins}

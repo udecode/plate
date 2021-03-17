@@ -26,7 +26,7 @@ export const Example = () => {
   const plugins: any[] = [ParagraphPlugin(), HeadingPlugin()];
   if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withLink({}, options),
@@ -38,7 +38,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueLinks}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarLink {...options} icon={<Link />} />

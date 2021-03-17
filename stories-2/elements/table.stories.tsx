@@ -48,7 +48,7 @@ export default {
   component: TablePlugin,
 };
 
-const withPlugins = [withReact, withHistory, withTable(options)] as const;
+const withOverrides = [withReact, withHistory, withTable(options)] as const;
 
 export const Example = () => {
   const plugins = [
@@ -65,7 +65,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueTables}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarMark type={MARK_BOLD} icon={<FormatBold />} />

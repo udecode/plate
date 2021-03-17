@@ -1,9 +1,12 @@
 import { getNodeDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
+import {
+  DeserializeHtml,
+  useEditorPluginOptions,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_LINK } from './defaults';
 
 export const useDeserializeLink = (): DeserializeHtml => {
-  const options = useEditorOptions(ELEMENT_LINK);
+  const options = useEditorPluginOptions(ELEMENT_LINK);
 
   return {
     element: getNodeDeserializer({

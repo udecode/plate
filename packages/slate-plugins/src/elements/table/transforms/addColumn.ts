@@ -1,22 +1,26 @@
 import { getAbove, someNode } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Path, Transforms } from 'slate';
+import { ELEMENT_TABLE, ELEMENT_TD } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
-export const addColumn = (
-  editor: Editor,
-  { header }: TablePluginOptions,
-  options: SlatePluginsOptions
-) => {
-  const { table, td, th } = options;
-
-  if (someNode(editor, { match: { type: table.type } })) {
+export const addColumn = (editor: Editor, { header }: TablePluginOptions) => {
+  if (
+    someNode(editor, { match: { type: getPluginType(editor, ELEMENT_TABLE) } })
+  ) {
     const currentCellItem = getAbove(editor, {
-      match: { type: [td.type, th.type] },
+      match: {
+        type: [
+          getPluginType(editor, ELEMENT_TD),
+          getPluginType(editor, ELEMENT_TD),
+        ],
+      },
     });
 
-    const currentTableItem = getAbove(editor, { match: { type: table.type } });
+    const currentTableItem = getAbove(editor, {
+      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    });
 
     if (currentCellItem && currentTableItem) {
       const nextCellPath = Path.next(currentCellItem[1]);
@@ -27,7 +31,7 @@ export const addColumn = (
       currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
 
-        Transforms.insertNodes(editor, getEmptyCellNode({ header }, options), {
+        Transforms.insertNodes(editor, getEmptyCellNode(editor, { header }), {
           at: newCellPath,
           select: rowIdx === currentRowIdx,
         });

@@ -1,21 +1,19 @@
 import { wrapNodes } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
+import { ELEMENT_LINK } from '../defaults';
 
 /**
  * Wrap selected nodes with a link and collapse at the end.
  */
 export const wrapLink = (
   editor: Editor,
-  { at, url }: { url: string; at?: Location },
-  options: SlatePluginsOptions
+  { at, url }: { url: string; at?: Location }
 ) => {
-  const { a } = options;
-
   wrapNodes(
     editor,
     {
-      type: a.type,
+      type: getPluginType(editor, ELEMENT_LINK),
       url,
       children: [],
     },

@@ -50,7 +50,7 @@ const initialValueVoids: Node[] = [
 export const Example = () => {
   const plugins = [ParagraphPlugin(), EditableVoidPlugin()];
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withInlineVoid({ plugins }),
@@ -60,7 +60,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValueVoids}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
       options={{
         p: {
           type: 'p',

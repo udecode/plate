@@ -146,5 +146,9 @@ export default [
       },
     ],
     plugins,
+    watch: {
+      include: 'src/**',
+      // exclude: 'node_modules/**',
+    },
   },
 ];

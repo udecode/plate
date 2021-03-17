@@ -22,7 +22,7 @@ export default {
 export const Example = () => {
   const plugins = [ParagraphPlugin(), HeadingPlugin()];
 
-  const withPlugins = [
+  const withOverrides = [
     withReact,
     withHistory,
     withNormalizeTypes({
@@ -35,7 +35,7 @@ export const Example = () => {
     <SlatePlugins
       id={id}
       initialValue={initialValueForcedLayout}
-      withPlugins={withPlugins}
+      withOverrides={withOverrides}
     >
       <EditablePlugins
         plugins={plugins}

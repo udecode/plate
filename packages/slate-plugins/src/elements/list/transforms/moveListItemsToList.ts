@@ -4,7 +4,6 @@ import {
   moveChildren,
   MoveChildrenOptions,
 } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
@@ -54,8 +53,7 @@ export const moveListItemsToList = (
     toList,
     toListIndex = null,
     deleteFromList = true,
-  }: MergeListItemIntoListOptions,
-  options: SlatePluginsOptions
+  }: MergeListItemIntoListOptions
 ) => {
   let fromListPath: Path | undefined;
 
@@ -63,7 +61,7 @@ export const moveListItemsToList = (
     const fromListItemSublist = findDescendant(editor, {
       at: fromListItem[1],
       match: {
-        type: getListTypes(options),
+        type: getListTypes(editor),
       },
     });
     if (!fromListItemSublist) return 0;

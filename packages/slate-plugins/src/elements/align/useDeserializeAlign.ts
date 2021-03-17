@@ -2,16 +2,10 @@ import {
   getElementDeserializer,
   getSlateClass,
 } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorMultiOptions,
-} from '@udecode/slate-plugins-core';
-import { KEYS_ALIGN } from './defaults';
+import { DeserializeHtml, useEditorOptions } from '@udecode/slate-plugins-core';
 
 export const useDeserializeAlign = (): DeserializeHtml => {
-  const { align_center, align_right, align_justify } = useEditorMultiOptions(
-    KEYS_ALIGN
-  );
+  const { align_center, align_right, align_justify } = useEditorOptions();
 
   return {
     element: [

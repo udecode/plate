@@ -36,7 +36,7 @@ export default {
   },
 };
 
-const withPlugins = [
+const withOverrides = [
   withReact,
   withHistory,
   withList({}, options),
@@ -61,7 +61,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         initialValue={initialValueList}
-        withPlugins={withPlugins}
+        withOverrides={withOverrides}
       >
         <HeadingToolbar>
           <ToolbarList

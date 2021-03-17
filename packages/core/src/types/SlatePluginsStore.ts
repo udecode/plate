@@ -26,11 +26,6 @@ export type SlatePluginsOptions = Record<string, SlatePluginOptions>;
 
 export type State = {
   /**
-   * Options for each key.
-   */
-  options: SlatePluginsOptions;
-
-  /**
    * Slate editor. Default uses `withReact`, `withHistoryPersist` and `withRandomKey` plugins.
    */
   editor?: unknown;
@@ -55,19 +50,16 @@ export type SlatePluginsState = { byId: Record<string, State> };
 
 export type SlatePluginsActions = {
   setInitialState: (id?: string) => void;
-  setOption: (
+  setEditor: (
     value: {
-      pluginKey: string;
-      optionKey: SlatePluginOptionKey;
-      value: any;
+      editor?: State['editor'];
+      withOverrides?: any[];
+      options?: SlatePluginsOptions;
     },
     id?: string
   ) => void;
-  setOptions: (value: State['options'], id?: string) => void;
-  setEditor: (value: State['editor'], id?: string) => void;
   setPlugins: (value: State['plugins'], id?: string) => void;
   setElementKeys: (value: State['elementKeys'], id?: string) => void;
-  setWithPlugins: (value: any[], id?: string) => void;
   setValue: (value: State['value'], id?: string) => void;
   resetEditorKey: (id?: string) => void;
 };

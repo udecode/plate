@@ -1,6 +1,7 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
+import { ELEMENT_TD, ELEMENT_TR } from '../defaults';
 
 /**
  * If at (default = selection) is in table>tr>td, return table, tr, and td
@@ -8,33 +9,35 @@ import { Editor, Location } from 'slate';
  */
 export const getTableCellEntry = (
   editor: Editor,
-  { at = editor.selection }: { at?: Location | null } = {},
-  options: SlatePluginsOptions
+  { at = editor.selection }: { at?: Location | null } = {}
 ) => {
-  const { td, tr, table } = options;
-
-  if (at && someNode(editor, { at, match: { type: td.type } })) {
+  if (
+    at &&
+    someNode(editor, { at, match: { type: getPluginType(editor, ELEMENT_TD) } })
+  ) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
 
     const tableCell =
-      getAbove(editor, { at, match: { type: td.type } }) ||
-      getParent(editor, paragraphPath);
+      getAbove(editor, {
+        at,
+        match: { type: getPluginType(editor, ELEMENT_TD) },
+      }) || getParent(editor, paragraphPath);
 
     if (!tableCell) return;
     const [tableCellNode, tableCellPath] = tableCell;
 
-    if (tableCellNode.type !== td.type) return;
+    if (tableCellNode.type !== getPluginType(editor, ELEMENT_TD)) return;
 
     const tableRow = getParent(editor, tableCellPath);
     if (!tableRow) return;
     const [tableRowNode, tableRowPath] = tableRow;
 
-    if (tableRowNode.type !== tr.type) return;
+    if (tableRowNode.type !== getPluginType(editor, ELEMENT_TR)) return;
 
     const tableElement = getParent(editor, tableRowPath);
-    if (!table) return;
+    if (!tableElement) return;
 
     return {
       tableElement,

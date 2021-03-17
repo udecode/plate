@@ -1,18 +1,18 @@
-import { SlatePluginsOptions } from '@udecode/slate-plugins-core';
+import { getPluginType } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
+import { ELEMENT_TABLE } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from './getEmptyRowNode';
 
 export const getEmptyTableNode = (
-  { header }: TablePluginOptions,
-  options: SlatePluginsOptions
+  editor: Editor,
+  { header }: TablePluginOptions
 ) => {
-  const { table } = options;
-
   return {
-    type: table.type,
+    type: getPluginType(editor, ELEMENT_TABLE),
     children: [
-      getEmptyRowNode({ header, colCount: 2 }, options),
-      getEmptyRowNode({ header, colCount: 2 }, options),
+      getEmptyRowNode(editor, { header, colCount: 2 }),
+      getEmptyRowNode(editor, { header, colCount: 2 }),
     ],
   };
 };
