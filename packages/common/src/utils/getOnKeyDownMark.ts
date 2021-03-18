@@ -1,5 +1,5 @@
+import { OnKeyDown } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
-import { Editor } from 'slate';
 import { toggleMark } from '../transforms/toggleMark';
 
 export interface OnKeyDownMarkOptions {
@@ -26,14 +26,12 @@ export const getOnKeyDownMark = ({
   type,
   hotkey,
   clear,
-}: OnKeyDownMarkOptions) => {
+}: OnKeyDownMarkOptions): OnKeyDown => (editor) => (e) => {
   if (!hotkey) return;
 
-  return (e: any, editor: Editor) => {
-    if (hotkey && isHotkey(hotkey, e)) {
-      e.preventDefault();
+  if (isHotkey(hotkey, e)) {
+    e.preventDefault();
 
-      toggleMark(editor, type, clear);
-    }
-  };
+    toggleMark(editor, type, clear);
+  }
 };

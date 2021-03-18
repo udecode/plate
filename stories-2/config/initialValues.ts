@@ -12,13 +12,14 @@ import {
 } from '@udecode/slate-plugins';
 // import faker from 'faker';
 import { Descendant, Text } from 'slate';
+import { ELEMENT_TAG } from '../examples/tag/defaults';
 
 export const options = getSlatePluginsOptions();
 
 export const inlineTypes = [options.mention.type, options.a.type];
 
 const resetBlockTypesCommonRule = {
-  types: [options.blockquote.type, options.todo_li.type],
+  types: [options.blockquote.type, options.action_item.type],
   defaultType: options.p.type,
 };
 
@@ -599,7 +600,7 @@ export const initialValueCombobox: SlateDocument = [
         type: options.p.type,
         children: [
           { text: 'Example using useCombobox from downshift with # trigger: ' },
-          { type: options.tag.type, children: [{ text: '' }], value: 'tag' },
+          { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
           { text: '' },
         ],
       },
@@ -891,32 +892,32 @@ export const initialValueList: SlateDocument = [
         ],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: true,
         children: [{ text: 'Slide to the left.' }],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: true,
         children: [{ text: 'Slide to the right.' }],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: false,
         children: [{ text: 'Criss-cross.' }],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: true,
         children: [{ text: 'Criss-cross!' }],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: false,
         children: [{ text: 'Cha cha real smooth…' }],
       },
       {
-        type: options.todo_li.type,
+        type: options.action_item.type,
         checked: false,
         children: [{ text: "Let's go to work!" }],
       },

@@ -1,4 +1,7 @@
-import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
+import {
+  getPluginOnKeyDownMark,
+  getPluginRenderLeaf,
+} from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { MARK_HIGHLIGHT } from './defaults';
 import { useDeserializeHighlight } from './useDeserializeHighlight';
@@ -8,7 +11,7 @@ import { useDeserializeHighlight } from './useDeserializeHighlight';
  * content or highlighting it for future reference.
  */
 export const HighlightPlugin = (): SlatePlugin => ({
-  renderLeaf: useRenderLeaf(MARK_HIGHLIGHT),
+  renderLeaf: getPluginRenderLeaf(MARK_HIGHLIGHT),
   deserialize: useDeserializeHighlight(),
-  onKeyDown: useOnKeyDownMark(MARK_HIGHLIGHT),
+  onKeyDown: getPluginOnKeyDownMark(MARK_HIGHLIGHT),
 });

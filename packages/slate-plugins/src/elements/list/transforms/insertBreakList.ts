@@ -43,7 +43,7 @@ export const insertBreakList = (editor: Editor) => {
         predicate: () => !moved && isBlockAboveEmpty(editor),
       },
     ],
-  })(null, editor);
+  })(editor)(null);
   if (didReset) return true;
 
   /**

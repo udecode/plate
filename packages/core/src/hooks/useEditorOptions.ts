@@ -3,10 +3,13 @@ import { useEditor } from 'slate-react';
 import { SlatePluginsOptions } from '../types/SlatePluginsStore';
 
 export const getOptions = (editor: Editor) =>
-  (editor.options ?? {}) as SlatePluginsOptions;
+  (editor?.options ?? {}) as SlatePluginsOptions;
 
 export const getPluginOptions = (editor: Editor, pluginKey: string) =>
   getOptions(editor)[pluginKey] ?? {};
+
+export const getPluginsOptions = (editor: Editor, pluginKeys: string[]) =>
+  pluginKeys.map((pluginKey) => getPluginOptions(editor, pluginKey));
 
 export const getPluginType = (editor: Editor, pluginKey: string): string =>
   getPluginOptions(editor, pluginKey).type ?? pluginKey;

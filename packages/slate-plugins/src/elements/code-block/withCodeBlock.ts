@@ -7,7 +7,7 @@ export const withCodeBlock = () => <T extends ReactEditor>(editor: T) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {
-    if (editor.selection) return;
+    if (!editor.selection) return;
 
     const res = getCodeLineEntry(editor, {});
     if (!res) return;

@@ -5,8 +5,10 @@
 export * from './decoratePlugins';
 export * from './getInlineTypes';
 export * from './getVoidTypes';
+export * from './onChangePlugins';
 export * from './onDOMBeforeInputPlugins';
 export * from './onKeyDownPlugins';
 export * from './pipe';
 export * from './renderElementPlugins';
 export * from './renderLeafPlugins';
+export { flatMapKey } from './flatMapKey';

@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Node } from 'slate';
-import { SlatePlugin } from './SlatePlugin';
+import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 
 export interface SlatePluginOptions {
   [key: string]: any;
@@ -38,7 +38,7 @@ export type State = {
   /**
    * Element keys used by the plugins
    */
-  elementKeys: string[];
+  pluginKeys: string[];
 
   /**
    * Editor value. Default is `[{children: [{text: ''}]}]`.
@@ -59,7 +59,7 @@ export type SlatePluginsActions = {
     id?: string
   ) => void;
   setPlugins: (value: State['plugins'], id?: string) => void;
-  setElementKeys: (value: State['elementKeys'], id?: string) => void;
+  setPluginKeys: (value: State['pluginKeys'], id?: string) => void;
   setValue: (value: State['value'], id?: string) => void;
   resetEditorKey: (id?: string) => void;
 };

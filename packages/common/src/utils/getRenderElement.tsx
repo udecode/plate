@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
 import { ElementToProps } from '../types/NodeToProps';
 import { RenderElementPropsWithAttributes } from '../types/RenderElementPropsWithAttributes';
@@ -10,48 +11,17 @@ export interface GetRenderElementOptions
     ElementToProps {}
 
 /**
- * Get a `renderElement` handler for a single type.
+ * Get a `renderElement` handler for a list of types.
  * If the given `type` is equals to the slate element type, render the given `component`.
  */
-export const getRenderElement = ({
-  type,
-  component: Element = DefaultElement,
-  nodeToProps,
-}: GetRenderElementOptions) => ({
-  attributes,
-  element,
-  children,
-}: RenderElementPropsWithAttributes) => {
-  if (element.type === type) {
-    const htmlAttributes =
-      nodeToProps?.({ attributes, element, children }) ?? element?.attributes;
+export const getRenderElement = (
+  options: GetRenderElementOptions | GetRenderElementOptions[]
+) => ({ attributes, element, children }: RenderElementPropsWithAttributes) => {
+  const _options = castArray<GetRenderElementOptions>(options);
 
-    return (
-      <Element
-        attributes={attributes}
-        htmlAttributes={htmlAttributes}
-        element={element}
-        className={getSlateClass(type)}
-      >
-        {children}
-      </Element>
-    );
-  }
-};
+  for (const option of _options) {
+    const { type, component: Element = DefaultElement, nodeToProps } = option;
 
-/**
- * Get a `renderElement` handler for multiple types.
- */
-export const getRenderElements = (options: GetRenderElementOptions[]) => ({
-  attributes,
-  element,
-  children,
-}: RenderElementPropsWithAttributes) => {
-  for (const {
-    type,
-    component: Element = DefaultElement,
-    nodeToProps,
-  } of options) {
     if (element.type === type) {
       const htmlAttributes =
         nodeToProps?.({ attributes, element, children }) ?? element?.attributes;

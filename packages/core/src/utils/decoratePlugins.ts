@@ -1,5 +1,6 @@
 import { Editor, NodeEntry, Range } from 'slate';
-import { Decorate } from '../types/Decorate';
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { Decorate } from '../types/SlatePlugin/Decorate';
 
 /**
  * @see {@link Decorate}
@@ -7,15 +8,15 @@ import { Decorate } from '../types/Decorate';
 export const decoratePlugins = (
   editor: Editor,
   decorateList: (Decorate | undefined)[]
-) => (entry: NodeEntry) => {
+): EditableProps['decorate'] => (entry: NodeEntry) => {
   let ranges: Range[] = [];
 
-  const addRanges = (newRanges: ReturnType<Decorate>) => {
+  const addRanges = (newRanges?: Range[]) => {
     if (newRanges?.length) ranges = [...ranges, ...newRanges];
   };
 
   decorateList.forEach((decorate) => {
-    decorate && addRanges(decorate(entry, editor));
+    decorate && addRanges(decorate(editor)(entry));
   });
 
   return ranges;

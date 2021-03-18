@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { SlatePlugin } from './SlatePlugin';
+import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions, State } from './SlatePluginsStore';
 
 /**
@@ -17,12 +17,6 @@ export interface UseSlatePluginsEffectsOptions
    * Default is `[{children: [{text: ''}]}]`.
    */
   initialValue?: Node[];
-
-  /**
-   * Apply the overrides to the editor singleton.
-   * Default is `[withReact, withHistory, withRandomKey]`.
-   */
-  withOverrides?: any;
 
   /**
    * The plugins are applied in the order they are specified.

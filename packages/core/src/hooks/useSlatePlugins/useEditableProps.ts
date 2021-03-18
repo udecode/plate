@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { usePlugins } from '../../store/usePlugins';
 import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { decoratePlugins } from '../../utils/decoratePlugins';
+import { flatMapKey } from '../../utils/flatMapKey';
 import { onDOMBeforeInputPlugins } from '../../utils/onDOMBeforeInputPlugins';
 import { onKeyDownPlugins } from '../../utils/onKeyDownPlugins';
 import { renderElementPlugins } from '../../utils/renderElementPlugins';
@@ -10,115 +12,53 @@ import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
 
 export const useEditableProps = ({
   id,
-  plugins: _plugins,
-  decorate: _decorateList,
-  decorateDeps: _decorateDeps,
-  renderElement: _renderElementList,
-  renderElementDeps: _renderElementDeps,
-  renderLeaf: _renderLeafList,
-  renderLeafDeps: _renderLeafDeps,
-  onDOMBeforeInput: _onDOMBeforeInputList,
-  onDOMBeforeInputDeps: _onDOMBeforeInputDeps,
-  onKeyDown: _onKeyDownList,
-  onKeyDownDeps: _onKeyDownDeps,
   editableProps,
 }: UseEditablePropsOptions): (() => EditableProps) => {
   const editor = useSlatePluginsEditor(id);
+  const plugins = usePlugins(id);
 
-  const plugins = useMemo(() => _plugins ?? [], [_plugins]);
-  const decorateList = useMemo(() => _decorateList ?? [], [_decorateList]);
-  const decorateDeps = useMemo(() => _decorateDeps ?? [], [_decorateDeps]);
-  const renderElementList = useMemo(() => _renderElementList ?? [], [
-    _renderElementList,
-  ]);
-  const renderElementDeps = useMemo(() => _renderElementDeps ?? [], [
-    _renderElementDeps,
-  ]);
-  const renderLeafList = useMemo(() => _renderLeafList ?? [], [
-    _renderLeafList,
-  ]);
-  const renderLeafDeps = useMemo(() => _renderLeafDeps ?? [], [
-    _renderLeafDeps,
-  ]);
-  const onDOMBeforeInputList = useMemo(() => _onDOMBeforeInputList ?? [], [
-    _onDOMBeforeInputList,
-  ]);
-  const onDOMBeforeInputDeps = useMemo(() => _onDOMBeforeInputDeps ?? [], [
-    _onDOMBeforeInputDeps,
-  ]);
-  const onKeyDownList = useMemo(() => _onKeyDownList ?? [], [_onKeyDownList]);
-  const onKeyDownDeps = useMemo(() => _onKeyDownDeps ?? [], [_onKeyDownDeps]);
+  const renderElement = useMemo(() => {
+    console.log('renderElement');
+    return renderElementPlugins(editor, flatMapKey(plugins, 'renderElement'));
+  }, [editor, plugins]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const renderElement: EditableProps['renderElement'] = useCallback(
-    renderElementPlugins([
-      ...plugins.flatMap((p) => p.renderElement),
-      ...renderElementList,
-    ]),
-    [...plugins.flatMap((p) => p.renderElementDeps), ...renderElementDeps]
+  const renderLeaf = useMemo(() => {
+    console.log('renderLeaf');
+    return renderLeafPlugins(editor, flatMapKey(plugins, 'renderLeaf'));
+  }, [editor, plugins]);
+
+  const onKeyDown = useMemo(() => {
+    console.log('onKeyDown');
+    return onKeyDownPlugins(editor, flatMapKey(plugins, 'onKeyDown'));
+  }, [editor, plugins]);
+
+  const decorate = useMemo(() => {
+    console.log('decorate');
+    return decoratePlugins(editor, flatMapKey(plugins, 'decorate'));
+  }, [editor, plugins]);
+
+  const onDOMBeforeInput = useMemo(
+    () =>
+      onDOMBeforeInputPlugins(editor, flatMapKey(plugins, 'onDOMBeforeInput')),
+    [editor, plugins]
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const renderLeaf: EditableProps['renderLeaf'] = useCallback(
-    renderLeafPlugins([
-      ...plugins.flatMap((p) => p.renderLeaf),
-      ...renderLeafList,
-    ]),
-    [
-      ...plugins.flatMap((e) => e.renderLeafDeps ?? []),
-      ...renderLeafDeps,
-      // see https://github.com/ianstormtaylor/slate/pull/3437
-      // render leaf cannot be memoized unless the decorate deps are passed to it
-      ...plugins.flatMap((p) => p.decorateDeps ?? []),
-      ...decorateDeps,
-    ]
-  );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onKeyDown: EditableProps['onKeyDown'] = useCallback(
-    onKeyDownPlugins(editor, [
-      ...plugins.flatMap((p) => p.onKeyDown),
-      ...onKeyDownList,
-    ]),
-    [...plugins.flatMap((p) => p.onKeyDownDeps ?? []), ...onKeyDownDeps]
-  );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const decorate: EditableProps['decorate'] = useCallback(
-    decoratePlugins(editor, [
-      ...plugins.flatMap((p) => p.decorate),
-      ...decorateList,
-    ]),
-    [...plugins.flatMap((p) => p.decorateDeps ?? []), ...decorateDeps]
-  );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onDOMBeforeInput: EditableProps['onDOMBeforeInput'] = useCallback(
-    onDOMBeforeInputPlugins(editor, [
-      ...plugins.flatMap((p) => p.onDOMBeforeInput),
-      ...onDOMBeforeInputList,
-    ]),
-    [
-      ...plugins.flatMap((p) => p.onDOMBeforeInputDeps ?? []),
-      ...onDOMBeforeInputDeps,
-    ]
-  );
-
-  return useCallback(() => {
-    return {
+  return useCallback(
+    () => ({
       renderElement,
       renderLeaf,
       onKeyDown,
       decorate,
       onDOMBeforeInput,
       ...editableProps,
-    };
-  }, [
-    decorate,
-    editableProps,
-    onDOMBeforeInput,
-    onKeyDown,
-    renderElement,
-    renderLeaf,
-  ]);
+    }),
+    [
+      decorate,
+      editableProps,
+      onDOMBeforeInput,
+      onKeyDown,
+      renderElement,
+      renderLeaf,
+    ]
+  );
 };

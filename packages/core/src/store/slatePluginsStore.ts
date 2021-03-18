@@ -73,9 +73,9 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStore>(
       set,
       key: 'value',
     }),
-    setElementKeys: getSetter<State['elementKeys']>({
+    setPluginKeys: getSetter<State['pluginKeys']>({
       set,
-      key: 'elementKeys',
+      key: 'pluginKeys',
     }),
     setInitialState: (id = 'main') =>
       set((state) => {

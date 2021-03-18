@@ -1,5 +1,6 @@
 import { Editor } from 'slate';
-import { OnDOMBeforeInput } from '../types/OnDOMBeforeInput';
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { OnDOMBeforeInput } from '../types/SlatePlugin/OnDOMBeforeInput';
 
 /**
  * @see {@link OnDOMBeforeInput}
@@ -7,8 +8,8 @@ import { OnDOMBeforeInput } from '../types/OnDOMBeforeInput';
 export const onDOMBeforeInputPlugins = (
   editor: Editor,
   onDOMBeforeInputList: (OnDOMBeforeInput | undefined)[]
-) => (event: Event) => {
+): EditableProps['onDOMBeforeInput'] => (event: Event) => {
   onDOMBeforeInputList.some(
-    (onDOMBeforeInput) => onDOMBeforeInput?.(event, editor) === false
+    (onDOMBeforeInput) => onDOMBeforeInput?.(editor)(event) === false
   );
 };

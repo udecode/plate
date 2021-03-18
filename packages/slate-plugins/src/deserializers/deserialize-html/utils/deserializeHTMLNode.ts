@@ -1,4 +1,5 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { DeserializeHTMLChildren } from '../types';
 import { deserializeHTMLToBreak } from './deserializeHTMLToBreak';
 import { deserializeHTMLToElement } from './deserializeHTMLToElement';
@@ -9,7 +10,7 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
+export const deserializeHTMLNode = (editor: Editor, plugins: SlatePlugin[]) => (
   node: HTMLElement | ChildNode
 ) => {
   // text node
@@ -34,7 +35,7 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
   }
 
   const children: DeserializeHTMLChildren[] = Array.from(parent.childNodes)
-    .map(deserializeHTMLNode(plugins))
+    .map(deserializeHTMLNode(editor, plugins))
     .flat();
 
   // body
@@ -45,7 +46,7 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
   if (fragment) return fragment;
 
   // element
-  const element = deserializeHTMLToElement({
+  const element = deserializeHTMLToElement(editor, {
     plugins,
     element: htmlElement,
     children,
@@ -53,7 +54,7 @@ export const deserializeHTMLNode = (plugins: SlatePlugin[]) => (
   if (element) return element;
 
   // mark
-  return deserializeHTMLToMarks({
+  return deserializeHTMLToMarks(editor, {
     plugins,
     element: htmlElement,
     children,

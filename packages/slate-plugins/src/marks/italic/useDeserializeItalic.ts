@@ -1,12 +1,10 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorPluginOptions,
-} from '@udecode/slate-plugins-core';
+import { DeserializeHtml, getPluginOptions } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { MARK_ITALIC } from './defaults';
 
-export const useDeserializeItalic = (): DeserializeHtml => {
-  const options = useEditorPluginOptions(MARK_ITALIC);
+export const useDeserializeItalic = (): DeserializeHtml => (editor: Editor) => {
+  const options = getPluginOptions(editor, MARK_ITALIC);
 
   return {
     leaf: getLeafDeserializer({

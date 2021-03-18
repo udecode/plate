@@ -35,7 +35,7 @@ export const withDeserializeHTML = ({
 
   const {
     preInsert = (fragment) => {
-      const inlineTypes = getInlineTypes(plugins);
+      const inlineTypes = getInlineTypes(editor, plugins);
 
       const firstNodeType = fragment[0].type as string | undefined;
 
@@ -61,7 +61,7 @@ export const withDeserializeHTML = ({
 
     if (html) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
-      let fragment = deserializeHTMLToDocumentFragment({
+      let fragment = deserializeHTMLToDocumentFragment(editor, {
         plugins,
         element: body,
       });

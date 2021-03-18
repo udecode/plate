@@ -1,12 +1,12 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorPluginOptions,
-} from '@udecode/slate-plugins-core';
+import { DeserializeHtml, getPluginOptions } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { MARK_SUBSCRIPT } from '../defaults';
 
-export const useDeserializeSubscript = (): DeserializeHtml => {
-  const options = useEditorPluginOptions(MARK_SUBSCRIPT);
+export const useDeserializeSubscript = (): DeserializeHtml => (
+  editor: Editor
+) => {
+  const options = getPluginOptions(editor, MARK_SUBSCRIPT);
 
   return {
     leaf: getLeafDeserializer({

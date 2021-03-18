@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
+import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 
 /**
@@ -13,7 +14,6 @@ export const useSlatePluginsEffects = ({
   components,
   options,
   initialValue,
-  withOverrides,
   plugins,
 }: UseSlatePluginsEffectsOptions) => {
   const {
@@ -21,8 +21,9 @@ export const useSlatePluginsEffects = ({
     setValue,
     setEditor,
     setPlugins,
-    setElementKeys,
+    setPluginKeys,
   } = useSlatePluginsActions(id);
+  const _editor = useSlatePluginsEditor(id);
 
   useEffect(() => {
     setInitialState();
@@ -41,7 +42,10 @@ export const useSlatePluginsEffects = ({
 
   // Slate.editor
   useEffect(() => {
-    if (editor || withOverrides || options || components) {
+    console.log(editor);
+    if (_editor) return;
+
+    if (editor || options || components || plugins) {
       const _options = options ?? {};
 
       if (components) {
@@ -59,16 +63,24 @@ export const useSlatePluginsEffects = ({
         if (!_options[key].type) _options[key].type = key;
       });
 
-      setEditor({ editor, withOverrides, options: _options });
+      const withOverrides =
+        plugins?.flatMap((p) => p.withOverrides ?? []) ?? [];
+
+      setEditor({
+        editor,
+        withOverrides,
+        options: _options,
+      });
     }
-  }, [components, editor, id, options, setEditor, withOverrides]);
+  }, [_editor, components, editor, id, options, plugins, setEditor]);
 
   // Slate plugins
   useEffect(() => {
+    console.log('plugins');
     plugins && setPlugins(plugins);
   }, [plugins, setPlugins]);
 
   useEffect(() => {
-    plugins && setElementKeys(plugins.flatMap((p) => p.elementKeys ?? []));
-  }, [plugins, setElementKeys]);
+    plugins && setPluginKeys(plugins.flatMap((p) => p.pluginKeys ?? []));
+  }, [plugins, setPluginKeys]);
 };

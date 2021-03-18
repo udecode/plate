@@ -6,15 +6,13 @@ import { UseEditablePropsOptions } from '../types/UseEditablePropsOptions';
 /**
  * {@link Editable} with plugins support.
  */
-export const EditablePlugins = (props: Omit<UseEditablePropsOptions, 'id'>) => {
-  const editor = useEditor();
-  const id = editor.id as string | undefined;
+export const EditablePlugins = (props: UseEditablePropsOptions) => {
+  // const editor = useSlateP();
+  // const id = editor.id as string | undefined;
 
-  const { getEditableProps } = useSlatePlugins({ ...props, id });
+  const { getEditableProps } = useSlatePlugins(props);
 
-  if (!editor) return null;
+  // if (!editor) return null;
 
-  const pro = getEditableProps();
-
-  return <Editable {...pro} />;
+  return <Editable {...getEditableProps()} />;
 };

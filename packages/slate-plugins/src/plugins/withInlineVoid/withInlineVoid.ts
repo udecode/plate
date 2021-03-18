@@ -22,10 +22,13 @@ export const withInlineVoid = ({
 
   plugins.forEach((plugin) => {
     if (plugin.inlineTypes) {
-      allInlineTypes = allInlineTypes.concat(castArray(plugin.inlineTypes));
+      allInlineTypes = allInlineTypes.concat(
+        castArray(plugin.inlineTypes(editor))
+      );
     }
+
     if (plugin.voidTypes) {
-      allVoidTypes = allVoidTypes.concat(castArray(plugin.voidTypes));
+      allVoidTypes = allVoidTypes.concat(castArray(plugin.voidTypes(editor)));
     }
   });
 

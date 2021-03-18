@@ -9,6 +9,8 @@ export interface MentionNode extends ElementWithAttributes, MentionNodeData {}
 
 // useMention options
 export interface UseMentionOptions {
+  mentionables?: MentionNodeData[];
+
   // Character triggering the mention select
   trigger?: string;
   // Maximum number of suggestions

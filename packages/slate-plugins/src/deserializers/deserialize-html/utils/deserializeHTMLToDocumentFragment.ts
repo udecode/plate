@@ -3,25 +3,28 @@ import {
   SlateDocumentFragment,
 } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Descendant } from 'slate';
+import { Descendant, Editor } from 'slate';
 import { htmlStringToDOMNode } from '../../../serializers/serialize-html/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHTMLToDocumentFragment = ({
-  plugins,
-  element,
-}: {
-  plugins: SlatePlugin[];
-  element: HTMLElement | string;
-}): SlateDocumentFragment => {
+export const deserializeHTMLToDocumentFragment = (
+  editor: Editor,
+  {
+    plugins,
+    element,
+  }: {
+    plugins: SlatePlugin[];
+    element: HTMLElement | string;
+  }
+): SlateDocumentFragment => {
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }
 
-  const fragment = deserializeHTMLElement({
+  const fragment = deserializeHTMLElement(editor, {
     plugins,
     element,
   }) as Descendant[];

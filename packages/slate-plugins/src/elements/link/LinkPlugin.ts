@@ -1,5 +1,5 @@
-import { useRenderElement } from '@udecode/slate-plugins-common';
-import { SlatePlugin, useEditorPluginType } from '@udecode/slate-plugins-core';
+import { getPluginRenderElement } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { ELEMENT_LINK } from './defaults';
 import { useDeserializeLink } from './useDeserializeLink';
 
@@ -8,9 +8,9 @@ import { useDeserializeLink } from './useDeserializeLink';
  */
 export const LinkPlugin = (): SlatePlugin => {
   return {
-    elementKeys: ELEMENT_LINK,
-    renderElement: useRenderElement(ELEMENT_LINK),
+    pluginKeys: ELEMENT_LINK,
+    renderElement: getPluginRenderElement(ELEMENT_LINK),
     deserialize: useDeserializeLink(),
-    inlineTypes: [useEditorPluginType(ELEMENT_LINK)],
+    // inlineTypes: [useEditorPluginType(ELEMENT_LINK)],
   };
 };

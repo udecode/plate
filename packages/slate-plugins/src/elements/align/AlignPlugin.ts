@@ -1,4 +1,4 @@
-import { useRenderElements } from '@udecode/slate-plugins-common';
+import { getPluginRenderElement } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { KEYS_ALIGN } from './defaults';
 import { useDeserializeAlign } from './useDeserializeAlign';
@@ -8,7 +8,7 @@ import { useDeserializeAlign } from './useDeserializeAlign';
  * to left, right and center it.
  */
 export const AlignPlugin = (): SlatePlugin => ({
-  elementKeys: KEYS_ALIGN,
-  renderElement: useRenderElements(KEYS_ALIGN),
+  pluginKeys: KEYS_ALIGN,
+  renderElement: getPluginRenderElement(KEYS_ALIGN),
   deserialize: useDeserializeAlign(),
 });

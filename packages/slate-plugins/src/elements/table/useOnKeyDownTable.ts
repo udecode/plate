@@ -1,9 +1,10 @@
-import { Editor, Transforms } from 'slate';
+import { OnKeyDown } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
 
-export const useOnKeyDownTable = () => (e: KeyboardEvent, editor: Editor) => {
+export const useOnKeyDownTable = (): OnKeyDown => (editor) => (e) => {
   if (e.key === 'Tab') {
     e.preventDefault();
     const res = getTableCellEntry(editor, {});

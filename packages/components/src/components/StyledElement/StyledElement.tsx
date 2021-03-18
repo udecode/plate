@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
 import { getRootClassNames, NodeStyleProps } from '../../types';
@@ -22,6 +23,10 @@ export const StyledElementBase = ({
     className,
     // Other style props
   });
+
+  useEffect(() => {
+    console.log('mount');
+  }, []);
 
   const Tag = as;
 

@@ -1,6 +1,6 @@
+import { OnKeyDown } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import castArray from 'lodash/castArray';
-import { Editor } from 'slate';
 import { toggleNodeType } from '../transforms/toggleNodeType';
 
 export interface OnKeyDownElementOptions {
@@ -22,25 +22,23 @@ export interface OnKeyDownElementOptions {
  */
 export const getOnKeyDownElement = (
   option: OnKeyDownElementOptions | OnKeyDownElementOptions[]
-) => {
+): OnKeyDown => (editor) => (e) => {
   const options = castArray(option);
 
-  return (e: any, editor: Editor) => {
-    options.forEach(({ type, defaultType, hotkey }) => {
-      if (!hotkey) return;
+  options.forEach(({ type, defaultType, hotkey }) => {
+    if (!hotkey) return;
 
-      const hotkeys = castArray(hotkey);
+    const hotkeys = castArray(hotkey);
 
-      for (const key of hotkeys) {
-        if (isHotkey(key, e)) {
-          e.preventDefault();
-          toggleNodeType(editor, {
-            activeType: type,
-            inactiveType: defaultType,
-          });
-          return;
-        }
+    for (const key of hotkeys) {
+      if (isHotkey(key, e)) {
+        e.preventDefault();
+        toggleNodeType(editor, {
+          activeType: type,
+          inactiveType: defaultType,
+        });
+        return;
       }
-    });
-  };
+    }
+  });
 };

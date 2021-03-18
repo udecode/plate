@@ -1,14 +1,12 @@
 import { isCollapsed, someNode } from '@udecode/slate-plugins-common';
+import { OnKeyDown } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
-import { Editor, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ResetBlockTypePluginOptions } from './types';
 
 export const onKeyDownResetBlockType = ({
   rules,
-}: ResetBlockTypePluginOptions) => (
-  event: KeyboardEvent | null,
-  editor: Editor
-) => {
+}: ResetBlockTypePluginOptions): OnKeyDown => (editor) => (event) => {
   let reset: boolean | undefined;
 
   if (editor.selection && isCollapsed(editor.selection)) {

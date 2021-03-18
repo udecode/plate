@@ -1,10 +1,10 @@
-import { Editor } from 'slate';
+import { ReactEditor } from 'slate-react';
 
 /**
  * Slate plugin overriding the `editor` methods.
  * Naming convention is `with*`.
  */
-export type WithPlugin<IEditor = Editor, IEditorExtension = {}> = <
+export type WithOverride<IEditor = ReactEditor, IEditorExtension = {}> = <
   T extends IEditor
 >(
   editor: T

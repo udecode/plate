@@ -1,5 +1,6 @@
 import { Editor } from 'slate';
-import { OnKeyDown } from '../types/OnKeyDown';
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { OnKeyDown } from '../types/SlatePlugin/OnKeyDown';
 
 /**
  * @see {@link OnKeyDown}
@@ -7,6 +8,6 @@ import { OnKeyDown } from '../types/OnKeyDown';
 export const onKeyDownPlugins = (
   editor: Editor,
   onKeyDownList: (OnKeyDown | null | undefined)[]
-) => (event: any) => {
-  onKeyDownList.some((onKeyDown) => onKeyDown?.(event, editor) === false);
+): EditableProps['onKeyDown'] => (event) => {
+  onKeyDownList.some((onKeyDown) => onKeyDown?.(editor)(event) === false);
 };

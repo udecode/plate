@@ -1,15 +1,5 @@
 import 'prismjs/themes/prism.css';
-import React, { useMemo } from 'react';
-import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
-import {
-  FormatQuote,
-  Looks3,
-  Looks4,
-  Looks5,
-  Looks6,
-  LooksOne,
-  LooksTwo,
-} from '@styled-icons/material';
+import React from 'react';
 import {
   BlockquotePlugin,
   CodeBlockPlugin,
@@ -21,25 +11,18 @@ import {
   ResetBlockTypePlugin,
   SlatePlugin,
   SlatePlugins,
-  SlatePluginsOptions,
   SoftBreakPlugin,
-  withCodeBlock,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-  ToolbarCodeBlock,
-  ToolbarElement,
-} from '@udecode/slate-plugins-components';
+import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import {
   initialValueBasicElements,
-  options,
   optionsExitBreak,
   optionsResetBlockTypes,
   optionsSoftBreak,
 } from '../config/initialValues';
+import { ToolbarBasicElements } from '../config/Toolbars';
 
 const id = 'Elements/Basic Elements';
 
@@ -53,10 +36,12 @@ export default {
   },
 };
 
-const withOverrides = [withReact, withHistory, withCodeBlock()] as const;
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
-const SlateContent = () => {
+export const Example = () => {
   const plugins: SlatePlugin[] = [
+    { withOverrides: [withReact, withHistory] },
     ParagraphPlugin(),
     BlockquotePlugin(),
     CodeBlockPlugin(),
@@ -67,53 +52,22 @@ const SlateContent = () => {
   ];
 
   return (
-    <>
-      <HeadingToolbar>
-        <ToolbarElement type={options.h1.type} icon={<LooksOne />} />
-        <ToolbarElement type={options.h2.type} icon={<LooksTwo />} />
-        <ToolbarElement type={options.h3.type} icon={<Looks3 />} />
-        <ToolbarElement type={options.h4.type} icon={<Looks4 />} />
-        <ToolbarElement type={options.h5.type} icon={<Looks5 />} />
-        <ToolbarElement type={options.h6.type} icon={<Looks6 />} />
-        <ToolbarElement type={options.blockquote.type} icon={<FormatQuote />} />
-        <ToolbarCodeBlock
-          type={options.code_block.type}
-          icon={<CodeBlock />}
-          // options={options}
-        />
-      </HeadingToolbar>
-      <EditablePlugins
-        plugins={plugins}
-        editableProps={useMemo(
-          () => ({
-            placeholder: 'Enter some rich text…',
-            spellCheck: true,
-            autoFocus: true,
-          }),
-          []
-        )}
-      />
-    </>
-  );
-};
-
-export const Example = () => {
-  const slatePluginsOptions: SlatePluginsOptions = useMemo(
-    getSlatePluginsOptions,
-    []
-  );
-
-  const components = useMemo(() => getSlatePluginsComponents(), []);
-
-  return (
     <SlatePlugins
       id={id}
-      initialValue={initialValueBasicElements}
-      withOverrides={withOverrides}
-      options={slatePluginsOptions}
+      plugins={plugins}
       components={components}
+      options={options}
+      initialValue={initialValueBasicElements}
     >
-      <SlateContent />
+      <ToolbarBasicElements />
+      <EditablePlugins
+        id={id}
+        editableProps={{
+          placeholder: 'Enter some rich text…',
+          spellCheck: true,
+          autoFocus: true,
+        }}
+      />
     </SlatePlugins>
   );
 };

@@ -1,5 +1,6 @@
 import { getParent } from '@udecode/slate-plugins-common';
-import { Editor, Transforms } from 'slate';
+import { OnKeyDown } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getCodeLines } from './queries/getCodeLines';
 import { indentCodeLine } from './transforms/indentCodeLine';
@@ -9,10 +10,7 @@ import { outdentCodeLine } from './transforms/outdentCodeLine';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const useOnKeyDownCodeBlock = () => (
-  e: KeyboardEvent,
-  editor: Editor
-) => {
+export const useOnKeyDownCodeBlock = (): OnKeyDown => (editor) => (e) => {
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
     const res = getCodeLineEntry(editor, {});

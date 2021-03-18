@@ -6,6 +6,7 @@ import {
   isSelectionAtBlockStart,
   queryNode,
 } from '@udecode/slate-plugins-common';
+import { OnKeyDown } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { Editor, Path, Transforms } from 'slate';
 import { ExitBreakOnKeyDownOptions } from './types';
@@ -56,10 +57,7 @@ export const onKeyDownExitBreak = ({
     { hotkey: 'mod+enter' },
     { hotkey: 'mod+shift+enter', before: true },
   ],
-}: ExitBreakOnKeyDownOptions = {}) => (
-  event: KeyboardEvent,
-  editor: Editor
-) => {
+}: ExitBreakOnKeyDownOptions = {}): OnKeyDown => (editor) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

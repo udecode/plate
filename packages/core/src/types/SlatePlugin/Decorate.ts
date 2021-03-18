@@ -6,6 +6,5 @@ import { Editor, NodeEntry, Range } from 'slate';
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate = (
-  entry: NodeEntry,
   editor: Editor
-) => Range[] | undefined;
+) => (entry: NodeEntry) => Range[] | undefined;

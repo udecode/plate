@@ -1,3 +1,4 @@
+import { Editor } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
 /**
@@ -6,5 +7,5 @@ import { RenderElementProps } from 'slate-react';
  * If the function renders a JSX element then that JSX element is rendered.
  */
 export type RenderElement = (
-  props: RenderElementProps
-) => JSX.Element | undefined;
+  editor: Editor
+) => (props: RenderElementProps) => JSX.Element | undefined;

@@ -1,4 +1,7 @@
-import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
+import {
+  getPluginOnKeyDownMark,
+  getPluginRenderLeaf,
+} from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { useDeserializeUnderline } from '../underline/useDeserializeUnderline';
 import { MARK_STRIKETHROUGH } from './defaults';
@@ -7,7 +10,7 @@ import { MARK_STRIKETHROUGH } from './defaults';
  * Enables support for strikethrough formatting.
  */
 export const StrikethroughPlugin = (): SlatePlugin => ({
-  renderLeaf: useRenderLeaf(MARK_STRIKETHROUGH),
+  renderLeaf: getPluginRenderLeaf(MARK_STRIKETHROUGH),
   deserialize: useDeserializeUnderline(),
-  onKeyDown: useOnKeyDownMark(MARK_STRIKETHROUGH),
+  onKeyDown: getPluginOnKeyDownMark(MARK_STRIKETHROUGH),
 });

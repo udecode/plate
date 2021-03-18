@@ -1,5 +1,5 @@
-import { useRenderElement } from '@udecode/slate-plugins-common';
-import { SlatePlugin, useEditorPluginType } from '@udecode/slate-plugins-core';
+import { getPluginRenderElement } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 import { useDeserializeIframe } from './useDeserializeIframe';
 
@@ -8,8 +8,8 @@ import { useDeserializeIframe } from './useDeserializeIframe';
  * or Vimeo videos, Instagram posts and tweets or Google Maps.
  */
 export const MediaEmbedPlugin = (): SlatePlugin => ({
-  elementKeys: ELEMENT_MEDIA_EMBED,
-  renderElement: useRenderElement(ELEMENT_MEDIA_EMBED),
+  pluginKeys: ELEMENT_MEDIA_EMBED,
+  renderElement: getPluginRenderElement(ELEMENT_MEDIA_EMBED),
   deserialize: useDeserializeIframe(),
-  voidTypes: [useEditorPluginType(ELEMENT_MEDIA_EMBED)],
+  // voidTypes: [useEditorPluginType(ELEMENT_MEDIA_EMBED)],
 });

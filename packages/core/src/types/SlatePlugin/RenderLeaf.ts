@@ -1,3 +1,4 @@
+import { Editor } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 
 /**
@@ -9,4 +10,6 @@ import { RenderLeafProps } from 'slate-react';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
+export type RenderLeaf = (
+  editor: Editor
+) => (props: RenderLeafProps) => JSX.Element;

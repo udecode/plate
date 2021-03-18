@@ -3,7 +3,10 @@ import { RenderLeaf } from '@udecode/slate-plugins-core';
 
 export const MARK_PRISM = 'prism';
 
-export const renderLeafCodeBlock = (): RenderLeaf => ({ leaf, children }) => {
+export const renderLeafCodeBlock = (): RenderLeaf => () => ({
+  leaf,
+  children,
+}) => {
   if (leaf[MARK_PRISM] && !!leaf.text) {
     return <span className={leaf?.className as string}>{children}</span>;
   }

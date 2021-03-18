@@ -20,7 +20,7 @@ export const useSlatePluginsActions = (
       setValue: getSetterById(s.getState().setValue, storeId),
       setEditor: getSetterById(s.getState().setEditor, storeId),
       setPlugins: getSetterById(s.getState().setPlugins, storeId),
-      setElementKeys: getSetterById(s.getState().setElementKeys, storeId),
+      setPluginKeys: getSetterById(s.getState().setPluginKeys, storeId),
       resetEditorKey: (id?: string) =>
         s.getState().resetEditorKey(id ?? storeId),
     }),

@@ -1,4 +1,7 @@
-import { useOnKeyDownMark, useRenderLeaf } from '@udecode/slate-plugins-common';
+import {
+  getPluginOnKeyDownMark,
+  getPluginRenderLeaf,
+} from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { MARK_BOLD } from './defaults';
 import { useDeserializeBold } from './useDeserializeBold';
@@ -7,7 +10,7 @@ import { useDeserializeBold } from './useDeserializeBold';
  * Enables support for bold formatting
  */
 export const BoldPlugin = (): SlatePlugin => ({
-  renderLeaf: useRenderLeaf(MARK_BOLD),
+  renderLeaf: getPluginRenderLeaf(MARK_BOLD),
   deserialize: useDeserializeBold(),
-  onKeyDown: useOnKeyDownMark(MARK_BOLD),
+  onKeyDown: getPluginOnKeyDownMark(MARK_BOLD),
 });

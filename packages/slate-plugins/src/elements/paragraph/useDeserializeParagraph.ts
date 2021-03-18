@@ -1,12 +1,12 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorPluginOptions,
-} from '@udecode/slate-plugins-core';
+import { DeserializeHtml, getPluginOptions } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { ELEMENT_PARAGRAPH } from './defaults';
 
-export const useDeserializeParagraph = (): DeserializeHtml => {
-  const options = useEditorPluginOptions(ELEMENT_PARAGRAPH);
+export const useDeserializeParagraph = (): DeserializeHtml => (
+  editor: Editor
+) => {
+  const options = getPluginOptions(editor, ELEMENT_PARAGRAPH);
 
   return {
     element: getElementDeserializer({

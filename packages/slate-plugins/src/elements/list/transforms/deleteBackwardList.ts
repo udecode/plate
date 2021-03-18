@@ -66,5 +66,5 @@ export const deleteBackwardList = (
         predicate: () => isSelectionAtBlockStart(editor),
       },
     ],
-  })(null, editor);
+  })(editor)(null);
 };

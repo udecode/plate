@@ -2,15 +2,15 @@ import {
   getNodeDeserializer,
   getSlateClass,
 } from '@udecode/slate-plugins-common';
-import {
-  DeserializeHtml,
-  useEditorPluginOptions,
-} from '@udecode/slate-plugins-core';
+import { DeserializeHtml, getPluginOptions } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { CLASS_TODO_LIST_CHECKED } from './constants';
 import { ELEMENT_TODO_LI } from './defaults';
 
-export const useDeserializeTodoList = (): DeserializeHtml => {
-  const options = useEditorPluginOptions(ELEMENT_TODO_LI);
+export const useDeserializeTodoList = (): DeserializeHtml => (
+  editor: Editor
+) => {
+  const options = getPluginOptions(editor, ELEMENT_TODO_LI);
 
   return {
     element: getNodeDeserializer({
