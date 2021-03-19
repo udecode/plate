@@ -1,7 +1,7 @@
-import { MarkPluginOptions } from '@udecode/slate-plugins-common';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 
 export const MARK_UNDERLINE = 'underline';
 
-export const DEFAULTS_UNDERLINE: MarkPluginOptions = {
+export const DEFAULTS_UNDERLINE: Partial<SlatePluginOptions> = {
   hotkey: 'mod+u',
 };

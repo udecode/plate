@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
+import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { MediaEmbedPlugin } from '../../../../elements/media-embed/MediaEmbedPlugin';
-import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { useMediaEmbedPlugin } from '../../../../elements/media-embed/useMediaEmbedPlugin';
+import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -33,7 +33,9 @@ const output = (
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
     const editor = withInlineVoid({})(
-      withDeserializeHTML({ plugins: [MediaEmbedPlugin()] })(withReact(input))
+      withDeserializeHTML({ plugins: [useMediaEmbedPlugin()] })(
+        withReact(input)
+      )
     );
 
     editor.insertData(data as any);

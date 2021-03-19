@@ -1,6 +1,7 @@
 import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
-import { SlatePluginsOptions, State } from './SlatePluginsStore';
+import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
+import { State } from './SlatePluginsStore';
 
 /**
  * `useSlatePluginsEffects` options

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { TablePlugin } from '../../../../elements/table/TablePlugin';
+import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
 import { deserializeHTMLElement } from '../../../index';
 
 const html =
@@ -9,7 +9,7 @@ const html =
 const element = getHtmlDocument(html).body;
 
 const input = {
-  plugins: [TablePlugin()],
+  plugins: [useTablePlugin()],
   element,
 };
 

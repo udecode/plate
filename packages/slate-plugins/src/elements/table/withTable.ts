@@ -1,9 +1,9 @@
 import { isCollapsed } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, WithOverride } from '@udecode/slate-plugins-core';
 import { Editor, Node, Point, Transforms } from 'slate';
 import { ELEMENT_TD } from './defaults';
 
-export const withTable = () => <T extends Editor>(editor: T) => {
+export const withTable = (): WithOverride => (editor) => {
   const matchCells = (node: Node) =>
     node.type === getPluginType(editor, ELEMENT_TD) ||
     node.type === getPluginType(editor, ELEMENT_TD);

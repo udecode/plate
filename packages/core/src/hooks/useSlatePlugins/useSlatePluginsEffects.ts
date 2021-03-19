@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
+import { useSlatePluginsEditor } from '../../store/useSlatePluginsSelectors';
+import { useSlatePluginsStore } from '../../store/useSlatePluginsStore';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
+import { flatMapKey } from '../../utils/flatMapKey';
 
 /**
  * Effects to update the slate plugins store from the options.
@@ -22,12 +24,21 @@ export const useSlatePluginsEffects = ({
     setEditor,
     setPlugins,
     setPluginKeys,
+    clearState,
   } = useSlatePluginsActions(id);
-  const _editor = useSlatePluginsEditor(id);
+  const storeEditor = useSlatePluginsEditor(id);
 
   useEffect(() => {
     setInitialState();
   }, [setInitialState]);
+
+  // Clear the state by id on unmount.
+  useEffect(
+    () => () => {
+      clearState();
+    },
+    [clearState]
+  );
 
   // Slate.value
   useEffect(() => {
@@ -42,45 +53,33 @@ export const useSlatePluginsEffects = ({
 
   // Slate.editor
   useEffect(() => {
-    console.log(editor);
-    if (_editor) return;
+    if (storeEditor) return;
 
-    if (editor || options || components || plugins) {
-      const _options = options ?? {};
+    const _options = options ?? {};
 
-      if (components) {
-        // Merge components into options
-        Object.keys(components).forEach((key) => {
-          _options[key] = {
-            component: components[key],
-            ..._options[key],
-          };
-        });
-      }
-
-      // Default type is the plugin key
-      Object.keys(_options).forEach((key) => {
-        if (!_options[key].type) _options[key].type = key;
-      });
-
-      const withOverrides =
-        plugins?.flatMap((p) => p.withOverrides ?? []) ?? [];
-
-      setEditor({
-        editor,
-        withOverrides,
-        options: _options,
+    if (components) {
+      // Merge components into options
+      Object.keys(components).forEach((key) => {
+        _options[key] = {
+          component: components[key],
+          ..._options[key],
+        };
       });
     }
-  }, [_editor, components, editor, id, options, plugins, setEditor]);
+
+    setEditor({
+      editor,
+      plugins,
+      options: _options,
+    });
+  }, [storeEditor, components, editor, id, options, plugins, setEditor]);
 
   // Slate plugins
   useEffect(() => {
-    console.log('plugins');
     plugins && setPlugins(plugins);
   }, [plugins, setPlugins]);
 
   useEffect(() => {
-    plugins && setPluginKeys(plugins.flatMap((p) => p.pluginKeys ?? []));
+    plugins && setPluginKeys(flatMapKey(plugins, 'pluginKeys') as any);
   }, [plugins, setPluginKeys]);
 };

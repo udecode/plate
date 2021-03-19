@@ -2,15 +2,19 @@ import React, { useCallback } from 'react';
 import { boolean, text } from '@storybook/addon-knobs';
 import {
   EditablePlugins,
+  getSlatePluginsOptions,
   SlateDocument,
   SlatePlugins,
+  useHistoryPlugin,
+  useReactPlugin,
   useSlatePluginsActions,
   useSlatePluginsEditor,
-  withInlineVoid,
 } from '@udecode/slate-plugins';
+import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { editableProps } from '../../stories/config/initialValues';
 import { initialValueCombobox, options } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 import { useComboboxControls } from './combobox/hooks/useComboboxControls';
@@ -27,6 +31,9 @@ const id = 'Examples/Combobox';
 export default {
   title: id,
 };
+
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 const useComboboxOnChange = (editor: Editor) => {
   const tagOnChange = useTagOnChange(editor, MENTIONABLES);
@@ -45,13 +52,7 @@ const useComboboxOnChange = (editor: Editor) => {
   }, [closeMenu, isOpen, tagOnChange]);
 };
 
-const plugins = [TagPlugin(options)];
-
-const withOverrides = [
-  withReact,
-  withHistory,
-  withInlineVoid({ plugins }),
-] as const;
+const plugins = [useReactPlugin(), useHistoryPlugin(), TagPlugin(options)];
 
 const ComboboxContainer = () => {
   useComboboxControls();
@@ -79,31 +80,25 @@ export const Example = () => {
     return (
       <SlatePlugins
         id={id}
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
         initialValue={initialValueCombobox}
-        withOverrides={withOverrides}
+        // onKeyDown={[comboboxOnKeyDown]}
+        //           onKeyDownDeps={[
+        //             editor,
+        //             itemIndex,
+        //             comboboxSearch,
+        //             tagTargetRange,
+        //             comboboxOnKeyDown,
+        //           ]}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
           comboboxOnChange();
         }}
       >
         <ComboboxContainer />
-        <EditablePlugins
-          plugins={plugins}
-          onKeyDown={[comboboxOnKeyDown]}
-          onKeyDownDeps={[
-            editor,
-            itemIndex,
-            comboboxSearch,
-            tagTargetRange,
-            comboboxOnKeyDown,
-          ]}
-          editableProps={{
-            readOnly: boolean('readOnly', false),
-            placeholder: text('placeholder', 'Enter some plain text...'),
-            spellCheck: boolean('spellCheck', true),
-            autoFocus: true,
-          }}
-        />
       </SlatePlugins>
     );
   };

@@ -1,12 +1,10 @@
-import {
-  ElementWithAttributes,
-  HtmlAttributesProps,
-} from '@udecode/slate-plugins';
+import { NodeProps } from '@udecode/slate-plugins-core';
 import { IStyle } from '@uifabric/styling';
 import {
   classNamesFunction,
   IStyleFunctionOrObject,
 } from '@uifabric/utilities';
+import { Element } from 'slate';
 import { RenderElementProps } from 'slate-react';
 
 export interface NodeStyleProps {
@@ -33,9 +31,10 @@ export interface ElementProps<
   TStyleProps = NodeStyleProps,
   TStyleSet = NodeStyleSet
 > extends Omit<RenderElementProps, 'element'>,
-    HtmlAttributesProps,
     NodeStyleProps {
-  element: TElement & ElementWithAttributes;
+  element: Element & TElement;
+
+  nodeProps?: NodeProps;
 
   /**
    * Call to provide customized styling that will layer on top of the variant rules.

@@ -14,7 +14,6 @@ export const BlockquoteElementBase = ({
   children,
   className,
   styles,
-  htmlAttributes,
 }: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -22,7 +21,7 @@ export const BlockquoteElementBase = ({
   });
 
   return (
-    <blockquote {...attributes} className={classNames.root} {...htmlAttributes}>
+    <blockquote {...attributes} className={classNames.root}>
       {children}
     </blockquote>
   );

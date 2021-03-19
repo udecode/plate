@@ -16,7 +16,6 @@ export const StyledElementBase = ({
   children,
   className,
   styles,
-  htmlAttributes,
   as = 'div',
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
@@ -24,14 +23,10 @@ export const StyledElementBase = ({
     // Other style props
   });
 
-  useEffect(() => {
-    console.log('mount');
-  }, []);
-
   const Tag = as;
 
   return (
-    <Tag {...attributes} className={classNames.root} {...htmlAttributes}>
+    <Tag {...attributes} className={classNames.root}>
       {children}
     </Tag>
   );

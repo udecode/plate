@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
-import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
-import { ItalicPlugin } from '../../../../marks/italic/ItalicPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
+import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
+import { useItalicPlugin } from '../../../../marks/italic/useItalicPlugin';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
-  plugins: [ParagraphPlugin(), BoldPlugin(), ItalicPlugin()],
+  plugins: [useParagraphPlugin(), useBoldPlugin(), useItalicPlugin()],
   element: document.createElement('strong'),
   children: [
     <hli>

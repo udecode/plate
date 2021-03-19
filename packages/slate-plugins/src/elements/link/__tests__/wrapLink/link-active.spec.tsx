@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
 import { ELEMENT_LINK } from '../../defaults';
 import { wrapLink } from '../../transforms/wrapLink';
 import { withLink } from '../../withLink';

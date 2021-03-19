@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { ImagePlugin } from '../../../../elements/image/ImagePlugin';
-import { LinkPlugin } from '../../../../elements/link/LinkPlugin';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
-import { TablePlugin } from '../../../../elements/table/TablePlugin';
+import { useImagePlugin } from '../../../../elements/image/useImagePlugin';
+import { useLinkPlugin } from '../../../../elements/link/useLinkPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
+import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
 import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
 import { deserializeHTMLElement } from '../../../index';
 
@@ -22,14 +22,14 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
 )}</p>${elementTags.join('')}</body></html>`;
 
 const input1 = [
-  ImagePlugin({
+  useImagePlugin({
     img: {
       deserialize: {
         attributes: ['alt'],
       },
     },
   }),
-  LinkPlugin({
+  useLinkPlugin({
     a: {
       deserialize: {
         node: (el) => ({
@@ -40,8 +40,8 @@ const input1 = [
       },
     },
   }),
-  ParagraphPlugin(),
-  TablePlugin({
+  useParagraphPlugin(),
+  useTablePlugin({
     th: {
       deserialize: {
         node: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),

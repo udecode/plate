@@ -1,11 +1,11 @@
-import { ElementPluginOptions } from '@udecode/slate-plugins-common';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
 
 export const KEYS_CODE_BLOCK = [ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE];
 
-export const DEFAULTS_CODE_BLOCK: ElementPluginOptions = {
+export const DEFAULTS_CODE_BLOCK: Partial<SlatePluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
 };
 

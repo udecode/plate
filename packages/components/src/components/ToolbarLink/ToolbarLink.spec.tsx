@@ -4,7 +4,6 @@ import {
   ELEMENT_H1,
   ELEMENT_LINK,
   pipe,
-  withInlineVoid,
   withLink,
 } from '@udecode/slate-plugins';
 import { Editor } from 'slate';

@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>

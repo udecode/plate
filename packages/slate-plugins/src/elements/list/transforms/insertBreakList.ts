@@ -1,7 +1,7 @@
 import { isBlockAboveEmpty } from '@udecode/slate-plugins-common';
 import { getPluginType } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
-import { onKeyDownResetBlockType } from '../../../handlers/reset-block-type/onKeyDownResetBlockType';
+import { onKeyDownResetBlockType } from '../../../plugins/reset-block-type/onKeyDownResetBlockType';
 import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
 import { ELEMENT_LI } from '../defaults';
 import { getListItemEntry } from '../queries/getListItemEntry';

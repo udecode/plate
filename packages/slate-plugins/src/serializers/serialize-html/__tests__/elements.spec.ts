@@ -1,20 +1,20 @@
 import {
-  AlignPlugin,
-  BlockquotePlugin,
-  HeadingPlugin,
   htmlStringToDOMNode,
-  ImagePlugin,
-  LinkPlugin,
-  ListPlugin,
-  ParagraphPlugin,
   serializeHTMLFromNodes,
-  TablePlugin,
+  useAlignPlugin,
+  useBlockquotePlugin,
+  useHeadingPlugin,
+  useImagePlugin,
+  useLinkPlugin,
+  useListPlugin,
+  useParagraphPlugin,
+  useTablePlugin,
 } from '../../../index';
 
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes({
-      plugins: [ListPlugin()],
+      plugins: [useListPlugin()],
       nodes: [
         {
           type: 'ul',
@@ -38,7 +38,7 @@ it('serialize list to html', () => {
 it('serialize link to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [LinkPlugin()],
+      plugins: [useLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -58,7 +58,7 @@ it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [BlockquotePlugin()],
+        plugins: [useBlockquotePlugin()],
         nodes: [
           {
             type: 'blockquote',
@@ -73,7 +73,7 @@ it('serialize blockquote to html', () => {
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes({
-      plugins: [HeadingPlugin()],
+      plugins: [useHeadingPlugin()],
       nodes: [
         {
           type: 'h1',
@@ -98,7 +98,7 @@ it('serialize headings to html', () => {
 it('serialize paragraph to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [ParagraphPlugin()],
+      plugins: [useParagraphPlugin()],
       nodes: [
         {
           type: 'p',
@@ -113,7 +113,7 @@ it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [ImagePlugin()],
+        plugins: [useImagePlugin()],
         nodes: [
           {
             type: 'img',
@@ -130,7 +130,7 @@ it('serialize image to html', () => {
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes({
-      plugins: [TablePlugin()],
+      plugins: [useTablePlugin()],
       nodes: [
         {
           type: 'table',
@@ -167,7 +167,7 @@ it('serialize table to html', () => {
 it('serialize alignments to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [AlignPlugin()],
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],

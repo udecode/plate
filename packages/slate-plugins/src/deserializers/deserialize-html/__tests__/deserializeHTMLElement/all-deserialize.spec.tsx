@@ -1,23 +1,22 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { AlignPlugin } from '../../../../elements/align/AlignPlugin';
-import { BlockquotePlugin } from '../../../../elements/blockquote/BlockquotePlugin';
-import { CodeBlockPlugin } from '../../../../elements/code-block/CodeBlockPlugin';
-import { HeadingPlugin } from '../../../../elements/heading/HeadingPlugin';
-import { ImagePlugin } from '../../../../elements/image/ImagePlugin';
-import { LinkPlugin } from '../../../../elements/link/LinkPlugin';
-import { ListPlugin } from '../../../../elements/list/ListPlugin';
-import { MediaEmbedPlugin } from '../../../../elements/media-embed/MediaEmbedPlugin';
-import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
-import { TablePlugin } from '../../../../elements/table/TablePlugin';
+import { useAlignPlugin } from '../../../../elements/align/useAlignPlugin';
+import { useBlockquotePlugin } from '../../../../elements/blockquote/useBlockquotePlugin';
+import { useCodeBlockPlugin } from '../../../../elements/code-block/useCodeBlockPlugin';
+import { useHeadingPlugin } from '../../../../elements/heading/useHeadingPlugin';
+import { useImagePlugin } from '../../../../elements/image/useImagePlugin';
+import { useLinkPlugin } from '../../../../elements/link/useLinkPlugin';
+import { useListPlugin } from '../../../../elements/list/useListPlugin';
+import { useMediaEmbedPlugin } from '../../../../elements/media-embed/useMediaEmbedPlugin';
+import { useMentionPlugin } from '../../../../elements/mention/useMentionPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
+import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
 import {
   CLASS_TODO_LIST,
   CLASS_TODO_LIST_CHECKED,
 } from '../../../../elements/todo-list/constants';
-import { TodoListPlugin } from '../../../../elements/todo-list/TodoListPlugin';
-import { SoftBreakPlugin } from '../../../../handlers/soft-break/SoftBreakPlugin';
+import { useTodoListPlugin } from '../../../../elements/todo-list/useTodoListPlugin';
 import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
 import { useDeserializeCode } from '../../../../marks/code/useDeserializeCode';
 import { useDeserializeHighlight } from '../../../../marks/highlight/useDeserializeHighlight';
@@ -27,7 +26,8 @@ import { useDeserializeStrikethrough } from '../../../../marks/strikethrough/use
 import { useDeserializeSubscript } from '../../../../marks/subsupscript/subscript/useDeserializeSubscript';
 import { useDeserializeSuperscript } from '../../../../marks/subsupscript/superscript/useDeserializeSuperscript';
 import { useDeserializeUnderline } from '../../../../marks/underline/useDeserializeUnderline';
-import { SearchHighlightPlugin } from '../../../../widgets/search-highlight/SearchHighlightPlugin';
+import { useSoftBreakPlugin } from '../../../../plugins/soft-break/useSoftBreakPlugin';
+import { useSearchHighlightPlugin } from '../../../../widgets/search-highlight/useSearchHighlightPlugin';
 import { deserializeHTMLElement } from '../../../index';
 
 const textTags = [
@@ -70,20 +70,20 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
 )}</p>${elementTags.join('')}</body></html>`;
 
 const input1 = [
-  BlockquotePlugin(),
-  TodoListPlugin(),
-  HeadingPlugin({ levels: 1 }),
-  ImagePlugin(),
-  LinkPlugin(),
-  ListPlugin(),
-  MentionPlugin(),
-  ParagraphPlugin(),
-  CodeBlockPlugin(),
-  TablePlugin(),
-  MediaEmbedPlugin(),
-  SearchHighlightPlugin(),
-  SoftBreakPlugin(),
-  AlignPlugin(),
+  useBlockquotePlugin(),
+  useTodoListPlugin(),
+  useHeadingPlugin({ levels: 1 }),
+  useImagePlugin(),
+  useLinkPlugin(),
+  useListPlugin(),
+  useMentionPlugin(),
+  useParagraphPlugin(),
+  useCodeBlockPlugin(),
+  useTablePlugin(),
+  useMediaEmbedPlugin(),
+  useSearchHighlightPlugin(),
+  useSoftBreakPlugin(),
+  useAlignPlugin(),
   { deserialize: useDeserializeBold() },
   { deserialize: useDeserializeHighlight() },
   { deserialize: useDeserializeCode() },

@@ -9,16 +9,16 @@ import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 import { ToolbarElement } from '../ToolbarElement/ToolbarElement';
 
 export const ToolbarList = ({
-  typeList = ELEMENT_UL,
+  type = ELEMENT_UL,
   ...props
-}: ToolbarButtonProps) => {
+}: ToolbarButtonProps & { type?: string }) => {
   const editor = useSlate();
 
   return (
     <ToolbarElement
-      type={typeList}
+      type={type}
       onMouseDown={getPreventDefaultHandler(toggleList, editor, {
-        typeList,
+        typeList: type,
       })}
       {...props}
     />

@@ -1,5 +1,4 @@
 import { Editor, Node } from 'slate';
-import { SlatePropsOnChange } from '../SlateProps';
 
 /**
  * Function called whenever a change occurs in the editor.

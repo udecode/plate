@@ -124,12 +124,12 @@ For additional help, join us in our
 
 | Handler Plugins                                               |                                                     |
 |:--------------------------------------------------------------|:----------------------------------------------------|
-| [Autoformat](packages/slate-plugins/src/handlers/autoformat/) | Enables support for autoformatting actions.         |
-| [SoftBreak](packages/slate-plugins/src/handlers/soft-break/)  | Enables support for inserting soft breaks.          |
+| [Autoformat](packages/slate-plugins/src/plugins/autoformat) | Enables support for autoformatting actions.         |
+| [SoftBreak](packages/slate-plugins/src/plugins/soft-break)  | Enables support for inserting soft breaks.          |
 
 | Decorator Plugins                                         |                                 |
 |:----------------------------------------------------------|:--------------------------------|
-| [Preview](stories/decorators/plugin) | Enables support for previewing. |
+| [Preview](stories/examples/preview-markdown) | Enables support for previewing. |
 
 | Toolbar                                                          |                                                                |
 |:-----------------------------------------------------------------|:---------------------------------------------------------------|

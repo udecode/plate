@@ -1,12 +1,12 @@
 import { Editor } from 'slate';
 import { Decorate } from './Decorate';
-import { DeserializeHtml } from './DeserializeHtml';
+import { Deserialize } from './Deserialize';
 import { OnChange } from './OnChange';
 import { OnDOMBeforeInput } from './OnDOMBeforeInput';
 import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
-import { SerializeHtml } from './SerializeHtml';
+import { Serialize } from './Serialize';
 import { WithOverride } from './WithOverride';
 
 /**
@@ -61,40 +61,13 @@ export interface SlatePlugin {
   /**
    * @see {@link DeserializeHtml}
    */
-  deserialize?: DeserializeHtml;
+  deserialize?: Deserialize;
 
   /**
    * @see {@link SerializeHtml}
    */
-  serialize?: SerializeHtml;
+  serialize?: Serialize;
 
   pluginKeys?: string | string[];
   // pluginKeys?: T | T[];
 }
-
-// /**
-// * Dependencies of `decorate`
-// */
-// decorateDeps?: any[];
-//
-// /**
-// * Dependencies for `renderElement`
-// */
-// renderElementDeps?: any[];
-//
-// /**
-// * Dependencies for `renderLeaf`
-// */
-// renderLeafDeps?: any[];
-//
-// /**
-// * Dependencies for `onDOMBeforeInput`
-// */
-// onDOMBeforeInputDeps?: any[];
-//
-//
-//
-// /**
-// * Dependencies for `onKeyDown`
-// */
-// onKeyDownDeps?: any[];

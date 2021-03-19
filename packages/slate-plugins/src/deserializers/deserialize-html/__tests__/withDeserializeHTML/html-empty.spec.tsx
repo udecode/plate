@@ -3,8 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
+import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -31,7 +31,7 @@ const output = (
 
 describe('when inserting empty html', () => {
   it('should do nothing', () => {
-    const editor = withDeserializeHTML({ plugins: [BoldPlugin()] })(
+    const editor = withDeserializeHTML({ plugins: [useBoldPlugin()] })(
       withReact(input)
     );
 

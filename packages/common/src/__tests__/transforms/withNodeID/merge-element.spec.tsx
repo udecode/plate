@@ -3,7 +3,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
-import { withNodeID } from '../../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
+import { withNodeId } from '../../../../../slate-plugins/src/plugins/useNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((
@@ -21,7 +21,7 @@ const output = (
 ) as any;
 
 it('should recover the ids', () => {
-  const editor: HistoryEditor = withNodeID({
+  const editor: HistoryEditor = withNodeId({
     idCreator: idCreatorFixture,
   })(withHistory(input));
 

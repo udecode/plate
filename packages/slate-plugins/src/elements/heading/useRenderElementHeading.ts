@@ -1,8 +1,8 @@
+import { getRenderElement } from '@udecode/slate-plugins-common';
 import {
-  getRenderElement,
+  getPluginOptions,
   RenderNodeOptions,
-} from '@udecode/slate-plugins-common';
-import { getPluginOptions } from '@udecode/slate-plugins-core';
+} from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import {
   DEFAULT_HEADING_LEVEL,

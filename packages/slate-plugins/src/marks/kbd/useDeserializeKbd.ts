@@ -1,9 +1,9 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, getPluginOptions } from '@udecode/slate-plugins-core';
+import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { MARK_KBD } from './defaults';
 
-export const useDeserializeKbd = (): DeserializeHtml => (editor: Editor) => {
+export const useDeserializeKbd = (): Deserialize => (editor: Editor) => {
   const options = getPluginOptions(editor, MARK_KBD);
 
   return {

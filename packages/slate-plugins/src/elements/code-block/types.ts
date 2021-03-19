@@ -1,4 +1,5 @@
 import { InsertNodesOptions } from '@udecode/slate-plugins-common';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 
 export interface WithCodeBlockOptions {
   /**
@@ -7,8 +8,8 @@ export interface WithCodeBlockOptions {
   // validCodeBlockChildrenTypes?: string[];
 }
 
-export interface CodeBlockInsertOptions {
-  defaultType?: string;
+export interface CodeBlockInsertOptions
+  extends Pick<SlatePluginOptions, 'defaultType'> {
   level?: number;
   insertNodesOptions?: Omit<InsertNodesOptions, 'match'>;
 }

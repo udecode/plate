@@ -1,15 +1,13 @@
-import { ReactEditor } from 'slate-react';
+import { WithOverride } from '@udecode/slate-plugins-core';
 import { getListNormalizer } from './normalizers/getListNormalizer';
 import { deleteBackwardList } from './transforms/deleteBackwardList';
 import { deleteFragmentList } from './transforms/deleteFragmentList';
 import { insertBreakList } from './transforms/insertBreakList';
 import { WithListOptions } from './types';
 
-export const withList = ({ validLiChildrenTypes }: WithListOptions = {}) => <
-  T extends ReactEditor
->(
-  editor: T
-) => {
+export const withList = ({
+  validLiChildrenTypes,
+}: WithListOptions = {}): WithOverride => (editor) => {
   const { insertBreak, deleteBackward, deleteFragment } = editor;
 
   editor.insertBreak = () => {

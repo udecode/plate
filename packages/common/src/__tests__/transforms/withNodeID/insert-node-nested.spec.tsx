@@ -2,7 +2,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeID } from '../../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
+import { withNodeId } from '../../../../../slate-plugins/src/plugins/useNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((
@@ -24,7 +24,7 @@ const output = (
 ) as any;
 
 it('should add an id to the new elements', () => {
-  const editor = withNodeID({ idCreator: idCreatorFixture })(
+  const editor = withNodeId({ idCreator: idCreatorFixture })(
     withHistory(input)
   );
 

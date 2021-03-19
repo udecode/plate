@@ -1,7 +1,7 @@
 import { Editor, Transforms } from 'slate';
 import { someNode } from '../queries/someNode';
 import { EditorNodesOptions } from '../types/Editor.types';
-import { DEFAULT_ELEMENT } from '../types/node.types';
+import { ELEMENT_DEFAULT } from '../types/node.types';
 
 export interface ToggleNodeTypeOptions {
   /**
@@ -24,7 +24,7 @@ export const toggleNodeType = (
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<EditorNodesOptions, 'match'>
 ) => {
-  const { activeType, inactiveType = DEFAULT_ELEMENT } = options;
+  const { activeType, inactiveType = ELEMENT_DEFAULT } = options;
 
   const isActive = someNode(editor, {
     ...editorNodesOptions,

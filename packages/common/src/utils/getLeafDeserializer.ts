@@ -1,4 +1,4 @@
-import { GetLeafDeserializerOptions } from '../types/Deserialize';
+import { GetLeafDeserializerOptions } from '@udecode/slate-plugins-core';
 import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**
@@ -6,6 +6,6 @@ import { getNodeDeserializer } from './getNodeDeserializer';
  */
 export const getLeafDeserializer = (options: GetLeafDeserializerOptions) =>
   getNodeDeserializer({
-    node: () => ({ [options.type]: true }),
+    getNode: () => ({ [options.type]: true }),
     ...options,
   });

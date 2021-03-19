@@ -1,0 +1,50 @@
+import React from 'react';
+import {
+  getSlatePluginsOptions,
+  SlatePlugins,
+  useBasicElementPlugins,
+  useBasicMarkPlugins,
+  useDeserializeMdPlugin,
+  useHistoryPlugin,
+  useImagePlugin,
+  useLinkPlugin,
+  useListPlugin,
+  useReactPlugin,
+  useTablePlugin,
+} from '@udecode/slate-plugins';
+import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
+import { editableProps, initialValuePasteMd } from '../config/initialValues';
+
+const id = 'Deserializers/Markdown';
+
+export default {
+  title: id,
+};
+
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
+
+export const Example = () => {
+  const plugins = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+    ...useBasicMarkPlugins(),
+    useImagePlugin(),
+    useLinkPlugin(),
+    useListPlugin(),
+    useTablePlugin(),
+    useDeserializeMdPlugin(),
+  ];
+
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePasteMd}
+    />
+  );
+};

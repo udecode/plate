@@ -19,8 +19,8 @@ import {
   initialValueSoftBreak,
   initialValueTables,
   options,
-  optionsResetBlockTypes,
-} from '../../../../../stories-2/config/initialValues';
+} from '../../../../../stories/config/initialValues';
+import { optionsResetBlockTypePlugin } from '../../../../../stories/config/pluginOptions';
 import { BalloonToolbar } from '../../../../components/src/components/Toolbar/BalloonToolbar/BalloonToolbar';
 import { HeadingToolbar } from '../../../../components/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
 import { ToolbarAlign } from '../../../../components/src/components/ToolbarAlign/ToolbarAlign';
@@ -31,83 +31,83 @@ import { ToolbarList } from '../../../../components/src/components/ToolbarList/T
 import { ToolbarMark } from '../../../../components/src/components/ToolbarMark/ToolbarMark';
 import { ToolbarTable } from '../../../../components/src/components/ToolbarTable/ToolbarTable';
 import { autoformatRulesFixtures } from '../../../../slate-plugins/src/__fixtures__/autoformat.fixtures';
-import { withDeserializeHTML } from '../../../../slate-plugins/src/deserializers/deserialize-html/withDeserializeHTML';
-import { AlignPlugin } from '../../../../slate-plugins/src/elements/align/AlignPlugin';
-import { BasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/BasicElementPlugins';
-import { BlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/BlockquotePlugin';
-import { CodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/CodeBlockPlugin';
+import { withDeserializeHTML } from '../../../../slate-plugins/src/deserializers/deserialize-html/useDeserializeHTMLPlugin';
+import { useAlignPlugin } from '../../../../slate-plugins/src/elements/align/useAlignPlugin';
+import { useBasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/useBasicElementPlugins';
+import { useBlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/useBlockquotePlugin';
+import { useCodeBlockPlugin } from '../../../../slate-plugins/src/elements/code-block/useCodeBlockPlugin';
 import { withCodeBlock } from '../../../../slate-plugins/src/elements/code-block/withCodeBlock';
-import { HeadingPlugin } from '../../../../slate-plugins/src/elements/heading/HeadingPlugin';
-import { withImageUpload } from '../../../../slate-plugins/src/elements/image/image-upload/withImageUpload';
-import { ImagePlugin } from '../../../../slate-plugins/src/elements/image/ImagePlugin';
-import { LinkPlugin } from '../../../../slate-plugins/src/elements/link/LinkPlugin';
+import { useHeadingPlugin } from '../../../../slate-plugins/src/elements/heading/useHeadingPlugin';
+import { useImagePlugin } from '../../../../slate-plugins/src/elements/image/useImagePlugin';
+import { withImageUpload } from '../../../../slate-plugins/src/elements/image/withImageUpload';
+import { useLinkPlugin } from '../../../../slate-plugins/src/elements/link/useLinkPlugin';
 import { withLink } from '../../../../slate-plugins/src/elements/link/withLink';
-import { ListPlugin } from '../../../../slate-plugins/src/elements/list/ListPlugin';
-import { MediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/MediaEmbedPlugin';
-import { MentionPlugin } from '../../../../slate-plugins/src/elements/mention/MentionPlugin';
-import { ParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/ParagraphPlugin';
-import { TablePlugin } from '../../../../slate-plugins/src/elements/table/TablePlugin';
+import { useListPlugin } from '../../../../slate-plugins/src/elements/list/useListPlugin';
+import { useMediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/useMediaEmbedPlugin';
+import { useMentionPlugin } from '../../../../slate-plugins/src/elements/mention/useMentionPlugin';
+import { useParagraphPlugin } from '../../../../slate-plugins/src/elements/paragraph/useParagraphPlugin';
+import { useTablePlugin } from '../../../../slate-plugins/src/elements/table/useTablePlugin';
 import { withTable } from '../../../../slate-plugins/src/elements/table/withTable';
-import { TodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/TodoListPlugin';
-import { withAutoformat } from '../../../../slate-plugins/src/handlers/autoformat/withAutoformat';
-import { ExitBreakPlugin } from '../../../../slate-plugins/src/handlers/exit-break/ExitBreakPlugin';
-import { ResetBlockTypePlugin } from '../../../../slate-plugins/src/handlers/reset-block-type/ResetBlockTypePlugin';
-import { SoftBreakPlugin } from '../../../../slate-plugins/src/handlers/soft-break/SoftBreakPlugin';
-import { BasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/BasicMarkPlugins';
-import { BoldPlugin } from '../../../../slate-plugins/src/marks/bold/BoldPlugin';
+import { useTodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/useTodoListPlugin';
+import { useBasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/useBasicMarkPlugins';
 import { MARK_BOLD } from '../../../../slate-plugins/src/marks/bold/defaults';
-import { CodePlugin } from '../../../../slate-plugins/src/marks/code/CodePlugin';
+import { useBoldPlugin } from '../../../../slate-plugins/src/marks/bold/useBoldPlugin';
 import { MARK_CODE } from '../../../../slate-plugins/src/marks/code/defaults';
-import { HighlightPlugin } from '../../../../slate-plugins/src/marks/highlight/HighlightPlugin';
+import { useCodePlugin } from '../../../../slate-plugins/src/marks/code/useCodePlugin';
+import { useHighlightPlugin } from '../../../../slate-plugins/src/marks/highlight/useHighlightPlugin';
 import { MARK_ITALIC } from '../../../../slate-plugins/src/marks/italic/defaults';
-import { ItalicPlugin } from '../../../../slate-plugins/src/marks/italic/ItalicPlugin';
+import { useItalicPlugin } from '../../../../slate-plugins/src/marks/italic/useItalicPlugin';
 import { MARK_STRIKETHROUGH } from '../../../../slate-plugins/src/marks/strikethrough/defaults';
-import { StrikethroughPlugin } from '../../../../slate-plugins/src/marks/strikethrough/StrikethroughPlugin';
+import { useStrikethroughPlugin } from '../../../../slate-plugins/src/marks/strikethrough/useStrikethroughPlugin';
 import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
 } from '../../../../slate-plugins/src/marks/subsupscript/defaults';
-import { SubscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/subscript/SubscriptPlugin';
-import { SuperscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/superscript/SuperscriptPlugin';
+import { useSubscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/subscript/useSubscriptPlugin';
+import { useSuperscriptPlugin } from '../../../../slate-plugins/src/marks/subsupscript/superscript/useSuperscriptPlugin';
 import { MARK_UNDERLINE } from '../../../../slate-plugins/src/marks/underline/defaults';
-import { UnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/UnderlinePlugin';
-import { withNormalizeTypes } from '../../../../slate-plugins/src/normalizers/withNormalizeTypes';
-import { withRemoveEmptyNodes } from '../../../../slate-plugins/src/normalizers/withRemoveEmptyNodes';
-import { withInlineVoid } from '../../../../slate-plugins/src/plugins/withInlineVoid/withInlineVoid';
-import { withNodeID } from '../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
-import { SearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/SearchHighlightPlugin';
+import { useUnderlinePlugin } from '../../../../slate-plugins/src/marks/underline/useUnderlinePlugin';
+import { withAutoformat } from '../../../../slate-plugins/src/plugins/autoformat/useAutoformatPlugin';
+import { useExitBreakPlugin } from '../../../../slate-plugins/src/plugins/exit-break/useExitBreakPlugin';
+import { useResetBlockTypePlugin } from '../../../../slate-plugins/src/plugins/reset-block-type/useResetBlockTypePlugin';
+import { useSoftBreakPlugin } from '../../../../slate-plugins/src/plugins/soft-break/useSoftBreakPlugin';
+import { withNodeId } from '../../../../slate-plugins/src/plugins/useNodeIdPlugin';
+import { withNormalizeTypes } from '../../../../slate-plugins/src/plugins/useNormalizeTypesPlugin';
+import { withRemoveEmptyNodes } from '../../../../slate-plugins/src/plugins/useRemoveEmptyNodesPlugin';
+import { useSearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/useSearchHighlightPlugin';
 import { EditablePlugins } from '../../components/EditablePlugins';
 import { SlatePlugins } from '../../components/SlatePlugins';
 import { useSlatePlugins } from '../../hooks/useSlatePlugins/useSlatePlugins';
+import { withInlineVoid } from '../../plugins/inline-void/withInlineVoid';
 import { pipe } from '../../utils/pipe';
 
 const plugins = [
-  ...BasicElementPlugins(),
-  ...BasicMarkPlugins(),
-  BlockquotePlugin(),
-  TodoListPlugin(),
-  HeadingPlugin({ levels: 5 }),
-  ImagePlugin(),
-  LinkPlugin(),
-  ListPlugin(),
-  MentionPlugin(),
-  ParagraphPlugin(),
-  TablePlugin(),
-  MediaEmbedPlugin(),
-  CodeBlockPlugin(),
-  AlignPlugin(),
-  BoldPlugin(),
-  CodePlugin(),
-  ItalicPlugin(),
-  StrikethroughPlugin(),
-  HighlightPlugin(),
-  UnderlinePlugin(),
-  SubscriptPlugin(),
-  SuperscriptPlugin(),
-  SearchHighlightPlugin(),
-  ResetBlockTypePlugin(optionsResetBlockTypes),
-  SoftBreakPlugin(),
-  ExitBreakPlugin(),
+  ...useBasicElementPlugins(),
+  ...useBasicMarkPlugins(),
+  useBlockquotePlugin(),
+  useTodoListPlugin(),
+  useHeadingPlugin({ levels: 5 }),
+  useImagePlugin(),
+  useLinkPlugin(),
+  useListPlugin(),
+  useMentionPlugin(),
+  useParagraphPlugin(),
+  useTablePlugin(),
+  useMediaEmbedPlugin(),
+  useCodeBlockPlugin(),
+  useAlignPlugin(),
+  useBoldPlugin(),
+  useCodePlugin(),
+  useItalicPlugin(),
+  useStrikethroughPlugin(),
+  useHighlightPlugin(),
+  useUnderlinePlugin(),
+  useSubscriptPlugin(),
+  useSuperscriptPlugin(),
+  useSearchHighlightPlugin(),
+  useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+  useSoftBreakPlugin(),
+  useExitBreakPlugin(),
 ];
 
 const initialValue = [
@@ -139,7 +139,7 @@ const withOverrides = [
   withNormalizeTypes({
     rules: [{ path: [0, 0], strictType: options.h1.type }],
   }),
-  withNodeID(),
+  withNodeId(),
   withInlineVoid({ plugins }),
   withRemoveEmptyNodes({ type: options.a.type }),
 ] as const;

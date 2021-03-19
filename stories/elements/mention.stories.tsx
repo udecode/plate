@@ -1,68 +1,55 @@
-import React, { useMemo } from 'react';
-import { boolean, text } from '@storybook/addon-knobs';
+import React from 'react';
 import {
-  EditablePlugins,
+  ELEMENT_MENTION,
   getSlatePluginsOptions,
-  HeadingPlugin,
   MentionNodeData,
-  MentionPlugin,
-  ParagraphPlugin,
-  SlateDocument,
+  SlatePlugin,
   SlatePlugins,
-  useMention,
-  useSlatePluginsActions,
-  useSlatePluginsEditor,
-  withInlineVoid,
+  useBasicElementPlugins,
+  useHistoryPlugin,
+  useMentionPlugin,
+  useReactPlugin,
 } from '@udecode/slate-plugins';
 import {
+  getComponent,
   getSlatePluginsComponents,
+  MentionElement,
   MentionSelect,
 } from '@udecode/slate-plugins-components';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { initialValueMentions } from '../../stories-2/config/initialValues';
-import { MENTIONABLES } from '../../stories-2/config/mentionables';
+import { editableProps, initialValueMentions } from '../config/initialValues';
+import { MENTIONABLES } from '../config/mentionables';
+import { optionsMentionPlugin } from '../config/pluginOptions';
 import { renderMentionLabel } from '../config/renderMentionLabel';
 
 const id = 'Elements/Mention';
 
 export default {
   title: id,
-  component: MentionPlugin,
 };
 
-const components = getSlatePluginsComponents();
+const components = {
+  ...getSlatePluginsComponents(),
+  [ELEMENT_MENTION]: getComponent(MentionElement, {
+    renderLabel: (mentionable: MentionNodeData) => {
+      const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
+      if (!entry) return 'unknown option';
+      return `${entry.name} - ${entry.email}`;
+    },
+  }),
+};
 const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const { getMentionSelectProps, ...mentionPlugin } = MentionPlugin({
-    mentionables: MENTIONABLES,
-    maxSuggestions: 10,
-    insertSpaceAfterMention: boolean('insert Space After Mention', false),
-    trigger: '@',
-    mentionableFilter: (s: string) => (mentionable: MentionNodeData) =>
-      mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
-      mentionable.name.toLowerCase().includes(s.toLowerCase()),
-    mentionableSearchPattern: boolean('useCustomMentionableSearchPattern', true)
-      ? text('mentionableSearchPattern', '\\S*')
-      : undefined,
-  });
+  const { getMentionSelectProps, ...mentionPlugin } = useMentionPlugin(
+    optionsMentionPlugin
+  );
 
-  const plugins = [ParagraphPlugin(), HeadingPlugin(), mentionPlugin];
-
-  plugins.push({
-    withOverrides: [withReact, withHistory, withInlineVoid({ plugins })],
-  });
-
-  // const {
-  //   onAddMention,
-  //   onChangeMention,
-  //   onKeyDownMention,
-  //   search,
-  //   index,
-  //   target,
-  //   values,
-  // } = useMention();
+  const plugins: SlatePlugin[] = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+    mentionPlugin,
+  ];
 
   return (
     <SlatePlugins
@@ -70,17 +57,9 @@ export const Example = () => {
       plugins={plugins}
       components={components}
       options={options}
+      editableProps={editableProps}
       initialValue={initialValueMentions}
     >
-      <EditablePlugins
-        id={id}
-        // onKeyDown={useMemo(() => [onKeyDownMention], [onKeyDownMention])}
-        // onKeyDownDeps={[index, search, target]}
-        editableProps={{
-          placeholder: 'Enter some text...',
-        }}
-      />
-
       <MentionSelect
         {...getMentionSelectProps()}
         renderLabel={renderMentionLabel}

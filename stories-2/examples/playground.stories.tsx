@@ -27,20 +27,9 @@ import {
   Search,
 } from '@styled-icons/material';
 import {
-  AlignPlugin,
-  BlockquotePlugin,
-  BoldPlugin,
-  CodeBlockPlugin,
-  CodePlugin,
   EditablePlugins,
   ELEMENT_IMAGE,
-  ExitBreakPlugin,
-  HeadingPlugin,
-  HighlightPlugin,
-  ImagePlugin,
-  ItalicPlugin,
-  LinkPlugin,
-  ListPlugin,
+  getSlatePluginsOptions,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -48,30 +37,44 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  MediaEmbedPlugin,
   MentionNodeData,
-  MentionPlugin,
-  ParagraphPlugin,
-  ResetBlockTypePlugin,
-  SearchHighlightPlugin,
   SlateDocument,
+  SlatePlugin,
   SlatePlugins,
-  SoftBreakPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  TablePlugin,
-  TodoListPlugin,
-  UnderlinePlugin,
+  useAlignPlugin,
+  useBlockquotePlugin,
+  useBoldPlugin,
+  useCodeBlockPlugin,
+  useCodePlugin,
   useDecorateSearchHighlight,
+  useExitBreakPlugin,
+  useHeadingPlugin,
+  useHighlightPlugin,
+  useHistoryPlugin,
+  useImagePlugin,
+  useItalicPlugin,
+  useLinkPlugin,
+  useListPlugin,
+  useMediaEmbedPlugin,
   useMention,
+  useMentionPlugin,
+  useParagraphPlugin,
+  useReactPlugin,
+  useResetBlockTypePlugin,
+  useSearchHighlightPlugin,
   useSlatePluginsActions,
   useSlatePluginsEditor,
+  useSoftBreakPlugin,
+  useStrikethroughPlugin,
+  useSubscriptPlugin,
+  useSuperscriptPlugin,
+  useTablePlugin,
+  useTodoListPlugin,
+  useUnderlinePlugin,
   withAutoformat,
   withCodeBlock,
   withDeserializeHTML,
   withImageUpload,
-  withInlineVoid,
   withLink,
   withList,
   withMarks,
@@ -82,6 +85,7 @@ import {
 } from '@udecode/slate-plugins';
 import {
   BalloonToolbar,
+  getSlatePluginsComponents,
   HeadingToolbar,
   MentionSelect,
   ToolbarAlign,
@@ -96,6 +100,7 @@ import {
 import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
+import { editableProps } from '../../stories/config/initialValues';
 import { autoformatRules } from '../config/autoformatRules';
 import {
   initialValueAutoformat,
@@ -113,9 +118,9 @@ import {
   initialValueSoftBreak,
   initialValueTables,
   options,
-  optionsExitBreak,
-  optionsResetBlockTypes,
-  optionsSoftBreak,
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
 } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 
@@ -124,6 +129,9 @@ const id = 'Examples/Playground';
 export default {
   title: id,
 };
+
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 const initialValue: Node[] = [
   ...initialValueForcedLayout,
@@ -149,36 +157,37 @@ const renderLabel = (mentionable: MentionNodeData) => {
 };
 
 export const Plugins = () => {
-  const plugins: any[] = [];
+  const plugins: SlatePlugin[] = [useReactPlugin(), useHistoryPlugin()];
 
-  if (boolean('ParagraphPlugin', true)) plugins.push(ParagraphPlugin());
-  if (boolean('BlockquotePlugin', true)) plugins.push(BlockquotePlugin());
-  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin());
-  if (boolean('HeadingPlugin', true)) plugins.push(HeadingPlugin());
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin());
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin());
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin());
-  if (boolean('MentionPlugin', true)) plugins.push(MentionPlugin());
-  if (boolean('TablePlugin', true)) plugins.push(TablePlugin());
-  if (boolean('MediaEmbedPlugin', true)) plugins.push(MediaEmbedPlugin());
-  if (boolean('CodeBlockPlugin', true)) plugins.push(CodeBlockPlugin());
-  if (boolean('AlignPlugin', true)) plugins.push(AlignPlugin());
-  if (boolean('BoldPlugin', true)) plugins.push(BoldPlugin());
-  if (boolean('CodePlugin', true)) plugins.push(CodePlugin());
-  if (boolean('ItalicPlugin', true)) plugins.push(ItalicPlugin());
-  if (boolean('HighlightPlugin', true)) plugins.push(HighlightPlugin());
+  if (boolean('ParagraphPlugin', true)) plugins.push(useParagraphPlugin());
+  if (boolean('BlockquotePlugin', true)) plugins.push(useBlockquotePlugin());
+  if (boolean('TodoListPlugin', true)) plugins.push(useTodoListPlugin());
+  if (boolean('HeadingPlugin', true)) plugins.push(useHeadingPlugin());
+  if (boolean('ImagePlugin', true)) plugins.push(useImagePlugin());
+  if (boolean('LinkPlugin', true)) plugins.push(useLinkPlugin());
+  if (boolean('ListPlugin', true)) plugins.push(useListPlugin());
+  if (boolean('MentionPlugin', true)) plugins.push(useMentionPlugin());
+  if (boolean('TablePlugin', true)) plugins.push(useTablePlugin());
+  if (boolean('MediaEmbedPlugin', true)) plugins.push(useMediaEmbedPlugin());
+  if (boolean('CodeBlockPlugin', true)) plugins.push(useCodeBlockPlugin());
+  if (boolean('AlignPlugin', true)) plugins.push(useAlignPlugin());
+  if (boolean('BoldPlugin', true)) plugins.push(useBoldPlugin());
+  if (boolean('CodePlugin', true)) plugins.push(useCodePlugin());
+  if (boolean('ItalicPlugin', true)) plugins.push(useItalicPlugin());
+  if (boolean('HighlightPlugin', true)) plugins.push(useHighlightPlugin());
   if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin());
-  if (boolean('UnderlinePlugin', true)) plugins.push(UnderlinePlugin());
-  if (boolean('StrikethroughPlugin', true)) plugins.push(StrikethroughPlugin());
-  if (boolean('SubscriptPlugin', true)) plugins.push(SubscriptPlugin());
-  if (boolean('SuperscriptPlugin', true)) plugins.push(SuperscriptPlugin());
+    plugins.push(useSearchHighlightPlugin());
+  if (boolean('UnderlinePlugin', true)) plugins.push(useUnderlinePlugin());
+  if (boolean('StrikethroughPlugin', true))
+    plugins.push(useStrikethroughPlugin());
+  if (boolean('SubscriptPlugin', true)) plugins.push(useSubscriptPlugin());
+  if (boolean('SuperscriptPlugin', true)) plugins.push(useSuperscriptPlugin());
   if (boolean('ResetBlockTypePlugin', true))
-    plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
+    plugins.push(useResetBlockTypePlugin(optionsResetBlockTypePlugin));
   if (boolean('SoftBreakPlugin', true))
-    plugins.push(SoftBreakPlugin(optionsSoftBreak));
+    plugins.push(useSoftBreakPlugin(optionsSoftBreakPlugin));
   if (boolean('ExitBreakPlugin', true))
-    plugins.push(ExitBreakPlugin(optionsExitBreak));
+    plugins.push(useExitBreakPlugin(optionsExitBreakPlugin));
 
   const withOverrides = [
     withReact,
@@ -233,12 +242,20 @@ export const Plugins = () => {
     return (
       <SlatePlugins
         id={id}
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
         initialValue={initialValue}
-        withOverrides={withOverrides}
         onChange={(newValue) => {
           setValue(newValue as SlateDocument);
           onChangeMention(editor);
         }}
+        // decorate={decorate}
+        //           decorateDeps={[search]}
+        //           renderLeafDeps={[search]}
+        //           onKeyDown={onKeyDown}
+        //           onKeyDownDeps={[index, mentionSearch, target]}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearchHighlight} />
         <HeadingToolbar styles={{ root: { flexWrap: 'wrap' } }}>
@@ -330,17 +347,6 @@ export const Plugins = () => {
           valueIndex={index}
           options={values}
           renderLabel={renderLabel}
-        />
-        <EditablePlugins
-          plugins={plugins}
-          decorate={decorate}
-          decorateDeps={[search]}
-          renderLeafDeps={[search]}
-          onKeyDown={onKeyDown}
-          onKeyDownDeps={[index, mentionSearch, target]}
-          editableProps={{
-            placeholder: 'Enter some plain text...',
-          }}
         />
       </SlatePlugins>
     );

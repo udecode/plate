@@ -35,9 +35,7 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  MentionNodeData,
 } from '@udecode/slate-plugins';
-import { MENTIONABLES } from '../../../../stories/config/mentionables';
 import { BlockquoteElement } from '../components/BlockquoteElement/BlockquoteElement';
 import { CodeBlockElement } from '../components/CodeBlockElement/CodeBlockElement';
 import { CodeLineElement } from '../components/CodeBlockElement/CodeLineElement';
@@ -182,12 +180,9 @@ export const getSlatePluginsComponents = () => {
     [ELEMENT_LI]: getComponent(StyledElement, { as: 'li' }),
     [ELEMENT_LINK]: LinkElement,
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
-    [ELEMENT_MENTION]: getComponent(MentionElement, {
-      renderLabel: (mentionable: MentionNodeData) => {
-        const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
-        if (!entry) return 'unknown option';
-        return `${entry.name} - ${entry.email}`;
-      },
+    [ELEMENT_MENTION]: MentionElement,
+    [ELEMENT_UL]: getComponent(StyledElement, {
+      as: 'ul',
     }),
     [ELEMENT_OL]: getComponent(StyledElement, { as: 'ol' }),
     [ELEMENT_PARAGRAPH]: getComponent(StyledElement, { as: 'p' }),
@@ -227,16 +222,6 @@ export const getSlatePluginsComponents = () => {
     }),
     [ELEMENT_TODO_LI]: TodoListElement,
     [ELEMENT_TR]: getComponent(StyledElement, { as: 'tr' }),
-    [ELEMENT_UL]: getComponent(StyledElement, {
-      as: 'ul',
-      styles: {
-        root: {
-          paddingInlineStart: '24px',
-          marginBlockStart: '0',
-          marginBlockEnd: '0',
-        },
-      },
-    }),
     [MARK_BOLD]: getComponent(StyledLeaf, { as: 'strong' }),
     [MARK_CODE]: getComponent(StyledLeaf, {
       as: 'code',

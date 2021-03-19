@@ -25,7 +25,6 @@ export const MentionElementBase = ({
   prefix,
   className,
   styles,
-  htmlAttributes,
   as: Tag = 'span',
   onClick,
   renderLabel = (mentionable: MentionNodeData) => mentionable.value,
@@ -47,7 +46,6 @@ export const MentionElementBase = ({
       className={classNames.root}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
-      {...htmlAttributes}
     >
       {prefix}
       {renderLabel(element)}

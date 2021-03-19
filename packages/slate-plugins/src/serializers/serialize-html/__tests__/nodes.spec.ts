@@ -1,14 +1,19 @@
-import { ListPlugin } from '../../../elements/list/ListPlugin';
-import { ParagraphPlugin } from '../../../elements/paragraph/ParagraphPlugin';
-import { BoldPlugin } from '../../../marks/bold/BoldPlugin';
-import { ItalicPlugin } from '../../../marks/italic/ItalicPlugin';
+import { useListPlugin } from '../../../elements/list/useListPlugin';
+import { useParagraphPlugin } from '../../../elements/paragraph/useParagraphPlugin';
+import { useBoldPlugin } from '../../../marks/bold/useBoldPlugin';
+import { useItalicPlugin } from '../../../marks/italic/useItalicPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize complex example list with paragraphs to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes({
-      plugins: [ItalicPlugin(), BoldPlugin(), ParagraphPlugin(), ListPlugin()],
+      plugins: [
+        useItalicPlugin(),
+        useBoldPlugin(),
+        useParagraphPlugin(),
+        useListPlugin(),
+      ],
       nodes: [
         {
           type: 'p',
@@ -79,7 +84,12 @@ it('serialize complex example list with paragraphs to html', () => {
 
 it('serialize complex example with no type on top level node to html', () => {
   const render = serializeHTMLFromNodes({
-    plugins: [ItalicPlugin(), BoldPlugin(), ParagraphPlugin(), ListPlugin()],
+    plugins: [
+      useItalicPlugin(),
+      useBoldPlugin(),
+      useParagraphPlugin(),
+      useListPlugin(),
+    ],
     nodes: [
       {
         children: [
@@ -116,7 +126,12 @@ it('serialize complex example with no type on top level node to html', () => {
 
 it('serialize complex example with multiple no types on top level node to html', () => {
   const render = serializeHTMLFromNodes({
-    plugins: [ItalicPlugin(), BoldPlugin(), ParagraphPlugin(), ListPlugin()],
+    plugins: [
+      useItalicPlugin(),
+      useBoldPlugin(),
+      useParagraphPlugin(),
+      useListPlugin(),
+    ],
     nodes: [
       {
         children: [
@@ -156,7 +171,7 @@ it('serialize complex example with multiple no types on top level node to html',
 
 it('serialize string with %', () => {
   const render = serializeHTMLFromNodes({
-    plugins: [ParagraphPlugin()],
+    plugins: [useParagraphPlugin()],
     nodes: [
       {
         children: [

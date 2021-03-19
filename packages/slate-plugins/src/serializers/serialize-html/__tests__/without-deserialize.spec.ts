@@ -1,5 +1,5 @@
 import { getRenderElement } from '@udecode/slate-plugins-common';
-import { options } from '../../../../../../stories-2/config/initialValues';
+import { options } from '../../../../../../stories/config/initialValues';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 describe('when there is no deserializer', () => {

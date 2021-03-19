@@ -1,11 +1,11 @@
-import { AlignPlugin } from '../../../elements/align/AlignPlugin';
-import { BoldPlugin } from '../../../marks/bold/BoldPlugin';
+import { useAlignPlugin } from '../../../elements/align/useAlignPlugin';
+import { useBoldPlugin } from '../../../marks/bold/useBoldPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize with slate className', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [AlignPlugin()],
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -17,7 +17,7 @@ it('serialize with slate classNames: a+slate', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: { className: 'a slate-align-center' },
           },
@@ -34,7 +34,7 @@ it('serialize with slate classNames: slate+b', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: { className: 'slate-align-center b' },
           },
@@ -51,7 +51,7 @@ it('serialize with classNames: a+slate+b', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: { className: 'a slate-align-center b' },
           },
@@ -68,7 +68,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: { className: 'a slate-align-center b slate-cool' },
           },
@@ -87,7 +87,7 @@ it('serialize with slate classNames: multiple tags', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: { className: 'a slate-align-center b' },
           },
@@ -107,7 +107,7 @@ it('serialize with custom preserved classname: a+custom', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: {
               className: 'a custom-align-center slate-align-center',
@@ -127,14 +127,14 @@ it('serialize nested with custom preserved classname: a+custom', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: {
               className: 'a custom-align-center slate-align-center',
             },
           },
         }),
-        BoldPlugin({
+        useBoldPlugin({
           bold: {
             rootProps: {
               className: 'custom-bold',
@@ -163,7 +163,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        AlignPlugin({
+        useAlignPlugin({
           align_center: {
             rootProps: {
               className: 'a custom-align-center slate-align-center',

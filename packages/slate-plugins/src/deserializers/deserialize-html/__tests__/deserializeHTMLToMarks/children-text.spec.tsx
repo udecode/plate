@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { BoldPlugin } from '../../../../marks/bold/BoldPlugin';
+import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
 } from '../../utils/deserializeHTMLToMarks';
 
 const input: DeserializeMarksProps = {
-  plugins: [BoldPlugin()],
+  plugins: [useBoldPlugin()],
   element: document.createElement('strong'),
   children: <fragment>test</fragment>,
 } as any;

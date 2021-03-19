@@ -1,19 +1,19 @@
-import { BoldPlugin } from '../../../marks/bold/BoldPlugin';
-import { CodePlugin } from '../../../marks/code/CodePlugin';
-import { HighlightPlugin } from '../../../marks/highlight/HighlightPlugin';
-import { ItalicPlugin } from '../../../marks/italic/ItalicPlugin';
-import { KbdPlugin } from '../../../marks/kbd/KbdPlugin';
-import { StrikethroughPlugin } from '../../../marks/strikethrough/StrikethroughPlugin';
-import { SubscriptPlugin } from '../../../marks/subsupscript/subscript/SubscriptPlugin';
-import { SuperscriptPlugin } from '../../../marks/subsupscript/superscript/SuperscriptPlugin';
-import { UnderlinePlugin } from '../../../marks/underline/UnderlinePlugin';
+import { useBoldPlugin } from '../../../marks/bold/useBoldPlugin';
+import { useCodePlugin } from '../../../marks/code/useCodePlugin';
+import { useHighlightPlugin } from '../../../marks/highlight/useHighlightPlugin';
+import { useItalicPlugin } from '../../../marks/italic/useItalicPlugin';
+import { useKbdPlugin } from '../../../marks/kbd/useKbdPlugin';
+import { useStrikethroughPlugin } from '../../../marks/strikethrough/useStrikethroughPlugin';
+import { useSubscriptPlugin } from '../../../marks/subsupscript/subscript/useSubscriptPlugin';
+import { useSuperscriptPlugin } from '../../../marks/subsupscript/superscript/useSuperscriptPlugin';
+import { useUnderlinePlugin } from '../../../marks/underline/useUnderlinePlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize bold to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [BoldPlugin()],
+      plugins: [useBoldPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true },
@@ -28,7 +28,7 @@ it('serialize bold to html', () => {
 it('serialize italic to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [ItalicPlugin()],
+      plugins: [useItalicPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'italic', italic: true },
@@ -44,7 +44,7 @@ it('serialize highlight to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [HighlightPlugin()],
+        plugins: [useHighlightPlugin()],
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'highlighted', highlight: true },
@@ -59,7 +59,7 @@ it('serialize strikethrough to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [StrikethroughPlugin()],
+        plugins: [useStrikethroughPlugin()],
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'strikethrough', strikethrough: true },
@@ -74,7 +74,7 @@ it('serialize code to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [CodePlugin()],
+        plugins: [useCodePlugin()],
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'some code', code: true },
@@ -89,7 +89,7 @@ it('serialize kbd to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [KbdPlugin()],
+        plugins: [useKbdPlugin()],
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'keyboard shortcut', kbd: true },
@@ -103,7 +103,7 @@ it('serialize kbd to html', () => {
 it('serialize subscript to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [SubscriptPlugin()],
+      plugins: [useSubscriptPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'subscripted', subscript: true },
@@ -118,7 +118,7 @@ it('serialize subscript to html', () => {
 it('serialize superscript to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [SuperscriptPlugin()],
+      plugins: [useSuperscriptPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'superscripted', superscript: true },
@@ -133,7 +133,7 @@ it('serialize superscript to html', () => {
 it('serialize underline to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [UnderlinePlugin()],
+      plugins: [useUnderlinePlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'underlined', underline: true },
@@ -148,7 +148,7 @@ it('serialize underline to html', () => {
 it('serialize bold and italic together to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [BoldPlugin(), ItalicPlugin()],
+      plugins: [useBoldPlugin(), useItalicPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, italic: true },
@@ -163,7 +163,7 @@ it('serialize bold and italic together to html', () => {
 it('serialize bold and superscript together to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [BoldPlugin(), SuperscriptPlugin()],
+      plugins: [useBoldPlugin(), useSuperscriptPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, superscript: true },
@@ -178,7 +178,7 @@ it('serialize bold and superscript together to html', () => {
 it('serialize bold italic and underline together to html', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [BoldPlugin(), ItalicPlugin(), UnderlinePlugin()],
+      plugins: [useBoldPlugin(), useItalicPlugin(), useUnderlinePlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, italic: true, underline: true },

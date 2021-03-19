@@ -2,14 +2,12 @@ import {
   getElementDeserializer,
   getSlateClass,
 } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, getOptions } from '@udecode/slate-plugins-core';
+import { Deserialize, getOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 
 // FIXME Handle code_line
 
-export const useDeserializeCodeBlock = (): DeserializeHtml => (
-  editor: Editor
-) => {
+export const useDeserializeCodeBlock = (): Deserialize => (editor: Editor) => {
   const { code_block, code_line } = getOptions(editor);
 
   return {

@@ -1,28 +1,6 @@
-import { FunctionComponent } from 'react';
 import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
-
-export interface SlatePluginOptions {
-  [key: string]: any;
-
-  /**
-   * Element or mark type.
-   */
-  type: string;
-
-  /**
-   * Element or mark React component.
-   */
-  component?: FunctionComponent;
-
-  // nodeToProps
-  // defaultType
-  // hotkey
-}
-
-export type SlatePluginOptionKey = keyof SlatePluginOptions;
-
-export type SlatePluginsOptions = Record<string, SlatePluginOptions>;
+import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
 
 export type State = {
   /**
@@ -46,14 +24,15 @@ export type State = {
   value: Node[];
 };
 
-export type SlatePluginsState = { byId: Record<string, State> };
+export type SlatePluginsState = Record<string, State>;
 
 export type SlatePluginsActions = {
+  clearState: (id?: string) => void;
   setInitialState: (id?: string) => void;
   setEditor: (
     value: {
       editor?: State['editor'];
-      withOverrides?: any[];
+      plugins?: SlatePlugin[];
       options?: SlatePluginsOptions;
     },
     id?: string
@@ -63,5 +42,3 @@ export type SlatePluginsActions = {
   setValue: (value: State['value'], id?: string) => void;
   resetEditorKey: (id?: string) => void;
 };
-
-export type SlatePluginsStore = SlatePluginsState & SlatePluginsActions;

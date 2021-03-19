@@ -1,15 +1,15 @@
 import {
   htmlStringToDOMNode,
-  ImagePlugin,
-  LinkPlugin,
   serializeHTMLFromNodes,
+  useImagePlugin,
+  useLinkPlugin,
 } from '../../../index';
 
 it('serialize link to html with attributes', () => {
   expect(
     serializeHTMLFromNodes({
       plugins: [
-        LinkPlugin({
+        useLinkPlugin({
           a: {
             nodeToProps: ({ element }) =>
               /^https?:\/\/slatejs.org\/?/.test(element.url)
@@ -44,11 +44,11 @@ it('serialize image with alt to html', () => {
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
         plugins: [
-          ImagePlugin({
+          useImagePlugin({
             img: {
               nodeToProps: ({ element }) => ({
                 width: element.url.split('/').pop(),
-                alt: element.attributes?.alt,
+                alt: element.attributeNames?.alt,
               }),
             },
           }),

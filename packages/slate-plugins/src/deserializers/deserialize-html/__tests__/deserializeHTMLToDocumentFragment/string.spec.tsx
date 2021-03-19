@@ -2,10 +2,10 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
-const input1: SlatePlugin[] = [ParagraphPlugin()];
+const input1: SlatePlugin[] = [useParagraphPlugin()];
 
 const output = (
   <fragment>

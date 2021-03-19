@@ -1,14 +1,16 @@
 import { useCallback, useMemo } from 'react';
 import { Node } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { usePlugins } from '../../store/usePlugins';
+import { SlatePluginsEditor } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsEditor';
-import { useSlatePluginsValue } from '../../store/useSlatePluginsValue';
+import {
+  usePlugins,
+  useSlatePluginsEditor,
+  useSlatePluginsValue,
+} from '../../store/useSlatePluginsSelectors';
 import { SlateProps } from '../../types/SlateProps';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { onChangePlugins } from '../../utils/onChangePlugins';
-import { SlatePluginsEditor } from '../../with/withSlatePlugins';
 
 /**
  * Get Slate props stored in a global store.

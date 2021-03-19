@@ -8,7 +8,7 @@ import {
   ELEMENT_UL,
 } from '../../../../../slate-plugins/src/elements/list/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
-import { withNodeID } from '../../../../../slate-plugins/src/plugins/withNodeID/withNodeID';
+import { withNodeId } from '../../../../../slate-plugins/src/plugins/useNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((
@@ -32,7 +32,7 @@ const output = (
 ) as any;
 
 it('should add an id to the new elements', () => {
-  const editor = withNodeID({
+  const editor = withNodeId({
     idCreator: idCreatorFixture,
     allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
     exclude: [ELEMENT_PARAGRAPH],

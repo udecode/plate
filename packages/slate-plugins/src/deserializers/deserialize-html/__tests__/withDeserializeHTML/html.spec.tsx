@@ -3,8 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { HeadingPlugin } from '../../../../elements/heading/HeadingPlugin';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { useHeadingPlugin } from '../../../../elements/heading/useHeadingPlugin';
+import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -32,7 +32,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = withDeserializeHTML({ plugins: [HeadingPlugin()] })(
+      const editor = withDeserializeHTML({ plugins: [useHeadingPlugin()] })(
         withReact(input)
       );
 
@@ -61,7 +61,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = withDeserializeHTML({ plugins: [HeadingPlugin()] })(
+      const editor = withDeserializeHTML({ plugins: [useHeadingPlugin()] })(
         withReact(input)
       );
 

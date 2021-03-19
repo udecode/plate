@@ -19,7 +19,6 @@ export const LinkElementBase = ({
   element,
   styles,
   className,
-  htmlAttributes,
 }: Props) => {
   const classNames = getClassNames(styles, {
     className,
@@ -27,12 +26,7 @@ export const LinkElementBase = ({
   });
 
   return (
-    <a
-      {...attributes}
-      href={element.url}
-      className={classNames.root}
-      {...htmlAttributes}
-    >
+    <a {...attributes} href={element.url} className={classNames.root}>
       {children}
     </a>
   );

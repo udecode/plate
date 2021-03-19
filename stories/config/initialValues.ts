@@ -1,78 +1,23 @@
 import {
   ELEMENT_TODO_LI,
-  ExitBreakPluginOptions,
   getSlatePluginsOptions,
-  isBlockAboveEmpty,
-  isSelectionAtBlockStart,
-  KEYS_HEADING,
-  ResetBlockTypePluginOptions,
   SlateDocument,
   SlateDocumentDescendant,
   SlateDocumentFragment,
-  SoftBreakPluginOptions,
 } from '@udecode/slate-plugins';
 // import faker from 'faker';
-import { Descendant, Text } from 'slate';
+import { Descendant, Node, Text } from 'slate';
 import { ELEMENT_TAG } from '../../stories-2/examples/tag/defaults';
+import { EDITABLE_VOID } from '../examples/editable-voids/types';
 
 export const options = getSlatePluginsOptions();
 
 export const inlineTypes = [options.mention.type, options.a.type];
 
-const resetBlockTypesCommonRule = {
-  types: [options.blockquote.type, options[ELEMENT_TODO_LI].type],
-  defaultType: options.p.type,
-};
-
-export const optionsResetBlockTypes: ResetBlockTypePluginOptions = {
-  rules: [
-    {
-      ...resetBlockTypesCommonRule,
-      hotkey: 'Enter',
-      predicate: isBlockAboveEmpty,
-    },
-    {
-      ...resetBlockTypesCommonRule,
-      hotkey: 'Backspace',
-      predicate: isSelectionAtBlockStart,
-    },
-  ],
-};
-
-export const optionsSoftBreak: SoftBreakPluginOptions = {
-  rules: [
-    { hotkey: 'shift+enter' },
-    {
-      hotkey: 'enter',
-      query: {
-        allow: [
-          options.code_block.type,
-          options.blockquote.type,
-          options.td.type,
-        ],
-      },
-    },
-  ],
-};
-
-export const optionsExitBreak: ExitBreakPluginOptions = {
-  rules: [
-    {
-      hotkey: 'mod+enter',
-    },
-    {
-      hotkey: 'mod+shift+enter',
-      before: true,
-    },
-    {
-      hotkey: 'enter',
-      query: {
-        start: true,
-        end: true,
-        allow: KEYS_HEADING,
-      },
-    },
-  ],
+export const editableProps = {
+  placeholder: 'Enter some rich text…',
+  spellCheck: true,
+  autoFocus: true,
 };
 
 const createParagraph = (text: string, mark?: string) => {
@@ -588,7 +533,10 @@ export const initialValuePlainText: SlateDocument = [
       {
         type: options.p.type,
         children: [
-          { text: 'This is editable plain text, just like a <textarea>!' },
+          {
+            text:
+              'This is editable plain text without plugins, just like a <textarea>!',
+          },
         ],
       },
     ],
@@ -1165,5 +1113,33 @@ export const initialValueExitBreak: SlateDocument = [
       },
       createTable(),
     ] as SlateDocumentFragment,
+  },
+];
+
+export const initialValueVoids: Node[] = [
+  {
+    children: [
+      {
+        type: options.p.type,
+        children: [
+          {
+            text:
+              'In addition to nodes that contain editable text, you can insert void nodes, which can also contain editable elements, inputs, or an entire other Slate editor.',
+          },
+        ],
+      },
+      {
+        type: EDITABLE_VOID,
+        children: [{ text: '' }],
+      },
+      {
+        type: options.p.type,
+        children: [
+          {
+            text: '',
+          },
+        ],
+      },
+    ],
   },
 ];

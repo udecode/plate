@@ -1,9 +1,10 @@
+import { WithOverride } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';
 import { insertCodeLine } from './transforms/insertCodeLine';
 
-export const withCodeBlock = () => <T extends ReactEditor>(editor: T) => {
+export const withCodeBlock = (): WithOverride<ReactEditor> => (editor) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {

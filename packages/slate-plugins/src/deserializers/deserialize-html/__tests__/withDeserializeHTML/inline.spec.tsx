@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
+import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
-import { MentionPlugin } from '../../../../elements/mention/MentionPlugin';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { useMentionPlugin } from '../../../../elements/mention/useMentionPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { pipe } from '../../../../pipe/pipe';
-import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
-import { withDeserializeHTML } from '../../withDeserializeHTML';
+import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -45,7 +45,7 @@ it('should do nothing', () => {
       inlineTypes: [ELEMENT_MENTION],
       voidTypes: [ELEMENT_MENTION],
     }),
-    withDeserializeHTML({ plugins: [ParagraphPlugin(), MentionPlugin()] })
+    withDeserializeHTML({ plugins: [useParagraphPlugin(), useMentionPlugin()] })
   );
 
   editor.insertData(data as any);

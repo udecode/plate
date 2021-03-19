@@ -1,8 +1,8 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import { DeserializeHtml, getOptions } from '@udecode/slate-plugins-core';
+import { Deserialize, getOptions } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 
-export const useDeserializeTable = (): DeserializeHtml => (editor: Editor) => {
+export const useDeserializeTable = (): Deserialize => (editor: Editor) => {
   const { table, td, th, tr } = getOptions(editor);
 
   return {
@@ -19,13 +19,13 @@ export const useDeserializeTable = (): DeserializeHtml => (editor: Editor) => {
       }),
       ...getElementDeserializer({
         type: td.type,
-        attributes: ['rowspan', 'colspan'],
+        attributeNames: ['rowspan', 'colspan'],
         rules: [{ nodeNames: 'TD' }],
         ...td.deserialize,
       }),
       ...getElementDeserializer({
         type: th.type,
-        attributes: ['rowspan', 'colspan'],
+        attributeNames: ['rowspan', 'colspan'],
         rules: [{ nodeNames: 'TH' }],
         ...th.deserialize,
       }),

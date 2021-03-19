@@ -14,7 +14,6 @@ export const CodeLineElementBase = ({
   children,
   className,
   styles,
-  htmlAttributes,
 }: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -22,7 +21,7 @@ export const CodeLineElementBase = ({
   });
 
   return (
-    <div {...attributes} className={classNames.root} {...htmlAttributes}>
+    <div {...attributes} className={classNames.root}>
       {children}
     </div>
   );

@@ -29,7 +29,6 @@ export const ImageElementBase = ({
   element,
   className,
   styles,
-  htmlAttributes,
 }: Props) => {
   const { url } = element;
   const focused = useFocused();
@@ -50,7 +49,6 @@ export const ImageElementBase = ({
           className={classNames.img}
           src={url}
           alt=""
-          {...htmlAttributes}
         />
       </div>
       {children}

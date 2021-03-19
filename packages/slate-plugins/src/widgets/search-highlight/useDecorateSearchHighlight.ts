@@ -6,7 +6,7 @@ import { DecorateSearchHighlightOptions } from './types';
 export const useDecorateSearchHighlight = ({
   search,
 }: DecorateSearchHighlightOptions): Decorate => (editor: Editor) => {
-  const { search_highlight } = getPluginOptions(editor, MARK_SEARCH_HIGHLIGHT);
+  const options = getPluginOptions(editor, MARK_SEARCH_HIGHLIGHT);
 
   return ([node, path]: NodeEntry) => {
     const ranges: Range[] = [];
@@ -20,7 +20,7 @@ export const useDecorateSearchHighlight = ({
           ranges.push({
             anchor: { path, offset: offset - search.length },
             focus: { path, offset },
-            [search_highlight.type]: true,
+            [options.type]: true,
           });
         }
         offset = offset + part.length + search.length;

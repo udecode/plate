@@ -3,12 +3,7 @@
  */
 
 export * from './getInitialState';
-export * from './getSetter';
-export * from './slatePluginsStore';
-export * from './usePlugins';
 export * from './useSlatePluginsActions';
-export * from './useSlatePluginsEditor';
-export * from './useSlatePluginsOptions';
-export * from './useSlatePluginsPluginKeys';
+export * from './useSlatePluginsSelectors';
 export * from './useSlatePluginsStore';
-export * from './useSlatePluginsValue';
+export * from './zustand.utils';

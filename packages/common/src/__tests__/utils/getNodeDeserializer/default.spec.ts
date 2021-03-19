@@ -6,7 +6,7 @@ const node = () => ({ type: ELEMENT_PARAGRAPH });
 it('should be', () => {
   const res = getNodeDeserializer({
     type: ELEMENT_PARAGRAPH,
-    node,
+    getNode: node,
     rules: [{ nodeNames: 'P' }],
   });
 

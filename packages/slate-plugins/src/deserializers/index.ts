@@ -3,7 +3,7 @@
  */
 
 export * from './deserialize-html/types';
-export * from './deserialize-html/withDeserializeHTML';
+export * from './deserialize-html/useDeserializeHTMLPlugin';
 export * from './deserialize-html/utils/deserializeHTMLElement';
 export * from './deserialize-html/utils/deserializeHTMLNode';
 export * from './deserialize-html/utils/deserializeHTMLToBreak';
@@ -13,6 +13,6 @@ export * from './deserialize-html/utils/deserializeHTMLToElement';
 export * from './deserialize-html/utils/deserializeHTMLToFragment';
 export * from './deserialize-html/utils/deserializeHTMLToMarks';
 export * from './deserialize-html/utils/deserializeHTMLToText';
-export * from './deserialize-md/withDeserializeMd';
+export * from './deserialize-md/useDeserializeMdPlugin';
 export * from './deserialize-md/utils/filterBreakLines';
 export * from './deserialize-md/utils/parseMD';

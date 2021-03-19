@@ -26,7 +26,6 @@ export const TodoListElementBase = ({
   element,
   className,
   styles,
-  htmlAttributes,
 }: Props) => {
   const editor = useEditor();
   const readOnly = useReadOnly();
@@ -39,7 +38,7 @@ export const TodoListElementBase = ({
   });
 
   return (
-    <div {...attributes} className={classNames.root} {...htmlAttributes}>
+    <div {...attributes} className={classNames.root}>
       <div contentEditable={false} className={classNames.checkboxWrapper}>
         <input
           data-testid="TodoListElementCheckbox"

@@ -10,7 +10,7 @@ import { Editor, Point, Range, Transforms } from 'slate';
 import { insertMention } from './transforms/insertMention';
 import { getNextIndex } from './utils/getNextIndex';
 import { getPreviousIndex } from './utils/getPreviousIndex';
-import { MentionNodeData, UseMentionOptions } from './types';
+import { MentionNodeData, MentionPluginOptions } from './types';
 
 export const matchesTriggerAndPattern = (
   editor: Editor,

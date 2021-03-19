@@ -14,7 +14,7 @@ const input = {
       deserialize: {
         element: getElementDeserializer({
           type: 'poll',
-          node: (el) => ({
+          getNode: (el) => ({
             type: 'poll',
             id: el.getAttribute('data-id'),
           }),

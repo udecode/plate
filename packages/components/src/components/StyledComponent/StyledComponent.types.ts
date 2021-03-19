@@ -6,8 +6,6 @@ export interface StyledComponentProps {
    */
   styles?: NodeStyles;
 
-  htmlAttributes?: { [key: string]: any };
-
   children?: any;
 
   as?: any;

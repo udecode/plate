@@ -7,10 +7,10 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, WithOverride } from '@udecode/slate-plugins-core';
 import { Editor, Range } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { withRemoveEmptyNodes } from '../../normalizers/withRemoveEmptyNodes';
+import { withRemoveEmptyNodes } from '../../plugins/useRemoveEmptyNodesPlugin';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
 import { ELEMENT_LINK } from './defaults';
@@ -69,7 +69,7 @@ export const withLink = ({
     afterMatch: true,
     multiPaths: true,
   },
-}: WithLinkOptions = {}) => <T extends ReactEditor>(editor: T) => {
+}: WithLinkOptions = {}): WithOverride<ReactEditor> => (editor) => {
   const { insertData, insertText } = editor;
 
   const type = getPluginType(editor, ELEMENT_LINK);

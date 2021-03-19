@@ -1,5 +1,5 @@
 import {
-  DEFAULT_ELEMENT,
+  ELEMENT_DEFAULT,
   isBlockAboveEmpty,
   isExpanded,
 } from '@udecode/slate-plugins-common';
@@ -14,7 +14,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = (
   editor: Editor,
   {
-    defaultType = DEFAULT_ELEMENT,
+    defaultType = ELEMENT_DEFAULT,
     insertNodesOptions,
     level = 1,
   }: CodeBlockInsertOptions

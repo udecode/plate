@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { useEditor } from 'slate-react';
-import { SlatePluginsOptions } from '../types/SlatePluginsStore';
+import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 
 export const getOptions = (editor: Editor) =>
   (editor?.options ?? {}) as SlatePluginsOptions;

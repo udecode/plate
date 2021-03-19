@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Transforms } from 'slate';
-import { withInlineVoid } from '../../../../plugins/withInlineVoid/withInlineVoid';
 import { ELEMENT_LINK } from '../../defaults';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 import { withLink } from '../../withLink';

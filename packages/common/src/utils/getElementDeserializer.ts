@@ -1,4 +1,4 @@
-import { GetElementDeserializerOptions } from '../types/Deserialize';
+import { GetElementDeserializerOptions } from '@udecode/slate-plugins-core';
 import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**
@@ -8,6 +8,6 @@ export const getElementDeserializer = (
   options: GetElementDeserializerOptions
 ) =>
   getNodeDeserializer({
-    node: () => ({ type: options.type }),
+    getNode: () => ({ type: options.type }),
     ...options,
   });

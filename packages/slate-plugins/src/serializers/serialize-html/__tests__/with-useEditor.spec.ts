@@ -1,9 +1,9 @@
-import { TodoListPlugin } from '../../../elements/todo-list/TodoListPlugin';
+import { useTodoListPlugin } from '../../../elements/todo-list/useTodoListPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize elements using useEditor', () => {
   const render = serializeHTMLFromNodes({
-    plugins: [TodoListPlugin()],
+    plugins: [useTodoListPlugin()],
     nodes: [
       {
         type: 'action_item',

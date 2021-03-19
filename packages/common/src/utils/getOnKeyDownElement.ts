@@ -1,21 +1,10 @@
-import { OnKeyDown } from '@udecode/slate-plugins-core';
+import {
+  OnKeyDown,
+  OnKeyDownElementOptions,
+} from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import castArray from 'lodash/castArray';
 import { toggleNodeType } from '../transforms/toggleNodeType';
-
-export interface OnKeyDownElementOptions {
-  /**
-   * Key of the mark
-   */
-  type: string;
-
-  /**
-   * Hotkey to toggle node type
-   */
-  hotkey?: string | string[];
-
-  defaultType?: string;
-}
 
 /**
  * Get `onKeyDown` handler to toggle node type if hotkey is pressed.

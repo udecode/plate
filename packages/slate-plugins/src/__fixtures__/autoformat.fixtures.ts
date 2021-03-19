@@ -1,13 +1,13 @@
 import { Editor } from 'slate';
-import { options } from '../../../../stories-2/config/initialValues';
+import { options } from '../../../../stories/config/initialValues';
 import { insertCodeBlock } from '../elements/code-block/transforms/insertCodeBlock';
 import { toggleList } from '../elements/list/transforms/toggleList';
 import { unwrapList } from '../elements/list/transforms/unwrapList';
-import { AutoformatRule } from '../handlers/autoformat/types';
 import { MARK_BOLD } from '../marks/bold/defaults';
 import { MARK_CODE } from '../marks/code/defaults';
 import { MARK_ITALIC } from '../marks/italic/defaults';
 import { MARK_STRIKETHROUGH } from '../marks/strikethrough/defaults';
+import { AutoformatRule } from '../plugins/autoformat/types';
 
 const preFormat = (editor: Editor) => unwrapList(editor, options);
 

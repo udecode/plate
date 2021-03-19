@@ -1,37 +1,45 @@
 import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
-  BlockquotePlugin,
-  CodeBlockPlugin,
   EditablePlugins,
-  ExitBreakPlugin,
-  HeadingPlugin,
-  ImagePlugin,
-  ParagraphPlugin,
-  ResetBlockTypePlugin,
+  getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
-  SoftBreakPlugin,
+  useBlockquotePlugin,
+  useCodeBlockPlugin,
+  useExitBreakPlugin,
+  useHeadingPlugin,
+  useImagePlugin,
+  useParagraphPlugin,
+  useResetBlockTypePlugin,
+  useSoftBreakPlugin,
   withImageUpload,
   withInlineVoid,
   withSelectOnBackspace,
 } from '@udecode/slate-plugins';
+import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import styled from 'styled-components';
+import { editableProps } from '../../stories/config/initialValues';
+import {
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
+} from '../../stories/config/pluginOptions';
 import {
   initialValueBasicElements,
   initialValueImages,
   options,
-  optionsExitBreak,
-  optionsResetBlockTypes,
-  optionsSoftBreak,
 } from '../config/initialValues';
 
 export default {
   title: 'Examples/Multiple Editors',
 };
+
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 const Wrapper = styled.div`
   display: flex;
@@ -62,34 +70,32 @@ const Editor = ({
     <WrapperEditor>
       <SlatePlugins
         id={id}
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
         initialValue={initialValue}
-        withOverrides={withOverrides}
-      >
-        <EditablePlugins
-          plugins={plugins}
-          editableProps={{
-            placeholder: 'Enter some rich text…',
-            spellCheck: true,
-            autoFocus: true,
-          }}
-        />
-      </SlatePlugins>
+      />
     </WrapperEditor>
   );
 };
 
 export const Example = () => {
   const mainPlugins: SlatePlugin[] = [
-    ParagraphPlugin(),
-    BlockquotePlugin(),
-    CodeBlockPlugin(),
-    HeadingPlugin(),
-    ResetBlockTypePlugin(optionsResetBlockTypes),
-    SoftBreakPlugin(optionsSoftBreak),
-    ExitBreakPlugin(optionsExitBreak),
+    useParagraphPlugin(),
+    useBlockquotePlugin(),
+    useCodeBlockPlugin(),
+    useHeadingPlugin(),
+    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useSoftBreakPlugin(optionsSoftBreakPlugin),
+    useExitBreakPlugin(optionsExitBreakPlugin),
   ];
 
-  const imagePlugins = [ParagraphPlugin(), HeadingPlugin(), ImagePlugin()];
+  const imagePlugins = [
+    useParagraphPlugin(),
+    useHeadingPlugin(),
+    useImagePlugin(),
+  ];
 
   const imagewithOverrides = [
     withReact,
@@ -105,7 +111,6 @@ export const Example = () => {
       <Editor
         id="image"
         plugins={imagePlugins}
-        withOverrides={imagewithOverrides}
         initialValue={initialValueImages}
       />
       <Editor id="3" />

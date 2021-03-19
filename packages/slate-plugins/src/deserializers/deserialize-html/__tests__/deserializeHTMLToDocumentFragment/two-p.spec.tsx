@@ -2,11 +2,11 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = '<p>first</p><p>second</p>';
-const input1: SlatePlugin[] = [ParagraphPlugin()];
+const input1: SlatePlugin[] = [useParagraphPlugin()];
 const input2 = getHtmlDocument(html).body;
 
 const output = (

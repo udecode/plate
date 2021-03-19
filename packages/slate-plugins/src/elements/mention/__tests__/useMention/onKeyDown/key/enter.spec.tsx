@@ -1,11 +1,11 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
+import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { pipe } from '../../../../../../pipe/pipe';
-import { withInlineVoid } from '../../../../../../plugins/withInlineVoid/withInlineVoid';
 import { ELEMENT_MENTION } from '../../../../defaults';
 import { useMention } from '../../../../useMention';
 import { mentionables } from '../mentionables.fixture';

@@ -14,7 +14,6 @@ export const CodeBlockElementBase = ({
   children,
   className,
   styles,
-  htmlAttributes,
 }: ElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -22,7 +21,7 @@ export const CodeBlockElementBase = ({
   });
 
   return (
-    <pre {...attributes} className={classNames.root} {...htmlAttributes}>
+    <pre {...attributes} className={classNames.root}>
       <code>{children}</code>
     </pre>
   );

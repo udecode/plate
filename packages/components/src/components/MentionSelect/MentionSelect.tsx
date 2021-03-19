@@ -3,16 +3,14 @@ import { useEffect, useRef } from 'react';
 import {
   getPreventDefaultHandler,
   MentionNodeData,
+  MentionSelectProps,
+  MentionSelectStyleSet,
 } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
 import { getRootClassNames, NodeStyleProps } from '../../types';
 import { PortalBody } from '../PortalBody/PortalBody';
 import { getMentionSelectStyles } from './MentionSelect.styles';
-import {
-  MentionSelectProps,
-  MentionSelectStyleSet,
-} from './MentionSelect.types';
 
 const getClassNames = getRootClassNames<
   NodeStyleProps,

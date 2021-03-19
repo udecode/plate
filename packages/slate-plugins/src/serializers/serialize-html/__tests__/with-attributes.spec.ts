@@ -1,14 +1,14 @@
 import {
   htmlStringToDOMNode,
-  ImagePlugin,
-  LinkPlugin,
   serializeHTMLFromNodes,
+  useImagePlugin,
+  useLinkPlugin,
 } from '../../../index';
 
 it('serialize link to html with attributes', () => {
   expect(
     serializeHTMLFromNodes({
-      plugins: [LinkPlugin()],
+      plugins: [useLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -29,7 +29,7 @@ it('serialize image with alt to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes({
-        plugins: [ImagePlugin()],
+        plugins: [useImagePlugin()],
         nodes: [
           {
             type: 'img',

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
 import {
-  BoldPlugin,
   htmlStringToDOMNode,
-  ImagePlugin,
   MARK_BOLD,
   serializeHTMLFromNodes,
+  useBoldPlugin,
+  useImagePlugin,
 } from '../../../index';
 
 it('custom serialize image to html', () => {
@@ -14,7 +14,7 @@ it('custom serialize image to html', () => {
       serializeHTMLFromNodes({
         plugins: [
           {
-            ...ImagePlugin(),
+            ...useImagePlugin(),
             serialize: {
               element: ({ element }: RenderElementProps) =>
                 React.createElement('img', { src: element.url }),
@@ -41,7 +41,7 @@ it('custom serialize bold to html', () => {
     serializeHTMLFromNodes({
       plugins: [
         {
-          ...BoldPlugin(),
+          ...useBoldPlugin(),
           serialize: {
             leaf: ({ leaf, children }: RenderLeafProps) =>
               leaf[MARK_BOLD] && !!leaf.text

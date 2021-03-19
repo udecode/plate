@@ -4,4 +4,3 @@
 
 export * from './MentionSelect.styles';
 export * from './MentionSelect';
-export * from './MentionSelect.types';

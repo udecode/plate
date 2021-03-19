@@ -1,8 +1,8 @@
-import { ParagraphPlugin } from '../../../../elements/paragraph/ParagraphPlugin';
+import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 
 const input = {
-  plugins: [ParagraphPlugin({ p: { type: 'p' } })],
+  plugins: [useParagraphPlugin({ p: { type: 'p' } })],
   element: document.createElement('div'),
   children: [{ text: 'test' }],
 };

@@ -1,14 +1,16 @@
-import { DeserializeNode } from '@udecode/slate-plugins-core';
+import {
+  DeserializeNode,
+  GetNodeDeserializerOptions,
+} from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
-import { GetNodeDeserializerOptions } from '../types/Deserialize';
 
 /**
  * Get a deserializer by type, node names, class names and styles.
  */
 export const getNodeDeserializer = ({
   type,
-  node,
-  attributes,
+  getNode,
+  attributeNames,
   rules,
   withoutChildren,
 }: GetNodeDeserializerOptions) => {
@@ -43,27 +45,36 @@ export const getNodeDeserializer = ({
             if (typeof attribute === 'string') {
               if (!el.getAttributeNames().includes(attribute)) return;
             } else {
-              for (const [key, value] of Object.entries(attribute)) {
-                const values = castArray<string>(value);
-                const attr = el.getAttribute(key);
+              for (const [attributeName, attributeValue] of Object.entries(
+                attribute
+              )) {
+                const attributeValues = castArray<string>(attributeValue);
+                const elAttribute = el.getAttribute(attributeName);
 
-                if (!attr || !values.includes(attr)) return;
+                if (!elAttribute || !attributeValues.includes(elAttribute))
+                  return;
               }
             }
           }
 
-          const htmlAttributes = {};
-          if (attributes) {
-            const attributeNames = el.getAttributeNames();
-            for (const attr of attributes) {
-              if (attributeNames.includes(attr))
-                htmlAttributes[attr] = el.getAttribute(attr);
+          const elementAttributes = {};
+          if (attributeNames) {
+            const elementAttributeNames = el.getAttributeNames();
+
+            for (const elementAttributeName of elementAttributeNames) {
+              if (attributeNames.includes(elementAttributeName)) {
+                elementAttributes[elementAttributeName] = el.getAttribute(
+                  elementAttributeName
+                );
+              }
             }
           }
 
-          const slateNode = node(el);
-          if (slateNode && Object.keys(htmlAttributes).length)
-            slateNode.attributes = htmlAttributes;
+          const slateNode = getNode(el);
+          if (slateNode && Object.keys(elementAttributes).length) {
+            slateNode.attributes = elementAttributes;
+          }
+
           return slateNode;
         },
       });

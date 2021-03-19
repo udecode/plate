@@ -1,6 +1,6 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor, useEditor } from 'slate-react';
-import { SlatePluginsEditor } from '../with/withSlatePlugins';
+import { SlatePluginsEditor } from '../plugins/useSlatePluginsPlugin';
 
 export interface IdEditor {
   id: string;
