@@ -1,10 +1,8 @@
 import { Range } from 'slate';
-import {
-  SearchHighlightDecorateOptions,
-  useDecorateSearchHighlight,
-} from '../../../../../index';
+import { createEditorPlugins } from '../../../../../__fixtures__/editor.fixtures';
+import { useDecorateSearchHighlight } from '../../../../../index';
 
-const input: SearchHighlightDecorateOptions = { search: 'test' };
+const input = { search: 'test' };
 
 const output: Range[] = [
   {
@@ -21,7 +19,10 @@ const output: Range[] = [
 ];
 
 it('should be', () => {
-  expect(useDecorateSearchHighlight(input)([{ text: 'test' }, [0, 0]])).toEqual(
-    output
-  );
+  expect(
+    useDecorateSearchHighlight(input)(createEditorPlugins())([
+      { text: 'test' },
+      [0, 0],
+    ])
+  ).toEqual(output);
 });

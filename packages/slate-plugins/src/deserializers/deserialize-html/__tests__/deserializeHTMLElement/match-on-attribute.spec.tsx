@@ -2,6 +2,7 @@
 
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLElement } from '../../../index';
 
 const html1 = '<html><body><div data-poll-id="456"/></body></html>';
@@ -9,7 +10,7 @@ const element1 = getHtmlDocument(html1).body;
 const input1 = {
   plugins: [
     {
-      deserialize: {
+      deserialize: () => ({
         element: getElementDeserializer({
           type: 'poll',
           getNode: (el) => ({
@@ -18,7 +19,7 @@ const input1 = {
           }),
           rules: [{ attribute: 'data-poll-id' }],
         }),
-      },
+      }),
     },
   ],
   element: element1,
@@ -33,7 +34,9 @@ const output = (
 ) as any;
 
 it('should match with the attribute name', () => {
-  expect(deserializeHTMLElement(input1)).toEqual(output.children);
+  expect(deserializeHTMLElement(createEditorPlugins(), input1)).toEqual(
+    output.children
+  );
 });
 
 const html2 = '<html><body><div data-type="poll" data-id="456"/></body></html>';
@@ -41,7 +44,7 @@ const element2 = getHtmlDocument(html2).body;
 const input2 = {
   plugins: [
     {
-      deserialize: {
+      deserialize: () => ({
         element: getElementDeserializer({
           type: 'poll',
           getNode: (el) => ({
@@ -50,12 +53,14 @@ const input2 = {
           }),
           rules: [{ attribute: { 'data-type': 'poll' } }],
         }),
-      },
+      }),
     },
   ],
   element: element2,
 };
 
 it('should match with the attribute name and value', () => {
-  expect(deserializeHTMLElement(input2)).toEqual(output.children);
+  expect(deserializeHTMLElement(createEditorPlugins(), input2)).toEqual(
+    output.children
+  );
 });

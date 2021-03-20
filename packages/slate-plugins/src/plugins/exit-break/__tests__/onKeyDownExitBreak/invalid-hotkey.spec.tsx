@@ -24,6 +24,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownExitBreak()(event, input);
+  onKeyDownExitBreak()(input)(event);
   expect(input.children).toEqual(output.children);
 });

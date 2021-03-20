@@ -38,7 +38,7 @@ it('should call uploadImage when provided', async () => {
   const editor = pipe(
     input,
     withReact,
-    withImageUpload({ img: { uploadImage: uploadSpy } })
+    withImageUpload({ uploadImage: uploadSpy })
   );
 
   const data = {

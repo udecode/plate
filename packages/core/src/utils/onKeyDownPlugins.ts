@@ -1,13 +1,16 @@
 import { Editor } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { OnKeyDown } from '../types/SlatePlugin/OnKeyDown';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { flatMapKey } from './flatMapKey';
 
 /**
  * @see {@link OnKeyDown}
  */
 export const onKeyDownPlugins = (
   editor: Editor,
-  onKeyDownList: (OnKeyDown | null | undefined)[]
+  plugins: SlatePlugin[]
 ): EditableProps['onKeyDown'] => (event) => {
-  onKeyDownList.some((onKeyDown) => onKeyDown?.(editor)(event) === false);
+  flatMapKey(plugins, 'onKeyDown').some(
+    (onKeyDown) => onKeyDown(editor)(event) === false
+  );
 };

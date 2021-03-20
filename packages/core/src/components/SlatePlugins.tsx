@@ -21,7 +21,7 @@ export const SlatePlugins = ({ children, ...options }: SlatePluginsProps) => {
   if (!slateProps.editor) return null;
 
   return (
-    <Slate key={(slateProps.editor as any).key} {...(slateProps as SlateProps)}>
+    <Slate {...(slateProps as SlateProps)}>
       {children}
       <Editable {...getEditableProps()} />
     </Slate>

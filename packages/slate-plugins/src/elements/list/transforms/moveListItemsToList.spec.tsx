@@ -3,6 +3,7 @@
 import { findNode } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import { moveListItemsToList } from './moveListItemsToList';
 
 const input = ((
@@ -50,14 +51,16 @@ const output = ((
 ) as any) as Editor;
 
 it('should', () => {
-  const editor = input;
+  const editor = createEditorPlugins({
+    editor: input,
+  });
 
-  const fromListItem = findNode(input, { match: { id: '2' } }) as any;
-  const toList = findNode(input, { match: { id: '1' } }) as any;
+  const fromListItem = findNode(editor, { match: { id: '2' } }) as any;
+  const toList = findNode(editor, { match: { id: '1' } }) as any;
 
   if (fromListItem && toList) {
-    moveListItemsToList(editor, { fromListItem, toList }, {});
+    moveListItemsToList(editor, { fromListItem, toList });
   }
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

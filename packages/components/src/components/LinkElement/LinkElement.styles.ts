@@ -1,4 +1,4 @@
-import { NodeStyleProps, NodeStyleSet } from '../../types';
+import { NodeStyleProps, NodeStyleSet } from '../StyledNode/StyledNode.types';
 
 export const getLinkElementStyles = ({
   className,

@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
-import { getRootClassNames, NodeStyleProps } from '../../types';
-import { getStyledComponentStyles } from '../StyledComponent/StyledComponent.styles';
+import { getRootClassNames } from '../../types';
+import { getStyledNodeStyles } from '../StyledNode/StyledNode.styles';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { StyledElementProps } from './StyledElement.types';
 
 const getClassNames = getRootClassNames();
@@ -17,6 +17,7 @@ export const StyledElementBase = ({
   className,
   styles,
   as = 'div',
+  nodeProps,
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -26,7 +27,7 @@ export const StyledElementBase = ({
   const Tag = as;
 
   return (
-    <Tag {...attributes} className={classNames.root}>
+    <Tag {...attributes} className={classNames.root} {...nodeProps}>
       {children}
     </Tag>
   );
@@ -36,6 +37,6 @@ export const StyledElement = styled<
   StyledElementProps,
   NodeStyleProps,
   NonNullable<StyledElementProps['styles']>
->(StyledElementBase, getStyledComponentStyles, undefined, {
+>(StyledElementBase, getStyledNodeStyles, undefined, {
   scope: 'StyledElement',
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { SlatePlugins } from '@udecode/slate-plugins';
-import { editableProps, initialValuePlainText } from '../config/initialValues';
+import { initialValuePlainText } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Components/SlatePlugins';
 

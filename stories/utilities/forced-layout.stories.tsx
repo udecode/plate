@@ -13,10 +13,8 @@ import {
   withTrailingNode,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import {
-  editableProps,
-  initialValueForcedLayout,
-} from '../config/initialValues';
+import { initialValueForcedLayout } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Utilities/Forced Layout';
 

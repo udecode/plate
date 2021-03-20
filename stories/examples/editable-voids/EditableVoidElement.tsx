@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RenderElementProps } from 'slate-react';
-import { Example } from '../../components/slate-plugins.stories';
+import { Example } from '../../elements/basic-elements.stories';
 
 export const EditableVoidElement = ({
   attributes,

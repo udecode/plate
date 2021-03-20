@@ -1,13 +1,9 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
-import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { withHistory } from 'slate-history';
-import { withReact } from 'slate-react';
-import { pipe } from '../../../../../../pipe/pipe';
-import { ELEMENT_MENTION } from '../../../../defaults';
-import { useMention } from '../../../../useMention';
+import { createEditorPlugins } from '../../../../../../__fixtures__/editor.fixtures';
+import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 
 const input = ((
@@ -31,31 +27,24 @@ const output = ((
   </editor>
 ) as any) as Editor;
 
-const withOverrides = [
-  withReact,
-  withHistory,
-  withInlineVoid({
-    inlineTypes: [ELEMENT_MENTION],
-    voidTypes: [ELEMENT_MENTION],
-  }),
-] as const;
-
 it('should go down', () => {
-  const editor = pipe(input, ...withOverrides);
+  const { result } = renderHook(() => useMentionPlugin({ mentionables }));
 
-  const { result } = renderHook(() => useMention(mentionables));
-
-  act(() => {
-    result.current.onChangeMention(editor);
+  const editor = createEditorPlugins({
+    editor: input,
+    plugins: [result.current],
   });
 
   act(() => {
-    result.current.onKeyDownMention(
-      new KeyboardEvent('keydown', { key: 'Enter' }),
-      editor
+    result.current.onChange?.(editor)([]);
+  });
+
+  act(() => {
+    result.current.onKeyDown?.(editor)(
+      new KeyboardEvent('keydown', { key: 'Enter' })
     );
   });
 
-  expect(input.children).toEqual(output.children);
-  expect(result.current.target).toEqual(null);
+  expect(editor.children).toEqual(output.children);
+  expect(result.current.getMentionSelectProps().at).toEqual(null);
 });

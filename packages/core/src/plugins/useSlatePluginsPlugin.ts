@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { Editor } from 'slate';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { WithOverride } from '../types/SlatePlugin/WithOverride';
@@ -13,9 +14,10 @@ export interface SlatePluginsEditor extends Editor {
 }
 
 export interface WithSlatePluginsOptions {
-  id: string;
+  id?: string;
   plugins?: SlatePlugin[];
   options?: SlatePluginsOptions;
+  components?: Record<string, ReactNode>;
 }
 
 /**
@@ -25,15 +27,27 @@ export interface WithSlatePluginsOptions {
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: {@link SlatePluginsOptions}
  */
-export const withSlatePlugins = ({
+export const withSlatePlugins = <TOutput = {}>({
   id = 'main',
   plugins = [],
   options = {},
-}: WithSlatePluginsOptions): WithOverride<Editor, SlatePluginsEditor> => (
-  e
-) => {
-  let editor = e as typeof e & SlatePluginsEditor;
+  components = {},
+}: WithSlatePluginsOptions = {}): WithOverride<
+  Editor,
+  SlatePluginsEditor & TOutput
+> => (e) => {
+  let editor = e as typeof e & SlatePluginsEditor & TOutput;
   editor.id = id;
+
+  if (components) {
+    // Merge components into options
+    Object.keys(components).forEach((key) => {
+      options[key] = {
+        component: components[key],
+        ...options[key],
+      };
+    });
+  }
 
   // Default option type is the plugin key
   Object.keys(options).forEach((key) => {

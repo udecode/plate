@@ -1,12 +1,8 @@
 import React from 'react';
-import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
 import {
-  ELEMENT_OL,
-  ELEMENT_UL,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
-  useEditorPluginType,
   useExitBreakPlugin,
   useHistoryPlugin,
   useImagePlugin,
@@ -19,14 +15,15 @@ import {
 import {
   getSlatePluginsComponents,
   HeadingToolbar,
-  ToolbarList,
 } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueList } from '../config/initialValues';
+import { initialValueList } from '../config/initialValues';
 import {
+  editableProps,
   optionsExitBreakPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
+import { ToolbarButtonsList } from '../config/Toolbars';
 
 const id = 'Elements/List';
 
@@ -36,19 +33,6 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
-
-const Toolbar = () => (
-  <HeadingToolbar>
-    <ToolbarList
-      type={useEditorPluginType(ELEMENT_UL)}
-      icon={<FormatListBulleted />}
-    />
-    <ToolbarList
-      type={useEditorPluginType(ELEMENT_OL)}
-      icon={<FormatListNumbered />}
-    />
-  </HeadingToolbar>
-);
 
 export const Example = () => {
   const plugins = [
@@ -72,7 +56,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueList}
     >
-      <Toolbar />
+      <HeadingToolbar>
+        <ToolbarButtonsList />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

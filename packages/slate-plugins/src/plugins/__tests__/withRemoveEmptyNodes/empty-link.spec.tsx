@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_LINK } from '../../../elements/link/defaults';
-import { withRemoveEmptyNodes } from '../../../normalizers/index';
+import { withRemoveEmptyNodes } from '../../useRemoveEmptyNodesPlugin';
 
 const input = ((
   <editor>

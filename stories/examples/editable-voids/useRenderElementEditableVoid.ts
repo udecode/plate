@@ -1,6 +1,6 @@
 import { getRenderElement, setDefaults } from '@udecode/slate-plugins';
+import { EDITABLE_VOID } from './defaults';
 import { EditableVoidElement } from './EditableVoidElement';
-import { EDITABLE_VOID } from './types';
 
 // TODO
 export const useRenderElementEditableVoid = (options?: any) => {

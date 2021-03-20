@@ -12,4 +12,7 @@ export type GetNodeProps = (options: {
   text?: Text;
 }) => NodeProps;
 
+/**
+ * Props passed from `getNodeProps` option.
+ */
 export type NodeProps = { [key: string]: any };

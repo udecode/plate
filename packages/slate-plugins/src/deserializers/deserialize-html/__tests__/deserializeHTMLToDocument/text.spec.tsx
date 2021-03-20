@@ -2,6 +2,7 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
 const html = 'test';
@@ -18,9 +19,14 @@ const output = (
 
 it('should have the break line', () => {
   expect(
-    deserializeHTMLToDocument({
-      plugins: input1,
-      element: input2,
-    })
+    deserializeHTMLToDocument(
+      createEditorPlugins({
+        plugins: input1,
+      }),
+      {
+        plugins: input1,
+        element: input2,
+      }
+    )
   ).toEqual(output);
 });

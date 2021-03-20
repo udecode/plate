@@ -66,6 +66,7 @@ export const withDeserializeHTML = ({
 
     if (html) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
+
       let fragment = deserializeHTMLToDocumentFragment(editor, {
         plugins,
         element: body,

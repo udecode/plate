@@ -1,21 +1,26 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+import { renderHook } from '@testing-library/react-hooks';
+import { getSlateClass } from '@udecode/slate-plugins-common';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
+import { ELEMENT_ALIGN_CENTER } from '../../../../elements/align/defaults';
 import { useAlignPlugin } from '../../../../elements/align/useAlignPlugin';
 import { useBlockquotePlugin } from '../../../../elements/blockquote/useBlockquotePlugin';
+import { ELEMENT_CODE_LINE } from '../../../../elements/code-block/defaults';
 import { useCodeBlockPlugin } from '../../../../elements/code-block/useCodeBlockPlugin';
 import { useHeadingPlugin } from '../../../../elements/heading/useHeadingPlugin';
 import { useImagePlugin } from '../../../../elements/image/useImagePlugin';
 import { useLinkPlugin } from '../../../../elements/link/useLinkPlugin';
 import { useListPlugin } from '../../../../elements/list/useListPlugin';
 import { useMediaEmbedPlugin } from '../../../../elements/media-embed/useMediaEmbedPlugin';
+import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
 import { useMentionPlugin } from '../../../../elements/mention/useMentionPlugin';
 import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
-import {
-  CLASS_TODO_LIST,
-  CLASS_TODO_LIST_CHECKED,
-} from '../../../../elements/todo-list/constants';
+import { CLASS_TODO_LIST_CHECKED } from '../../../../elements/todo-list/constants';
+import { ELEMENT_TODO_LI } from '../../../../elements/todo-list/defaults';
 import { useTodoListPlugin } from '../../../../elements/todo-list/useTodoListPlugin';
 import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
 import { useDeserializeCode } from '../../../../marks/code/useDeserializeCode';
@@ -50,18 +55,26 @@ const textTags = [
 
 const inlineTags = [
   '<a href="http://google.com">a</a>',
-  `<span data-slate-value="mention" class="slate-mention" />`,
+  `<span data-slate-value="mention" class="${getSlateClass(
+    ELEMENT_MENTION
+  )}" />`,
 ];
 
 const elementTags = [
-  '<pre><code><div class="slate-code-line">code 1</div><div class="slate-code-line">code 2</div></code></pre>',
+  `<pre><code><div class="${getSlateClass(
+    ELEMENT_CODE_LINE
+  )}">code 1</div><div class="${getSlateClass(
+    ELEMENT_CODE_LINE
+  )}">code 2</div></code></pre>`,
   '<ul><li><p>ul-li-p</p></li></ul>',
   '<ol><li><p>ol-li-p</p></li></ol>',
   '<img alt="" src="https://i.imgur.com/removed.png" />',
   '<table><tr><td>table</td></tr></table>',
-  `<div class="${CLASS_TODO_LIST} ${CLASS_TODO_LIST_CHECKED}">checked</div>`,
-  `<div class="${CLASS_TODO_LIST}">unchecked</div>`,
-  `<div class="slate-align-center">center</div>`,
+  `<div class="${getSlateClass(
+    ELEMENT_TODO_LI
+  )} ${CLASS_TODO_LIST_CHECKED}">checked</div>`,
+  `<div class="${getSlateClass(ELEMENT_TODO_LI)}">unchecked</div>`,
+  `<div class="${getSlateClass(ELEMENT_ALIGN_CENTER)}">center</div>`,
   `<iframe src="https://player.vimeo.com/video/26689853" />`,
 ];
 
@@ -69,31 +82,6 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
   ''
 )}</p>${elementTags.join('')}</body></html>`;
 
-const input1 = [
-  useBlockquotePlugin(),
-  useTodoListPlugin(),
-  useHeadingPlugin({ levels: 1 }),
-  useImagePlugin(),
-  useLinkPlugin(),
-  useListPlugin(),
-  useMentionPlugin(),
-  useParagraphPlugin(),
-  useCodeBlockPlugin(),
-  useTablePlugin(),
-  useMediaEmbedPlugin(),
-  useSearchHighlightPlugin(),
-  useSoftBreakPlugin(),
-  useAlignPlugin(),
-  { deserialize: useDeserializeBold() },
-  { deserialize: useDeserializeHighlight() },
-  { deserialize: useDeserializeCode() },
-  { deserialize: useDeserializeKbd() },
-  { deserialize: useDeserializeItalic() },
-  { deserialize: useDeserializeStrikethrough() },
-  { deserialize: useDeserializeSubscript() },
-  { deserialize: useDeserializeSuperscript() },
-  { deserialize: useDeserializeUnderline() },
-];
 const input2 = getHtmlDocument(html).body;
 
 const output = (
@@ -143,8 +131,8 @@ const output = (
         <htd>table</htd>
       </htr>
     </htable>
-    <hTodoList checked>checked</hTodoList>
-    <hTodoList checked={false}>unchecked</hTodoList>
+    <htodolist checked>checked</htodolist>
+    <htodolist checked={false}>unchecked</htodolist>
     <hcenter>center</hcenter>
     <hembed url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
@@ -153,10 +141,41 @@ const output = (
 ) as any;
 
 it('should be', () => {
+  const plugins = renderHook(() => [
+    useBlockquotePlugin(),
+    useTodoListPlugin(),
+    useHeadingPlugin({ levels: 1 }),
+    useImagePlugin(),
+    useLinkPlugin(),
+    useListPlugin(),
+    useMentionPlugin(),
+    useParagraphPlugin(),
+    useCodeBlockPlugin(),
+    useTablePlugin(),
+    useMediaEmbedPlugin(),
+    useSearchHighlightPlugin(),
+    useSoftBreakPlugin(),
+    useAlignPlugin(),
+    { deserialize: useDeserializeBold() },
+    { deserialize: useDeserializeHighlight() },
+    { deserialize: useDeserializeCode() },
+    { deserialize: useDeserializeKbd() },
+    { deserialize: useDeserializeItalic() },
+    { deserialize: useDeserializeStrikethrough() },
+    { deserialize: useDeserializeSubscript() },
+    { deserialize: useDeserializeSuperscript() },
+    { deserialize: useDeserializeUnderline() },
+  ]).result.current;
+
   expect(
-    deserializeHTMLElement({
-      plugins: input1,
-      element: input2,
-    })
+    deserializeHTMLElement(
+      createEditorPlugins({
+        plugins,
+      }),
+      {
+        plugins,
+        element: input2,
+      }
+    )
   ).toEqual(output.children);
 });

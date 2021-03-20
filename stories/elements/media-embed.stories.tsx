@@ -10,7 +10,8 @@ import {
   useSelectOnBackspacePlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueEmbeds } from '../config/initialValues';
+import { initialValueEmbeds } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Elements/Media Embed';
 

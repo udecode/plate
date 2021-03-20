@@ -7,10 +7,8 @@ import {
   useReactPlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import {
-  editableProps,
-  initialValueHugeDocument,
-} from '../config/initialValues';
+import { initialValueHugeDocument } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Examples/Huge Document';
 

@@ -13,7 +13,8 @@ import {
   useTablePlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValuePasteMd } from '../config/initialValues';
+import { initialValuePasteMd } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Deserializers/Markdown';
 

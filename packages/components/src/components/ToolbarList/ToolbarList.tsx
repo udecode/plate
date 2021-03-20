@@ -18,7 +18,7 @@ export const ToolbarList = ({
     <ToolbarElement
       type={type}
       onMouseDown={getPreventDefaultHandler(toggleList, editor, {
-        typeList: type,
+        type,
       })}
       {...props}
     />

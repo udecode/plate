@@ -51,7 +51,7 @@ export const jsx = createHyperscript({
     ha: { type: ELEMENT_LINK },
     himg: { type: ELEMENT_IMAGE },
     hembed: { type: ELEMENT_MEDIA_EMBED },
-    hTodoList: { type: ELEMENT_TODO_LI },
+    htodolist: { type: ELEMENT_TODO_LI },
     htable: { type: ELEMENT_TABLE },
     htr: { type: ELEMENT_TR },
     hth: { type: ELEMENT_TH },

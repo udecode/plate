@@ -65,6 +65,7 @@ const getNode = (
   // Search for matching plugin based on element type
   plugins.some((plugin) => {
     if (!plugin.serialize?.element && !plugin.renderElement) return false;
+
     if (
       !plugin
         .deserialize?.(editor)

@@ -15,7 +15,8 @@ import {
   HeadingToolbar,
   ToolbarImage,
 } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueImages } from '../config/initialValues';
+import { initialValueImages } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Elements/Image';
 

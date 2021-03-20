@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
-import { ElementProps, getRootClassNames } from '../../types';
+import { getRootClassNames } from '../../types';
+import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { getImageElementStyles } from './ImageElement.styles';
 import {
   ImageElementStyleProps,
@@ -13,7 +14,7 @@ const getClassNames = getRootClassNames<
   ImageElementStyleSet
 >();
 
-type Props = ElementProps<
+type Props = StyledElementProps<
   { url: string },
   ImageElementStyleProps,
   ImageElementStyleSet
@@ -29,6 +30,7 @@ export const ImageElementBase = ({
   element,
   className,
   styles,
+  nodeProps,
 }: Props) => {
   const { url } = element;
   const focused = useFocused();
@@ -49,6 +51,7 @@ export const ImageElementBase = ({
           className={classNames.img}
           src={url}
           alt=""
+          {...nodeProps}
         />
       </div>
       {children}

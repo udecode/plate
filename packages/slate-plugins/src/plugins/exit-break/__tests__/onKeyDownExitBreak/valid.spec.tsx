@@ -30,7 +30,7 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
   onKeyDownExitBreak({
     rules: [{ hotkey: 'mod+enter', level: 0, before: false }],
-  })(event, input);
+  })(input)(event);
   expect(input.children).toEqual(output.children);
   expect(input.selection?.anchor).toEqual({ offset: 0, path: [1, 0] });
 });

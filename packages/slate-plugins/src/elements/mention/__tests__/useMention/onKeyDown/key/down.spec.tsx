@@ -4,8 +4,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
-import { pipe } from '../../../../../../pipe/pipe';
-import { useMention } from '../../../../useMention';
+import { createEditorPlugins } from '../../../../../../__fixtures__/editor.fixtures';
+import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 
 const input = ((
@@ -20,20 +20,21 @@ const input = ((
 const withOverrides = [withReact, withHistory] as const;
 
 it('should go down', () => {
-  const editor = pipe(input, ...withOverrides);
+  const editor = createEditorPlugins({
+    editor: input,
+  });
 
-  const { result } = renderHook(() => useMention(mentionables));
+  const { result } = renderHook(() => useMentionPlugin({ mentionables }));
 
   act(() => {
-    result.current.onChangeMention(editor);
+    result.current.onChange?.(editor)([]);
   });
 
   act(() => {
-    result.current.onKeyDownMention(
-      new KeyboardEvent('keydown', { key: 'ArrowDown' }),
-      editor
+    result.current.onKeyDown?.(editor)(
+      new KeyboardEvent('keydown', { key: 'ArrowDown' })
     );
   });
 
-  expect(result.current.index).toBe(1);
+  expect(result.current.getMentionSelectProps().valueIndex).toBe(1);
 });

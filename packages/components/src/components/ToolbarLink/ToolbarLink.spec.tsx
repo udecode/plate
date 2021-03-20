@@ -1,46 +1,26 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import {
-  ELEMENT_H1,
-  ELEMENT_LINK,
-  pipe,
-  withLink,
-} from '@udecode/slate-plugins';
+import { ELEMENT_H1, useLinkPlugin } from '@udecode/slate-plugins';
 import { Editor } from 'slate';
 import * as SlateReact from 'slate-react';
-import { withReact } from 'slate-react';
+import { createEditorPlugins } from '../../../../slate-plugins/src/__fixtures__/editor.fixtures';
 import { ToolbarLink } from './ToolbarLink';
+import {
+  input1,
+  input2,
+  input3,
+  output1,
+  output2,
+  output3,
+} from './ToolbarLink.fixtures';
 
 describe('ToolbarLink', () => {
   describe('when default', () => {
     it('should render', () => {
-      const input = ((
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any) as Editor;
-
-      const output = (
-        <editor>
-          <hp>
-            test
-            <ha url="https://i.imgur.com/removed.png">
-              https://i.imgur.com/removed.png
-            </ha>
-            <cursor />
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = pipe(
-        input,
-        withReact,
-        withLink(),
-        withInlineVoid({ inlineTypes: [ELEMENT_LINK] })
-      );
+      const editor = createEditorPlugins({
+        editor: input1,
+        plugins: [useLinkPlugin()],
+      });
 
       jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
       jest
@@ -52,35 +32,18 @@ describe('ToolbarLink', () => {
       const element = getByTestId('ToolbarButton');
       fireEvent.mouseDown(element);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output1.children);
     });
   });
 
   describe('when with url', () => {
     it('should render', () => {
-      const input = ((
-        <editor>
-          <hp>
-            <ha url="https://i.imgur.com/removed.png">
-              <cursor />
-              https://i.imgur.com/removed.png
-            </ha>
-          </hp>
-        </editor>
-      ) as any) as Editor;
+      const editor = createEditorPlugins({
+        editor: input2,
+        plugins: [useLinkPlugin()],
+      });
 
-      const output = (
-        <editor>
-          <hp>
-            <ha url="https://i.imgur.com/changed.png">
-              <cursor />
-              https://i.imgur.com/removed.png
-            </ha>
-          </hp>
-        </editor>
-      ) as any;
-
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(input as any);
+      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
       const prompt = jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/changed.png');
@@ -97,31 +60,16 @@ describe('ToolbarLink', () => {
         'https://i.imgur.com/removed.png'
       );
 
-      // expect(editor.children).toEqual(output.children)
+      expect(editor.children).toEqual(output2.children);
     });
   });
 
   describe('when without url', () => {
     it('should render', () => {
-      const input = ((
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any) as Editor;
-
-      const output = (
-        <editor>
-          <hp>
-            test
-            <cursor />
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = input;
+      const editor = createEditorPlugins({
+        editor: input3,
+        plugins: [useLinkPlugin()],
+      });
 
       jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
@@ -133,7 +81,7 @@ describe('ToolbarLink', () => {
       const element = getByTestId('ToolbarButton');
       fireEvent.mouseDown(element);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output3.children);
     });
   });
 });

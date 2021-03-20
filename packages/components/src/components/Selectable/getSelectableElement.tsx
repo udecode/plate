@@ -1,4 +1,4 @@
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, ReactNode, useMemo } from 'react';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Editor, Path } from 'slate';
 import {
@@ -20,7 +20,7 @@ export interface GetSelectabelElementOptions {
   level?: number;
   filter?: (editor: Editor, path: Path) => boolean;
   allowReadOnly?: boolean;
-  dragIcon?: React.ReactNode;
+  dragIcon?: ReactNode;
 }
 
 export const getSelectableElement = ({

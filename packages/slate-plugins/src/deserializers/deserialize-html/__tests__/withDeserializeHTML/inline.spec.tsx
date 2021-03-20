@@ -1,14 +1,10 @@
 /** @jsx jsx */
-
-import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { withReact } from 'slate-react';
-import { ELEMENT_MENTION } from '../../../../elements/mention/defaults';
-import { useMentionPlugin } from '../../../../elements/mention/useMentionPlugin';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
+import { useLinkPlugin } from '../../../../elements/link/useLinkPlugin';
 import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
-import { pipe } from '../../../../pipe/pipe';
-import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
+import { useDeserializeHTMLPlugin } from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -21,34 +17,29 @@ const input = ((
 
 // noinspection CheckTagEmptyBody
 const data = {
-  getData: () =>
-    `<html><body><span data-slate-value="mention" class="slate-mention" /></body></html>`,
+  getData: () => `<html><body><a href="http://test.com">link</a></body></html>`,
 };
 
 const output = (
   <editor>
     <hp>
       test
-      <hmention value="mention">
-        <htext />
-      </hmention>
+      <ha url="http://test.com">link</ha>
       <cursor />
     </hp>
   </editor>
 ) as any;
 
 it('should do nothing', () => {
-  const editor = pipe(
-    input,
-    withReact,
-    withInlineVoid({
-      inlineTypes: [ELEMENT_MENTION],
-      voidTypes: [ELEMENT_MENTION],
-    }),
-    withDeserializeHTML({ plugins: [useParagraphPlugin(), useMentionPlugin()] })
-  );
+  const plugins = [useParagraphPlugin(), useLinkPlugin()];
+  plugins.push(useDeserializeHTMLPlugin({ plugins }));
+
+  const editor = createEditorPlugins({
+    editor: input,
+    plugins,
+  });
 
   editor.insertData(data as any);
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

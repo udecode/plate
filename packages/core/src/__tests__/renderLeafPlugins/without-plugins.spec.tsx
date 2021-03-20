@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
+import { createEditorPlugins } from '../../../../slate-plugins/src/__fixtures__/editor.fixtures';
 import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
 
 const attributes = {
@@ -10,7 +11,7 @@ const attributes = {
 const text = { text: 'test' };
 
 it('should render the default leaf', () => {
-  const Leaf = renderLeafPlugins([], []);
+  const Leaf = renderLeafPlugins(createEditorPlugins(), [])!;
 
   const { getByTestId } = render(
     <Leaf attributes={attributes} leaf={text} text={text}>

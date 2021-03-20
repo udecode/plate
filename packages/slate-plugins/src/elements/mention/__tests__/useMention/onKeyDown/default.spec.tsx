@@ -5,7 +5,7 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { pipe } from '../../../../../pipe/pipe';
-import { useMention } from '../../../useMention';
+import { useMentionPlugin } from '../../../useMentionPlugin';
 import { mentionables } from './mentionables.fixture';
 
 const input = ((
@@ -22,18 +22,17 @@ const withOverrides = [withReact, withHistory] as const;
 it('should go down', () => {
   const editor = pipe(input, ...withOverrides);
 
-  const { result } = renderHook(() => useMention(mentionables));
+  const { result } = renderHook(() => useMentionPlugin({ mentionables }));
 
   act(() => {
-    result.current.onChangeMention(editor);
+    result.current.onChange?.(editor)([]);
   });
 
   act(() => {
-    result.current.onKeyDownMention(
-      new KeyboardEvent('keydown', { key: 'a' }),
-      editor
+    result.current.onKeyDown?.(editor)(
+      new KeyboardEvent('keydown', { key: 'a' })
     );
   });
 
-  expect(result.current.target).toBeDefined();
+  expect(result.current.getMentionSelectProps().at).toBeDefined();
 });

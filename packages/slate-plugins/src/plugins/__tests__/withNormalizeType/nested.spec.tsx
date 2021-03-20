@@ -2,9 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../../stories/config/initialValues';
+import { options } from '../../../../../../stories/config/pluginOptions';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
-import { withNormalizeTypes } from '../../../normalizers/index';
+import { withNormalizeTypes } from '../../useNormalizeTypesPlugin';
 
 const input = (
   <editor>

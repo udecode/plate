@@ -10,17 +10,18 @@ import {
   useResetBlockTypePlugin,
   useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
+import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueBasicElements } from '../config/initialValues';
 import {
   editableProps,
-  initialValueBasicElements,
-} from '../config/initialValues';
-import {
   optionsExitBreakPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
-import { HeadingToolbarAlign } from '../config/Toolbars';
+import { ToolbarButtonsAlign } from '../config/Toolbars';
 
 const id = 'Elements/Alignment';
 
@@ -51,7 +52,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueBasicElements}
     >
-      <HeadingToolbarAlign />
+      <HeadingToolbar>
+        <ToolbarButtonsAlign />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

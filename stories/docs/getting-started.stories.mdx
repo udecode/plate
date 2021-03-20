@@ -45,13 +45,13 @@ import {
 
 const initialValue: Node[] = [
   {
-    type: options.p.type,
+    type: options[ELEMENT_PARAGRAPH].type,
     children: [
       {
         text: 'This text is bold, italic and underlined.',
-        [options.bold.type]: true,
-        [options.italic.type]: true,
-        [options.underline.type]: true,
+        [options[MARK_BOLD].type]: true,
+        [options[MARK_ITALIC].type]: true,
+        [options[MARK_UNDERLINE].type]: true,
       },
     ],
   }

@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { useMention } from '../../../../useMention';
+import { useMentionPlugin } from '../../../../useMentionPlugin';
 
 const input = ((
   <editor>
@@ -11,11 +11,11 @@ const input = ((
 ) as any) as Editor;
 
 it('should be', () => {
-  const { result } = renderHook(() => useMention());
+  const { result } = renderHook(() => useMentionPlugin());
 
   act(() => {
-    result.current.onKeyDownMention(new KeyboardEvent('ArrowDown'), input);
+    result.current.onKeyDown?.(input)(new KeyboardEvent('ArrowDown'));
   });
 
-  expect(result.current.index).toBe(0);
+  expect(result.current.getMentionSelectProps().valueIndex).toBe(0);
 });

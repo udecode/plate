@@ -1,11 +1,16 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditor } from 'slate';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useImagePlugin } from '../../../../elements/image/useImagePlugin';
 import { useLinkPlugin } from '../../../../elements/link/useLinkPlugin';
 import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
-import { useDeserializeBold } from '../../../../marks/bold/useDeserializeBold';
+import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
+import { getSlatePluginsOptions } from '../../../../utils/getSlatePluginsOptions';
 import { deserializeHTMLElement } from '../../../index';
 
 const textTags = ['<b>strong</b>'];
@@ -21,38 +26,37 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
   ''
 )}</p>${elementTags.join('')}</body></html>`;
 
-const input1 = [
-  useImagePlugin({
+const editor = createEditorPlugins({
+  options: {
     img: {
       deserialize: {
-        attributes: ['alt'],
+        attributeNames: ['alt'],
       },
     },
-  }),
-  useLinkPlugin({
     a: {
       deserialize: {
-        node: (el) => ({
+        getNode: (el) => ({
           type: 'a',
           url: el.getAttribute('href'),
           opener: el.getAttribute('target') === '_blank',
         }),
       },
     },
-  }),
-  useParagraphPlugin(),
-  useTablePlugin({
     th: {
       deserialize: {
-        node: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
+        getNode: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
       },
     },
-  }),
-  {
-    deserialize: useDeserializeBold({
-      bold: { deserialize: { rules: [{ nodeNames: ['B'] }] } },
-    }),
+    bold: { deserialize: { rules: [{ nodeNames: ['B'] }] } },
   },
+});
+
+const plugins: SlatePlugin[] = [
+  useImagePlugin(),
+  useLinkPlugin(),
+  useParagraphPlugin(),
+  useTablePlugin(),
+  useBoldPlugin(),
 ];
 const input2 = getHtmlDocument(html).body;
 
@@ -85,8 +89,8 @@ const output = (
 
 it('should be', () => {
   expect(
-    deserializeHTMLElement({
-      plugins: input1,
+    deserializeHTMLElement(editor, {
+      plugins,
       element: input2,
     })
   ).toEqual(output.children);

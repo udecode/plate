@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import { createEditor } from 'slate';
+import { withSlatePlugins } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import { useSlatePluginsEditor } from '../../store/useSlatePluginsSelectors';
-import { useSlatePluginsStore } from '../../store/useSlatePluginsStore';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapKey } from '../../utils/flatMapKey';
+import { pipe } from '../../utils/pipe';
 
 /**
  * Effects to update the slate plugins store from the options.
@@ -55,23 +57,12 @@ export const useSlatePluginsEffects = ({
   useEffect(() => {
     if (storeEditor) return;
 
-    const _options = options ?? {};
-
-    if (components) {
-      // Merge components into options
-      Object.keys(components).forEach((key) => {
-        _options[key] = {
-          component: components[key],
-          ..._options[key],
-        };
-      });
-    }
-
-    setEditor({
-      editor,
-      plugins,
-      options: _options,
-    });
+    setEditor(
+      pipe(
+        createEditor(),
+        withSlatePlugins({ id, plugins, options, components })
+      )
+    );
   }, [storeEditor, components, editor, id, options, plugins, setEditor]);
 
   // Slate plugins

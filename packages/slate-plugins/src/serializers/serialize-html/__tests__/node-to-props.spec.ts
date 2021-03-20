@@ -1,3 +1,4 @@
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import {
   htmlStringToDOMNode,
   serializeHTMLFromNodes,
@@ -5,19 +6,29 @@ import {
   useLinkPlugin,
 } from '../../../index';
 
+const plugins = [useLinkPlugin(), useImagePlugin()];
+const editor = createEditorPlugins({
+  plugins,
+  options: {
+    a: {
+      getNodeProps: ({ element }) =>
+        /^https?:\/\/slatejs.org\/?/.test((element as any).url)
+          ? {}
+          : { target: '_blank' },
+    },
+    img: {
+      getNodeProps: ({ element }) => ({
+        width: (element as any).url.split('/').pop(),
+        alt: (element as any).attributes?.alt,
+      }),
+    },
+  },
+});
+
 it('serialize link to html with attributes', () => {
   expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useLinkPlugin({
-          a: {
-            nodeToProps: ({ element }) =>
-              /^https?:\/\/slatejs.org\/?/.test(element.url)
-                ? {}
-                : { target: '_blank' },
-          },
-        }),
-      ],
+    serializeHTMLFromNodes(editor, {
+      plugins,
       nodes: [
         { text: 'An external ' },
         {
@@ -35,24 +46,15 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a href="https://theuselessweb.com/" class="slate-link" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-link">link</a>.'
+    'An external <a href="https://theuselessweb.com/" class="slate-a" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-a">link</a>.'
   );
 });
 
 it('serialize image with alt to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes({
-        plugins: [
-          useImagePlugin({
-            img: {
-              nodeToProps: ({ element }) => ({
-                width: element.url.split('/').pop(),
-                alt: element.attributeNames?.alt,
-              }),
-            },
-          }),
-        ],
+      serializeHTMLFromNodes(editor, {
+        plugins,
         nodes: [
           {
             type: 'img',

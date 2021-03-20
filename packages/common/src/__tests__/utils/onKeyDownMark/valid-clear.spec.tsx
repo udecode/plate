@@ -39,7 +39,7 @@ it('should be', () => {
     type: MARK_BOLD,
     hotkey: 'ctrl+b',
     clear: MARK_ITALIC,
-  })?.(event, input);
+  })?.(input)(event);
   expect(input.children).toEqual(output.children);
   expect(input.selection).toEqual(output.selection);
 });

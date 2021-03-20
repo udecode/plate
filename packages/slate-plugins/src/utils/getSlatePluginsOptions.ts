@@ -70,7 +70,7 @@ import {
 } from '../marks/underline/defaults';
 import { MARK_SEARCH_HIGHLIGHT } from '../widgets/search-highlight/defaults';
 
-type PluginKey =
+export type SlatePluginKey =
   | typeof ELEMENT_ALIGN_CENTER
   | typeof ELEMENT_ALIGN_JUSTIFY
   | typeof ELEMENT_ALIGN_LEFT
@@ -108,11 +108,14 @@ type PluginKey =
   | typeof MARK_SUPERSCRIPT
   | typeof MARK_UNDERLINE;
 
-export const getSlatePluginsOptions = (): Record<
-  PluginKey,
-  SlatePluginOptions
-> => {
-  const options: Record<PluginKey, Partial<SlatePluginOptions>> = {
+/**
+ * Get slate plugins options.
+ * @param overrides merge into the default options
+ */
+export const getSlatePluginsOptions = <T extends string = string>(
+  overrides?: Partial<Record<SlatePluginKey | T, Partial<SlatePluginOptions>>>
+) => {
+  const options: Record<SlatePluginKey, Partial<SlatePluginOptions>> = {
     [ELEMENT_ALIGN_CENTER]: {},
     [ELEMENT_ALIGN_JUSTIFY]: {},
     [ELEMENT_ALIGN_LEFT]: {},
@@ -151,9 +154,15 @@ export const getSlatePluginsOptions = (): Record<
     [MARK_UNDERLINE]: DEFAULTS_UNDERLINE,
   };
 
+  if (overrides) {
+    Object.keys(overrides).forEach((key) => {
+      options[key] = overrides[key];
+    });
+  }
+
   Object.keys(options).forEach((key) => {
     options[key].type = key;
   });
 
-  return options as Record<PluginKey, SlatePluginOptions>;
+  return options as Record<SlatePluginKey | T, SlatePluginOptions>;
 };

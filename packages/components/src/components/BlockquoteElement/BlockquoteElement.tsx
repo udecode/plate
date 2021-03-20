@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
-import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
+import { getRootClassNames } from '../../types';
+import { StyledElementProps } from '../StyledElement/StyledElement.types';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { getBlockquoteElementStyles } from './BlockquoteElement.styles';
 
 const getClassNames = getRootClassNames();
@@ -14,14 +16,15 @@ export const BlockquoteElementBase = ({
   children,
   className,
   styles,
-}: ElementProps) => {
+  nodeProps,
+}: StyledElementProps) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
   });
 
   return (
-    <blockquote {...attributes} className={classNames.root}>
+    <blockquote {...attributes} className={classNames.root} {...nodeProps}>
       {children}
     </blockquote>
   );
@@ -31,9 +34,9 @@ export const BlockquoteElementBase = ({
  * BlockquoteElement
  */
 export const BlockquoteElement = styled<
-  ElementProps,
+  StyledElementProps,
   NodeStyleProps,
-  NonNullable<ElementProps['styles']>
+  NonNullable<StyledElementProps['styles']>
 >(BlockquoteElementBase, getBlockquoteElementStyles, undefined, {
   scope: 'BlockquoteElement',
 });

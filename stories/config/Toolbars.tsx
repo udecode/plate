@@ -17,6 +17,8 @@ import {
   FormatAlignRight,
   FormatBold,
   FormatItalic,
+  FormatListBulleted,
+  FormatListNumbered,
   FormatQuote,
   FormatStrikethrough,
   FormatUnderlined,
@@ -46,6 +48,8 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_OL,
+  ELEMENT_UL,
   insertTable,
   MARK_BOLD,
   MARK_CODE,
@@ -59,16 +63,16 @@ import {
 } from '@udecode/slate-plugins';
 import {
   BalloonToolbar,
-  HeadingToolbar,
   ToolbarAlign,
   ToolbarCodeBlock,
   ToolbarElement,
+  ToolbarList,
   ToolbarMark,
   ToolbarTable,
 } from '@udecode/slate-plugins-components';
 
-export const HeadingToolbarBasicElements = () => (
-  <HeadingToolbar>
+export const ToolbarButtonsBasicElements = () => (
+  <>
     <ToolbarElement
       type={useEditorPluginType(ELEMENT_H1)}
       icon={<LooksOne />}
@@ -89,11 +93,24 @@ export const HeadingToolbarBasicElements = () => (
       type={useEditorPluginType(ELEMENT_CODE_BLOCK)}
       icon={<CodeBlock />}
     />
-  </HeadingToolbar>
+  </>
 );
 
-export const HeadingToolbarAlign = () => (
-  <HeadingToolbar>
+export const ToolbarButtonsList = () => (
+  <>
+    <ToolbarList
+      type={useEditorPluginType(ELEMENT_UL)}
+      icon={<FormatListBulleted />}
+    />
+    <ToolbarList
+      type={useEditorPluginType(ELEMENT_OL)}
+      icon={<FormatListNumbered />}
+    />
+  </>
+);
+
+export const ToolbarButtonsAlign = () => (
+  <>
     <ToolbarAlign icon={<FormatAlignLeft />} />
     <ToolbarAlign
       type={useEditorPluginType(ELEMENT_ALIGN_CENTER)}
@@ -107,41 +124,46 @@ export const HeadingToolbarAlign = () => (
       type={useEditorPluginType(ELEMENT_ALIGN_JUSTIFY)}
       icon={<FormatAlignJustify />}
     />
-  </HeadingToolbar>
+  </>
 );
 
-export const HeadingToolbarMarks = () => (
-  <HeadingToolbar>
-    <ToolbarMark type={useEditorPluginType(MARK_BOLD)} icon={<FormatBold />} />
-    <ToolbarMark
-      type={useEditorPluginType(MARK_ITALIC)}
-      icon={<FormatItalic />}
-    />
-    <ToolbarMark
-      type={useEditorPluginType(MARK_UNDERLINE)}
-      icon={<FormatUnderlined />}
-    />
-    <ToolbarMark
-      type={useEditorPluginType(MARK_STRIKETHROUGH)}
-      icon={<FormatStrikethrough />}
-    />
-    <ToolbarMark type={useEditorPluginType(MARK_CODE)} icon={<CodeAlt />} />
-    <ToolbarMark type={useEditorPluginType(MARK_KBD)} icon={<Keyboard />} />
-    <ToolbarMark
-      type={useEditorPluginType(MARK_SUPERSCRIPT)}
-      clear={useEditorPluginType(MARK_SUBSCRIPT)}
-      icon={<Superscript />}
-    />
-    <ToolbarMark
-      type={useEditorPluginType(MARK_SUBSCRIPT)}
-      clear={useEditorPluginType(MARK_SUPERSCRIPT)}
-      icon={<Subscript />}
-    />
-  </HeadingToolbar>
-);
+export const ToolbarButtonsBasicMarks = () => {
+  return (
+    <>
+      <ToolbarMark
+        type={useEditorPluginType(MARK_BOLD)}
+        icon={<FormatBold />}
+      />
+      <ToolbarMark
+        type={useEditorPluginType(MARK_ITALIC)}
+        icon={<FormatItalic />}
+      />
+      <ToolbarMark
+        type={useEditorPluginType(MARK_UNDERLINE)}
+        icon={<FormatUnderlined />}
+      />
+      <ToolbarMark
+        type={useEditorPluginType(MARK_STRIKETHROUGH)}
+        icon={<FormatStrikethrough />}
+      />
+      <ToolbarMark type={useEditorPluginType(MARK_CODE)} icon={<CodeAlt />} />
+      <ToolbarMark type={useEditorPluginType(MARK_KBD)} icon={<Keyboard />} />
+      <ToolbarMark
+        type={useEditorPluginType(MARK_SUPERSCRIPT)}
+        clear={useEditorPluginType(MARK_SUBSCRIPT)}
+        icon={<Superscript />}
+      />
+      <ToolbarMark
+        type={useEditorPluginType(MARK_SUBSCRIPT)}
+        clear={useEditorPluginType(MARK_SUPERSCRIPT)}
+        icon={<Subscript />}
+      />
+    </>
+  );
+};
 
-export const HeadingToolbarTable = () => (
-  <HeadingToolbar>
+export const ToolbarButtonsTable = () => (
+  <>
     <ToolbarMark type={useEditorPluginType(MARK_BOLD)} icon={<FormatBold />} />
     <ToolbarTable icon={<BorderAll />} transform={insertTable} />
     <ToolbarTable icon={<BorderClear />} transform={deleteTable} />
@@ -149,7 +171,7 @@ export const HeadingToolbarTable = () => (
     <ToolbarTable icon={<BorderTop />} transform={deleteRow} />
     <ToolbarTable icon={<BorderLeft />} transform={addColumn} />
     <ToolbarTable icon={<BorderRight />} transform={deleteColumn} />
-  </HeadingToolbar>
+  </>
 );
 
 export const BallonToolbarMarks = () => {

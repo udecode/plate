@@ -3,6 +3,7 @@
 import { findNode } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 describe('when there is toListItem sublist', () => {
@@ -63,23 +64,21 @@ describe('when there is toListItem sublist', () => {
   ) as any) as Editor;
 
   it('should', () => {
-    const editor = input;
+    const editor = createEditorPlugins({
+      editor: input,
+    });
 
-    const fromListItem = findNode(input, { match: { id: '12' } }) as any;
-    const toListItem = findNode(input, { match: { id: '11' } }) as any;
+    const fromListItem = findNode(editor, { match: { id: '12' } }) as any;
+    const toListItem = findNode(editor, { match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(
-        editor,
-        {
-          fromListItem,
-          toListItem,
-        },
-        {}
-      );
+      moveListItemSublistItemsToListItemSublist(editor, {
+        fromListItem,
+        toListItem,
+      });
     }
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -127,22 +126,20 @@ describe('when there is no list in toListItem', () => {
   ) as any) as Editor;
 
   it('should', () => {
-    const editor = input;
+    const editor = createEditorPlugins({
+      editor: input,
+    });
 
-    const fromListItem = findNode(input, { match: { id: '12' } }) as any;
-    const toListItem = findNode(input, { match: { id: '11' } }) as any;
+    const fromListItem = findNode(editor, { match: { id: '12' } }) as any;
+    const toListItem = findNode(editor, { match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
-      moveListItemSublistItemsToListItemSublist(
-        editor,
-        {
-          fromListItem,
-          toListItem,
-        },
-        {}
-      );
+      moveListItemSublistItemsToListItemSublist(editor, {
+        fromListItem,
+        toListItem,
+      });
     }
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

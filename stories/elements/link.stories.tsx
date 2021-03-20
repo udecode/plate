@@ -13,7 +13,8 @@ import {
   HeadingToolbar,
   ToolbarLink,
 } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueLinks } from '../config/initialValues';
+import { initialValueLinks } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Elements/Link';
 

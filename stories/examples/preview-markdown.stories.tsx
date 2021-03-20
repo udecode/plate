@@ -7,7 +7,8 @@ import {
   useReactPlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValuePreview } from '../config/initialValues';
+import { initialValuePreview } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 import { usePreviewPlugin } from './preview-markdown/usePreviewPlugin';
 
 const id = 'Examples/Preview Markdown';

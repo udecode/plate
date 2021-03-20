@@ -2,7 +2,8 @@ import * as React from 'react';
 import { getHandler, MentionNodeData } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
-import { getRootClassNames, NodeStyleSet } from '../../types';
+import { getRootClassNames } from '../../types';
+import { NodeStyleSet } from '../StyledNode/StyledNode.types';
 import { getMentionElementStyles } from './MentionElement.styles';
 import {
   MentionElementProps,
@@ -25,6 +26,7 @@ export const MentionElementBase = ({
   prefix,
   className,
   styles,
+  nodeProps,
   as: Tag = 'span',
   onClick,
   renderLabel = (mentionable: MentionNodeData) => mentionable.value,
@@ -46,6 +48,7 @@ export const MentionElementBase = ({
       className={classNames.root}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
+      {...nodeProps}
     >
       {prefix}
       {renderLabel(element)}

@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
 import {
   deserializeHTMLToMarks,
@@ -20,5 +21,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(input as any)).toEqual(output);
+  expect(deserializeHTMLToMarks(createEditorPlugins(), input as any)).toEqual(
+    output
+  );
 });

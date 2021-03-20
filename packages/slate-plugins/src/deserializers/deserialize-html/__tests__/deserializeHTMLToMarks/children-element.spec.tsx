@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { useBoldPlugin } from '../../../../marks/bold/useBoldPlugin';
 import { useItalicPlugin } from '../../../../marks/italic/useItalicPlugin';
@@ -29,5 +31,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(input as any)).toEqual(output);
+  expect(deserializeHTMLToMarks(createEditorPlugins(), input as any)).toEqual(
+    output
+  );
 });

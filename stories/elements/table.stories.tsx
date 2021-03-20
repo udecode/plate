@@ -4,22 +4,23 @@ import {
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
-  useBoldPlugin,
   useExitBreakPlugin,
-  useHeadingPlugin,
   useHistoryPlugin,
-  useParagraphPlugin,
   useReactPlugin,
   useSoftBreakPlugin,
   useTablePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueTables } from '../config/initialValues';
 import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueTables } from '../config/initialValues';
+import {
+  editableProps,
   optionsExitBreakPlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
-import { HeadingToolbarTable } from '../config/Toolbars';
+import { ToolbarButtonsTable } from '../config/Toolbars';
 
 const id = 'Elements/Table';
 
@@ -50,7 +51,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueTables}
     >
-      <HeadingToolbarTable />
+      <HeadingToolbar>
+        <ToolbarButtonsTable />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

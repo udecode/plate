@@ -15,6 +15,9 @@ module.exports = {
   },
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
+  moduleNameMapper: {
+    '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.js',
+  },
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
   transform: {

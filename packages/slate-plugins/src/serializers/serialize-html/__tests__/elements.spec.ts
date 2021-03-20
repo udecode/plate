@@ -1,3 +1,4 @@
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import {
   htmlStringToDOMNode,
   serializeHTMLFromNodes,
@@ -11,9 +12,11 @@ import {
   useTablePlugin,
 } from '../../../index';
 
+const editor = createEditorPlugins({});
+
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useListPlugin()],
       nodes: [
         {
@@ -37,7 +40,7 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   expect(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
@@ -50,14 +53,14 @@ it('serialize link to html', () => {
       ],
     })
   ).toBe(
-    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-link">link</a> part.'
+    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-a">link</a> part.'
   );
 });
 
 it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes({
+      serializeHTMLFromNodes(editor, {
         plugins: [useBlockquotePlugin()],
         nodes: [
           {
@@ -72,7 +75,7 @@ it('serialize blockquote to html', () => {
 
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useHeadingPlugin()],
       nodes: [
         {
@@ -97,7 +100,7 @@ it('serialize headings to html', () => {
 
 it('serialize paragraph to html', () => {
   expect(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useParagraphPlugin()],
       nodes: [
         {
@@ -112,7 +115,7 @@ it('serialize paragraph to html', () => {
 it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes({
+      serializeHTMLFromNodes(editor, {
         plugins: [useImagePlugin()],
         nodes: [
           {
@@ -129,7 +132,7 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useTablePlugin()],
       nodes: [
         {
@@ -166,11 +169,11 @@ it('serialize table to html', () => {
 
 it('serialize alignments to html', () => {
   expect(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
-  ).toBe('<div class="slate-align-center">I am centered text!</div>');
+  ).toBe('<div class="slate-align_center">I am centered text!</div>');
 });

@@ -5,7 +5,7 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { pipe } from '../../../../../pipe/pipe';
-import { useMention } from '../../../useMention';
+import { useMentionPlugin } from '../../../useMentionPlugin';
 
 const input = ((
   <editor>
@@ -18,11 +18,11 @@ const withOverrides = [withReact, withHistory] as const;
 it('should do nothing', () => {
   const editor = pipe(input, ...withOverrides);
 
-  const { result } = renderHook(() => useMention());
+  const { result } = renderHook(() => useMentionPlugin());
 
   act(() => {
-    result.current.onChangeMention(editor);
+    result.current.onChange?.(editor)([]);
   });
 
-  expect(result.current.index).toBe(0);
+  expect(result.current.getMentionSelectProps().valueIndex).toBe(0);
 });

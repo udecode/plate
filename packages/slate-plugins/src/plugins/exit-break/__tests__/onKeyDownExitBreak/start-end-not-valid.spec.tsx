@@ -35,7 +35,7 @@ it('should be', () => {
         query: { start: true, end: true },
       },
     ],
-  })(event, input);
+  })(input)(event);
   expect(input.children).toEqual(output.children);
   expect(input.selection?.anchor).toEqual({ offset: 2, path: [0, 0] });
 });

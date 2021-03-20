@@ -2,18 +2,19 @@ import * as React from 'react';
 import { Editor } from 'slate';
 import { DefaultLeaf, RenderLeafProps } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { RenderLeaf } from '../types/SlatePlugin/RenderLeaf';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { flatMapKey } from './flatMapKey';
 
 /**
  * @see {@link RenderLeaf}
  */
 export const renderLeafPlugins = (
   editor: Editor,
-  renderLeafList: (RenderLeaf | undefined)[]
+  plugins: SlatePlugin[]
 ): EditableProps['renderLeaf'] => (props: RenderLeafProps) => {
   const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
 
-  renderLeafList.forEach((renderLeaf) => {
+  flatMapKey(plugins, 'renderLeaf').forEach((renderLeaf) => {
     if (!renderLeaf) return;
 
     const newChildren = renderLeaf(editor)(leafProps);

@@ -2,6 +2,7 @@
 
 import { findNode } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import { hasListChild } from './hasListChild';
 
 describe('when there is a sublist', () => {
@@ -27,9 +28,13 @@ describe('when there is a sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const listItem = findNode(input, { match: { id: '2' } });
+    const editor = createEditorPlugins({
+      editor: input,
+    });
 
-    expect(hasListChild(listItem?.[0] as any)).toBeTruthy();
+    const listItem = findNode(editor, { match: { id: '2' } });
+
+    expect(hasListChild(editor, listItem?.[0] as any)).toBeTruthy();
   });
 });
 
@@ -45,8 +50,12 @@ describe('when there is no sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const listItem = findNode(input, { match: { id: '2' } });
+    const editor = createEditorPlugins({
+      editor: input,
+    });
 
-    expect(hasListChild(listItem?.[0] as any)).toBeFalsy();
+    const listItem = findNode(editor, { match: { id: '2' } });
+
+    expect(hasListChild(editor, listItem?.[0] as any)).toBeFalsy();
   });
 });

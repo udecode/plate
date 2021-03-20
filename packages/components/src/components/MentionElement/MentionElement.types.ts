@@ -1,6 +1,7 @@
 import { MentionNode, MentionNodeData } from '@udecode/slate-plugins';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { ElementProps, NodeStyleSet } from '../../types';
+import { StyledElementProps } from '../StyledElement/StyledElement.types';
+import { NodeStyleSet } from '../StyledNode/StyledNode.types';
 
 export interface MentionElementStyleProps {
   /**
@@ -14,7 +15,7 @@ export interface MentionElementStyleProps {
 }
 
 // renderElement props
-export interface MentionElementProps extends ElementProps<MentionNode> {
+export interface MentionElementProps extends StyledElementProps<MentionNode> {
   /**
    * Call to provide customized styling that will layer on top of the variant rules.
    */

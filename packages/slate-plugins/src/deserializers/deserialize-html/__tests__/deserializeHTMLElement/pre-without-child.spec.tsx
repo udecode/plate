@@ -2,6 +2,7 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core/src';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLElement } from '../../../index';
 
 const html = `<html><body>test<pre /></body></html>`;
@@ -16,7 +17,7 @@ const output = (
 
 it('should ignore pre', () => {
   expect(
-    deserializeHTMLElement({
+    deserializeHTMLElement(createEditorPlugins(), {
       plugins: input1,
       element: input2,
     })

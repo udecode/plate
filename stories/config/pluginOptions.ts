@@ -1,7 +1,12 @@
 import { boolean, text } from '@storybook/addon-knobs';
 import {
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_TD,
   ELEMENT_TODO_LI,
   ExitBreakPluginOptions,
+  getSlatePluginsOptions,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
@@ -9,8 +14,9 @@ import {
   ResetBlockTypePluginOptions,
   SoftBreakPluginOptions,
 } from '@udecode/slate-plugins';
-import { options } from './initialValues';
 import { MENTIONABLES } from './mentionables';
+
+export const options = getSlatePluginsOptions();
 
 export const optionsMentionPlugin = {
   mentionables: MENTIONABLES,
@@ -26,8 +32,8 @@ export const optionsMentionPlugin = {
 };
 
 const resetBlockTypesCommonRule = {
-  types: [options.blockquote.type, options[ELEMENT_TODO_LI].type],
-  defaultType: options.p.type,
+  types: [options[ELEMENT_BLOCKQUOTE].type, options[ELEMENT_TODO_LI].type],
+  defaultType: options[ELEMENT_PARAGRAPH].type,
 };
 
 export const optionsResetBlockTypePlugin: ResetBlockTypePluginOptions = {
@@ -52,9 +58,9 @@ export const optionsSoftBreakPlugin: SoftBreakPluginOptions = {
       hotkey: 'enter',
       query: {
         allow: [
-          options.code_block.type,
-          options.blockquote.type,
-          options.td.type,
+          options[ELEMENT_CODE_BLOCK].type,
+          options[ELEMENT_BLOCKQUOTE].type,
+          options[ELEMENT_TD].type,
         ],
       },
     },
@@ -79,4 +85,10 @@ export const optionsExitBreakPlugin: ExitBreakPluginOptions = {
       },
     },
   ],
+};
+
+export const editableProps = {
+  placeholder: 'Enter some rich text…',
+  spellCheck: true,
+  autoFocus: true,
 };

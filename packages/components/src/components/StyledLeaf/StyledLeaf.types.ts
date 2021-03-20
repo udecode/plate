@@ -1,6 +1,16 @@
-import { RenderLeafProps } from 'slate-react';
-import { StyledComponentProps } from '../StyledComponent/StyledComponent.types';
+import { Text } from 'slate';
+import {
+  NodeStyleProps,
+  NodeStyleSet,
+  StyledNodeProps,
+} from '../StyledNode/StyledNode.types';
 
-export interface StyledLeafProps
-  extends Omit<StyledComponentProps, 'children'>,
-    RenderLeafProps {}
+export interface StyledLeafProps<
+  TText = Text,
+  TStyleProps = NodeStyleProps,
+  TStyleSet = NodeStyleSet
+> extends StyledNodeProps<TStyleProps, TStyleSet> {
+  children: any;
+  text: Text;
+  leaf: Text & TText;
+}

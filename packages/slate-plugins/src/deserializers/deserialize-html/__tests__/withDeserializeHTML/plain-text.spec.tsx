@@ -3,7 +3,12 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
+import { getSlatePluginsOptions } from '../../../../utils/getSlatePluginsOptions';
+import {
+  useDeserializeHTMLPlugin,
+  withDeserializeHTML,
+} from '../../useDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -30,7 +35,10 @@ const output = (
 it('should do nothing', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-  const editor = withDeserializeHTML()(withReact(input));
+  const editor = createEditorPlugins({
+    editor: input,
+    plugins: [useDeserializeHTMLPlugin()],
+  });
 
   editor.insertData(data as any);
 

@@ -10,10 +10,8 @@ import {
   BalloonToolbar,
   getSlatePluginsComponents,
 } from '@udecode/slate-plugins-components';
-import {
-  editableProps,
-  initialValueBalloonToolbar,
-} from '../config/initialValues';
+import { initialValueBalloonToolbar } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 import { BallonToolbarMarks } from '../config/Toolbars';
 
 const id = 'Components/BalloonToolbar';

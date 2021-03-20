@@ -1,3 +1,4 @@
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import {
   htmlStringToDOMNode,
   serializeHTMLFromNodes,
@@ -6,30 +7,47 @@ import {
 } from '../../../index';
 
 it('serialize link to html with attributes', () => {
+  const plugins = [useLinkPlugin()];
+
   expect(
-    serializeHTMLFromNodes({
-      plugins: [useLinkPlugin()],
-      nodes: [
-        { text: 'Some paragraph of text with ' },
-        {
-          type: 'a',
-          url: 'https://theuselessweb.com/',
-          attributes: { target: '_blank', rel: 'noopener nofollow' },
-          children: [{ text: 'link' }],
+    serializeHTMLFromNodes(
+      createEditorPlugins({
+        plugins,
+        options: {
+          a: {
+            getNodeProps: () => ({
+              target: '_blank',
+              rel: 'noopener nofollow',
+            }),
+          },
         },
-        { text: ' part.' },
-      ],
-    })
+      }),
+      {
+        plugins,
+        nodes: [
+          { text: 'Some paragraph of text with ' },
+          {
+            type: 'a',
+            url: 'https://theuselessweb.com/',
+            attributes: { target: '_blank', rel: 'noopener nofollow' },
+            children: [{ text: 'link' }],
+          },
+          { text: ' part.' },
+        ],
+      }
+    )
   ).toBe(
-    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-link" target="_blank" rel="noopener nofollow">link</a> part.'
+    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-a" target="_blank" rel="noopener nofollow">link</a> part.'
   );
 });
 
 it('serialize image with alt to html', () => {
+  const plugins = [useImagePlugin()];
+
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes({
-        plugins: [useImagePlugin()],
+      serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
+        plugins,
         nodes: [
           {
             type: 'img',

@@ -1,120 +1,145 @@
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import { useAlignPlugin } from '../../../elements/align/useAlignPlugin';
 import { useBoldPlugin } from '../../../marks/bold/useBoldPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize with slate className', () => {
+  const editor = createEditorPlugins();
+
   expect(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(editor, {
       plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
-  ).toBe('<div class="slate-align-center">I am centered text!</div>');
+  ).toBe('<div class="slate-align_center">I am centered text!</div>');
 });
 
 it('serialize with slate classNames: a+slate', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: { className: 'a slate-align-center' },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
-  ).toBe('<div class="slate-align-center">I am centered text!</div>');
+  ).toBe('<div class="slate-align_center">I am centered text!</div>');
 });
 
 it('serialize with slate classNames: slate+b', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: { className: 'slate-align-center b' },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'slate-align_center b',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
-  ).toBe('<div class="slate-align-center">I am centered text!</div>');
+  ).toBe('<div class="slate-align_center">I am centered text!</div>');
 });
 
 it('serialize with classNames: a+slate+b', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: { className: 'a slate-align-center b' },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center b',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
-  ).toBe('<div class="slate-align-center">I am centered text!</div>');
+  ).toBe('<div class="slate-align_center">I am centered text!</div>');
 });
 
 it('serialize with classNames: a+slate+b+slate', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: { className: 'a slate-align-center b slate-cool' },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center b slate-cool',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
   ).toBe(
-    '<div class="slate-align-center slate-cool">I am centered text!</div>'
+    '<div class="slate-align_center slate-cool">I am centered text!</div>'
   );
 });
 
 it('serialize with slate classNames: multiple tags', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: { className: 'a slate-align-center b' },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center b',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
     })
   ).toBe(
-    '<div class="slate-align-center">I am centered text!</div><div class="slate-align-center">I am centered text!</div>'
+    '<div class="slate-align_center">I am centered text!</div><div class="slate-align_center">I am centered text!</div>'
   );
 });
 
 it('serialize with custom preserved classname: a+custom', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: {
-              className: 'a custom-align-center slate-align-center',
-            },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a custom-align-center slate-align_center',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -124,24 +149,24 @@ it('serialize with custom preserved classname: a+custom', () => {
 });
 
 it('serialize nested with custom preserved classname: a+custom', () => {
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a custom-align-center slate-align_center',
+        }),
+      },
+      bold: {
+        getNodeProps: () => ({
+          className: 'custom-bold',
+        }),
+      },
+    },
+  });
+
   expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: {
-              className: 'a custom-align-center slate-align-center',
-            },
-          },
-        }),
-        useBoldPlugin({
-          bold: {
-            rootProps: {
-              className: 'custom-bold',
-            },
-          },
-        }),
-      ],
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin(), useBoldPlugin()],
       nodes: [
         {
           type: 'align_center',
@@ -160,23 +185,25 @@ it('serialize nested with custom preserved classname: a+custom', () => {
 });
 
 it('serialize with multiple custom classname: a+custom+slate', () => {
-  expect(
-    serializeHTMLFromNodes({
-      plugins: [
-        useAlignPlugin({
-          align_center: {
-            rootProps: {
-              className: 'a custom-align-center slate-align-center',
-            },
-          },
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a custom-align-center slate-align_center',
         }),
-      ],
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [useAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
       preserveClassNames: ['custom-', 'slate-'],
     })
   ).toBe(
-    '<div class="custom-align-center slate-align-center">I am centered text!</div>'
+    '<div class="custom-align-center slate-align_center">I am centered text!</div>'
   );
 });

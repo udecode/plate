@@ -17,28 +17,27 @@ import { onChangePlugins } from '../../utils/onChangePlugins';
  */
 export const useSlateProps = ({
   id,
-  onChange: controlledOnChange,
+  onChange: _onChange,
 }: UseSlatePropsOptions = {}): (() => Omit<SlateProps, 'children'>) => {
   const { setValue } = useSlatePluginsActions(id);
   const editor = useSlatePluginsEditor<ReactEditor & SlatePluginsEditor>(id);
   const value = useSlatePluginsValue(id);
   const plugins = usePlugins(id);
 
-  const onChange = useMemo(() => {
-    if (controlledOnChange) return controlledOnChange;
-
-    return (newValue: Node[]) => {
+  const onChange = useMemo(
+    () => (newValue: Node[]) => {
       setValue(newValue);
 
-      onChangePlugins(
-        editor,
-        plugins.flatMap((p) => p.onChange)
-      )(newValue);
-    };
-  }, [controlledOnChange, editor, plugins, setValue]);
+      onChangePlugins(editor, plugins)(newValue);
+
+      _onChange?.(newValue);
+    },
+    [_onChange, editor, plugins, setValue]
+  );
 
   return useCallback(
     () => ({
+      key: editor?.key,
       editor,
       onChange,
       value,

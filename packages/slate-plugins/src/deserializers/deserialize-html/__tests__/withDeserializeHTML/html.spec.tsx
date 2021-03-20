@@ -2,9 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { withReact } from 'slate-react';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useHeadingPlugin } from '../../../../elements/heading/useHeadingPlugin';
-import { withDeserializeHTML } from '../../useDeserializeHTMLPlugin';
+import { useDeserializeHTMLPlugin } from '../../useDeserializeHTMLPlugin';
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -32,13 +32,16 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = withDeserializeHTML({ plugins: [useHeadingPlugin()] })(
-        withReact(input)
-      );
+      const plugins = [useHeadingPlugin()];
+      plugins.push(useDeserializeHTMLPlugin({ plugins }));
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins,
+      });
 
       editor.insertData(data as any);
 
-      expect(input.children).toEqual(expected.children);
+      expect(editor.children).toEqual(expected.children);
     });
   });
 
@@ -61,13 +64,16 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = withDeserializeHTML({ plugins: [useHeadingPlugin()] })(
-        withReact(input)
-      );
+      const plugins = [useHeadingPlugin()];
+      plugins.push(useDeserializeHTMLPlugin({ plugins }));
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins,
+      });
 
       editor.insertData(data as any);
 
-      expect(input.children).toEqual(expected.children);
+      expect(editor.children).toEqual(expected.children);
     });
   });
 });

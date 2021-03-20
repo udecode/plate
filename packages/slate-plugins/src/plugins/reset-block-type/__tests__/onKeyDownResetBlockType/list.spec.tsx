@@ -6,6 +6,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import {
   ELEMENT_LI,
   ELEMENT_PARAGRAPH,
@@ -36,6 +37,10 @@ const output = (
 ) as any;
 
 it('should be', () => {
+  const editor = createEditorPlugins({
+    editor: input,
+  });
+
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
   const resetBlockTypesListRule = {
@@ -57,7 +62,7 @@ it('should be', () => {
         predicate: isSelectionAtBlockStart,
       },
     ],
-  })(new KeyboardEvent('keydown'), input);
+  })(editor)(new KeyboardEvent('keydown'));
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

@@ -15,14 +15,18 @@ import {
   useTablePlugin,
   useTrailingNodePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueExitBreak } from '../config/initialValues';
 import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueExitBreak } from '../config/initialValues';
+import {
+  editableProps,
   optionsExitBreakPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
-import { HeadingToolbarBasicElements } from '../config/Toolbars';
+import { ToolbarButtonsBasicElements } from '../config/Toolbars';
 
 const id = 'Utilities/Exit Break';
 
@@ -57,7 +61,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueExitBreak}
     >
-      <HeadingToolbarBasicElements />
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

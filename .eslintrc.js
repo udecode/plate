@@ -250,11 +250,7 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
-      },
-    },
-    {
-      files: '**/__tests__/*',
-      rules: {
+        'react-hooks/rules-of-hooks': 'off',
         'no-restricted-imports': [
           'error',
           {

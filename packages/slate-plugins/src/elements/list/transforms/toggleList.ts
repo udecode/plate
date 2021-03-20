@@ -5,13 +5,10 @@ import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
 import { ELEMENT_LI } from '../defaults';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (
-  editor: Editor,
-  { typeList }: { typeList: string }
-) => {
+export const toggleList = (editor: Editor, { type }: { type: string }) => {
   if (!editor.selection) return;
 
-  const isActive = someNode(editor, { match: { type: typeList } });
+  const isActive = someNode(editor, { match: { type } });
 
   unwrapList(editor);
 
@@ -20,7 +17,7 @@ export const toggleList = (
   });
 
   if (!isActive) {
-    const list = { type: typeList, children: [] };
+    const list = { type, children: [] };
     wrapNodes(editor, list);
 
     const nodes = [

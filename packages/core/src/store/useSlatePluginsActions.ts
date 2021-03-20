@@ -5,7 +5,7 @@ import { SlatePluginsActions, State } from '../types/SlatePluginsStore';
 import { pipe } from '../utils/pipe';
 import { getInitialState } from './getInitialState';
 import { slatePluginsStore } from './useSlatePluginsStore';
-import { getSetStateByKey, mergeState } from './zustand.utils';
+import { getSetStateByKey } from './zustand.utils';
 
 const s = slatePluginsStore;
 const get = s.getState;
@@ -13,15 +13,9 @@ const set = s.setState;
 
 export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
   useMemo(() => {
-    const setEditor: SlatePluginsActions['setEditor'] = (
-      { options = {}, plugins = [], editor: _editor },
-      id = storeId
-    ) => {
-      let editor: any = _editor ?? createEditor();
-      editor = pipe(editor, withSlatePlugins({ id, plugins, options }));
-
-      return mergeState({ editor }, id);
-    };
+    const setEditor: SlatePluginsActions['setEditor'] = getSetStateByKey<
+      State['editor']
+    >('editor', storeId);
 
     return {
       setEditor,
@@ -41,13 +35,16 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
               }
         ),
       resetEditorKey: (id = storeId) => {
-        console.log('reset');
-        const editor = get()[id].editor ?? createEditor();
+        const { editor } = get()[id] as any;
         const { plugins } = get()[id];
 
-        const { options } = editor as any;
-
-        setEditor({ plugins, options }, id);
+        setEditor(
+          pipe(
+            createEditor(),
+            withSlatePlugins({ id, plugins, options: editor?.options })
+          ),
+          id
+        );
       },
       setPlugins: getSetStateByKey<State['plugins']>('plugins', storeId),
       setValue: getSetStateByKey<State['value']>('value', storeId),

@@ -17,7 +17,10 @@ export const getRenderElement = (
     const { type, component: Element = DefaultElement, getNodeProps } = option;
 
     if (element.type === type) {
-      const nodeProps = getNodeProps?.({ attributes, element, children });
+      const nodeProps =
+        getNodeProps?.({ attributes, element, children }) ??
+        element.attributes ??
+        {};
 
       return (
         <Element

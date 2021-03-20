@@ -14,9 +14,10 @@ import {
   withAutoformat,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { autoformatRules } from '../config/autoformatRules';
-import { editableProps, initialValueAutoformat } from '../config/initialValues';
+import { optionsAutoformat } from '../config/autoformatRules';
+import { initialValueAutoformat } from '../config/initialValues';
 import {
+  editableProps,
   optionsExitBreakPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
@@ -42,9 +43,7 @@ export const Example = () => {
     useResetBlockTypePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
-    useAutoformatPlugin({
-      rules: autoformatRules,
-    }),
+    useAutoformatPlugin(optionsAutoformat),
   ];
 
   return (

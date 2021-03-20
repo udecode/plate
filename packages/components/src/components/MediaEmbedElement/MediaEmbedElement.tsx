@@ -2,7 +2,9 @@ import * as React from 'react';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor, useEditor } from 'slate-react';
-import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
+import { getRootClassNames } from '../../types';
+import { StyledElementProps } from '../StyledElement/StyledElement.types';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
@@ -12,7 +14,7 @@ const getClassNames = getRootClassNames<
   MediaEmbedElementStyleSet
 >();
 
-type Props = ElementProps<
+type Props = StyledElementProps<
   { url: string },
   NodeStyleProps,
   MediaEmbedElementStyleSet
@@ -28,6 +30,7 @@ export const MediaEmbedElementBase = ({
   element,
   className,
   styles,
+  nodeProps,
 }: Props) => {
   const classNames = getClassNames(styles, {
     className,
@@ -46,6 +49,7 @@ export const MediaEmbedElementBase = ({
             title="embed"
             src={`${url}?title=0&byline=0&portrait=0`}
             frameBorder="0"
+            {...nodeProps}
           />
         </div>
 

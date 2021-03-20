@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatRulesFixtures } from '../../../../../__fixtures__/autoformat.fixtures';
+import { optionsAutoformat } from '../../../../../../../../stories/config/autoformatRules';
 import { withAutoformat } from '../../../useAutoformatPlugin';
 
 const input = (
@@ -18,9 +18,7 @@ const output = (
 ) as any;
 
 it('should run insertText', () => {
-  const editor = withAutoformat({ rules: autoformatRulesFixtures })(
-    withReact(input)
-  );
+  const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
   editor.insertText(' ');
 

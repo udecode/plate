@@ -1,4 +1,4 @@
-import { NodeStyleProps } from '../../types';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
 
 export const getMediaEmbedElementStyles = ({

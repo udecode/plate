@@ -29,6 +29,6 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
   onKeyDownExitBreak({
     rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
-  })(event, input);
+  })(input)(event);
   expect(input.children).toEqual(output.children);
 });

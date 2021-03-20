@@ -1,3 +1,4 @@
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
@@ -9,5 +10,5 @@ const input = {
 const output = [{ text: 'test' }];
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(input)).toEqual(output);
+  expect(deserializeHTMLToMarks(createEditorPlugins(), input)).toEqual(output);
 });

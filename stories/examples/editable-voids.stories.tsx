@@ -7,7 +7,10 @@ import {
   useReactPlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueVoids } from '../config/initialValues';
+import { initialValueVoids } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+import { EDITABLE_VOID } from './editable-voids/defaults';
+import { EditableVoidElement } from './editable-voids/EditableVoidElement';
 import { useEditableVoidPlugin } from './editable-voids/useEditableVoidPlugin';
 
 const id = 'Elements/Editable Voids';
@@ -16,7 +19,9 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
+const components = getSlatePluginsComponents({
+  [EDITABLE_VOID]: EditableVoidElement,
+});
 const options = getSlatePluginsOptions();
 
 export const Example = () => {

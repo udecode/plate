@@ -1,4 +1,4 @@
-import { NodeStyleSet } from '../../types';
+import { NodeStyleSet } from '../StyledNode/StyledNode.types';
 import { MentionElementStyleProps } from './MentionElement.types';
 
 export const getMentionElementStyles = ({

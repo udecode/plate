@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
@@ -35,6 +36,7 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  SlatePluginKey,
 } from '@udecode/slate-plugins';
 import { BlockquoteElement } from '../components/BlockquoteElement/BlockquoteElement';
 import { CodeBlockElement } from '../components/CodeBlockElement/CodeBlockElement';
@@ -52,8 +54,10 @@ import { getComponent } from './getComponent';
 const baseMargin = 4.8;
 const baseFontSize = 16;
 
-export const getSlatePluginsComponents = () => {
-  return {
+export const getSlatePluginsComponents = <T extends string = string>(
+  overrides?: Partial<Record<SlatePluginKey | T, ReactNode>>
+) => {
+  const components = {
     [ELEMENT_ALIGN_CENTER]: getComponent(StyledElement, {
       styles: {
         root: {
@@ -278,4 +282,12 @@ export const getSlatePluginsComponents = () => {
     [MARK_SUPERSCRIPT]: getComponent(StyledLeaf, { as: 'sup' }),
     [MARK_UNDERLINE]: getComponent(StyledLeaf, { as: 'u' }),
   };
+
+  if (overrides) {
+    Object.keys(overrides).forEach((key) => {
+      components[key] = overrides[key];
+    });
+  }
+
+  return components as Record<SlatePluginKey | T, ReactNode>;
 };

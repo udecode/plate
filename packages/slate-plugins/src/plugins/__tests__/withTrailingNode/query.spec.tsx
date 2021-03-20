@@ -4,7 +4,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../elements/heading/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/defaults';
-import { withTrailingNode } from '../../../normalizers/index';
+import { withTrailingNode } from '../../useTrailingNodePlugin';
 
 const input = (
   <editor>

@@ -6,7 +6,6 @@ import {
 } from '../../store/useSlatePluginsSelectors';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { decoratePlugins } from '../../utils/decoratePlugins';
-import { flatMapKey } from '../../utils/flatMapKey';
 import { onDOMBeforeInputPlugins } from '../../utils/onDOMBeforeInputPlugins';
 import { onKeyDownPlugins } from '../../utils/onKeyDownPlugins';
 import { renderElementPlugins } from '../../utils/renderElementPlugins';
@@ -19,48 +18,22 @@ export const useEditableProps = ({
   const editor = useSlatePluginsEditor(id);
   const plugins = usePlugins(id);
 
-  const renderElement = useMemo(
-    () => renderElementPlugins(editor, flatMapKey(plugins, 'renderElement')),
-    [editor, plugins]
-  );
-
-  const renderLeaf = useMemo(
-    () => renderLeafPlugins(editor, flatMapKey(plugins, 'renderLeaf')),
-    [editor, plugins]
-  );
-
-  const onKeyDown = useMemo(
-    () => onKeyDownPlugins(editor, flatMapKey(plugins, 'onKeyDown')),
-    [editor, plugins]
-  );
-
-  const decorate = useMemo(
-    () => decoratePlugins(editor, flatMapKey(plugins, 'decorate')),
-    [editor, plugins]
-  );
-
-  const onDOMBeforeInput = useMemo(
-    () =>
-      onDOMBeforeInputPlugins(editor, flatMapKey(plugins, 'onDOMBeforeInput')),
+  const props = useMemo(
+    () => ({
+      renderElement: renderElementPlugins(editor, plugins),
+      renderLeaf: renderLeafPlugins(editor, plugins),
+      onKeyDown: onKeyDownPlugins(editor, plugins),
+      decorate: decoratePlugins(editor, plugins),
+      onDOMBeforeInput: onDOMBeforeInputPlugins(editor, plugins),
+    }),
     [editor, plugins]
   );
 
   return useCallback(
     () => ({
-      renderElement,
-      renderLeaf,
-      onKeyDown,
-      decorate,
-      onDOMBeforeInput,
+      ...props,
       ...editableProps,
     }),
-    [
-      decorate,
-      editableProps,
-      onDOMBeforeInput,
-      onKeyDown,
-      renderElement,
-      renderLeaf,
-    ]
+    [editableProps, props]
   );
 };

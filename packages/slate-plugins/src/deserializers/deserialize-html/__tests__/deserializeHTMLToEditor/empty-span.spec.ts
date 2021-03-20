@@ -1,5 +1,6 @@
 import { SlateDocument } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
 const plugins: SlatePlugin[] = [];
@@ -13,7 +14,7 @@ const output: SlateDocument = [
 
 it('should be', () => {
   expect(
-    deserializeHTMLToDocument({
+    deserializeHTMLToDocument(createEditorPlugins(), {
       plugins,
       element: body,
     })

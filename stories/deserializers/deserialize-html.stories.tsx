@@ -18,8 +18,8 @@ import {
   useTodoListPlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValuePasteHtml } from '../config/initialValues';
-import { optionsSoftBreakPlugin } from '../config/pluginOptions';
+import { initialValuePasteHtml } from '../config/initialValues';
+import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
 
 const id = 'Deserializers/HTML';
 

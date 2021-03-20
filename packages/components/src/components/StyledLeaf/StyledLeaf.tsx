@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
-import { getRootClassNames, NodeStyleProps } from '../../types';
-import { getStyledComponentStyles } from '../StyledComponent/StyledComponent.styles';
+import { getRootClassNames } from '../../types';
+import { getStyledNodeStyles } from '../StyledNode/StyledNode.styles';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { StyledLeafProps } from './StyledLeaf.types';
 
 const getClassNames = getRootClassNames();
@@ -11,11 +12,11 @@ const getClassNames = getRootClassNames();
  * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
  */
 export const StyledLeafBase = ({
-  attributes,
   children,
   className,
   styles,
   as = 'span',
+  nodeProps,
 }: StyledLeafProps) => {
   const classNames = getClassNames(styles, {
     className,
@@ -25,7 +26,7 @@ export const StyledLeafBase = ({
   const Tag = as;
 
   return (
-    <Tag {...attributes} className={classNames.root}>
+    <Tag className={classNames.root} {...nodeProps}>
       {children}
     </Tag>
   );
@@ -35,6 +36,6 @@ export const StyledLeaf = styled<
   StyledLeafProps,
   NodeStyleProps,
   NonNullable<StyledLeafProps['styles']>
->(StyledLeafBase, getStyledComponentStyles, undefined, {
+>(StyledLeafBase, getStyledNodeStyles, undefined, {
   scope: 'StyledLeaf',
 });

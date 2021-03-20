@@ -1,6 +1,9 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditor } from 'slate';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useTablePlugin } from '../../../../elements/table/useTablePlugin';
 import { deserializeHTMLElement } from '../../../index';
 
@@ -28,5 +31,7 @@ const output = (
 ) as any;
 
 it('should include named attributes', () => {
-  expect(deserializeHTMLElement(input)).toEqual(output.children);
+  expect(deserializeHTMLElement(createEditorPlugins(), input)).toEqual(
+    output.children
+  );
 });

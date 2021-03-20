@@ -3,7 +3,7 @@ import {
   usePluginTypes,
   useRenderElement,
 } from '@udecode/slate-plugins';
-import { EDITABLE_VOID } from './types';
+import { EDITABLE_VOID } from './defaults';
 
 export const useEditableVoidPlugin = (): SlatePlugin => ({
   renderElement: useRenderElement(EDITABLE_VOID),

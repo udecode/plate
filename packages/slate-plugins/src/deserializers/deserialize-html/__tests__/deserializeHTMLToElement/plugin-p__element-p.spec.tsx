@@ -1,11 +1,13 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { useParagraphPlugin } from '../../../../elements/paragraph/useParagraphPlugin';
 import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 
 const input = {
-  plugins: [useParagraphPlugin({ p: { type: 'p' } })],
+  plugins: [useParagraphPlugin()],
   element: document.createElement('p'),
   children: [{ text: 'test' }],
 };
@@ -17,5 +19,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToElement(input)).toEqual(output);
+  expect(deserializeHTMLToElement(createEditorPlugins(), input)).toEqual(
+    output
+  );
 });

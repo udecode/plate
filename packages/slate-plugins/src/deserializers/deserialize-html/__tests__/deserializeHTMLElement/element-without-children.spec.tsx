@@ -1,7 +1,9 @@
 /** @jsx jsx */
 
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '../../../../__fixtures__/editor.fixtures';
 import { deserializeHTMLElement } from '../../../index';
 
 const html =
@@ -11,7 +13,7 @@ const element = getHtmlDocument(html).body;
 const input = {
   plugins: [
     {
-      deserialize: {
+      deserialize: () => ({
         element: getElementDeserializer({
           type: 'poll',
           getNode: (el) => ({
@@ -21,9 +23,9 @@ const input = {
           rules: [{ className: 'poll' }],
           withoutChildren: true,
         }),
-      },
+      }),
     },
-  ],
+  ] as SlatePlugin[],
   element,
 };
 
@@ -36,5 +38,7 @@ const output = (
 ) as any;
 
 it('should include named attributes', () => {
-  expect(deserializeHTMLElement(input)).toEqual(output.children);
+  expect(deserializeHTMLElement(createEditorPlugins(), input)).toEqual(
+    output.children
+  );
 });

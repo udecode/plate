@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { RenderElementProps, RenderLeafProps } from 'slate-react';
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import {
   htmlStringToDOMNode,
   MARK_BOLD,
@@ -8,19 +9,21 @@ import {
   useImagePlugin,
 } from '../../../index';
 
+const plugins = [
+  {
+    ...useImagePlugin(),
+    serialize: {
+      element: ({ element }: RenderElementProps) =>
+        React.createElement('img', { src: element.url }),
+    },
+  },
+];
+
 it('custom serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes({
-        plugins: [
-          {
-            ...useImagePlugin(),
-            serialize: {
-              element: ({ element }: RenderElementProps) =>
-                React.createElement('img', { src: element.url }),
-            },
-          },
-        ],
+      serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
+        plugins,
         nodes: [
           {
             type: 'img',
@@ -38,7 +41,7 @@ it('custom serialize image to html', () => {
 
 it('custom serialize bold to html', () => {
   expect(
-    serializeHTMLFromNodes({
+    serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
       plugins: [
         {
           ...useBoldPlugin(),

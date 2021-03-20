@@ -13,10 +13,8 @@ import {
   getSlatePluginsComponents,
   ToolbarSearchHighlight,
 } from '@udecode/slate-plugins-components';
-import {
-  editableProps,
-  initialValueSearchHighlighting,
-} from '../config/initialValues';
+import { initialValueSearchHighlighting } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
 
 const id = 'Widgets/Search Highlight';
 

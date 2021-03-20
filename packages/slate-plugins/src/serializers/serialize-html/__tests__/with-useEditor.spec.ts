@@ -1,9 +1,15 @@
+import { getSlateClass } from '@udecode/slate-plugins-common';
+import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
+import { CLASS_TODO_LIST_CHECKED } from '../../../elements/todo-list/constants';
+import { ELEMENT_TODO_LI } from '../../../elements/todo-list/defaults';
 import { useTodoListPlugin } from '../../../elements/todo-list/useTodoListPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize elements using useEditor', () => {
-  const render = serializeHTMLFromNodes({
-    plugins: [useTodoListPlugin()],
+  const plugins = [useTodoListPlugin()];
+  const editor = createEditorPlugins({ plugins });
+  const render = serializeHTMLFromNodes(editor, {
+    plugins,
     nodes: [
       {
         type: 'action_item',
@@ -14,6 +20,8 @@ it('serialize elements using useEditor', () => {
   });
 
   expect(render).toBe(
-    '<div class="slate-todo-list slate-todo-list-checked"><div contenteditable="false" ><input type="checkbox"  checked=""/></div><span  contenteditable="true">Slide to the right.</span></div>'
+    `<div class="${getSlateClass(
+      ELEMENT_TODO_LI
+    )} ${CLASS_TODO_LIST_CHECKED}"><div contenteditable="false" ><input type="checkbox"  checked=""/></div><span  contenteditable="true">Slide to the right.</span></div>`
   );
 });

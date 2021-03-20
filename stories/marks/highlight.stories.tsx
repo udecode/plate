@@ -8,9 +8,13 @@ import {
   useHistoryPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueHighlight } from '../config/initialValues';
-import { HeadingToolbarMarks } from '../config/Toolbars';
+import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueHighlight } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+import { ToolbarButtonsBasicMarks } from '../config/Toolbars';
 
 const id = 'Marks/Highlight';
 
@@ -39,7 +43,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueHighlight}
     >
-      <HeadingToolbarMarks />
+      <HeadingToolbar>
+        <ToolbarButtonsBasicMarks />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

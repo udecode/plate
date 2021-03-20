@@ -1,9 +1,13 @@
 import { Editor } from 'slate';
 import { OnChange } from '../types/SlatePlugin/OnChange';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { flatMapKey } from './flatMapKey';
 
 export const onChangePlugins = (
   editor: Editor,
-  onChangeList: (OnChange | undefined)[]
+  plugins: SlatePlugin[]
 ): ReturnType<OnChange> => (nodes) => {
-  onChangeList.some((onChange) => onChange?.(editor)(nodes) === false);
+  flatMapKey(plugins, 'onChange').some(
+    (onChange) => onChange(editor)(nodes) === false
+  );
 };

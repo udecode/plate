@@ -14,14 +14,18 @@ import {
   useSoftBreakPlugin,
   useTrailingNodePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueSoftBreak } from '../config/initialValues';
 import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueSoftBreak } from '../config/initialValues';
+import {
+  editableProps,
   optionsExitBreakPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
-import { HeadingToolbarBasicElements } from '../config/Toolbars';
+import { ToolbarButtonsBasicElements } from '../config/Toolbars';
 
 const id = 'Utilities/Soft Break';
 
@@ -55,7 +59,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueSoftBreak}
     >
-      <HeadingToolbarBasicElements />
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

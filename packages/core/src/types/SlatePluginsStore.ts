@@ -1,6 +1,5 @@
 import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
-import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
 
 export type State = {
   /**
@@ -29,14 +28,7 @@ export type SlatePluginsState = Record<string, State>;
 export type SlatePluginsActions = {
   clearState: (id?: string) => void;
   setInitialState: (id?: string) => void;
-  setEditor: (
-    value: {
-      editor?: State['editor'];
-      plugins?: SlatePlugin[];
-      options?: SlatePluginsOptions;
-    },
-    id?: string
-  ) => void;
+  setEditor: (value: State['editor'], id?: string) => void;
   setPlugins: (value: State['plugins'], id?: string) => void;
   setPluginKeys: (value: State['pluginKeys'], id?: string) => void;
   setValue: (value: State['value'], id?: string) => void;

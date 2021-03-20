@@ -14,9 +14,13 @@ import {
   useSuperscriptPlugin,
   useUnderlinePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { editableProps, initialValueBasicMarks } from '../config/initialValues';
-import { HeadingToolbarMarks } from '../config/Toolbars';
+import {
+  getSlatePluginsComponents,
+  HeadingToolbar,
+} from '@udecode/slate-plugins-components';
+import { initialValueBasicMarks } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+import { ToolbarButtonsBasicMarks } from '../config/Toolbars';
 
 const id = 'Marks/Basic Marks';
 
@@ -51,7 +55,9 @@ export const Example = () => {
       editableProps={editableProps}
       initialValue={initialValueBasicMarks}
     >
-      <HeadingToolbarMarks />
+      <HeadingToolbar>
+        <ToolbarButtonsBasicMarks />
+      </HeadingToolbar>
     </SlatePlugins>
   );
 };

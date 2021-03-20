@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../../../stories/config/initialValues';
-import { withNormalizeTypes } from '../../../../normalizers/index';
+import { options } from '../../../../../../../stories/config/pluginOptions';
+import { withNormalizeTypes } from '../../../useNormalizeTypesPlugin';
 
 const input = (
   <editor>

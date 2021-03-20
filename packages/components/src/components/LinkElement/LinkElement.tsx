@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
-import { ElementProps, getRootClassNames, NodeStyleProps } from '../../types';
+import { getRootClassNames } from '../../types';
+import { StyledElementProps } from '../StyledElement/StyledElement.types';
+import { NodeStyleProps } from '../StyledNode/StyledNode.types';
 import { getLinkElementStyles } from './LinkElement.styles';
 
 const getClassNames = getRootClassNames();
 
-type Props = ElementProps<{
+type Props = StyledElementProps<{
   url: string;
 }>;
 
@@ -19,6 +21,7 @@ export const LinkElementBase = ({
   element,
   styles,
   className,
+  nodeProps,
 }: Props) => {
   const classNames = getClassNames(styles, {
     className,
@@ -26,7 +29,12 @@ export const LinkElementBase = ({
   });
 
   return (
-    <a {...attributes} href={element.url} className={classNames.root}>
+    <a
+      {...attributes}
+      href={element.url}
+      className={classNames.root}
+      {...nodeProps}
+    >
       {children}
     </a>
   );
