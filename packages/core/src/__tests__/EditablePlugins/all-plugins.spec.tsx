@@ -25,7 +25,7 @@ import { ToolbarImage } from '../../../../components/src/components/ToolbarImage
 import { ToolbarLink } from '../../../../components/src/components/ToolbarLink/ToolbarLink';
 import { ToolbarSearchHighlight } from '../../../../components/src/components/ToolbarSearchHighlight/ToolbarSearchHighlight';
 import { getSlatePluginsComponents } from '../../../../components/src/utils/getSlatePluginsComponents';
-import { useDeserializeHTMLPlugin } from '../../../../slate-plugins/src/deserializers/deserialize-html/useDeserializeHTMLPlugin';
+import { useDeserializeHTMLPlugin } from '../../../../html-serializer/src/deserializer/useDeserializeHTMLPlugin';
 import { useAlignPlugin } from '../../../../slate-plugins/src/elements/align/useAlignPlugin';
 import { useBasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/useBasicElementPlugins';
 import { useBlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/useBlockquotePlugin';

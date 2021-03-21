@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-common",
-  "version": "0.75.0",
+  "version": "0.75.2",
   "description": "Slate plugins common",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/common#readme",
@@ -33,12 +33,8 @@
     "slate-hyperscript": ">=0.58.0",
     "slate-react": ">=0.58.0"
   },
-  "devDependencies": {
-    "@udecode/slate-plugins-test-utils": "^0.75.0"
-  },
   "dependencies": {
-    "@udecode/slate-plugins-core": "^0.75.0",
-    "utility-types": "^3.10.0"
+    "@udecode/slate-plugins-core": "^0.75.2"
   },
   "publishConfig": {
     "access": "public"

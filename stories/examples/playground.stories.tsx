@@ -14,7 +14,6 @@ import {
   useBoldPlugin,
   useCodeBlockPlugin,
   useCodePlugin,
-  useDeserializeHTMLPlugin,
   useExitBreakPlugin,
   useHeadingPlugin,
   useHighlightPlugin,
@@ -50,6 +49,7 @@ import {
   ToolbarLink,
   ToolbarSearchHighlight,
 } from '@udecode/slate-plugins-components';
+import { useDeserializeHTMLPlugin } from '@udecode/slate-plugins-html-serializer';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {

@@ -10,7 +10,6 @@ export * from './MediaEmbedElement/index';
 export * from './MentionElement/index';
 export * from './MentionSelect/index';
 export * from './PortalBody/index';
-export * from './Selectable/index';
 export * from './StyledElement/index';
 export * from './StyledLeaf/index';
 export * from './StyledNode/index';

@@ -11,6 +11,7 @@ export * from './TEditor';
 export * from './TElement';
 export * from './TNode';
 export * from './TRenderElementProps';
+export * from './TRenderLeafProps';
 export * from './TText';
 export * from './UseEditablePropsOptions';
 export * from './UseSlatePluginsEffectsOptions';

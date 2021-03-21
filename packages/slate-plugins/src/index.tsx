@@ -4,11 +4,8 @@
 
 export * from '@udecode/slate-plugins-core';
 export * from '@udecode/slate-plugins-common';
-export * from './deserializers/index';
-export * from './dnd/index';
 export * from './elements/index';
 export * from './marks/index';
 export * from './plugins/index';
-export * from './serializers/index';
 export * from './utils/index';
 export * from './widgets/index';

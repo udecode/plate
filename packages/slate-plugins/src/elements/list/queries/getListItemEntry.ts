@@ -1,6 +1,11 @@
-import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
+import {
+  getAbove,
+  getParent,
+  isCollapsed,
+  someNode,
+} from '@udecode/slate-plugins-common';
 import { getPluginType, TElement } from '@udecode/slate-plugins-core';
-import { Editor, Location, NodeEntry } from 'slate';
+import { Editor, Location, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
 /**
@@ -17,9 +22,9 @@ export const getListItemEntry = (
     const [, paragraphPath] = selectionParent;
 
     // If selection range includes root list item
-        if (Range.isRange(at) && !isCollapsed(at) && paragraphPath.length === 1) {
-          at = at.focus.path;
-        }
+    if (Range.isRange(at) && !isCollapsed(at) && paragraphPath.length === 1) {
+      at = at.focus.path;
+    }
 
     const listItem =
       getAbove<TElement>(editor, { at, match: { type: liType } }) ||

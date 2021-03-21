@@ -4,7 +4,6 @@ import {
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
-  useDeserializeHTMLPlugin,
   useHighlightPlugin,
   useHistoryPlugin,
   useImagePlugin,
@@ -18,6 +17,7 @@ import {
   useTodoListPlugin,
 } from '@udecode/slate-plugins';
 import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
+import { useDeserializeHTMLPlugin } from '@udecode/slate-plugins-html-serializer';
 import { initialValuePasteHtml } from '../config/initialValues';
 import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
 

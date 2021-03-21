@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.75.0",
+  "version": "0.75.2",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -26,21 +26,10 @@
     "rollup": "rollup -c=../../rollup.config.js"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^0.75.0",
-    "@udecode/slate-plugins-core": "^0.75.0",
-    "image-extensions": "^1.1.0",
+    "@udecode/slate-plugins-common": "^0.75.2",
+    "@udecode/slate-plugins-core": "^0.75.2",
     "is-hotkey": "^0.1.6",
-    "prismjs": "^1.23.0",
-    "react-dnd": "^13.1.1",
-    "react-dnd-html5-backend": "^12.1.1",
-    "remark-parse": "^9.0.0",
-    "remark-slate": "^1.4.0",
-    "unified": "^9.2.0"
-  },
-  "devDependencies": {
-    "@types/marked": "^1.2.2",
-    "@udecode/slate-plugins-test-utils": "^0.75.0",
-    "react-dnd-test-backend": "^12.0.0"
+    "prismjs": "^1.23.0"
   },
   "peerDependencies": {
     "react": "*",

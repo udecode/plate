@@ -24,10 +24,10 @@ import {
 } from '@udecode/slate-plugins';
 import {
   getComponent,
-  getSelectableElement,
   getSlatePluginsComponents,
   StyledElement,
 } from '@udecode/slate-plugins-components';
+import { getSelectableElement } from '@udecode/slate-plugins-dnd';
 import { Plugins } from '../examples/playground.stories';
 
 const id = 'Widgets/Drag & Drop';

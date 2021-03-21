@@ -1,8 +1,14 @@
-import { OnKeyDown } from '@udecode/slate-plugins-core';
+import { getAbove } from '@udecode/slate-plugins-common';
+import {
+  getPluginOptions,
+  OnKeyDown,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
+import { ELEMENT_TABLE } from './defaults';
 
 export const useOnKeyDownTable = (): OnKeyDown => (editor) => (e) => {
   if (e.key === 'Tab') {
@@ -41,18 +47,18 @@ export const useOnKeyDownTable = (): OnKeyDown => (editor) => (e) => {
   }
 
   // FIXME: would prefer this as mod+a, but doesn't work
-    if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-      const { table } = setDefaults(options, DEFAULTS_TABLE);
+  if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+    const options = getPluginOptions(editor, ELEMENT_TABLE);
 
-      const res = getAbove(editor, { match: { type: table.type } });
-      if (!res) return;
+    const res = getAbove<TElement>(editor, { match: { type: options.type } });
+    if (!res) return;
 
-      const [, tablePath] = res;
+    const [, tablePath] = res;
 
-      // select the whole table
-      Transforms.select(editor, tablePath);
+    // select the whole table
+    Transforms.select(editor, tablePath);
 
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    e.preventDefault();
+    e.stopPropagation();
+  }
 };

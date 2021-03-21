@@ -110,12 +110,12 @@ For additional help, join us in our
 
 | Deserializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| [DeserializeHtml](packages/slate-plugins/src/deserializers/deserialize-html/)   | Enables support for deserializing content from HTML format to Slate format.     |
-| [DeserializeMarkdown](packages/slate-plugins/src/deserializers/deserialize-md/) | Enables support for deserializing content from Markdown format to Slate format. |
+| [DeserializeHtml](packages/html-serializer/src/deserializer)   | Enables support for deserializing content from HTML format to Slate format.     |
+| [DeserializeMarkdown](packages/md-serializer/src/deserializer) | Enables support for deserializing content from Markdown format to Slate format. |
 
 | Serializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| [SerializeHtml](packages/slate-plugins/src/serializers/serialize-html/)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
+| [SerializeHtml](packages/html-serializer/src/serializer)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
 
 | Normalizer Plugins                                        |                                                                                                                      |
 |:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|

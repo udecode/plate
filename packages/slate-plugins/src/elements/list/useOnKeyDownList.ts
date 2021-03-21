@@ -13,7 +13,7 @@ export const useOnKeyDownList = (): OnKeyDown => (editor) => (e) => {
     if (!res) return;
 
     // TODO: handle multiple li
-    if (isAcrossListItems(editor, options)) return;
+    if (isAcrossListItems(editor)) return;
 
     const { list, listItem } = res;
     const [, listItemPath] = listItem;

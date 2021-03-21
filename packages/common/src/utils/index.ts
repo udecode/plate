@@ -18,4 +18,3 @@ export * from './getRenderLeaf';
 export * from './getSlateClass';
 export * from './isUrl';
 export * from './normalizeDescendantsToDocumentFragment';
-export * from './setDefaults';
