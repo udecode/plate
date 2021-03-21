@@ -39,4 +39,20 @@ export const useOnKeyDownTable = (): OnKeyDown => (editor) => (e) => {
       }
     }
   }
+
+  // FIXME: would prefer this as mod+a, but doesn't work
+    if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+      const { table } = setDefaults(options, DEFAULTS_TABLE);
+
+      const res = getAbove(editor, { match: { type: table.type } });
+      if (!res) return;
+
+      const [, tablePath] = res;
+
+      // select the whole table
+      Transforms.select(editor, tablePath);
+
+      e.preventDefault();
+      e.stopPropagation();
+    }
 };

@@ -1,6 +1,7 @@
 import { isFirstChild } from '@udecode/slate-plugins-common';
 import { OnKeyDown } from '@udecode/slate-plugins-core';
 import { getListItemEntry } from './queries/getListItemEntry';
+import { isAcrossListItems } from './queries/isAcrossListItems';
 import { moveListItemDown } from './transforms/moveListItemDown';
 import { moveListItemUp } from './transforms/moveListItemUp';
 
@@ -10,6 +11,10 @@ export const useOnKeyDownList = (): OnKeyDown => (editor) => (e) => {
   if (e.key === 'Tab') {
     const res = getListItemEntry(editor, {});
     if (!res) return;
+
+    // TODO: handle multiple li
+    if (isAcrossListItems(editor, options)) return;
+
     const { list, listItem } = res;
     const [, listItemPath] = listItem;
 

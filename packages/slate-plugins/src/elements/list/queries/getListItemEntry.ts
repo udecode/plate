@@ -16,6 +16,11 @@ export const getListItemEntry = (
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
 
+    // If selection range includes root list item
+        if (Range.isRange(at) && !isCollapsed(at) && paragraphPath.length === 1) {
+          at = at.focus.path;
+        }
+
     const listItem =
       getAbove<TElement>(editor, { at, match: { type: liType } }) ||
       getParent<TElement>(editor, paragraphPath);
