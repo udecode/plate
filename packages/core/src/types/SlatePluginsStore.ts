@@ -1,5 +1,5 @@
-import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
+import { TDescendant } from './TDescendant';
 
 export type State = {
   /**
@@ -20,7 +20,7 @@ export type State = {
   /**
    * Editor value. Default is `[{children: [{text: ''}]}]`.
    */
-  value: Node[];
+  value: TDescendant[];
 };
 
 export type SlatePluginsState = Record<string, State>;

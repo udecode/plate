@@ -1,7 +1,7 @@
-import { Node } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
 import { State } from './SlatePluginsStore';
+import { TDescendant } from './TDescendant';
 
 /**
  * `useSlatePluginsEffects` options
@@ -17,7 +17,7 @@ export interface UseSlatePluginsEffectsOptions
    * Initial value of the editor.
    * Default is `[{children: [{text: ''}]}]`.
    */
-  initialValue?: Node[];
+  initialValue?: TDescendant[];
 
   /**
    * The plugins are applied in the order they are specified.

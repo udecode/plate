@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { withReact } from 'slate-react';
-import { ELEMENT_LINK } from '../link/defaults';
-import { withList } from './withList';
+import { createEditorPlugins } from '../../__fixtures__/editor.fixtures';
+import { useLinkPlugin } from '../link/useLinkPlugin';
+import { useParagraphPlugin } from '../paragraph/useParagraphPlugin';
+import { useListPlugin } from './useListPlugin';
 
 describe('normalizeList', () => {
   describe('when there is no p in li', () => {
@@ -35,9 +35,10 @@ describe('normalizeList', () => {
         </editor>
       ) as any) as Editor;
 
-      const editor = withList()(
-        withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
-      );
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins: [useParagraphPlugin(), useListPlugin(), useLinkPlugin()],
+      });
 
       editor.insertText('o');
 

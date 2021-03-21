@@ -1,4 +1,4 @@
-import { Node } from 'slate';
+import { TNode } from './TNode';
 import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
 
 /**
@@ -9,5 +9,5 @@ export interface UseSlatePropsOptions
   /**
    * Controlled callback called when the editor state changes.
    */
-  onChange?: (value: Node[]) => void;
+  onChange?: (value: TNode[]) => void;
 }

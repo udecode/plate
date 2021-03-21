@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { ELEMENT_H1 } from '@udecode/slate-plugins';
+import { ELEMENT_H1, SlatePlugins } from '@udecode/slate-plugins';
 import { Editor } from 'slate';
-import * as SlateReact from 'slate-react';
 import { ToolbarImage } from './ToolbarImage';
 
 describe('ToolbarImage', () => {
@@ -28,13 +27,17 @@ describe('ToolbarImage', () => {
     it('should render', () => {
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
+      // jest
+      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
 
       const { getByTestId } = render(
-        <ToolbarImage type={ELEMENT_H1} icon={null} />
+        <SlatePlugins editor={input}>
+          <ToolbarImage type={ELEMENT_H1} icon={null} />
+        </SlatePlugins>
       );
 
       const element = getByTestId('ToolbarButton');
@@ -46,7 +49,9 @@ describe('ToolbarImage', () => {
     it('should invoke getUrlImage when provided', () => {
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
+      // jest
+      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -54,11 +59,13 @@ describe('ToolbarImage', () => {
       const getImageUrlMock = jest.fn();
 
       const { getByTestId } = render(
-        <ToolbarImage
-          type={ELEMENT_H1}
-          getImageUrl={getImageUrlMock}
-          icon={null}
-        />
+        <SlatePlugins editor={input}>
+          <ToolbarImage
+            type={ELEMENT_H1}
+            getImageUrl={getImageUrlMock}
+            icon={null}
+          />
+        </SlatePlugins>
       );
 
       const element = getByTestId('ToolbarButton');
@@ -90,11 +97,15 @@ describe('ToolbarImage', () => {
 
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
+      // jest
+      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .mockReturnValue(editor as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(
-        <ToolbarImage type={ELEMENT_H1} icon={null} />
+        <SlatePlugins editor={input}>
+          <ToolbarImage type={ELEMENT_H1} icon={null} />
+        </SlatePlugins>
       );
 
       const element = getByTestId('ToolbarButton');

@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { Node } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { SlatePluginsEditor } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
@@ -9,6 +8,7 @@ import {
   useSlatePluginsValue,
 } from '../../store/useSlatePluginsSelectors';
 import { SlateProps } from '../../types/SlateProps';
+import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { onChangePlugins } from '../../utils/onChangePlugins';
 
@@ -25,7 +25,7 @@ export const useSlateProps = ({
   const plugins = usePlugins(id);
 
   const onChange = useMemo(
-    () => (newValue: Node[]) => {
+    () => (newValue: TNode[]) => {
       setValue(newValue);
 
       onChangePlugins(editor, plugins)(newValue);

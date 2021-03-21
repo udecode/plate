@@ -1,7 +1,6 @@
 import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
 import {
   getPluginType,
-  isElement,
   TDescendant,
   TElement,
 } from '@udecode/slate-plugins-core';
@@ -46,10 +45,7 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a <p> tag as a first element
-  if (
-    isElement(firstChild) &&
-    firstChild.type !== getPluginType(editor, ELEMENT_PARAGRAPH)
-  ) {
+  if (firstChild.type !== getPluginType(editor, ELEMENT_PARAGRAPH)) {
     insertEmptyElement(editor, getPluginType(editor, ELEMENT_PARAGRAPH), {
       at: firstChildPath,
     });
@@ -58,8 +54,6 @@ export const normalizeListItem = (
   // Ensure that any text nodes under the list are inside the <p>
   for (const ref of inlinePathRefs.reverse()) {
     const path = ref.unref();
-
-    console.log(firstChildPath);
 
     if (path) {
       Transforms.moveNodes(editor, {
