@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { RenderElementProps } from 'slate-react';
+import { TRenderElementProps } from '../TRenderElementProps';
 
 /**
  * Function used to render an element.
@@ -8,4 +8,4 @@ import { RenderElementProps } from 'slate-react';
  */
 export type RenderElement = (
   editor: Editor
-) => (props: RenderElementProps) => JSX.Element | undefined;
+) => (props: TRenderElementProps) => JSX.Element | undefined;

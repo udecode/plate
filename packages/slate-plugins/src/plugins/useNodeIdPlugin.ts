@@ -1,15 +1,17 @@
 import {
   defaultsDeepToNodes,
-  isDescendant,
   mergeDeepToNodes,
   QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
+  isDescendant,
+  isElement,
+  TNode,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import cloneDeep from 'lodash/cloneDeep';
-import { Element, Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
 
 export interface NodeIdEditor extends HistoryEditor {
@@ -64,14 +66,14 @@ export const withNodeId = ({
 
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
-      const newFilter = (entry: NodeEntry<Node>) => {
+      const newFilter = (entry: NodeEntry<TNode>) => {
         const [node] = entry;
         return filter(entry) && filterText
-          ? Element.isElement(node)
+          ? isElement(node)
           : isDescendant(node);
       };
 
-      const node = cloneDeep(operation.node);
+      const node = cloneDeep(operation.node) as TNode;
 
       // it will not overwrite ids once it's set as it's read-only
       const applyDeepToNodes = resetExistingID
@@ -95,7 +97,7 @@ export const withNodeId = ({
 
     if (
       operation.type === 'split_node' &&
-      (!filterText || operation.properties.type)
+      (!filterText || (operation.properties as Partial<TNode>).type)
     ) {
       let id = operation.properties[idKey];
       if (editor.removedIDs.has(id)) {
@@ -115,9 +117,9 @@ export const withNodeId = ({
 
     if (
       operation.type === 'merge_node' &&
-      (!filterText || operation.properties.type)
+      (!filterText || (operation.properties as Partial<TNode>).type)
     ) {
-      editor.removedIDs.add(operation.properties.id);
+      editor.removedIDs.add((operation.properties as Partial<TNode>).id);
     }
 
     return apply(operation);

@@ -5,8 +5,8 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Node, Transforms } from 'slate';
+import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { Editor, Transforms } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
 /**
@@ -19,7 +19,7 @@ export const insertCodeBlock = (
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 
-  const matchCodeElements = (node: Node) =>
+  const matchCodeElements = (node: TElement) =>
     node.type === getPluginType(editor, ELEMENT_CODE_BLOCK) ||
     node.type === getPluginType(editor, ELEMENT_CODE_LINE);
 
@@ -40,7 +40,7 @@ export const insertCodeBlock = (
     {
       type: getPluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: '' }],
-    },
+    } as any,
     insertNodesOptions
   );
 

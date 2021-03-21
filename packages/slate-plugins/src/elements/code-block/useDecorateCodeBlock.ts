@@ -43,7 +43,11 @@
 // import 'prismjs/components/prism-typescript';
 // import 'prismjs/components/prism-wasm';
 // import 'prismjs/components/prism-yaml';
-import { Decorate, getPluginOptions } from '@udecode/slate-plugins-core';
+import {
+  Decorate,
+  getPluginOptions,
+  isElement,
+} from '@udecode/slate-plugins-core';
 import { languages, Token, tokenize } from 'prismjs';
 import { Editor, Node, NodeEntry } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './defaults';
@@ -55,7 +59,7 @@ export const useDecorateCodeBlock = (): Decorate => (editor: Editor) => {
     const ranges: any = [];
     const [node, path] = entry;
 
-    if (node.type === code_block.type) {
+    if (isElement(node) && node.type === code_block.type) {
       const text = Node.string(node);
       // const langName: any = parent.lang || 'markup';
       const langName: any = 'javascript';

@@ -1,6 +1,7 @@
 import { ErrorHandler, getNode } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
+  isElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Path, Transforms } from 'slate';
@@ -45,8 +46,10 @@ export const withNormalizeTypes = ({
           const node = getNode(editor, path);
 
           if (node) {
-            if (strictType && node.type !== strictType) {
-              Transforms.setNodes(editor, { type: strictType }, { at: path });
+            if (strictType && isElement(node) && node.type !== strictType) {
+              Transforms.setNodes(editor, { type: strictType } as any, {
+                at: path,
+              });
               return true;
             }
           } else {
@@ -56,7 +59,7 @@ export const withNormalizeTypes = ({
                 {
                   type: strictType ?? type,
                   children: [{ text: '' }],
-                },
+                } as any,
                 { at: path }
               );
               return true;

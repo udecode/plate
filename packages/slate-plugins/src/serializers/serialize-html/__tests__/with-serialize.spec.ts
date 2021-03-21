@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { RenderElementProps, RenderLeafProps } from 'slate-react';
+import { RenderLeafProps } from 'slate-react';
 import { createEditorPlugins } from '../../../__fixtures__/editor.fixtures';
 import {
   htmlStringToDOMNode,
   MARK_BOLD,
   serializeHTMLFromNodes,
+  TRenderElementProps,
   useBoldPlugin,
   useImagePlugin,
 } from '../../../index';
@@ -13,7 +14,7 @@ const plugins = [
   {
     ...useImagePlugin(),
     serialize: {
-      element: ({ element }: RenderElementProps) =>
+      element: ({ element }: TRenderElementProps) =>
         React.createElement('img', { src: element.url }),
     },
   },

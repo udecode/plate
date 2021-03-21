@@ -1,15 +1,10 @@
 import React from 'react';
+import { TRenderElementProps } from '@udecode/slate-plugins';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { Element } from 'slate';
-import { RenderElementProps } from 'slate-react';
-
-export interface ElementWithId extends Element {
-  id: string;
-}
 
 export interface SelectableProps
-  extends Pick<RenderElementProps, 'attributes'> {
+  extends Pick<TRenderElementProps, 'attributes' | 'element'> {
   /**
    * Additional class name to provide on the root element, in addition to the slate-Selectable class.
    */
@@ -25,8 +20,6 @@ export interface SelectableProps
   componentRef?: any;
 
   dragIcon?: React.ReactNode;
-
-  element: ElementWithId;
 }
 
 export interface SelectableStyleProps {

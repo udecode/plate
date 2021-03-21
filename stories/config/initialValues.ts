@@ -32,9 +32,9 @@ import {
   MARK_UNDERLINE,
   SlateDocument,
   SlateDocumentFragment,
+  TDescendant,
 } from '@udecode/slate-plugins';
 // import faker from 'faker';
-import { Descendant, Node } from 'slate';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { options } from './pluginOptions';
@@ -152,7 +152,7 @@ export const initialValueBalloonToolbar: SlateDocument = [
 
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
-export const initialValueHugeDocument: Descendant[] = [{ children: [] }];
+export const initialValueHugeDocument: TDescendant[] = [{ children: [] }];
 
 const lorem =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum';
@@ -1095,7 +1095,7 @@ export const initialValueExitBreak: SlateDocument = [
   },
 ];
 
-export const initialValueVoids: Node[] = [
+export const initialValueVoids: TDescendant[] = [
   {
     children: [
       {
@@ -1123,7 +1123,7 @@ export const initialValueVoids: Node[] = [
   },
 ];
 
-export const initialValueIframe: Node[] = [
+export const initialValueIframe: TDescendant[] = [
   {
     children: [
       {
@@ -1166,7 +1166,7 @@ export const initialValueIframe: Node[] = [
   },
 ];
 
-export const initialValuePlayground: Node[] = getNodesWithRandomId([
+export const initialValuePlayground: TDescendant[] = getNodesWithRandomId([
   ...initialValueForcedLayout,
   ...initialValueBasicMarks,
   ...initialValueHighlight,

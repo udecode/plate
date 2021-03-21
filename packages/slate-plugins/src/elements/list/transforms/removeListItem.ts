@@ -3,8 +3,8 @@ import {
   getPreviousPath,
   isExpanded,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -12,8 +12,8 @@ import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
-  list: NodeEntry<Ancestor>;
-  listItem: NodeEntry<Ancestor>;
+  list: NodeEntry<TElement>;
+  listItem: NodeEntry<TElement>;
 }
 
 /**
@@ -45,7 +45,7 @@ export const removeListItem = (
     const previousLi = Editor.node(
       editor,
       previousLiPath
-    ) as NodeEntry<Ancestor>;
+    ) as NodeEntry<TElement>;
 
     // 1
     let tempLiPath = Path.next(liPath);
@@ -59,11 +59,11 @@ export const removeListItem = (
             children: [{ text: '' }],
           },
         ],
-      },
+      } as any,
       { at: tempLiPath }
     );
 
-    const tempLi = Editor.node(editor, tempLiPath) as NodeEntry<Ancestor>;
+    const tempLi = Editor.node(editor, tempLiPath) as NodeEntry<TElement>;
     const tempLiPathRef = Editor.pathRef(editor, tempLi[1]);
 
     // 2

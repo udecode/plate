@@ -31,7 +31,7 @@ export const upsertLinkAtSelection = (
       type,
       url,
       children: [{ text: url }],
-    });
+    } as any);
   }
 
   // if our cursor is inside an existing link, but don't have the text selected, select it now

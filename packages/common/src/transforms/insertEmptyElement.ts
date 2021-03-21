@@ -12,7 +12,7 @@ export const insertEmptyElement = (
     {
       type,
       children: [{ text: '' }],
-    },
+    } as any,
     getQueryOptions(editor, options)
   );
 };

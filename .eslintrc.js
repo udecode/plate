@@ -226,6 +226,7 @@ module.exports = {
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     'max-classes-per-file': 'off',
     'default-case': 'off',
     'no-bitwise': 'off',

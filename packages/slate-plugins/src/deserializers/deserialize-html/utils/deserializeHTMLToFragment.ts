@@ -1,4 +1,4 @@
-import { Descendant } from 'slate';
+import { TDescendant } from '@udecode/slate-plugins-core';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -11,7 +11,7 @@ export const deserializeHTMLToFragment = ({
 }: {
   element: HTMLElement;
   children: DeserializeHTMLChildren[];
-}): Descendant[] | undefined => {
+}): TDescendant[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx('fragment', {}, children);
   }

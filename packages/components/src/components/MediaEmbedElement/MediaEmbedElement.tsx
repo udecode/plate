@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { useEditorStatic } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
-import { ReactEditor, useEditor } from 'slate-react';
+import { ReactEditor } from 'slate-react';
 import { getRootClassNames } from '../../types';
 import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { NodeStyleProps } from '../StyledNode/StyledNode.types';
@@ -37,7 +38,7 @@ export const MediaEmbedElementBase = ({
     // Other style props
   });
 
-  const editor = useEditor();
+  const editor = useEditorStatic();
   const { url } = element;
 
   return (
@@ -59,7 +60,7 @@ export const MediaEmbedElementBase = ({
           url={url}
           onChange={(val: string) => {
             const path = ReactEditor.findPath(editor, element);
-            Transforms.setNodes(editor, { url: val }, { at: path });
+            Transforms.setNodes(editor, { url: val } as any, { at: path });
           }}
         />
       </div>

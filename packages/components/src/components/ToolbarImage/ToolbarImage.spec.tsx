@@ -28,7 +28,7 @@ describe('ToolbarImage', () => {
     it('should render', () => {
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -46,7 +46,7 @@ describe('ToolbarImage', () => {
     it('should invoke getUrlImage when provided', () => {
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -90,7 +90,7 @@ describe('ToolbarImage', () => {
 
       const editor = input;
 
-      jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+      jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(

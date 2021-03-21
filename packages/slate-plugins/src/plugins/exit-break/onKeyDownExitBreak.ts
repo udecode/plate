@@ -90,7 +90,7 @@ export const onKeyDownExitBreak = ({
 
         Transforms.insertNodes(
           editor,
-          { type: defaultType, children: [{ text: '' }] },
+          { type: defaultType, children: [{ text: '' }] } as any,
           {
             at: insertPath,
             select: !isStart,

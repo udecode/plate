@@ -1,4 +1,5 @@
-import { Element, Text } from 'slate';
+import { TElement } from '../TElement';
+import { TText } from '../TText';
 
 /**
  * Map slate node props to `nodeProps`.
@@ -7,9 +8,9 @@ import { Element, Text } from 'slate';
 export type GetNodeProps = (options: {
   attributes: any;
   children: any;
-  element?: Element;
-  leaf?: Text;
-  text?: Text;
+  element?: TElement;
+  leaf?: TText;
+  text?: TText;
 }) => NodeProps;
 
 /**

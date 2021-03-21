@@ -2,8 +2,8 @@ import {
   normalizeDescendantsToDocumentFragment,
   SlateDocumentFragment,
 } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Descendant, Editor } from 'slate';
+import { SlatePlugin, TDescendant } from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { htmlStringToDOMNode } from '../../../serializers/serialize-html/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
@@ -27,7 +27,7 @@ export const deserializeHTMLToDocumentFragment = (
   const fragment = deserializeHTMLElement(editor, {
     plugins,
     element,
-  }) as Descendant[];
+  }) as TDescendant[];
 
   return normalizeDescendantsToDocumentFragment(fragment);
 };

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RenderNodeOptions } from '@udecode/slate-plugins-core';
-import { DefaultLeaf, RenderLeafProps } from 'slate-react';
+import { TRenderLeafProps } from '@udecode/slate-plugins-core/dist/types/TRenderLeafProps';
+import { DefaultLeaf } from 'slate-react';
 import { getSlateClass } from './getSlateClass';
 
 /**
@@ -15,7 +16,7 @@ export const getRenderLeaf = ({
   leaf,
   text,
   attributes,
-}: RenderLeafProps) => {
+}: TRenderLeafProps) => {
   const nodeProps =
     getNodeProps?.({ leaf, text, attributes, children }) ??
     leaf.attributes ??

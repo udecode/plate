@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { isElement } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Element } from 'slate';
 import { mergeDeepToNodes } from '../../../transforms/index';
 
 const node = (<htext>test</htext>) as any;
@@ -15,7 +15,7 @@ it('should do nothing', () => {
     node,
     source: props,
     query: {
-      filter: ([n]) => Element.isElement(n),
+      filter: ([n]) => isElement(n),
     },
   });
   expect(node).toEqual(output);

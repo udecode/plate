@@ -2,6 +2,7 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
+import { TNode } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { FindNodeOptions } from './findNode';
 import { match } from './match';
@@ -9,7 +10,7 @@ import { match } from './match';
 /**
  * Get the first descendant node matching the condition.
  */
-export const findDescendant = <T extends Node = Node>(
+export const findDescendant = <T extends TNode = TNode>(
   editor: Editor,
   options: FindNodeOptions<T>
 ): NodeEntry<T> | undefined => {

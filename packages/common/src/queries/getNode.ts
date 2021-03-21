@@ -5,9 +5,9 @@ import { Editor, Node, Path } from 'slate';
  * If the path is an empty array, it refers to the root node itself.
  * If the node is not found, return null.
  */
-export const getNode = (editor: Editor, path: Path) => {
+export const getNode = <T extends Node>(editor: Editor, path: Path) => {
   try {
-    return Node.get(editor, path);
+    return Node.get(editor, path) as T;
   } catch (err) {
     return null;
   }

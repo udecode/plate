@@ -5,6 +5,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
+  isElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Path, Transforms } from 'slate';
@@ -36,13 +37,17 @@ export const withTrailingNode = ({
       const entry = getLastNode(editor, level);
       const [lastNode, lastPath] = entry;
 
-      if (lastNode.type !== type && queryNode(entry, query)) {
+      if (
+        isElement(lastNode) &&
+        lastNode.type !== type &&
+        queryNode(entry, query)
+      ) {
         Transforms.insertNodes(
           editor,
           {
             type,
             children: [{ text: '' }],
-          },
+          } as any,
           { at: Path.next(lastPath) }
         );
         return;

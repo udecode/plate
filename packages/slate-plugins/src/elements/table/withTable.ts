@@ -1,12 +1,21 @@
 import { isCollapsed } from '@udecode/slate-plugins-common';
-import { getPluginType, WithOverride } from '@udecode/slate-plugins-core';
+import {
+  getPluginType,
+  isElement,
+  TElement,
+  WithOverride,
+} from '@udecode/slate-plugins-core';
 import { Editor, Node, Point, Transforms } from 'slate';
 import { ELEMENT_TD } from './defaults';
 
 export const withTable = (): WithOverride => (editor) => {
-  const matchCells = (node: Node) =>
-    node.type === getPluginType(editor, ELEMENT_TD) ||
-    node.type === getPluginType(editor, ELEMENT_TD);
+  const matchCells = (node: Node) => {
+    return (
+      isElement(node) &&
+      (node.type === getPluginType(editor, ELEMENT_TD) ||
+        node.type === getPluginType(editor, ELEMENT_TD))
+    );
+  };
 
   const { deleteBackward, deleteForward, deleteFragment, insertText } = editor;
 
@@ -18,7 +27,7 @@ export const withTable = (): WithOverride => (editor) => {
     const { selection } = editor;
 
     if (isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
+      const [cell] = Editor.nodes<TElement>(editor, {
         match: matchCells,
       });
       if (cell) {

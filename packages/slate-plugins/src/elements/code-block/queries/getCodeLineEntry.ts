@@ -1,5 +1,5 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, isElement } from '@udecode/slate-plugins-core';
 import { Editor, Location } from 'slate';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
@@ -30,7 +30,11 @@ export const getCodeLineEntry = (
     if (!codeLine) return;
     const [codeLineNode, codeLinePath] = codeLine;
 
-    if (codeLineNode.type !== getPluginType(editor, ELEMENT_CODE_LINE)) return;
+    if (
+      isElement(codeLineNode) &&
+      codeLineNode.type !== getPluginType(editor, ELEMENT_CODE_LINE)
+    )
+      return;
 
     const codeBlock = getParent(editor, codeLinePath);
     if (!codeBlock) return;

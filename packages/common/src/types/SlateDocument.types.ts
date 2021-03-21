@@ -1,4 +1,4 @@
-import { Text } from 'slate';
+import { TText } from '@udecode/slate-plugins-core';
 
 export type ArrayOne<T> = [T];
 
@@ -9,11 +9,12 @@ export interface ArrayOneOrMore<T> extends Array<T> {
 export type SlateDocumentFragment = ArrayOneOrMore<SlateDocumentDescendant>;
 
 export interface SlateDocumentElement {
+  [key: string]: any;
+  type: string;
   children: SlateDocumentFragment;
-  [key: string]: unknown;
 }
 
-export type SlateDocumentDescendant = SlateDocumentElement | Text;
+export type SlateDocumentDescendant = SlateDocumentElement | TText;
 
 /**
  * Strict document structure to be used as a Slate value.

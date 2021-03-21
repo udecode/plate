@@ -1,15 +1,16 @@
-import { Descendant, Node, NodeEntry } from 'slate';
-import { isAncestor, queryNode } from '../queries';
+import { isAncestor, TDescendant, TNode } from '@udecode/slate-plugins-core';
+import { NodeEntry } from 'slate';
+import { queryNode } from '../queries';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 export interface ApplyDeepToNodesOptions {
   // The destination node object.
-  node: Node;
+  node: TNode;
   // The source object. Can be a factory.
   source: Record<string, any> | (() => Record<string, any>);
   // Function to call on each node following the query.
   apply: (
-    node: Node,
+    node: TNode,
     source: Record<string, any> | (() => Record<string, any>)
   ) => void;
   // Query to filter the nodes.
@@ -25,7 +26,7 @@ export const applyDeepToNodes = ({
   apply,
   query,
 }: ApplyDeepToNodesOptions) => {
-  const entry: NodeEntry<Node> = [node, []];
+  const entry: NodeEntry<TNode> = [node, []];
 
   if (queryNode(entry, query)) {
     if (source instanceof Function) {
@@ -37,7 +38,7 @@ export const applyDeepToNodes = ({
 
   if (!isAncestor(node)) return;
 
-  node.children.forEach((child: Descendant) => {
+  node.children.forEach((child: TDescendant) => {
     applyDeepToNodes({ node: child, source, apply, query });
   });
 };

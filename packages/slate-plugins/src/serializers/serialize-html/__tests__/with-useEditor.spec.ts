@@ -5,7 +5,7 @@ import { ELEMENT_TODO_LI } from '../../../elements/todo-list/defaults';
 import { useTodoListPlugin } from '../../../elements/todo-list/useTodoListPlugin';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
-it('serialize elements using useEditor', () => {
+it('serialize elements using useSlateStatic', () => {
   const plugins = [useTodoListPlugin()];
   const editor = createEditorPlugins({ plugins });
   const render = serializeHTMLFromNodes(editor, {

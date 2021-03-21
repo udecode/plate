@@ -22,7 +22,7 @@ export const withDeserializeMd = (): WithOverride<ReactEditor> => (editor) => {
       if (!fragment.length) return;
 
       if (fragment[0].type) {
-        Transforms.setNodes(editor, { type: fragment[0].type });
+        Transforms.setNodes(editor, { type: fragment[0].type } as any);
       }
 
       Transforms.insertFragment(editor, fragment);

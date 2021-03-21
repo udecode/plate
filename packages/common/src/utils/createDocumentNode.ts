@@ -1,10 +1,10 @@
-import { Node } from 'slate';
+import { TDescendant } from '@udecode/slate-plugins-core';
 
 export const createDocumentNode = (
   type = 'p',
   text = '',
-  remaining: Node[] = []
-): Node[] => [
+  remaining: TDescendant[] = []
+): TDescendant[] => [
   {
     children: [
       {

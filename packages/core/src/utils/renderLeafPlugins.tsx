@@ -11,7 +11,7 @@ import { flatMapKey } from './flatMapKey';
 export const renderLeafPlugins = (
   editor: Editor,
   plugins: SlatePlugin[]
-): EditableProps['renderLeaf'] => (props: RenderLeafProps) => {
+): EditableProps['renderLeaf'] => (props) => {
   const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
 
   flatMapKey(plugins, 'renderLeaf').forEach((renderLeaf) => {

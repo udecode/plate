@@ -1,7 +1,7 @@
+import { isAncestor, TDescendant } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry } from 'slate';
-import { isAncestor } from './isAncestor';
 
-const getLastChild = (node: Node, level: number): Node => {
+const getLastChild = (node: Node, level: number): TDescendant => {
   if (!(level + 1) || !isAncestor(node)) return node;
 
   const { children } = node;
@@ -14,7 +14,10 @@ const getLastChild = (node: Node, level: number): Node => {
 /**
  * Get the last node at a given level.
  */
-export const getLastNode = (editor: Editor, level: number): NodeEntry => {
+export const getLastNode = (
+  editor: Editor,
+  level: number
+): NodeEntry<TDescendant> => {
   const { children } = editor;
 
   const lastNode = children[children.length - 1];

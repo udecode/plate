@@ -1,6 +1,11 @@
 import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+import {
+  getPluginType,
+  isElement,
+  TDescendant,
+  TElement,
+} from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
@@ -14,7 +19,7 @@ export const normalizeListItem = (
   {
     nodeEntry,
     validLiChildrenTypes = [],
-  }: { nodeEntry: NodeEntry } & ListNormalizerOptions
+  }: { nodeEntry: NodeEntry<TElement> } & ListNormalizerOptions
 ) => {
   const allValidLiChildrenTypes = [
     getPluginType(editor, ELEMENT_UL),
@@ -25,7 +30,7 @@ export const normalizeListItem = (
 
   const [listItemNode, listItemPath] = nodeEntry;
   const firstChildPath: Path = listItemPath.concat([0]);
-  const firstChild: Node = (listItemNode.children as Node[])?.[0];
+  const firstChild: TDescendant = listItemNode.children?.[0];
 
   if (!firstChild) {
     insertEmptyElement(editor, getPluginType(editor, ELEMENT_PARAGRAPH), {
@@ -37,13 +42,14 @@ export const normalizeListItem = (
   const children = getChildren(nodeEntry);
 
   const inlinePathRefs = children
-    .filter(
-      ([child]) => !allValidLiChildrenTypes.includes(child.type as string)
-    )
+    .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a <p> tag as a first element
-  if (firstChild.type !== getPluginType(editor, ELEMENT_PARAGRAPH)) {
+  if (
+    isElement(firstChild) &&
+    firstChild.type !== getPluginType(editor, ELEMENT_PARAGRAPH)
+  ) {
     insertEmptyElement(editor, getPluginType(editor, ELEMENT_PARAGRAPH), {
       at: firstChildPath,
     });
@@ -52,6 +58,8 @@ export const normalizeListItem = (
   // Ensure that any text nodes under the list are inside the <p>
   for (const ref of inlinePathRefs.reverse()) {
     const path = ref.unref();
+
+    console.log(firstChildPath);
 
     if (path) {
       Transforms.moveNodes(editor, {

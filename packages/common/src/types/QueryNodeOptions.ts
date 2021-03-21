@@ -1,3 +1,4 @@
+import { TNode } from '@udecode/slate-plugins-core';
 import { NodeEntry } from 'slate';
 
 /**
@@ -7,7 +8,7 @@ export interface QueryNodeOptions {
   /**
    * Query the node entry.
    */
-  filter?: (entry: NodeEntry) => boolean;
+  filter?: (entry: NodeEntry<TNode>) => boolean;
 
   /**
    * List of types that are valid. If empty or undefined - allow all.

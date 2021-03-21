@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-core';
+import { TDescendant, withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Descendant, Editor, Range } from 'slate';
+import { Editor, Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../slate-plugins/src/elements/link/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
@@ -19,7 +19,7 @@ const input = ((
   </editor>
 ) as any) as Editor;
 
-const output: Descendant[] = [];
+const output: TDescendant[] = [];
 
 it('should be', () => {
   const above = getBlockAbove(

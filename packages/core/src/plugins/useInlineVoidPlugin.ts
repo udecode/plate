@@ -1,6 +1,7 @@
 import castArray from 'lodash/castArray';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { WithOverride } from '../types/SlatePlugin/WithOverride';
+import { TElement } from '../types/TElement';
 import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
 
 export interface WithInlineVoidOptions {
@@ -37,13 +38,13 @@ export const withInlineVoid = ({
   });
 
   editor.isInline = (element) => {
-    return allInlineTypes.includes(element.type as string)
+    return allInlineTypes.includes((element as TElement).type)
       ? true
       : isInline(element);
   };
 
   editor.isVoid = (element) =>
-    allVoidTypes.includes(element.type as string) ? true : isVoid(element);
+    allVoidTypes.includes((element as TElement).type) ? true : isVoid(element);
 
   return editor;
 };

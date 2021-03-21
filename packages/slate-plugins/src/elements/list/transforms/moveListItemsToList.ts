@@ -4,24 +4,25 @@ import {
   moveChildren,
   MoveChildrenOptions,
 } from '@udecode/slate-plugins-common';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { TElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions {
   /**
    * List items of the sublist of this node will be moved.
    */
-  fromListItem?: NodeEntry<Ancestor>;
+  fromListItem?: NodeEntry<TElement>;
 
   /**
    * List items of the list will be moved.
    */
-  fromList?: NodeEntry<Ancestor>;
+  fromList?: NodeEntry<TElement>;
 
   /**
    * List items will be moved in this list.
    */
-  toList?: NodeEntry<Ancestor>;
+  toList?: NodeEntry<TElement>;
 
   fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
 

@@ -1,6 +1,10 @@
 import { mergeDeepToNodes } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Descendant, Editor, Element, Text } from 'slate';
+import {
+  isElement,
+  SlatePlugin,
+  TDescendant,
+} from '@udecode/slate-plugins-core';
+import { Editor, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -11,7 +15,7 @@ export interface DeserializeMarksProps {
 }
 
 /**
- * Deserialize HTML to Descendant[] with marks on Text.
+ * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
 export const deserializeHTMLToMarks = (
@@ -33,10 +37,10 @@ export const deserializeHTMLToMarks = (
     });
   });
 
-  return children.reduce((arr: Descendant[], child) => {
+  return children.reduce((arr: TDescendant[], child) => {
     if (!child) return arr;
 
-    if (Element.isElement(child)) {
+    if (isElement(child)) {
       if (Object.keys(leaf).length) {
         mergeDeepToNodes({
           node: child,

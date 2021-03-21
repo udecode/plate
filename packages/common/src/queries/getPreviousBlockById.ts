@@ -1,3 +1,4 @@
+import { TNode } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry } from 'slate';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
@@ -14,7 +15,7 @@ export const getPreviousBlockById = (
 ): NodeEntry<Node> | undefined => {
   const entry = findNode(editor, { match: { id } });
   if (entry) {
-    const prevEntry = Editor.previous(editor, { at: entry[1] });
+    const prevEntry = Editor.previous<TNode>(editor, { at: entry[1] });
     if (prevEntry && prevEntry[0].id && Editor.isBlock(editor, prevEntry[0])) {
       return prevEntry;
     }
@@ -24,7 +25,9 @@ export const getPreviousBlockById = (
     ...Editor.nodes(editor, {
       mode: 'highest',
       reverse: true,
-      match: (n) => {
+      match: (_n) => {
+        const n = _n as TNode;
+
         // filter nodes that are not blocks and without id.
         if (!Editor.isBlock(editor, n) || !n.id) return false;
 
@@ -47,7 +50,9 @@ export const getPreviousBlockById = (
   const firstNodeEntry = [
     ...Editor.nodes(editor, {
       mode: 'highest',
-      match: (n) => {
+      match: (_n) => {
+        const n = _n as TNode;
+
         return Editor.isBlock(editor, n) && !!n.id && queryNode([n, []], query);
       },
       at: [],

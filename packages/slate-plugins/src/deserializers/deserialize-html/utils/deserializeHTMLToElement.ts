@@ -1,5 +1,9 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Descendant, Editor, Element } from 'slate';
+import {
+  SlatePlugin,
+  TDescendant,
+  TElement,
+} from '@udecode/slate-plugins-core';
+import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -17,7 +21,7 @@ export const deserializeHTMLToElement = (
     element: HTMLElement;
     children: DeserializeHTMLChildren[];
   }
-): Element | undefined => {
+): TElement | undefined => {
   let slateElement: any;
   let withoutChildren: boolean | undefined;
 
@@ -36,11 +40,11 @@ export const deserializeHTMLToElement = (
   });
 
   if (slateElement) {
-    let descendants = children as Descendant[];
+    let descendants = children as TDescendant[];
     if (!descendants.length || withoutChildren) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', slateElement, descendants);
+    return jsx('element', slateElement, descendants) as TElement;
   }
 };

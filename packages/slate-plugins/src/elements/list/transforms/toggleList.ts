@@ -14,7 +14,7 @@ export const toggleList = (editor: Editor, { type }: { type: string }) => {
 
   Transforms.setNodes(editor, {
     type: getPluginType(editor, ELEMENT_PARAGRAPH),
-  });
+  } as any);
 
   if (!isActive) {
     const list = { type, children: [] };

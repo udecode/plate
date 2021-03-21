@@ -12,7 +12,7 @@ const components = getSlatePluginsComponents();
 
 it('should render draggable component', () => {
   const editor = jest.fn();
-  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({
     component: components[ELEMENT_PARAGRAPH],
@@ -35,7 +35,7 @@ it('should render draggable component', () => {
 
 it('should filter based on level', () => {
   const editor = jest.fn();
-  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({
     component: components[ELEMENT_PARAGRAPH],
@@ -59,7 +59,7 @@ it('should filter based on level', () => {
 
 it('should not be draggable if readOnly', () => {
   const editor = jest.fn();
-  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
   jest.spyOn(SlateReact, 'useReadOnly').mockReturnValue(true);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({
@@ -83,7 +83,7 @@ it('should not be draggable if readOnly', () => {
 
 it('should be draggable in readOnly if allowReadOnly', () => {
   const editor = jest.fn();
-  jest.spyOn(SlateReact, 'useEditor').mockReturnValue(editor as any);
+  jest.spyOn(SlateReact, 'useEditorStatic').mockReturnValue(editor as any);
   jest.spyOn(SlateReact, 'useReadOnly').mockReturnValue(true);
   jest.spyOn(ReactEditor, 'findPath').mockReturnValue([0, 0]);
   const DraggableElement = getSelectableElement({

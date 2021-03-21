@@ -50,7 +50,7 @@ export const withDeserializeHTML = ({
         firstNodeType &&
         !inlineTypes.includes(firstNodeType)
       ) {
-        Transforms.setNodes(editor, { type: fragment[0].type });
+        Transforms.setNodes(editor, { type: fragment[0].type } as any);
       }
 
       return fragment;

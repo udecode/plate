@@ -5,6 +5,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
+  TNode,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import Slate, { Editor, Transforms } from 'slate';
@@ -26,7 +27,7 @@ export const withSelectOnBackspace = (
         unit,
       });
       if (prevNode) {
-        const [prevCell] = Editor.nodes(editor, {
+        const [prevCell] = Editor.nodes<TNode>(editor, {
           match: (node) => queryNode([node, prevNode.path], query),
           at: prevNode,
         });

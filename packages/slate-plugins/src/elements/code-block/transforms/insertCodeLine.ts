@@ -12,6 +12,6 @@ export const insertCodeLine = (editor: Editor, indentDepth = 0) => {
     Transforms.insertNodes(editor, {
       type: getPluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: indent }],
-    });
+    } as any);
   }
 };

@@ -1,4 +1,4 @@
-import { Element } from 'slate';
+import { TElement } from '../../../packages/core/src/types/TElement';
 
 // Data of Element node
 export interface TagNodeData {
@@ -7,4 +7,4 @@ export interface TagNodeData {
 }
 
 // Element node
-export interface TagNode extends Element, TagNodeData {}
+export interface TagNode extends TElement<TagNodeData> {}

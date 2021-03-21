@@ -1,10 +1,11 @@
 import { match } from '@udecode/slate-plugins-common';
+import { TElement } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemDownOptions {
-  list: NodeEntry<Ancestor>;
-  listItem: NodeEntry<Ancestor>;
+  list: NodeEntry<TElement>;
+  listItem: NodeEntry<TElement>;
 }
 
 export const moveListItemDown = (
@@ -34,7 +35,7 @@ export const moveListItemDown = (
       // Create new sublist
       Transforms.wrapNodes(
         editor,
-        { type: listNode.type, children: [] },
+        { type: listNode.type, children: [] } as any,
         { at: listItemPath }
       );
     }

@@ -1,12 +1,12 @@
-import { Descendant, Element } from 'slate';
+import { TDescendant, TElement } from '@udecode/slate-plugins-core';
 
-export type DeserializeHTMLChildren = ChildNode | Descendant | string | null;
+export type DeserializeHTMLChildren = ChildNode | TDescendant | string | null;
 
 export type DeserializeHTMLReturn =
   | string
   | null
-  | Descendant[]
-  | Element
+  | TDescendant[]
+  | TElement
   | DeserializeHTMLChildren[];
 
-export type DeserializedHTMLElement = Descendant;
+export type DeserializedHTMLElement = TDescendant;

@@ -37,5 +37,5 @@ export const toggleNodeType = (
 
   Transforms.setNodes(editor, {
     type: isActive ? inactiveType : activeType,
-  });
+  } as any);
 };

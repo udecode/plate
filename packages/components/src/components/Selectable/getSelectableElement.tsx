@@ -1,18 +1,10 @@
 import React, { forwardRef, ReactNode, useMemo } from 'react';
+import { TRenderElementProps, useEditorStatic } from '@udecode/slate-plugins';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Editor, Path } from 'slate';
-import {
-  ReactEditor,
-  RenderElementProps,
-  useEditor,
-  useReadOnly,
-} from 'slate-react';
+import { ReactEditor, useReadOnly } from 'slate-react';
 import { Selectable } from './Selectable';
-import {
-  ElementWithId,
-  SelectableStyleProps,
-  SelectableStyles,
-} from './Selectable.types';
+import { SelectableStyleProps, SelectableStyles } from './Selectable.types';
 
 export interface GetSelectabelElementOptions {
   component: any;
@@ -32,8 +24,8 @@ export const getSelectableElement = ({
   dragIcon,
 }: GetSelectabelElementOptions) => {
   return forwardRef(
-    ({ attributes, element, ...props }: RenderElementProps, ref) => {
-      const editor = useEditor();
+    ({ attributes, element, ...props }: TRenderElementProps, ref) => {
+      const editor = useEditorStatic();
       const readOnly = useReadOnly();
       const path = useMemo(() => ReactEditor.findPath(editor, element), [
         editor,
@@ -54,7 +46,7 @@ export const getSelectableElement = ({
         <Selectable
           attributes={attributes}
           componentRef={ref}
-          element={element as ElementWithId}
+          element={element}
           styles={styles}
           dragIcon={dragIcon}
         >

@@ -1,5 +1,5 @@
 import { Editor } from 'slate';
-import { RenderLeafProps } from 'slate-react';
+import { TRenderLeafProps } from '../TRenderLeafProps';
 
 /**
  * Function used to render the children of a leaf.
@@ -12,4 +12,4 @@ import { RenderLeafProps } from 'slate-react';
  */
 export type RenderLeaf = (
   editor: Editor
-) => (props: RenderLeafProps) => JSX.Element;
+) => (props: TRenderLeafProps) => JSX.Element;

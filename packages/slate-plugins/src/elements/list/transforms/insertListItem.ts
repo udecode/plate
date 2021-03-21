@@ -3,7 +3,7 @@ import {
   getParent,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, isElement } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_PARAGRAPH } from '../../paragraph/defaults';
 import { ELEMENT_LI } from '../defaults';
@@ -25,7 +25,7 @@ export const insertListItem = (editor: Editor) => {
     if (!listItemEntry) return;
     const [listItemNode, listItemPath] = listItemEntry;
 
-    if (listItemNode.type !== liType) return;
+    if (isElement(listItemNode) && listItemNode.type !== liType) return;
 
     if (!Range.isCollapsed(editor.selection)) {
       Transforms.delete(editor);
@@ -50,7 +50,7 @@ export const insertListItem = (editor: Editor) => {
         {
           type: liType,
           children: [{ type: pType, children: [{ text: '' }] }],
-        },
+        } as any,
         { at: listItemPath }
       );
       return true;
@@ -67,7 +67,7 @@ export const insertListItem = (editor: Editor) => {
           {
             type: liType,
             children: [],
-          },
+          } as any,
           { at: nextParagraphPath }
         );
         Transforms.moveNodes(editor, {
@@ -89,7 +89,7 @@ export const insertListItem = (editor: Editor) => {
         {
           type: liType,
           children: [{ type: pType, children: [{ text: '', ...marks }] }],
-        },
+        } as any,
         { at: nextListItemPath }
       );
       Transforms.select(editor, nextListItemPath);

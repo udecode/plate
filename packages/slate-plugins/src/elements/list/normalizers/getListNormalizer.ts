@@ -1,6 +1,6 @@
 import { match } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Descendant, Editor, NodeEntry, Transforms } from 'slate';
+import { getPluginType, isElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions } from '../types';
@@ -16,8 +16,10 @@ export const getListNormalizer = (
   const { normalizeNode } = editor;
 
   return ([node, path]: NodeEntry) => {
+    if (!isElement(node)) return;
+
     if (match(node, { type: getListTypes(editor) })) {
-      if (!(node.children as Descendant[]).length) {
+      if (!node.children.length) {
         return Transforms.removeNodes(editor, { at: path });
       }
     }

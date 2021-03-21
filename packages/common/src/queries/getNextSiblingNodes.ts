@@ -1,4 +1,5 @@
-import { Ancestor, Descendant, NodeEntry, Path } from 'slate';
+import { TAncestor, TDescendant } from '@udecode/slate-plugins-core';
+import { NodeEntry, Path } from 'slate';
 
 /**
  * Get the next sibling nodes after a path.
@@ -6,14 +7,14 @@ import { Ancestor, Descendant, NodeEntry, Path } from 'slate';
  * @param path Path of the reference node
  */
 export const getNextSiblingNodes = (
-  ancestorEntry: NodeEntry<Ancestor>,
+  ancestorEntry: NodeEntry<TAncestor>,
   path: Path
 ) => {
   const [ancestor, ancestorPath] = ancestorEntry;
 
   const leafIndex = path[ancestorPath.length];
 
-  const siblings: Descendant[] = [];
+  const siblings: TDescendant[] = [];
 
   if (leafIndex + 1 < ancestor.children.length) {
     for (let i = leafIndex + 1; i < ancestor.children.length; i++) {

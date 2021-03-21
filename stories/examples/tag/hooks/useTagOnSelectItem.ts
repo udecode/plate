@@ -36,7 +36,7 @@ export const useTagOnSelectItem = () => {
           type,
           children: [{ text: '' }],
           value: item.text,
-        });
+        } as any);
         // move the selection after the tag element
         Transforms.move(editor);
 

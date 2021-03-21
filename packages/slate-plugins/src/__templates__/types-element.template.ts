@@ -1,6 +1,8 @@
-import { RenderElementOptions } from '@udecode/slate-plugins-core';
+import {
+  RenderElementOptions,
+  TRenderElementProps,
+} from '@udecode/slate-plugins-core';
 import { Element } from 'slate';
-import { RenderElementProps } from 'slate-react';
 
 // Data of Element node
 export interface TemplateNodeData {}
@@ -27,7 +29,7 @@ export interface TemplateRenderElementOptions
 
 // renderElement props
 export interface TemplateRenderElementProps
-  extends RenderElementProps,
+  extends TRenderElementProps,
     TemplateRenderElementOptionsProps {
   element: TemplateNode;
 }

@@ -15,7 +15,7 @@ export const toggleCodeBlock = (editor: Editor) => {
 
   Transforms.setNodes(editor, {
     type: getPluginType(editor, ELEMENT_CODE_LINE),
-  });
+  } as any);
 
   if (!isActive) {
     const codeBlock = {

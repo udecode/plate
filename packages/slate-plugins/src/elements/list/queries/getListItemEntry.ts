@@ -1,6 +1,6 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Location } from 'slate';
+import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { Editor, Location, NodeEntry } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
 /**
@@ -9,7 +9,7 @@ import { ELEMENT_LI } from '../defaults';
 export const getListItemEntry = (
   editor: Editor,
   { at = editor.selection }: { at?: Location | null } = {}
-) => {
+): { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> } | undefined => {
   const liType = getPluginType(editor, ELEMENT_LI);
   if (at && someNode(editor, { at, match: { type: liType } })) {
     const selectionParent = getParent(editor, at);
@@ -17,15 +17,15 @@ export const getListItemEntry = (
     const [, paragraphPath] = selectionParent;
 
     const listItem =
-      getAbove(editor, { at, match: { type: liType } }) ||
-      getParent(editor, paragraphPath);
+      getAbove<TElement>(editor, { at, match: { type: liType } }) ||
+      getParent<TElement>(editor, paragraphPath);
 
     if (!listItem) return;
     const [listItemNode, listItemPath] = listItem;
 
     if (listItemNode.type !== liType) return;
 
-    const list = getParent(editor, listItemPath);
+    const list = getParent<TElement>(editor, listItemPath);
     if (!list) return;
 
     return {

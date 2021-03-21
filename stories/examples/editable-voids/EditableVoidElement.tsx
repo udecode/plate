@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { RenderElementProps } from 'slate-react';
+import { TRenderElementProps } from '../../../packages/core/src/types/TRenderElementProps';
 import { Example } from '../../elements/basic-elements.stories';
 
 export const EditableVoidElement = ({
   attributes,
   children,
-}: RenderElementProps) => {
+}: TRenderElementProps) => {
   const [inputValue, setInputValue] = useState('');
 
   return (

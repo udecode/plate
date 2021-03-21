@@ -1,14 +1,14 @@
 import { getAbove, getNode, isLastChild } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: NodeEntry<Ancestor>;
-  listItem: NodeEntry<Ancestor>;
+  list: NodeEntry<TElement>;
+  listItem: NodeEntry<TElement>;
 }
 
 /**
@@ -22,7 +22,7 @@ export const moveListItemUp = (
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = getAbove(editor, {
+    const liParent = getAbove<TElement>(editor, {
       at: listPath,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });
@@ -39,13 +39,13 @@ export const moveListItemUp = (
           {
             type: listNode.type,
             children: [],
-          },
+          } as any,
           { at: toListPath }
         );
       }
 
       if (condA) {
-        const toListNode = getNode(editor, toListPath) as Ancestor;
+        const toListNode = getNode<TElement>(editor, toListPath);
         if (!toListNode) return;
 
         // Move li sub-lis to the new list
@@ -57,7 +57,7 @@ export const moveListItemUp = (
 
       // If there is siblings li, move them to the new list
       if (condB) {
-        const toListNode = getNode(editor, toListPath) as Ancestor;
+        const toListNode = getNode<TElement>(editor, toListPath);
         if (!toListNode) return;
 
         // Move next lis to the new list
@@ -87,12 +87,12 @@ export const moveListItemUp = (
           {
             type: listNode.type,
             children: [],
-          },
+          } as any,
           { at: toListPath }
         );
       }
 
-      const toListNode = getNode(editor, toListPath) as Ancestor;
+      const toListNode = getNode<TElement>(editor, toListPath);
       if (!toListNode) return;
 
       // Move next siblings to li sublist.

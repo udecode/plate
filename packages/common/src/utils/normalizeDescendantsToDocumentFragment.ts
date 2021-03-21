@@ -1,14 +1,14 @@
-import { Descendant, Element } from 'slate';
+import { isElement, TDescendant } from '@udecode/slate-plugins-core';
 import { SlateDocumentFragment } from '../types/SlateDocument.types';
 
 /**
  * Normalize the descendants to a valid document fragment.
  */
 export const normalizeDescendantsToDocumentFragment = (
-  descendants: Descendant[]
+  descendants: TDescendant[]
 ): SlateDocumentFragment => {
   descendants.forEach((element) => {
-    if (Element.isElement(element)) {
+    if (isElement(element)) {
       normalizeDescendantsToDocumentFragment(element.children);
     }
   });

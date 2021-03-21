@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { isDescendant } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { isDescendant } from '../../../queries/index';
 import { mergeDeepToNodes } from '../../../transforms/index';
 
 const node = (<htext>test</htext>) as any;

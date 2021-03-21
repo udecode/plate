@@ -4,19 +4,20 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { TElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
    * The list item to merge.
    */
-  fromListItem: NodeEntry<Ancestor>;
+  fromListItem: NodeEntry<TElement>;
 
   /**
    * The list item where to merge.
    */
-  toListItem: NodeEntry<Ancestor>;
+  toListItem: NodeEntry<TElement>;
 
   /**
    * Move to the start of the list instead of the end.
@@ -39,7 +40,7 @@ export const moveListItemSublistItemsToListItemSublist = (
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
 
-  const fromListItemSublist = findDescendant<Ancestor>(editor, {
+  const fromListItemSublist = findDescendant<TElement>(editor, {
     at: fromListItemPath,
     match: {
       type: getListTypes(editor),
@@ -49,7 +50,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
   const [, fromListItemSublistPath] = fromListItemSublist;
 
-  const toListItemSublist = findDescendant<Ancestor>(editor, {
+  const toListItemSublist = findDescendant<TElement>(editor, {
     at: toListItemPath,
     match: {
       type: getListTypes(editor),
@@ -69,7 +70,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
     Transforms.insertNodes(
       editor,
-      { type: fromListType, children: [] },
+      { type: fromListType, children: [] } as any,
       { at: toListItemSublistPath }
     );
 

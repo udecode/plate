@@ -38,7 +38,7 @@ export const renderElementList = (options?: ListRenderElementOptions) => {
 export const renderElementParagraph = () => ({
   attributes,
   ...props
-}: RenderElementProps) => {
+}: TRenderElementProps) => {
   if (props.element.type === ELEMENT_PARAGRAPH) {
     return <p {...attributes} {...props} className="slate-p" />;
   }

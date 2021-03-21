@@ -1,7 +1,10 @@
 import * as React from 'react';
-import { RenderNodeOptions } from '@udecode/slate-plugins-core';
+import {
+  RenderNodeOptions,
+  TRenderElementProps,
+} from '@udecode/slate-plugins-core';
 import { castArray } from 'lodash';
-import { DefaultElement, RenderElementProps } from 'slate-react';
+import { DefaultElement } from 'slate-react';
 import { getSlateClass } from './getSlateClass';
 
 /**
@@ -10,7 +13,7 @@ import { getSlateClass } from './getSlateClass';
  */
 export const getRenderElement = (
   options: RenderNodeOptions | RenderNodeOptions[]
-) => ({ attributes, element, children }: RenderElementProps) => {
+) => ({ attributes, element, children }: TRenderElementProps) => {
   const _options = castArray<RenderNodeOptions>(options);
 
   for (const option of _options) {

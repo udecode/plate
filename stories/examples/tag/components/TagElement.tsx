@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { useEditorStatic } from '@udecode/slate-plugins';
 import { getRootClassNames } from '@udecode/slate-plugins-components';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
-import { useEditor, useFocused, useSelected } from 'slate-react';
+import { useFocused, useSelected } from 'slate-react';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { useOnMouseClick } from '../hooks/useOnMouseClick';
 import { getTagElementStyles } from './TagElement.styles';
@@ -28,7 +29,7 @@ export const TagElementBase = ({
   styles,
   className,
 }: TagElementProps) => {
-  const editor = useEditor();
+  const editor = useEditorStatic();
   const selected = useSelected();
   const focused = useFocused();
 

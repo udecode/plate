@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { useEditorStatic } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
-import { ReactEditor, useEditor, useReadOnly } from 'slate-react';
+import { ReactEditor, useReadOnly } from 'slate-react';
 import { getRootClassNames } from '../../types';
 import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { getTodoListElementStyles } from './TodoListElement.styles';
@@ -29,7 +30,7 @@ export const TodoListElementBase = ({
   styles,
   nodeProps,
 }: Props) => {
-  const editor = useEditor();
+  const editor = useEditorStatic();
   const readOnly = useReadOnly();
 
   const { checked } = element;
@@ -50,11 +51,9 @@ export const TodoListElementBase = ({
           onChange={(e) => {
             const path = ReactEditor.findPath(editor, element);
 
-            Transforms.setNodes(
-              editor,
-              { checked: e.target.checked },
-              { at: path }
-            );
+            Transforms.setNodes(editor, { checked: e.target.checked } as any, {
+              at: path,
+            });
           }}
           {...nodeProps}
         />

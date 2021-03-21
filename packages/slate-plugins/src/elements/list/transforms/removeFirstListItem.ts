@@ -1,5 +1,6 @@
 import { isFirstChild } from '@udecode/slate-plugins-common';
-import { Ancestor, Editor, NodeEntry } from 'slate';
+import { TElement } from '@udecode/slate-plugins-core';
+import { Editor, NodeEntry } from 'slate';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
@@ -12,8 +13,8 @@ export const removeFirstListItem = (
     list,
     listItem,
   }: {
-    list: NodeEntry<Ancestor>;
-    listItem: NodeEntry<Ancestor>;
+    list: NodeEntry<TElement>;
+    listItem: NodeEntry<TElement>;
   }
 ) => {
   const [, listPath] = list;

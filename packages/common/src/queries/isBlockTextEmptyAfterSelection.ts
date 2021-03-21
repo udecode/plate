@@ -1,3 +1,4 @@
+import { isText } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
@@ -26,7 +27,7 @@ export const isBlockTextEmptyAfterSelection = (editor: Editor) => {
 
   if (siblingNodes.length) {
     for (const siblingNode of siblingNodes) {
-      if (siblingNode.text) {
+      if (isText(siblingNode) && siblingNode.text) {
         return false;
       }
     }

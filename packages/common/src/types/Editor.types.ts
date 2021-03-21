@@ -1,14 +1,15 @@
-import { Ancestor, Node, Path, Point, Range, Span } from 'slate';
+import { TAncestor, TNode } from '@udecode/slate-plugins-core';
+import { Path, Point, Range, Span } from 'slate';
 import { Predicate } from '../queries/match';
 
-export type NodeMatch<T = Node> = Predicate<T>;
+export type NodeMatch<T = TNode> = Predicate<T>;
 
-export interface MatchOptions<T = Node> {
+export interface MatchOptions<T = TNode> {
   match?: NodeMatch<T>;
   block?: boolean;
 }
 
-export interface EditorNodesOptions<T = Node> extends MatchOptions<T> {
+export interface EditorNodesOptions<T = TNode> extends MatchOptions<T> {
   at?: Range | Path | Point | Span;
   mode?: 'highest' | 'lowest' | 'all';
   universal?: boolean;
@@ -16,7 +17,7 @@ export interface EditorNodesOptions<T = Node> extends MatchOptions<T> {
   voids?: boolean;
 }
 
-export interface EditorAboveOptions<T = Ancestor> extends MatchOptions<T> {
+export interface EditorAboveOptions<T = TAncestor> extends MatchOptions<T> {
   at?: Range | Path | Point;
   mode?: 'highest' | 'lowest';
   voids?: boolean;

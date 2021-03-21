@@ -26,7 +26,7 @@ export const insertEmptyCodeBlock = (
     const insertPath = Path.next(selectionPath.slice(0, level + 1));
     Transforms.insertNodes(
       editor,
-      { type: defaultType, children: [{ text: '' }] },
+      { type: defaultType, children: [{ text: '' }] } as any,
       {
         at: insertPath,
         select: true,

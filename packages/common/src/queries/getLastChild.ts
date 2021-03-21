@@ -1,11 +1,12 @@
-import { Ancestor, Descendant, NodeEntry, Path } from 'slate';
+import { TAncestor, TDescendant } from '@udecode/slate-plugins-core';
+import { NodeEntry, Path } from 'slate';
 
 /**
  * Get the last child of a node or null if no children.
  */
 export const getLastChild = (
-  nodeEntry: NodeEntry<Ancestor>
-): NodeEntry<Descendant> | null => {
+  nodeEntry: NodeEntry<TAncestor>
+): NodeEntry<TDescendant> | null => {
   const [node, path] = nodeEntry;
 
   if (!node.children.length) return null;
@@ -19,7 +20,7 @@ export const getLastChild = (
 /**
  * Get last child path. If there is no child, last index is 0.
  */
-export const getLastChildPath = (nodeEntry: NodeEntry<Ancestor>): Path => {
+export const getLastChildPath = (nodeEntry: NodeEntry<TAncestor>): Path => {
   const lastChild = getLastChild(nodeEntry);
 
   if (!lastChild) return nodeEntry[1].concat([-1]);
@@ -31,7 +32,7 @@ export const getLastChildPath = (nodeEntry: NodeEntry<Ancestor>): Path => {
  * Is the child path the last one of the parent.
  */
 export const isLastChild = (
-  parentEntry: NodeEntry<Ancestor>,
+  parentEntry: NodeEntry<TAncestor>,
   childPath: Path
 ): boolean => {
   const lastChildPath = getLastChildPath(parentEntry);

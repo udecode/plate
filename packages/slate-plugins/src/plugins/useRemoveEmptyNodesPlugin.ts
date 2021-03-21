@@ -1,5 +1,6 @@
 import {
   getSlatePluginWithOverrides,
+  isElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
@@ -17,8 +18,9 @@ export const withRemoveEmptyNodes = (options: {
 
   editor.normalizeNode = ([node, path]: NodeEntry) => {
     if (
+      isElement(node) &&
       node.type &&
-      types.includes(node.type as string) &&
+      types.includes(node.type) &&
       Node.string(node) === ''
     ) {
       Transforms.removeNodes(editor, { at: path });

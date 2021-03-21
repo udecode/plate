@@ -15,7 +15,7 @@ export const onKeyDownResetBlockType = ({
         if (predicate(editor) && someNode(editor, { match: { type: types } })) {
           event?.preventDefault();
 
-          Transforms.setNodes(editor, { type: defaultType });
+          Transforms.setNodes(editor, { type: defaultType } as any);
 
           onReset?.(editor);
 
