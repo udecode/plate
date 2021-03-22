@@ -1,11 +1,12 @@
-import { SlatePlugin } from '../types';
+import { Editor } from 'slate';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 
 /**
  * Get void types from the plugins
  */
-export const getVoidTypes = (plugins: SlatePlugin[]): string[] => {
-  return plugins.reduce((arr: string[], plugin) => {
-    const types = plugin.voidTypes || [];
-    return arr.concat(types);
-  }, []);
+export const getVoidTypes = (
+  editor: Editor,
+  plugins: SlatePlugin[]
+): string[] => {
+  return plugins.flatMap((p) => p.voidTypes?.(editor) ?? []);
 };

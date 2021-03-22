@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "0.75.2",
+  "version": "1.0.0-alpha.0",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -19,26 +19,11 @@
     "dist"
   ],
   "scripts": {
+    "cti": "sh ../../cti.sh below",
     "prebuild": "rimraf dist",
-    "build": "rollup -c=../../rollup.config.js"
-  },
-  "dependencies": {
-    "@react-hook/merged-ref": "^1.3.0",
-    "@tippyjs/react": "^4.0.2",
-    "@udecode/slate-plugins-core": "^0.75.2",
-    "@uifabric/styling": "^7.12.11",
-    "@uifabric/utilities": "^7.19.0",
-    "image-extensions": "^1.1.0",
-    "is-hotkey": "^0.1.6",
-    "lodash": "^4.17.15",
-    "prismjs": "^1.20.0",
-    "react-dnd": "^13.1.1",
-    "react-dnd-html5-backend": "^12.1.1",
-    "react-use": "^15.1.0",
-    "remark-parse": "^9.0.0",
-    "remark-slate": "^1.4.0",
-    "unified": "^9.1.0",
-    "utility-types": "^3.10.0"
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../rollup.config.js"
   },
   "peerDependencies": {
     "react": "*",
@@ -47,12 +32,50 @@
     "slate-hyperscript": ">=0.58.0",
     "slate-react": ">=0.58.0"
   },
+  "dependencies": {
+    "@udecode/slate-plugins-alignment": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-alignment-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-autoformat": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-basic-elements": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-basic-marks": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-block-quote": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-block-quote-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-break": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-code-block": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-code-block-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-dnd": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-find-replace": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-find-replace-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-heading": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-highlight": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-html-serializer": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-image": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-image-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-kbd": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-link": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-link-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-list": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-list-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-md-serializer": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-media-embed": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-media-embed-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-mention": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-mention-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-node-id": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-normalizers": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-paragraph": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-reset-node": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-select": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-table": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-table-ui": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-trailing-block": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.0"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
-  "devDependencies": {
-    "@types/marked": "^1.1.0",
-    "react-dnd-test-backend": "^11.1.3"
-  }
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
 }

@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
@@ -11,7 +12,10 @@ import { terser } from 'rollup-plugin-terser';
 import typescript from 'rollup-plugin-typescript2';
 
 const PACKAGE_ROOT_PATH = process.cwd();
-const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
+const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
+const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
+  ? INPUT_FILE_PATH
+  : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 const PKG_JSON = require(path.join(PACKAGE_ROOT_PATH, 'package.json'));
 
 const isUmd = false;
@@ -39,6 +43,7 @@ const plugins = [
   typescript({
     clean: true,
     tsconfig: path.join(PACKAGE_ROOT_PATH, 'tsconfig.build.json'),
+    useTsconfigDeclarationDir: true,
   }),
 
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015
@@ -141,5 +146,9 @@ export default [
       },
     ],
     plugins,
+    watch: {
+      include: 'src/**',
+      // exclude: 'node_modules/**',
+    },
   },
 ];

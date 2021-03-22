@@ -30,28 +30,28 @@ For additional help, join us in our
 Now, let's create a simple editor with 3 plugins: 
 
 ```js
-import React, { useMemo, useState } from 'react';
-import { createEditor, Node } from 'slate';
+import React from 'react';
+import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  SlatePlugins,
   ParagraphPlugin,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
-  pipe,
 } from '@udecode/slate-plugins';
 
 const initialValue: Node[] = [
   {
-    type: options.p.type,
+    type: options[ELEMENT_PARAGRAPH].type,
     children: [
       {
         text: 'This text is bold, italic and underlined.',
-        [options.bold.type]: true,
-        [options.italic.type]: true,
-        [options.underline.type]: true,
+        [options[MARK_BOLD].type]: true,
+        [options[MARK_ITALIC].type]: true,
+        [options[MARK_UNDERLINE].type]: true,
       },
     ],
   }
@@ -59,20 +59,14 @@ const initialValue: Node[] = [
 
 const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 export const Editor = () => {
-  const [value, setValue] = useState(initialValue);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      initialValue={initialValue}
     >
-      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} editableProps={{ placeholder: 'Enter some text...' }} />
     </Slate>
   );
 };

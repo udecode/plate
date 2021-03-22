@@ -38,7 +38,7 @@ export const renderElementList = (options?: ListRenderElementOptions) => {
 export const renderElementParagraph = () => ({
   attributes,
   ...props
-}: RenderElementProps) => {
+}: TRenderElementProps) => {
   if (props.element.type === ELEMENT_PARAGRAPH) {
     return <p {...attributes} {...props} className="slate-p" />;
   }
@@ -55,19 +55,6 @@ const options: ParagraphRenderElementOptions = {
     component: StyledElement,
     // Give a unique type for each element.
     type: ELEMENT_PARAGRAPH,
-    // Give props to the root of the React component.
-    rootProps: {
-      // Give a className to the React component. Give an empty string to remove the className.
-      className: 'slate-p',
-      // When using a styled component, specify the root tag to render.
-      as: 'p',
-      // Customize styled components: https://github.com/microsoft/fluentui/wiki/Component-Styling
-      styles: {
-        root: {
-          margin: 0,
-        }
-      }
-    },
   },
 }
 ```

@@ -1,67 +1,51 @@
-import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
+import React from 'react';
 import { Image } from '@styled-icons/material';
 import {
-  EditablePlugins,
-  HeadingPlugin,
+  ELEMENT_IMAGE,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
   HeadingToolbar,
-  ImagePlugin,
-  ParagraphPlugin,
-  pipe,
-  renderElementImage,
-  SlateDocument,
+  SlatePlugins,
   ToolbarImage,
-  withImageUpload,
-  withInlineVoid,
-  withSelectOnBackspace,
+  useBasicElementPlugins,
+  useHistoryPlugin,
+  useImagePlugin,
+  useReactPlugin,
+  useSelectOnBackspacePlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValueImages, options } from '../config/initialValues';
+import { initialValueImages } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+
+const id = 'Elements/Image';
 
 export default {
-  title: 'Elements/Image',
-  component: ImagePlugin,
-  subcomponents: {
-    renderElementImage,
-    ToolbarImage,
-    withImageUpload,
-  },
+  title: id,
 };
 
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
+
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('ImagePlugin', true)) plugins.push(ImagePlugin(options));
+  const plugins = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+    useImagePlugin(),
+    useSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+  ];
 
-  const withPlugins = [
-    withReact,
-    withHistory,
-    withImageUpload(),
-    withInlineVoid({ plugins }),
-    withSelectOnBackspace({ allow: [options.img.type] }),
-  ] as const;
-
-  const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueImages);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
-        <HeadingToolbar>
-          <ToolbarImage {...options} icon={<Image />} />
-        </HeadingToolbar>
-        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueImages}
+    >
+      <HeadingToolbar>
+        <ToolbarImage icon={<Image />} />
+      </HeadingToolbar>
+    </SlatePlugins>
+  );
 };

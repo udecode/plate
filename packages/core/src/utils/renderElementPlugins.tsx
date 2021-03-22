@@ -1,31 +1,25 @@
 import * as React from 'react';
-import { RenderElementProps } from 'slate-react';
-import { RenderElement, SlatePlugin } from '../types';
+import { Editor } from 'slate';
+import { DefaultElement } from 'slate-react';
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { TRenderElementProps } from '../types/TRenderElementProps';
+import { flatMapKey } from './flatMapKey';
 
+/**
+ * @see {@link RenderElement}
+ */
 export const renderElementPlugins = (
-  plugins: SlatePlugin[],
-  renderElementList: RenderElement[]
-) => {
-  const Tag = (elementProps: RenderElementProps) => {
-    let element;
+  editor: Editor,
+  plugins: SlatePlugin[]
+): EditableProps['renderElement'] => (elementProps) => {
+  let element;
 
-    renderElementList.some((renderElement) => {
-      element = renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
+  flatMapKey(plugins, 'renderElement').some((renderElement) => {
+    element = renderElement(editor)(elementProps as TRenderElementProps);
+    return !!element;
+  });
+  if (element) return element;
 
-    plugins.some(({ renderElement }) => {
-      element = renderElement && renderElement(elementProps);
-      return !!element;
-    });
-    if (element) return element;
-
-    return <div {...elementProps.attributes}>{elementProps.children}</div>;
-  };
-
-  return (elementProps: RenderElementProps) => {
-    // XXX: A wrapper tag component to make useContext get correct value inside.
-    return <Tag {...elementProps} />;
-  };
+  return <DefaultElement {...elementProps} />;
 };

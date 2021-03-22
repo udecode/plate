@@ -21,7 +21,7 @@ export const deserializeAlign = (
       ...getElementDeserializer({
         type: align_center.type,
         rules: [
-          { className: align_center.rootProps.className },
+          { className: getSlateClass(align_center.type) },
           {
             nodeNames: 'DIV',
             style: {
@@ -33,7 +33,7 @@ export const deserializeAlign = (
       ...getElementDeserializer({
         type: align_right.type,
         rules: [
-          { className: align_right.rootProps.className },
+          { className: getSlateClass(align_right.type) },
           {
             nodeNames: 'DIV',
             style: {
@@ -45,7 +45,7 @@ export const deserializeAlign = (
       ...getElementDeserializer({
         type: align_justify.type,
         rules: [
-          { className: align_justify.rootProps.className },
+          { className: getSlateClass(align_justify.type) },
           {
             nodeNames: 'DIV',
             style: {

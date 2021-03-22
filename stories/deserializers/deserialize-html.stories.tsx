@@ -1,102 +1,62 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
-  BlockquotePlugin,
-  BoldPlugin,
-  CodeBlockPlugin,
-  CodePlugin,
-  EditablePlugins,
-  HeadingPlugin,
-  HighlightPlugin,
-  ImagePlugin,
-  ItalicPlugin,
-  LinkPlugin,
-  ListPlugin,
-  MediaEmbedPlugin,
-  MentionPlugin,
-  ParagraphPlugin,
-  pipe,
-  SlateDocument,
-  SoftBreakPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  TablePlugin,
-  TodoListPlugin,
-  UnderlinePlugin,
-  withCodeBlock,
-  withDeserializeHTML,
-  withImageUpload,
-  withInlineVoid,
-  withLink,
-  withList,
-  withTable,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
+  SlatePlugins,
+  useBasicElementPlugins,
+  useBasicMarkPlugins,
+  useDeserializeHTMLPlugin,
+  useHighlightPlugin,
+  useHistoryPlugin,
+  useImagePlugin,
+  useLinkPlugin,
+  useListPlugin,
+  useMediaEmbedPlugin,
+  useMentionPlugin,
+  useReactPlugin,
+  useSoftBreakPlugin,
+  useTablePlugin,
+  useTodoListPlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValuePasteHtml, options } from '../config/initialValues';
+import { initialValuePasteHtml } from '../config/initialValues';
+import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
+
+const id = 'Deserializers/HTML';
 
 export default {
-  title: 'Deserializers/HTML',
-  component: withDeserializeHTML,
+  title: id,
 };
 
-const plugins = [
-  ParagraphPlugin(options),
-  BlockquotePlugin(options),
-  CodeBlockPlugin(options),
-  HeadingPlugin(options),
-  ImagePlugin(options),
-  LinkPlugin(options),
-  ListPlugin(options),
-  TablePlugin(options),
-  TodoListPlugin(options),
-  MentionPlugin(options),
-  MediaEmbedPlugin(options),
-  BoldPlugin(options),
-  CodePlugin(options),
-  ItalicPlugin(options),
-  StrikethroughPlugin(options),
-  HighlightPlugin(options),
-  UnderlinePlugin(options),
-  SubscriptPlugin(options),
-  SuperscriptPlugin(options),
-  SoftBreakPlugin(),
-];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withTable(options),
-  withLink(options),
-  withCodeBlock(options),
-  withList(options),
-  withDeserializeHTML({ plugins }),
-  withImageUpload(),
-  withInlineVoid({ plugins }),
-] as const;
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValuePasteHtml);
+  const plugins = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+    ...useBasicMarkPlugins(),
+    useImagePlugin(),
+    useLinkPlugin(),
+    useListPlugin(),
+    useTablePlugin(),
+    useTodoListPlugin(),
+    useMentionPlugin(),
+    useMediaEmbedPlugin(),
+    useHighlightPlugin(),
+    useSoftBreakPlugin(optionsSoftBreakPlugin),
+  ];
 
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  plugins.push(useDeserializeHTMLPlugin({ plugins }));
 
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
-        <EditablePlugins
-          plugins={plugins}
-          placeholder="Paste in some HTML..."
-        />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePasteHtml}
+    />
+  );
 };

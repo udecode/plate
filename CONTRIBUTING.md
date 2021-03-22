@@ -130,13 +130,10 @@ folder structure and naming convention, as defined below.
 
 ```sh
 # Proper naming convention and structure for test files
-+-- packages/path_to_plugin/__tests__/[filename_to_test]
-|   +-- [case-1].spec.ts
-|   +-- [case-2].spec.tsx
-|   +-- [case-3].spec.ts
++-- filename_to_test.spec.ts
 ```
 
-Write your tests using the following convention:
+Write your tests using the following convention (if only one case):
 
 ```ts
 const input = 1;
@@ -153,7 +150,7 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
-import { jsx } from "../../../../__test-utils__/jsx";
+import { jsx } from "@udecode/slate-plugins-test-utils";
 ```
 
 Example of `input` and `output` being an editor containing one
@@ -281,10 +278,12 @@ are on the latest versions (yarn at least v1.3.2).
 2. `git clone https://github.com/udecode/slate-plugins.git`
    _bonus_: use your own fork for this step
 3. `cd slate-plugins`
-4. `yarn`
-5. `yarn build`
-6. `yarn test` (optional)
-7. `yarn storybook`
+4. `yarn install`
+5. `yarn build` once
+6. Run storybook:
+   7. If editing package source files, watch both these files and the
+      stories: `yarn storybook:w`
+   8. Otherwise, just watch the stories by running: `yarn storybook`
 
 ### Working with Storybook
 
@@ -303,37 +302,15 @@ assumes:
 
 The current manual release sequence is as follows:
 
-- Generate a changelog and verify the release by hand
-- Update and commit the new version in the docs
-- Lint, test, build and publish the release
-- Copy and paste the changelog to the github release page, and mark it
-  as a (pre-) release
+- If you want to synchronize the exports, run `yarn cti` to
+  automatically update the index files.
+- Lint, test, build locally.
+- To create a release PR with GitHub Actions, comment a GitHub issue
+  starting by:
+  - `/create release patch` for patch version.
+  - `/create release minor` for minor version.
+- Once the release PR is created, set the changelog in the description
+  content as it will be published on release page.
+- If the checks pass, the owners of the repository can merge the release
+  PR so it will automatically release the new version on npm and GitHub.
 
-<!--**NOTE:** The very first time you publish a scoped package (`@storybook/x`) you need to make sure that it's package.json contains the following-->
-
-<!--```js-->
-<!--"publishConfig": {-->
-<!--  "access": "public"-->
-<!--}-->
-<!--```-->
-
-<!--This sequence applies to both releases and pre-releases, but differs slightly between the two.-->
-
-<!--**NOTE: This is a work in progress. Don't try this unless you know what you're doing. We hope to automate this in CI, so this process is designed with that in mind.**-->
-
-#### Full release:
-
-```sh
-# make sure you current with origin/master.
-git checkout master
-git status
-
-# Edit the changelog/PRs as needed, then commit
-git commit -m "x.y.z"
-
-# lint, build, publish and tag the release
-yarn release
-
-# update the release page
-open https://github.com/udecode/slate-plugins/releases
-```

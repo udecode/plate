@@ -1,127 +1,62 @@
-import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
-import { FormatListBulleted, FormatListNumbered } from '@styled-icons/material';
+import React from 'react';
 import {
-  EditablePlugins,
-  ExitBreakPlugin,
-  HeadingPlugin,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
   HeadingToolbar,
-  ImagePlugin,
-  ListPlugin,
-  ParagraphPlugin,
-  pipe,
-  ResetBlockTypePlugin,
-  SlateDocument,
-  SoftBreakPlugin,
-  TodoListPlugin,
-  ToolbarList,
-  withImageUpload,
-  withList,
+  SlatePlugins,
+  useBasicElementPlugins,
+  useExitBreakPlugin,
+  useHistoryPlugin,
+  useImagePlugin,
+  useListPlugin,
+  useReactPlugin,
+  useResetNodePlugin,
+  useSoftBreakPlugin,
+  useTodoListPlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { initialValueList } from '../config/initialValues';
 import {
-  headingTypes,
-  initialValueList,
-  options,
-  optionsResetBlockTypes,
-} from '../config/initialValues';
+  editableProps,
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
+} from '../config/pluginOptions';
+import { ToolbarButtonsList } from '../config/Toolbars';
+
+const id = 'Elements/List';
 
 export default {
-  title: 'Elements/List',
-  component: ListPlugin,
-  subcomponents: {
-    TodoListPlugin,
-  },
+  title: id,
 };
 
-const withPlugins = [
-  withReact,
-  withHistory,
-  withList(options),
-  withImageUpload(options),
-] as const;
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const plugins: any[] = [
-    ParagraphPlugin(options),
-    HeadingPlugin(options),
-    ImagePlugin(options),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [
-              options.code_block.type,
-              options.blockquote.type,
-              options.td.type,
-            ],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: headingTypes,
-          },
-        },
-      ],
-    }),
+  const plugins = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+    useImagePlugin(),
+    useTodoListPlugin(),
+    useListPlugin(),
+    useSoftBreakPlugin(optionsSoftBreakPlugin),
+    useExitBreakPlugin(optionsExitBreakPlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
   ];
-  if (boolean('TodoListPlugin', true)) plugins.push(TodoListPlugin(options));
-  if (boolean('ListPlugin', true)) plugins.push(ListPlugin(options));
-  if (boolean('ResetBlockTypePlugin', true))
-    plugins.push(ResetBlockTypePlugin(optionsResetBlockTypes));
 
-  const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueList);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
-        <HeadingToolbar>
-          <ToolbarList
-            {...options}
-            typeList={options.ul.type}
-            icon={<FormatListBulleted />}
-          />
-          <ToolbarList
-            {...options}
-            typeList={options.ol.type}
-            icon={<FormatListNumbered />}
-          />
-        </HeadingToolbar>
-        <EditablePlugins
-          plugins={plugins}
-          placeholder="Enter some rich text…"
-          spellCheck
-          autoFocus
-        />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueList}
+    >
+      <HeadingToolbar>
+        <ToolbarButtonsList />
+      </HeadingToolbar>
+    </SlatePlugins>
+  );
 };

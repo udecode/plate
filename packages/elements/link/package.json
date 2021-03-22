@@ -1,0 +1,43 @@
+{
+  "name": "@udecode/slate-plugins-link",
+  "version": "1.0.0-alpha.0",
+  "description": "Slate plugins link",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/link#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "slate": ">=0.58.0",
+    "slate-hyperscript": ">=0.58.0",
+    "slate-react": ">=0.58.0"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-normalizers": "^1.0.0-alpha.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

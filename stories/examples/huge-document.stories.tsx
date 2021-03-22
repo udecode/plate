@@ -1,36 +1,39 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
-  EditablePlugins,
-  HeadingPlugin,
-  ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
+  SlatePlugins,
+  useBasicElementPlugins,
+  useHistoryPlugin,
+  useReactPlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValueHugeDocument, options } from '../config/initialValues';
+import { initialValueHugeDocument } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+
+const id = 'Examples/Huge Document';
 
 export default {
-  title: 'Examples/Huge Document',
+  title: id,
 };
 
-const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
-
-const withPlugins = [withReact, withHistory] as const;
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const [value, setValue] = useState(initialValueHugeDocument);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  const plugins = [
+    useReactPlugin(),
+    useHistoryPlugin(),
+    ...useBasicElementPlugins(),
+  ];
 
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
-    >
-      <EditablePlugins plugins={plugins} spellCheck autoFocus />
-    </Slate>
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueHugeDocument}
+    />
   );
 };

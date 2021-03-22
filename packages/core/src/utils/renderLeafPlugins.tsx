@@ -1,27 +1,27 @@
 import * as React from 'react';
-import { RenderLeafProps } from 'slate-react';
-import { RenderLeaf, SlatePlugin } from '../types';
+import { Editor } from 'slate';
+import { DefaultLeaf, RenderLeafProps } from 'slate-react';
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { flatMapKey } from './flatMapKey';
 
+/**
+ * @see {@link RenderLeaf}
+ */
 export const renderLeafPlugins = (
-  plugins: SlatePlugin[],
-  renderLeafList: RenderLeaf[]
-) => {
-  const Tag = (props: RenderLeafProps) => {
-    const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
-    renderLeafList.forEach((renderLeaf) => {
-      leafProps.children = renderLeaf(leafProps);
-    });
+  editor: Editor,
+  plugins: SlatePlugin[]
+): EditableProps['renderLeaf'] => (props) => {
+  const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
 
-    plugins.forEach(({ renderLeaf }) => {
-      if (!renderLeaf) return;
-      leafProps.children = renderLeaf(leafProps);
-    });
+  flatMapKey(plugins, 'renderLeaf').forEach((renderLeaf) => {
+    if (!renderLeaf) return;
 
-    return <span {...leafProps.attributes}>{leafProps.children}</span>;
-  };
+    const newChildren = renderLeaf(editor)(leafProps);
+    if (newChildren !== undefined) {
+      leafProps.children = newChildren;
+    }
+  });
 
-  return (leafProps: RenderLeafProps) => {
-    // XXX: A wrapper tag component to make useContext get correct value inside.
-    return <Tag {...leafProps} />;
-  };
+  return <DefaultLeaf {...leafProps} />;
 };

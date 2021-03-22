@@ -28,7 +28,7 @@ and
 - 💅 Styling.
 - 🏷️ Separation of Concerns.
 - ⚛️ Atomic Design.
-- ✅ Unit tested with `slate@0.59.0`.
+- ✅ Unit tested with `slate@0.60.11`.
 - 📓
   [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)
   and
@@ -99,23 +99,23 @@ For additional help, join us in our
 | Mark Plugins                                                     |                                               |
 |:-----------------------------------------------------------------|:----------------------------------------------|
 | [BasicMarks](packages/slate-plugins/src/marks/basic-marks)       | Enables support for basic text formatting.    |
-| [Bold](packages/slate-plugins/src/marks/bold/)                   | Enables support for bold formatting.          |
-| [Code](packages/slate-plugins/src/marks/code)                    | Enables support for inline code formatting.   |
+| [Bold](packages/marks/basic-marks/src/bold)                   | Enables support for bold formatting.          |
+| [Code](packages/basic-marks/src/code)                    | Enables support for inline code formatting.   |
 | [Highlight](packages/slate-plugins/src/marks/highlight/)         | Enables support for highlights.               |
-| [Italic](packages/slate-plugins/src/marks/italic)                | Enables support for italic formatting.        |
-| [Strikethrough](packages/slate-plugins/src/marks/strikethrough/) | Enables support for strikethrough formatting. |
-| [Subscript](packages/slate-plugins/src/marks/subsupscript/subscript)         | Enables support for subscript formatting.     |
-| [Superscript](packages/slate-plugins/src/marks/subsupscript/superscript/)     | Enables support for superscript formatting.   |
-| [Underline](packages/slate-plugins/src/marks/underline)          | Enables support for underline formatting.     |
+| [Italic](packages/basic-marks/src/italic)                | Enables support for italic formatting.        |
+| [Strikethrough](packages/basic-marks/src/strikethrough) | Enables support for strikethrough formatting. |
+| [Subscript](packages/basic-marks/src/subscript)         | Enables support for subscript formatting.     |
+| [Superscript](packages/basic-marks/src/superscript)     | Enables support for superscript formatting.   |
+| [Underline](packages/basic-marks/src/underline)          | Enables support for underline formatting.     |
 
 | Deserializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| [DeserializeHtml](packages/slate-plugins/src/deserializers/deserialize-html/)   | Enables support for deserializing content from HTML format to Slate format.     |
-| [DeserializeMarkdown](packages/slate-plugins/src/deserializers/deserialize-md/) | Enables support for deserializing content from Markdown format to Slate format. |
+| [DeserializeHtml](packages/html-serializer/src/deserializer)   | Enables support for deserializing content from HTML format to Slate format.     |
+| [DeserializeMarkdown](packages/md-serializer/src/deserializer) | Enables support for deserializing content from Markdown format to Slate format. |
 
 | Serializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| [SerializeHtml](packages/slate-plugins/src/serializers/serialize-html/)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
+| [SerializeHtml](packages/html-serializer/src/serializer)   | Enables support for serializing content from Slate format to HTML. Useful for exports from editor.    |
 
 | Normalizer Plugins                                        |                                                                                                                      |
 |:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
@@ -124,17 +124,17 @@ For additional help, join us in our
 
 | Handler Plugins                                               |                                                     |
 |:--------------------------------------------------------------|:----------------------------------------------------|
-| [Autoformat](packages/slate-plugins/src/handlers/autoformat/) | Enables support for autoformatting actions.         |
-| [SoftBreak](packages/slate-plugins/src/handlers/soft-break/)  | Enables support for inserting soft breaks.          |
+| [Autoformat](packages/slate-plugins/src/plugins/autoformat) | Enables support for autoformatting actions.         |
+| [SoftBreak](packages/break/src/soft-break)  | Enables support for inserting soft breaks.          |
 
 | Decorator Plugins                                         |                                 |
 |:----------------------------------------------------------|:--------------------------------|
-| [Preview](packages/slate-plugins/src/decorators/preview/) | Enables support for previewing. |
+| [Preview](stories/examples/preview-markdown) | Enables support for previewing. |
 
 | Toolbar                                                          |                                                                |
 |:-----------------------------------------------------------------|:---------------------------------------------------------------|
-| [BalloonToolbar](packages/slate-plugins/src/components/Toolbar/) | Provides a toolbar, pointing at a particular element or range. |
-| [Toolbar](packages/slate-plugins/src/components/Toolbar/)        | Provides a toolbar with buttons.                               |
+| [BalloonToolbar](packages/components/src/components/Toolbar) | Provides a toolbar, pointing at a particular element or range. |
+| [Toolbar](packages/components/src/components/Toolbar)        | Provides a toolbar with buttons.                               |
 
 | Utility Plugins                                                |                                                     |
 |:---------------------------------------------------------------|:----------------------------------------------------|
@@ -143,7 +143,7 @@ For additional help, join us in our
 
 | Widget Plugins                                                          |                                                  |
 |:------------------------------------------------------------------------|:-------------------------------------------------|
-| [SearchHighlight](packages/slate-plugins/src/widgets/search-highlight/) | Enables support for highlighting searching text. |
+| [SearchHighlight](packages/slate-plugins/src/widgets/find-replace) | Enables support for highlighting searching text. |
 
 ## 🤔 Notice
 

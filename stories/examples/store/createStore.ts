@@ -2,7 +2,7 @@ import pipe from 'ramda/es/pipe';
 import create from 'zustand';
 import { immer } from './immer.middleware';
 
-export const createStore = (storeName: string) => pipe(immer, create);
+export const createStore = () => pipe(immer, create);
 
 // export const action = (type: string) =>
 

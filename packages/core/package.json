@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-core",
-  "version": "0.75.2",
+  "version": "1.0.0-alpha.0",
   "description": "Slate plugins core",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/core#readme",
@@ -19,8 +19,11 @@
     "dist"
   ],
   "scripts": {
+    "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
-    "build": "rollup -c=../../rollup.config.js",
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
   },
   "peerDependencies": {
@@ -29,6 +32,10 @@
     "slate": ">=0.58.0",
     "slate-hyperscript": ">=0.58.0",
     "slate-react": ">=0.58.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "zustand": "^3.3.2"
   },
   "publishConfig": {
     "access": "public"
