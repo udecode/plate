@@ -3,7 +3,7 @@ slate-plugins
 </h1>
 
 <p align="center">
-<a href="https://img.shields.io/github/v/release/udecode/slate-plugins"><img src="https://img.shields.io/github/v/release/udecode/slate-plugins" /></a>
+<a href="https://github.com/udecode/slate-plugins/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/slate-plugins" /></a>
 <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 <a href="https://www.codefactor.io/repository/github/udecode/slate-plugins/badge"><img src="https://www.codefactor.io/repository/github/udecode/slate-plugins/badge" /></a>
 <a href="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg"><img src="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg" /></a>
