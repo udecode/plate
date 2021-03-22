@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-trailing-block",
-  "version": "0.75.2",
+  "version": "1.0.0-alpha.0",
   "description": "Slate plugins trailing-block",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/trailing-block#readme",
@@ -34,7 +34,7 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^0.75.2"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.0"
   },
   "publishConfig": {
     "access": "public"
