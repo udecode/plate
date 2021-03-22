@@ -13,18 +13,30 @@ slate-plugins
 </p>
 
 > **We are working hard on v1 docs. Storybook docs are still for
-> v0.75.2.**
+> v0.75.**
+
+Author's Note:
+
+>  [@zbeyens](https://github.com/zbeyens): Hi, I'm building a startup
+>  with an editor like many of you and my first initiative was to spend
+>  months to share this work, while hundreds of developers were coding
+>  and debugging the exact same features. Open-source is a long-term
+>  investment for a **bug-free product** and to **minimize technical
+>  debt**, so I can only encourage you to join this collaboration to
+>  enjoy these benefits. At the end, a fully-featured editor will be
+>  shared here. DRY.
 
 ## Introduction
 
 [Slate](https://github.com/ianstormtaylor/slate/) is a low-level
-framework for building rich text editors. However, your codebase can
-quickly get complex when implementing tens of features.
+framework for building rich text editors. However, it's not
+beginner-friendly and your codebase can quickly get complex when
+implementing tens of features.
 
 `@udecode/slate-plugins` is built on top of `slate` to handle plugins
-and editor state management to keep your codebase clean and easy to
-debug. This library comes with a lot of plugins as elements, marks,
-serializers, normalizers, queries, transforms, components and so on.
+and state management to optimize the development experience. This
+repository comes with a lot of plugins as elements, marks, serializers,
+normalizers, queries, transforms, components and so on.
 
 <!--[API documentation](https://slate-plugins-api.netlify.app/).-->
 
@@ -32,7 +44,7 @@ serializers, normalizers, queries, transforms, components and so on.
 <!--and-->
 <!--[create yours in a few minutes](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!-->
 
-- 🏎 Simple & Quick Start
+- 🏎 Simple Start
 
 >  You only need one component to get started: `<SlatePlugins>`
 
@@ -258,7 +270,6 @@ into their own package in the future.
 
 We welcome contributions to `@udecode/slate-plugins`! Please feel free
 to **share your own plugins** here.
-
 
 📥 Pull requests and 🌟 Stars are always welcome. Read our
 [contributing guide](CONTRIBUTING.md) to get started, or find us on
