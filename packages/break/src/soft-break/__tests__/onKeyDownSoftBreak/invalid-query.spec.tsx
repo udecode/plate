@@ -1,0 +1,34 @@
+/** @jsx jsx */
+
+import { jsx } from '@udecode/slate-plugins-test-utils';
+import * as isHotkey from 'is-hotkey';
+import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
+
+const input = (
+  <editor>
+    <hp>paragraph</hp>
+    <hcode>
+      code
+      <cursor />
+      block
+    </hcode>
+  </editor>
+) as any;
+
+const event = new KeyboardEvent('keydown');
+
+const output = (
+  <editor>
+    <hp>paragraph</hp>
+    <hcode>code{'\n'}block</hcode>
+  </editor>
+) as any;
+
+it('should be', () => {
+  jest.spyOn(isHotkey, 'default').mockReturnValue(true);
+  onKeyDownSoftBreak({
+    rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
+  })(input)(event);
+  expect(input.children).toEqual(output.children);
+});

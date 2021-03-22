@@ -1,4 +1,4 @@
-import { MentionNode, MentionNodeData } from '@udecode/slate-plugins';
+import { MentionNode, MentionNodeData } from '@udecode/slate-plugins-mention';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { StyledElementProps } from '../StyledElement/StyledElement.types';
 import { NodeStyleSet } from '../StyledNode/StyledNode.types';

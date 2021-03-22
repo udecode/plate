@@ -6,9 +6,9 @@ import { withHistory } from 'slate-history';
 import {
   ELEMENT_LI,
   ELEMENT_UL,
-} from '../../../../../slate-plugins/src/elements/list/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
-import { withNodeId } from '../../../../../slate-plugins/src/plugins/useNodeIdPlugin';
+} from '../../../../../elements/list/src/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { withNodeId } from '../../../../../node-id/src/useNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 const input = ((

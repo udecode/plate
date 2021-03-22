@@ -99,14 +99,14 @@ For additional help, join us in our
 | Mark Plugins                                                     |                                               |
 |:-----------------------------------------------------------------|:----------------------------------------------|
 | [BasicMarks](packages/slate-plugins/src/marks/basic-marks)       | Enables support for basic text formatting.    |
-| [Bold](packages/slate-plugins/src/marks/bold/)                   | Enables support for bold formatting.          |
-| [Code](packages/slate-plugins/src/marks/code)                    | Enables support for inline code formatting.   |
+| [Bold](packages/marks/basic-marks/src/bold)                   | Enables support for bold formatting.          |
+| [Code](packages/basic-marks/src/code)                    | Enables support for inline code formatting.   |
 | [Highlight](packages/slate-plugins/src/marks/highlight/)         | Enables support for highlights.               |
-| [Italic](packages/slate-plugins/src/marks/italic)                | Enables support for italic formatting.        |
-| [Strikethrough](packages/slate-plugins/src/marks/strikethrough/) | Enables support for strikethrough formatting. |
-| [Subscript](packages/slate-plugins/src/marks/subsupscript/subscript)         | Enables support for subscript formatting.     |
-| [Superscript](packages/slate-plugins/src/marks/subsupscript/superscript/)     | Enables support for superscript formatting.   |
-| [Underline](packages/slate-plugins/src/marks/underline)          | Enables support for underline formatting.     |
+| [Italic](packages/basic-marks/src/italic)                | Enables support for italic formatting.        |
+| [Strikethrough](packages/basic-marks/src/strikethrough) | Enables support for strikethrough formatting. |
+| [Subscript](packages/basic-marks/src/subscript)         | Enables support for subscript formatting.     |
+| [Superscript](packages/basic-marks/src/superscript)     | Enables support for superscript formatting.   |
+| [Underline](packages/basic-marks/src/underline)          | Enables support for underline formatting.     |
 
 | Deserializer Plugins                                                            |                                                                                 |
 |:--------------------------------------------------------------------------------|:--------------------------------------------------------------------------------|
@@ -125,7 +125,7 @@ For additional help, join us in our
 | Handler Plugins                                               |                                                     |
 |:--------------------------------------------------------------|:----------------------------------------------------|
 | [Autoformat](packages/slate-plugins/src/plugins/autoformat) | Enables support for autoformatting actions.         |
-| [SoftBreak](packages/slate-plugins/src/plugins/soft-break)  | Enables support for inserting soft breaks.          |
+| [SoftBreak](packages/break/src/soft-break)  | Enables support for inserting soft breaks.          |
 
 | Decorator Plugins                                         |                                 |
 |:----------------------------------------------------------|:--------------------------------|
@@ -143,7 +143,7 @@ For additional help, join us in our
 
 | Widget Plugins                                                          |                                                  |
 |:------------------------------------------------------------------------|:-------------------------------------------------|
-| [SearchHighlight](packages/slate-plugins/src/widgets/search-highlight/) | Enables support for highlighting searching text. |
+| [SearchHighlight](packages/slate-plugins/src/widgets/find-replace) | Enables support for highlighting searching text. |
 
 ## 🤔 Notice
 

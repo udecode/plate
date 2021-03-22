@@ -1,9 +1,11 @@
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
+  useDeserializeMdPlugin,
   useHistoryPlugin,
   useImagePlugin,
   useLinkPlugin,
@@ -11,8 +13,6 @@ import {
   useReactPlugin,
   useTablePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
-import { useDeserializeMdPlugin } from '@udecode/slate-plugins-md-serializer';
 import { initialValuePasteMd } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

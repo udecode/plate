@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
@@ -8,14 +9,11 @@ import {
   useImagePlugin,
   useListPlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
+  useResetNodePlugin,
   useSoftBreakPlugin,
   useTodoListPlugin,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-} from '@udecode/slate-plugins-components';
+import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueList } from '../config/initialValues';
 import {
   editableProps,
@@ -44,7 +42,7 @@ export const Example = () => {
     useListPlugin(),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
   ];
 
   return (

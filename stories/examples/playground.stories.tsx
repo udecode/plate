@@ -5,6 +5,7 @@ import {
   ELEMENT_H1,
   ELEMENT_IMAGE,
   ELEMENT_PARAGRAPH,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
@@ -14,7 +15,9 @@ import {
   useBoldPlugin,
   useCodeBlockPlugin,
   useCodePlugin,
+  useDeserializeHTMLPlugin,
   useExitBreakPlugin,
+  useFindReplacePlugin,
   useHeadingPlugin,
   useHighlightPlugin,
   useHistoryPlugin,
@@ -22,15 +25,13 @@ import {
   useItalicPlugin,
   useLinkPlugin,
   useListPlugin,
-  useMarksPlugin,
   useMediaEmbedPlugin,
   useMentionPlugin,
   useNodeIdPlugin,
   useNormalizeTypesPlugin,
   useParagraphPlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
-  useSearchHighlightPlugin,
+  useResetNodePlugin,
   useSelectOnBackspacePlugin,
   useSoftBreakPlugin,
   useStrikethroughPlugin,
@@ -38,18 +39,16 @@ import {
   useSuperscriptPlugin,
   useTablePlugin,
   useTodoListPlugin,
-  useTrailingNodePlugin,
+  useTrailingBlockPlugin,
   useUnderlinePlugin,
 } from '@udecode/slate-plugins';
 import {
-  getSlatePluginsComponents,
   HeadingToolbar,
   MentionSelect,
   ToolbarImage,
   ToolbarLink,
   ToolbarSearchHighlight,
 } from '@udecode/slate-plugins-components';
-import { useDeserializeHTMLPlugin } from '@udecode/slate-plugins-html-serializer';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {
@@ -82,7 +81,7 @@ export const Plugins = ({
   components = defaultComponents,
   options = defaultOptions,
 }: any) => {
-  const { setSearch, ...searchHighlightPlugin } = useSearchHighlightPlugin();
+  const { setSearch, ...searchHighlightPlugin } = useFindReplacePlugin();
   const { getMentionSelectProps, ...mentionPlugin } = useMentionPlugin(
     optionsMentionPlugin
   );
@@ -106,23 +105,22 @@ export const Plugins = ({
     useCodePlugin(),
     useItalicPlugin(),
     useHighlightPlugin(),
-    useSearchHighlightPlugin(),
+    useFindReplacePlugin(),
     useUnderlinePlugin(),
     useStrikethroughPlugin(),
     useSubscriptPlugin(),
     useSuperscriptPlugin(),
     mentionPlugin,
     searchHighlightPlugin,
-    useMarksPlugin(),
     useNodeIdPlugin(),
     useAutoformatPlugin(optionsAutoformat),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
     useNormalizeTypesPlugin({
       rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
     }),
-    useTrailingNodePlugin({ type: options[ELEMENT_PARAGRAPH].type, level: 1 }),
+    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type, level: 1 }),
     useSelectOnBackspacePlugin({ allow: options[ELEMENT_IMAGE].type }),
   ];
 

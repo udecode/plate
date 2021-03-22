@@ -1,4 +1,4 @@
-import { TablePluginOptions } from '@udecode/slate-plugins';
+import { TablePluginOptions } from '@udecode/slate-plugins-table';
 import { Editor } from 'slate';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 

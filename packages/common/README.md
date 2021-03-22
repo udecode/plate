@@ -1,4 +1,4 @@
-# slate-plugins-template
+# slate-plugins-common
 
 See [README](https://github.com/udecode/slate-plugins).
 

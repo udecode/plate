@@ -2,10 +2,10 @@ import * as React from 'react';
 import {
   CodeBlockInsertOptions,
   ELEMENT_CODE_BLOCK,
-  getPluginType,
-  getPreventDefaultHandler,
   insertEmptyCodeBlock,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-code-block';
+import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
+import { getPluginType } from '@udecode/slate-plugins-core';
 import { useSlate } from 'slate-react';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 import { ToolbarElement } from '../ToolbarElement/ToolbarElement';

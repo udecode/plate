@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ELEMENT_PARAGRAPH,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
@@ -10,15 +11,12 @@ import {
   useHistoryPlugin,
   useListPlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
+  useResetNodePlugin,
   useSoftBreakPlugin,
   useTablePlugin,
-  useTrailingNodePlugin,
+  useTrailingBlockPlugin,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-} from '@udecode/slate-plugins-components';
+import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueExitBreak } from '../config/initialValues';
 import {
   editableProps,
@@ -46,10 +44,10 @@ export const Example = () => {
     ...useBasicMarkPlugins(),
     useListPlugin(),
     useTablePlugin(),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
-    useTrailingNodePlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
   ];
 
   return (

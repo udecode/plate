@@ -6,6 +6,7 @@ export * from './createDocumentNode';
 export * from './createElementWithSlate';
 export * from './createNode';
 export * from './escapeRegexp';
+export * from './getComponent';
 export * from './getElementDeserializer';
 export * from './getHandler';
 export * from './getLeafDeserializer';

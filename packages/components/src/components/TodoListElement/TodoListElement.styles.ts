@@ -1,4 +1,4 @@
-import { CLASS_TODO_LIST_CHECKED } from '@udecode/slate-plugins';
+import { CLASS_TODO_LIST_CHECKED } from '@udecode/slate-plugins-list';
 import {
   TodoListElementStyleProps,
   TodoListElementStyles,

@@ -4,4 +4,3 @@
 
 export * from './types';
 export * from './components/index';
-export * from './utils/index';

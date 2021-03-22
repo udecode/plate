@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
@@ -14,10 +15,7 @@ import {
   useSuperscriptPlugin,
   useUnderlinePlugin,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-} from '@udecode/slate-plugins-components';
+import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueBasicMarks } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { ToolbarButtonsBasicMarks } from '../config/Toolbars';

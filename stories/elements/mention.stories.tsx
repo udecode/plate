@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   ELEMENT_MENTION,
+  getComponent,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   MentionNodeData,
   SlatePlugin,
@@ -11,8 +13,6 @@ import {
   useReactPlugin,
 } from '@udecode/slate-plugins';
 import {
-  getComponent,
-  getSlatePluginsComponents,
   MentionElement,
   MentionSelect,
 } from '@udecode/slate-plugins-components';

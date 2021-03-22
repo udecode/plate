@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTimeoutFn } from 'react-use';
-import { getSelectionText, isSelectionExpanded } from '@udecode/slate-plugins';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+} from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
 
 /**

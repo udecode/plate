@@ -3,7 +3,7 @@
 import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Range } from 'slate';
-import { ELEMENT_LINK } from '../../../../../slate-plugins/src/elements/link/defaults';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
 

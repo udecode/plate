@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useAutoformatPlugin,
@@ -9,11 +10,10 @@ import {
   useHistoryPlugin,
   useListPlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
+  useResetNodePlugin,
   useSoftBreakPlugin,
   withAutoformat,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValueAutoformat } from '../config/initialValues';
 import {
@@ -40,7 +40,7 @@ export const Example = () => {
     ...useBasicElementPlugins(),
     ...useBasicMarkPlugins(),
     useListPlugin(),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
     useAutoformatPlugin(optionsAutoformat),

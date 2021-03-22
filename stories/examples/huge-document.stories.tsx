@@ -1,12 +1,12 @@
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
   useHistoryPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { initialValueHugeDocument } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

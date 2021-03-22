@@ -1,6 +1,7 @@
 import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 import { isMarkActive } from '../queries/isMarkActive';
+import { removeMark } from './removeMark';
 
 /**
  * Add/remove marks in the selection.
@@ -15,13 +16,13 @@ export const toggleMark = (
   const isActive = isMarkActive(editor, key);
 
   if (isActive) {
-    editor.removeMark(key);
+    removeMark(editor, { key });
     return;
   }
 
   const clears: string[] = castArray(clear);
   clears.forEach((item) => {
-    editor.removeMark(item);
+    removeMark(editor, { key: item });
   });
 
   editor.addMark(key, true);

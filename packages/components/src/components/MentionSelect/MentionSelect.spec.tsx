@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins';
+import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
-import { mentionables } from '../../../../slate-plugins/src/elements/mention/__tests__/useMention/onKeyDown/mentionables.fixture';
+import { mentionables } from '../../../../elements/mention/src/__tests__/useMention/onKeyDown/mentionables.fixture';
 import { MentionSelect } from './MentionSelect';
 
 describe('when MentionSelect', () => {

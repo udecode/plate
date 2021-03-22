@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {
-  ELEMENT_TABLE,
-  getPluginType,
   getPreventDefaultHandler,
   someNode,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-common';
+import { getPluginType } from '@udecode/slate-plugins-core';
+import { ELEMENT_TABLE } from '@udecode/slate-plugins-table';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarTableProps } from './ToolbarTable.types';

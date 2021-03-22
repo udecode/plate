@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { ELEMENT_IMAGE } from '@udecode/slate-plugins';
 import * as SlateReact from 'slate-react';
+import {ELEMENT_IMAGE} from "../../../../elements/image/src/defaults";
 import { ImageElement } from './ImageElement';
 
 it('should render', () => {

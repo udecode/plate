@@ -3,7 +3,7 @@ import {
   getPreventDefaultHandler,
   isMarkActive,
   toggleMark,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarMarkProps } from './ToolbarMark.types';

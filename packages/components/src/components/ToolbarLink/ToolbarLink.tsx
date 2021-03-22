@@ -1,13 +1,15 @@
 import * as React from 'react';
 import {
-  ELEMENT_LINK,
   getAbove,
-  getPluginType,
   isCollapsed,
   someNode,
   unwrapNodes,
+} from '@udecode/slate-plugins-common';
+import { getPluginType } from '@udecode/slate-plugins-core';
+import {
+  ELEMENT_LINK,
   upsertLinkAtSelection,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-link';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';

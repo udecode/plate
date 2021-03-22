@@ -2,8 +2,8 @@
 
 import { isElement } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ELEMENT_LI } from '../../../../../slate-plugins/src/elements/list/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
+import { ELEMENT_LI } from '../../../../../elements/list/src/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { mergeDeepToNodes } from '../../../transforms/index';
 
 const node = (

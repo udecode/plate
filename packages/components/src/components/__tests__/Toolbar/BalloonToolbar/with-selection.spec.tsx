@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { SlatePlugins } from '@udecode/slate-plugins';
+import { SlatePlugins } from '../../../../../../core/src/components/SlatePlugins';
 import { BalloonToolbar } from '../../../Toolbar/BalloonToolbar/BalloonToolbar';
 
 const Editor = () => (

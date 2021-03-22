@@ -2,6 +2,7 @@ import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
   ELEMENT_IMAGE,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
@@ -10,11 +11,10 @@ import {
   useHistoryPlugin,
   useImagePlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
+  useResetNodePlugin,
   useSelectOnBackspacePlugin,
   useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { Node } from 'slate';
 import styled from 'styled-components';
 import {
@@ -78,7 +78,7 @@ export const Example = () => {
     useReactPlugin(),
     useHistoryPlugin(),
     ...useBasicElementPlugins(),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
   ];

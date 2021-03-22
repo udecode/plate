@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { getHandler, MentionNodeData } from '@udecode/slate-plugins';
+import { getHandler } from '@udecode/slate-plugins-common';
+import { MentionNodeData } from '@udecode/slate-plugins-mention';
 import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
 import { getRootClassNames } from '../../types';

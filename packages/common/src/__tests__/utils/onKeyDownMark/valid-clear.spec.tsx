@@ -2,8 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
-import { MARK_ITALIC } from '../../../../../slate-plugins/src/marks/italic/defaults';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
 import { getOnKeyDownMark } from '../../../utils/getOnKeyDownMark';
 
 const input = (

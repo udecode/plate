@@ -3,9 +3,9 @@ import { DndProvider } from 'react-dnd';
 import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
 import { SlatePlugins } from '@udecode/slate-plugins-core';
-import { getSlatePluginsComponents } from '../../../components/src/utils/getSlatePluginsComponents';
-import { ELEMENT_PARAGRAPH } from '../../../slate-plugins/src/elements/paragraph/defaults';
-import { useParagraphPlugin } from '../../../slate-plugins/src/elements/paragraph/useParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
+import { useParagraphPlugin } from '../../../elements/paragraph/src/useParagraphPlugin';
+import { getSlatePluginsComponents } from '../../../slate-plugins/src/utils/getSlatePluginsComponents';
 import { getSlatePluginsOptions } from '../../../slate-plugins/src/utils/getSlatePluginsOptions';
 import { getSelectableElement } from '../components/getSelectableElement';
 

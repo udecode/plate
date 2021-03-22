@@ -9,6 +9,7 @@ export * from './insertEmptyElement';
 export * from './mergeDeepToNodes';
 export * from './mergeNodes';
 export * from './moveChildren';
+export * from './removeMark';
 export * from './selectEndOfBlockAboveSelection';
 export * from './toggleMark';
 export * from './toggleNodeType';

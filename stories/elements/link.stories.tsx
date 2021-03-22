@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@styled-icons/material';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
@@ -8,11 +9,7 @@ import {
   useLinkPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-  ToolbarLink,
-} from '@udecode/slate-plugins-components';
+import { HeadingToolbar, ToolbarLink } from '@udecode/slate-plugins-components';
 import { initialValueLinks } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

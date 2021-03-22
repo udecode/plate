@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { createEditorPlugins } from '../../../../slate-plugins/src/__fixtures__/editor.fixtures';
+import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
 
 const attributes = {

@@ -3,7 +3,7 @@ import {
   getPreventDefaultHandler,
   someNode,
   toggleNodeType,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarElementProps } from './ToolbarElement.types';

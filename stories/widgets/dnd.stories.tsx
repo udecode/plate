@@ -20,13 +20,11 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  getSlatePluginsOptions,
-} from '@udecode/slate-plugins';
-import {
   getComponent,
   getSlatePluginsComponents,
-  StyledElement,
-} from '@udecode/slate-plugins-components';
+  getSlatePluginsOptions,
+} from '@udecode/slate-plugins';
+import { StyledElement } from '@udecode/slate-plugins-components';
 import { getSelectableElement } from '@udecode/slate-plugins-dnd';
 import { Plugins } from '../examples/playground.stories';
 

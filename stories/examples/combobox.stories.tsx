@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   OnChange,
   SlatePlugin,
@@ -8,7 +9,6 @@ import {
   useReactPlugin,
   useSlatePluginsEditor,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { initialValueCombobox } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 import { editableProps } from '../config/pluginOptions';

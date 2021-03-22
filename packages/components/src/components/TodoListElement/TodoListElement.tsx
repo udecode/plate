@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEditorStatic } from '@udecode/slate-plugins';
+import { useEditorStatic } from '@udecode/slate-plugins-core';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';

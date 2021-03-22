@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ELEMENT_IMAGE,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
@@ -9,7 +10,6 @@ import {
   useReactPlugin,
   useSelectOnBackspacePlugin,
 } from '@udecode/slate-plugins';
-import { getSlatePluginsComponents } from '@udecode/slate-plugins-components';
 import { initialValueEmbeds } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

@@ -19,40 +19,39 @@ import {
   ToolbarButtonsList,
   ToolbarButtonsTable,
 } from '../../../../../stories/config/Toolbars';
+import { useAutoformatPlugin } from '../../../../autoformat/src/useAutoformatPlugin';
+import { useExitBreakPlugin } from '../../../../break/src/exit-break/useExitBreakPlugin';
+import { useSoftBreakPlugin } from '../../../../break/src/soft-break/useSoftBreakPlugin';
 import { MentionSelect } from '../../../../components/src/components/MentionSelect/MentionSelect';
 import { HeadingToolbar } from '../../../../components/src/components/Toolbar/HeadingToolbar/HeadingToolbar';
 import { ToolbarImage } from '../../../../components/src/components/ToolbarImage/ToolbarImage';
 import { ToolbarLink } from '../../../../components/src/components/ToolbarLink/ToolbarLink';
 import { ToolbarSearchHighlight } from '../../../../components/src/components/ToolbarSearchHighlight/ToolbarSearchHighlight';
-import { getSlatePluginsComponents } from '../../../../components/src/utils/getSlatePluginsComponents';
-import { useDeserializeHTMLPlugin } from '../../../../html-serializer/src/deserializer/useDeserializeHTMLPlugin';
-import { useAlignPlugin } from '../../../../slate-plugins/src/elements/align/useAlignPlugin';
-import { useBasicElementPlugins } from '../../../../slate-plugins/src/elements/basic-elements/useBasicElementPlugins';
-import { useBlockquotePlugin } from '../../../../slate-plugins/src/elements/blockquote/useBlockquotePlugin';
-import { ELEMENT_H1 } from '../../../../slate-plugins/src/elements/heading/defaults';
-import { useHeadingPlugin } from '../../../../slate-plugins/src/elements/heading/useHeadingPlugin';
-import { ELEMENT_IMAGE } from '../../../../slate-plugins/src/elements/image/defaults';
-import { useImagePlugin } from '../../../../slate-plugins/src/elements/image/useImagePlugin';
-import { useLinkPlugin } from '../../../../slate-plugins/src/elements/link/useLinkPlugin';
-import { useListPlugin } from '../../../../slate-plugins/src/elements/list/useListPlugin';
-import { useMediaEmbedPlugin } from '../../../../slate-plugins/src/elements/media-embed/useMediaEmbedPlugin';
-import { useMentionPlugin } from '../../../../slate-plugins/src/elements/mention/useMentionPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../slate-plugins/src/elements/paragraph/defaults';
-import { useTablePlugin } from '../../../../slate-plugins/src/elements/table/useTablePlugin';
-import { useTodoListPlugin } from '../../../../slate-plugins/src/elements/todo-list/useTodoListPlugin';
-import { useBasicMarkPlugins } from '../../../../slate-plugins/src/marks/basic-marks/useBasicMarkPlugins';
-import { useHighlightPlugin } from '../../../../slate-plugins/src/marks/highlight/useHighlightPlugin';
-import { useMarksPlugin } from '../../../../slate-plugins/src/marks/useMarksPlugin';
-import { useAutoformatPlugin } from '../../../../slate-plugins/src/plugins/autoformat/useAutoformatPlugin';
-import { useExitBreakPlugin } from '../../../../slate-plugins/src/plugins/exit-break/useExitBreakPlugin';
-import { useResetBlockTypePlugin } from '../../../../slate-plugins/src/plugins/reset-block-type/useResetBlockTypePlugin';
-import { useSoftBreakPlugin } from '../../../../slate-plugins/src/plugins/soft-break/useSoftBreakPlugin';
-import { useNodeIdPlugin } from '../../../../slate-plugins/src/plugins/useNodeIdPlugin';
-import { useNormalizeTypesPlugin } from '../../../../slate-plugins/src/plugins/useNormalizeTypesPlugin';
-import { useSelectOnBackspacePlugin } from '../../../../slate-plugins/src/plugins/useSelectOnBackspacePlugin';
-import { useTrailingNodePlugin } from '../../../../slate-plugins/src/plugins/useTrailingNodePlugin';
+import { useAlignPlugin } from '../../../../elements/alignment/src/useAlignPlugin';
+import { useBasicElementPlugins } from '../../../../elements/basic-elements/src/useBasicElementPlugins';
+import { useBlockquotePlugin } from '../../../../elements/block-quote/src/useBlockquotePlugin';
+import { ELEMENT_H1 } from '../../../../elements/heading/src/defaults';
+import { useHeadingPlugin } from '../../../../elements/heading/src/useHeadingPlugin';
+import { ELEMENT_IMAGE } from '../../../../elements/image/src/defaults';
+import { useImagePlugin } from '../../../../elements/image/src/useImagePlugin';
+import { useLinkPlugin } from '../../../../elements/link/src/useLinkPlugin';
+import { useTodoListPlugin } from '../../../../elements/list/src/todo-list/useTodoListPlugin';
+import { useListPlugin } from '../../../../elements/list/src/useListPlugin';
+import { useMediaEmbedPlugin } from '../../../../elements/media-embed/src/useMediaEmbedPlugin';
+import { useMentionPlugin } from '../../../../elements/mention/src/useMentionPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
+import { useTablePlugin } from '../../../../elements/table/src/useTablePlugin';
+import { useFindReplacePlugin } from '../../../../find-replace/src/useFindReplacePlugin';
+import { useBasicMarkPlugins } from '../../../../marks/basic-marks/src/useBasicMarkPlugins';
+import { useHighlightPlugin } from '../../../../marks/highlight/src/useHighlightPlugin';
+import { useNodeIdPlugin } from '../../../../node-id/src/useNodeIdPlugin';
+import { useNormalizeTypesPlugin } from '../../../../normalizers/src/useNormalizeTypesPlugin';
+import { useResetNodePlugin } from '../../../../reset-node/src/useResetNodePlugin';
+import { useSelectOnBackspacePlugin } from '../../../../select/src/useSelectOnBackspacePlugin';
+import { useDeserializeHTMLPlugin } from '../../../../serializers/html-serializer/src/deserializer/useDeserializeHTMLPlugin';
+import { getSlatePluginsComponents } from '../../../../slate-plugins/src/utils/getSlatePluginsComponents';
 import { getSlatePluginsOptions } from '../../../../slate-plugins/src/utils/getSlatePluginsOptions';
-import { useSearchHighlightPlugin } from '../../../../slate-plugins/src/widgets/search-highlight/useSearchHighlightPlugin';
+import { useTrailingBlockPlugin } from '../../../../trailing-block/src/useTrailingBlockPlugin';
 import { SlatePlugins } from '../../components/SlatePlugins';
 import { useHistoryPlugin } from '../../plugins/useHistoryPlugin';
 import { useReactPlugin } from '../../plugins/useReactPlugin';
@@ -61,7 +60,7 @@ const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
 const SlatePluginsContainer = () => {
-  const { setSearch, ...searchHighlightPlugin } = useSearchHighlightPlugin();
+  const { setSearch, ...searchHighlightPlugin } = useFindReplacePlugin();
   const { getMentionSelectProps, ...mentionPlugin } = useMentionPlugin(
     optionsMentionPlugin
   );
@@ -85,19 +84,18 @@ const SlatePluginsContainer = () => {
     useMediaEmbedPlugin(),
     useAlignPlugin(),
     useHighlightPlugin(),
-    useSearchHighlightPlugin(),
+    useFindReplacePlugin(),
     mentionPlugin,
     searchHighlightPlugin,
-    useMarksPlugin(),
     useNodeIdPlugin(),
     useAutoformatPlugin(optionsAutoformat),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
     useNormalizeTypesPlugin({
       rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
     }),
-    useTrailingNodePlugin({ type: options[ELEMENT_PARAGRAPH].type, level: 1 }),
+    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type, level: 1 }),
     useSelectOnBackspacePlugin({ allow: options[ELEMENT_IMAGE].type }),
   ];
   plugins.push(useDeserializeHTMLPlugin({ plugins }));

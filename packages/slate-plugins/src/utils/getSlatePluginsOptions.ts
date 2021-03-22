@@ -1,19 +1,36 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
-} from '../elements/align/defaults';
+} from '@udecode/slate-plugins-alignment';
+import {
+  DEFAULTS_BOLD,
+  DEFAULTS_CODE,
+  DEFAULTS_ITALIC,
+  DEFAULTS_STRIKETHROUGH,
+  DEFAULTS_SUBSCRIPT,
+  DEFAULTS_SUPERSCRIPT,
+  DEFAULTS_UNDERLINE,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
+} from '@udecode/slate-plugins-basic-marks';
 import {
   DEFAULTS_BLOCKQUOTE,
   ELEMENT_BLOCKQUOTE,
-} from '../elements/blockquote/defaults';
+} from '@udecode/slate-plugins-block-quote';
 import {
   DEFAULTS_CODE_BLOCK,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-} from '../elements/code-block/defaults';
+} from '@udecode/slate-plugins-code-block';
+import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
 import {
   DEFAULTS_H1,
   DEFAULTS_H2,
@@ -24,16 +41,27 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '../elements/heading/defaults';
-import { ELEMENT_IMAGE } from '../elements/image/defaults';
-import { ELEMENT_LINK } from '../elements/link/defaults';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../elements/list/defaults';
-import { ELEMENT_MEDIA_EMBED } from '../elements/media-embed/defaults';
-import { ELEMENT_MENTION } from '../elements/mention/defaults';
+} from '@udecode/slate-plugins-heading';
+import {
+  DEFAULTS_HIGHLIGHT,
+  MARK_HIGHLIGHT,
+} from '@udecode/slate-plugins-highlight';
+import { ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
+import { MARK_KBD } from '@udecode/slate-plugins-kbd';
+import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
+import {
+  DEFAULTS_TODO_LIST,
+  ELEMENT_LI,
+  ELEMENT_OL,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
+} from '@udecode/slate-plugins-list';
+import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
+import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
 import {
   DEFAULTS_PARAGRAPH,
   ELEMENT_PARAGRAPH,
-} from '../elements/paragraph/defaults';
+} from '@udecode/slate-plugins-paragraph';
 import {
   DEFAULTS_TD,
   DEFAULTS_TH,
@@ -41,34 +69,7 @@ import {
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '../elements/table/defaults';
-import {
-  DEFAULTS_TODO_LIST,
-  ELEMENT_TODO_LI,
-} from '../elements/todo-list/defaults';
-import { DEFAULTS_BOLD, MARK_BOLD } from '../marks/bold/defaults';
-import { DEFAULTS_CODE, MARK_CODE } from '../marks/code/defaults';
-import {
-  DEFAULTS_HIGHLIGHT,
-  MARK_HIGHLIGHT,
-} from '../marks/highlight/defaults';
-import { DEFAULTS_ITALIC, MARK_ITALIC } from '../marks/italic/defaults';
-import { MARK_KBD } from '../marks/kbd/defaults';
-import {
-  DEFAULTS_STRIKETHROUGH,
-  MARK_STRIKETHROUGH,
-} from '../marks/strikethrough/defaults';
-import {
-  DEFAULTS_SUBSCRIPT,
-  DEFAULTS_SUPERSCRIPT,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-} from '../marks/subsupscript/defaults';
-import {
-  DEFAULTS_UNDERLINE,
-  MARK_UNDERLINE,
-} from '../marks/underline/defaults';
-import { MARK_SEARCH_HIGHLIGHT } from '../widgets/search-highlight/defaults';
+} from '@udecode/slate-plugins-table';
 
 export type SlatePluginKey =
   | typeof ELEMENT_ALIGN_CENTER

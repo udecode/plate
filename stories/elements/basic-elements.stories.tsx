@@ -1,6 +1,7 @@
 import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBlockquotePlugin,
@@ -10,13 +11,10 @@ import {
   useHistoryPlugin,
   useParagraphPlugin,
   useReactPlugin,
-  useResetBlockTypePlugin,
+  useResetNodePlugin,
   useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
-import {
-  getSlatePluginsComponents,
-  HeadingToolbar,
-} from '@udecode/slate-plugins-components';
+import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueBasicElements } from '../config/initialValues';
 import {
   editableProps,
@@ -43,7 +41,7 @@ export const Example = () => {
     useBlockquotePlugin(),
     useCodeBlockPlugin(),
     useHeadingPlugin(),
-    useResetBlockTypePlugin(optionsResetBlockTypePlugin),
+    useResetNodePlugin(optionsResetBlockTypePlugin),
     useSoftBreakPlugin(optionsSoftBreakPlugin),
     useExitBreakPlugin(optionsExitBreakPlugin),
   ];

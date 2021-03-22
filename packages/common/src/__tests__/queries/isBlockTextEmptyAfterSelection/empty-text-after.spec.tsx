@@ -3,7 +3,7 @@
 import { withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { ELEMENT_LINK } from '../../../../../slate-plugins/src/elements/link/defaults';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
 
 const input = ((

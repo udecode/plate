@@ -1,10 +1,9 @@
 import * as React from 'react';
+import { KEYS_ALIGN, upsertAlign } from '@udecode/slate-plugins-alignment';
 import {
   getPreventDefaultHandler,
-  KEYS_ALIGN,
   someNode,
-  upsertAlign,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-common';
 import { useSlate } from 'slate-react';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';

@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { getNodeDeserializer } from '../../../utils/getNodeDeserializer';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { ELEMENT_CODE_BLOCK } from '../../../../../slate-plugins/src/elements/code-block/defaults';
+import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
 import { toggleWrapNodes } from '../../../transforms/index';
 
 const input = (

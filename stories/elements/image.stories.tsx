@@ -2,6 +2,7 @@ import React from 'react';
 import { Image } from '@styled-icons/material';
 import {
   ELEMENT_IMAGE,
+  getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
   useBasicElementPlugins,
@@ -11,7 +12,6 @@ import {
   useSelectOnBackspacePlugin,
 } from '@udecode/slate-plugins';
 import {
-  getSlatePluginsComponents,
   HeadingToolbar,
   ToolbarImage,
 } from '@udecode/slate-plugins-components';

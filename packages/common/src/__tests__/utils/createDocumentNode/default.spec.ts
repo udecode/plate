@@ -1,5 +1,5 @@
 import { Node } from 'slate';
-import { ELEMENT_PARAGRAPH } from '../../../../../slate-plugins/src/elements/paragraph/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { createDocumentNode } from '../../../utils/index';
 
 const output: Node[] = [

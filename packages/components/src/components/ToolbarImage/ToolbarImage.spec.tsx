@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import { ELEMENT_H1, SlatePlugins } from '@udecode/slate-plugins';
+import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
 import { Editor } from 'slate';
+import { SlatePlugins } from '../../../../core/src/components/SlatePlugins';
 import { ToolbarImage } from './ToolbarImage';
 
 describe('ToolbarImage', () => {

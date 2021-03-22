@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
+import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
 import {
-  getPreventDefaultHandler,
   MentionNodeData,
   MentionSelectProps,
   MentionSelectStyleSet,
-} from '@udecode/slate-plugins';
+} from '@udecode/slate-plugins-mention';
 import { styled } from '@uifabric/utilities';
 import { ReactEditor, useSlate } from 'slate-react';
 import { getRootClassNames } from '../../types';

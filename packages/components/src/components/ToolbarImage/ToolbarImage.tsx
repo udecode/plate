@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { insertImage, useEditorStatic } from '@udecode/slate-plugins';
+import { useEditorStatic } from '@udecode/slate-plugins-core';
+import { insertImage } from '@udecode/slate-plugins-image';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 

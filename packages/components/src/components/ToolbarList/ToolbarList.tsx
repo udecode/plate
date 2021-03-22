@@ -1,9 +1,6 @@
 import * as React from 'react';
-import {
-  ELEMENT_UL,
-  getPreventDefaultHandler,
-  toggleList,
-} from '@udecode/slate-plugins';
+import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
+import { ELEMENT_UL, toggleList } from '@udecode/slate-plugins-list';
 import { useSlate } from 'slate-react';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 import { ToolbarElement } from '../ToolbarElement/ToolbarElement';

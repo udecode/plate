@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { getSelectionText, isSelectionExpanded } from '@udecode/slate-plugins';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+} from '@udecode/slate-plugins-common';
 import { Editor } from 'slate';
 import { setPositionAtSelection } from './setPositionAtSelection';
 

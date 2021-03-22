@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { MARK_BOLD } from '../../../../../slate-plugins/src/marks/bold/defaults';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
 import { getOnKeyDownMark } from '../../../utils/getOnKeyDownMark';
 
 const input = (
