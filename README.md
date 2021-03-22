@@ -162,10 +162,8 @@ yarn add @udecode/slate-plugins-ui-fluent
 
 ## Usage
 
-> **v1 docs WIP**
-
 Most plugins are used in
-[this storybook playground](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins).
+[this storybook playground](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins) (**v1 docs WIP**).
 
 For guidance on using `@udecode/slate-plugins` visit:
 [slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
