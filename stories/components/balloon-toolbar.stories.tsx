@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  BalloonToolbar,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
@@ -7,7 +8,6 @@ import {
   useHistoryPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { BalloonToolbar } from '@udecode/slate-plugins-components';
 import { initialValueBalloonToolbar } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { BallonToolbarMarks } from '../config/Toolbars';

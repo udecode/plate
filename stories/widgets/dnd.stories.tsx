@@ -21,11 +21,11 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_UL,
   getComponent,
+  getSelectableElement,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  StyledElement,
 } from '@udecode/slate-plugins';
-import { StyledElement } from '@udecode/slate-plugins-components';
-import { getSelectableElement } from '@udecode/slate-plugins-dnd';
 import { Plugins } from '../examples/playground.stories';
 
 const id = 'Widgets/Drag & Drop';

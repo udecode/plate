@@ -5,12 +5,12 @@ import {
   getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
+  ToolbarSearchHighlight,
   useBasicElementPlugins,
   useFindReplacePlugin,
   useHistoryPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { ToolbarSearchHighlight } from '@udecode/slate-plugins-components';
 import { initialValueSearchHighlighting } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
@@ -9,7 +10,6 @@ import {
   useHistoryPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueHighlight } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { ToolbarButtonsBasicMarks } from '../config/Toolbars';

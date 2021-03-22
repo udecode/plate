@@ -1,4 +1,4 @@
-import { StyledElementProps } from '@udecode/slate-plugins-components';
+import { StyledElementProps } from '@udecode/slate-plugins';
 import { IStyle } from '@uifabric/styling';
 import { TagNode } from '../types';
 

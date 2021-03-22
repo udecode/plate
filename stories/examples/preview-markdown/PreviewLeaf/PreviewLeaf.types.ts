@@ -1,4 +1,4 @@
-import { NodeStyleSet } from '@udecode/slate-plugins-components';
+import { NodeStyleSet } from '@udecode/slate-plugins';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { RenderLeafProps } from 'slate-react';

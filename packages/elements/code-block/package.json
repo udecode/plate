@@ -34,6 +34,7 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
+    "@udecode/slate-plugins-common": "^0.75.2",
     "prismjs": "^1.23.0"
   },
   "publishConfig": {

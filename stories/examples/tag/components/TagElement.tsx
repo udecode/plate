@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { useEditorStatic } from '@udecode/slate-plugins';
-import { getRootClassNames } from '@udecode/slate-plugins-components';
+import { getRootClassNames, useEditorStatic } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { useFocused, useSelected } from 'slate-react';

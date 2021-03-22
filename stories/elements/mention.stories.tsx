@@ -4,7 +4,9 @@ import {
   getComponent,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  MentionElement,
   MentionNodeData,
+  MentionSelect,
   SlatePlugin,
   SlatePlugins,
   useBasicElementPlugins,
@@ -12,10 +14,6 @@ import {
   useMentionPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import {
-  MentionElement,
-  MentionSelect,
-} from '@udecode/slate-plugins-components';
 import { initialValueMentions } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 import { editableProps, optionsMentionPlugin } from '../config/pluginOptions';

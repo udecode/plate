@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { getRootClassNames } from '@udecode/slate-plugins-components';
+import { getRootClassNames } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
 import {

@@ -34,6 +34,7 @@ import { TippyProps } from '@tippyjs/react';
 import {
   addColumn,
   addRow,
+  BalloonToolbar,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -59,17 +60,14 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  useEditorPluginType,
-} from '@udecode/slate-plugins';
-import {
-  BalloonToolbar,
   ToolbarAlign,
   ToolbarCodeBlock,
   ToolbarElement,
   ToolbarList,
   ToolbarMark,
   ToolbarTable,
-} from '@udecode/slate-plugins-components';
+  useEditorPluginType,
+} from '@udecode/slate-plugins';
 
 export const ToolbarButtonsBasicElements = () => (
   <>

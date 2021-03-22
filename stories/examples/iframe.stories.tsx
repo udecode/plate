@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   useBasicElementPlugins,
   useBasicMarkPlugins,
   useHistoryPlugin,
@@ -9,7 +10,6 @@ import {
   useSlatePlugins,
   useSlatePluginsEditor,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { Editable, ReactEditor, Slate } from 'slate-react';
 import { initialValueIframe } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';

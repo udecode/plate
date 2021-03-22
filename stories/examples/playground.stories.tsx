@@ -7,8 +7,13 @@ import {
   ELEMENT_PARAGRAPH,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
+  MentionSelect,
   SlatePlugin,
   SlatePlugins,
+  ToolbarImage,
+  ToolbarLink,
+  ToolbarSearchHighlight,
   useAlignPlugin,
   useAutoformatPlugin,
   useBlockquotePlugin,
@@ -42,13 +47,6 @@ import {
   useTrailingBlockPlugin,
   useUnderlinePlugin,
 } from '@udecode/slate-plugins';
-import {
-  HeadingToolbar,
-  MentionSelect,
-  ToolbarImage,
-  ToolbarLink,
-  ToolbarSearchHighlight,
-} from '@udecode/slate-plugins-components';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {

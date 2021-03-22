@@ -15,24 +15,16 @@ import {
   MARK_UNDERLINE,
 } from '@udecode/slate-plugins-basic-marks';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-block-quote';
+import { BlockquoteElement } from '@udecode/slate-plugins-block-quote-ui';
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
 } from '@udecode/slate-plugins-code-block';
-import { getComponent } from '@udecode/slate-plugins-common';
 import {
-  BlockquoteElement,
   CodeBlockElement,
   CodeLineElement,
-  ImageElement,
-  LinkElement,
-  MediaEmbedElement,
-  MentionElement,
-  StyledElement,
-  StyledLeaf,
-  TableElement,
-  TodoListElement,
-} from '@udecode/slate-plugins-components';
+} from '@udecode/slate-plugins-code-block-ui';
+import { getComponent } from '@udecode/slate-plugins-common';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
 import {
   ELEMENT_H1,
@@ -44,16 +36,21 @@ import {
 } from '@udecode/slate-plugins-heading';
 import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
 import { ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
+import { ImageElement } from '@udecode/slate-plugins-image-ui';
 import { MARK_KBD } from '@udecode/slate-plugins-kbd';
 import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
+import { LinkElement } from '@udecode/slate-plugins-link-ui';
 import {
   ELEMENT_LI,
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
 } from '@udecode/slate-plugins-list';
+import { TodoListElement } from '@udecode/slate-plugins-list-ui';
 import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
+import { MediaEmbedElement } from '@udecode/slate-plugins-media-embed-ui';
 import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
+import { MentionElement } from '@udecode/slate-plugins-mention-ui';
 import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import {
   ELEMENT_TABLE,
@@ -61,6 +58,8 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/slate-plugins-table';
+import { TableElement } from '@udecode/slate-plugins-table-ui';
+import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
 import { SlatePluginKey } from './getSlatePluginsOptions';
 
 const baseMargin = 4.8;

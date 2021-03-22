@@ -3,8 +3,7 @@
   "compilerOptions": {
     "noEmit": false,
     "paths": {
-      "@udecode/slate-plugins": ["./packages/slate-plugins/src"],
-      "@udecode/slate-plugins-components": ["./packages/components/src"]
+      "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
     }
   },
   "exclude": ["**/node_modules"]

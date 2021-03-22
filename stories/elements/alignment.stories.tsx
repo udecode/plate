@@ -2,6 +2,7 @@ import React from 'react';
 import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   SlatePlugins,
   useAlignPlugin,
   useBasicElementPlugins,
@@ -11,7 +12,6 @@ import {
   useResetNodePlugin,
   useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueBasicElements } from '../config/initialValues';
 import {
   editableProps,

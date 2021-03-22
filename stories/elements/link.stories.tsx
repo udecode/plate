@@ -3,13 +3,14 @@ import { Link } from '@styled-icons/material';
 import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   SlatePlugins,
+  ToolbarLink,
   useBasicElementPlugins,
   useHistoryPlugin,
   useLinkPlugin,
   useReactPlugin,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar, ToolbarLink } from '@udecode/slate-plugins-components';
 import { initialValueLinks } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 

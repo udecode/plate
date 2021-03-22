@@ -3,6 +3,7 @@ import {
   ELEMENT_PARAGRAPH,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   SlatePlugin,
   SlatePlugins,
   useBasicElementPlugins,
@@ -15,7 +16,6 @@ import {
   useSoftBreakPlugin,
   useTrailingBlockPlugin,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueSoftBreak } from '../config/initialValues';
 import {
   editableProps,

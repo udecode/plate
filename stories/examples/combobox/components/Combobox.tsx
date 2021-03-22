@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import { getPreventDefaultHandler } from '@udecode/slate-plugins';
-import { PortalBody } from '@udecode/slate-plugins-components';
+import { getPreventDefaultHandler, PortalBody } from '@udecode/slate-plugins';
 import { useSlate } from 'slate-react';
 import {
   ComboboxItem,

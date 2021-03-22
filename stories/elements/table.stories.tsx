@@ -2,6 +2,7 @@ import React from 'react';
 import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  HeadingToolbar,
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
@@ -11,7 +12,6 @@ import {
   useSoftBreakPlugin,
   useTablePlugin,
 } from '@udecode/slate-plugins';
-import { HeadingToolbar } from '@udecode/slate-plugins-components';
 import { initialValueTables } from '../config/initialValues';
 import {
   editableProps,

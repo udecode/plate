@@ -1,4 +1,4 @@
-import { TElement } from '../../../packages/core/src/types/TElement';
+import { TElement } from '@udecode/slate-plugins-core';
 
 // Data of Element node
 export interface TagNodeData {
