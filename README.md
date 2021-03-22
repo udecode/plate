@@ -34,7 +34,7 @@ beginner-friendly and your codebase can quickly get complex when
 implementing tens of features.
 
 `@udecode/slate-plugins` is built on top of `slate` to handle plugins
-and state management to optimize the development experience. This
+and state management for an optimal development experience. This
 repository comes with a lot of plugins as elements, marks, serializers,
 normalizers, queries, transforms, components and so on.
 
@@ -53,16 +53,16 @@ normalizers, queries, transforms, components and so on.
 > [zustand](https://github.com/pmndrs/zustand) store is internally used
 > to support multiple editor states.
 
-- 🔌 40+ Packages
-
-> We enforce separation of concerns by packaging each feature for
-> optimization and versioning.
-
 - 💅 Design System
 
 > The API is design system friendly. We provide a default design system
 > for quick start but you can plug-in your own one using a single
 > function.
+
+- 🔌 40+ Packages
+
+> We enforce separation of concerns by packaging each feature for
+> optimization and versioning.
 
 - 📦 Tree-shaking / ES modules
 - ✅ TypeScript types
@@ -172,21 +172,22 @@ For additional help, join us in
 
 <img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
 
-| Element Plugins                                                 | Version | Description                                                           |
-|:----------------------------------------------------------------|:--------|:----------------------------------------------------------------------|
-| [`@udecode/slate-plugins-alignment`](packages/elements/alignment) |         | Enables support for text alignment.                                   |
-| [BasicElements](packages/elements/basic-elements)               |         | Enables support for basic elements.                                   |
-| [Blockquote](packages/elements/block-quote/)                    |         | Enables support for block quotes.                                     |
-| [CodeBlock](packages/elements/code-block)                       |         | Enables support for pre-formatted code blocks.                        |
-| [Heading](packages/elements/heading/)                           |         | Enables support for headings (from 1 to 6).                           |
-| [Image](packages/elements/image/)                               |         | Enables support for images.                                           |
-| [ImageUpload](packages/elements/image/)                         |         | Allows for pasting images from clipboard.                             |
-| [Link](packages/elements/link/)                                 |         | Enables support for hyperlinks.                                       |
-| [List](packages/elements/list)                                  |         | Enables support for bulleted, numbered and to-do lists.               |
-| [MediaEmbed](packages/elements/media-embed)                     |         | Enables support for embeddable media such as YouTube or Vimeo videos. |
-| [Mention](packages/elements/mention/)                           |         | Enables support for autocompleting @mentions and #tags.               |
-| [Paragraph](packages/elements/paragraph/)                       |         | Enables support for paragraphs.                                       |
-| [Table](packages/elements/table/)                               |         | Enables support for tables.                                           |
+| Element Plugins                                                           | Version                                                                                                                                                                    | Description                                                           |
+|:--------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------|
+| [`@udecode/slate-plugins-alignment`](packages/elements/alignment)         | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins.svg" alt="@udecode/slate-plugins npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins) | Enables support for text alignment.                                                                      |
+| [`@udecode/slate-plugins-alignment-ui`](packages/elements/alignment-ui)   |                                                                                                                                                                            | Default UI for alignment.                                             |
+| [`@udecode/slate-plugins-BasicElements](packages/elements/basic-elements) |                                                                                                                                                                            | Enables support for basic elements.                                   |
+| [`@udecode/slate-plugins-Blockquote](packages/elements/block-quote/)      |                                                                                                                                                                            | Enables support for block quotes.                                     |
+| [`@udecode/slate-plugins-CodeBlock](packages/elements/code-block)         |                                                                                                                                                                            | Enables support for pre-formatted code blocks.                        |
+| [`@udecode/slate-plugins-Heading](packages/elements/heading/)             |                                                                                                                                                                            | Enables support for headings (from 1 to 6).                           |
+| [`@udecode/slate-plugins-Image](packages/elements/image/)                 |                                                                                                                                                                            | Enables support for images.                                           |
+| [`@udecode/slate-plugins-ImageUpload](packages/elements/image/)           |                                                                                                                                                                            | Allows for pasting images from clipboard.                             |
+| [`@udecode/slate-plugins-Link](packages/elements/link/)                   |                                                                                                                                                                            | Enables support for hyperlinks.                                       |
+| [`@udecode/slate-plugins-List](packages/elements/list)                    |                                                                                                                                                                            | Enables support for bulleted, numbered and to-do lists.               |
+| [`@udecode/slate-plugins-MediaEmbed](packages/elements/media-embed)       |                                                                                                                                                                            | Enables support for embeddable media such as YouTube or Vimeo videos. |
+| [`@udecode/slate-plugins-Mention](packages/elements/mention/)             |                                                                                                                                                                            | Enables support for autocompleting @mentions and #tags.               |
+| [`@udecode/slate-plugins-Paragraph](packages/elements/paragraph/)         |                                                                                                                                                                            | Enables support for paragraphs.                                       |
+| [`@udecode/slate-plugins-Table](packages/elements/table/)                 |                                                                                                                                                                            | Enables support for tables.                                           |
 
 <img src="https://imgur.com/NQJgC5b.png" alt="marks" width="650"/>
 
