@@ -5,7 +5,8 @@
     "packages/**"
   ],
   "scripts": {
-    "build": "lerna exec --since next -- yarn build",
+    "build": "lerna exec -- yarn build",
+    "build:since": "lerna exec --since next -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "build-storybook": "yarn build && build-storybook",
     "clean": "rimraf dist",
