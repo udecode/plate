@@ -13,8 +13,7 @@ slate-plugins
 </p>
 
 > **We are working hard on v1 docs 🚧.  
-> Storybook docs are still for
-> v0.75.**
+> Storybook docs are still for v0.75.**
 
 Author's Note:
 
@@ -69,7 +68,10 @@ normalizers, queries, transforms, components and so on.
 > We enforce separation of concerns by packaging each feature for build
 > optimization and versioning.
 
-- 🛠 Customizable and extensible
+- 🛠 Extensible
+
+> All plugins accept extensible options and if you need to fork a plugin, all its functions are exported.
+
 - 📦 Tree-shaking / ES modules
 - ✅ TypeScript types
 - ✅ Unit tested with `slate@0.60.11`
@@ -244,8 +246,8 @@ For additional help, join us in
 
 ## [Contributing](CONTRIBUTING.md)
 
-🌟 Stars and 📥 Pull requests to `@udecode/slate-plugins` are welcome! Don't hesitate
-to **share your plugins** here. Read our
+🌟 Stars and 📥 Pull requests to `@udecode/slate-plugins` are welcome!
+Don't hesitate to **share your plugins** here. Read our
 [contributing guide](CONTRIBUTING.md) to get started, or find us on
 [Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
 take the time to guide you.
