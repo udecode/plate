@@ -4,6 +4,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import * as SlateReact from 'slate-react';
+import { TEditor } from '../../../../core/src/types/TEditor';
 import { mentionables } from '../../../../elements/mention/src/__tests__/useMention/onKeyDown/mentionables.fixture';
 import { MentionSelect } from './MentionSelect';
 
@@ -28,7 +29,7 @@ describe('when MentionSelect', () => {
 
   describe('when at is the selection', () => {
     it('should render', () => {
-      const editor = createEditor();
+      const editor = createEditor() as TEditor;
       editor.children = [
         {
           type: ELEMENT_PARAGRAPH,

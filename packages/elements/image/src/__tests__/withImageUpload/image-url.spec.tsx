@@ -2,10 +2,8 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import {
-  ELEMENT_IMAGE,
-  withImageUpload,
-} from '../../../../../slate-plugins/src/elements/index';
+import { ELEMENT_IMAGE } from '../../defaults';
+import { withImageUpload } from '../../withImageUpload';
 
 const input = (
   <editor>

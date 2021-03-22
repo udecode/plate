@@ -1,5 +1,5 @@
+import { useDecorateSearchHighlight } from '@udecode/slate-plugins-find-replace';
 import { Range } from 'slate';
-import { useDecorateSearchHighlight } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 
 const input = { search: 'test' };
@@ -15,7 +15,7 @@ const output: Range[] = [
       path: [0, 0],
     },
     search_highlight: true,
-  },
+  } as any,
 ];
 
 it('should be', () => {
@@ -23,6 +23,6 @@ it('should be', () => {
     useDecorateSearchHighlight(input)(createEditorPlugins())([
       { text: 'test' },
       [0, 0],
-    ])
+    ] as any)
   ).toEqual(output);
 });

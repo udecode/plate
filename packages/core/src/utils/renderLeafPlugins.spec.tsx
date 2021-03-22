@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
-import { renderLeafPlugins } from '../../utils/renderLeafPlugins';
+import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
+import { renderLeafPlugins } from './renderLeafPlugins';
 
 const attributes = {
   'data-testid': 'Leaf',

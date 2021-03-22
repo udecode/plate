@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import { withImageUpload } from '../../../../../slate-plugins/src/elements/index';
+import { withImageUpload } from '../../withImageUpload';
 
 const input = (
   <editor>

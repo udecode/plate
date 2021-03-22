@@ -4,13 +4,11 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
+import { ELEMENT_LI } from '@udecode/slate-plugins-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import {
-  ELEMENT_LI,
-  ELEMENT_PARAGRAPH,
-  unwrapList,
-} from '../../../../elements/index';
+import { unwrapList } from '../../../elements/list/src/transforms/unwrapList';
 import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
 import { onKeyDownResetNode } from '../onKeyDownResetNode';
 

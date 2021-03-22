@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
+import { pipe } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import { withImageUpload } from '../../../../../slate-plugins/src/elements/index';
-import { pipe } from '../../../../../slate-plugins/src/pipe/pipe';
+import { withImageUpload } from '../../withImageUpload';
 
 const input = (
   <editor>

@@ -44,5 +44,6 @@ describe('withTable', () => {
     editor.deleteBackward('character');
     expect(editor.children).toEqual(output2);
   });
-  it.todo('should prevent cell deletions on insertText');
+  // eslint-disable-next-line jest/no-commented-out-tests
+  // it.todo('should prevent cell deletions on insertText');
 });

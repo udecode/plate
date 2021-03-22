@@ -7,7 +7,7 @@ import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { useParagraphPlugin } from '../../../elements/paragraph/src/useParagraphPlugin';
 import { getSlatePluginsComponents } from '../../../slate-plugins/src/utils/getSlatePluginsComponents';
 import { getSlatePluginsOptions } from '../../../slate-plugins/src/utils/getSlatePluginsOptions';
-import { getSelectableElement } from '../components/getSelectableElement';
+import { getSelectableElement } from './getSelectableElement';
 
 const options = getSlatePluginsOptions();
 const components = getSlatePluginsComponents();

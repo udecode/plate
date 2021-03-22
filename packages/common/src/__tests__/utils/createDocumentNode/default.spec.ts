@@ -1,8 +1,8 @@
-import { Node } from 'slate';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { TDescendant } from '@udecode/slate-plugins-core';
+import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import { createDocumentNode } from '../../../utils/index';
 
-const output: Node[] = [
+const output: TDescendant[] = [
   {
     children: [
       {
