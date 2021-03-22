@@ -12,7 +12,8 @@ slate-plugins
 <a href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" /></a>
 </p>
 
-> **We are working hard on v1 docs. Storybook docs are still for
+> **We are working hard on v1 docs 🚧.  
+> Storybook docs are still for
 > v0.75.**
 
 Author's Note:
@@ -65,9 +66,10 @@ normalizers, queries, transforms, components and so on.
 
 - 🔌 40+ Packages
 
-> We enforce separation of concerns by packaging each feature for
+> We enforce separation of concerns by packaging each feature for build
 > optimization and versioning.
 
+- 🛠 Customizable and extensible
 - 📦 Tree-shaking / ES modules
 - ✅ TypeScript types
 - ✅ Unit tested with `slate@0.60.11`
@@ -94,14 +96,7 @@ normalizers, queries, transforms, components and so on.
   * [Plugins](#plugins)
 - [Contributing](CONTRIBUTING.md)
   * [Development scripts](#development-scripts)
-    + [`yarn`](#-yarn-)
-    + [`yarn build`](#-yarn-build-)
-    + [`yarn storybook`](#-yarn-storybook-)
-    + [`yarn storybook:w`](#-yarn-storybook-w-)
-    + [`yarn lint`](#-yarn-lint-)
-    + [`yarn test`](#-yarn-test-)
-    + [`yarn release`](#-yarn-release-)
-  *  [Contributors ✨](#contributors--)
+  * [Contributors](#contributors)
 - [License](#license)
 
 ## Installation
@@ -288,7 +283,7 @@ Useful scripts include:
 > Lint, test, build and push a release to git and npm will ask for
 > version in interactive mode - using lerna.
 
-### Contributors ✨
+### Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
