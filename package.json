@@ -5,7 +5,7 @@
     "packages/**"
   ],
   "scripts": {
-    "build": "lerna exec -- yarn build",
+    "build": "lerna exec --since next -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "build-storybook": "yarn build && build-storybook",
     "clean": "rimraf dist",
@@ -15,10 +15,11 @@
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"{packages/*/src,stories}/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",
-    "pre-release": "yarn release --conventional-prerelease",
     "prebuild": "yarn clean",
     "release": "lerna publish from-package",
+    "release:graduate": "yarn release --conventional-graduate",
     "release:open": "open https://github.com/udecode/slate-plugins/releases",
+    "release:pre": "yarn release --conventional-prerelease",
     "storybook": "start-storybook -p 6006",
     "storybook:w": "concurrently \"yarn build:w\" \"yarn storybook --quiet\"",
     "test": "jest",
