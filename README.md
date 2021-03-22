@@ -17,25 +17,29 @@ slate-plugins
 
 Author's Note:
 
->  [@zbeyens](https://github.com/zbeyens): Hi, I'm building a startup
->  with an editor like many of you and my first initiative was to spend
+>  [@zbeyens](https://github.com/zbeyens): Hi, I'm building an app with
+>  an editor like many of you and my first initiative was to spend
 >  months to share this work, while hundreds of developers were coding
 >  and debugging the exact same features. Open-source is a long-term
->  investment for a **bug-free product** and to **minimize technical
->  debt**, so I can only encourage you to join this collaboration to
->  enjoy these benefits. At the end, a fully-featured editor will be
->  shared here. DRY.
+>  investment for a **bug-free product and reducing technical debt**, so
+>  I can only encourage you to join this collaboration. At the end, a
+>  fully-featured editor will be shared here. DRY.
 
 ## Introduction
 
-[Slate](https://github.com/ianstormtaylor/slate/) is a low-level
-framework for building rich text editors. However, it's not
-beginner-friendly and your codebase can quickly get complex when
-implementing tens of features.
+[Slate](https://github.com/ianstormtaylor/slate) is a low-level editor
+framework that helps you deal with difficult parts when building an
+editor, such as events handlers, elements, formatting, commands,
+rendering, serializing, normalizing, etc.
 
-`@udecode/slate-plugins` is built on top of `slate` to handle plugins
-and state management for an optimal development experience. This
-repository comes with a lot of plugins as elements, marks, serializers,
+While you are trying to build your own editors, it still needs a lot of
+skills to make something similar to [Quill](https://quilljs.com/) or
+[ProseMirror](https://prosemirror.net/). This repository allows you to
+build your editor right away with **minimal** slate knowledge.
+
+`@udecode/slate-plugins` is built on top of slate to handle plugins and
+state management for an optimal development experience. This repository
+comes with a lot of plugins as elements, marks, serializers,
 normalizers, queries, transforms, components and so on.
 
 <!--[API documentation](https://slate-plugins-api.netlify.app/).-->
@@ -79,16 +83,26 @@ normalizers, queries, transforms, components and so on.
 
 ## Table of contents
 
-- 🚀 [Getting Started](#-getting-started)
-- 🔌 [Plugins](#-plugins)
-- 🤔 [Notice](#-notice)
-  - [Why](#why)
-  - [Bundle size](#bundle-size)
-- 👥 [Community](#-community)
-- 👏 [Contributing](#-contributing)
-  - 👨‍💻 [Development scripts](#-development-scripts)
-- ✨ [Contributors](#contributors-)
-- :memo: [License](#license)
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Packages](#packages)
+  * [Core libraries](#core-libraries)
+  * [Elements](#elements)
+  * [Marks](#marks)
+  * [Serializers](#serializers)
+  * [Plugins](#plugins)
+- [Contributing](CONTRIBUTING.md)
+  * [Development scripts](#development-scripts)
+    + [`yarn`](#-yarn-)
+    + [`yarn build`](#-yarn-build-)
+    + [`yarn storybook`](#-yarn-storybook-)
+    + [`yarn storybook:w`](#-yarn-storybook-w-)
+    + [`yarn lint`](#-yarn-lint-)
+    + [`yarn test`](#-yarn-test-)
+    + [`yarn release`](#-yarn-release-)
+  *  [Contributors ✨](#contributors--)
+- [License](#license)
 
 ## Installation
 
@@ -168,116 +182,80 @@ For additional help, join us in
 
 ### Core libraries
 
-## 🔌 Plugins
+| Name                                               | Version                                                                                                                                                                                         | Description                               |
+|:---------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|
+| [`@udecode/slate-plugins-common`](packages/common) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-common.svg" alt="@udecode/slate-plugins-common npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-common) | Common queries, transforms and utilities. |
+| [`@udecode/slate-plugins-core`](packages/core)     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-core.svg" alt="@udecode/slate-plugins-core npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-core)       | Core slate-plugins architecture.          |
 
-<img src="https://i.imgur.com/JAO2NPN.png" alt="blocks" width="400"/>
+### Element Plugins
 
-| Element Plugins                                                           | Version                                                                                                                                                                    | Description                                                           |
-|:--------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------|
-| [`@udecode/slate-plugins-alignment`](packages/elements/alignment)         | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins.svg" alt="@udecode/slate-plugins npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins) | Enables support for text alignment.                                                                      |
-| [`@udecode/slate-plugins-alignment-ui`](packages/elements/alignment-ui)   |                                                                                                                                                                            | Default UI for alignment.                                             |
-| [`@udecode/slate-plugins-BasicElements](packages/elements/basic-elements) |                                                                                                                                                                            | Enables support for basic elements.                                   |
-| [`@udecode/slate-plugins-Blockquote](packages/elements/block-quote/)      |                                                                                                                                                                            | Enables support for block quotes.                                     |
-| [`@udecode/slate-plugins-CodeBlock](packages/elements/code-block)         |                                                                                                                                                                            | Enables support for pre-formatted code blocks.                        |
-| [`@udecode/slate-plugins-Heading](packages/elements/heading/)             |                                                                                                                                                                            | Enables support for headings (from 1 to 6).                           |
-| [`@udecode/slate-plugins-Image](packages/elements/image/)                 |                                                                                                                                                                            | Enables support for images.                                           |
-| [`@udecode/slate-plugins-ImageUpload](packages/elements/image/)           |                                                                                                                                                                            | Allows for pasting images from clipboard.                             |
-| [`@udecode/slate-plugins-Link](packages/elements/link/)                   |                                                                                                                                                                            | Enables support for hyperlinks.                                       |
-| [`@udecode/slate-plugins-List](packages/elements/list)                    |                                                                                                                                                                            | Enables support for bulleted, numbered and to-do lists.               |
-| [`@udecode/slate-plugins-MediaEmbed](packages/elements/media-embed)       |                                                                                                                                                                            | Enables support for embeddable media such as YouTube or Vimeo videos. |
-| [`@udecode/slate-plugins-Mention](packages/elements/mention/)             |                                                                                                                                                                            | Enables support for autocompleting @mentions and #tags.               |
-| [`@udecode/slate-plugins-Paragraph](packages/elements/paragraph/)         |                                                                                                                                                                            | Enables support for paragraphs.                                       |
-| [`@udecode/slate-plugins-Table](packages/elements/table/)                 |                                                                                                                                                                            | Enables support for tables.                                           |
+| Name                                                                         | Version                                                                                                                                                                                                                 | Description                                       |
+|:-----------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|
+| [`@udecode/slate-plugins-basic-elements`](packages/elements/basic-elements)  | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-basic-elements.svg" alt="@udecode/slate-plugins-basic-elements npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-basic-elements) | Basic elements.                                   |
+| [`@udecode/slate-plugins-alignment`](packages/elements/alignment)            | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-alignment.svg" alt="@udecode/slate-plugins-alignment npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-alignment)                | Text alignment.                                   |
+| [`@udecode/slate-plugins-alignment-ui`](packages/elements/alignment-ui)      | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-alignment-ui.svg" alt="@udecode/slate-plugins-alignment-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-alignment-ui)       | Default UI for alignment.                         |
+| [`@udecode/slate-plugins-block-quote`](packages/elements/block-quote/)       | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-block-quote.svg" alt="@udecode/slate-plugins-block-quote npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-block-quote)          | Block quotes.                                     |
+| [`@udecode/slate-plugins-block-quote-ui`](packages/elements/block-quote-ui/) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-block-quote-ui.svg" alt="@udecode/slate-plugins-block-quote-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-block-quote-ui) | Default UI for block quotes.                      |
+| [`@udecode/slate-plugins-code-block`](packages/elements/code-block)          | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-code-block.svg" alt="@udecode/slate-plugins-code-block npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-code-block)             | Code blocks.                                      |
+| [`@udecode/slate-plugins-code-block-ui`](packages/elements/code-block-ui)    | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-code-block-ui.svg" alt="@udecode/slate-plugins-code-block-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-code-block-ui)    | Default UI for code blocks.                       |
+| [`@udecode/slate-plugins-heading`](packages/elements/heading/)               | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-heading.svg" alt="@udecode/slate-plugins-heading npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-heading)                      | Headings (from 1 to 6).                           |
+| [`@udecode/slate-plugins-image`](packages/elements/image/)                   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-image.svg" alt="@udecode/slate-plugins-image npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-image)                            | Images and pasting images from clipboard.         |
+| [`@udecode/slate-plugins-image-ui`](packages/elements/image-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-image-ui.svg" alt="@udecode/slate-plugins-image-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-image-ui)                   | Default UI for images.                            |
+| [`@udecode/slate-plugins-link`](packages/elements/link/)                     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-link.svg" alt="@udecode/slate-plugins-link npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-link)                               | Hyperlinks.                                       |
+| [`@udecode/slate-plugins-link-ui`](packages/elements/link-ui/)               | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-link-ui.svg" alt="@udecode/slate-plugins-link-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-link-ui)                      | Default UI for hyperlinks.                        |
+| [`@udecode/slate-plugins-list`](packages/elements/list)                      | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-list.svg" alt="@udecode/slate-plugins-list npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-list)                               | Bulleted, numbered and to-do lists.               |
+| [`@udecode/slate-plugins-list-ui`](packages/elements/list-ui)                | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-list-ui.svg" alt="@udecode/slate-plugins-list-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-list-ui)                      | Default UI for lists.                             |
+| [`@udecode/slate-plugins-media-embed`](packages/elements/media-embed)        | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-media-embed.svg" alt="@udecode/slate-plugins-media-embed npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-media-embed)          | Embeddable media such as YouTube or Vimeo videos. |
+| [`@udecode/slate-plugins-media-embed-ui`](packages/elements/media-embed-ui)  | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-media-embed-ui.svg" alt="@udecode/slate-plugins-media-embed-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-media-embed-ui) | Default UI for embeddable media.                  |
+| [`@udecode/slate-plugins-mention`](packages/elements/mention/)               | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-mention.svg" alt="@udecode/slate-plugins-mention npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-mention)                      | Autocompleting @mentions and #tags.               |
+| [`@udecode/slate-plugins-mention-ui`](packages/elements/mention-ui/)         | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-mention-ui.svg" alt="@udecode/slate-plugins-mention-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-mention-ui)             | Default UI for mentions.                          |
+| [`@udecode/slate-plugins-paragraph`](packages/elements/paragraph/)           | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-paragraph.svg" alt="@udecode/slate-plugins-paragraph npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-paragraph)                | Paragraphs.                                       |
+| [`@udecode/slate-plugins-table`](packages/elements/table/)                   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-table.svg" alt="@udecode/slate-plugins-table npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-table)                            | Tables.                                           |
+| [`@udecode/slate-plugins-table-ui`](packages/elements/table-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-table-ui.svg" alt="@udecode/slate-plugins-table-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-table-ui)                   | Default UI for tables.                            |
 
-<img src="https://imgur.com/NQJgC5b.png" alt="marks" width="650"/>
+### Mark Plugins
 
-| Mark Plugins                                               |                                               |
-|:-----------------------------------------------------------|:----------------------------------------------|
-| [BasicMarks](packages/slate-plugins/src/marks/basic-marks) | Enables support for basic text formatting.    |
-| [Bold](packages/marks/basic-marks/src/bold)                | Enables support for bold formatting.          |
-| [Code](packages/basic-marks/src/code)                      | Enables support for inline code formatting.   |
-| [Highlight](packages/slate-plugins/src/marks/highlight/)   | Enables support for highlights.               |
-| [Italic](packages/basic-marks/src/italic)                  | Enables support for italic formatting.        |
-| [Strikethrough](packages/basic-marks/src/strikethrough)    | Enables support for strikethrough formatting. |
-| [Subscript](packages/basic-marks/src/subscript)            | Enables support for subscript formatting.     |
-| [Superscript](packages/basic-marks/src/superscript)        | Enables support for superscript formatting.   |
-| [Underline](packages/basic-marks/src/underline)            | Enables support for underline formatting.     |
+| Name                                                    | Version                                                                                                                                                                                                        | Description                                                                                     |
+|:--------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| [`@udecode/slate-plugins-`](packages/marks/basic-marks) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-basic-marks.svg" alt="@udecode/slate-plugins-basic-marks npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-basic-marks) | Basic text formatting: bold, code, italic, strikethrough, subscript, superscript and underline. |
+| [`@udecode/slate-plugins-`](packages/marks/highlight/)  | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-highlight.svg" alt="@udecode/slate-plugins-highlight npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-highlight)       | Highlights.                                                                                     |
+| [`@udecode/slate-plugins-`](packages/marks/kbd/)        | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-kbd.svg" alt="@udecode/slate-plugins-kbd npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-kbd)                         | Keyboard input formatting.                                                                      |
 
-| Deserializer Plugins                                           |                                                                                 |
-|:---------------------------------------------------------------|:--------------------------------------------------------------------------------|
-| [DeserializeHtml](packages/html-serializer/src/deserializer)   | Enables support for deserializing content from HTML format to Slate format.     |
-| [DeserializeMarkdown](packages/md-serializer/src/deserializer) | Enables support for deserializing content from Markdown format to Slate format. |
+### Serializer Plugins
 
-| Serializer Plugins                                       |                                                                                                    |
-|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------|
-| [SerializeHtml](packages/html-serializer/src/serializer) | Enables support for serializing content from Slate format to HTML. Useful for exports from editor. |
+| Name                                                              | Version                                                                                                                                                                                                                    | Description               |
+|:------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------|
+| [`@udecode/slate-plugins-`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-html-serializer.svg" alt="@udecode/slate-plugins-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-html-serializer) | HTML (de)serializing.     |
+| [`@udecode/slate-plugins-`](packages/serializers/md-serializer)   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-md-serializer.svg" alt="@udecode/slate-plugins-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-md-serializer)       | Markdown (de)serializing. |
 
-| Normalizer Plugins                                        |                                                                                                                      |
-|:----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|
-| [NormalizeTypes](packages/slate-plugins/src/normalizers/) | Enables support for defining type rules for specific locations in the document.                                      |
-| [TrailingNode](packages/slate-plugins/src/normalizers/)   | Enables support for inserting a trailing node of a configurable type when the type of the last node is not matching. |
+### Plugins
 
-| Handler Plugins                                             |                                             |
-|:------------------------------------------------------------|:--------------------------------------------|
-| [Autoformat](packages/slate-plugins/src/plugins/autoformat) | Enables support for autoformatting actions. |
-| [SoftBreak](packages/break/src/soft-break)                  | Enables support for inserting soft breaks.  |
+| Name                                                                 | Version                                                                                                                                                                                                                    | Description                                                                 |
+|:---------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|
+| [`@udecode/slate-plugins-slate-plugins`](packages/slate-plugins)     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins.svg" alt="@udecode/slate-plugins npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins)                                                 | Provides all packages.                                                      |
+| [`@udecode/slate-plugins-autoformat`](packages/autoformat)           | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-autoformat.svg" alt="@udecode/slate-plugins-autoformat npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-autoformat)                | Autoformatting actions.                                                     |
+| [`@udecode/slate-plugins-break`](packages/break)                     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-break.svg" alt="@udecode/slate-plugins-break npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-break)                               | Soft-break and exit-break.                                                  |
+| [`@udecode/slate-plugins-dnd`](packages/dnd)                         | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-dnd.svg" alt="@udecode/slate-plugins-dnd npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-dnd)                                     | Drag and drop with [react-dnd](https://github.com/react-dnd/react-dnd).     |
+| [`@udecode/slate-plugins-find-replace`](packages/find-replace)       | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-find-replace.svg" alt="@udecode/slate-plugins-find-replace npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-find-replace)          | Highlighting searching text.                                                |
+| [`@udecode/slate-plugins-find-replace-ui`](packages/find-replace-ui) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-find-replace-ui.svg" alt="@udecode/slate-plugins-find-replace-ui npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-find-replace-ui) | Default UI for find-replace.                                                |
+| [`@udecode/slate-plugins-node-id`](packages/node-id)                 | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-node-id.svg" alt="@udecode/slate-plugins-node-id npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-node-id)                         | Insert nodes with an id key.                                                |
+| [`@udecode/slate-plugins-normalizers`](packages/normalizers)         | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-normalizers.svg" alt="@udecode/slate-plugins-normalizers npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-normalizers)             | Editor normalizers.                                                         |
+| [`@udecode/slate-plugins-reset-node`](packages/reset-node)           | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-reset-node.svg" alt="@udecode/slate-plugins-reset-node npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-reset-node)                | Reset node type.                                                            |
+| [`@udecode/slate-plugins-select`](packages/select)                   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-select.svg" alt="@udecode/slate-plugins-select npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-select)                            | Selection utilities.                                                        |
+| [`@udecode/slate-plugins-trailing-block`](packages/trailing-block)   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-trailing-block.svg" alt="@udecode/slate-plugins-trailing-block npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-trailing-block)    | Ensures a trailing block.                                                   |
+| [`@udecode/slate-plugins-toolbar`](packages/ui/toolbar)              | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-toolbar.svg" alt="@udecode/slate-plugins-toolbar npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-toolbar)                         | Toolbar components: balloon, heading, buttons.                              |
+| [`@udecode/slate-plugins-ui-fluent`](packages/ui/fluent)             | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-ui-fluent.svg" alt="@udecode/slate-plugins-ui-fluent npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-ui-fluent)                   | Common UI utilities with [fluentui](https://github.com/microsoft/fluentui). |
+| [`@udecode/slate-plugins-test-utils`](packages/test-utils/)          | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-test-utils.svg" alt="@udecode/slate-plugins-test-utils npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-test-utils)                | Test utilities.                                                             |
 
-| Decorator Plugins                            |                                 |
-|:---------------------------------------------|:--------------------------------|
-| [Preview](stories/examples/preview-markdown) | Enables support for previewing. |
+## [Contributing](CONTRIBUTING.md)
 
-| Toolbar                                                      |                                                                |
-|:-------------------------------------------------------------|:---------------------------------------------------------------|
-| [BalloonToolbar](packages/components/src/components/Toolbar) | Provides a toolbar, pointing at a particular element or range. |
-| [Toolbar](packages/components/src/components/Toolbar)        | Provides a toolbar with buttons.                               |
-
-| Utility Plugins                                             |                                                     |
-|:------------------------------------------------------------|:----------------------------------------------------|
-| [NodeID](packages/slate-plugins/src/common/plugins/node-id) | Enables support for inserting nodes with an id key. |
-
-
-| Widget Plugins                                                     |                                                  |
-|:-------------------------------------------------------------------|:-------------------------------------------------|
-| [SearchHighlight](packages/slate-plugins/src/widgets/find-replace) | Enables support for highlighting searching text. |
-
-## 🤔 Notice
-
-### Why
-
-[Slate](https://github.com/ianstormtaylor/slate) is a powerful editor
-framework that helps you deal with difficult parts when building an
-editor, such as events handlers, elements, formatting, commands,
-rendering, serializing, normalizing, etc.
-
-While you are trying to build your own editors, it still need a lot of
-efforts to make something similar to [Quill](https://quilljs.com/) or
-[ProseMirror](https://prosemirror.net/). This repository allows you to
-build your editor right away with **minimal** slate knowledge.
-
-### Bundle size
-
-For simplicity, a single package `@udecode/slate-plugins` has been
-published to share all the plugins. It's not a problem as
-[it is tree-shakeable](https://bundlephobia.com/result?p=slate-plugins-next).
-However, a few plugins use external dependencies. These should be moved
-into their own package in the future.
-
-## 👥 Community
-
-- Chatting on
-  [Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1)
-
-## 👏 [Contributing](CONTRIBUTING.md)
-
-We welcome contributions to `@udecode/slate-plugins`! Please feel free
-to **share your own plugins** here.
-
-📥 Pull requests and 🌟 Stars are always welcome. Read our
+🌟 Stars and 📥 Pull requests to `@udecode/slate-plugins` are welcome! Don't hesitate
+to **share your plugins** here. Read our
 [contributing guide](CONTRIBUTING.md) to get started, or find us on
 [Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
-take the time to guide you
+take the time to guide you.
 
-### 👨‍💻 Development scripts
+### Development scripts
 
 Useful scripts include:
 
@@ -291,7 +269,11 @@ Useful scripts include:
 
 #### `yarn storybook`
 
-> Starts storybook dev (after building).
+> Starts storybook (after `yarn build`).
+
+#### `yarn storybook:w`
+
+> Starts storybook dev and watch package files (after `yarn build`).
 
 #### `yarn lint`
 
@@ -306,7 +288,7 @@ Useful scripts include:
 > Lint, test, build and push a release to git and npm will ask for
 > version in interactive mode - using lerna.
 
-## Contributors ✨
+### Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
