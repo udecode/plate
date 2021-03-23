@@ -19,9 +19,7 @@
     "postversionup": "yarn commit-version && git push",
     "prebuild": "yarn clean",
     "release": "lerna publish from-package",
-    "release:graduate": "yarn release --conventional-graduate",
     "release:open": "open https://github.com/udecode/slate-plugins/releases",
-    "release:pre": "yarn release --conventional-prerelease",
     "storybook": "start-storybook -p 6006",
     "storybook:w": "concurrently \"yarn build:w\" \"yarn storybook --quiet\"",
     "test": "jest",
@@ -32,7 +30,9 @@
     "test:wa": "yarn test --watchAll",
     "typedoc": "npx typedoc",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
-    "versionup": "lerna version --no-git-tag-version"
+    "versionup": "lerna version --no-git-tag-version",
+    "versionup:pre": "lerna version --conventional-prerelease",
+    "versionup:graduate": "lerna version --conventional-graduate --force-publish"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.0",
