@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-media-embed-ui",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Slate plugins media-embed-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/media-embed-ui#readme",
@@ -34,8 +34,8 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-media-embed": "^1.0.0-alpha.0",
-    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.0"
+    "@udecode/slate-plugins-media-embed": "^1.0.0-alpha.1",
+    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.1"
   },
   "publishConfig": {
     "access": "public"
