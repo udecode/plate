@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   isCollapsed,
   isPointAtWordEnd,
@@ -39,9 +39,11 @@ export const useMentionPlugin = ({
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
   const [search, setSearch] = useState('');
-  const values = mentionables
-    .filter(mentionableFilter(search))
-    .slice(0, maxSuggestions);
+  const values = useMemo(
+    () =>
+      mentionables.filter(mentionableFilter(search)).slice(0, maxSuggestions),
+    [maxSuggestions, mentionableFilter, mentionables, search]
+  );
 
   const onAddMention = useCallback(
     (editor: Editor, data: MentionNodeData) => {
@@ -72,19 +74,12 @@ export const useMentionPlugin = ({
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
-          onAddMention(editor, values[valueIndex]);
+          onAddMention(editor, mentionables[valueIndex]);
           return false;
         }
       }
     },
-    [
-      values,
-      valueIndex,
-      setValueIndex,
-      targetRange,
-      setTargetRange,
-      onAddMention,
-    ]
+    [targetRange, valueIndex, values, onAddMention, mentionables]
   );
 
   const onChangeMention: OnChange = useCallback(
@@ -141,7 +136,7 @@ export const useMentionPlugin = ({
         at: targetRange,
         valueIndex,
         options: values,
-        onClick: onAddMention,
+        onClickMention: onAddMention,
       }),
       [onAddMention, targetRange, valueIndex, values]
     ),

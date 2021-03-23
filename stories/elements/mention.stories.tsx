@@ -15,7 +15,6 @@ import {
   useReactPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueMentions } from '../config/initialValues';
-import { MENTIONABLES } from '../config/mentionables';
 import { editableProps, optionsMentionPlugin } from '../config/pluginOptions';
 import { renderMentionLabel } from '../config/renderMentionLabel';
 
@@ -27,11 +26,7 @@ export default {
 
 const components = getSlatePluginsComponents({
   [ELEMENT_MENTION]: getComponent(MentionElement, {
-    renderLabel: (mentionable: MentionNodeData) => {
-      const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
-      if (!entry) return 'unknown option';
-      return `${entry.name} - ${entry.email}`;
-    },
+    renderLabel: renderMentionLabel,
   }),
 });
 const options = getSlatePluginsOptions();

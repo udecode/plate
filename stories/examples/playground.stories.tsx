@@ -4,10 +4,13 @@ import { Image, Link, Search } from '@styled-icons/material';
 import {
   ELEMENT_H1,
   ELEMENT_IMAGE,
+  ELEMENT_MENTION,
   ELEMENT_PARAGRAPH,
+  getComponent,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   HeadingToolbar,
+  MentionElement,
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
@@ -72,7 +75,11 @@ export default {
   title: id,
 };
 
-const defaultComponents = getSlatePluginsComponents();
+const defaultComponents = getSlatePluginsComponents({
+  [ELEMENT_MENTION]: getComponent(MentionElement, {
+    renderLabel: renderMentionLabel,
+  }),
+});
 const defaultOptions = getSlatePluginsOptions();
 
 export const Plugins = ({
@@ -94,7 +101,6 @@ export const Plugins = ({
     useImagePlugin(),
     useLinkPlugin(),
     useListPlugin(),
-    useMentionPlugin(),
     useTablePlugin(),
     useMediaEmbedPlugin(),
     useCodeBlockPlugin(),
@@ -108,8 +114,6 @@ export const Plugins = ({
     useStrikethroughPlugin(),
     useSubscriptPlugin(),
     useSuperscriptPlugin(),
-    mentionPlugin,
-    searchHighlightPlugin,
     useNodeIdPlugin(),
     useAutoformatPlugin(optionsAutoformat),
     useResetNodePlugin(optionsResetBlockTypePlugin),
@@ -120,6 +124,8 @@ export const Plugins = ({
     }),
     useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type, level: 1 }),
     useSelectOnBackspacePlugin({ allow: options[ELEMENT_IMAGE].type }),
+    mentionPlugin,
+    searchHighlightPlugin,
   ];
 
   plugins.push(useDeserializeHTMLPlugin({ plugins }));
