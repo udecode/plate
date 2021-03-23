@@ -74,12 +74,12 @@ export const useMentionPlugin = ({
 
         if (['Tab', 'Enter'].includes(e.key)) {
           e.preventDefault();
-          onAddMention(editor, mentionables[valueIndex]);
+          onAddMention(editor, values[valueIndex]);
           return false;
         }
       }
     },
-    [targetRange, valueIndex, values, onAddMention, mentionables]
+    [targetRange, valueIndex, values, onAddMention]
   );
 
   const onChangeMention: OnChange = useCallback(
