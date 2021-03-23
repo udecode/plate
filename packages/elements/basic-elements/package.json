@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-basic-elements",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Slate plugins basic-elements",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/basic-elements#readme",
@@ -34,10 +34,10 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-block-quote": "^1.0.0-alpha.0",
-    "@udecode/slate-plugins-code-block": "^1.0.0-alpha.0",
-    "@udecode/slate-plugins-heading": "^1.0.0-alpha.0",
-    "@udecode/slate-plugins-paragraph": "^1.0.0-alpha.0"
+    "@udecode/slate-plugins-block-quote": "^1.0.0-alpha.1",
+    "@udecode/slate-plugins-code-block": "^1.0.0-alpha.1",
+    "@udecode/slate-plugins-heading": "^1.0.0-alpha.1",
+    "@udecode/slate-plugins-paragraph": "^1.0.0-alpha.1"
   },
   "publishConfig": {
     "access": "public"

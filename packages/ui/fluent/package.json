@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-ui-fluent",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Slate plugins Components",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/components#readme",
@@ -34,7 +34,7 @@
     "slate-react": ">=0.58.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.0",
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.1",
     "@uifabric/styling": "^7.18.0",
     "@uifabric/utilities": "^7.33.4"
   },
