@@ -12,7 +12,7 @@ slate-plugins
 <a href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" /></a>
 </p>
 
-> **We are working hard on v1 docs 🚧.  
+> **We are working hard on v1 docs 🚧.
 > Storybook docs are still for v0.75.**
 
 Author's Note:

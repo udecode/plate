@@ -1,4 +1,3 @@
-import { boolean, text } from '@storybook/addon-knobs';
 import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
@@ -21,14 +20,12 @@ export const options = getSlatePluginsOptions();
 export const optionsMentionPlugin = {
   mentionables: MENTIONABLES,
   maxSuggestions: 10,
-  insertSpaceAfterMention: boolean('insert Space After Mention', false),
+  insertSpaceAfterMention: false,
   trigger: '@',
   mentionableFilter: (s: string) => (mentionable: MentionNodeData) =>
     mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
     mentionable.name.toLowerCase().includes(s.toLowerCase()),
-  mentionableSearchPattern: boolean('useCustomMentionableSearchPattern', true)
-    ? text('mentionableSearchPattern', '\\S*')
-    : undefined,
+  mentionableSearchPattern: '\\S*',
 };
 
 const resetBlockTypesCommonRule = {
