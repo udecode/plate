@@ -12,8 +12,8 @@ slate-plugins
 <a href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" /></a>
 </p>
 
-> **We are working hard on v1 docs 🚧.
-> Storybook docs are still for v0.75.**
+> **We are working hard on v1 docs 🚧. Storybook docs are still for
+> v0.75.**
 
 Author's Note:
 
@@ -70,7 +70,8 @@ normalizers, queries, transforms, components and so on.
 
 - 🛠 Extensible
 
-> All plugins accept extensible options and if you need to fork a plugin, all its functions are exported.
+> All plugins accept extensible options and if you need to fork a
+> plugin, all its functions are exported.
 
 - 📦 Tree-shaking / ES modules
 - ✅ TypeScript types
@@ -163,7 +164,8 @@ yarn add @udecode/slate-plugins-ui-fluent
 ## Usage
 
 Most plugins are used in
-[this storybook playground](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins) (**v1 docs WIP**).
+[this storybook playground](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)
+(**v1 docs WIP**).
 
 For guidance on using `@udecode/slate-plugins` visit:
 [slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
@@ -210,18 +212,18 @@ For additional help, join us in
 
 ### Mark Plugins
 
-| Name                                                    | Version                                                                                                                                                                                                        | Description                                                                                     |
-|:--------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| [`@udecode/slate-plugins-`](packages/marks/basic-marks) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-basic-marks.svg" alt="@udecode/slate-plugins-basic-marks npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-basic-marks) | Basic text formatting: bold, code, italic, strikethrough, subscript, superscript and underline. |
-| [`@udecode/slate-plugins-`](packages/marks/highlight/)  | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-highlight.svg" alt="@udecode/slate-plugins-highlight npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-highlight)       | Highlights.                                                                                     |
-| [`@udecode/slate-plugins-`](packages/marks/kbd/)        | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-kbd.svg" alt="@udecode/slate-plugins-kbd npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-kbd)                         | Keyboard input formatting.                                                                      |
+| Name                                                               | Version                                                                                                                                                                                                        | Description                                                                                     |
+|:-------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| [`@udecode/slate-plugins-basic-marks`](packages/marks/basic-marks) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-basic-marks.svg" alt="@udecode/slate-plugins-basic-marks npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-basic-marks) | Basic text formatting: bold, code, italic, strikethrough, subscript, superscript and underline. |
+| [`@udecode/slate-plugins-highlight`](packages/marks/highlight/)    | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-highlight.svg" alt="@udecode/slate-plugins-highlight npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-highlight)       | Highlights.                                                                                     |
+| [`@udecode/slate-plugins-kbd`](packages/marks/kbd/)                | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-kbd.svg" alt="@udecode/slate-plugins-kbd npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-kbd)                         | Keyboard input formatting.                                                                      |
 
 ### Serializer Plugins
 
-| Name                                                              | Version                                                                                                                                                                                                                    | Description               |
-|:------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------|
-| [`@udecode/slate-plugins-`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-html-serializer.svg" alt="@udecode/slate-plugins-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-html-serializer) | HTML (de)serializing.     |
-| [`@udecode/slate-plugins-`](packages/serializers/md-serializer)   | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-md-serializer.svg" alt="@udecode/slate-plugins-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-md-serializer)       | Markdown (de)serializing. |
+| Name                                                                             | Version                                                                                                                                                                                                                    | Description               |
+|:---------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------|
+| [`@udecode/slate-plugins-html-serializer`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-html-serializer.svg" alt="@udecode/slate-plugins-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-html-serializer) | HTML (de)serializing.     |
+| [`@udecode/slate-plugins-md-serializer`](packages/serializers/md-serializer)     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-md-serializer.svg" alt="@udecode/slate-plugins-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-md-serializer)       | Markdown (de)serializing. |
 
 ### Plugins
 
