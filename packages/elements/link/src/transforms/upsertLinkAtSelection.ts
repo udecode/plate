@@ -1,5 +1,5 @@
 import { isCollapsed, unwrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 import { wrapLink } from './wrapLink';
@@ -10,7 +10,7 @@ import { wrapLink } from './wrapLink';
  * Then, wrap the link at the location.
  */
 export const upsertLinkAtSelection = (
-  editor: Editor,
+  editor: SPEditor,
   {
     url,
     wrap,

@@ -1,5 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
 import { DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLNode } from './deserializeHTMLNode';
 
@@ -7,7 +6,7 @@ import { deserializeHTMLNode } from './deserializeHTMLNode';
  * Deserialize HTML element.
  */
 export const deserializeHTMLElement = (
-  editor: Editor,
+  editor: SPEditor,
   {
     plugins,
     element,

@@ -1,9 +1,9 @@
 import { getRenderElement } from '@udecode/slate-plugins-common';
 import {
   getPluginOptions,
+  RenderElement,
   RenderNodeOptions,
 } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import {
   DEFAULT_HEADING_LEVEL,
   ELEMENT_H1,
@@ -26,7 +26,7 @@ import { HeadingPluginOptions } from './types';
  */
 export const useRenderElementHeading = ({
   levels = DEFAULT_HEADING_LEVEL,
-}: HeadingPluginOptions = {}) => (editor: Editor) => {
+}: HeadingPluginOptions = {}): RenderElement => (editor) => {
   const h1 = getPluginOptions(editor, ELEMENT_H1);
   const h2 = getPluginOptions(editor, ELEMENT_H2);
   const h3 = getPluginOptions(editor, ELEMENT_H3);

@@ -1,23 +1,26 @@
 import {
   getSlatePluginWithOverrides,
+  SPEditor,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { parseMD } from './utils/parseMD';
+import { deserializeMD } from './utils/deserializeMD';
 
 /**
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMd = (): WithOverride<ReactEditor> => (editor) => {
+export const withDeserializeMD = (): WithOverride<ReactEditor & SPEditor> => (
+  editor
+) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
     if (content) {
-      const fragment = parseMD(editor, content);
+      const fragment = deserializeMD(editor, content);
 
       if (!fragment.length) return;
 
@@ -38,6 +41,6 @@ export const withDeserializeMd = (): WithOverride<ReactEditor> => (editor) => {
 /**
  * @see {@link withDeserializeMd}
  */
-export const useDeserializeMdPlugin = getSlatePluginWithOverrides(
-  withDeserializeMd
+export const useDeserializeMDPlugin = getSlatePluginWithOverrides(
+  withDeserializeMD
 );

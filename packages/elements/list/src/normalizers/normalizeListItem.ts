@@ -5,6 +5,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import {
   getPluginType,
+  SPEditor,
   TDescendant,
   TElement,
 } from '@udecode/slate-plugins-core';
@@ -17,7 +18,7 @@ import { ListNormalizerOptions } from '../types';
  * Else: move the children that are not valid to the paragraph.
  */
 export const normalizeListItem = (
-  editor: Editor,
+  editor: SPEditor,
   {
     nodeEntry,
     validLiChildrenTypes = [],

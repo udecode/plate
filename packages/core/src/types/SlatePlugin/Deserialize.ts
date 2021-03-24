@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 
 export type DeserializeNode = {
   type: string;
@@ -16,7 +16,7 @@ export type DeserializeNode = {
  * HTML Deserializer for element and leaf.
  */
 export type Deserialize = (
-  editor: Editor
+  editor: SPEditor
 ) => {
   element?: DeserializeNode[];
   leaf?: DeserializeNode[];

@@ -3,14 +3,13 @@ import {
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { ELEMENT_LI } from '../defaults';
 
 /**
  * Is selection across blocks with list items
  */
-export const isAcrossListItems = (editor: Editor) => {
+export const isAcrossListItems = (editor: SPEditor) => {
   const { selection } = editor;
 
   if (!selection || isCollapsed(selection)) {

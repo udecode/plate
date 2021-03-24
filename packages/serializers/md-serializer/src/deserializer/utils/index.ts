@@ -3,4 +3,4 @@
  */
 
 export * from './filterBreakLines';
-export * from './parseMD';
+export * from './deserializeMD';

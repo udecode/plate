@@ -1,9 +1,10 @@
 import { match, moveChildren } from '@udecode/slate-plugins-common';
-import { Editor, Node, NodeEntry, Path } from 'slate';
+import { SPEditor } from '@udecode/slate-plugins-core';
+import { Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = (
-  editor: Editor,
+  editor: SPEditor,
   {
     at,
     to,

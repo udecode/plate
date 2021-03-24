@@ -1,13 +1,17 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType, isElement } from '@udecode/slate-plugins-core';
-import { Editor, Location } from 'slate';
+import {
+  getPluginType,
+  isElement,
+  SPEditor,
+} from '@udecode/slate-plugins-core';
+import { Location } from 'slate';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
  */
 export const getCodeLineEntry = (
-  editor: Editor,
+  editor: SPEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

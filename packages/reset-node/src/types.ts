@@ -1,5 +1,4 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { SlatePluginOptions, SPEditor } from '@udecode/slate-plugins-core';
 
 export interface ResetBlockTypePluginRule
   extends Pick<SlatePluginOptions, 'defaultType' | 'hotkey'> {
@@ -11,12 +10,12 @@ export interface ResetBlockTypePluginRule
   /**
    * Additional condition to the rule.
    */
-  predicate: (editor: Editor) => boolean;
+  predicate: (editor: SPEditor) => boolean;
 
   /**
    * Callback called when resetting.
    */
-  onReset?: (editor: Editor) => void;
+  onReset?: (editor: SPEditor) => void;
 }
 
 export interface ResetBlockTypePluginOptions {

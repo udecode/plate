@@ -1,5 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
 import { DeserializeHTMLChildren, DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLToBreak } from './deserializeHTMLToBreak';
 import { deserializeHTMLToElement } from './deserializeHTMLToElement';
@@ -10,9 +9,10 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHTMLNode = (editor: Editor, plugins: SlatePlugin[]) => (
-  node: HTMLElement | ChildNode
-): DeserializeHTMLReturn => {
+export const deserializeHTMLNode = (
+  editor: SPEditor,
+  plugins: SlatePlugin[]
+) => (node: HTMLElement | ChildNode): DeserializeHTMLReturn => {
   // text node
   const textNode = deserializeHTMLToText(node);
   if (textNode) return textNode;

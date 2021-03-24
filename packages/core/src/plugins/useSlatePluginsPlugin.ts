@@ -1,13 +1,12 @@
 import { ReactNode } from 'react';
 import { Editor } from 'slate';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
-import { WithOverride } from '../types/SlatePlugin/WithOverride';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
 import { pipe } from '../utils/pipe';
 import { withInlineVoid } from './useInlineVoidPlugin';
 
-export interface SlatePluginsEditor extends Editor {
+export interface SPEditor extends Editor {
   key: any;
   id: string;
   options: SlatePluginsOptions;
@@ -32,11 +31,8 @@ export const withSlatePlugins = <TOutput = {}>({
   plugins = [],
   options = {},
   components = {},
-}: WithSlatePluginsOptions = {}): WithOverride<
-  Editor,
-  SlatePluginsEditor & TOutput
-> => (e) => {
-  let editor = e as typeof e & SlatePluginsEditor & TOutput;
+}: WithSlatePluginsOptions = {}) => <T extends Editor>(e: T) => {
+  let editor = e as T & SPEditor & TOutput;
   editor.id = id;
 
   if (components) {

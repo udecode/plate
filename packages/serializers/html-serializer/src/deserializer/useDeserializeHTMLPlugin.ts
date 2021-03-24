@@ -6,6 +6,7 @@ import {
   getInlineTypes,
   getSlatePluginWithOverrides,
   SlatePlugin,
+  SPEditor,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
@@ -35,7 +36,9 @@ export interface WithDeserializeHTMLOptions {
 export const withDeserializeHTML = ({
   plugins = [],
   ...options
-}: WithDeserializeHTMLOptions = {}): WithOverride<ReactEditor> => (editor) => {
+}: WithDeserializeHTMLOptions = {}): WithOverride<ReactEditor & SPEditor> => (
+  editor
+) => {
   const { insertData } = editor;
 
   const {

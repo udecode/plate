@@ -1,13 +1,13 @@
 import { getAbove } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Ancestor, Editor, NodeEntry, Path, Point, Range } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
 /**
  * Searches upward for the root list element
  */
 export const getListRoot = (
-  editor: Editor,
+  editor: SPEditor,
   at: Path | Range | Point | null = editor.selection
 ): NodeEntry<Ancestor> | undefined => {
   if (!at) return;

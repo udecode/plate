@@ -1,9 +1,9 @@
 import { getAbove, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Transforms } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { ELEMENT_TABLE } from '../defaults';
 
-export const deleteTable = (editor: Editor) => {
+export const deleteTable = (editor: SPEditor) => {
   if (
     someNode(editor, { match: { type: getPluginType(editor, ELEMENT_TABLE) } })
   ) {

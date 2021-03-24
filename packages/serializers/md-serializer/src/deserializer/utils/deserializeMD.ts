@@ -1,6 +1,6 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-code-block';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -18,10 +18,13 @@ import {
 import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import markdown from 'remark-parse';
 import slate from 'remark-slate';
-import { Editor } from 'slate';
 import unified from 'unified';
 
-export const parseMD = (editor: Editor, content: string) => {
+/**
+ * Deserialize content from Markdown format to Slate format.
+ * `editor` needs
+ */
+export const deserializeMD = (editor: SPEditor, content: string) => {
   const tree: any = unified()
     .use(markdown)
     .use(slate, {

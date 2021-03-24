@@ -1,5 +1,6 @@
 import { Editor, NodeEntry, Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { flatMapKey } from './flatMapKey';
 
@@ -7,7 +8,7 @@ import { flatMapKey } from './flatMapKey';
  * @see {@link Decorate}
  */
 export const decoratePlugins = (
-  editor: Editor,
+  editor: SPEditor,
   plugins: SlatePlugin[]
 ): EditableProps['decorate'] => (entry: NodeEntry) => {
   let ranges: Range[] = [];

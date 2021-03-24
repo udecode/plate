@@ -3,10 +3,9 @@ import {
   getSlateClass,
 } from '@udecode/slate-plugins-common';
 import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import { ELEMENT_MENTION } from './defaults';
 
-export const useDeserializeMention = (): Deserialize => (editor: Editor) => {
+export const useDeserializeMention = (): Deserialize => (editor) => {
   const options = getPluginOptions(editor, ELEMENT_MENTION);
 
   return {

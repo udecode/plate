@@ -1,18 +1,17 @@
-import { Editor } from 'slate';
-import { SlatePluginsEditor } from '../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
-import { useEditorStatic } from './useEditorStatic';
+import { useEditorStatic } from './useEditor';
 
-export const getOptions = (editor: Editor): SlatePluginsOptions =>
-  (editor as SlatePluginsEditor)?.options ?? {};
+export const getOptions = (editor: SPEditor): SlatePluginsOptions =>
+  (editor as SPEditor)?.options ?? {};
 
-export const getPluginOptions = (editor: Editor, pluginKey: string) =>
+export const getPluginOptions = (editor: SPEditor, pluginKey: string) =>
   getOptions(editor)[pluginKey] ?? {};
 
-export const getPluginsOptions = (editor: Editor, pluginKeys: string[]) =>
+export const getPluginsOptions = (editor: SPEditor, pluginKeys: string[]) =>
   pluginKeys.map((pluginKey) => getPluginOptions(editor, pluginKey));
 
-export const getPluginType = (editor: Editor, pluginKey: string): string =>
+export const getPluginType = (editor: SPEditor, pluginKey: string): string =>
   getPluginOptions(editor, pluginKey).type ?? pluginKey;
 
 export const useEditorOptions = () => {

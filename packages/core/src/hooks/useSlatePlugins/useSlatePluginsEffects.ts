@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { createEditor } from 'slate';
 import { withSlatePlugins } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSlatePluginsEditor } from '../../store/useSlatePluginsSelectors';
+import { useSPEditor } from '../../store/useSlatePluginsSelectors';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapKey } from '../../utils/flatMapKey';
 import { pipe } from '../../utils/pipe';
@@ -28,7 +28,7 @@ export const useSlatePluginsEffects = ({
     setPluginKeys,
     clearState,
   } = useSlatePluginsActions(id);
-  const storeEditor = useSlatePluginsEditor(id);
+  const storeEditor = useSPEditor(id);
 
   useEffect(() => {
     setInitialState();

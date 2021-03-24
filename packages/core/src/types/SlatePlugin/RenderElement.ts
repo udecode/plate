@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 import { TRenderElementProps } from '../TRenderElementProps';
 
 /**
@@ -7,5 +7,5 @@ import { TRenderElementProps } from '../TRenderElementProps';
  * If the function renders a JSX element then that JSX element is rendered.
  */
 export type RenderElement = (
-  editor: Editor
+  editor: SPEditor
 ) => (props: TRenderElementProps) => JSX.Element | undefined;

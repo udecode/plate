@@ -1,4 +1,5 @@
-import { Editor, NodeEntry, Range } from 'slate';
+import { NodeEntry, Range } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 
 /**
  * Function used to decorate ranges.
@@ -6,5 +7,5 @@ import { Editor, NodeEntry, Range } from 'slate';
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate = (
-  editor: Editor
+  editor: SPEditor
 ) => (entry: NodeEntry) => Range[] | undefined;
