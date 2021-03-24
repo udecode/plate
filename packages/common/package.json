@@ -26,6 +26,12 @@
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
   },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
   "dependencies": {
     "@udecode/slate-plugins-core": "^1.0.0-alpha.1",
     "is-hotkey": "^0.1.6"
