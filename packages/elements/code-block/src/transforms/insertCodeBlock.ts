@@ -5,8 +5,8 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, TElement } from '@udecode/slate-plugins-core';
-import { Editor, Transforms } from 'slate';
+import { getPluginType, SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
 /**
@@ -14,7 +14,7 @@ import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
  * If the cursor is not at the block start, insert break before.
  */
 export const insertCodeBlock = (
-  editor: Editor,
+  editor: SPEditor,
   insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;

@@ -2,9 +2,10 @@ import { mergeDeepToNodes } from '@udecode/slate-plugins-common';
 import {
   isElement,
   SlatePlugin,
+  SPEditor,
   TDescendant,
 } from '@udecode/slate-plugins-core';
-import { Editor, Text } from 'slate';
+import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -19,7 +20,7 @@ export interface DeserializeMarksProps {
  * Build the leaf from the leaf deserializers of each plugin.
  */
 export const deserializeHTMLToMarks = (
-  editor: Editor,
+  editor: SPEditor,
   { plugins, element, children }: DeserializeMarksProps
 ) => {
   let leaf = {};

@@ -3,10 +3,9 @@ import {
   getSlateClass,
 } from '@udecode/slate-plugins-common';
 import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 
-export const useDeserializeIframe = (): Deserialize => (editor: Editor) => {
+export const useDeserializeIframe = (): Deserialize => (editor) => {
   const options = getPluginOptions(editor, ELEMENT_MEDIA_EMBED);
 
   return {

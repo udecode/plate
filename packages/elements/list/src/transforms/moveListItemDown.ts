@@ -1,5 +1,5 @@
 import { match } from '@udecode/slate-plugins-common';
-import { TElement } from '@udecode/slate-plugins-core';
+import { SPEditor, TElement } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
@@ -9,7 +9,7 @@ export interface MoveListItemDownOptions {
 }
 
 export const moveListItemDown = (
-  editor: Editor,
+  editor: SPEditor,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   const [listNode] = list;

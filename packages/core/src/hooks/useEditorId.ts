@@ -1,7 +1,7 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import { SlatePluginsEditor } from '../plugins/useSlatePluginsPlugin';
-import { useEditorStatic } from './useEditorStatic';
+import { SPEditor } from '../plugins/useSlatePluginsPlugin';
+import { useEditorStatic } from './useEditor';
 
 export interface IdEditor {
   id: string;
@@ -11,8 +11,8 @@ export interface IdEditor {
  * Editor id stored in `editor`.
  */
 export const useEditorId = <
-  TEditor extends ReactEditor & IdEditor & SlatePluginsEditor = ReactEditor &
+  TEditor extends ReactEditor & IdEditor & SPEditor = ReactEditor &
     IdEditor &
     HistoryEditor &
-    SlatePluginsEditor
+    SPEditor
 >() => useEditorStatic<TEditor>().id;

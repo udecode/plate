@@ -1,13 +1,12 @@
 import { SlateDocument } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
 import { deserializeHTMLToDocumentFragment } from './deserializeHTMLToDocumentFragment';
 
 /**
  * Deserialize HTML to a valid Slate value.
  */
 export const deserializeHTMLToDocument = (
-  editor: Editor,
+  editor: SPEditor,
   {
     plugins,
     element,

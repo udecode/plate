@@ -6,8 +6,13 @@ import {
   usePluginTypes,
   useRenderElement,
 } from '@udecode/slate-plugins-common';
-import { OnChange, OnKeyDown, SlatePlugin } from '@udecode/slate-plugins-core';
-import { Editor, Range, Transforms } from 'slate';
+import {
+  OnChange,
+  OnKeyDown,
+  SlatePlugin,
+  SPEditor,
+} from '@udecode/slate-plugins-core';
+import { Range, Transforms } from 'slate';
 import { matchesTriggerAndPattern } from './queries/matchesTriggerAndPattern';
 import { insertMention } from './transforms/insertMention';
 import { getNextIndex } from './utils/getNextIndex';
@@ -46,7 +51,7 @@ export const useMentionPlugin = ({
   );
 
   const onAddMention = useCallback(
-    (editor: Editor, data: MentionNodeData) => {
+    (editor: SPEditor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
         insertMention(editor, { data, insertSpaceAfterMention });

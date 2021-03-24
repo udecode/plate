@@ -1,9 +1,8 @@
 import { getElementDeserializer } from '@udecode/slate-plugins-common';
 import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from './defaults';
 
-export const useDeserializeTable = (): Deserialize => (editor: Editor) => {
+export const useDeserializeTable = (): Deserialize => (editor) => {
   const table = getPluginOptions(editor, ELEMENT_TABLE);
   const td = getPluginOptions(editor, ELEMENT_TD);
   const th = getPluginOptions(editor, ELEMENT_TH);

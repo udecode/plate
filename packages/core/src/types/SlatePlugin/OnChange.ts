@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 import { TNode } from '../TNode';
 
 /**
@@ -6,4 +6,4 @@ import { TNode } from '../TNode';
  * To prevent the next handler from running, return false.
  * @see {@link SlatePropsOnChange}
  */
-export type OnChange = (editor: Editor) => (value: TNode[]) => boolean | void;
+export type OnChange = (editor: SPEditor) => (value: TNode[]) => boolean | void;

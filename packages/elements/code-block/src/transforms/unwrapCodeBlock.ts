@@ -1,9 +1,8 @@
 import { unwrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
-export const unwrapCodeBlock = (editor: Editor) => {
+export const unwrapCodeBlock = (editor: SPEditor) => {
   unwrapNodes(editor, {
     match: { type: getPluginType(editor, ELEMENT_CODE_LINE) },
   });

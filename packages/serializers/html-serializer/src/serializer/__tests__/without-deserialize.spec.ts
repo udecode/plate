@@ -1,5 +1,3 @@
-import { getRenderElement } from '@udecode/slate-plugins-common';
-import { options } from '../../../../../../stories/config/pluginOptions';
 import { useAlignPlugin } from '../../../../../elements/alignment/src/useAlignPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';

@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { OnChange } from './OnChange';
@@ -26,12 +26,12 @@ export interface SlatePlugin {
   /**
    * Inline element types
    */
-  inlineTypes?: (editor: Editor) => string[];
+  inlineTypes?: (editor: SPEditor) => string[];
 
   /**
    * Void element types
    */
-  voidTypes?: (editor: Editor) => string[];
+  voidTypes?: (editor: SPEditor) => string[];
 
   /**
    * @see {@link Decorate}

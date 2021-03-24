@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { getBlockAbove, getPluginType } from '@udecode/slate-plugins';
+import { getBlockAbove, getPluginType, SPEditor } from '@udecode/slate-plugins';
 import { Editor, Transforms } from 'slate';
 import { IComboboxItem } from '../../combobox/components/Combobox.types';
 import { useComboboxIsOpen } from '../../combobox/selectors/useComboboxIsOpen';
@@ -15,7 +15,7 @@ export const useTagOnSelectItem = () => {
   const closeMenu = useComboboxStore((state) => state.closeMenu);
 
   return useCallback(
-    (editor: Editor, item: IComboboxItem) => {
+    (editor: SPEditor, item: IComboboxItem) => {
       const type = getPluginType(editor, ELEMENT_TAG);
 
       if (isOpen && targetRange) {

@@ -1,6 +1,6 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Location } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Location } from 'slate';
 import { ELEMENT_TD, ELEMENT_TR } from '../defaults';
 
 /**
@@ -8,7 +8,7 @@ import { ELEMENT_TD, ELEMENT_TR } from '../defaults';
  * node entries.
  */
 export const getTableCellEntry = (
-  editor: Editor,
+  editor: SPEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

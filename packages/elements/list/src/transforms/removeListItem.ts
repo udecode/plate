@@ -4,7 +4,7 @@ import {
   getPreviousPath,
   isExpanded,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor, TElement } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -20,7 +20,7 @@ export interface RemoveListItemOptions {
  * Remove list item and move its sublist to list if any.
  */
 export const removeListItem = (
-  editor: Editor,
+  editor: SPEditor,
   { list, listItem }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;

@@ -3,6 +3,7 @@ import {
   isBlockAboveEmpty,
   isExpanded,
 } from '@udecode/slate-plugins-common';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Path, Transforms } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -12,7 +13,7 @@ import { insertCodeBlock } from './insertCodeBlock';
  * rather than awkwardly splitting the current selection.
  */
 export const insertEmptyCodeBlock = (
-  editor: Editor,
+  editor: SPEditor,
   {
     defaultType = ELEMENT_DEFAULT,
     insertNodesOptions,

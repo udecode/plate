@@ -4,8 +4,8 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
-import { TElement } from '@udecode/slate-plugins-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
@@ -30,7 +30,7 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * If there is no `toListItem` sublist, insert one.
  */
 export const moveListItemSublistItemsToListItemSublist = (
-  editor: Editor,
+  editor: SPEditor,
   {
     fromListItem,
     toListItem,

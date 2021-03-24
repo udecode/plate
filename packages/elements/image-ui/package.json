@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-image-ui",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Slate plugins image-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/image-ui#readme",
@@ -26,9 +26,15 @@
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
   },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
   "dependencies": {
-    "@udecode/slate-plugins-image": "^1.0.0-alpha.1",
-    "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.1"
+    "@udecode/slate-plugins-image": "^1.0.0-alpha.2",
+    "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.2"
   },
   "publishConfig": {
     "access": "public"

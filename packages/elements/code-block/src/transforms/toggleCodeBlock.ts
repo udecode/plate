@@ -1,10 +1,10 @@
 import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Transforms } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (editor: Editor) => {
+export const toggleCodeBlock = (editor: SPEditor) => {
   if (!editor.selection) return;
 
   const isActive = someNode(editor, {

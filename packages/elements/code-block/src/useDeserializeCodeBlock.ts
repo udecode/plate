@@ -3,12 +3,11 @@ import {
   getSlateClass,
 } from '@udecode/slate-plugins-common';
 import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
 
 // FIXME Handle code_line
 
-export const useDeserializeCodeBlock = (): Deserialize => (editor: Editor) => {
+export const useDeserializeCodeBlock = (): Deserialize => (editor) => {
   const code_block = getPluginOptions(editor, ELEMENT_CODE_BLOCK);
   const code_line = getPluginOptions(editor, ELEMENT_CODE_LINE);
 

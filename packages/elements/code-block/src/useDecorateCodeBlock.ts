@@ -49,10 +49,10 @@ import {
   isElement,
 } from '@udecode/slate-plugins-core';
 import { languages, Token, tokenize } from 'prismjs';
-import { Editor, Node, NodeEntry } from 'slate';
+import { Node, NodeEntry } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './defaults';
 
-export const useDecorateCodeBlock = (): Decorate => (editor: Editor) => {
+export const useDecorateCodeBlock = (): Decorate => (editor) => {
   const code_block = getPluginOptions(editor, ELEMENT_CODE_BLOCK);
 
   return (entry: NodeEntry) => {

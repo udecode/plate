@@ -4,8 +4,8 @@ import {
   moveChildren,
   MoveChildrenOptions,
 } from '@udecode/slate-plugins-common';
-import { TElement } from '@udecode/slate-plugins-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions {
@@ -45,7 +45,7 @@ export interface MergeListItemIntoListOptions {
  * Move the list items of `fromList` to `toList` (if `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: Editor,
+  editor: SPEditor,
   {
     fromList,
     fromListItem,

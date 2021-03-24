@@ -5,14 +5,14 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getHighestEmptyList } from '../queries/getHighestEmptyList';
 import { hasListChild } from '../queries/hasListChild';
 import { isAcrossListItems } from '../queries/isAcrossListItems';
 
-export const deleteFragmentList = (editor: Editor) => {
+export const deleteFragmentList = (editor: SPEditor) => {
   let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {

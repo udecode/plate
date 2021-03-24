@@ -1,10 +1,10 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { OnChange } from '../types/SlatePlugin/OnChange';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { flatMapKey } from './flatMapKey';
 
 export const onChangePlugins = (
-  editor: Editor,
+  editor: SPEditor,
   plugins: SlatePlugin[]
 ): ReturnType<OnChange> => (nodes) => {
   flatMapKey(plugins, 'onChange').some(

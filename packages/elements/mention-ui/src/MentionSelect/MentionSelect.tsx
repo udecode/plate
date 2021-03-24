@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
+import { useEditorSlate } from '@udecode/slate-plugins-core';
 import {
   MentionNodeData,
   MentionSelectProps,
@@ -12,7 +13,7 @@ import {
   PortalBody,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
-import { ReactEditor, useSlate } from 'slate-react';
+import { ReactEditor } from 'slate-react';
 import { getMentionSelectStyles } from './MentionSelect.styles';
 
 const getClassNames = getRootClassNames<
@@ -35,7 +36,7 @@ export const MentionSelectBase = ({
   });
 
   const ref: any = useRef();
-  const editor = useSlate();
+  const editor = useEditorSlate();
 
   useEffect(() => {
     if (at && options.length > 0) {

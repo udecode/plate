@@ -4,7 +4,11 @@ import {
   getParent,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, isElement } from '@udecode/slate-plugins-core';
+import {
+  getPluginType,
+  isElement,
+  SPEditor,
+} from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
@@ -12,7 +16,7 @@ import { ELEMENT_LI } from '../defaults';
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (editor: Editor) => {
+export const insertListItem = (editor: SPEditor) => {
   const liType = getPluginType(editor, ELEMENT_LI);
   const pType = getPluginType(editor, ELEMENT_DEFAULT);
 

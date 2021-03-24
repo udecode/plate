@@ -4,10 +4,9 @@ import {
   getPluginOptions,
   getSlateClass,
 } from '@udecode/slate-plugins';
-import { Editor } from 'slate';
 import { ELEMENT_TAG } from './defaults';
 
-export const useDeserializeTag = (): Deserialize => (editor: Editor) => {
+export const useDeserializeTag = (): Deserialize => (editor) => {
   const options = getPluginOptions(editor, ELEMENT_TAG);
 
   return {

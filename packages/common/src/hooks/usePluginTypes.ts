@@ -1,9 +1,8 @@
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { castArray } from 'lodash';
-import { Editor } from 'slate';
 
 export const usePluginTypes = (pluginKey: string | string[]) => (
-  editor: Editor
+  editor: SPEditor
 ): string[] => {
   const pluginKeys = castArray<string>(pluginKey);
 

@@ -31,7 +31,7 @@
     "typedoc": "npx typedoc",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --no-git-tag-version",
-    "versionup:pre": "lerna version --conventional-prerelease",
+    "versionup:pre": "lerna version prerelease",
     "versionup:graduate": "lerna version --conventional-graduate --force-publish"
   },
   "devDependencies": {

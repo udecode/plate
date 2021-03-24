@@ -4,5 +4,5 @@
 
 export * from './useEditorId';
 export * from './useEditorOptions';
-export * from './useEditorStatic';
+export * from './useEditor';
 export * from './useSlatePlugins/index';

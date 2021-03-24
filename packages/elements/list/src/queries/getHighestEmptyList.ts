@@ -1,6 +1,6 @@
 import { getAbove } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Path } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Path } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from './getListTypes';
 
@@ -13,7 +13,7 @@ import { getListTypes } from './getListTypes';
  * - its path is not equals to diffListPath.
  */
 export const getHighestEmptyList = (
-  editor: Editor,
+  editor: SPEditor,
   {
     diffListPath,
     liPath,

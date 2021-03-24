@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 import { TRenderLeafProps } from '../TRenderLeafProps';
 
 /**
@@ -11,5 +11,5 @@ import { TRenderLeafProps } from '../TRenderLeafProps';
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
 export type RenderLeaf = (
-  editor: Editor
+  editor: SPEditor
 ) => (props: TRenderLeafProps) => JSX.Element;

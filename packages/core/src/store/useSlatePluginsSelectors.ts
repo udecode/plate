@@ -2,15 +2,15 @@ import { useCallback } from 'react';
 import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import { SlatePluginsEditor } from '../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 /**
  * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
  */
-export const useSlatePluginsEditor = <
-  TEditor extends Editor = ReactEditor & HistoryEditor & SlatePluginsEditor
+export const useSPEditor = <
+  TEditor extends Editor = ReactEditor & HistoryEditor & SPEditor
 >(
   id = 'main'
 ) =>
@@ -30,4 +30,4 @@ export const useSlatePluginsPluginKeys = (id = 'main') =>
   );
 
 export const useSlatePluginsOptions = (id = 'main') =>
-  useSlatePluginsEditor(id).options as SlatePluginsOptions;
+  useSPEditor(id).options as SlatePluginsOptions;

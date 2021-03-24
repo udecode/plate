@@ -1,7 +1,7 @@
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 import { Element, Range } from 'slate';
-import { ReactEditor } from 'slate-react';
 
 export interface MentionNodeData {
   value: string;
@@ -66,7 +66,7 @@ export interface MentionSelectProps {
   /**
    * Callback called when clicking on a mention option
    */
-  onClickMention?: (editor: ReactEditor, option: MentionNodeData) => void;
+  onClickMention?: (editor: SPEditor, option: MentionNodeData) => void;
 
   renderLabel?: (mentionable: MentionNodeData) => string;
 }

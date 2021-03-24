@@ -1,13 +1,13 @@
 import { wrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Location } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Location } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 
 /**
  * Wrap selected nodes with a link and collapse at the end.
  */
 export const wrapLink = (
-  editor: Editor,
+  editor: SPEditor,
   { at, url }: { url: string; at?: Location }
 ) => {
   wrapNodes(

@@ -5,12 +5,11 @@ import {
   insertEmptyCodeBlock,
 } from '@udecode/slate-plugins-code-block';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, useEditorSlate } from '@udecode/slate-plugins-core';
 import {
   ToolbarButtonProps,
   ToolbarElement,
 } from '@udecode/slate-plugins-toolbar';
-import { useSlate } from 'slate-react';
 
 export const ToolbarCodeBlock = ({
   options,
@@ -18,7 +17,7 @@ export const ToolbarCodeBlock = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = useSlate();
+  const editor = useEditorSlate();
 
   return (
     <ToolbarElement

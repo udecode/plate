@@ -7,9 +7,13 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, WithOverride } from '@udecode/slate-plugins-core';
+import {
+  getPluginType,
+  SPEditor,
+  WithOverride,
+} from '@udecode/slate-plugins-core';
 import { withRemoveEmptyNodes } from '@udecode/slate-plugins-normalizers';
-import { Editor, Range } from 'slate';
+import { Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
@@ -17,7 +21,7 @@ import { ELEMENT_LINK } from './defaults';
 import { WithLinkOptions } from './types';
 
 const upsertLink = (
-  editor: Editor,
+  editor: SPEditor,
   {
     url,
     at,
@@ -42,7 +46,7 @@ const upsertLink = (
   });
 };
 
-const upsertLinkIfValid = (editor: ReactEditor, { isUrl }: { isUrl: any }) => {
+const upsertLinkIfValid = (editor: SPEditor, { isUrl }: { isUrl: any }) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
 
@@ -69,7 +73,7 @@ export const withLink = ({
     afterMatch: true,
     multiPaths: true,
   },
-}: WithLinkOptions = {}): WithOverride<ReactEditor> => (editor) => {
+}: WithLinkOptions = {}): WithOverride<ReactEditor & SPEditor> => (editor) => {
   const { insertData, insertText } = editor;
 
   const type = getPluginType(editor, ELEMENT_LINK);

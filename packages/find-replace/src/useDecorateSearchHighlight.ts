@@ -1,11 +1,11 @@
 import { Decorate, getPluginOptions } from '@udecode/slate-plugins-core';
-import { Editor, NodeEntry, Range, Text } from 'slate';
+import { NodeEntry, Range, Text } from 'slate';
 import { MARK_SEARCH_HIGHLIGHT } from './defaults';
 import { DecorateSearchHighlightOptions } from './types';
 
 export const useDecorateSearchHighlight = ({
   search,
-}: DecorateSearchHighlightOptions): Decorate => (editor: Editor) => {
+}: DecorateSearchHighlightOptions): Decorate => (editor) => {
   const options = getPluginOptions(editor, MARK_SEARCH_HIGHLIGHT);
 
   return ([node, path]: NodeEntry) => {

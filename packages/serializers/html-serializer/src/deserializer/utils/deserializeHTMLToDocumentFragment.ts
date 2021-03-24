@@ -2,8 +2,11 @@ import {
   normalizeDescendantsToDocumentFragment,
   SlateDocumentFragment,
 } from '@udecode/slate-plugins-common';
-import { SlatePlugin, TDescendant } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import {
+  SlatePlugin,
+  SPEditor,
+  TDescendant,
+} from '@udecode/slate-plugins-core';
 import { htmlStringToDOMNode } from '../../serializer/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
@@ -11,7 +14,7 @@ import { deserializeHTMLElement } from './deserializeHTMLElement';
  * Deserialize HTML element to a valid document fragment.
  */
 export const deserializeHTMLToDocumentFragment = (
-  editor: Editor,
+  editor: SPEditor,
   {
     plugins,
     element,

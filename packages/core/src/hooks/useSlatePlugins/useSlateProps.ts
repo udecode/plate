@@ -1,11 +1,9 @@
 import { useCallback, useMemo } from 'react';
-import { ReactEditor } from 'slate-react';
-import { SlatePluginsEditor } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
   usePlugins,
-  useSlatePluginsEditor,
   useSlatePluginsValue,
+  useSPEditor,
 } from '../../store/useSlatePluginsSelectors';
 import { SlateProps } from '../../types/SlateProps';
 import { TNode } from '../../types/TNode';
@@ -20,7 +18,7 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): (() => Omit<SlateProps, 'children'>) => {
   const { setValue } = useSlatePluginsActions(id);
-  const editor = useSlatePluginsEditor<ReactEditor & SlatePluginsEditor>(id);
+  const editor = useSPEditor(id);
   const value = useSlatePluginsValue(id);
   const plugins = usePlugins(id);
 

@@ -4,7 +4,7 @@ import {
   isCollapsed,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { onKeyDownResetNode } from '@udecode/slate-plugins-reset-node';
 import { Editor } from 'slate';
 import { ELEMENT_LI } from '../defaults';
@@ -15,7 +15,7 @@ import { removeListItem } from './removeListItem';
 import { unwrapList } from './unwrapList';
 
 export const deleteBackwardList = (
-  editor: Editor,
+  editor: SPEditor,
   unit: 'character' | 'word' | 'line' | 'block'
 ) => {
   const res = getListItemEntry(editor, {});
@@ -53,17 +53,13 @@ export const deleteBackwardList = (
     }
   }
 
-  const resetBlockTypesListRule = {
-    types: [getPluginType(editor, ELEMENT_LI)],
-    defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-    onReset: (_editor: Editor) => unwrapList(_editor),
-  };
-
   return onKeyDownResetNode({
     rules: [
       {
-        ...resetBlockTypesListRule,
+        types: [getPluginType(editor, ELEMENT_LI)],
+        defaultType: getPluginType(editor, ELEMENT_DEFAULT),
         predicate: () => isSelectionAtBlockStart(editor),
+        onReset: (_editor) => unwrapList(_editor),
       },
     ],
   })(editor)(null);

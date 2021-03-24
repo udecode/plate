@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
 
 /**
  * Function used to handle beforeInput events.
@@ -7,5 +7,5 @@ import { Editor } from 'slate';
  * To prevent the next handler from running return false.
  */
 export type OnDOMBeforeInput = (
-  editor: Editor
+  editor: SPEditor
 ) => (event: Event) => boolean | undefined | void;

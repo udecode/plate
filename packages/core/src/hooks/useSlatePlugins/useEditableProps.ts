@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import {
-  usePlugins,
-  useSlatePluginsEditor,
-} from '../../store/useSlatePluginsSelectors';
+import { usePlugins, useSPEditor } from '../../store/useSlatePluginsSelectors';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { decoratePlugins } from '../../utils/decoratePlugins';
 import { onDOMBeforeInputPlugins } from '../../utils/onDOMBeforeInputPlugins';
@@ -15,7 +12,7 @@ export const useEditableProps = ({
   id,
   editableProps,
 }: UseEditablePropsOptions): (() => EditableProps) => {
-  const editor = useSlatePluginsEditor(id);
+  const editor = useSPEditor(id);
   const plugins = usePlugins(id);
 
   const props = useMemo(

@@ -5,7 +5,7 @@ import {
   SlatePlugins,
   useBasicElementPlugins,
   useBasicMarkPlugins,
-  useDeserializeMdPlugin,
+  useDeserializeMDPlugin,
   useHistoryPlugin,
   useImagePlugin,
   useLinkPlugin,
@@ -35,7 +35,7 @@ export const Example = () => {
     useLinkPlugin(),
     useListPlugin(),
     useTablePlugin(),
-    useDeserializeMdPlugin(),
+    useDeserializeMDPlugin(),
   ];
 
   return (

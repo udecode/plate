@@ -4,12 +4,12 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getPluginType } from '@udecode/slate-plugins-core';
-import { Editor, Transforms } from 'slate';
+import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: Editor, { type }: { type: string }) => {
+export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
   if (!editor.selection) return;
 
   const isActive = someNode(editor, { match: { type } });

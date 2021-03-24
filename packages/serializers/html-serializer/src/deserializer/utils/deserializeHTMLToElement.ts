@@ -1,9 +1,9 @@
 import {
   SlatePlugin,
+  SPEditor,
   TDescendant,
   TElement,
 } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -11,7 +11,7 @@ import { DeserializeHTMLChildren } from '../types';
  * Deserialize HTML to Element.
  */
 export const deserializeHTMLToElement = (
-  editor: Editor,
+  editor: SPEditor,
   {
     plugins,
     element,

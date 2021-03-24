@@ -1,5 +1,5 @@
 import { getAbove, getNode, isLastChild } from '@udecode/slate-plugins-common';
-import { getPluginType, TElement } from '@udecode/slate-plugins-core';
+import { getPluginType, SPEditor, TElement } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -15,7 +15,7 @@ export interface MoveListItemUpOptions {
  * Move a list item up.
  */
 export const moveListItemUp = (
-  editor: Editor,
+  editor: SPEditor,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {
