@@ -36,6 +36,7 @@
     "@udecode/slate-plugins-block-quote": "^1.0.0-alpha.2",
     "@udecode/slate-plugins-code-block": "^1.0.0-alpha.2",
     "@udecode/slate-plugins-common": "^1.0.0-alpha.2",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.2",
     "@udecode/slate-plugins-heading": "^1.0.0-alpha.2",
     "@udecode/slate-plugins-link": "^1.0.0-alpha.2",
     "@udecode/slate-plugins-list": "^1.0.0-alpha.2",

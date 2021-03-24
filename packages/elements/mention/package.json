@@ -32,7 +32,8 @@
     "slate": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.2"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.2",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.2"
   },
   "publishConfig": {
     "access": "public"
