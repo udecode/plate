@@ -4,6 +4,7 @@ import {
   removeMark,
 } from '@udecode/slate-plugins-common';
 import { Editor, Range, Transforms } from 'slate';
+import { AutoformatRule } from '../types';
 
 export const autoformatInline = (
   editor: Editor,
@@ -12,12 +13,7 @@ export const autoformatInline = (
     between,
     markup,
     ignoreTrim,
-  }: {
-    type: string;
-    between?: string[];
-    markup?: string;
-    ignoreTrim?: boolean;
-  }
+  }: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
 ) => {
   const selection = editor.selection as Range;
 
