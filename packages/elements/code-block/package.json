@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-code-block",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Slate plugins code-block",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/code-block#readme",
@@ -33,7 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.1",
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.2",
     "prismjs": "^1.23.0"
   },
   "publishConfig": {

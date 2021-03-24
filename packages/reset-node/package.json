@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-reset-node",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Slate plugins reset-node",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/reset-node#readme",
@@ -33,7 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.1"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.2"
   },
   "publishConfig": {
     "access": "public"
