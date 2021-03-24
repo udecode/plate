@@ -1,23 +1,17 @@
-import { StyledElementProps } from '@udecode/slate-plugins';
+import {
+  ClassName,
+  RootStyleSet,
+  StyledElementProps,
+} from '@udecode/slate-plugins';
 import { IStyle } from '@uifabric/styling';
 import { TagNode } from '../types';
 
-export interface TagElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
+export interface TagElementStyleProps extends ClassName {
   selected?: boolean;
   focused?: boolean;
 }
 
-export interface TagElementStyleSet {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
+export interface TagElementStyleSet extends RootStyleSet {
   link?: IStyle;
 }
 

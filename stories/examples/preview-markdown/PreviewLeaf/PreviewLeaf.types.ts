@@ -1,36 +1,9 @@
-import { NodeStyleSet } from '@udecode/slate-plugins';
-import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import { RenderLeafProps } from 'slate-react';
+import { ClassName, StyledLeafProps } from '@udecode/slate-plugins';
 
-export interface PreviewLeafProps extends RenderLeafProps {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<PreviewLeafStyleProps, NodeStyleSet>;
+export interface PreviewLeafProps
+  extends StyledLeafProps<{}, PreviewLeafStyleProps> {}
 
-  /**
-   * Additional class name to provide on the root element.
-   */
-  className?: string;
-}
-
-export interface PreviewLeafStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert BlockquoteElement classNames below
-}
-
-export interface PreviewLeafStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert PreviewLeaf style props below
+export interface PreviewLeafStyleProps extends ClassName {
   bold?: boolean;
   italic?: boolean;
   title?: boolean;

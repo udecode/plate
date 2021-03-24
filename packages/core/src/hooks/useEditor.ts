@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor, useSlate, useSlateStatic } from 'slate-react';
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../types/SPEditor';
 
 /**
  * {@link useSlateStatic} with generic type.

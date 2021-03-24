@@ -1,23 +1,13 @@
+import { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import { Element } from 'slate';
 import {
-  NodeStyleProps,
-  NodeStyleSet,
-  StyledNodeProps,
+  ClassName,
+  RootStyleSet,
+  StyledProps,
 } from '../StyledNode/StyledNode.types';
 
-export interface StyledElementProps<
+export type StyledElementProps<
   TElement = Element,
-  TStyleProps = NodeStyleProps,
-  TStyleSet = NodeStyleSet
-> extends StyledNodeProps<TStyleProps, TStyleSet> {
-  attributes: {
-    'data-slate-node': 'element';
-    'data-slate-inline'?: true;
-    'data-slate-void'?: true;
-    dir?: 'rtl';
-    ref: any;
-    [key: string]: any;
-  };
-  children: any;
-  element: Element & TElement;
-}
+  TStyleProps = ClassName,
+  TStyleSet = RootStyleSet
+> = SPRenderElementProps<TElement> & StyledProps<TStyleProps, TStyleSet>;

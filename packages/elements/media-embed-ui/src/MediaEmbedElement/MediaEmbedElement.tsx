@@ -1,27 +1,17 @@
 import * as React from 'react';
 import { useEditorStatic } from '@udecode/slate-plugins-core';
-import {
-  getRootClassNames,
-  NodeStyleProps,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
+import { ClassName, getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
-import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
+import {
+  MediaEmbedElementProps,
+  MediaEmbedElementStyleSet,
+} from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 
-const getClassNames = getRootClassNames<
-  NodeStyleProps,
-  MediaEmbedElementStyleSet
->();
-
-type Props = StyledElementProps<
-  { url: string },
-  NodeStyleProps,
-  MediaEmbedElementStyleSet
->;
+const getClassNames = getRootClassNames<ClassName, MediaEmbedElementStyleSet>();
 
 /**
  * MediaEmbedElement with no default styles.
@@ -34,7 +24,7 @@ export const MediaEmbedElementBase = ({
   className,
   styles,
   nodeProps,
-}: Props) => {
+}: MediaEmbedElementProps) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -75,9 +65,9 @@ export const MediaEmbedElementBase = ({
  * MediaEmbedElement
  */
 export const MediaEmbedElement = styled<
-  Props,
-  NodeStyleProps,
-  NonNullable<Props['styles']>
+  MediaEmbedElementProps,
+  ClassName,
+  MediaEmbedElementStyleSet
 >(MediaEmbedElementBase, getMediaEmbedElementStyles, undefined, {
   scope: 'MediaEmbedElement',
 });

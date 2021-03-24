@@ -5,7 +5,6 @@ import {
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   MentionElement,
-  MentionNodeData,
   MentionSelect,
   SlatePlugin,
   SlatePlugins,

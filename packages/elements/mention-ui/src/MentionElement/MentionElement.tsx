@@ -3,7 +3,7 @@ import { getHandler } from '@udecode/slate-plugins-common';
 import { MentionNodeData } from '@udecode/slate-plugins-mention';
 import {
   getRootClassNames,
-  NodeStyleSet,
+  RootStyleSet,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
@@ -15,7 +15,7 @@ import {
 
 const getClassNames = getRootClassNames<
   MentionElementStyleProps,
-  NodeStyleSet
+  RootStyleSet
 >();
 
 /**
@@ -66,7 +66,7 @@ export const MentionElementBase = ({
 export const MentionElement = styled<
   MentionElementProps,
   MentionElementStyleProps,
-  NonNullable<MentionElementProps['styles']>
+  RootStyleSet
 >(MentionElementBase, getMentionElementStyles, undefined, {
   scope: 'MentionElement',
 });

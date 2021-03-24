@@ -2,15 +2,10 @@ import { ReactNode } from 'react';
 import { Editor } from 'slate';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import { SPEditor } from '../types/SPEditor';
 import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
 import { pipe } from '../utils/pipe';
 import { withInlineVoid } from './useInlineVoidPlugin';
-
-export interface SPEditor extends Editor {
-  key: any;
-  id: string;
-  options: SlatePluginsOptions;
-}
 
 export interface WithSlatePluginsOptions {
   id?: string;

@@ -1,29 +1,12 @@
 import React from 'react';
-import { TRenderElementProps } from '@udecode/slate-plugins-core';
+import {
+  ClassName,
+  RootStyleSet,
+  StyledElementProps,
+} from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
 
-export interface SelectableProps
-  extends Pick<TRenderElementProps, 'attributes' | 'element'> {
-  /**
-   * Additional class name to provide on the root element, in addition to the slate-Selectable class.
-   */
-  className?: string;
-
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<SelectableStyleProps, SelectableStyles>;
-
-  children?: any;
-
-  componentRef?: any;
-
-  dragIcon?: React.ReactNode;
-}
-
-export interface SelectableStyleProps {
-  className?: string;
+export interface SelectableStyleProps extends ClassName {
   direction: '' | 'top' | 'bottom';
   isDragging: boolean;
 
@@ -31,12 +14,7 @@ export interface SelectableStyleProps {
   selected?: boolean;
 }
 
-export interface SelectableStyles {
-  /**
-   * Contains the gutter left, block, dropline.
-   */
-  root?: IStyle;
-
+export interface SelectableStyleSet extends RootStyleSet {
   /**
    * Block and gutter.
    */
@@ -78,4 +56,11 @@ export interface SelectableStyles {
    * Show a dropline above or below the block when dragging a block.
    */
   dropLine?: IStyle;
+}
+
+export interface SelectableProps
+  extends StyledElementProps<{}, SelectableStyleProps, SelectableStyleSet> {
+  componentRef?: any;
+
+  dragIcon?: React.ReactNode;
 }

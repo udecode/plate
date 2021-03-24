@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {
+  ClassName,
   getRootClassNames,
-  NodeStyleProps,
+  RootStyleSet,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -22,7 +23,6 @@ export const TableElementBase = ({
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
     className,
-    // Other style props
   });
 
   return (
@@ -35,10 +35,11 @@ export const TableElementBase = ({
 /**
  * TableElement
  */
-export const TableElement = styled<
-  StyledElementProps,
-  NodeStyleProps,
-  NonNullable<StyledElementProps['styles']>
->(TableElementBase, getTableElementStyles, undefined, {
-  scope: 'TableElement',
-});
+export const TableElement = styled<StyledElementProps, ClassName, RootStyleSet>(
+  TableElementBase,
+  getTableElementStyles,
+  undefined,
+  {
+    scope: 'TableElement',
+  }
+);

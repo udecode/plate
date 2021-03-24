@@ -1,5 +1,5 @@
 import { NodeEntry, Range } from 'slate';
-import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../SPEditor';
 
 /**
  * Function used to decorate ranges.

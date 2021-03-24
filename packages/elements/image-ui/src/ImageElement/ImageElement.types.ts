@@ -1,22 +1,23 @@
+import { ImageNodeData } from '@udecode/slate-plugins-image';
+import {
+  ClassName,
+  RootStyleSet,
+  StyledElementProps,
+} from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
 
-export interface ImageElementStyleSet {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
-
-  // Insert ImageElement classNames below
-  img?: IStyle;
-}
-
-export interface ImageElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert ImageElement style props below
+export interface ImageElementStyleProps extends ClassName {
   selected?: boolean;
   focused?: boolean;
 }
+
+export interface ImageElementStyleSet extends RootStyleSet {
+  img?: IStyle;
+}
+
+export interface ImageElementProps
+  extends StyledElementProps<
+    ImageNodeData,
+    ImageElementStyleProps,
+    ImageElementStyleSet
+  > {}

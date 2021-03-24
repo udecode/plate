@@ -1,30 +1,18 @@
 import { MentionNode, MentionNodeData } from '@udecode/slate-plugins-mention';
 import {
-  NodeStyleSet,
+  ClassName,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
 
-export interface MentionElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
+export interface MentionElementStyleProps extends ClassName {
   // Insert MentionElement style props below
   selected?: boolean;
   focused?: boolean;
 }
 
 // renderElement props
-export interface MentionElementProps extends StyledElementProps<MentionNode> {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<MentionElementStyleProps, NodeStyleSet>;
-
-  as?: any;
-
+export interface MentionElementProps
+  extends StyledElementProps<MentionNode, MentionElementStyleProps> {
   /**
    * Prefix rendered before mention
    */

@@ -1,23 +1,23 @@
+import { TodoListItemNodeData } from '@udecode/slate-plugins-list';
+import {
+  ClassName,
+  RootStyleSet,
+  StyledElementProps,
+} from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
 
-export interface TodoListElementStyles {
-  /**
-   * Style for the root element.
-   */
-  root?: IStyle;
+export interface TodoListElementStyleProps
+  extends ClassName,
+    TodoListItemNodeData {}
 
-  // Insert TodoListElement classNames below
+export interface TodoListElementStyleSet extends RootStyleSet {
   checkboxWrapper?: IStyle;
   checkbox?: IStyle;
   text?: IStyle;
 }
 
-export interface TodoListElementStyleProps {
-  /**
-   * Accept custom classNames
-   */
-  className?: string;
-
-  // Insert TodoListElement style props below
-  checked?: boolean;
-}
+export type TodoListElementProps = StyledElementProps<
+  TodoListItemNodeData,
+  TodoListElementStyleProps,
+  TodoListElementStyleSet
+>;

@@ -1,12 +1,8 @@
 import * as React from 'react';
-import { getRootClassNames } from '@udecode/slate-plugins';
+import { getRootClassNames, RootStyleSet } from '@udecode/slate-plugins';
 import { styled } from '@uifabric/utilities';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
-import {
-  PreviewLeafProps,
-  PreviewLeafStyleProps,
-  PreviewLeafStyles,
-} from './PreviewLeaf.types';
+import { PreviewLeafProps, PreviewLeafStyleProps } from './PreviewLeaf.types';
 
 const getClassNames = getRootClassNames<
   PreviewLeafStyleProps,
@@ -43,7 +39,7 @@ export const PreviewLeafBase = ({
 export const PreviewLeaf = styled<
   PreviewLeafProps,
   PreviewLeafStyleProps,
-  PreviewLeafStyles
+  RootStyleSet
 >(PreviewLeafBase, getPreviewLeafStyles, undefined, {
   scope: 'PreviewLeaf',
 });

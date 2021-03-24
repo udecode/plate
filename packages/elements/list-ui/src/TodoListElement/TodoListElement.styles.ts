@@ -1,13 +1,13 @@
 import { CLASS_TODO_LIST_CHECKED } from '@udecode/slate-plugins-list';
 import {
   TodoListElementStyleProps,
-  TodoListElementStyles,
+  TodoListElementStyleSet,
 } from './TodoListElement.types';
 
 export const getTodoListElementStyles = ({
   className,
   checked,
-}: TodoListElementStyleProps): TodoListElementStyles => {
+}: TodoListElementStyleProps): TodoListElementStyleSet => {
   let rootClassName = className;
   if (checked) rootClassName += ` ${CLASS_TODO_LIST_CHECKED}`;
 

@@ -1,8 +1,6 @@
 import { NodeProps } from './SlatePluginOptions/GetNodeProps';
 
-export interface RenderNodeProps {
-  children: any;
-
+export interface SPRenderNodeProps {
   className?: string;
 
   /**

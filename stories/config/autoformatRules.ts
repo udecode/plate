@@ -16,14 +16,14 @@ import {
   MARK_CODE,
   MARK_ITALIC,
   MARK_STRIKETHROUGH,
+  SPEditor,
   toggleList,
   unwrapList,
   WithAutoformatOptions,
 } from '@udecode/slate-plugins';
-import { Editor } from 'slate';
 import { options } from './pluginOptions';
 
-const preFormat = (editor: Editor) => unwrapList(editor);
+const preFormat = (editor: SPEditor) => unwrapList(editor);
 
 export const optionsAutoformat: WithAutoformatOptions = {
   rules: [

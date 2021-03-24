@@ -1,4 +1,4 @@
-import { SelectableStyleProps, SelectableStyles } from './Selectable.types';
+import { SelectableStyleProps, SelectableStyleSet } from './Selectable.types';
 
 const classNames = {
   root: 'slate-Selectable',
@@ -10,7 +10,7 @@ export const getSelectableStyles = ({
   direction,
   isDragging,
   selected,
-}: SelectableStyleProps): SelectableStyles => {
+}: SelectableStyleProps): SelectableStyleSet => {
   return {
     root: [
       classNames.root,

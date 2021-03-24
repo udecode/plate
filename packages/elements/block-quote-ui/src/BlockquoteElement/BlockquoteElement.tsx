@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {
+  ClassName,
   getRootClassNames,
-  NodeStyleProps,
+  RootStyleSet,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -37,8 +38,8 @@ export const BlockquoteElementBase = ({
  */
 export const BlockquoteElement = styled<
   StyledElementProps,
-  NodeStyleProps,
-  NonNullable<StyledElementProps['styles']>
+  ClassName,
+  RootStyleSet
 >(BlockquoteElementBase, getBlockquoteElementStyles, undefined, {
   scope: 'BlockquoteElement',
 });

@@ -2,24 +2,21 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
 import { useEditorSlate } from '@udecode/slate-plugins-core';
+import { MentionNodeData } from '@udecode/slate-plugins-mention';
 import {
-  MentionNodeData,
-  MentionSelectProps,
-  MentionSelectStyleSet,
-} from '@udecode/slate-plugins-mention';
-import {
+  ClassName,
   getRootClassNames,
-  NodeStyleProps,
   PortalBody,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { ReactEditor } from 'slate-react';
 import { getMentionSelectStyles } from './MentionSelect.styles';
+import {
+  MentionSelectProps,
+  MentionSelectStyleSet,
+} from './MentionSelect.types';
 
-const getClassNames = getRootClassNames<
-  NodeStyleProps,
-  MentionSelectStyleSet
->();
+const getClassNames = getRootClassNames<ClassName, MentionSelectStyleSet>();
 
 export const MentionSelectBase = ({
   className,
@@ -81,8 +78,8 @@ export const MentionSelectBase = ({
 
 export const MentionSelect = styled<
   MentionSelectProps,
-  NodeStyleProps,
-  NonNullable<MentionSelectProps['styles']>
+  ClassName,
+  MentionSelectStyleSet
 >(MentionSelectBase, getMentionSelectStyles, undefined, {
   scope: 'MentionSelect',
 });

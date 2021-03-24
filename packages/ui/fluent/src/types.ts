@@ -1,7 +1,7 @@
 import { classNamesFunction } from '@uifabric/utilities';
-import { NodeStyleProps, NodeStyleSet } from './StyledNode/StyledNode.types';
+import { ClassName, RootStyleSet } from './StyledNode/StyledNode.types';
 
 export const getRootClassNames = <
-  TStyleProps = NodeStyleProps,
-  TStyleSet = NodeStyleSet
+  TStyleProps = ClassName,
+  TStyleSet = RootStyleSet
 >() => classNamesFunction<TStyleProps, TStyleSet>();

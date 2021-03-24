@@ -1,4 +1,4 @@
-import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../SPEditor';
 
 /**
  * Function called on key down event.

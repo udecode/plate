@@ -19,9 +19,9 @@ import { getNextIndex } from './utils/getNextIndex';
 import { getPreviousIndex } from './utils/getPreviousIndex';
 import { ELEMENT_MENTION } from './defaults';
 import {
+  GetMentionSelectProps,
   MentionNodeData,
   MentionPluginOptions,
-  MentionSelectProps,
 } from './types';
 import { useDeserializeMention } from './useDeserializeMention';
 
@@ -39,7 +39,7 @@ export const useMentionPlugin = ({
   mentionableSearchPattern,
   insertSpaceAfterMention,
 }: MentionPluginOptions = {}): SlatePlugin & {
-  getMentionSelectProps: () => MentionSelectProps;
+  getMentionSelectProps: () => GetMentionSelectProps;
 } => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);

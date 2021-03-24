@@ -4,8 +4,8 @@ import {
   SlatePlugin,
   SlateProps,
   SPEditor,
+  SPRenderElementProps,
   TDescendant,
-  TRenderElementProps,
 } from '@udecode/slate-plugins-core';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
@@ -56,7 +56,7 @@ const getNode = (
     preserveClassNames,
   }: {
     plugins: SlatePlugin[];
-    elementProps: TRenderElementProps;
+    elementProps: SPRenderElementProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }

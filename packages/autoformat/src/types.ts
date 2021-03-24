@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { SPEditor } from '@udecode/slate-plugins-core';
 
 export interface AutoformatRule {
   /**
@@ -25,12 +25,12 @@ export interface AutoformatRule {
    * Function called before formatting.
    * Generally used to reset the selected block.
    */
-  preFormat?: (editor: Editor) => void;
+  preFormat?: (editor: SPEditor) => void;
 
   /**
    * Custom formatting function.
    */
-  format?: (editor: Editor) => void;
+  format?: (editor: SPEditor) => void;
 
   /**
    * - block (default) – set/insert block. Should be used with `markup`.
@@ -64,7 +64,7 @@ export interface AutoformatRule {
   /**
    * Query to allow autoformat.
    */
-  query?: (editor: Editor, rule: Omit<AutoformatRule, 'query'>) => boolean;
+  query?: (editor: SPEditor, rule: Omit<AutoformatRule, 'query'>) => boolean;
 }
 
 export interface WithAutoformatOptions {
