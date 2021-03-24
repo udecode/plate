@@ -35,7 +35,7 @@ jobs:
         id: changelog
         shell: bash -ex {0}
         run: |
-          version=$(node -p 'require("./packages/slate-plugins/package.json").version')
+          version=$(node -p 'require("./lerna.json").version')
           echo "::set-output name=version::${version}"
       - name: Create Pull Request
         id: cpr

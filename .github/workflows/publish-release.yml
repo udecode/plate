@@ -46,7 +46,7 @@ jobs:
       - name: Set Current Version
         shell: bash -ex {0}
         run: |
-          CURRENT_VERSION=$(node -p 'require("./packages/slate-plugins/package.json").version')
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo "::set-env name=CURRENT_VERSION::${CURRENT_VERSION}"
       - name: Tag Check
         id: tag_check
