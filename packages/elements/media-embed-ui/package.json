@@ -26,13 +26,6 @@
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
   },
-  "peerDependencies": {
-    "react": "*",
-    "react-dom": "*",
-    "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
-    "slate-react": ">=0.60.0"
-  },
   "dependencies": {
     "@udecode/slate-plugins-media-embed": "^1.0.0-alpha.1",
     "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.1"

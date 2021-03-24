@@ -27,11 +27,7 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-dom": "*",
-    "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
-    "slate-react": ">=0.60.0"
+    "slate-hyperscript": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/slate-plugins-common": "^1.0.0-alpha.1"

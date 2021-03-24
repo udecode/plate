@@ -27,11 +27,8 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-dom": "*",
     "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
-    "slate-react": ">=0.60.0"
+    "slate-hyperscript": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"
