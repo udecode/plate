@@ -109,7 +109,7 @@ You can install all the packages simultaneously:
 yarn add @udecode/slate-plugins
 ```
 
-You will also need these peer dependencies:
+You will also need these peer dependencies (slate >= 0.60):
 
 ```bash
 yarn add slate slate-hyperscript slate-react react react-dom
