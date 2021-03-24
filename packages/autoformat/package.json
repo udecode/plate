@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-autoformat",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Slate plugins autoformat",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/autoformat#readme",
