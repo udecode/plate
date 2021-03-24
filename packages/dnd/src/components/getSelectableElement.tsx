@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo } from 'react';
 import {
   SPRenderElementProps,
-  useEditorStatic,
+  useTSlateStatic,
 } from '@udecode/slate-plugins-core';
 import { Editor, Path } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
@@ -26,7 +26,7 @@ export const getSelectableElement = ({
 }: GetSelectabelElementOptions) => {
   return forwardRef(
     ({ attributes, element, ...props }: SPRenderElementProps, ref) => {
-      const editor = useEditorStatic();
+      const editor = useTSlateStatic();
       const readOnly = useReadOnly();
       const path = useMemo(() => ReactEditor.findPath(editor, element), [
         editor,

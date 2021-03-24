@@ -8,7 +8,7 @@ import {
   useHistoryPlugin,
   useReactPlugin,
   useSlatePlugins,
-  useSPEditor,
+  useStoreEditor,
 } from '@udecode/slate-plugins';
 import { Editable, ReactEditor, Slate } from 'slate-react';
 import { initialValueIframe } from '../config/initialValues';
@@ -30,7 +30,7 @@ const components = getSlatePluginsComponents({
 const options = getSlatePluginsOptions();
 
 const Editor = ({ plugins }: any) => {
-  const editor = useSPEditor(id);
+  const editor = useStoreEditor(id);
 
   const handleBlur = useCallback(() => {
     ReactEditor.deselect(editor);

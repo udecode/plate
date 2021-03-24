@@ -1,6 +1,6 @@
 import { isCollapsed } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   isElement,
   TElement,
   WithOverride,
@@ -12,8 +12,8 @@ export const withTable = (): WithOverride => (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&
-      (node.type === getPluginType(editor, ELEMENT_TD) ||
-        node.type === getPluginType(editor, ELEMENT_TD))
+      (node.type === getSlatePluginType(editor, ELEMENT_TD) ||
+        node.type === getSlatePluginType(editor, ELEMENT_TD))
     );
   };
 

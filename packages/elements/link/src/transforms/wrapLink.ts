@@ -1,5 +1,5 @@
 import { wrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Location } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 
@@ -13,7 +13,7 @@ export const wrapLink = (
   wrapNodes(
     editor,
     {
-      type: getPluginType(editor, ELEMENT_LINK),
+      type: getSlatePluginType(editor, ELEMENT_LINK),
       url,
       children: [],
     },

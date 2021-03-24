@@ -45,7 +45,7 @@
 // import 'prismjs/components/prism-yaml';
 import {
   Decorate,
-  getPluginOptions,
+  getSlatePluginOptions,
   isElement,
 } from '@udecode/slate-plugins-core';
 import { languages, Token, tokenize } from 'prismjs';
@@ -53,7 +53,7 @@ import { Node, NodeEntry } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './defaults';
 
 export const useDecorateCodeBlock = (): Decorate => (editor) => {
-  const code_block = getPluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const code_block = getSlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];

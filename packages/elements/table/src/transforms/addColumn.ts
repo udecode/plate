@@ -1,5 +1,5 @@
 import { getAbove, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Path, Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD } from '../defaults';
 import { TablePluginOptions } from '../types';
@@ -7,19 +7,21 @@ import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
 export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
   if (
-    someNode(editor, { match: { type: getPluginType(editor, ELEMENT_TABLE) } })
+    someNode(editor, {
+      match: { type: getSlatePluginType(editor, ELEMENT_TABLE) },
+    })
   ) {
     const currentCellItem = getAbove(editor, {
       match: {
         type: [
-          getPluginType(editor, ELEMENT_TD),
-          getPluginType(editor, ELEMENT_TD),
+          getSlatePluginType(editor, ELEMENT_TD),
+          getSlatePluginType(editor, ELEMENT_TD),
         ],
       },
     });
 
     const currentTableItem = getAbove(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getSlatePluginType(editor, ELEMENT_TABLE) },
     });
 
     if (currentCellItem && currentTableItem) {

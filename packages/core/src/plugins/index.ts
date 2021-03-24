@@ -5,4 +5,3 @@
 export * from './useHistoryPlugin';
 export * from './useInlineVoidPlugin';
 export * from './useReactPlugin';
-export * from './useSlatePluginsPlugin';

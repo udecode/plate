@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { createEditor } from 'slate';
-import { withSlatePlugins } from '../../plugins/useSlatePluginsPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useSPEditor } from '../../store/useSlatePluginsSelectors';
+import { useStoreEditor } from '../../store/useSlatePluginsSelectors';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
-import { flatMapKey } from '../../utils/flatMapKey';
+import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
+import { withSlatePlugins } from '../../utils/withSlatePlugins';
 
 /**
  * Effects to update the slate plugins store from the options.
@@ -28,7 +28,7 @@ export const useSlatePluginsEffects = ({
     setPluginKeys,
     clearState,
   } = useSlatePluginsActions(id);
-  const storeEditor = useSPEditor(id);
+  const storeEditor = useStoreEditor(id);
 
   useEffect(() => {
     setInitialState();
@@ -71,6 +71,6 @@ export const useSlatePluginsEffects = ({
   }, [plugins, setPlugins]);
 
   useEffect(() => {
-    plugins && setPluginKeys(flatMapKey(plugins, 'pluginKeys') as any);
+    plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
   }, [plugins, setPluginKeys]);
 };

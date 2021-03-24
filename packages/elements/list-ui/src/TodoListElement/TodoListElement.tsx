@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEditorStatic } from '@udecode/slate-plugins-core';
+import { useTSlateStatic } from '@udecode/slate-plugins-core';
 import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
@@ -28,7 +28,7 @@ export const TodoListElementBase = ({
   styles,
   nodeProps,
 }: TodoListElementProps) => {
-  const editor = useEditorStatic();
+  const editor = useTSlateStatic();
   const readOnly = useReadOnly();
 
   const { checked } = element;

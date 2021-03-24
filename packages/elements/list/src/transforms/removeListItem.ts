@@ -4,7 +4,11 @@ import {
   getPreviousPath,
   isExpanded,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor, TElement } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -52,10 +56,10 @@ export const removeListItem = (
     Transforms.insertNodes(
       editor,
       {
-        type: getPluginType(editor, ELEMENT_LI),
+        type: getSlatePluginType(editor, ELEMENT_LI),
         children: [
           {
-            type: getPluginType(editor, ELEMENT_DEFAULT),
+            type: getSlatePluginType(editor, ELEMENT_DEFAULT),
             children: [{ text: '' }],
           },
         ],

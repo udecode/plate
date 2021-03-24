@@ -8,7 +8,7 @@ import {
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   SPEditor,
   WithOverride,
 } from '@udecode/slate-plugins-core';
@@ -32,7 +32,7 @@ const upsertLink = (
 ) => {
   unwrapNodes(editor, {
     at,
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
+    match: { type: getSlatePluginType(editor, ELEMENT_LINK) },
   });
 
   const newSelection = editor.selection as Range;
@@ -76,7 +76,7 @@ export const withLink = ({
 }: WithLinkOptions = {}): WithOverride<ReactEditor & SPEditor> => (editor) => {
   const { insertData, insertText } = editor;
 
-  const type = getPluginType(editor, ELEMENT_LINK);
+  const type = getSlatePluginType(editor, ELEMENT_LINK);
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {

@@ -4,7 +4,7 @@ import {
   someNode,
   toggleNodeType,
 } from '@udecode/slate-plugins-common';
-import { useEditorSlate } from '@udecode/slate-plugins-core';
+import { useTSlate } from '@udecode/slate-plugins-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarElementProps } from './ToolbarElement.types';
 
@@ -16,7 +16,7 @@ export const ToolbarElement = ({
   inactiveType,
   ...props
 }: ToolbarElementProps) => {
-  const editor = useEditorSlate();
+  const editor = useTSlate();
 
   return (
     <ToolbarButton

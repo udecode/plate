@@ -1,6 +1,6 @@
 import { match } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   isElement,
   SPEditor,
 } from '@udecode/slate-plugins-core';
@@ -28,7 +28,7 @@ export const getListNormalizer = (
       }
     }
 
-    if (node.type === getPluginType(editor, ELEMENT_LI)) {
+    if (node.type === getSlatePluginType(editor, ELEMENT_LI)) {
       if (
         normalizeListItem(editor, {
           nodeEntry: [node, path],

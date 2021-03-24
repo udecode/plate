@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
 import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
-import { renderLeafPlugins } from './renderLeafPlugins';
+import { pipeRenderLeaf } from './pipeRenderLeaf';
 
 const attributes = {
   'data-testid': 'Leaf',
@@ -11,7 +11,7 @@ const attributes = {
 const text = { text: 'test' };
 
 it('should render the default leaf', () => {
-  const Leaf = renderLeafPlugins(createEditorPlugins(), [])!;
+  const Leaf = pipeRenderLeaf(createEditorPlugins(), [])!;
 
   const { getByTestId } = render(
     <Leaf attributes={attributes} leaf={text} text={text}>

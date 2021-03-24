@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 import { Editor } from 'slate';
+import { withInlineVoid } from '../plugins/useInlineVoidPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';
-import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
-import { pipe } from '../utils/pipe';
-import { withInlineVoid } from './useInlineVoidPlugin';
+import { flatMapByKey } from './flatMapByKey';
+import { pipe } from './pipe';
 
 export interface WithSlatePluginsOptions {
   id?: string;
@@ -54,15 +54,8 @@ export const withSlatePlugins = <TOutput = {}>({
   editor = pipe(editor, withInlineVoid({ plugins }));
 
   // Plugins withOverrides
-  const withOverrides = plugins?.flatMap((p) => p.withOverrides ?? []) ?? [];
+  const withOverrides = flatMapByKey(plugins, 'withOverrides');
   editor = pipe(editor, ...withOverrides);
 
   return editor;
 };
-
-/**
- * @see {@link withSlatePlugins}
- */
-export const useSlatePluginsPlugin = getSlatePluginWithOverrides(
-  withSlatePlugins
-);

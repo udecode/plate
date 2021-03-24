@@ -5,7 +5,7 @@ import {
   getParent,
   moveChildren,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getHighestEmptyList } from '../queries/getHighestEmptyList';
@@ -26,7 +26,7 @@ export const deleteFragmentList = (editor: SPEditor) => {
     const end = Editor.end(editor, editor.selection as Range);
     const liEnd = getAbove(editor, {
       at: end,
-      match: { type: getPluginType(editor, ELEMENT_LI) },
+      match: { type: getSlatePluginType(editor, ELEMENT_LI) },
     });
     const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
     const liEndPathRef = liEndCanBeDeleted
@@ -59,7 +59,7 @@ export const deleteFragmentList = (editor: SPEditor) => {
     const start = Editor.start(editor, editor.selection as Range);
     const liStart = getAbove(editor, {
       at: start,
-      match: { type: getPluginType(editor, ELEMENT_LI) },
+      match: { type: getSlatePluginType(editor, ELEMENT_LI) },
     });
 
     if (liEndPathRef) {

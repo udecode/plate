@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEditorSlate } from '@udecode/slate-plugins-core';
+import { useTSlate } from '@udecode/slate-plugins-core';
 import { PortalBody } from '@udecode/slate-plugins-ui-fluent';
 import { Toolbar } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
@@ -17,7 +17,7 @@ export const BalloonToolbar = ({
   arrow = false,
 }: BalloonToolbarProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const editor = useEditorSlate();
+  const editor = useTSlate();
 
   const [hidden] = useBalloonShow({ editor, ref, hiddenDelay });
   useBalloonMove({ editor, ref, direction });

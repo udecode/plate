@@ -3,8 +3,8 @@ import {
   isCollapsed,
   isPointAtWordEnd,
   isWordAfterTrigger,
-  usePluginTypes,
   useRenderElement,
+  useSlatePluginTypes,
 } from '@udecode/slate-plugins-common';
 import {
   OnChange,
@@ -133,8 +133,8 @@ export const useMentionPlugin = ({
     renderElement: useRenderElement(ELEMENT_MENTION),
     onKeyDown: onKeyDownMention,
     deserialize: useDeserializeMention(),
-    inlineTypes: usePluginTypes(ELEMENT_MENTION),
-    voidTypes: usePluginTypes(ELEMENT_MENTION),
+    inlineTypes: useSlatePluginTypes(ELEMENT_MENTION),
+    voidTypes: useSlatePluginTypes(ELEMENT_MENTION),
 
     getMentionSelectProps: useCallback(
       () => ({

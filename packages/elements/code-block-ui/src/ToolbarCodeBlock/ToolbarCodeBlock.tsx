@@ -5,7 +5,7 @@ import {
   insertEmptyCodeBlock,
 } from '@udecode/slate-plugins-code-block';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import { getPluginType, useEditorSlate } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, useTSlate } from '@udecode/slate-plugins-core';
 import {
   ToolbarButtonProps,
   ToolbarElement,
@@ -17,11 +17,11 @@ export const ToolbarCodeBlock = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = useEditorSlate();
+  const editor = useTSlate();
 
   return (
     <ToolbarElement
-      type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
+      type={getSlatePluginType(editor, ELEMENT_CODE_BLOCK)}
       onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
         insertNodesOptions: { select: true },
         ...options,

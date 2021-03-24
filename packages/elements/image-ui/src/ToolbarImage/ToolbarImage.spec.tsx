@@ -29,7 +29,7 @@ describe('ToolbarImage', () => {
       const editor = input;
 
       // jest
-      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .spyOn(SlatePlugins, 'useTSlateStatic')
       //   .mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
@@ -51,7 +51,7 @@ describe('ToolbarImage', () => {
       const editor = input;
 
       // jest
-      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .spyOn(SlatePlugins, 'useTSlateStatic')
       //   .mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
@@ -99,7 +99,7 @@ describe('ToolbarImage', () => {
       const editor = input;
 
       // jest
-      //   .spyOn(SlatePlugins, 'useEditorStatic')
+      //   .spyOn(SlatePlugins, 'useTSlateStatic')
       //   .mockReturnValue(editor as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 

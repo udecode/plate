@@ -4,7 +4,11 @@ import {
   isCollapsed,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor, TElement } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Location, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
@@ -15,7 +19,7 @@ export const getListItemEntry = (
   editor: SPEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> } | undefined => {
-  const liType = getPluginType(editor, ELEMENT_LI);
+  const liType = getSlatePluginType(editor, ELEMENT_LI);
   if (at && someNode(editor, { at, match: { type: liType } })) {
     const selectionParent = getParent(editor, at);
     if (!selectionParent) return;

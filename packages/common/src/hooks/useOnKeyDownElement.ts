@@ -1,6 +1,6 @@
 import {
-  getPluginOptions,
-  getPluginType,
+  getSlatePluginOptions,
+  getSlatePluginType,
   OnKeyDown,
 } from '@udecode/slate-plugins-core';
 import { castArray } from 'lodash';
@@ -11,11 +11,11 @@ export const useOnKeyDownElement = (
   pluginKey: string | string[]
 ): OnKeyDown => (editor) => (e) => {
   const pluginKeys = castArray<string>(pluginKey);
-  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT);
 
   const opt = pluginKeys.map((key) => {
     return {
-      ...getPluginOptions(editor, key),
+      ...getSlatePluginOptions(editor, key),
       defaultType,
     };
   });

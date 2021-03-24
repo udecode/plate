@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
-import { withSlatePlugins } from '../plugins/useSlatePluginsPlugin';
 import { SlatePluginsActions, State } from '../types/SlatePluginsStore';
 import { pipe } from '../utils/pipe';
+import { withSlatePlugins } from '../utils/withSlatePlugins';
 import { getInitialState } from './getInitialState';
 import { slatePluginsStore } from './useSlatePluginsStore';
 import { getSetStateByKey } from './zustand.utils';

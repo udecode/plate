@@ -1,6 +1,6 @@
 import {
-  usePluginTypes,
   useRenderElement,
+  useSlatePluginTypes,
 } from '@udecode/slate-plugins-common';
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { ELEMENT_IMAGE } from './defaults';
@@ -17,6 +17,6 @@ export const useImagePlugin = (
   pluginKeys: ELEMENT_IMAGE,
   renderElement: useRenderElement(ELEMENT_IMAGE),
   deserialize: useDeserializeImage(),
-  voidTypes: usePluginTypes(ELEMENT_IMAGE),
+  voidTypes: useSlatePluginTypes(ELEMENT_IMAGE),
   withOverrides: withImageUpload(options),
 });
