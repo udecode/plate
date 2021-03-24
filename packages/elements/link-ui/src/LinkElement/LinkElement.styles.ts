@@ -1,8 +1,8 @@
-import { NodeStyleProps, NodeStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import { ClassName, RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
 
 export const getLinkElementStyles = ({
   className,
-}: NodeStyleProps): NodeStyleSet => {
+}: ClassName): RootStyleSet => {
   return {
     root: [
       {

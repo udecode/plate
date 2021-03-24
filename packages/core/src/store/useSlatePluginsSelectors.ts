@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import { SPEditor } from '../types/SPEditor';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 /**

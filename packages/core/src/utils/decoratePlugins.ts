@@ -1,7 +1,7 @@
-import { Editor, NodeEntry, Range } from 'slate';
+import { NodeEntry, Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 import { flatMapKey } from './flatMapKey';
 
 /**

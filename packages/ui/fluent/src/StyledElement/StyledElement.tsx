@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
 import { getStyledNodeStyles } from '../StyledNode/StyledNode.styles';
-import { NodeStyleProps } from '../StyledNode/StyledNode.types';
+import { ClassName, RootStyleSet } from '../StyledNode/StyledNode.types';
 import { getRootClassNames } from '../types';
 import { StyledElementProps } from './StyledElement.types';
 
@@ -16,15 +16,12 @@ export const StyledElementBase = ({
   children,
   className,
   styles,
-  as = 'div',
+  as: Tag = 'div',
   nodeProps,
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
     className,
-    // Other style props
   });
-
-  const Tag = as;
 
   return (
     <Tag {...attributes} className={classNames.root} {...nodeProps}>
@@ -35,8 +32,8 @@ export const StyledElementBase = ({
 
 export const StyledElement = styled<
   StyledElementProps,
-  NodeStyleProps,
-  NonNullable<StyledElementProps['styles']>
+  ClassName,
+  RootStyleSet
 >(StyledElementBase, getStyledNodeStyles, undefined, {
   scope: 'StyledElement',
 });

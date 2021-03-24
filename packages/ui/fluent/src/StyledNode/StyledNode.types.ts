@@ -1,31 +1,32 @@
-import { RenderNodeProps } from '@udecode/slate-plugins-core';
 import { IStyle } from '@uifabric/styling';
 import { IStyleFunctionOrObject } from '@uifabric/utilities';
 
-// Props for node styles
-export interface NodeStyleProps extends Pick<RenderNodeProps, 'className'> {}
+export interface ClassName {
+  /**
+   * Additional class name to provide on the root element.
+   */
+  className?: string;
+}
 
-// Node styles
-export interface NodeStyleSet {
+// Root style set
+export interface RootStyleSet {
   /**
    * Style for the root element.
    */
   root?: IStyle;
 }
 
-export type NodeStyles<
-  TStyleProps = NodeStyleProps,
-  TStyleSet = NodeStyleSet
+export type Styles<
+  TStyleProps = ClassName,
+  TStyleSet = RootStyleSet
 > = IStyleFunctionOrObject<TStyleProps, TStyleSet>;
 
-export interface StyledNodeProps<
-  TStyleProps = NodeStyleProps,
-  TStyleSet = NodeStyleSet
-> extends RenderNodeProps {
+export interface StyledProps<TStyleProps = ClassName, TStyleSet = RootStyleSet>
+  extends ClassName {
   /**
    * Call to provide customized styling that will layer on top of the variant rules.
    */
-  styles?: NodeStyles<TStyleProps, TStyleSet>;
+  styles?: Styles<TStyleProps, TStyleSet>;
 
   as?: any;
 }

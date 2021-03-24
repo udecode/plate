@@ -1,19 +1,9 @@
 import { HTMLProps } from 'react';
 import { TippyProps } from '@tippyjs/react';
-import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { StyledProps } from '@udecode/slate-plugins-ui-fluent';
 
-export interface ToolbarButtonProps {
-  /**
-   * Additional class name to provide on the root element.
-   */
-  className?: string;
-
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<ToolbarButtonStyleProps, ToolbarButtonStyles>;
-
+export interface ToolbarButtonProps
+  extends StyledProps<ToolbarButtonStyleProps> {
   /**
    * Is it active.
    */
@@ -34,11 +24,5 @@ export interface ToolbarButtonProps {
   [key: string]: any;
 }
 
-export interface ToolbarButtonStyleProps {
-  className?: string;
-  active?: ToolbarButtonProps['active'];
-}
-
-export interface ToolbarButtonStyles {
-  root?: IStyle;
-}
+export interface ToolbarButtonStyleProps
+  extends Pick<ToolbarButtonProps, 'className' | 'active'> {}

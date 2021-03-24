@@ -1,4 +1,4 @@
-import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../SPEditor';
 
 export type DeserializeNode = {
   type: string;

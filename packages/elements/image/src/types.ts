@@ -1,3 +1,7 @@
+export interface ImageNodeData {
+  url: string;
+}
+
 export interface WithImageUploadOptions {
   /**
    * An optional method that will upload the image to a server.

@@ -1,17 +1,15 @@
 import * as React from 'react';
+import { LinkNodeData } from '@udecode/slate-plugins-link';
 import {
+  ClassName,
   getRootClassNames,
-  NodeStyleProps,
+  RootStyleSet,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { getLinkElementStyles } from './LinkElement.styles';
 
 const getClassNames = getRootClassNames();
-
-type Props = StyledElementProps<{
-  url: string;
-}>;
 
 /**
  * LinkElement with no default styles.
@@ -24,7 +22,7 @@ export const LinkElementBase = ({
   styles,
   className,
   nodeProps,
-}: Props) => {
+}: StyledElementProps<LinkNodeData>) => {
   const classNames = getClassNames(styles, {
     className,
     // Other style props
@@ -46,9 +44,9 @@ export const LinkElementBase = ({
  * LinkElement
  */
 export const LinkElement = styled<
-  Props,
-  NodeStyleProps,
-  NonNullable<Props['styles']>
+  StyledElementProps<LinkNodeData>,
+  ClassName,
+  RootStyleSet
 >(LinkElementBase, getLinkElementStyles, undefined, {
   scope: 'LinkElement',
 });

@@ -9,15 +9,15 @@ import { getSelectableStyles } from './Selectable.styles';
 import {
   SelectableProps,
   SelectableStyleProps,
-  SelectableStyles,
+  SelectableStyleSet,
 } from './Selectable.types';
 
 const getClassNames = classNamesFunction<
   SelectableStyleProps,
-  SelectableStyles
+  SelectableStyleSet
 >();
 
-const SelectableBase = ({
+export const SelectableBase = ({
   children,
   element,
   className,
@@ -86,7 +86,7 @@ const SelectableBase = ({
 export const Selectable = styled<
   SelectableProps,
   SelectableStyleProps,
-  NonNullable<SelectableProps['styles']>
+  SelectableStyleSet
 >(SelectableBase, getSelectableStyles, undefined, {
   scope: 'Selectable',
 });

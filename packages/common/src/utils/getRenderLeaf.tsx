@@ -24,7 +24,13 @@ export const getRenderLeaf = ({
 
   if (leaf[type] && !!leaf.text) {
     return (
-      <Leaf className={getSlateClass(type)} leaf={leaf} nodeProps={nodeProps}>
+      <Leaf
+        className={getSlateClass(type)}
+        attributes={attributes}
+        leaf={leaf}
+        text={text}
+        nodeProps={nodeProps}
+      >
         {children}
       </Leaf>
     );

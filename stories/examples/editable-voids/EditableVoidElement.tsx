@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { TRenderElementProps } from '@udecode/slate-plugins-core';
+import { SPRenderElementProps } from '@udecode/slate-plugins-core';
 import { Example } from '../../elements/basic-elements.stories';
 
 export const EditableVoidElement = ({
   attributes,
   children,
-}: TRenderElementProps) => {
+}: SPRenderElementProps) => {
   const [inputValue, setInputValue] = useState('');
 
   return (

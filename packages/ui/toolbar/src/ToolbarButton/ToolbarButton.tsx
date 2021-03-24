@@ -1,17 +1,19 @@
 import * as React from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react'; // optional
-import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
+import {
+  getRootClassNames,
+  RootStyleSet,
+} from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';
 import {
   ToolbarButtonProps,
   ToolbarButtonStyleProps,
-  ToolbarButtonStyles,
 } from './ToolbarButton.types';
 
 const getClassNames = getRootClassNames<
   ToolbarButtonStyleProps,
-  ToolbarButtonStyles
+  RootStyleSet
 >();
 
 export const ToolbarButtonBase = ({
@@ -21,6 +23,7 @@ export const ToolbarButtonBase = ({
   tooltip,
   active,
   onMouseDown,
+  as: Tag = 'span',
 }: ToolbarButtonProps) => {
   const spanProps = {
     onMouseDown,
@@ -42,13 +45,9 @@ export const ToolbarButtonBase = ({
   };
 
   const button = (
-    <span
-      data-testid="ToolbarButton"
-      className={classNames.root}
-      {...spanProps}
-    >
+    <Tag data-testid="ToolbarButton" className={classNames.root} {...spanProps}>
       {icon}
-    </span>
+    </Tag>
   );
 
   return tooltip ? <Tippy {...tooltipProps}>{button}</Tippy> : button;
@@ -57,7 +56,7 @@ export const ToolbarButtonBase = ({
 export const ToolbarButton = styled<
   ToolbarButtonProps,
   ToolbarButtonStyleProps,
-  NonNullable<ToolbarButtonProps['styles']>
+  RootStyleSet
 >(ToolbarButtonBase, getToolbarButtonStyles, undefined, {
   scope: 'ToolbarButton',
 });

@@ -1,6 +1,10 @@
+import {
+  ClassName,
+  RootStyleSet,
+  Styles,
+} from '@udecode/slate-plugins-ui-fluent';
 import { concatStyleSets } from '@uifabric/styling';
 import { getToolbarStyles } from '../Toolbar/Toolbar.styles';
-import { ToolbarStyleProps, ToolbarStyles } from '../Toolbar/Toolbar.types';
 
 const classNames = {
   root: 'slate-HeadingToolbar',
@@ -8,10 +12,10 @@ const classNames = {
 
 export const getHeadingToolbarStyles = ({
   className,
-}: ToolbarStyleProps = {}): ToolbarStyles => {
+}: ClassName = {}): Styles => {
   const color = '#06c';
 
-  const styles: ToolbarStyles = {
+  const styles: RootStyleSet = {
     root: [
       classNames.root,
       {

@@ -1,5 +1,5 @@
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 
 /**
  * Get void types from the plugins

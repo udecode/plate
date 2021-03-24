@@ -1,6 +1,6 @@
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { OnChange } from '../types/SlatePlugin/OnChange';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 import { flatMapKey } from './flatMapKey';
 
 export const onChangePlugins = (

@@ -1,25 +1,5 @@
-import { IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
+import { StyledProps } from '@udecode/slate-plugins-ui-fluent';
 
-export interface ToolbarProps {
-  /**
-   * Additional class name to provide on the root element.
-   */
-  className?: string;
-
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-
-  styles?: IStyleFunctionOrObject<ToolbarStyleProps, ToolbarStyles>;
-
+export interface ToolbarProps extends StyledProps {
   children?: any;
-}
-
-export interface ToolbarStyleProps {
-  className?: string;
-}
-
-export interface ToolbarStyles {
-  root: IStyle;
 }

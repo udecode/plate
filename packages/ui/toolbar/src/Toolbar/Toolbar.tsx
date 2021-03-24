@@ -2,13 +2,9 @@ import * as React from 'react';
 import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { concatStyleSets } from '@uifabric/styling';
 import { getToolbarStyles } from './Toolbar.styles';
-import {
-  ToolbarProps,
-  ToolbarStyleProps,
-  ToolbarStyles,
-} from './Toolbar.types';
+import { ToolbarProps } from './Toolbar.types';
 
-const getClassNames = getRootClassNames<ToolbarStyleProps, ToolbarStyles>();
+const getClassNames = getRootClassNames();
 
 export const ToolbarBase = React.forwardRef<HTMLDivElement, ToolbarProps>(
   ({ className, styles, children }, ref) => {

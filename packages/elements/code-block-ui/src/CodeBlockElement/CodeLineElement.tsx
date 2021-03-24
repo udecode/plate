@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {
+  ClassName,
   getRootClassNames,
-  NodeStyleProps,
+  RootStyleSet,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -36,8 +37,8 @@ export const CodeLineElementBase = ({
  */
 export const CodeLineElement = styled<
   StyledElementProps,
-  NodeStyleProps,
-  NonNullable<StyledElementProps['styles']>
+  ClassName,
+  RootStyleSet
 >(CodeLineElementBase, getCodeLineElementStyles, undefined, {
   scope: 'CodeBlockElement',
 });

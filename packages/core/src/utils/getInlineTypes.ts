@@ -1,5 +1,5 @@
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 
 /**
  * Get inline types from the plugins

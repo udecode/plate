@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { styled } from '@uifabric/utilities';
 import { getStyledNodeStyles } from '../StyledNode/StyledNode.styles';
-import { NodeStyleProps } from '../StyledNode/StyledNode.types';
+import { ClassName, RootStyleSet } from '../StyledNode/StyledNode.types';
 import { getRootClassNames } from '../types';
 import { StyledLeafProps } from './StyledLeaf.types';
 
@@ -15,15 +15,12 @@ export const StyledLeafBase = ({
   children,
   className,
   styles,
-  as = 'span',
+  as: Tag = 'span',
   nodeProps,
 }: StyledLeafProps) => {
   const classNames = getClassNames(styles, {
     className,
-    // Other style props
   });
-
-  const Tag = as;
 
   return (
     <Tag className={classNames.root} {...nodeProps}>
@@ -32,10 +29,11 @@ export const StyledLeafBase = ({
   );
 };
 
-export const StyledLeaf = styled<
-  StyledLeafProps,
-  NodeStyleProps,
-  NonNullable<StyledLeafProps['styles']>
->(StyledLeafBase, getStyledNodeStyles, undefined, {
-  scope: 'StyledLeaf',
-});
+export const StyledLeaf = styled<StyledLeafProps, ClassName, RootStyleSet>(
+  StyledLeafBase,
+  getStyledNodeStyles,
+  undefined,
+  {
+    scope: 'StyledLeaf',
+  }
+);

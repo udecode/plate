@@ -1,5 +1,5 @@
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import { SPEditor } from '../types/SPEditor';
 import { useEditorStatic } from './useEditor';
 
 export const getOptions = (editor: SPEditor): SlatePluginsOptions =>

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { DefaultLeaf, RenderLeafProps } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { SPEditor } from '../plugins/useSlatePluginsPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 import { flatMapKey } from './flatMapKey';
 
 /**

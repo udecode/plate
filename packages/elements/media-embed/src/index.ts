@@ -3,5 +3,6 @@
  */
 
 export * from './defaults';
+export * from './types';
 export * from './useDeserializeIframe';
 export * from './useMediaEmbedPlugin';

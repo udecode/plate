@@ -1,9 +1,9 @@
-import { NodeStyleProps } from '@udecode/slate-plugins-ui-fluent';
+import { ClassName } from '@udecode/slate-plugins-ui-fluent';
 import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
 
 export const getMediaEmbedElementStyles = ({
   className,
-}: NodeStyleProps): MediaEmbedElementStyleSet => {
+}: ClassName): MediaEmbedElementStyleSet => {
   return {
     root: [
       {

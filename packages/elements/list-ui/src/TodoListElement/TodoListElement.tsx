@@ -1,24 +1,20 @@
 import * as React from 'react';
 import { useEditorStatic } from '@udecode/slate-plugins-core';
-import {
-  getRootClassNames,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
+import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { getTodoListElementStyles } from './TodoListElement.styles';
 import {
+  TodoListElementProps,
   TodoListElementStyleProps,
-  TodoListElementStyles,
+  TodoListElementStyleSet,
 } from './TodoListElement.types';
 
 const getClassNames = getRootClassNames<
   TodoListElementStyleProps,
-  TodoListElementStyles
+  TodoListElementStyleSet
 >();
-
-type Props = StyledElementProps<{ checked?: boolean }>;
 
 /**
  * TodoListElement with no default styles.
@@ -31,7 +27,7 @@ export const TodoListElementBase = ({
   className,
   styles,
   nodeProps,
-}: Props) => {
+}: TodoListElementProps) => {
   const editor = useEditorStatic();
   const readOnly = useReadOnly();
 
@@ -75,9 +71,9 @@ export const TodoListElementBase = ({
  * TodoListElement
  */
 export const TodoListElement = styled<
-  Props,
+  TodoListElementProps,
   TodoListElementStyleProps,
-  NonNullable<Props['styles']>
+  TodoListElementStyleSet
 >(TodoListElementBase, getTodoListElementStyles, undefined, {
   scope: 'TodoListElement',
 });

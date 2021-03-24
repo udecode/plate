@@ -1,6 +1,6 @@
-import { MentionSelectStyleSet } from '@udecode/slate-plugins-mention';
-import { NodeStyleProps } from '@udecode/slate-plugins-ui-fluent';
+import { ClassName } from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
+import { MentionSelectStyleSet } from './MentionSelect.types';
 
 const classNames = {
   root: 'slate-MentionSelect',
@@ -10,7 +10,7 @@ const classNames = {
 
 export const getMentionSelectStyles = ({
   className,
-}: NodeStyleProps = {}): MentionSelectStyleSet => {
+}: ClassName = {}): MentionSelectStyleSet => {
   const mentionItem: IStyle = [
     classNames.mentionItem,
     {

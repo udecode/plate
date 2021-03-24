@@ -1,9 +1,7 @@
+import { RootStyleSet, Styles } from '@udecode/slate-plugins-ui-fluent';
 import { concatStyleSets, IStyle } from '@uifabric/styling';
-import { IStyleFunctionOrObject, memoizeFunction } from '@uifabric/utilities';
-import {
-  BalloonToolbarStyleProps,
-  BalloonToolbarStyles,
-} from './BalloonToolbar.types';
+import { memoizeFunction } from '@uifabric/utilities';
+import { BalloonToolbarStyleProps } from './BalloonToolbar.types';
 
 const classNames = {
   root: 'slate-BalloonToolbar',
@@ -12,16 +10,13 @@ const classNames = {
 export const getBalloonToolbarStyles = memoizeFunction(
   (
     className?: string,
-    styles?: IStyleFunctionOrObject<
-      BalloonToolbarStyleProps,
-      BalloonToolbarStyles
-    >,
+    styles?: Styles<BalloonToolbarStyleProps>,
     theme?: BalloonToolbarStyleProps['theme'],
     hidden?: BalloonToolbarStyleProps['hidden'],
     hiddenDelay?: BalloonToolbarStyleProps['hiddenDelay'],
     direction?: BalloonToolbarStyleProps['direction'],
     arrow?: BalloonToolbarStyleProps['arrow']
-  ): BalloonToolbarStyles => {
+  ): RootStyleSet => {
     let color = 'rgb(157, 170, 182)';
     let colorActive = 'white';
     let background = 'rgb(36, 42, 49)';

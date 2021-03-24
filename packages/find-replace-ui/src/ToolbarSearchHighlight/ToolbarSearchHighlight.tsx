@@ -1,12 +1,15 @@
 import * as React from 'react';
 import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
 
-interface Props {
+export interface ToolbarSearchHighlightProps {
   icon: any;
   setSearch: any;
 }
 
-export const ToolbarSearchHighlight = ({ icon: Icon, setSearch }: Props) => (
+export const ToolbarSearchHighlight = ({
+  icon: Icon,
+  setSearch,
+}: ToolbarSearchHighlightProps) => (
   <HeadingToolbar styles={{ root: { height: '38px' } }}>
     <div
       style={{

@@ -1,8 +1,6 @@
-import { NodeStyleProps, NodeStyleSet } from './StyledNode.types';
+import { ClassName, RootStyleSet } from './StyledNode.types';
 
-export const getStyledNodeStyles = ({
-  className,
-}: NodeStyleProps): NodeStyleSet => {
+export const getStyledNodeStyles = ({ className }: ClassName): RootStyleSet => {
   return {
     root: [
       className,

@@ -1,4 +1,4 @@
-import { SPEditor } from '../../plugins/useSlatePluginsPlugin';
+import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { OnChange } from './OnChange';

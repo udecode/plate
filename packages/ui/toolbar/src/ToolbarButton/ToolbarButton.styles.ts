@@ -1,7 +1,5 @@
-import {
-  ToolbarButtonStyleProps,
-  ToolbarButtonStyles,
-} from './ToolbarButton.types';
+import { RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import { ToolbarButtonStyleProps } from './ToolbarButton.types';
 
 const classNames = {
   root: 'slate-ToolbarButton',
@@ -11,7 +9,7 @@ const classNames = {
 export const getToolbarButtonStyles = ({
   className,
   active,
-}: ToolbarButtonStyleProps = {}): ToolbarButtonStyles => ({
+}: ToolbarButtonStyleProps = {}): RootStyleSet => ({
   root: [
     classNames.root,
     {

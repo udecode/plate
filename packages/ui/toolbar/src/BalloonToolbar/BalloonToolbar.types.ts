@@ -1,20 +1,8 @@
 import { ReactNode } from 'react';
-import { IStyleFunctionOrObject } from '@uifabric/utilities';
-import {
-  ToolbarProps,
-  ToolbarStyleProps,
-  ToolbarStyles,
-} from '../Toolbar/Toolbar.types';
+import { StyledProps } from '@udecode/slate-plugins-ui-fluent';
 
-export interface BalloonToolbarProps extends ToolbarProps {
-  /**
-   * Call to provide customized styling that will layer on top of the variant rules.
-   */
-  styles?: IStyleFunctionOrObject<
-    BalloonToolbarStyleProps,
-    BalloonToolbarStyles
-  >;
-
+export interface BalloonToolbarProps
+  extends StyledProps<BalloonToolbarStyleProps> {
   children: ReactNode;
 
   /**
@@ -39,12 +27,10 @@ export interface BalloonToolbarProps extends ToolbarProps {
   arrow?: boolean;
 }
 
-export interface BalloonToolbarStyleProps extends ToolbarStyleProps {
+export interface BalloonToolbarStyleProps {
   hidden?: boolean;
   hiddenDelay?: BalloonToolbarProps['hiddenDelay'];
   direction?: BalloonToolbarProps['direction'];
   theme?: BalloonToolbarProps['theme'];
   arrow?: BalloonToolbarProps['arrow'];
 }
-
-export interface BalloonToolbarStyles extends ToolbarStyles {}

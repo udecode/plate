@@ -1,16 +1,13 @@
+import { SPRenderLeafProps } from '@udecode/slate-plugins-core';
 import { Text } from 'slate';
 import {
-  NodeStyleProps,
-  NodeStyleSet,
-  StyledNodeProps,
+  ClassName,
+  RootStyleSet,
+  StyledProps,
 } from '../StyledNode/StyledNode.types';
 
-export interface StyledLeafProps<
+export type StyledLeafProps<
   TText = Text,
-  TStyleProps = NodeStyleProps,
-  TStyleSet = NodeStyleSet
-> extends StyledNodeProps<TStyleProps, TStyleSet> {
-  children: any;
-  text: Text;
-  leaf: Text & TText;
-}
+  TStyleProps = ClassName,
+  TStyleSet = RootStyleSet
+> = SPRenderLeafProps<TText> & StyledProps<TStyleProps, TStyleSet>;
