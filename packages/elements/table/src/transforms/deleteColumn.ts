@@ -1,25 +1,27 @@
 import { getAbove, someNode } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TR } from '../defaults';
 
 export const deleteColumn = (editor: SPEditor) => {
   if (
-    someNode(editor, { match: { type: getPluginType(editor, ELEMENT_TABLE) } })
+    someNode(editor, {
+      match: { type: getSlatePluginType(editor, ELEMENT_TABLE) },
+    })
   ) {
     const currentCellItem = getAbove(editor, {
       match: {
         type: [
-          getPluginType(editor, ELEMENT_TD),
-          getPluginType(editor, ELEMENT_TD),
+          getSlatePluginType(editor, ELEMENT_TD),
+          getSlatePluginType(editor, ELEMENT_TD),
         ],
       },
     });
     const currentRowItem = getAbove(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TR) },
+      match: { type: getSlatePluginType(editor, ELEMENT_TR) },
     });
     const currentTableItem = getAbove(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getSlatePluginType(editor, ELEMENT_TABLE) },
     });
 
     if (

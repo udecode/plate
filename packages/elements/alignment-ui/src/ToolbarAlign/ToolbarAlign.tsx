@@ -4,7 +4,7 @@ import {
   getPreventDefaultHandler,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { useEditorSlate } from '@udecode/slate-plugins-core';
+import { useTSlate } from '@udecode/slate-plugins-core';
 import {
   ToolbarButton,
   ToolbarButtonProps,
@@ -20,7 +20,7 @@ export const ToolbarAlign = ({
   unwrapTypes = KEYS_ALIGN,
   ...props
 }: ToolbarAlignProps) => {
-  const editor = useEditorSlate();
+  const editor = useTSlate();
 
   return (
     <ToolbarButton

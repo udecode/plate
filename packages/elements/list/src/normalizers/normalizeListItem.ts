@@ -4,7 +4,7 @@ import {
   insertEmptyElement,
 } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   SPEditor,
   TDescendant,
   TElement,
@@ -25,9 +25,9 @@ export const normalizeListItem = (
   }: { nodeEntry: NodeEntry<TElement> } & ListNormalizerOptions
 ) => {
   const allValidLiChildrenTypes = [
-    getPluginType(editor, ELEMENT_UL),
-    getPluginType(editor, ELEMENT_OL),
-    getPluginType(editor, ELEMENT_DEFAULT),
+    getSlatePluginType(editor, ELEMENT_UL),
+    getSlatePluginType(editor, ELEMENT_OL),
+    getSlatePluginType(editor, ELEMENT_DEFAULT),
     ...validLiChildrenTypes,
   ];
 
@@ -36,7 +36,7 @@ export const normalizeListItem = (
   const firstChild: TDescendant = listItemNode.children?.[0];
 
   if (!firstChild) {
-    insertEmptyElement(editor, getPluginType(editor, ELEMENT_DEFAULT), {
+    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_DEFAULT), {
       at: firstChildPath,
     });
     return true;
@@ -49,8 +49,8 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a <p> tag as a first element
-  if (firstChild.type !== getPluginType(editor, ELEMENT_DEFAULT)) {
-    insertEmptyElement(editor, getPluginType(editor, ELEMENT_DEFAULT), {
+  if (firstChild.type !== getSlatePluginType(editor, ELEMENT_DEFAULT)) {
+    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_DEFAULT), {
       at: firstChildPath,
     });
   }

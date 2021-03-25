@@ -1,9 +1,12 @@
 import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import { Deserialize, getPluginOptions } from '@udecode/slate-plugins-core';
+import {
+  Deserialize,
+  getSlatePluginOptions,
+} from '@udecode/slate-plugins-core';
 import { MARK_BOLD } from './defaults';
 
 export const useDeserializeBold = (): Deserialize => (editor) => {
-  const options = getPluginOptions(editor, MARK_BOLD);
+  const options = getSlatePluginOptions(editor, MARK_BOLD);
 
   return {
     leaf: getLeafDeserializer({

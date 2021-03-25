@@ -1,5 +1,5 @@
 import { isCollapsed, unwrapNodes } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 import { wrapLink } from './wrapLink';
@@ -24,7 +24,7 @@ export const upsertLinkAtSelection = (
 ) => {
   if (!editor.selection) return;
 
-  const type = getPluginType(editor, ELEMENT_LINK);
+  const type = getSlatePluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
     return Transforms.insertNodes(editor, {

@@ -9,7 +9,7 @@ import { useSlatePluginsStore } from './useSlatePluginsStore';
 /**
  * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
  */
-export const useSPEditor = <
+export const useStoreEditor = <
   TEditor extends Editor = ReactEditor & HistoryEditor & SPEditor
 >(
   id = 'main'
@@ -18,16 +18,16 @@ export const useSPEditor = <
     useCallback((state) => state[id]?.editor as TEditor, [id])
   );
 
-export const useSlatePluginsValue = (id = 'main') =>
+export const useStoreValue = (id = 'main') =>
   useSlatePluginsStore(useCallback((state) => state[id]?.value ?? [], [id]));
 
-export const usePlugins = (id = 'main') =>
+export const useStorePlugins = (id = 'main') =>
   useSlatePluginsStore(useCallback((state) => state[id]?.plugins ?? [], [id]));
 
-export const useSlatePluginsPluginKeys = (id = 'main') =>
+export const useStorePluginKeys = (id = 'main') =>
   useSlatePluginsStore(
     useCallback((state) => state[id]?.pluginKeys ?? [], [id])
   );
 
-export const useSlatePluginsOptions = (id = 'main') =>
-  useSPEditor(id).options as SlatePluginsOptions;
+export const useStoreEditorOptions = (id = 'main') =>
+  useStoreEditor(id).options as SlatePluginsOptions;

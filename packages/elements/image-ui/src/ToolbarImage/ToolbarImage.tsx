@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEditorStatic } from '@udecode/slate-plugins-core';
+import { useTSlateStatic } from '@udecode/slate-plugins-core';
 import { insertImage } from '@udecode/slate-plugins-image';
 import {
   ToolbarButton,
@@ -14,7 +14,7 @@ export interface ToolbarImageProps extends ToolbarButtonProps {
 }
 
 export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
-  const editor = useEditorStatic();
+  const editor = useTSlateStatic();
 
   return (
     <ToolbarButton

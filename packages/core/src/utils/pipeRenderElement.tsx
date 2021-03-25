@@ -4,18 +4,18 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 import { SPRenderElementProps } from '../types/SPRenderElementProps';
-import { flatMapKey } from './flatMapKey';
+import { flatMapByKey } from './flatMapByKey';
 
 /**
  * @see {@link RenderElement}
  */
-export const renderElementPlugins = (
+export const pipeRenderElement = (
   editor: SPEditor,
   plugins: SlatePlugin[]
 ): EditableProps['renderElement'] => (elementProps) => {
   let element;
 
-  flatMapKey(plugins, 'renderElement').some((renderElement) => {
+  flatMapByKey(plugins, 'renderElement').some((renderElement) => {
     element = renderElement(editor)(elementProps as SPRenderElementProps);
     return !!element;
   });

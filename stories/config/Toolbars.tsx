@@ -66,29 +66,23 @@ import {
   ToolbarList,
   ToolbarMark,
   ToolbarTable,
-  useEditorPluginType,
+  useSlatePluginType,
 } from '@udecode/slate-plugins';
 
 export const ToolbarButtonsBasicElements = () => (
   <>
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H1)} icon={<LooksOne />} />
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H2)} icon={<LooksTwo />} />
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H3)} icon={<Looks3 />} />
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H4)} icon={<Looks4 />} />
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H5)} icon={<Looks5 />} />
+    <ToolbarElement type={useSlatePluginType(ELEMENT_H6)} icon={<Looks6 />} />
     <ToolbarElement
-      type={useEditorPluginType(ELEMENT_H1)}
-      icon={<LooksOne />}
-    />
-    <ToolbarElement
-      type={useEditorPluginType(ELEMENT_H2)}
-      icon={<LooksTwo />}
-    />
-    <ToolbarElement type={useEditorPluginType(ELEMENT_H3)} icon={<Looks3 />} />
-    <ToolbarElement type={useEditorPluginType(ELEMENT_H4)} icon={<Looks4 />} />
-    <ToolbarElement type={useEditorPluginType(ELEMENT_H5)} icon={<Looks5 />} />
-    <ToolbarElement type={useEditorPluginType(ELEMENT_H6)} icon={<Looks6 />} />
-    <ToolbarElement
-      type={useEditorPluginType(ELEMENT_BLOCKQUOTE)}
+      type={useSlatePluginType(ELEMENT_BLOCKQUOTE)}
       icon={<FormatQuote />}
     />
     <ToolbarCodeBlock
-      type={useEditorPluginType(ELEMENT_CODE_BLOCK)}
+      type={useSlatePluginType(ELEMENT_CODE_BLOCK)}
       icon={<CodeBlock />}
     />
   </>
@@ -97,11 +91,11 @@ export const ToolbarButtonsBasicElements = () => (
 export const ToolbarButtonsList = () => (
   <>
     <ToolbarList
-      type={useEditorPluginType(ELEMENT_UL)}
+      type={useSlatePluginType(ELEMENT_UL)}
       icon={<FormatListBulleted />}
     />
     <ToolbarList
-      type={useEditorPluginType(ELEMENT_OL)}
+      type={useSlatePluginType(ELEMENT_OL)}
       icon={<FormatListNumbered />}
     />
   </>
@@ -111,15 +105,15 @@ export const ToolbarButtonsAlign = () => (
   <>
     <ToolbarAlign icon={<FormatAlignLeft />} />
     <ToolbarAlign
-      type={useEditorPluginType(ELEMENT_ALIGN_CENTER)}
+      type={useSlatePluginType(ELEMENT_ALIGN_CENTER)}
       icon={<FormatAlignCenter />}
     />
     <ToolbarAlign
-      type={useEditorPluginType(ELEMENT_ALIGN_RIGHT)}
+      type={useSlatePluginType(ELEMENT_ALIGN_RIGHT)}
       icon={<FormatAlignRight />}
     />
     <ToolbarAlign
-      type={useEditorPluginType(ELEMENT_ALIGN_JUSTIFY)}
+      type={useSlatePluginType(ELEMENT_ALIGN_JUSTIFY)}
       icon={<FormatAlignJustify />}
     />
   </>
@@ -128,32 +122,29 @@ export const ToolbarButtonsAlign = () => (
 export const ToolbarButtonsBasicMarks = () => {
   return (
     <>
+      <ToolbarMark type={useSlatePluginType(MARK_BOLD)} icon={<FormatBold />} />
       <ToolbarMark
-        type={useEditorPluginType(MARK_BOLD)}
-        icon={<FormatBold />}
-      />
-      <ToolbarMark
-        type={useEditorPluginType(MARK_ITALIC)}
+        type={useSlatePluginType(MARK_ITALIC)}
         icon={<FormatItalic />}
       />
       <ToolbarMark
-        type={useEditorPluginType(MARK_UNDERLINE)}
+        type={useSlatePluginType(MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
       <ToolbarMark
-        type={useEditorPluginType(MARK_STRIKETHROUGH)}
+        type={useSlatePluginType(MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
-      <ToolbarMark type={useEditorPluginType(MARK_CODE)} icon={<CodeAlt />} />
-      <ToolbarMark type={useEditorPluginType(MARK_KBD)} icon={<Keyboard />} />
+      <ToolbarMark type={useSlatePluginType(MARK_CODE)} icon={<CodeAlt />} />
+      <ToolbarMark type={useSlatePluginType(MARK_KBD)} icon={<Keyboard />} />
       <ToolbarMark
-        type={useEditorPluginType(MARK_SUPERSCRIPT)}
-        clear={useEditorPluginType(MARK_SUBSCRIPT)}
+        type={useSlatePluginType(MARK_SUPERSCRIPT)}
+        clear={useSlatePluginType(MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
       <ToolbarMark
-        type={useEditorPluginType(MARK_SUBSCRIPT)}
-        clear={useEditorPluginType(MARK_SUPERSCRIPT)}
+        type={useSlatePluginType(MARK_SUBSCRIPT)}
+        clear={useSlatePluginType(MARK_SUPERSCRIPT)}
         icon={<Subscript />}
       />
     </>
@@ -162,7 +153,7 @@ export const ToolbarButtonsBasicMarks = () => {
 
 export const ToolbarButtonsTable = () => (
   <>
-    <ToolbarMark type={useEditorPluginType(MARK_BOLD)} icon={<FormatBold />} />
+    <ToolbarMark type={useSlatePluginType(MARK_BOLD)} icon={<FormatBold />} />
     <ToolbarTable icon={<BorderAll />} transform={insertTable} />
     <ToolbarTable icon={<BorderClear />} transform={deleteTable} />
     <ToolbarTable icon={<BorderBottom />} transform={addRow} />
@@ -194,17 +185,17 @@ export const BallonToolbarMarks = () => {
       arrow={arrow}
     >
       <ToolbarMark
-        type={useEditorPluginType(MARK_BOLD)}
+        type={useSlatePluginType(MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
       />
       <ToolbarMark
-        type={useEditorPluginType(MARK_ITALIC)}
+        type={useSlatePluginType(MARK_ITALIC)}
         icon={<FormatItalic />}
         tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
       />
       <ToolbarMark
-        type={useEditorPluginType(MARK_UNDERLINE)}
+        type={useSlatePluginType(MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
       />

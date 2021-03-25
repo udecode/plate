@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
 import { getPreventDefaultHandler, PortalBody } from '@udecode/slate-plugins';
-import { useEditorSlate } from '@udecode/slate-plugins-core';
+import { useTSlate } from '@udecode/slate-plugins-core';
 import {
   ComboboxItem,
   ComboboxRoot,
@@ -21,7 +21,7 @@ export const Combobox = ({ onSelectItem, onRenderItem }: ComboboxProps) => {
   const isOpen = useComboboxIsOpen();
 
   const ref = React.useRef<any>(null);
-  const editor = useEditorSlate();
+  const editor = useTSlate();
 
   useEffect(() => {
     setElementPositionByRange(editor, { ref, at });

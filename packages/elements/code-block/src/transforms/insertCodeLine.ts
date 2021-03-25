@@ -1,4 +1,4 @@
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
@@ -10,7 +10,7 @@ export const insertCodeLine = (editor: SPEditor, indentDepth = 0) => {
     const indent = ' '.repeat(indentDepth);
 
     Transforms.insertNodes(editor, {
-      type: getPluginType(editor, ELEMENT_CODE_LINE),
+      type: getSlatePluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: indent }],
     } as any);
   }

@@ -5,7 +5,7 @@ import {
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   isElement,
   SPEditor,
 } from '@udecode/slate-plugins-core';
@@ -17,8 +17,8 @@ import { ELEMENT_LI } from '../defaults';
  * TODO: test
  */
 export const insertListItem = (editor: SPEditor) => {
-  const liType = getPluginType(editor, ELEMENT_LI);
-  const pType = getPluginType(editor, ELEMENT_DEFAULT);
+  const liType = getSlatePluginType(editor, ELEMENT_LI);
+  const pType = getSlatePluginType(editor, ELEMENT_DEFAULT);
 
   if (editor.selection) {
     const paragraphEntry = getAbove(editor, { match: { type: pType } });

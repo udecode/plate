@@ -1,5 +1,5 @@
 import { getAbove } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
@@ -16,8 +16,8 @@ export const getListRoot = (
     at,
     match: {
       type: [
-        getPluginType(editor, ELEMENT_UL),
-        getPluginType(editor, ELEMENT_OL),
+        getSlatePluginType(editor, ELEMENT_UL),
+        getSlatePluginType(editor, ELEMENT_OL),
       ],
     },
   });

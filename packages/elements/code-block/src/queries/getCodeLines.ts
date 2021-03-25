@@ -1,5 +1,5 @@
 import { getNodes } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Location } from 'slate';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
@@ -15,7 +15,7 @@ export const getCodeLines = (
   return [
     ...getNodes(editor, {
       at,
-      match: { type: getPluginType(editor, ELEMENT_CODE_LINE) },
+      match: { type: getSlatePluginType(editor, ELEMENT_CODE_LINE) },
     }),
   ];
 };

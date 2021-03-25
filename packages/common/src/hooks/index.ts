@@ -4,6 +4,6 @@
 
 export * from './useOnKeyDownElement';
 export * from './useOnKeyDownMark';
-export * from './usePluginTypes';
 export * from './useRenderElement';
 export * from './useRenderLeaf';
+export * from './useSlatePluginTypes';

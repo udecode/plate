@@ -1,6 +1,6 @@
 import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
 import {
-  getPluginType,
+  getSlatePluginType,
   isElement,
   SPEditor,
 } from '@udecode/slate-plugins-core';
@@ -18,7 +18,7 @@ export const getCodeLineEntry = (
     at &&
     someNode(editor, {
       at,
-      match: { type: getPluginType(editor, ELEMENT_CODE_LINE) },
+      match: { type: getSlatePluginType(editor, ELEMENT_CODE_LINE) },
     })
   ) {
     const selectionParent = getParent(editor, at);
@@ -28,7 +28,7 @@ export const getCodeLineEntry = (
     const codeLine =
       getAbove(editor, {
         at,
-        match: { type: getPluginType(editor, ELEMENT_CODE_LINE) },
+        match: { type: getSlatePluginType(editor, ELEMENT_CODE_LINE) },
       }) || getParent(editor, parentPath);
 
     if (!codeLine) return;
@@ -36,7 +36,7 @@ export const getCodeLineEntry = (
 
     if (
       isElement(codeLineNode) &&
-      codeLineNode.type !== getPluginType(editor, ELEMENT_CODE_LINE)
+      codeLineNode.type !== getSlatePluginType(editor, ELEMENT_CODE_LINE)
     )
       return;
 

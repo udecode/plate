@@ -3,7 +3,7 @@ import {
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { getPluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { ELEMENT_LI } from '../defaults';
 
 /**
@@ -20,6 +20,6 @@ export const isAcrossListItems = (editor: SPEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getPluginType(editor, ELEMENT_LI) },
+    match: { type: getSlatePluginType(editor, ELEMENT_LI) },
   });
 };
