@@ -17,7 +17,7 @@ export const insertEmptyCodeBlock = (
   {
     defaultType = ELEMENT_DEFAULT,
     insertNodesOptions,
-    level = 1,
+    level = 0,
   }: CodeBlockInsertOptions
 ) => {
   if (!editor.selection) return;

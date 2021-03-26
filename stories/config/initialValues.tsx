@@ -36,12 +36,7 @@ import * as faker from 'faker';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { options } from './pluginOptions';
-import {
-  createList,
-  createNodes,
-  createParagraph,
-  getNodesWithRandomId,
-} from './utils';
+import { createList, createParagraph, getNodesWithRandomId } from './utils';
 
 jsx;
 
@@ -286,7 +281,7 @@ export const initialValueMentions: any = (
   </fragment>
 );
 
-export const initialValuePasteHtml: any = createNodes([
+export const initialValuePasteHtml: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [
@@ -324,9 +319,9 @@ export const initialValuePasteHtml: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValuePasteMd: any = createNodes([
+export const initialValuePasteMd: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [
@@ -369,9 +364,9 @@ export const initialValuePasteMd: any = createNodes([
       { text: '' },
     ],
   },
-]);
+];
 
-export const initialValuePlainText: any = createNodes([
+export const initialValuePlainText: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
     children: [
@@ -381,9 +376,9 @@ export const initialValuePlainText: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValueCombobox: any = createNodes([
+export const initialValueCombobox: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
     children: [
@@ -392,9 +387,9 @@ export const initialValueCombobox: any = createNodes([
       { text: '' },
     ],
   },
-]);
+];
 
-export const initialValueBasicMarks: any = createNodes([
+export const initialValueBasicMarks: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [
@@ -469,9 +464,9 @@ export const initialValueBasicMarks: any = createNodes([
     ],
   },
   createParagraph('There are many other keyboard shortcuts.'),
-]);
+];
 
-export const initialValueHighlight: any = createNodes([
+export const initialValueHighlight: any = [
   {
     type: options[ELEMENT_H2].type,
     children: [
@@ -496,9 +491,9 @@ export const initialValueHighlight: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValueBasicElements: any = createNodes([
+export const initialValueBasicElements: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [{ text: '🧱 Elements' }],
@@ -564,9 +559,9 @@ export const initialValueBasicElements: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValueList: any = createNodes([
+export const initialValueList: any = [
   {
     type: options[ELEMENT_H2].type,
     children: [{ text: '✍️ List' }],
@@ -703,9 +698,9 @@ export const initialValueList: any = createNodes([
     type: options[ELEMENT_PARAGRAPH].type,
     children: [{ text: 'Try it out for yourself!' }],
   },
-]);
+];
 
-export const initialValueSearchHighlighting: any = createNodes([
+export const initialValueSearchHighlighting: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
     children: [
@@ -725,7 +720,7 @@ export const initialValueSearchHighlighting: any = createNodes([
       },
     ],
   },
-]);
+];
 
 const createTable = () => ({
   type: options[ELEMENT_TABLE].type,
@@ -825,7 +820,7 @@ const createSpanningTable = () => ({
   ],
 });
 
-export const initialValueTables: any = createNodes([
+export const initialValueTables: any = [
   {
     type: options[ELEMENT_H2].type,
     children: [
@@ -863,9 +858,9 @@ export const initialValueTables: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValueSoftBreak: any = createNodes([
+export const initialValueSoftBreak: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [{ text: '🍦 Soft Break ⇧⏎' }],
@@ -890,9 +885,9 @@ export const initialValueSoftBreak: any = createNodes([
     type: options[ELEMENT_CODE_BLOCK].type,
     children: [{ text: 'And ⏎ here.' }],
   },
-]);
+];
 
-export const initialValueExitBreak: any = createNodes([
+export const initialValueExitBreak: any = [
   {
     type: options[ELEMENT_H1].type,
     children: [{ text: '⏎ Exit Break ⏎' }],
@@ -924,9 +919,9 @@ export const initialValueExitBreak: any = createNodes([
     children: [{ text: 'It also works for nested blocks:' }],
   },
   createTable(),
-]);
+];
 
-export const initialValueVoids: any = createNodes([
+export const initialValueVoids: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
     children: [
@@ -948,9 +943,9 @@ export const initialValueVoids: any = createNodes([
       },
     ],
   },
-]);
+];
 
-export const initialValueIframe: any = createNodes([
+export const initialValueIframe: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
     children: [
@@ -986,7 +981,7 @@ export const initialValueIframe: any = createNodes([
       },
     ],
   },
-]);
+];
 
 export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueForcedLayout,
@@ -1022,4 +1017,4 @@ for (let h = 0; h < HEADINGS; h++) {
     });
   }
 }
-export const initialValueHugeDocument: any = createNodes(hugeDocument);
+export const initialValueHugeDocument: any = hugeDocument;

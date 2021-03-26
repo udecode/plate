@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { deserializeHTMLToFragment } from '../../utils/deserializeHTMLToFragment';
+
+jsx;
 
 const fragment = (
   <fragment>

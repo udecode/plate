@@ -1,6 +1,5 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -8,6 +7,8 @@ import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
+
+jsx;
 
 const input = ((
   <editor>

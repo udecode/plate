@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { RenderLeafProps } from 'slate-react';
 import {
+  getBoldPlugin,
   getImagePlugin,
   MARK_BOLD,
   TRenderElementProps,
-  useBoldPlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
@@ -45,7 +45,7 @@ it('custom serialize bold to html', () => {
     serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
       plugins: [
         {
-          ...useBoldPlugin(),
+          ...getBoldPlugin(),
           serialize: {
             leaf: ({ leaf, children }: RenderLeafProps) =>
               leaf[MARK_BOLD] && !!leaf.text

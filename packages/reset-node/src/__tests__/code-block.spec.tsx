@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { isBlockAboveEmpty } from '@udecode/slate-plugins-common';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { Editor } from 'slate';
 import { options } from '../../../../stories/config/pluginOptions';
 import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/src/defaults';
 import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
@@ -17,7 +17,7 @@ const input = ((
       <cursor />
     </hcodeblock>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output = (
   <editor>

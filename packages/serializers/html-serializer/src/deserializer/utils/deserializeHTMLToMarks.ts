@@ -6,9 +6,10 @@ import {
   TDescendant,
 } from '@udecode/slate-plugins-core';
 import { Text } from 'slate';
-jsx;
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
+
+jsx;
 
 export interface DeserializeMarksProps {
   plugins: SlatePlugin[];

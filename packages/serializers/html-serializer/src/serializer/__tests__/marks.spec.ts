@@ -1,6 +1,6 @@
 import { getBasicMarkPlugins } from '../../../../../marks/basic-marks/src/getBasicMarkPlugins';
 import { getHighlightPlugin } from '../../../../../marks/highlight/src/getHighlightPlugin';
-import { useKbdPlugin } from '../../../../../marks/kbd/src/getKbdPlugin';
+import { getKbdPlugin } from '../../../../../marks/kbd/src/getKbdPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
@@ -8,7 +8,7 @@ import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 const plugins = [
   ...getBasicMarkPlugins(),
   getHighlightPlugin(),
-  useKbdPlugin(),
+  getKbdPlugin(),
 ];
 const editor = createEditorPlugins({ plugins });
 

@@ -32,28 +32,25 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getListPlugin(),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+  getAutoformatPlugin(optionsAutoformat),
+];
 
-export const Example = () => {
-  const plugins = [
-    getReactPlugin(),
-    getHistoryPlugin(),
-    ...getBasicElementPlugins(),
-    ...getBasicMarkPlugins(),
-    getListPlugin(),
-    getResetNodePlugin(optionsResetBlockTypePlugin),
-    getSoftBreakPlugin(optionsSoftBreakPlugin),
-    getExitBreakPlugin(optionsExitBreakPlugin),
-    getAutoformatPlugin(optionsAutoformat),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueAutoformat}
-    />
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueAutoformat}
+  />
+);

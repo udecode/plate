@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { useBalloonMove } from '../../../../BalloonToolbar/useBalloonMove';
+
+jsx;
 
 const input1 = ((
   <editor>

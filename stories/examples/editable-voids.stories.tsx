@@ -23,7 +23,6 @@ const components = getSlatePluginsComponents({
   [EDITABLE_VOID]: EditableVoidElement,
 });
 const options = getSlatePluginsOptions();
-
 const plugins = [
   getReactPlugin(),
   getHistoryPlugin(),

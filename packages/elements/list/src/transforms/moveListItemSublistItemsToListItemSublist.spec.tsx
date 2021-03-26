@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
 import { findNode } from '@udecode/slate-plugins-common';
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
+
+jsx;
 
 describe('when there is toListItem sublist', () => {
   const input = ((

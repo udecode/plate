@@ -20,7 +20,6 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
-
 const plugins: SlatePlugin[] = [
   getReactPlugin(),
   getHistoryPlugin(),

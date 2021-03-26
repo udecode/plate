@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 import { withLink } from '../../withLink';
+
+jsx;
 
 const input = (
   <editor>

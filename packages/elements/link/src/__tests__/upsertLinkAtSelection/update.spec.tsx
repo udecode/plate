@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
 import { withInlineVoid } from '@udecode/slate-plugins-core';
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { ELEMENT_LINK } from '../../defaults';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 import { withLink } from '../../withLink';
+
+jsx;
 
 const urlInput = 'http://input.com';
 

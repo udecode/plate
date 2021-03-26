@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
   useStoreEditor,

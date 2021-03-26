@@ -1,15 +1,15 @@
 import { getListPlugin } from '../../../../../elements/list/src/getListPlugin';
 import { getParagraphPlugin } from '../../../../../elements/paragraph/src/getParagraphPlugin';
-import { useBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
-import { useItalicPlugin } from '../../../../../marks/basic-marks/src/italic/getItalicPlugin';
+import { getBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { getItalicPlugin } from '../../../../../marks/basic-marks/src/italic/getItalicPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
     getParagraphPlugin(),
     getListPlugin(),
   ];
@@ -88,8 +88,8 @@ it('serialize complex example list with paragraphs to html', () => {
 
 it('serialize complex example with no type on top level node to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
     getParagraphPlugin(),
     getListPlugin(),
   ];
@@ -133,8 +133,8 @@ it('serialize complex example with no type on top level node to html', () => {
 
 it('serialize complex example with multiple no types on top level node to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
     getParagraphPlugin(),
     getListPlugin(),
   ];

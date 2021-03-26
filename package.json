@@ -15,7 +15,7 @@
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
-    "lint": "eslint \"{packages/*/src,stories}/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"{packages/**/src,stories}/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",
     "prebuild": "yarn clean",
     "release": "lerna publish from-package",

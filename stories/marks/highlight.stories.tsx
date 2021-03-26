@@ -22,28 +22,25 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getHighlightPlugin(),
+];
 
-export const Example = () => {
-  const plugins = [
-    getReactPlugin(),
-    getHistoryPlugin(),
-    ...getBasicElementPlugins(),
-    ...getBasicMarkPlugins(),
-    getHighlightPlugin(),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueHighlight}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsBasicMarks />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueHighlight}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsBasicMarks />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

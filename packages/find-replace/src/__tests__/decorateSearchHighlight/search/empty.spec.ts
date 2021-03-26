@@ -1,6 +1,6 @@
 import { Range } from 'slate';
-import { useDecorateSearchHighlight } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { getSearchHighlightDecorate } from '../../../getSearchHighlightDecorate';
 
 const input = { search: '' };
 
@@ -8,7 +8,7 @@ const output: Range[] = [];
 
 it('should be', () => {
   expect(
-    useDecorateSearchHighlight(input)(createEditorPlugins())([
+    getSearchHighlightDecorate(input)(createEditorPlugins())([
       { text: '' },
       [0, 0],
     ])

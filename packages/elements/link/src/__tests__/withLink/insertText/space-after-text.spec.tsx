@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
 import { withInlineVoid } from '@udecode/slate-plugins-core';
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';
+
+jsx;
 
 const input = (
   <editor>

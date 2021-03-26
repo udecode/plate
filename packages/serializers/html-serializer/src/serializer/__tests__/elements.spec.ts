@@ -6,7 +6,7 @@ import {
   getLinkPlugin,
   getListPlugin,
   getParagraphPlugin,
-  useTablePlugin,
+  getTablePlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
@@ -133,7 +133,7 @@ it('serialize image to html', () => {
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [useTablePlugin()],
+      plugins: [getTablePlugin()],
       nodes: [
         {
           type: 'table',

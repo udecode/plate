@@ -1,5 +1,5 @@
 import { getAlignPlugin } from '../../../../../elements/alignment/src/getAlignPlugin';
-import { useBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { getBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
@@ -166,7 +166,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin(), useBoldPlugin()],
+      plugins: [getAlignPlugin(), getBoldPlugin()],
       nodes: [
         {
           type: 'align_center',

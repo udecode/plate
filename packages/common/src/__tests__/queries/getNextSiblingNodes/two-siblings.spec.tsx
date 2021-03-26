@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-core';
+import { SPEditor, withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor, Range } from 'slate';
+import { Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
@@ -21,7 +21,7 @@ const input = ((
       <htext>last</htext>
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output = [<htext />, <htext>last</htext>];
 

@@ -135,7 +135,7 @@ const output = (
     <htodoli checked={false}>unchecked</htodoli>
     <hcenter>center</hcenter>
     <hmediaembed url="https://player.vimeo.com/video/26689853">
-      <htext />
+      {'</body></html>'}
     </hmediaembed>
   </editor>
 ) as any;

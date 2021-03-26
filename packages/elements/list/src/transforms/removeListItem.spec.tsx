@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
 import { findNode } from '@udecode/slate-plugins-common';
-jsx;
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
 import { removeListItem } from './removeListItem';
+
+jsx;
 
 const input = ((
   <editor>
@@ -44,7 +45,7 @@ const input = ((
       </hli>
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output = ((
   <editor>
@@ -82,7 +83,7 @@ const output = ((
       </hli>
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 it('should', () => {
   const editor = input;

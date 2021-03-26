@@ -65,7 +65,7 @@ export const getExitBreakOnKeyDown = ({
     ({
       hotkey,
       query = {},
-      level = 1,
+      level = 0,
       before,
       defaultType = ELEMENT_DEFAULT,
     }) => {

@@ -1,16 +1,17 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
-import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
-import { useItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/getItalicPlugin';
+import { getBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { getItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/getItalicPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
+jsx;
+
 const input = {
-  plugins: [getParagraphPlugin(), useBoldPlugin(), useItalicPlugin()],
+  plugins: [getParagraphPlugin(), getBoldPlugin(), getItalicPlugin()],
   element: document.createElement('strong'),
   children: [
     <hli>

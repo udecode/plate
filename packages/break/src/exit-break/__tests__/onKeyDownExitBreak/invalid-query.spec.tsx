@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { ELEMENT_ALIGN_CENTER } from '@udecode/slate-plugins-alignment';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
 import { getExitBreakOnKeyDown } from '../../getExitBreakOnKeyDown';
 
 jsx;
@@ -30,7 +30,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
   getExitBreakOnKeyDown({
-    rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
+    rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_ALIGN_CENTER] } }],
   })(input)(event);
   expect(input.children).toEqual(output.children);
 });

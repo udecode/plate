@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
@@ -10,6 +9,8 @@ import {
   getDeserializeHTMLPlugin,
   withDeserializeHTML,
 } from '../../getDeserializeHTMLPlugin';
+
+jsx;
 
 const input = ((
   <editor>

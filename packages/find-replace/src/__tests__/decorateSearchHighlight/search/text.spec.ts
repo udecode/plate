@@ -1,4 +1,4 @@
-import { useDecorateSearchHighlight } from '@udecode/slate-plugins-find-replace';
+import { getSearchHighlightDecorate } from '@udecode/slate-plugins-find-replace';
 import { Range } from 'slate';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 
@@ -20,7 +20,7 @@ const output: Range[] = [
 
 it('should be', () => {
   expect(
-    useDecorateSearchHighlight(input)(createEditorPlugins())([
+    getSearchHighlightDecorate(input)(createEditorPlugins())([
       { text: 'test' },
       [0, 0],
     ] as any)

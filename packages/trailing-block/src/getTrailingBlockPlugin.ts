@@ -23,11 +23,11 @@ export interface WithTrailingBlock extends QueryNodeOptions {
 }
 
 /**
- * Add a trailing block when the last node type is not `type`
+ * Add a trailing block when the last node type is not `type`.
  */
 export const withTrailingBlock = ({
   type = ELEMENT_DEFAULT,
-  level = 1,
+  level = 0,
   ...query
 }: WithTrailingBlock = {}): WithOverride => (editor) => {
   const { normalizeNode } = editor;

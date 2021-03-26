@@ -1,11 +1,9 @@
 import {
-  ELEMENT_H2,
   ELEMENT_LI,
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
   SlateDocumentDescendant,
   SlateDocumentFragment,
-  TDescendant,
 } from '@udecode/slate-plugins';
 import { Text } from 'slate';
 import { options } from './pluginOptions';
@@ -66,43 +64,5 @@ export const getNodesWithRandomId = (nodes: any[]) => {
     });
   });
 
-  return nodes;
-};
-
-export const createElement = (
-  element: { key?: string; text?: string; data?: any } | string
-) => {
-  if (!Array.isArray(element))
-    return {
-      type: options[ELEMENT_PARAGRAPH].type,
-      children: [
-        {
-          text: element,
-        },
-      ],
-    };
-
-  const { key, text, data } = element as any;
-
-  return {
-    type: options[key].type,
-    children: [
-      {
-        text,
-      },
-    ],
-    ...data,
-  };
-};
-
-export const createElements = (
-  elements: ({ key?: string; text?: string; data?: any } | string)[]
-) => {
-  return elements.map((element) => {
-    createElement(element);
-  });
-};
-
-export const createNodes = (nodes: TDescendant[]) => {
   return nodes;
 };

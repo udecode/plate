@@ -50,6 +50,7 @@ import {
   useFindReplacePlugin,
   useMentionPlugin,
 } from '@udecode/slate-plugins';
+import { getKbdPlugin } from '../../packages/marks/kbd/src/getKbdPlugin';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {
@@ -91,8 +92,8 @@ export const Plugins = ({
     optionsMentionPlugin
   );
 
-  const plugins: SlatePlugin[] = useMemo(() => {
-    const _plugins = [
+  const pluginsMemo: SlatePlugin[] = useMemo(() => {
+    const plugins = [
       getReactPlugin(),
       getHistoryPlugin(),
       getParagraphPlugin(),
@@ -114,6 +115,7 @@ export const Plugins = ({
       getStrikethroughPlugin(),
       getSubscriptPlugin(),
       getSuperscriptPlugin(),
+      getKbdPlugin(),
       getNodeIdPlugin(),
       getAutoformatPlugin(optionsAutoformat),
       getResetNodePlugin(optionsResetBlockTypePlugin),
@@ -131,15 +133,15 @@ export const Plugins = ({
       searchHighlightPlugin,
     ];
 
-    _plugins.push(getDeserializeHTMLPlugin({ plugins: _plugins }));
+    plugins.push(getDeserializeHTMLPlugin({ plugins }));
 
-    return _plugins;
+    return plugins;
   }, [mentionPlugin, options, searchHighlightPlugin]);
 
   return (
     <SlatePlugins
       id={id}
-      plugins={plugins}
+      plugins={pluginsMemo}
       components={components}
       options={options}
       editableProps={editableProps}

@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-jsx;
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
 import { getListItemEntry } from './getListItemEntry';
+
+jsx;
 
 describe('when the cursor is in a list item paragraph', () => {
   const input = ((
@@ -17,7 +18,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as SPEditor;
 
   const listNode = (
     <hul>
@@ -66,7 +67,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as SPEditor;
 
   const listNode = (
     <hul>
@@ -120,7 +121,7 @@ describe('when the selection range includes root list item', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as SPEditor;
 
   const listNode = (
     <hul>
@@ -176,7 +177,7 @@ describe('when the cursor is not in a list item', () => {
         2<cursor />
       </hp>
     </editor>
-  ) as any) as Editor;
+  ) as any) as SPEditor;
 
   it('should be', () => {
     const res = getListItemEntry(input);

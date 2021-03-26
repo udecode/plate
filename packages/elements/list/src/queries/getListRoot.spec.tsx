@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { getListRoot } from './getListRoot';
+
+jsx;
 
 const listRoot = (
   <hul>

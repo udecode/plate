@@ -28,34 +28,31 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getBoldPlugin(),
+  getItalicPlugin(),
+  getUnderlinePlugin(),
+  getStrikethroughPlugin(),
+  getSubscriptPlugin(),
+  getSuperscriptPlugin(),
+  getCodePlugin(),
+  getKbdPlugin(),
+];
 
-export const Example = () => {
-  const plugins = [
-    getReactPlugin(),
-    getHistoryPlugin(),
-    ...getBasicElementPlugins(),
-    getBoldPlugin(),
-    getItalicPlugin(),
-    getUnderlinePlugin(),
-    getStrikethroughPlugin(),
-    getSubscriptPlugin(),
-    getSuperscriptPlugin(),
-    getCodePlugin(),
-    getKbdPlugin(),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueBasicMarks}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsBasicMarks />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueBasicMarks}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsBasicMarks />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

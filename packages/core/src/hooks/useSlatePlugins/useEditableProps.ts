@@ -19,16 +19,15 @@ export const useEditableProps = ({
   const editor = useStoreEditor(id);
   const plugins = useStorePlugins(id);
 
-  return useMemo(() => {
-    console.log('update plugins');
-
-    return {
+  return useMemo(
+    () => ({
       renderElement: pipeRenderElement(editor, plugins),
       renderLeaf: pipeRenderLeaf(editor, plugins),
       onKeyDown: pipeOnKeyDown(editor, plugins),
       decorate: pipeDecorate(editor, plugins),
       onDOMBeforeInput: pipeOnDOMBeforeInput(editor, plugins),
       ...editableProps,
-    };
-  }, [editor, plugins]);
+    }),
+    [editor, plugins]
+  );
 };

@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
-jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { getHeadingPlugin } from '../../../../../../elements/heading/src/getHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+
+jsx;
 
 // noinspection CheckTagEmptyBody
 const data = {

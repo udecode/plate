@@ -4,11 +4,7 @@ import {
   getParent,
   isBlockTextEmptyAfterSelection,
 } from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  isElement,
-  SPEditor,
-} from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
@@ -29,7 +25,7 @@ export const insertListItem = (editor: SPEditor) => {
     if (!listItemEntry) return;
     const [listItemNode, listItemPath] = listItemEntry;
 
-    if (isElement(listItemNode) && listItemNode.type !== liType) return;
+    if (listItemNode.type !== liType) return;
 
     if (!Range.isCollapsed(editor.selection)) {
       Transforms.delete(editor);

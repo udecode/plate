@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Search } from '@styled-icons/material';
 import {
   getBasicElementPlugins,
@@ -26,12 +26,15 @@ const options = getSlatePluginsOptions();
 export const Example = () => {
   const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
-  const plugins: SlatePlugin[] = [
-    getReactPlugin(),
-    getHistoryPlugin(),
-    ...getBasicElementPlugins(),
-    searchHighlightPlugin,
-  ];
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      searchHighlightPlugin,
+    ],
+    [searchHighlightPlugin]
+  );
 
   return (
     <SlatePlugins

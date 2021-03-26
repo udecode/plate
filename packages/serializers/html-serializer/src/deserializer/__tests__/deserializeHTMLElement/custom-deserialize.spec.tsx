@@ -3,15 +3,15 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { createEditor } from 'slate';
 import { getImagePlugin } from '../../../../../../elements/image/src/getImagePlugin';
 import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
 import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
 import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
-import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { getBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/getSlatePluginsOptions';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
+
+jsx;
 
 const textTags = ['<b>strong</b>'];
 
@@ -56,7 +56,7 @@ const plugins: SlatePlugin[] = [
   getLinkPlugin(),
   getParagraphPlugin(),
   getTablePlugin(),
-  useBoldPlugin(),
+  getBoldPlugin(),
 ];
 const input2 = getHtmlDocument(html).body;
 

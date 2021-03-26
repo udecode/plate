@@ -4,9 +4,10 @@ import {
   TDescendant,
   TElement,
 } from '@udecode/slate-plugins-core';
-jsx;
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
+
+jsx;
 
 /**
  * Deserialize HTML to Element.

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   getBasicElementPlugins,
   getBasicMarkPlugins,
@@ -30,31 +30,39 @@ export default {
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
-const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  ...getBasicMarkPlugins(),
-  getImagePlugin(),
-  getLinkPlugin(),
-  getListPlugin(),
-  getTablePlugin(),
-  getTodoListPlugin(),
-  useMentionPlugin().plugin,
-  getMediaEmbedPlugin(),
-  getHighlightPlugin(),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-];
+export const Example = () => {
+  const { plugin: mentionPlugin } = useMentionPlugin();
 
-plugins.push(getDeserializeHTMLPlugin({ plugins }));
+  const pluginsMemo = useMemo(() => {
+    const plugins = [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      ...getBasicMarkPlugins(),
+      getImagePlugin(),
+      getLinkPlugin(),
+      getListPlugin(),
+      getTablePlugin(),
+      getTodoListPlugin(),
+      getMediaEmbedPlugin(),
+      getHighlightPlugin(),
+      getSoftBreakPlugin(optionsSoftBreakPlugin),
+      mentionPlugin,
+    ];
 
-export const Example = () => (
-  <SlatePlugins
-    id={id}
-    plugins={plugins}
-    components={components}
-    options={options}
-    editableProps={editableProps}
-    initialValue={initialValuePasteHtml}
-  />
-);
+    plugins.push(getDeserializeHTMLPlugin({ plugins }));
+
+    return plugins;
+  }, [mentionPlugin]);
+
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={pluginsMemo}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePasteHtml}
+    />
+  );
+};
