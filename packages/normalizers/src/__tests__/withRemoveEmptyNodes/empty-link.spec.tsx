@@ -3,7 +3,9 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_LINK } from '../../../../elements/link/src/defaults';
-import { withRemoveEmptyNodes } from '../../useRemoveEmptyNodesPlugin';
+import { withRemoveEmptyNodes } from '../../getRemoveEmptyNodesPlugin';
+
+jsx;
 
 const input = ((
   <editor>

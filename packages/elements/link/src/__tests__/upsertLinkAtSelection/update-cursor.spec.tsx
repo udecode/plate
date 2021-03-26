@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { withInlineVoid } from '@udecode/slate-plugins-core';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Transforms } from 'slate';
 import { ELEMENT_LINK } from '../../defaults';

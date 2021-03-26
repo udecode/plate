@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ELEMENT_MENTION,
+  getBasicElementPlugins,
   getComponent,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   MentionElement,
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useHistoryPlugin,
   useMentionPlugin,
-  useReactPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueMentions } from '../config/initialValues';
 import { editableProps, optionsMentionPlugin } from '../config/pluginOptions';
@@ -31,16 +31,19 @@ const components = getSlatePluginsComponents({
 const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const { getMentionSelectProps, ...mentionPlugin } = useMentionPlugin(
+  const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
     optionsMentionPlugin
   );
 
-  const plugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    mentionPlugin,
-  ];
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      mentionPlugin,
+    ],
+    [mentionPlugin]
+  );
 
   return (
     <SlatePlugins

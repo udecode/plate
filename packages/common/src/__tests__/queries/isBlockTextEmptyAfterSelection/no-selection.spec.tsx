@@ -6,6 +6,8 @@ import { Editor } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

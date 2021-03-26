@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { getListItemEntry } from './getListItemEntry';

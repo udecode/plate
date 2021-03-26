@@ -2,8 +2,10 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeId } from '../../../../../node-id/src/useNodeIdPlugin';
+import { withNodeId } from '../../../../../node-id/src/getNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
+
+jsx;
 
 const input = ((
   <editor>

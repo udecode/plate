@@ -1,20 +1,20 @@
 import React from 'react';
 import {
   ELEMENT_PARAGRAPH,
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getListPlugin,
+  getReactPlugin,
+  getResetNodePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
+  getTrailingBlockPlugin,
   HeadingToolbar,
   SlatePlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useListPlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSoftBreakPlugin,
-  useTrailingBlockPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueSoftBreak } from '../config/initialValues';
 import {
@@ -29,7 +29,7 @@ const id = 'Utilities/Soft Break';
 
 export default {
   title: id,
-  component: useSoftBreakPlugin,
+  component: getSoftBreakPlugin,
 };
 
 const components = getSlatePluginsComponents();
@@ -37,15 +37,15 @@ const options = getSlatePluginsOptions();
 
 export const Example = () => {
   const plugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useListPlugin(),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+    getReactPlugin(),
+    getHistoryPlugin(),
+    ...getBasicElementPlugins(),
+    ...getBasicMarkPlugins(),
+    getListPlugin(),
+    getResetNodePlugin(optionsResetBlockTypePlugin),
+    getSoftBreakPlugin(optionsSoftBreakPlugin),
+    getExitBreakPlugin(optionsExitBreakPlugin),
+    getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
   ];
 
   return (

@@ -1,7 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
+import { getSoftBreakOnKeyDown } from '../../getSoftBreakOnKeyDown';
+
+jsx;
 
 const input = (
   <editor>
@@ -24,6 +26,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownSoftBreak()(input)(event);
+  getSoftBreakOnKeyDown()(input)(event);
   expect(input.children).toEqual(output.children);
 });

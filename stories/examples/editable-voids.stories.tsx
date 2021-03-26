@@ -1,17 +1,17 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugins,
-  useBasicElementPlugins,
-  useHistoryPlugin,
-  useReactPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueVoids } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { EDITABLE_VOID } from './editable-voids/defaults';
 import { EditableVoidElement } from './editable-voids/EditableVoidElement';
-import { useEditableVoidPlugin } from './editable-voids/useEditableVoidPlugin';
+import { getEditableVoidPlugin } from './editable-voids/getEditableVoidPlugin';
 
 const id = 'Elements/Editable Voids';
 
@@ -24,22 +24,20 @@ const components = getSlatePluginsComponents({
 });
 const options = getSlatePluginsOptions();
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useEditableVoidPlugin(),
-  ];
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getEditableVoidPlugin(),
+];
 
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueVoids}
-    />
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueVoids}
+  />
+);

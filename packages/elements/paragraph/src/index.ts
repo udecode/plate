@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeParagraph';
-export * from './useParagraphPlugin';
+export * from './getParagraphDeserialize';
+export * from './getParagraphPlugin';

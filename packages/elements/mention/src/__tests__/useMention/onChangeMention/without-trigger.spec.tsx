@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
 import { withSlatePlugins } from '@udecode/slate-plugins-core';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { pipe } from '../../../../../../slate-plugins/src/pipe/pipe';
@@ -21,7 +22,7 @@ it('should do nothing', () => {
   const { result } = renderHook(() => useMentionPlugin());
 
   act(() => {
-    result.current.onChange?.(editor)([]);
+    result.current.plugin.onChange?.(editor)([]);
   });
 
   expect(result.current.getMentionSelectProps().valueIndex).toBe(0);

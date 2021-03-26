@@ -5,6 +5,8 @@ import * as isHotkey from 'is-hotkey';
 import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
 import { getOnKeyDownMark } from '../../../utils/getOnKeyDownMark';
 
+jsx;
+
 const input = (
   <editor>
     <hp>

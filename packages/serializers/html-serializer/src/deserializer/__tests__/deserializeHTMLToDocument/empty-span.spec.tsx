@@ -5,14 +5,16 @@ import { SlatePlugin } from '../../../../../../core/src/types/SlatePlugin/SlateP
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToDocument } from '../../utils/deserializeHTMLToDocument';
 
+jsx;
+
 const plugins: SlatePlugin[] = [];
 const body = document.createElement('span');
 
 const output = (
   <fragment>
-    <block>
+    <element>
       <htext />
-    </block>
+    </element>
   </fragment>
 ) as any;
 

@@ -3,10 +3,13 @@
  */
 
 export * from './defaults';
+export * from './getListDeleteBackward';
+export * from './getListDeleteFragment';
+export * from './getListDeserialize';
+export * from './getListInsertBreak';
 export * from './types';
-export * from './useDeserializeList';
-export * from './useListPlugin';
-export * from './useOnKeyDownList';
+export * from './getListPlugin';
+export * from './getListOnKeyDown';
 export * from './withList';
 export * from './normalizers/index';
 export * from './queries/index';

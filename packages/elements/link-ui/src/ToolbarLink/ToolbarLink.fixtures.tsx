@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /** @jsx jsx */
 import * as React from 'react';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 

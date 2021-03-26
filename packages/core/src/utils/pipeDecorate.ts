@@ -2,24 +2,31 @@ import { NodeEntry, Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SPEditor } from '../types/SPEditor';
-import { flatMapByKey } from './flatMapByKey';
 
 /**
- * @see {@link Decorate}
+ * @see {@link Decorate}.
+ * Optimization: return undefined if empty list so Editable uses a memo.
  */
 export const pipeDecorate = (
   editor: SPEditor,
   plugins: SlatePlugin[]
-): EditableProps['decorate'] => (entry: NodeEntry) => {
-  let ranges: Range[] = [];
+): EditableProps['decorate'] => {
+  const decorates = plugins.flatMap(
+    (plugin) => plugin.decorate?.(editor) ?? []
+  );
+  if (!decorates.length) return;
 
-  const addRanges = (newRanges?: Range[]) => {
-    if (newRanges?.length) ranges = [...ranges, ...newRanges];
+  return (entry: NodeEntry) => {
+    let ranges: Range[] = [];
+
+    const addRanges = (newRanges?: Range[]) => {
+      if (newRanges?.length) ranges = [...ranges, ...newRanges];
+    };
+
+    decorates.forEach((decorate) => {
+      addRanges(decorate(entry));
+    });
+
+    return ranges;
   };
-
-  flatMapByKey(plugins, 'decorate').forEach((decorate) => {
-    addRanges(decorate(editor)(entry));
-  });
-
-  return ranges;
 };

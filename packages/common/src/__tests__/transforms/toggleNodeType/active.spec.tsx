@@ -5,6 +5,8 @@ import { Editor } from 'slate';
 import { ELEMENT_BLOCKQUOTE } from '../../../../../elements/block-quote/src/defaults';
 import { toggleNodeType } from '../../../transforms/toggleNodeType';
 
+jsx;
+
 const input = ((
   <editor>
     <hblockquote>

@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { pipe } from '@udecode/slate-plugins-core';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { withImageUpload } from '../../withImageUpload';

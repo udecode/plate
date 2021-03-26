@@ -2,14 +2,14 @@ import React from 'react';
 import {
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getNormalizeTypesPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getTrailingBlockPlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useHistoryPlugin,
-  useNormalizeTypesPlugin,
-  useReactPlugin,
-  useTrailingBlockPlugin,
   withNormalizeTypes,
   withTrailingBlock,
 } from '@udecode/slate-plugins';
@@ -29,13 +29,13 @@ const options = getSlatePluginsOptions();
 
 export const Example = () => {
   const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useNormalizeTypesPlugin({
+    getReactPlugin(),
+    getHistoryPlugin(),
+    ...getBasicElementPlugins(),
+    getNormalizeTypesPlugin({
       rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
     }),
-    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+    getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
   ];
 
   return (

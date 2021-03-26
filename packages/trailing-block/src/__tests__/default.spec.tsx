@@ -2,7 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { withTrailingBlock } from '../useTrailingBlockPlugin';
+import { withTrailingBlock } from '../getTrailingBlockPlugin';
+
+jsx;
 
 const input = (
   <editor>

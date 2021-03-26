@@ -1,18 +1,18 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getImagePlugin,
+  getListPlugin,
+  getReactPlugin,
+  getResetNodePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
+  getTodoListPlugin,
   HeadingToolbar,
   SlatePlugins,
-  useBasicElementPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useImagePlugin,
-  useListPlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSoftBreakPlugin,
-  useTodoListPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueList } from '../config/initialValues';
 import {
@@ -32,31 +32,29 @@ export default {
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useImagePlugin(),
-    useTodoListPlugin(),
-    useListPlugin(),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-  ];
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getImagePlugin(),
+  getTodoListPlugin(),
+  getListPlugin(),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+];
 
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueList}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsList />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueList}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsList />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

@@ -3,6 +3,6 @@
  */
 
 export * from './defaults';
-export * from './useAlignPlugin';
-export * from './useDeserializeAlign';
+export * from './getAlignDeserialize';
+export * from './getAlignPlugin';
 export * from './transforms/index';

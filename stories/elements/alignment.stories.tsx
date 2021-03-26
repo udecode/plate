@@ -1,16 +1,16 @@
 import React from 'react';
 import {
+  getAlignPlugin,
+  getBasicElementPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getReactPlugin,
+  getResetNodePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
   HeadingToolbar,
   SlatePlugins,
-  useAlignPlugin,
-  useBasicElementPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueBasicElements } from '../config/initialValues';
 import {
@@ -30,29 +30,27 @@ export default {
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useAlignPlugin(),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-  ];
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getAlignPlugin(),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+];
 
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueBasicElements}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsAlign />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueBasicElements}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsAlign />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

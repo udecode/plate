@@ -1,15 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
-import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/useBoldPlugin';
-import { useItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/useItalicPlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
+import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { useItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/getItalicPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
-  plugins: [useParagraphPlugin(), useBoldPlugin(), useItalicPlugin()],
+  plugins: [getParagraphPlugin(), useBoldPlugin(), useItalicPlugin()],
   element: document.createElement('strong'),
   children: [
     <hli>

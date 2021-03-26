@@ -16,30 +16,25 @@ import { pipeOnChange } from '../../utils/pipeOnChange';
 export const useSlateProps = ({
   id,
   onChange: _onChange,
-}: UseSlatePropsOptions = {}): (() => Omit<SlateProps, 'children'>) => {
+}: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = useSlatePluginsActions(id);
   const editor = useStoreEditor(id);
   const value = useStoreValue(id);
   const plugins = useStorePlugins(id);
 
-  const onChange = useMemo(
-    () => (newValue: TNode[]) => {
-      setValue(newValue);
-
-      pipeOnChange(editor, plugins)(newValue);
-
-      _onChange?.(newValue);
-    },
-    [_onChange, editor, plugins, setValue]
-  );
-
-  return useCallback(
+  return useMemo(
     () => ({
       key: editor?.key,
       editor,
-      onChange,
+      onChange: (newValue: TNode[]) => {
+        setValue(newValue);
+
+        pipeOnChange(editor, plugins)(newValue);
+
+        _onChange?.(newValue);
+      },
       value,
     }),
-    [editor, onChange, value]
+    [_onChange, editor, plugins, setValue, value]
   );
 };

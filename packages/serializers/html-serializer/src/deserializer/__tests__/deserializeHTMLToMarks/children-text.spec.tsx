@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/useBoldPlugin';
+import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import {
   deserializeHTMLToMarks,

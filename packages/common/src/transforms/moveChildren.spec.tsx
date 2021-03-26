@@ -5,6 +5,8 @@ import { Editor, Path } from 'slate';
 import { findNode } from '../queries/findNode';
 import { moveChildren } from './moveChildren';
 
+jsx;
+
 const input = ((
   <editor>
     <hul>

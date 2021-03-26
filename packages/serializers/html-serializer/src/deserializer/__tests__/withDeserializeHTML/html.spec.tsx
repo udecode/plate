@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { useHeadingPlugin } from '../../../../../../elements/heading/src/useHeadingPlugin';
+import { getHeadingPlugin } from '../../../../../../elements/heading/src/getHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { useDeserializeHTMLPlugin } from '../../useDeserializeHTMLPlugin';
+import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -32,8 +33,8 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [useHeadingPlugin()];
-      plugins.push(useDeserializeHTMLPlugin({ plugins }));
+      const plugins = [getHeadingPlugin()];
+      plugins.push(getDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
         plugins,
@@ -64,8 +65,8 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [useHeadingPlugin()];
-      plugins.push(useDeserializeHTMLPlugin({ plugins }));
+      const plugins = [getHeadingPlugin()];
+      plugins.push(getDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
         plugins,

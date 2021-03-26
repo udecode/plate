@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import {
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   HeadingToolbar,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useHistoryPlugin,
-  useReactPlugin,
   useSlatePlugins,
   useStoreEditor,
 } from '@udecode/slate-plugins';
@@ -29,14 +29,21 @@ const components = getSlatePluginsComponents({
 });
 const options = getSlatePluginsOptions();
 
-const Editor = ({ plugins }: any) => {
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+];
+
+export const Example = () => {
   const editor = useStoreEditor(id);
 
   const handleBlur = useCallback(() => {
     ReactEditor.deselect(editor);
   }, [editor]);
 
-  const { getSlateProps, getEditableProps } = useSlatePlugins({
+  const { slateProps, editableProps: _editableProps } = useSlatePlugins({
     id,
     plugins,
     components,
@@ -45,27 +52,16 @@ const Editor = ({ plugins }: any) => {
     initialValue: initialValueIframe,
   });
 
-  if (!getSlateProps().editor) return null;
+  if (!slateProps.editor) return null;
 
   return (
-    <Slate {...(getSlateProps() as any)}>
+    <Slate {...(slateProps as any)}>
       <HeadingToolbar>
         <ToolbarButtonsBasicMarks />
       </HeadingToolbar>
       <IFrame onBlur={handleBlur}>
-        <Editable {...getEditableProps()} />
+        <Editable {..._editableProps} />
       </IFrame>
     </Slate>
   );
-};
-
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-  ];
-
-  return <Editor plugins={plugins} />;
 };

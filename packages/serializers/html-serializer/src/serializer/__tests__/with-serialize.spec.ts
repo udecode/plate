@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { RenderLeafProps } from 'slate-react';
 import {
+  getImagePlugin,
   MARK_BOLD,
   TRenderElementProps,
   useBoldPlugin,
-  useImagePlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
@@ -12,7 +12,7 @@ import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
   {
-    ...useImagePlugin(),
+    ...getImagePlugin(),
     serialize: {
       element: ({ element }: TRenderElementProps) =>
         React.createElement('img', { src: element.url }),

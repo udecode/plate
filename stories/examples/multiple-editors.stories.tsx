@@ -2,18 +2,18 @@ import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
   ELEMENT_IMAGE,
+  getBasicElementPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getImagePlugin,
+  getReactPlugin,
+  getResetNodePlugin,
+  getSelectOnBackspacePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
   SlatePlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useImagePlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSelectOnBackspacePlugin,
-  useSoftBreakPlugin,
 } from '@udecode/slate-plugins';
 import { Node } from 'slate';
 import styled from 'styled-components';
@@ -35,6 +35,25 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+
+const mainPlugins: SlatePlugin[] = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+];
+
+const imagePlugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getImagePlugin(),
+  getSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+];
+
+const corePlugins = [getReactPlugin(), getHistoryPlugin()];
 
 const Wrapper = styled.div`
   display: flex;
@@ -58,54 +77,31 @@ const Editor = ({
   id?: string;
   initialValue?: Node[];
   plugins?: SlatePlugin[];
-}) => {
-  return (
-    <WrapperEditor>
-      <SlatePlugins
-        id={id}
-        plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValue}
-      />
-    </WrapperEditor>
-  );
-};
+}) => (
+  <WrapperEditor>
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValue}
+    />
+  </WrapperEditor>
+);
 
-export const Example = () => {
-  const mainPlugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-  ];
-
-  const imagePlugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useImagePlugin(),
-    useSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
-  ];
-
-  const corePlugins = [useReactPlugin(), useHistoryPlugin()];
-
-  return (
-    <Wrapper>
-      <Editor plugins={mainPlugins} initialValue={initialValueBasicElements} />
-      <Editor
-        id="image"
-        plugins={imagePlugins}
-        initialValue={initialValueImages}
-      />
-      <Editor
-        id="core"
-        plugins={corePlugins}
-        initialValue={initialValuePlainText}
-      />
-    </Wrapper>
-  );
-};
+export const Example = () => (
+  <Wrapper>
+    <Editor plugins={mainPlugins} initialValue={initialValueBasicElements} />
+    <Editor
+      id="image"
+      plugins={imagePlugins}
+      initialValue={initialValueImages}
+    />
+    <Editor
+      id="core"
+      plugins={corePlugins}
+      initialValue={initialValuePlainText}
+    />
+  </Wrapper>
+);

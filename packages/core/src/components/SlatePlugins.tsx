@@ -14,16 +14,14 @@ export interface SlatePluginsProps
 }
 
 export const SlatePlugins = ({ children, ...options }: SlatePluginsProps) => {
-  const { getSlateProps, getEditableProps } = useSlatePlugins(options);
-
-  const slateProps = getSlateProps();
+  const { slateProps, editableProps } = useSlatePlugins(options);
 
   if (!slateProps.editor) return null;
 
   return (
     <Slate {...(slateProps as SlateProps)}>
       {children}
-      <Editable {...getEditableProps()} />
+      <Editable {...editableProps} />
     </Slate>
   );
 };

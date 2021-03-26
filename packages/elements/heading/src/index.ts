@@ -3,7 +3,7 @@
  */
 
 export * from './defaults';
+export * from './getHeadingDeserialize';
 export * from './types';
-export * from './useDeserializeHeading';
-export * from './useHeadingPlugin';
-export * from './useRenderElementHeading';
+export * from './getHeadingPlugin';
+export * from './getHeadingRenderElement';

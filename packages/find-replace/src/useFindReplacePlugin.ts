@@ -1,21 +1,26 @@
-import { Dispatch, SetStateAction, useState } from 'react';
-import { useRenderLeaf } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import { getRenderLeaf, SlatePlugin } from '@udecode/slate-plugins-core';
 import { MARK_SEARCH_HIGHLIGHT } from './defaults';
-import { useDecorateSearchHighlight } from './useDecorateSearchHighlight';
+import { getSearchHighlightDecorate } from './getSearchHighlightDecorate';
 
 /**
  * Supports search highlight.
  * TODO: replace
  */
-export const useFindReplacePlugin = (): SlatePlugin & {
+export const useFindReplacePlugin = (): {
+  plugin: SlatePlugin;
   setSearch: Dispatch<SetStateAction<string>>;
 } => {
   const [search, setSearch] = useState('');
 
   return {
-    renderLeaf: useRenderLeaf(MARK_SEARCH_HIGHLIGHT),
-    decorate: useDecorateSearchHighlight({ search }),
+    plugin: useMemo(
+      () => ({
+        renderLeaf: getRenderLeaf(MARK_SEARCH_HIGHLIGHT),
+        decorate: getSearchHighlightDecorate({ search }),
+      }),
+      [search]
+    ),
     setSearch,
   };
 };

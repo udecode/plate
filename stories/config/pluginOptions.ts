@@ -85,7 +85,7 @@ export const optionsExitBreakPlugin: ExitBreakPluginOptions = {
 };
 
 export const editableProps = {
-  placeholder: 'Enter some rich text…',
-  spellCheck: true,
+  // placeholder: 'Enter some rich text…',
+  spellCheck: false,
   autoFocus: true,
 };

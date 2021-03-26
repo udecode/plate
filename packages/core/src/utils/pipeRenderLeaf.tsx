@@ -3,7 +3,6 @@ import { DefaultLeaf, RenderLeafProps } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SPEditor } from '../types/SPEditor';
-import { flatMapByKey } from './flatMapByKey';
 
 /**
  * @see {@link RenderLeaf}
@@ -11,17 +10,21 @@ import { flatMapByKey } from './flatMapByKey';
 export const pipeRenderLeaf = (
   editor: SPEditor,
   plugins: SlatePlugin[]
-): EditableProps['renderLeaf'] => (props) => {
-  const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
+): EditableProps['renderLeaf'] => {
+  const renderLeafs = plugins.flatMap(
+    (plugin) => plugin.renderLeaf?.(editor) ?? []
+  );
 
-  flatMapByKey(plugins, 'renderLeaf').forEach((renderLeaf) => {
-    if (!renderLeaf) return;
+  return (props) => {
+    const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
 
-    const newChildren = renderLeaf(editor)(leafProps);
-    if (newChildren !== undefined) {
-      leafProps.children = newChildren;
-    }
-  });
+    renderLeafs.forEach((renderLeaf) => {
+      const newChildren = renderLeaf(leafProps);
+      if (newChildren !== undefined) {
+        leafProps.children = newChildren;
+      }
+    });
 
-  return <DefaultLeaf {...leafProps} />;
+    return <DefaultLeaf {...leafProps} />;
+  };
 };

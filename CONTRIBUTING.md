@@ -150,6 +150,7 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
+jsx;
 import { jsx } from "@udecode/slate-plugins-test-utils";
 ```
 

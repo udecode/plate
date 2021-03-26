@@ -1,14 +1,15 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { getSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/getSlatePluginsOptions';
 import {
-  useDeserializeHTMLPlugin,
+  getDeserializeHTMLPlugin,
   withDeserializeHTML,
-} from '../../useDeserializeHTMLPlugin';
+} from '../../getDeserializeHTMLPlugin';
 
 const input = ((
   <editor>
@@ -37,7 +38,7 @@ it('should do nothing', () => {
 
   const editor = createEditorPlugins({
     editor: input,
-    plugins: [useDeserializeHTMLPlugin()],
+    plugins: [getDeserializeHTMLPlugin()],
   });
 
   editor.insertData(data as any);

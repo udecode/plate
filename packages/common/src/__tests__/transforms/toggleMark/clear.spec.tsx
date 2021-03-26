@@ -5,6 +5,8 @@ import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
 import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
 import { toggleMark } from '../../../transforms/toggleMark';
 
+jsx;
+
 const input = (
   <editor>
     <hp>

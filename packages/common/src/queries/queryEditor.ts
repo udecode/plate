@@ -8,8 +8,8 @@ import { someNode } from './someNode';
 /**
  * Query the editor state.
  */
-export const queryEditor = (
-  editor: Editor,
+export const queryEditor = <T extends Editor>(
+  editor: T,
   {
     filter,
     selectionAtBlockStart,

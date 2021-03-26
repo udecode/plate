@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { findNode } from '@udecode/slate-plugins-common';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';

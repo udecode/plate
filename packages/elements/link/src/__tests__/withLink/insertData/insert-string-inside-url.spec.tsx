@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { withInlineVoid } from '@udecode/slate-plugins-core';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { ELEMENT_LINK } from '../../../defaults';
@@ -10,11 +11,11 @@ const input = (
   <editor>
     <hp>
       test
-      <element type="a" url="http://google.com">
+      <ha url="http://google.com">
         http://
         <cursor />
         google.com
-      </element>
+      </ha>
       <htext />
     </hp>
   </editor>

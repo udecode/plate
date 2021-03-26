@@ -1,11 +1,12 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
-import { useLinkPlugin } from '../../link/src/useLinkPlugin';
-import { useParagraphPlugin } from '../../paragraph/src/useParagraphPlugin';
-import { useListPlugin } from './useListPlugin';
+import { getLinkPlugin } from '../../link/src/getLinkPlugin';
+import { getParagraphPlugin } from '../../paragraph/src/getParagraphPlugin';
+import { getListPlugin } from './getListPlugin';
 
 describe('normalizeList', () => {
   describe('when there is no p in li', () => {
@@ -37,7 +38,7 @@ describe('normalizeList', () => {
 
       const editor = createEditorPlugins({
         editor: input,
-        plugins: [useParagraphPlugin(), useListPlugin(), useLinkPlugin()],
+        plugins: [getParagraphPlugin(), getListPlugin(), getLinkPlugin()],
       });
 
       editor.insertText('o');

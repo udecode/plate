@@ -6,14 +6,16 @@ import * as isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { options } from '../../../../stories/config/pluginOptions';
 import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/src/defaults';
-import { onKeyDownResetNode } from '../onKeyDownResetNode';
+import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
+
+jsx;
 
 const input = ((
   <editor>
-    <hcode>
+    <hcodeblock>
       <htext />
       <cursor />
-    </hcode>
+    </hcodeblock>
   </editor>
 ) as any) as Editor;
 
@@ -29,7 +31,7 @@ const output = (
 it('should render', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  onKeyDownResetNode({
+  getResetNodeOnKeyDown({
     rules: [
       {
         types: [ELEMENT_CODE_BLOCK],

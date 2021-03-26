@@ -1,3 +1,4 @@
+import { castArray } from 'lodash';
 import { SPEditor } from '../types/SPEditor';
 import { getSlatePluginOptions } from './getSlatePluginOptions';
 
@@ -6,5 +7,9 @@ import { getSlatePluginOptions } from './getSlatePluginOptions';
  */
 export const mapSlatePluginKeysToOptions = (
   editor: SPEditor,
-  pluginKeys: string[]
-) => pluginKeys.map((pluginKey) => getSlatePluginOptions(editor, pluginKey));
+  pluginKey: string | string[]
+) => {
+  const pluginKeys = castArray<string>(pluginKey);
+
+  return pluginKeys.map((key) => getSlatePluginOptions(editor, key));
+};

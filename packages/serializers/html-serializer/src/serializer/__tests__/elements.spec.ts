@@ -1,11 +1,11 @@
 import {
-  useAlignPlugin,
-  useBlockquotePlugin,
-  useHeadingPlugin,
-  useImagePlugin,
-  useLinkPlugin,
-  useListPlugin,
-  useParagraphPlugin,
+  getAlignPlugin,
+  getBlockquotePlugin,
+  getHeadingPlugin,
+  getImagePlugin,
+  getLinkPlugin,
+  getListPlugin,
+  getParagraphPlugin,
   useTablePlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
@@ -17,7 +17,7 @@ const editor = createEditorPlugins({});
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [useListPlugin()],
+      plugins: [getListPlugin()],
       nodes: [
         {
           type: 'ul',
@@ -41,7 +41,7 @@ it('serialize list to html', () => {
 it('serialize link to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [useLinkPlugin()],
+      plugins: [getLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -61,7 +61,7 @@ it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [useBlockquotePlugin()],
+        plugins: [getBlockquotePlugin()],
         nodes: [
           {
             type: 'blockquote',
@@ -76,7 +76,7 @@ it('serialize blockquote to html', () => {
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [useHeadingPlugin()],
+      plugins: [getHeadingPlugin()],
       nodes: [
         {
           type: 'h1',
@@ -101,7 +101,7 @@ it('serialize headings to html', () => {
 it('serialize paragraph to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [useParagraphPlugin()],
+      plugins: [getParagraphPlugin()],
       nodes: [
         {
           type: 'p',
@@ -116,7 +116,7 @@ it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [useImagePlugin()],
+        plugins: [getImagePlugin()],
         nodes: [
           {
             type: 'img',
@@ -170,7 +170,7 @@ it('serialize table to html', () => {
 it('serialize alignments to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [useAlignPlugin()],
+      plugins: [getAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],

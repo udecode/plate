@@ -1,10 +1,10 @@
-import { useAlignPlugin } from '../../../../../elements/alignment/src/useAlignPlugin';
+import { getAlignPlugin } from '../../../../../elements/alignment/src/getAlignPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
-    const plugin = useAlignPlugin();
+    const plugin = getAlignPlugin();
     delete plugin.deserialize;
 
     expect(

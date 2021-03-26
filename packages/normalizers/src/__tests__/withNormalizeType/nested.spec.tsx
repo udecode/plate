@@ -1,27 +1,30 @@
 /** @jsx jsx */
 
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { options } from '../../../../../stories/config/pluginOptions';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
-import { withNormalizeTypes } from '../../useNormalizeTypesPlugin';
+import { withNormalizeTypes } from '../../getNormalizeTypesPlugin';
+
+jsx;
 
 const input = (
   <editor>
-    <block />
+    <element />
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <block>
+    <element>
       <hh1>
         <htext />
       </hh1>
       <hp>
         <htext />
       </hp>
-    </block>
+    </element>
   </editor>
 ) as any;
 
@@ -34,7 +37,7 @@ it('should be', () => {
       },
       { path: [0, 1], type: ELEMENT_PARAGRAPH },
     ],
-  })(input as Editor);
+  })(input as SPEditor);
 
   editor.normalizeNode([input, []]);
 

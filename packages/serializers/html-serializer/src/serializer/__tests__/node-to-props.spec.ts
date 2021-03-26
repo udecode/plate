@@ -1,12 +1,12 @@
 import {
-  useImagePlugin,
-  useLinkPlugin,
+  getImagePlugin,
+  getLinkPlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
-const plugins = [useLinkPlugin(), useImagePlugin()];
+const plugins = [getLinkPlugin(), getImagePlugin()];
 const editor = createEditorPlugins({
   plugins,
   options: {

@@ -1,16 +1,16 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
+  getTablePlugin,
   HeadingToolbar,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useReactPlugin,
-  useSoftBreakPlugin,
-  useTablePlugin,
 } from '@udecode/slate-plugins';
 import { initialValueTables } from '../config/initialValues';
 import {
@@ -29,29 +29,27 @@ export default {
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useTablePlugin(),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-  ];
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getTablePlugin(),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+];
 
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueTables}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsTable />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueTables}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsTable />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

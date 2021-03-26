@@ -6,7 +6,9 @@ import * as isHotkey from 'is-hotkey';
 import { Editor } from 'slate';
 import { options } from '../../../../stories/config/pluginOptions';
 import { ELEMENT_BLOCKQUOTE } from '../../../elements/block-quote/src/defaults';
-import { onKeyDownResetNode } from '../onKeyDownResetNode';
+import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
+
+jsx;
 
 const input = ((
   <editor>
@@ -29,7 +31,7 @@ const output = (
 it('should render', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  onKeyDownResetNode({
+  getResetNodeOnKeyDown({
     rules: [
       {
         types: [ELEMENT_BLOCKQUOTE],

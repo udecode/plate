@@ -1,17 +1,17 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getDeserializeMDPlugin,
+  getHistoryPlugin,
+  getImagePlugin,
+  getLinkPlugin,
+  getListPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getTablePlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useDeserializeMDPlugin,
-  useHistoryPlugin,
-  useImagePlugin,
-  useLinkPlugin,
-  useListPlugin,
-  useReactPlugin,
-  useTablePlugin,
 } from '@udecode/slate-plugins';
 import { initialValuePasteMd } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
@@ -25,27 +25,25 @@ export default {
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useImagePlugin(),
-    useLinkPlugin(),
-    useListPlugin(),
-    useTablePlugin(),
-    useDeserializeMDPlugin(),
-  ];
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getImagePlugin(),
+  getLinkPlugin(),
+  getListPlugin(),
+  getTablePlugin(),
+  getDeserializeMDPlugin(),
+];
 
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePasteMd}
-    />
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValuePasteMd}
+  />
+);

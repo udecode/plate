@@ -1,20 +1,20 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getBoldPlugin,
+  getCodePlugin,
+  getHistoryPlugin,
+  getItalicPlugin,
+  getKbdPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getStrikethroughPlugin,
+  getSubscriptPlugin,
+  getSuperscriptPlugin,
+  getUnderlinePlugin,
   HeadingToolbar,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBoldPlugin,
-  useCodePlugin,
-  useHistoryPlugin,
-  useItalicPlugin,
-  useKbdPlugin,
-  useReactPlugin,
-  useStrikethroughPlugin,
-  useSubscriptPlugin,
-  useSuperscriptPlugin,
-  useUnderlinePlugin,
 } from '@udecode/slate-plugins';
 import { initialValueBasicMarks } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
@@ -31,17 +31,17 @@ const options = getSlatePluginsOptions();
 
 export const Example = () => {
   const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useBoldPlugin(),
-    useItalicPlugin(),
-    useUnderlinePlugin(),
-    useStrikethroughPlugin(),
-    useSubscriptPlugin(),
-    useSuperscriptPlugin(),
-    useCodePlugin(),
-    useKbdPlugin(),
+    getReactPlugin(),
+    getHistoryPlugin(),
+    ...getBasicElementPlugins(),
+    getBoldPlugin(),
+    getItalicPlugin(),
+    getUnderlinePlugin(),
+    getStrikethroughPlugin(),
+    getSubscriptPlugin(),
+    getSuperscriptPlugin(),
+    getCodePlugin(),
+    getKbdPlugin(),
   ];
 
   return (

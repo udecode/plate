@@ -2,8 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import { ELEMENT_IMAGE } from '../../defaults';
 import { withImageUpload } from '../../withImageUpload';
+
+jsx;
 
 const input = (
   <editor>
@@ -14,9 +15,9 @@ const input = (
 const output = (
   <editor>
     <hp>test</hp>
-    <element type={ELEMENT_IMAGE} url="https://i.imgur.com/removed.png">
+    <himg url="https://i.imgur.com/removed.png">
       <htext />
-    </element>
+    </himg>
   </editor>
 ) as any;
 

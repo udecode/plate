@@ -4,11 +4,11 @@
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
 import { createEditor } from 'slate';
-import { useImagePlugin } from '../../../../../../elements/image/src/useImagePlugin';
-import { useLinkPlugin } from '../../../../../../elements/link/src/useLinkPlugin';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
-import { useTablePlugin } from '../../../../../../elements/table/src/useTablePlugin';
-import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/useBoldPlugin';
+import { getImagePlugin } from '../../../../../../elements/image/src/getImagePlugin';
+import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
+import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
+import { useBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { getSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/getSlatePluginsOptions';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
@@ -52,10 +52,10 @@ const editor = createEditorPlugins({
 });
 
 const plugins: SlatePlugin[] = [
-  useImagePlugin(),
-  useLinkPlugin(),
-  useParagraphPlugin(),
-  useTablePlugin(),
+  getImagePlugin(),
+  getLinkPlugin(),
+  getParagraphPlugin(),
+  getTablePlugin(),
   useBoldPlugin(),
 ];
 const input2 = getHtmlDocument(html).body;

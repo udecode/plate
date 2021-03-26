@@ -1,13 +1,13 @@
 import {
-  useImagePlugin,
-  useLinkPlugin,
+  getImagePlugin,
+  getLinkPlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize link to html with attributes', () => {
-  const plugins = [useLinkPlugin()];
+  const plugins = [getLinkPlugin()];
 
   expect(
     serializeHTMLFromNodes(
@@ -42,7 +42,7 @@ it('serialize link to html with attributes', () => {
 });
 
 it('serialize image with alt to html', () => {
-  const plugins = [useImagePlugin()];
+  const plugins = [getImagePlugin()];
 
   expect(
     htmlStringToDOMNode(

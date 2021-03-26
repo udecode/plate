@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { withImageUpload } from '../../withImageUpload';

@@ -1,29 +1,29 @@
-import { WithOverride } from '@udecode/slate-plugins-core';
+import { SPEditor, WithOverride } from '@udecode/slate-plugins-core';
 import { getListNormalizer } from './normalizers/getListNormalizer';
-import { deleteBackwardList } from './transforms/deleteBackwardList';
-import { deleteFragmentList } from './transforms/deleteFragmentList';
-import { insertBreakList } from './transforms/insertBreakList';
+import { getListDeleteBackward } from './getListDeleteBackward';
+import { getListDeleteFragment } from './getListDeleteFragment';
+import { getListInsertBreak } from './getListInsertBreak';
 import { WithListOptions } from './types';
 
 export const withList = ({
   validLiChildrenTypes,
-}: WithListOptions = {}): WithOverride => (editor) => {
+}: WithListOptions = {}): WithOverride<SPEditor> => (editor) => {
   const { insertBreak, deleteBackward, deleteFragment } = editor;
 
   editor.insertBreak = () => {
-    if (insertBreakList(editor)) return;
+    if (getListInsertBreak(editor)) return;
 
     insertBreak();
   };
 
   editor.deleteBackward = (unit) => {
-    if (deleteBackwardList(editor, unit)) return;
+    if (getListDeleteBackward(editor, unit)) return;
 
     deleteBackward(unit);
   };
 
   editor.deleteFragment = () => {
-    if (deleteFragmentList(editor)) return;
+    if (getListDeleteFragment(editor)) return;
 
     deleteFragment();
   };

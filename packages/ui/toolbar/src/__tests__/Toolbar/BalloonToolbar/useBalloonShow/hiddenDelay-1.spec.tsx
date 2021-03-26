@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { useBalloonShow } from '../../../../BalloonToolbar/useBalloonShow';

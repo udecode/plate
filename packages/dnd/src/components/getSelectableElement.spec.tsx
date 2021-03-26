@@ -4,7 +4,7 @@ import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
 import { SlatePlugins } from '@udecode/slate-plugins-core';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
-import { useParagraphPlugin } from '../../../elements/paragraph/src/useParagraphPlugin';
+import { getParagraphPlugin } from '../../../elements/paragraph/src/getParagraphPlugin';
 import { getSlatePluginsComponents } from '../../../slate-plugins/src/utils/getSlatePluginsComponents';
 import { getSlatePluginsOptions } from '../../../slate-plugins/src/utils/getSlatePluginsOptions';
 import { getSelectableElement } from './getSelectableElement';
@@ -32,7 +32,7 @@ it('should render draggable component', () => {
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <SlatePlugins
-        plugins={[useParagraphPlugin()]}
+        plugins={[getParagraphPlugin()]}
         options={options}
         components={_components}
         initialValue={initialValue}
@@ -54,7 +54,7 @@ it('should render draggable component', () => {
 //   const { container } = render(
 //     <DndProvider backend={TestBackend}>
 //       <SlatePlugins
-//         plugins={[useParagraphPlugin()]}
+//         plugins={[getParagraphPlugin()]}
 //         options={options}
 //         components={_components}
 //         initialValue={[{ children: initialValue }]}
@@ -74,7 +74,7 @@ it('should not be draggable if readOnly', () => {
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <SlatePlugins
-        plugins={[useParagraphPlugin()]}
+        plugins={[getParagraphPlugin()]}
         options={options}
         components={_components}
         initialValue={initialValue}
@@ -96,7 +96,7 @@ it('should be draggable in readOnly if allowReadOnly', () => {
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <SlatePlugins
-        plugins={[useParagraphPlugin()]}
+        plugins={[getParagraphPlugin()]}
         options={options}
         components={_components}
         initialValue={initialValue}

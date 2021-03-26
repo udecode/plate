@@ -1,13 +1,14 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 
 const input = {
-  plugins: [useParagraphPlugin()],
+  plugins: [getParagraphPlugin()],
   element: document.createElement('p'),
   children: [{ text: 'test' }],
 };

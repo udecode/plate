@@ -4,6 +4,8 @@ import { TEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { mergeDeepToNodes } from '../../../transforms/index';
 
+jsx;
+
 const editor = ((
   <editor>
     <hp>test</hp>

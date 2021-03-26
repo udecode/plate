@@ -29,11 +29,11 @@ export const useSlatePlugins = ({
   });
 
   return {
-    getSlateProps: useSlateProps({
+    slateProps: useSlateProps({
       id,
       onChange,
     }),
-    getEditableProps: useEditableProps({
+    editableProps: useEditableProps({
       id,
       editableProps,
     }),

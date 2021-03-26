@@ -3,8 +3,8 @@
  */
 
 export * from './defaults';
+export * from './getLinkDeserialize';
 export * from './types';
-export * from './useDeserializeLink';
-export * from './useLinkPlugin';
+export * from './getLinkPlugin';
 export * from './withLink';
 export * from './transforms/index';

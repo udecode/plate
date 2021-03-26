@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
+jsx;
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
@@ -27,21 +28,21 @@ it('should go down then back to the first index', () => {
   const { result } = renderHook(() => useMentionPlugin({ mentionables }));
 
   act(() => {
-    result.current.onChange?.(editor)([]);
+    result.current.plugin.onChange?.(editor)([]);
   });
 
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'ArrowDown' })
     );
   });
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'ArrowDown' })
     );
   });
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'ArrowDown' })
     );
   });

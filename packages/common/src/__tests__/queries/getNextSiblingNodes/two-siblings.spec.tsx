@@ -7,6 +7,8 @@ import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

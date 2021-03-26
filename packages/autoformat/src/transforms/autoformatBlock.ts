@@ -1,9 +1,8 @@
-import { SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Location, Transforms } from 'slate';
 import { AutoformatRule } from '../types';
 
 export const autoformatBlock = (
-  editor: SPEditor,
+  editor: Editor,
   type: string,
   at: Location,
   { preFormat, format }: Pick<AutoformatRule, 'preFormat' | 'format'>

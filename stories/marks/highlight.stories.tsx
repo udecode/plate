@@ -1,14 +1,14 @@
 import React from 'react';
 import {
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getHighlightPlugin,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   HeadingToolbar,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useHighlightPlugin,
-  useHistoryPlugin,
-  useReactPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueHighlight } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
@@ -25,11 +25,11 @@ const options = getSlatePluginsOptions();
 
 export const Example = () => {
   const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useHighlightPlugin(),
+    getReactPlugin(),
+    getHistoryPlugin(),
+    ...getBasicElementPlugins(),
+    ...getBasicMarkPlugins(),
+    getHighlightPlugin(),
   ];
 
   return (
