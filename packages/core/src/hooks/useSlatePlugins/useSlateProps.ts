@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
   useStoreEditor,
-  useStorePlugins,
-  useStoreValue,
+  useStoreEditorValue,
+  useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
 import { SlateProps } from '../../types/SlateProps';
 import { TNode } from '../../types/TNode';
@@ -19,8 +19,8 @@ export const useSlateProps = ({
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = useSlatePluginsActions(id);
   const editor = useStoreEditor(id);
-  const value = useStoreValue(id);
-  const plugins = useStorePlugins(id);
+  const value = useStoreEditorValue(id);
+  const plugins = useStoreSlatePlugins(id);
 
   return useMemo(
     () => ({

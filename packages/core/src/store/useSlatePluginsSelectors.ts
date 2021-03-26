@@ -18,13 +18,13 @@ export const useStoreEditor = <
     useCallback((state) => state[id]?.editor as TEditor, [id])
   );
 
-export const useStoreValue = (id = 'main') =>
+export const useStoreEditorValue = (id = 'main') =>
   useSlatePluginsStore(useCallback((state) => state[id]?.value ?? [], [id]));
 
-export const useStorePlugins = (id = 'main') =>
+export const useStoreSlatePlugins = (id = 'main') =>
   useSlatePluginsStore(useCallback((state) => state[id]?.plugins ?? [], [id]));
 
-export const useStorePluginKeys = (id = 'main') =>
+export const useStoreSlatePluginKeys = (id = 'main') =>
   useSlatePluginsStore(
     useCallback((state) => state[id]?.pluginKeys ?? [], [id])
   );

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import {
   useStoreEditor,
-  useStorePlugins,
+  useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -17,7 +17,7 @@ export const useEditableProps = ({
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
   const editor = useStoreEditor(id);
-  const plugins = useStorePlugins(id);
+  const plugins = useStoreSlatePlugins(id);
 
   return useMemo(
     () => ({
