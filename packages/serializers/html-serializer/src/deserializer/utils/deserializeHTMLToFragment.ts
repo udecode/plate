@@ -2,6 +2,8 @@ import { TDescendant } from '@udecode/slate-plugins-core';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
+jsx;
+
 /**
  * Deserialize HTML body element to Fragment.
  */

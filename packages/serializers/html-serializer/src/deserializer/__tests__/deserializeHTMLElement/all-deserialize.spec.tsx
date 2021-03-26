@@ -2,36 +2,36 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { getSlateClass } from '@udecode/slate-plugins-common';
+import { getSlateClass } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { useSoftBreakPlugin } from '../../../../../../break/src/soft-break/useSoftBreakPlugin';
+import { getSoftBreakPlugin } from '../../../../../../break/src/soft-break/getSoftBreakPlugin';
 import { ELEMENT_ALIGN_CENTER } from '../../../../../../elements/alignment/src/defaults';
-import { useAlignPlugin } from '../../../../../../elements/alignment/src/useAlignPlugin';
-import { useBlockquotePlugin } from '../../../../../../elements/block-quote/src/useBlockquotePlugin';
+import { getAlignPlugin } from '../../../../../../elements/alignment/src/getAlignPlugin';
+import { getBlockquotePlugin } from '../../../../../../elements/block-quote/src/getBlockquotePlugin';
 import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/defaults';
-import { useCodeBlockPlugin } from '../../../../../../elements/code-block/src/useCodeBlockPlugin';
-import { useHeadingPlugin } from '../../../../../../elements/heading/src/useHeadingPlugin';
-import { useImagePlugin } from '../../../../../../elements/image/src/useImagePlugin';
-import { useLinkPlugin } from '../../../../../../elements/link/src/useLinkPlugin';
+import { getCodeBlockPlugin } from '../../../../../../elements/code-block/src/getCodeBlockPlugin';
+import { getHeadingPlugin } from '../../../../../../elements/heading/src/getHeadingPlugin';
+import { getImagePlugin } from '../../../../../../elements/image/src/getImagePlugin';
+import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
+import { getListPlugin } from '../../../../../../elements/list/src/getListPlugin';
 import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/constants';
 import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
-import { useTodoListPlugin } from '../../../../../../elements/list/src/todo-list/useTodoListPlugin';
-import { useListPlugin } from '../../../../../../elements/list/src/useListPlugin';
-import { useMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/useMediaEmbedPlugin';
+import { getTodoListPlugin } from '../../../../../../elements/list/src/todo-list/getTodoListPlugin';
+import { getMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/getMediaEmbedPlugin';
 import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
 import { useMentionPlugin } from '../../../../../../elements/mention/src/useMentionPlugin';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
-import { useTablePlugin } from '../../../../../../elements/table/src/useTablePlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
+import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
 import { useFindReplacePlugin } from '../../../../../../find-replace/src/useFindReplacePlugin';
-import { useDeserializeBold } from '../../../../../../marks/basic-marks/src/bold/useDeserializeBold';
-import { useDeserializeCode } from '../../../../../../marks/basic-marks/src/code/useDeserializeCode';
-import { useDeserializeItalic } from '../../../../../../marks/basic-marks/src/italic/useDeserializeItalic';
-import { useDeserializeStrikethrough } from '../../../../../../marks/basic-marks/src/strikethrough/useDeserializeStrikethrough';
-import { useDeserializeSubscript } from '../../../../../../marks/basic-marks/src/subscript/useDeserializeSubscript';
-import { useDeserializeSuperscript } from '../../../../../../marks/basic-marks/src/superscript/useDeserializeSuperscript';
-import { useDeserializeUnderline } from '../../../../../../marks/basic-marks/src/underline/useDeserializeUnderline';
-import { useDeserializeHighlight } from '../../../../../../marks/highlight/src/useDeserializeHighlight';
-import { useDeserializeKbd } from '../../../../../../marks/kbd/src/useDeserializeKbd';
+import { getBoldDeserialize } from '../../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
+import { getCodeDeserialize } from '../../../../../../marks/basic-marks/src/code/getCodeDeserialize';
+import { getItalicDeserialize } from '../../../../../../marks/basic-marks/src/italic/getItalicDeserialize';
+import { getStrikethroughDeserialize } from '../../../../../../marks/basic-marks/src/strikethrough/getStrikethroughDeserialize';
+import { getSubscriptDeserialize } from '../../../../../../marks/basic-marks/src/subscript/getSubscriptDeserialize';
+import { getSuperscriptDeserialize } from '../../../../../../marks/basic-marks/src/superscript/getSuperscriptDeserialize';
+import { getUnderlineDeserialize } from '../../../../../../marks/basic-marks/src/underline/getUnderlineDeserialize';
+import { getHighlightDeserialize } from '../../../../../../marks/highlight/src/getHighlightDeserialize';
+import { getKbdDeserialize } from '../../../../../../marks/kbd/src/getKbdDeserialize';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
@@ -109,10 +109,10 @@ const output = (
         <htext />
       </hmention>
     </hp>
-    <hcode>
+    <hcodeblock>
       <hcodeline>code 1</hcodeline>
       <hcodeline>code 2</hcodeline>
-    </hcode>
+    </hcodeblock>
     <hul>
       <hli>
         <hp>ul-li-p</hp>
@@ -131,40 +131,40 @@ const output = (
         <htd>table</htd>
       </htr>
     </htable>
-    <htodolist checked>checked</htodolist>
-    <htodolist checked={false}>unchecked</htodolist>
+    <htodoli checked>checked</htodoli>
+    <htodoli checked={false}>unchecked</htodoli>
     <hcenter>center</hcenter>
-    <hembed url="https://player.vimeo.com/video/26689853">
+    <hmediaembed url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
-    </hembed>
+    </hmediaembed>
   </editor>
 ) as any;
 
 it('should be', () => {
   const plugins = renderHook(() => [
-    useBlockquotePlugin(),
-    useTodoListPlugin(),
-    useHeadingPlugin({ levels: 1 }),
-    useImagePlugin(),
-    useLinkPlugin(),
-    useListPlugin(),
-    useMentionPlugin(),
-    useParagraphPlugin(),
-    useCodeBlockPlugin(),
-    useTablePlugin(),
-    useMediaEmbedPlugin(),
-    useFindReplacePlugin(),
-    useSoftBreakPlugin(),
-    useAlignPlugin(),
-    { deserialize: useDeserializeBold() },
-    { deserialize: useDeserializeHighlight() },
-    { deserialize: useDeserializeCode() },
-    { deserialize: useDeserializeKbd() },
-    { deserialize: useDeserializeItalic() },
-    { deserialize: useDeserializeStrikethrough() },
-    { deserialize: useDeserializeSubscript() },
-    { deserialize: useDeserializeSuperscript() },
-    { deserialize: useDeserializeUnderline() },
+    getBlockquotePlugin(),
+    getTodoListPlugin(),
+    getHeadingPlugin({ levels: 1 }),
+    getImagePlugin(),
+    getLinkPlugin(),
+    getListPlugin(),
+    useMentionPlugin().plugin,
+    getParagraphPlugin(),
+    getCodeBlockPlugin(),
+    getTablePlugin(),
+    getMediaEmbedPlugin(),
+    useFindReplacePlugin().plugin,
+    getSoftBreakPlugin(),
+    getAlignPlugin(),
+    { deserialize: getBoldDeserialize() },
+    { deserialize: getHighlightDeserialize() },
+    { deserialize: getCodeDeserialize() },
+    { deserialize: getKbdDeserialize() },
+    { deserialize: getItalicDeserialize() },
+    { deserialize: getStrikethroughDeserialize() },
+    { deserialize: getSubscriptDeserialize() },
+    { deserialize: getSuperscriptDeserialize() },
+    { deserialize: getUnderlineDeserialize() },
   ]).result.current;
 
   expect(

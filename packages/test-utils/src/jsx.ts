@@ -1,8 +1,7 @@
 import { createHyperscript } from 'slate-hyperscript';
 import { createText } from './hyperscript/creators';
 
-// const ELEMENT_ALIGN_LEFT = 'align_left';
-// const ELEMENT_ALIGN_RIGHT = 'align_right';
+const ELEMENT_ALIGN_RIGHT = 'align_right';
 const ELEMENT_ALIGN_CENTER = 'align_center';
 const ELEMENT_ALIGN_JUSTIFY = 'align_justify';
 const ELEMENT_H1 = 'h1';
@@ -41,34 +40,35 @@ declare global {
   }
 }
 
+const voidChildren = [{ text: '' }];
+
 export const jsx = createHyperscript({
   elements: {
-    hp: { type: ELEMENT_PARAGRAPH },
-    hmention: { type: ELEMENT_MENTION },
-    hblockquote: { type: ELEMENT_BLOCKQUOTE },
-    hcode: { type: ELEMENT_CODE_BLOCK },
-    hcodeline: { type: ELEMENT_CODE_LINE },
     ha: { type: ELEMENT_LINK },
-    himg: { type: ELEMENT_IMAGE },
-    hembed: { type: ELEMENT_MEDIA_EMBED },
-    htodolist: { type: ELEMENT_TODO_LI },
-    htable: { type: ELEMENT_TABLE },
-    htr: { type: ELEMENT_TR },
-    hth: { type: ELEMENT_TH },
-    htd: { type: ELEMENT_TD },
-    hul: { type: ELEMENT_UL },
-    hol: { type: ELEMENT_OL },
-    hli: { type: ELEMENT_LI },
+    hblockquote: { type: ELEMENT_BLOCKQUOTE },
+    hcenter: { type: ELEMENT_ALIGN_CENTER },
+    hcodeblock: { type: ELEMENT_CODE_BLOCK },
+    hcodeline: { type: ELEMENT_CODE_LINE },
     hh1: { type: ELEMENT_H1 },
     hh2: { type: ELEMENT_H2 },
     hh3: { type: ELEMENT_H3 },
     hh4: { type: ELEMENT_H4 },
     hh5: { type: ELEMENT_H5 },
     hh6: { type: ELEMENT_H6 },
-    hcenter: { type: ELEMENT_ALIGN_CENTER },
+    himg: { type: ELEMENT_IMAGE, children: voidChildren },
     hjustify: { type: ELEMENT_ALIGN_JUSTIFY },
-    inline: { inline: true },
-    block: {},
+    hli: { type: ELEMENT_LI },
+    hmention: { type: ELEMENT_MENTION, children: voidChildren },
+    hmediaembed: { type: ELEMENT_MEDIA_EMBED, children: voidChildren },
+    hol: { type: ELEMENT_OL },
+    hp: { type: ELEMENT_PARAGRAPH },
+    hright: { type: ELEMENT_ALIGN_RIGHT },
+    htable: { type: ELEMENT_TABLE },
+    htd: { type: ELEMENT_TD },
+    hth: { type: ELEMENT_TH },
+    htodoli: { type: ELEMENT_TODO_LI },
+    htr: { type: ELEMENT_TR },
+    hul: { type: ELEMENT_UL },
   },
   creators: {
     htext: createText,

@@ -6,6 +6,8 @@ import { ELEMENT_LI } from '../../../../../elements/list/src/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { mergeDeepToNodes } from '../../../transforms/mergeDeepToNodes';
 
+jsx;
+
 const node = (
   <hli>
     test

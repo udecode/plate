@@ -3,5 +3,5 @@
  */
 
 export * from './types';
-export * from './useAutoformatPlugin';
+export * from './getAutoformatPlugin';
 export * from './transforms/index';

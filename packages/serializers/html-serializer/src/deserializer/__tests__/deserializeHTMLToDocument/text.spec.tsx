@@ -11,9 +11,9 @@ const input2 = getHtmlDocument(html).body;
 
 const output = (
   <fragment>
-    <block>
+    <element>
       <htext>test</htext>
-    </block>
+    </element>
   </fragment>
 ) as any;
 

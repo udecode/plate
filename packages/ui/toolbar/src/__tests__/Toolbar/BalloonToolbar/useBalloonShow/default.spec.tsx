@@ -5,6 +5,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { useBalloonShow } from '../../../../BalloonToolbar/useBalloonShow';
 
+jsx;
+
 const input1 = ((
   <editor>
     <hp>

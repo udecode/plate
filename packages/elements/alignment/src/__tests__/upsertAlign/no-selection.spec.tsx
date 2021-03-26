@@ -4,6 +4,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { upsertAlign } from '../../transforms/upsertAlign';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>test</hp>

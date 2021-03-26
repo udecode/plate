@@ -3,6 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 
+jsx;
+
 export const input = ((
   <editor>
     <hp>

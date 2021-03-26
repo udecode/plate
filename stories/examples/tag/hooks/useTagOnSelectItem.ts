@@ -1,5 +1,9 @@
 import { useCallback } from 'react';
-import { getBlockAbove } from '@udecode/slate-plugins';
+import {
+  getBlockAbove,
+  getSlatePluginType,
+  SPEditor,
+} from '@udecode/slate-plugins';
 import { Editor, Transforms } from 'slate';
 import { IComboboxItem } from '../../combobox/components/Combobox.types';
 import { useComboboxIsOpen } from '../../combobox/selectors/useComboboxIsOpen';

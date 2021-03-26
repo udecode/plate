@@ -7,7 +7,7 @@ import { UseEditablePropsOptions } from '../types/UseEditablePropsOptions';
  * {@link Editable} with plugins support.
  */
 export const EditablePlugins = (props: UseEditablePropsOptions) => {
-  const { getEditableProps } = useSlatePlugins(props);
+  const { editableProps } = useSlatePlugins(props);
 
-  return <Editable {...getEditableProps()} />;
+  return <Editable {...editableProps} />;
 };

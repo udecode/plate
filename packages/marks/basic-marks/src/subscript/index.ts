@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeSubscript';
-export * from './useSubscriptPlugin';
+export * from './getSubscriptDeserialize';
+export * from './getSubscriptPlugin';

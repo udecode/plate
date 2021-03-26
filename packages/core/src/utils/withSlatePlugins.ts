@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Editor } from 'slate';
-import { withInlineVoid } from '../plugins/useInlineVoidPlugin';
+import { withInlineVoid } from '../plugins/getInlineVoidPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';

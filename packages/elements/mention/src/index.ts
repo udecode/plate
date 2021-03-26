@@ -3,8 +3,8 @@
  */
 
 export * from './defaults';
+export * from './getMentionDeserialize';
 export * from './types';
-export * from './useDeserializeMention';
 export * from './useMentionPlugin';
 export * from './queries/index';
 export * from './transforms/index';

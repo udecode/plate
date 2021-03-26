@@ -3,11 +3,13 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
-const input1: SlatePlugin[] = [useParagraphPlugin()];
+jsx;
+
+const input1: SlatePlugin[] = [getParagraphPlugin()];
 
 const output = (
   <fragment>

@@ -3,6 +3,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { MentionNodeData } from '../../../types';
 
+jsx;
+
 export const editorWithMentionable = ((
   <editor>
     <hp>

@@ -3,16 +3,18 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
-import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
+import { getSoftBreakOnKeyDown } from '../../getSoftBreakOnKeyDown';
+
+jsx;
 
 const input = (
   <editor>
     <hp>paragraph</hp>
-    <hcode>
+    <hcodeblock>
       code
       <cursor />
       block
-    </hcode>
+    </hcodeblock>
   </editor>
 ) as any;
 
@@ -21,13 +23,13 @@ const event = new KeyboardEvent('keydown');
 const output = (
   <editor>
     <hp>paragraph</hp>
-    <hcode>code{'\n'}block</hcode>
+    <hcodeblock>code{'\n'}block</hcodeblock>
   </editor>
 ) as any;
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
-  onKeyDownSoftBreak({
+  getSoftBreakOnKeyDown({
     rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
   })(input)(event);
   expect(input.children).toEqual(output.children);

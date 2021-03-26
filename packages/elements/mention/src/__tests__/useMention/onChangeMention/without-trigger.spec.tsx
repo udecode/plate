@@ -6,6 +6,8 @@ import { Editor } from 'slate';
 import { pipe } from '../../../../../../slate-plugins/src/pipe/pipe';
 import { useMentionPlugin } from '../../../useMentionPlugin';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>
@@ -21,7 +23,7 @@ it('should do nothing', () => {
   const { result } = renderHook(() => useMentionPlugin());
 
   act(() => {
-    result.current.onChange?.(editor)([]);
+    result.current.plugin.onChange?.(editor)([]);
   });
 
   expect(result.current.getMentionSelectProps().valueIndex).toBe(0);

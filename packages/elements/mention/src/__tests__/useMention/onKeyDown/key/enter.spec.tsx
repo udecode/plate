@@ -1,10 +1,13 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
+
+jsx;
 
 const input = ((
   <editor>
@@ -13,7 +16,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output = ((
   <editor>
@@ -32,15 +35,15 @@ it('should go down', () => {
 
   const editor = createEditorPlugins({
     editor: input,
-    plugins: [result.current],
+    plugins: [result.current.plugin],
   });
 
   act(() => {
-    result.current.onChange?.(editor)([]);
+    result.current.plugin.onChange?.(editor)([]);
   });
 
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'Enter' })
     );
   });

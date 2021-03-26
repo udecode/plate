@@ -1,17 +1,17 @@
-import { useListPlugin } from '../../../../../elements/list/src/useListPlugin';
-import { useParagraphPlugin } from '../../../../../elements/paragraph/src/useParagraphPlugin';
-import { useBoldPlugin } from '../../../../../marks/basic-marks/src/bold/useBoldPlugin';
-import { useItalicPlugin } from '../../../../../marks/basic-marks/src/italic/useItalicPlugin';
+import { getListPlugin } from '../../../../../elements/list/src/getListPlugin';
+import { getParagraphPlugin } from '../../../../../elements/paragraph/src/getParagraphPlugin';
+import { getBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { getItalicPlugin } from '../../../../../marks/basic-marks/src/italic/getItalicPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
-    useParagraphPlugin(),
-    useListPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
+    getParagraphPlugin(),
+    getListPlugin(),
   ];
   const editor = createEditorPlugins({ plugins });
 
@@ -88,10 +88,10 @@ it('serialize complex example list with paragraphs to html', () => {
 
 it('serialize complex example with no type on top level node to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
-    useParagraphPlugin(),
-    useListPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
+    getParagraphPlugin(),
+    getListPlugin(),
   ];
   const editor = createEditorPlugins({ plugins });
 
@@ -133,10 +133,10 @@ it('serialize complex example with no type on top level node to html', () => {
 
 it('serialize complex example with multiple no types on top level node to html', () => {
   const plugins = [
-    useItalicPlugin(),
-    useBoldPlugin(),
-    useParagraphPlugin(),
-    useListPlugin(),
+    getItalicPlugin(),
+    getBoldPlugin(),
+    getParagraphPlugin(),
+    getListPlugin(),
   ];
   const editor = createEditorPlugins({ plugins });
 
@@ -180,7 +180,7 @@ it('serialize complex example with multiple no types on top level node to html',
 });
 
 it('serialize string with %', () => {
-  const plugins = [useParagraphPlugin()];
+  const plugins = [getParagraphPlugin()];
   const editor = createEditorPlugins({ plugins });
 
   const render = serializeHTMLFromNodes(editor, {

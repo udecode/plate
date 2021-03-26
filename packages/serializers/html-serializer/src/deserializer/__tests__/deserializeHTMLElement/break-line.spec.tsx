@@ -2,10 +2,12 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { createEditor } from 'slate';
+import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
-const editor = createEditor();
+jsx;
+
+const editor = createEditorPlugins();
 
 const html = `<html><body>test<br /></body></html>`;
 const input1: SlatePlugin[] = [];

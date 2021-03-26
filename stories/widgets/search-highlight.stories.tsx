@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Search } from '@styled-icons/material';
 import {
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
   ToolbarSearchHighlight,
-  useBasicElementPlugins,
   useFindReplacePlugin,
-  useHistoryPlugin,
-  useReactPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueSearchHighlighting } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
@@ -24,14 +24,17 @@ const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const { setSearch, ...searchHighlightPlugin } = useFindReplacePlugin();
+  const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
-  const plugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    searchHighlightPlugin,
-  ];
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      searchHighlightPlugin,
+    ],
+    [searchHighlightPlugin]
+  );
 
   return (
     <SlatePlugins

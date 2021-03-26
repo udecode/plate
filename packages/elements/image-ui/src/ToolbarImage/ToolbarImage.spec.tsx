@@ -20,6 +20,7 @@ describe('ToolbarImage', () => {
       <editor>
         <hp>test</hp>
         <himg url="https://i.imgur.com/removed.png">
+          <htext />
           <cursor />
         </himg>
       </editor>

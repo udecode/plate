@@ -1,17 +1,17 @@
 import React from 'react';
 import {
+  getAutoformatPlugin,
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getListPlugin,
+  getReactPlugin,
+  getResetNodePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
   SlatePlugins,
-  useAutoformatPlugin,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useListPlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSoftBreakPlugin,
   withAutoformat,
 } from '@udecode/slate-plugins';
 import { optionsAutoformat } from '../config/autoformatRules';
@@ -32,28 +32,25 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getListPlugin(),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+  getAutoformatPlugin(optionsAutoformat),
+];
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useListPlugin(),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-    useAutoformatPlugin(optionsAutoformat),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueAutoformat}
-    />
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueAutoformat}
+  />
+);

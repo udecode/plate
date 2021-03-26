@@ -3,7 +3,9 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { optionsAutoformat } from '../../../../../../stories/config/autoformatRules';
-import { withAutoformat } from '../../../useAutoformatPlugin';
+import { withAutoformat } from '../../../getAutoformatPlugin';
+
+jsx;
 
 const input = (
   <editor>
@@ -18,9 +20,9 @@ const input = (
 const output = (
   <editor>
     <hp>hello</hp>
-    <hcode>
+    <hcodeblock>
       <hcodeline>world</hcodeline>
-    </hcode>
+    </hcodeblock>
   </editor>
 ) as any;
 

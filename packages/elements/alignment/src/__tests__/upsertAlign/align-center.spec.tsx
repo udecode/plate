@@ -5,6 +5,8 @@ import { Editor } from 'slate';
 import { ELEMENT_ALIGN_CENTER } from '../../defaults';
 import { upsertAlign } from '../../transforms/upsertAlign';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

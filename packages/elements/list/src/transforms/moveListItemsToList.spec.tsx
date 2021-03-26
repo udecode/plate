@@ -6,6 +6,8 @@ import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { moveListItemsToList } from './moveListItemsToList';
 
+jsx;
+
 const input = ((
   <editor>
     <hul id="1">

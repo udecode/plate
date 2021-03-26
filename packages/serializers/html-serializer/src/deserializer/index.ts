@@ -3,5 +3,5 @@
  */
 
 export * from './types';
-export * from './useDeserializeHTMLPlugin';
+export * from './getDeserializeHTMLPlugin';
 export * from './utils/index';

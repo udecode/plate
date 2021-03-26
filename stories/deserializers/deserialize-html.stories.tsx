@@ -1,22 +1,22 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getDeserializeHTMLPlugin,
+  getHighlightPlugin,
+  getHistoryPlugin,
+  getImagePlugin,
+  getLinkPlugin,
+  getListPlugin,
+  getMediaEmbedPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
+  getTablePlugin,
+  getTodoListPlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useDeserializeHTMLPlugin,
-  useHighlightPlugin,
-  useHistoryPlugin,
-  useImagePlugin,
-  useLinkPlugin,
-  useListPlugin,
-  useMediaEmbedPlugin,
   useMentionPlugin,
-  useReactPlugin,
-  useSoftBreakPlugin,
-  useTablePlugin,
-  useTodoListPlugin,
 } from '@udecode/slate-plugins';
 import { initialValuePasteHtml } from '../config/initialValues';
 import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
@@ -31,28 +31,34 @@ const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useImagePlugin(),
-    useLinkPlugin(),
-    useListPlugin(),
-    useTablePlugin(),
-    useTodoListPlugin(),
-    useMentionPlugin(),
-    useMediaEmbedPlugin(),
-    useHighlightPlugin(),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-  ];
+  const { plugin: mentionPlugin } = useMentionPlugin();
 
-  plugins.push(useDeserializeHTMLPlugin({ plugins }));
+  const pluginsMemo = useMemo(() => {
+    const plugins = [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      ...getBasicMarkPlugins(),
+      getImagePlugin(),
+      getLinkPlugin(),
+      getListPlugin(),
+      getTablePlugin(),
+      getTodoListPlugin(),
+      getMediaEmbedPlugin(),
+      getHighlightPlugin(),
+      getSoftBreakPlugin(optionsSoftBreakPlugin),
+      mentionPlugin,
+    ];
+
+    plugins.push(getDeserializeHTMLPlugin({ plugins }));
+
+    return plugins;
+  }, [mentionPlugin]);
 
   return (
     <SlatePlugins
       id={id}
-      plugins={plugins}
+      plugins={pluginsMemo}
       components={components}
       options={options}
       editableProps={editableProps}

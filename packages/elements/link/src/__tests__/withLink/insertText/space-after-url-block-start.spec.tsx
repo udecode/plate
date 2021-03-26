@@ -6,6 +6,8 @@ import { withReact } from 'slate-react';
 import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';
 
+jsx;
+
 const input = (
   <editor>
     <hp>

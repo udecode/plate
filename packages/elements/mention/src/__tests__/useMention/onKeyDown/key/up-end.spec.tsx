@@ -6,6 +6,8 @@ import { createEditorPlugins } from '../../../../../../../slate-plugins/src/util
 import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>
@@ -23,17 +25,17 @@ it('should go down', () => {
   const { result } = renderHook(() => useMentionPlugin({ mentionables }));
 
   act(() => {
-    result.current.onChange?.(editor)([]);
+    result.current.plugin.onChange?.(editor)([]);
   });
 
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'ArrowUp' })
     );
   });
 
   act(() => {
-    result.current.onKeyDown?.(editor)(
+    result.current.plugin.onKeyDown?.(editor)(
       new KeyboardEvent('keydown', { key: 'ArrowUp' })
     );
   });

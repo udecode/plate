@@ -3,10 +3,10 @@ import {
   isCollapsed,
   isPointAtWordEnd,
   isWordAfterTrigger,
-  useRenderElement,
-  useSlatePluginTypes,
 } from '@udecode/slate-plugins-common';
 import {
+  getRenderElement,
+  getSlatePluginTypes,
   OnChange,
   OnKeyDown,
   SlatePlugin,
@@ -18,12 +18,12 @@ import { insertMention } from './transforms/insertMention';
 import { getNextIndex } from './utils/getNextIndex';
 import { getPreviousIndex } from './utils/getPreviousIndex';
 import { ELEMENT_MENTION } from './defaults';
+import { getMentionDeserialize } from './getMentionDeserialize';
 import {
   GetMentionSelectProps,
   MentionNodeData,
   MentionPluginOptions,
 } from './types';
-import { useDeserializeMention } from './useDeserializeMention';
 
 /**
  * Enables support for autocompleting @mentions and #tags.
@@ -38,7 +38,8 @@ export const useMentionPlugin = ({
     c.value.toLowerCase().includes(search.toLowerCase()),
   mentionableSearchPattern,
   insertSpaceAfterMention,
-}: MentionPluginOptions = {}): SlatePlugin & {
+}: MentionPluginOptions = {}): {
+  plugin: SlatePlugin;
   getMentionSelectProps: () => GetMentionSelectProps;
 } => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
@@ -128,13 +129,18 @@ export const useMentionPlugin = ({
   );
 
   return {
-    pluginKeys: ELEMENT_MENTION,
-    onChange: onChangeMention,
-    renderElement: useRenderElement(ELEMENT_MENTION),
-    onKeyDown: onKeyDownMention,
-    deserialize: useDeserializeMention(),
-    inlineTypes: useSlatePluginTypes(ELEMENT_MENTION),
-    voidTypes: useSlatePluginTypes(ELEMENT_MENTION),
+    plugin: useMemo(
+      () => ({
+        pluginKeys: ELEMENT_MENTION,
+        onChange: onChangeMention,
+        renderElement: getRenderElement(ELEMENT_MENTION),
+        onKeyDown: onKeyDownMention,
+        deserialize: getMentionDeserialize(),
+        inlineTypes: getSlatePluginTypes(ELEMENT_MENTION),
+        voidTypes: getSlatePluginTypes(ELEMENT_MENTION),
+      }),
+      [onChangeMention, onKeyDownMention]
+    ),
 
     getMentionSelectProps: useCallback(
       () => ({

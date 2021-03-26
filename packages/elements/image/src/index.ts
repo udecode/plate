@@ -3,9 +3,9 @@
  */
 
 export * from './defaults';
+export * from './getImageDeserialize';
 export * from './types';
-export * from './useDeserializeImage';
-export * from './useImagePlugin';
+export * from './getImagePlugin';
 export * from './withImageUpload';
 export * from './transforms/index';
 export * from './utils/index';

@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeStrikethrough';
-export * from './useStrikethroughPlugin';
+export * from './getStrikethroughDeserialize';
+export * from './getStrikethroughPlugin';

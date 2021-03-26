@@ -6,20 +6,20 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 Note: `renderLeaf` should always return `children` (wrapped or not).
 
-### Using getRenderLeafDefault
+### Using getEditableRenderLeafDefault
 
 Get a `renderLeaf` handler for a single type, with default options.
 
 ```js
 export const renderLeafBold = (options?: BoldRenderLeafOptions) =>
-  getRenderLeafDefault({
+  getEditableRenderLeafDefault({
     key: 'bold',
     defaultOptions: DEFAULTS_BOLD,
     options,
   });
 ```
 
-### Using getRenderLeaf
+### Using getEditableRenderLeaf
 
 Get a `renderLeaf` handler for a single type.
 
@@ -29,7 +29,7 @@ export const renderLeafBold = (
 ) => {
   const { bold } = setDefaults(options, DEFAULTS_BOLD);
 
-  return getRenderLeaf(bold);
+  return getEditableRenderLeaf(bold);
 };
 ```
 

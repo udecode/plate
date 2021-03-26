@@ -1,20 +1,20 @@
 import React from 'react';
 import {
   ELEMENT_PARAGRAPH,
+  getBasicElementPlugins,
+  getBasicMarkPlugins,
+  getExitBreakPlugin,
+  getHistoryPlugin,
+  getListPlugin,
+  getReactPlugin,
+  getResetNodePlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getSoftBreakPlugin,
+  getTrailingBlockPlugin,
   HeadingToolbar,
   SlatePlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useBasicMarkPlugins,
-  useExitBreakPlugin,
-  useHistoryPlugin,
-  useListPlugin,
-  useReactPlugin,
-  useResetNodePlugin,
-  useSoftBreakPlugin,
-  useTrailingBlockPlugin,
 } from '@udecode/slate-plugins';
 import { initialValueSoftBreak } from '../config/initialValues';
 import {
@@ -29,37 +29,33 @@ const id = 'Utilities/Soft Break';
 
 export default {
   title: id,
-  component: useSoftBreakPlugin,
 };
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins: SlatePlugin[] = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  ...getBasicMarkPlugins(),
+  getListPlugin(),
+  getResetNodePlugin(optionsResetBlockTypePlugin),
+  getSoftBreakPlugin(optionsSoftBreakPlugin),
+  getExitBreakPlugin(optionsExitBreakPlugin),
+  getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+];
 
-export const Example = () => {
-  const plugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    ...useBasicMarkPlugins(),
-    useListPlugin(),
-    useResetNodePlugin(optionsResetBlockTypePlugin),
-    useSoftBreakPlugin(optionsSoftBreakPlugin),
-    useExitBreakPlugin(optionsExitBreakPlugin),
-    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueSoftBreak}
-    >
-      <HeadingToolbar>
-        <ToolbarButtonsBasicElements />
-      </HeadingToolbar>
-    </SlatePlugins>
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueSoftBreak}
+  >
+    <HeadingToolbar>
+      <ToolbarButtonsBasicElements />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

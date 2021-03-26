@@ -2,14 +2,14 @@ import React from 'react';
 import {
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getNormalizeTypesPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
+  getTrailingBlockPlugin,
   SlatePlugins,
-  useBasicElementPlugins,
-  useHistoryPlugin,
-  useNormalizeTypesPlugin,
-  useReactPlugin,
-  useTrailingBlockPlugin,
   withNormalizeTypes,
   withTrailingBlock,
 } from '@udecode/slate-plugins';
@@ -26,26 +26,23 @@ export default {
 
 const components = getSlatePluginsComponents();
 const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getNormalizeTypesPlugin({
+    rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
+  }),
+  getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+];
 
-export const Example = () => {
-  const plugins = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    ...useBasicElementPlugins(),
-    useNormalizeTypesPlugin({
-      rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
-    }),
-    useTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
-  ];
-
-  return (
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueForcedLayout}
-    />
-  );
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueForcedLayout}
+  />
+);

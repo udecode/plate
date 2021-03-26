@@ -3,6 +3,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
 import { toggleWrapNodes } from '../../../transforms/index';
 
+jsx;
+
 const input = (
   <editor>
     <hp>
@@ -14,12 +16,12 @@ const input = (
 
 const output = (
   <editor>
-    <hcode>
+    <hcodeblock>
       <hp>
         test
         <cursor />
       </hp>
-    </hcode>
+    </hcodeblock>
   </editor>
 ) as any;
 

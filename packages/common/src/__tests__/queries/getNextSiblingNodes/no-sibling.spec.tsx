@@ -1,11 +1,17 @@
 /** @jsx jsx */
 
-import { TDescendant, withInlineVoid } from '@udecode/slate-plugins-core';
+import {
+  SPEditor,
+  TDescendant,
+  withInlineVoid,
+} from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor, Range } from 'slate';
+import { Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
+
+jsx;
 
 const input = ((
   <editor>
@@ -17,7 +23,7 @@ const input = ((
       </ha>
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output: TDescendant[] = [];
 

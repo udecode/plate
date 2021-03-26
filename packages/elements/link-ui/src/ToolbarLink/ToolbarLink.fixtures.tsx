@@ -4,6 +4,8 @@ import * as React from 'react';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 
+jsx;
+
 export const input1 = ((
   <editor>
     <hp>

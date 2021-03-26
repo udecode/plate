@@ -1,10 +1,12 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { useLinkPlugin } from '../../../../../../elements/link/src/useLinkPlugin';
-import { useParagraphPlugin } from '../../../../../../elements/paragraph/src/useParagraphPlugin';
+import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
+import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { useDeserializeHTMLPlugin } from '../../useDeserializeHTMLPlugin';
+import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+
+jsx;
 
 const input = ((
   <editor>
@@ -31,8 +33,8 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const plugins = [useParagraphPlugin(), useLinkPlugin()];
-  plugins.push(useDeserializeHTMLPlugin({ plugins }));
+  const plugins = [getParagraphPlugin(), getLinkPlugin()];
+  plugins.push(getDeserializeHTMLPlugin({ plugins }));
 
   const editor = createEditorPlugins({
     editor: input,

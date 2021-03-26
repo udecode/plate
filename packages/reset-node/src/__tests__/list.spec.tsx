@@ -10,7 +10,9 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { unwrapList } from '../../../elements/list/src/transforms/unwrapList';
 import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
-import { onKeyDownResetNode } from '../onKeyDownResetNode';
+import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
+
+jsx;
 
 const input = (
   <editor>
@@ -47,7 +49,7 @@ it('should be', () => {
     onReset: unwrapList,
   };
 
-  onKeyDownResetNode({
+  getResetNodeOnKeyDown({
     rules: [
       {
         ...resetBlockTypesListRule,

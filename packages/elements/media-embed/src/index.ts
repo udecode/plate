@@ -3,6 +3,6 @@
  */
 
 export * from './defaults';
+export * from './getMediaEmbedDeserialize';
 export * from './types';
-export * from './useDeserializeIframe';
-export * from './useMediaEmbedPlugin';
+export * from './getMediaEmbedPlugin';

@@ -6,6 +6,8 @@ import { withReact } from 'slate-react';
 import { pipe } from '../../../../slate-plugins/src/pipe/pipe';
 import { ELEMENT_MENTION } from '../defaults';
 
+jsx;
+
 const input = (
   <editor>
     <hp>

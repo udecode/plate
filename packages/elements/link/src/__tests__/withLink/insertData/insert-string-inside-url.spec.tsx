@@ -6,15 +6,17 @@ import { withReact } from 'slate-react';
 import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';
 
+jsx;
+
 const input = (
   <editor>
     <hp>
       test
-      <element type="a" url="http://google.com">
+      <ha url="http://google.com">
         http://
         <cursor />
         google.com
-      </element>
+      </ha>
       <htext />
     </hp>
   </editor>

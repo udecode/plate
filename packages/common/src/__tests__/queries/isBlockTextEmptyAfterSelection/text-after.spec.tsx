@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-core';
+import { SPEditor, withInlineVoid } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
+
+jsx;
 
 const input = ((
   <editor>
@@ -17,7 +18,7 @@ const input = ((
       last
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 const output = false;
 

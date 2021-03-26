@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useBoldPlugin';
-export * from './useDeserializeBold';
+export * from './getBoldDeserialize';
+export * from './getBoldPlugin';

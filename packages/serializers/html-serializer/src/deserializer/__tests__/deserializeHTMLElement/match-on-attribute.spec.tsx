@@ -27,9 +27,9 @@ const input1 = {
 
 const output = (
   <editor>
-    <block type="poll" id="456">
+    <element type="poll" id="456">
       <htext />
-    </block>
+    </element>
   </editor>
 ) as any;
 

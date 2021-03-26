@@ -3,6 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { isSelectionExpanded } from '../../../queries/index';
 
+jsx;
+
 const input = (
   <editor>
     <element>test</element>

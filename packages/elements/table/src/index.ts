@@ -3,10 +3,10 @@
  */
 
 export * from './defaults';
+export * from './getTableDeserialize';
 export * from './types';
-export * from './useDeserializeTable';
-export * from './useOnKeyDownTable';
-export * from './useTablePlugin';
+export * from './getTableOnKeyDown';
+export * from './getTablePlugin';
 export * from './withTable';
 export * from './queries/index';
 export * from './transforms/index';

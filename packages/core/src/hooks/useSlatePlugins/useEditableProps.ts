@@ -1,8 +1,9 @@
-import { useCallback, useMemo } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import {
   useStoreEditor,
-  useStorePlugins,
+  useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -14,26 +15,19 @@ import { pipeRenderLeaf } from '../../utils/pipeRenderLeaf';
 export const useEditableProps = ({
   id,
   editableProps,
-}: UseEditablePropsOptions): (() => EditableProps) => {
+}: UseEditablePropsOptions): EditableProps => {
   const editor = useStoreEditor(id);
-  const plugins = useStorePlugins(id);
+  const plugins = useStoreSlatePlugins(id);
 
-  const props = useMemo(
+  return useMemo(
     () => ({
       renderElement: pipeRenderElement(editor, plugins),
       renderLeaf: pipeRenderLeaf(editor, plugins),
       onKeyDown: pipeOnKeyDown(editor, plugins),
       decorate: pipeDecorate(editor, plugins),
       onDOMBeforeInput: pipeOnDOMBeforeInput(editor, plugins),
-    }),
-    [editor, plugins]
-  );
-
-  return useCallback(
-    () => ({
-      ...props,
       ...editableProps,
     }),
-    [editableProps, props]
+    [editor, plugins]
   );
 };

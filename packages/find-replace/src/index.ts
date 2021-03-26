@@ -3,6 +3,6 @@
  */
 
 export * from './defaults';
+export * from './getSearchHighlightDecorate';
 export * from './types';
-export * from './useDecorateSearchHighlight';
 export * from './useFindReplacePlugin';

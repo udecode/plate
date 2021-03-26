@@ -9,6 +9,8 @@ import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
+jsx;
+
 export interface DeserializeMarksProps {
   plugins: SlatePlugin[];
   element: HTMLElement;

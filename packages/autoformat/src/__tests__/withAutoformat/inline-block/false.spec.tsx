@@ -3,7 +3,9 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { ELEMENT_CODE_BLOCK } from '../../../../../elements/code-block/src/defaults';
-import { withAutoformat } from '../../../useAutoformatPlugin';
+import { withAutoformat } from '../../../getAutoformatPlugin';
+
+jsx;
 
 const input = (
   <editor>

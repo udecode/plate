@@ -7,6 +7,8 @@ import { ELEMENT_LINK } from '../../defaults';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 import { withLink } from '../../withLink';
 
+jsx;
+
 const urlInput = 'http://input.com';
 
 const input = (

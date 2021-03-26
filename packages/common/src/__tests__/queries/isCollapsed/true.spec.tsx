@@ -4,6 +4,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { isCollapsed } from '../../../queries/isCollapsed';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

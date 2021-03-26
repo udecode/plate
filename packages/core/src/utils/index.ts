@@ -3,10 +3,16 @@
  */
 
 export * from './flatMapByKey';
+export * from './getEditableRenderElement';
+export * from './getEditableRenderLeaf';
 export * from './getEditorOptions';
 export * from './getInlineTypes';
+export * from './getRenderElement';
+export * from './getRenderLeaf';
+export * from './getSlateClass';
 export * from './getSlatePluginOptions';
 export * from './getSlatePluginType';
+export * from './getSlatePluginTypes';
 export * from './getSlatePluginWithOverrides';
 export * from './getVoidTypes';
 export * from './mapSlatePluginKeysToOptions';

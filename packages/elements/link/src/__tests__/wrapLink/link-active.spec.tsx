@@ -6,6 +6,8 @@ import { ELEMENT_LINK } from '../../defaults';
 import { wrapLink } from '../../transforms/wrapLink';
 import { withLink } from '../../withLink';
 
+jsx;
+
 const input = (
   <editor>
     <hp>

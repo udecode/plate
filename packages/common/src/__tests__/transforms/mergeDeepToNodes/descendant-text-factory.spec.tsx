@@ -4,6 +4,8 @@ import { isDescendant } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { mergeDeepToNodes } from '../../../transforms/index';
 
+jsx;
+
 const node = (<htext>test</htext>) as any;
 
 const props = { a: 1 };

@@ -10,10 +10,10 @@ const input2 = getHtmlDocument(html).body;
 
 const output = (
   <fragment>
-    <block>
+    <element>
       <htext>first</htext>
       <htext>second</htext>
-    </block>
+    </element>
   </fragment>
 ) as any;
 

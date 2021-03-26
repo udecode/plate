@@ -1,7 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
+import { getExitBreakOnKeyDown } from '../../getExitBreakOnKeyDown';
+
+jsx;
 
 const input = (
   <editor>
@@ -24,6 +26,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownExitBreak()(input)(event);
+  getExitBreakOnKeyDown()(input)(event);
   expect(input.children).toEqual(output.children);
 });

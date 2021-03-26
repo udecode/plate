@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { OnKeyDown } from '@udecode/slate-plugins';
-import { Editor } from 'slate';
+import { OnKeyDown, SPEditor } from '@udecode/slate-plugins';
 import { IComboboxItem } from '../components/Combobox.types';
 import { useComboboxIsOpen } from '../selectors/useComboboxIsOpen';
 import { useComboboxStore } from '../useComboboxStore';
@@ -12,7 +11,7 @@ import { getNextWrappingIndex } from '../utils/getNextWrappingIndex';
 export const useComboboxOnKeyDown = ({
   onSelectItem,
 }: {
-  onSelectItem: (editor: Editor, item: IComboboxItem) => any;
+  onSelectItem: (editor: SPEditor, item: IComboboxItem) => any;
 }): OnKeyDown => {
   const itemIndex = useComboboxStore((state) => state.itemIndex);
   const setItemIndex = useComboboxStore((state) => state.setItemIndex);

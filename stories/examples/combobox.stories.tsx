@@ -1,12 +1,12 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
+  getHistoryPlugin,
+  getReactPlugin,
   getSlatePluginsComponents,
   getSlatePluginsOptions,
   OnChange,
   SlatePlugin,
   SlatePlugins,
-  useHistoryPlugin,
-  useReactPlugin,
   useStoreEditor,
 } from '@udecode/slate-plugins';
 import { initialValueCombobox } from '../config/initialValues';
@@ -19,9 +19,9 @@ import { useComboboxStore } from './combobox/useComboboxStore';
 import { TagCombobox } from './tag/components/TagCombobox';
 import { TagElement } from './tag/components/TagElement';
 import { ELEMENT_TAG } from './tag/defaults';
+import { getTagPlugin } from './tag/getTagPlugin';
 import { useTagOnChange } from './tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './tag/hooks/useTagOnSelectItem';
-import { useTagPlugin } from './tag/useTagPlugin';
 
 const id = 'Examples/Combobox';
 
@@ -74,15 +74,18 @@ export const Example = () => {
     onSelectItem: tagOnSelect,
   });
 
-  const plugins: SlatePlugin[] = [
-    useReactPlugin(),
-    useHistoryPlugin(),
-    useTagPlugin(),
-    {
-      onChange: comboboxOnChange,
-      onKeyDown: comboboxOnKeyDown,
-    },
-  ];
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      getTagPlugin(),
+      {
+        onChange: comboboxOnChange,
+        onKeyDown: comboboxOnKeyDown,
+      },
+    ],
+    [comboboxOnChange, comboboxOnKeyDown]
+  );
 
   return (
     <SlatePlugins

@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeHighlight';
-export * from './useHighlightPlugin';
+export * from './getHighlightDeserialize';
+export * from './getHighlightPlugin';

@@ -4,6 +4,8 @@ import { findNode } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { isListNested } from './isListNested';
 
+jsx;
+
 describe('when the list is nested', () => {
   const input = (
     <editor>

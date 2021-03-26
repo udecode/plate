@@ -1,10 +1,15 @@
-import { createEditor } from 'slate';
+import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
+import { getTablePlugin } from '../getTablePlugin';
 import { withTable } from '../withTable';
 import { content, out, output2 } from './fixtures';
 
+const plugins = [getTablePlugin()];
+
 describe('withTable', () => {
   it('should prevent cell deletions on deleteBackward from outside the table', () => {
-    const editor = withTable()(createEditor());
+    const editor = createEditorPlugins({
+      plugins,
+    });
     editor.children = content;
     editor.selection = {
       anchor: { path: [2, 0], offset: 0 },
@@ -14,7 +19,9 @@ describe('withTable', () => {
     expect(editor.children).toEqual(content);
   });
   it('should prevent cell deletions on deleteForward from outside the table', () => {
-    const editor = withTable()(createEditor());
+    const editor = createEditorPlugins({
+      plugins,
+    });
     editor.children = content;
     editor.selection = {
       anchor: { path: [0, 0], offset: 1 },
@@ -24,7 +31,9 @@ describe('withTable', () => {
     expect(editor.children).toEqual(content);
   });
   it('should prevent cell deletions when selecting multiple cells', () => {
-    const editor = withTable()(createEditor());
+    const editor = createEditorPlugins({
+      plugins,
+    });
     editor.children = content;
     editor.selection = {
       anchor: { path: [1, 0, 0, 0], offset: 0 },
@@ -34,7 +43,9 @@ describe('withTable', () => {
     expect(editor.children).toEqual(out);
   });
   it('should allow deletions within a cell without deleting the cell', () => {
-    const editor = withTable()(createEditor());
+    const editor = createEditorPlugins({
+      plugins,
+    });
     editor.children = content;
     editor.selection = {
       anchor: { path: [1, 0, 0, 0], offset: 1 },

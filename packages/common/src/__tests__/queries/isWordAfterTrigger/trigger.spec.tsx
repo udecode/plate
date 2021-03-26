@@ -4,6 +4,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Range } from 'slate';
 import { isWordAfterTrigger } from '../../../queries/index';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeSuperscript';
-export * from './useSuperscriptPlugin';
+export * from './getSuperscriptDeserialize';
+export * from './getSuperscriptPlugin';

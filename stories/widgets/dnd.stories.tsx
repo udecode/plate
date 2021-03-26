@@ -70,7 +70,7 @@ Object.keys(components).forEach((key) => {
 
     components[key] = getSelectableElement({
       component: components[key],
-      level: rootKeys.includes(key) ? 1 : undefined,
+      level: rootKeys.includes(key) ? 0 : undefined,
       dragIcon: (
         <DragIndicator
           style={{
@@ -91,9 +91,10 @@ Object.keys(components).forEach((key) => {
     });
   }
 });
+const options = getSlatePluginsOptions();
 
 export const Example = () => (
   <DndProvider backend={HTML5Backend}>
-    <Plugins components={components} options={getSlatePluginsOptions()} />
+    <Plugins components={components} options={options} />
   </DndProvider>
 );

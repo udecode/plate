@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useDeserializeUnderline';
-export * from './useUnderlinePlugin';
+export * from './getUnderlineDeserialize';
+export * from './getUnderlinePlugin';

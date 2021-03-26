@@ -3,5 +3,5 @@
  */
 
 export * from './defaults';
-export * from './useCodePlugin';
-export * from './useDeserializeCode';
+export * from './getCodeDeserialize';
+export * from './getCodePlugin';

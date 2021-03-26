@@ -4,6 +4,8 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { getPointFromLocation } from '../../../queries/getPointFromLocation';
 
+jsx;
+
 const input = ((
   <editor>
     <hp>

@@ -6,7 +6,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 Note: `renderElement` should return `undefined` by default so `EditablePlugins` can run the next one.
 
-### Using getRenderElement
+### Using getEditableRenderElement
 
 Get a `renderElement` handler for a single type. If the given `type` is equals to the slate element type, render the given `component`.
 
@@ -16,11 +16,11 @@ export const renderElementParagraph = (
 ) => {
   const { p } = setDefaults(options, DEFAULTS_PARAGRAPH);
 
-  return getRenderElement(p);
+  return getEditableRenderElement(p);
 };
 ```
 
-### Using getRenderElements
+### Using getEditableRenderElements
 
 Get a `renderElement` handler for multiple types.
 
@@ -28,7 +28,7 @@ Get a `renderElement` handler for multiple types.
 export const renderElementList = (options?: ListRenderElementOptions) => {
   const { ul, ol, li } = setDefaults(options, DEFAULTS_LIST);
 
-  return getRenderElements([ul, ol, li]);
+  return getEditableRenderElements([ul, ol, li]);
 };
 ```
 

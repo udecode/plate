@@ -2,13 +2,14 @@ import { isCollapsed } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   isElement,
+  SPEditor,
   TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Editor, Node, Point, Transforms } from 'slate';
 import { ELEMENT_TD } from './defaults';
 
-export const withTable = (): WithOverride => (editor) => {
+export const withTable = (): WithOverride<SPEditor> => (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&

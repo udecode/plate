@@ -3,6 +3,8 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { getLastNode } from '../../../queries/index';
 
+jsx;
+
 const input = (
   <editor>
     <hh1>
