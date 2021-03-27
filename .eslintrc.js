@@ -231,6 +231,7 @@ module.exports = {
     'default-case': 'off',
     'no-bitwise': 'off',
     'react/jsx-uses-react': 'off',
+    'react/no-unescaped-entities': 'off',
     'react/react-in-jsx-scope': 'off',
     camelcase: 'off',
     'no-constant-condition': 'off',
