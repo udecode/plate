@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 
-export interface AutoformatRule {
+export interface AutoformatRule<T extends Editor = Editor> {
   /**
    * Block type to autoformat.
    */
@@ -25,12 +25,12 @@ export interface AutoformatRule {
    * Function called before formatting.
    * Generally used to reset the selected block.
    */
-  preFormat?: <T extends Editor>(editor: T) => void;
+  preFormat?: (editor: T) => void;
 
   /**
    * Custom formatting function.
    */
-  format?: <T extends Editor>(editor: T) => void;
+  format?: (editor: T) => void;
 
   /**
    * - block (default) – set/insert block. Should be used with `markup`.
@@ -64,15 +64,12 @@ export interface AutoformatRule {
   /**
    * Query to allow autoformat.
    */
-  query?: <T extends Editor>(
-    editor: T,
-    rule: Omit<AutoformatRule, 'query'>
-  ) => boolean;
+  query?: (editor: T, rule: Omit<AutoformatRule<T>, 'query'>) => boolean;
 }
 
-export interface WithAutoformatOptions {
+export interface WithAutoformatOptions<T extends Editor = Editor> {
   /**
    * A list of triggering rules.
    */
-  rules: AutoformatRule[];
+  rules: AutoformatRule<T>[];
 }

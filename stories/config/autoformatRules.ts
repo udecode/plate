@@ -1,4 +1,5 @@
 import {
+  createEditorPlugins,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
@@ -25,7 +26,13 @@ import { options } from './pluginOptions';
 
 const preFormat = (editor: SPEditor) => unwrapList(editor);
 
-export const optionsAutoformat: WithAutoformatOptions = {
+// const a = <T extends BaseEditor>(editor: T) => {};
+//
+// const b: SPEditor = createEditorPlugins();
+//
+// a(b);
+
+export const optionsAutoformat: WithAutoformatOptions<SPEditor> = {
   rules: [
     {
       type: options[ELEMENT_H1].type,

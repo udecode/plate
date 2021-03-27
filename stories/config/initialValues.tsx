@@ -378,17 +378,6 @@ export const initialValuePlainText: any = [
   },
 ];
 
-export const initialValueCombobox: any = [
-  {
-    type: options[ELEMENT_PARAGRAPH].type,
-    children: [
-      { text: 'Example using useCombobox from downshift with # trigger: ' },
-      { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
-      { text: '' },
-    ],
-  },
-];
-
 export const initialValueBasicMarks: any = [
   {
     type: options[ELEMENT_H1].type,
@@ -921,6 +910,23 @@ export const initialValueExitBreak: any = [
   createTable(),
 ];
 
+export const initialValuePlayground: any = getNodesWithRandomId([
+  ...initialValueForcedLayout,
+  ...initialValueBasicMarks,
+  ...initialValueHighlight,
+  ...initialValueBasicElements,
+  ...initialValueList,
+  ...initialValueTables,
+  ...initialValueLinks,
+  ...initialValueMentions,
+  ...initialValueImages,
+  ...initialValueEmbeds,
+  ...initialValueAutoformat,
+  ...initialValueSoftBreak,
+  ...initialValueExitBreak,
+  ...initialValuePasteHtml,
+]);
+
 export const initialValueVoids: any = [
   {
     type: options[ELEMENT_PARAGRAPH].type,
@@ -983,22 +989,16 @@ export const initialValueIframe: any = [
   },
 ];
 
-export const initialValuePlayground: any = getNodesWithRandomId([
-  ...initialValueForcedLayout,
-  ...initialValueBasicMarks,
-  ...initialValueHighlight,
-  ...initialValueBasicElements,
-  ...initialValueList,
-  ...initialValueTables,
-  ...initialValueLinks,
-  ...initialValueMentions,
-  ...initialValueImages,
-  ...initialValueEmbeds,
-  ...initialValueAutoformat,
-  ...initialValueSoftBreak,
-  ...initialValueExitBreak,
-  ...initialValuePasteHtml,
-]);
+export const initialValueCombobox: any = [
+  {
+    type: options[ELEMENT_PARAGRAPH].type,
+    children: [
+      { text: 'Example using useCombobox from downshift with # trigger: ' },
+      { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
+      { text: '' },
+    ],
+  },
+];
 
 const HEADINGS = 100;
 const PARAGRAPHS = 7;

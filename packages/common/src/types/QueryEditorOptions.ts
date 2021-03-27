@@ -4,12 +4,12 @@ import { QueryNodeOptions } from './QueryNodeOptions';
 /**
  * Query the editor state.
  */
-export interface QueryEditorOptions
+export interface QueryEditorOptions<T extends Editor = Editor>
   extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /**
    * Query the editor.
    */
-  filter?: (editor: Editor) => boolean;
+  filter?: (editor: T) => boolean;
 
   /**
    * Location from where to lookup the node types (bottom-up)

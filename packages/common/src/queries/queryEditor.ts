@@ -17,7 +17,7 @@ export const queryEditor = <T extends Editor>(
     allow,
     exclude,
     at = editor.selection || [],
-  }: QueryEditorOptions = {}
+  }: QueryEditorOptions<T> = {}
 ) => {
   if (
     (filter && !filter(editor)) ||
