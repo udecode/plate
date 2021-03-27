@@ -1,19 +1,11 @@
 name: ci
 on:
-  push:
-    branches:
-    - master
-    - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
   pull_request:
     branches:
     - master
     - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
+    paths-ignore:
+    - '**.md'
 jobs:
   ci:
     runs-on: ubuntu-latest
