@@ -1,15 +1,16 @@
-import { Editor, Location } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
+import { Location } from 'slate';
 import { QueryNodeOptions } from './QueryNodeOptions';
 
 /**
  * Query the editor state.
  */
-export interface QueryEditorOptions<T extends Editor = Editor>
+export interface QueryEditorOptions
   extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /**
    * Query the editor.
    */
-  filter?: (editor: T) => boolean;
+  filter?: (editor: TEditor) => boolean;
 
   /**
    * Location from where to lookup the node types (bottom-up)
