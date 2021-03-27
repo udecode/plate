@@ -2,7 +2,7 @@
 slate-plugins
 </h1>
 
-<div align="center">
+<div align="center" style="margin-bottom: 10px;">
 <div align="center">
   <a href="https://github.com/udecode/slate-plugins/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/slate-plugins" /></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
@@ -15,7 +15,7 @@ slate-plugins
   <a href="https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c" alt="Live Demo CodeSandbox"><img src="https://img.shields.io/badge/Live%20Demo-CodeSandbox-blue?logo=codesandbox" height="25" /></a>
   <a href="https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins" alt="Playground Storybook"><img src="https://img.shields.io/badge/Playground-Storybook-ff4684?logo=storybook" height="25" /></a>
 </div>
-</div>
+</p>
 
 > **We are working hard on v1 docs 🚧. Storybook docs are still for
 > v0.75.**
