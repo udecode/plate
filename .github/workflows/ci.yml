@@ -4,16 +4,14 @@ on:
     branches:
     - master
     - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
+    paths-ignore:
+    - '**.md'
   pull_request:
     branches:
     - master
     - next
-    paths:
-    - '**.jsx?'
-    - '**.tsx?'
+    paths-ignore:
+    - '**.md'
 jobs:
   ci:
     runs-on: ubuntu-latest
