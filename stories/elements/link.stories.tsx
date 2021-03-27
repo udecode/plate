@@ -1,64 +1,46 @@
-import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
+import React from 'react';
 import { Link } from '@styled-icons/material';
 import {
-  EditablePlugins,
-  HeadingPlugin,
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getLinkPlugin,
+  getReactPlugin,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
   HeadingToolbar,
-  LinkPlugin,
-  ParagraphPlugin,
-  pipe,
-  renderElementLink,
-  SlateDocument,
+  SlatePlugins,
   ToolbarLink,
-  withInlineVoid,
-  withLink,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValueLinks, options } from '../config/initialValues';
+import { initialValueLinks } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+
+const id = 'Elements/Link';
 
 export default {
-  title: 'Elements/Link',
-  component: LinkPlugin,
-  subcomponents: {
-    renderElementLink,
-    LinkButton: ToolbarLink,
-  },
+  title: id,
+  component: getLinkPlugin,
 };
 
-export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options), HeadingPlugin(options)];
-  if (boolean('LinkPlugin', true)) plugins.push(LinkPlugin(options));
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  ...getBasicElementPlugins(),
+  getLinkPlugin(),
+];
 
-  const withPlugins = [
-    withReact,
-    withHistory,
-    withLink(options),
-    withInlineVoid({ plugins }),
-  ] as const;
-
-  const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueLinks);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
-        <HeadingToolbar>
-          <ToolbarLink {...options} icon={<Link />} />
-        </HeadingToolbar>
-        <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
-};
+export const Example = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueLinks}
+  >
+    <HeadingToolbar>
+      <ToolbarLink icon={<Link />} />
+    </HeadingToolbar>
+  </SlatePlugins>
+);

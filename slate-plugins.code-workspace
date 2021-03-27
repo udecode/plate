@@ -10,6 +10,10 @@
     }
   ],
   "settings": {
-    "jest.disabledWorkspaceFolders": ["root", "slate-plugins"]
+    "jest.disabledWorkspaceFolders": [
+      "root",
+      "slate-plugins",
+      "slate-plugins-common"
+    ]
   }
 }

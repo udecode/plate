@@ -1,0 +1,42 @@
+{
+  "name": "@udecode/slate-plugins-media-embed",
+  "version": "1.0.0-alpha.8",
+  "description": "Slate plugins media-embed",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/media-embed#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.8",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

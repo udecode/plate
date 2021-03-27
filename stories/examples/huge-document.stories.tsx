@@ -1,36 +1,65 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  EditablePlugins,
-  HeadingPlugin,
-  ParagraphPlugin,
-  pipe,
-  SlateDocument,
+  getHistoryPlugin,
+  getReactPlugin,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
+  SlatePlugins,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValueHugeDocument, options } from '../config/initialValues';
+import { getHeadingPlugin } from '@udecode/slate-plugins-heading';
+import { getParagraphPlugin } from '@udecode/slate-plugins-paragraph';
+import { createEditor, Descendant } from 'slate';
+import { Editable, RenderElementProps, Slate, withReact } from 'slate-react';
+import { initialValueHugeDocument } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+
+const id = 'Examples/Huge Document';
 
 export default {
-  title: 'Examples/Huge Document',
+  title: id,
 };
 
-const plugins = [ParagraphPlugin(options), HeadingPlugin(options)];
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
+const plugins = [
+  getReactPlugin(),
+  getHistoryPlugin(),
+  getHeadingPlugin(),
+  getParagraphPlugin(),
+];
 
-const withPlugins = [withReact, withHistory] as const;
+export const WithSlatePlugins = () => (
+  <SlatePlugins
+    id={id}
+    plugins={plugins}
+    components={components}
+    options={options}
+    editableProps={editableProps}
+    initialValue={initialValueHugeDocument}
+  />
+);
 
-export const Example = () => {
-  const [value, setValue] = useState(initialValueHugeDocument);
+const Element = ({ attributes, children, element }: RenderElementProps) => {
+  switch ((element as any).type) {
+    case 'h1':
+      return <h1 {...attributes}>{children}</h1>;
+    default:
+      return <p {...attributes}>{children}</p>;
+  }
+};
 
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+export const WithoutSlatePlugins = () => {
+  const [value, setValue] = useState<Descendant[]>(initialValueHugeDocument);
+  const renderElement = useCallback((p: any) => <Element {...p} />, []);
+  const editor = useMemo(() => withReact(createEditor()), []);
 
   return (
     <Slate
       editor={editor}
       value={value}
-      onChange={(newValue) => setValue(newValue as SlateDocument)}
+      onChange={useCallback((v) => setValue(v), [])}
     >
-      <EditablePlugins plugins={plugins} spellCheck autoFocus />
+      <Editable renderElement={renderElement} {...editableProps} />
     </Slate>
   );
 };

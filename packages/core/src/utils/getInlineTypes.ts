@@ -1,11 +1,12 @@
-import { SlatePlugin } from '../types';
+import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { SPEditor } from '../types/SPEditor';
 
 /**
  * Get inline types from the plugins
  */
-export const getInlineTypes = (plugins: SlatePlugin[]): string[] => {
-  return plugins.reduce((arr: string[], plugin) => {
-    const types = plugin.inlineTypes || [];
-    return arr.concat(types);
-  }, []);
+export const getInlineTypes = (
+  editor: SPEditor,
+  plugins: SlatePlugin[]
+): string[] => {
+  return plugins.flatMap((p) => p.inlineTypes?.(editor) ?? []);
 };

@@ -1,19 +1,20 @@
 import * as React from 'react';
-import { classNamesFunction, styled } from '@uifabric/utilities';
+import { getRootClassNames, useTSlateStatic } from '@udecode/slate-plugins';
+import { styled } from '@uifabric/utilities';
 import { Transforms } from 'slate';
-import { useEditor, useFocused, useSelected } from 'slate-react';
+import { useFocused, useSelected } from 'slate-react';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { useOnMouseClick } from '../hooks/useOnMouseClick';
+import { getTagElementStyles } from './TagElement.styles';
 import {
   TagElementProps,
   TagElementStyleProps,
-  TagElementStyles,
-} from '../types';
-import { getTagElementStyles } from './TagElement.styles';
+  TagElementStyleSet,
+} from './TagElement.types';
 
-const getClassNames = classNamesFunction<
+const getClassNames = getRootClassNames<
   TagElementStyleProps,
-  TagElementStyles
+  TagElementStyleSet
 >();
 
 /**
@@ -27,7 +28,7 @@ export const TagElementBase = ({
   styles,
   className,
 }: TagElementProps) => {
-  const editor = useEditor();
+  const editor = useTSlateStatic();
   const selected = useSelected();
   const focused = useFocused();
 
@@ -80,7 +81,7 @@ export const TagElementBase = ({
 export const TagElement = styled<
   TagElementProps,
   TagElementStyleProps,
-  TagElementStyles
+  TagElementStyleSet
 >(TagElementBase, getTagElementStyles, undefined, {
   scope: 'TagElement',
 });

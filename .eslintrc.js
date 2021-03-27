@@ -8,8 +8,7 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/typescript',
-    'prettier/react',
-    'prettier/@typescript-eslint',
+    'prettier',
   ],
   parserOptions: {
     parser: '@typescript-eslint/parser',
@@ -227,10 +226,12 @@ module.exports = {
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     'max-classes-per-file': 'off',
     'default-case': 'off',
     'no-bitwise': 'off',
     'react/jsx-uses-react': 'off',
+    'react/no-unescaped-entities': 'off',
     'react/react-in-jsx-scope': 'off',
     camelcase: 'off',
     'no-constant-condition': 'off',
@@ -251,11 +252,7 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
-      },
-    },
-    {
-      files: '**/__tests__/*',
-      rules: {
+        'react-hooks/rules-of-hooks': 'off',
         'no-restricted-imports': [
           'error',
           {

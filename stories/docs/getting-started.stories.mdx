@@ -1,57 +1,38 @@
 import { Meta } from '@storybook/addon-docs/blocks';
+import readme from "../../README.md"
 
 <Meta title="Docs/Getting Started" />
 
-# Getting Started
-
-## 📦 Install
-
-```bash
-yarn add @udecode/slate-plugins
-```
-
-> ⚠️ In production, you should pin the dependency until 1.0.0 is
-> released.
-
-You will also need these peerDependencies:
-
-```bash
-yarn add slate slate-hyperscript slate-react react react-dom
-```
-
-For full documentation on using `@udecode/slate-plugins` visit:
-[slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/).
-
-For additional help, join us in our
-[Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
+> **We are working hard on v1 docs 🚧.
+> These docs are still for v0.75.**
 
 ## Editor
 
 Now, let's create a simple editor with 3 plugins: 
 
 ```js
-import React, { useMemo, useState } from 'react';
-import { createEditor, Node } from 'slate';
+import React from 'react';
+import { Node } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
 import {
+  SlatePlugins,
   ParagraphPlugin,
   BoldPlugin,
   EditablePlugins,
   ItalicPlugin,
   UnderlinePlugin,
-  pipe,
 } from '@udecode/slate-plugins';
 
 const initialValue: Node[] = [
   {
-    type: options.p.type,
+    type: options[ELEMENT_PARAGRAPH].type,
     children: [
       {
         text: 'This text is bold, italic and underlined.',
-        [options.bold.type]: true,
-        [options.italic.type]: true,
-        [options.underline.type]: true,
+        [options[MARK_BOLD].type]: true,
+        [options[MARK_ITALIC].type]: true,
+        [options[MARK_UNDERLINE].type]: true,
       },
     ],
   }
@@ -59,20 +40,14 @@ const initialValue: Node[] = [
 
 const plugins = [ParagraphPlugin(), BoldPlugin(), ItalicPlugin(), UnderlinePlugin()];
 
-const withPlugins = [withReact, withHistory] as const;
+const withOverrides = [withReact, withHistory] as const;
 
 export const Editor = () => {
-  const [value, setValue] = useState(initialValue);
-
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
-    <Slate
-      editor={editor}
-      value={value}
-      onChange={newValue => setValue(newValue as SlateDocument)}
+    <SlatePlugins
+      initialValue={initialValue}
     >
-      <EditablePlugins plugins={plugins} placeholder="Enter some text..." />
+      <EditablePlugins plugins={plugins} editableProps={{ placeholder: 'Enter some text...' }} />
     </Slate>
   );
 };

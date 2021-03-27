@@ -2,6 +2,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Docs/Guide"/>
 
+> **We are working hard on v1 docs 🚧.
+> These docs are still for v0.75.**
+
 # Guide
 
 ## Atomic Design
@@ -67,7 +70,7 @@ These are the atoms that the Slate framework uses.
 ```js
 type Decorate = (entry: NodeEntry) => Range[];
 type RenderElement = (
-  props: RenderElementProps
+  props: TRenderElementProps
 ) => JSX.Element | undefined;
 type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
 type OnKeyDown = (e: any, editor: Editor, props?: any) => void;

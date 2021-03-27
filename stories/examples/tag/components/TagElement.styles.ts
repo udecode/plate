@@ -1,4 +1,4 @@
-import { TagElementStyleProps, TagElementStyles } from '../types';
+import { TagElementStyleProps, TagElementStyleSet } from './TagElement.types';
 
 const classNames = {
   root: 'slate-TagElement',
@@ -9,7 +9,7 @@ export const getTagElementStyles = ({
   className,
   focused,
   selected,
-}: TagElementStyleProps): TagElementStyles => {
+}: TagElementStyleProps): TagElementStyleSet => {
   const selectedFocused = selected && focused;
 
   return {

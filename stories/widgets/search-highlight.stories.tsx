@@ -1,73 +1,51 @@
-import React, { useMemo, useState } from 'react';
-import { boolean } from '@storybook/addon-knobs';
+import React, { useMemo } from 'react';
 import { Search } from '@styled-icons/material';
 import {
-  decorateSearchHighlight,
-  EditablePlugins,
-  HighlightPlugin,
-  ParagraphPlugin,
-  pipe,
-  renderLeafHighlight,
-  SearchHighlightPlugin,
-  SlateDocument,
+  getBasicElementPlugins,
+  getHistoryPlugin,
+  getReactPlugin,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
+  SlatePlugin,
+  SlatePlugins,
   ToolbarSearchHighlight,
+  useFindReplacePlugin,
 } from '@udecode/slate-plugins';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import {
-  initialValueSearchHighlighting,
-  options,
-} from '../config/initialValues';
+import { initialValueSearchHighlighting } from '../config/initialValues';
+import { editableProps } from '../config/pluginOptions';
+
+const id = 'Widgets/Search Highlight';
 
 export default {
-  title: 'Widgets/Search Highlight',
-  component: SearchHighlightPlugin,
-  subcomponents: {
-    HighlightPlugin,
-    renderLeafHighlight,
-    decorateSearchHighlight,
-  },
+  title: id,
 };
 
-const withPlugins = [withReact, withHistory] as const;
+const components = getSlatePluginsComponents();
+const options = getSlatePluginsOptions();
 
 export const Example = () => {
-  const plugins: any[] = [ParagraphPlugin(options)];
-  if (boolean('SearchHighlightPlugin', true))
-    plugins.push(SearchHighlightPlugin(options));
+  const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
-  const createReactEditor = () => () => {
-    const decorate = [];
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      ...getBasicElementPlugins(),
+      searchHighlightPlugin,
+    ],
+    [searchHighlightPlugin]
+  );
 
-    const [search, setSearch] = useState('');
-
-    if (boolean('decorateSearchHighlight', true)) {
-      decorate.push(decorateSearchHighlight({ search }));
-    }
-
-    const [value, setValue] = useState(initialValueSearchHighlighting);
-
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => setValue(newValue as SlateDocument)}
-      >
-        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
-        <EditablePlugins
-          plugins={plugins}
-          decorate={decorate}
-          decorateDeps={[search]}
-          renderLeafDeps={[search]}
-        />
-      </Slate>
-    );
-  };
-
-  const Editor = createReactEditor();
-
-  return <Editor />;
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueSearchHighlighting}
+    >
+      <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+    </SlatePlugins>
+  );
 };

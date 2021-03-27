@@ -1,54 +1,63 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { boolean, text } from '@storybook/addon-knobs';
+import React, { useCallback, useMemo } from 'react';
 import {
-  EditablePlugins,
-  pipe,
-  SlateDocument,
-  withInlineVoid,
+  getHistoryPlugin,
+  getReactPlugin,
+  getSlatePluginsComponents,
+  getSlatePluginsOptions,
+  OnChange,
+  SlatePlugin,
+  SlatePlugins,
+  useStoreEditor,
 } from '@udecode/slate-plugins';
-import { createEditor, Editor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
-import { initialValueCombobox, options } from '../config/initialValues';
+import { initialValueCombobox } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
+import { editableProps } from '../config/pluginOptions';
 import { useComboboxControls } from './combobox/hooks/useComboboxControls';
 import { useComboboxOnKeyDown } from './combobox/hooks/useComboboxOnKeyDown';
 import { useComboboxIsOpen } from './combobox/selectors/useComboboxIsOpen';
 import { useComboboxStore } from './combobox/useComboboxStore';
 import { TagCombobox } from './tag/components/TagCombobox';
+import { TagElement } from './tag/components/TagElement';
+import { ELEMENT_TAG } from './tag/defaults';
+import { getTagPlugin } from './tag/getTagPlugin';
 import { useTagOnChange } from './tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './tag/hooks/useTagOnSelectItem';
-import { TagPlugin } from './tag/TagPlugin';
+
+const id = 'Examples/Combobox';
 
 export default {
-  title: 'Examples/Combobox',
+  title: id,
 };
 
-const useComboboxOnChange = (editor: Editor) => {
+const components = getSlatePluginsComponents({
+  [ELEMENT_TAG]: TagElement,
+});
+const options = getSlatePluginsOptions();
+
+// Handle multiple combobox
+const useComboboxOnChange = (): OnChange => {
+  const editor = useStoreEditor(id);
+
   const tagOnChange = useTagOnChange(editor, MENTIONABLES);
   const isOpen = useComboboxIsOpen();
   const closeMenu = useComboboxStore((state) => state.closeMenu);
 
-  return useCallback(() => {
-    let changed: boolean | undefined = false;
-    changed = tagOnChange();
+  return useCallback(
+    () => () => {
+      let changed: boolean | undefined = false;
+      changed = tagOnChange();
 
-    if (changed) return;
+      if (changed) return;
 
-    if (!changed && isOpen) {
-      closeMenu();
-    }
-  }, [closeMenu, isOpen, tagOnChange]);
+      if (!changed && isOpen) {
+        closeMenu();
+      }
+    },
+    [closeMenu, isOpen, tagOnChange]
+  );
 };
 
-const plugins = [TagPlugin(options)];
-
-const withPlugins = [
-  withReact,
-  withHistory,
-  withInlineVoid({ plugins }),
-] as const;
-
+// Handle multiple combobox
 const ComboboxContainer = () => {
   useComboboxControls();
 
@@ -56,53 +65,38 @@ const ComboboxContainer = () => {
 };
 
 export const Example = () => {
-  const createReactEditor = () => () => {
-    const [value, setValue] = useState(initialValueCombobox);
+  const comboboxOnChange = useComboboxOnChange();
 
-    const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+  const tagOnSelect = useTagOnSelectItem();
 
-    const comboboxOnChange = useComboboxOnChange(editor);
+  // Handle multiple combobox
+  const comboboxOnKeyDown = useComboboxOnKeyDown({
+    onSelectItem: tagOnSelect,
+  });
 
-    const itemIndex = useComboboxStore((state) => state.itemIndex);
-    const comboboxSearch = useComboboxStore((state) => state.search);
-    const tagTargetRange = useComboboxStore((state) => state.targetRange);
+  const plugins: SlatePlugin[] = useMemo(
+    () => [
+      getReactPlugin(),
+      getHistoryPlugin(),
+      getTagPlugin(),
+      {
+        onChange: comboboxOnChange,
+        onKeyDown: comboboxOnKeyDown,
+      },
+    ],
+    [comboboxOnChange, comboboxOnKeyDown]
+  );
 
-    const tagOnSelect = useTagOnSelectItem();
-
-    const comboboxOnKeyDown = useComboboxOnKeyDown({
-      onSelectItem: tagOnSelect,
-    });
-
-    return (
-      <Slate
-        editor={editor}
-        value={value}
-        onChange={(newValue) => {
-          setValue(newValue as SlateDocument);
-          comboboxOnChange();
-        }}
-      >
-        <ComboboxContainer />
-        <EditablePlugins
-          plugins={plugins}
-          onKeyDown={[comboboxOnKeyDown]}
-          onKeyDownDeps={[
-            editor,
-            itemIndex,
-            comboboxSearch,
-            tagTargetRange,
-            comboboxOnKeyDown,
-          ]}
-          readOnly={boolean('readOnly', false)}
-          placeholder={text('placeholder', 'Enter some plain text...')}
-          spellCheck={boolean('spellCheck', true)}
-          autoFocus
-        />
-      </Slate>
-    );
-  };
-
-  const EditorContainer = createReactEditor();
-
-  return <EditorContainer />;
+  return (
+    <SlatePlugins
+      id={id}
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueCombobox}
+    >
+      <ComboboxContainer />
+    </SlatePlugins>
+  );
 };
