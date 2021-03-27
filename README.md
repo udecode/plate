@@ -20,16 +20,6 @@ slate-plugins
 > **We are working hard on v1 docs 🚧. Storybook docs are still for
 > v0.75.**
 
-Author's Note:
-
->  [@zbeyens](https://github.com/zbeyens): Hi, I'm building an app with
->  an editor like many of you and my first initiative was to spend
->  months to share this work, while hundreds of developers were coding
->  and debugging the exact same features. Open-source is a long-term
->  investment for a **bug-free product and reducing technical debt**, so
->  I can only encourage you to join this collaboration. At the end, a
->  fully-featured editor will be shared here. DRY.
-
 ## Introduction
 
 [Slate](https://github.com/ianstormtaylor/slate) is a low-level editor
@@ -288,6 +278,16 @@ Useful scripts include:
 
 > Lint, test, build and push a release to git and npm will ask for
 > version in interactive mode - using lerna.
+
+### Author's Note
+
+>  [@zbeyens](https://github.com/zbeyens): I'm building an app with
+>  an editor like many of you and my first initiative was to spend
+>  months to share this work, while hundreds of developers were coding
+>  and debugging the exact same features. Open-source is a long-term
+>  investment for a **bug-free product and reducing technical debt**, so
+>  I can only encourage you to join this collaboration. At the end, a
+>  fully-featured editor will be shared here. DRY.
 
 ### Contributors
 
