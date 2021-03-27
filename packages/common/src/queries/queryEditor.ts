@@ -1,5 +1,5 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
-import { Editor } from 'slate';
 import { QueryEditorOptions } from '../types/QueryEditorOptions';
 import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
@@ -8,8 +8,8 @@ import { someNode } from './someNode';
 /**
  * Query the editor state.
  */
-export const queryEditor = <T extends Editor>(
-  editor: T,
+export const queryEditor = (
+  editor: TEditor,
   {
     filter,
     selectionAtBlockStart,

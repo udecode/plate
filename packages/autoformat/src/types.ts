@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
 
 export interface AutoformatRule {
   /**
@@ -25,12 +25,12 @@ export interface AutoformatRule {
    * Function called before formatting.
    * Generally used to reset the selected block.
    */
-  preFormat?: <T extends Editor>(editor: T) => void;
+  preFormat?: (editor: TEditor) => void;
 
   /**
    * Custom formatting function.
    */
-  format?: <T extends Editor>(editor: T) => void;
+  format?: (editor: TEditor) => void;
 
   /**
    * - block (default) – set/insert block. Should be used with `markup`.
@@ -64,10 +64,7 @@ export interface AutoformatRule {
   /**
    * Query to allow autoformat.
    */
-  query?: <T extends Editor>(
-    editor: T,
-    rule: Omit<AutoformatRule, 'query'>
-  ) => boolean;
+  query?: (editor: TEditor, rule: Omit<AutoformatRule, 'query'>) => boolean;
 }
 
 export interface WithAutoformatOptions {

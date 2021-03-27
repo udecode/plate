@@ -21,9 +21,11 @@ import {
   unwrapList,
   WithAutoformatOptions,
 } from '@udecode/slate-plugins';
+import { AutoformatRule } from '../../packages/autoformat/src/types';
 import { options } from './pluginOptions';
 
-const preFormat = (editor: SPEditor) => unwrapList(editor);
+const preFormat: AutoformatRule['preFormat'] = (editor) =>
+  unwrapList(editor as SPEditor);
 
 export const optionsAutoformat: WithAutoformatOptions = {
   rules: [
@@ -62,7 +64,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['*', '-'],
       preFormat,
       format: (editor) => {
-        toggleList(editor, { type: options[ELEMENT_UL].type });
+        toggleList(editor as SPEditor, { type: options[ELEMENT_UL].type });
       },
     },
     {
@@ -70,7 +72,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['1.', '1)'],
       preFormat,
       format: (editor) => {
-        toggleList(editor, { type: options[ELEMENT_OL].type });
+        toggleList(editor as SPEditor, { type: options[ELEMENT_OL].type });
       },
     },
     {
@@ -125,7 +127,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
       triggerAtBlockStart: false,
       preFormat,
       format: (editor) => {
-        insertCodeBlock(editor, { select: true });
+        insertCodeBlock(editor as SPEditor, { select: true });
       },
     },
   ],
