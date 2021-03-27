@@ -17,7 +17,7 @@ slate-plugins
 </div>
 </div>
 
-> **We are working hard on v1 docs 🚧. Storybook docs are still for
+> **We are working hard on v1 docs. Storybook docs are still for
 > v0.75.**
 
 ## Introduction
