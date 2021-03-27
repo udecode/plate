@@ -1,11 +1,5 @@
 name: ci
 on:
-  push:
-    branches:
-    - master
-    - next
-    paths-ignore:
-    - '**.md'
   pull_request:
     branches:
     - master
