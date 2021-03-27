@@ -57,11 +57,8 @@ export const createList = (
 export const getNodesWithRandomId = (nodes: any[]) => {
   let _id = 10000;
   nodes.forEach((node) => {
-    const children = node.children as any[];
-    children?.forEach((block) => {
-      block.id = _id;
-      _id++;
-    });
+    node.id = _id;
+    _id++;
   });
 
   return nodes;
