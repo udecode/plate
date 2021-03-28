@@ -3,6 +3,7 @@ import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { State } from '../types/SlatePluginsStore';
 import { SPEditor } from '../types/SPEditor';
+import { TEditor } from '../types/TEditor';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
 export const useStoreState = (id = 'main'): State | undefined =>
@@ -12,10 +13,10 @@ export const useStoreState = (id = 'main'): State | undefined =>
  * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
  */
 export const useStoreEditor = <
-  TEditor extends SPEditor | undefined = ReactEditor & HistoryEditor & SPEditor
+  T extends TEditor | undefined = ReactEditor & HistoryEditor
 >(
   id?: string
-) => useStoreState(id)?.editor as TEditor;
+) => useStoreState(id)?.editor as T & SPEditor;
 
 export const useStoreEditorEnabled = (id?: string) =>
   useStoreState(id)?.enabled;
