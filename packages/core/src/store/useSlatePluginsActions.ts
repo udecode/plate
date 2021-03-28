@@ -15,8 +15,11 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
       State['editor']
     >('editor', storeId);
 
+    const setValue = getSetStateByKey<State['value']>('value', storeId);
+
     return {
       setEditor,
+      setValue,
       clearState: (id = storeId) => {
         set((state) => {
           delete state[id];
@@ -46,7 +49,7 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
       resetEditor: (id = storeId) => {
         const state = get()[id];
         if (!state) return;
-        const { editor, plugins } = get()[id];
+        const { editor, plugins } = state;
 
         setEditor(
           pipe(
@@ -62,7 +65,6 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
       },
       setEnabled: getSetStateByKey<State['enabled']>('enabled', storeId),
       setPlugins: getSetStateByKey<State['plugins']>('plugins', storeId),
-      setValue: getSetStateByKey<State['value']>('value', storeId),
       setPluginKeys: getSetStateByKey<State['pluginKeys']>(
         'pluginKeys',
         storeId

@@ -1,8 +1,12 @@
 import { useEffect } from 'react';
 import { createEditor } from 'slate';
+import { getHistoryPlugin } from '../../plugins/getHistoryPlugin';
+import { getReactPlugin } from '../../plugins/getReactPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
   useStoreEditor,
+  useStoreEditorEnabled,
+  useStoreSlatePlugins,
   useStoreState,
 } from '../../store/useSlatePluginsSelectors';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
@@ -34,7 +38,9 @@ export const useSlatePluginsEffects = ({
     clearState,
   } = useSlatePluginsActions(id);
   const storeEditor = useStoreEditor(id);
-  const state = useStoreState(id);
+  const storeEnabled = useStoreEditorEnabled(id);
+  const storeState = useStoreState(id);
+  const storePlugins = useStoreSlatePlugins(id);
 
   // Clear the state on unmount.
   useEffect(
@@ -45,12 +51,12 @@ export const useSlatePluginsEffects = ({
   );
 
   useEffect(() => {
-    if (!state) {
+    if (!storeState) {
       setInitialState({
-        enabled,
-        plugins,
+        enabled: true,
+        plugins: [],
         pluginKeys: [],
-        value: value ?? initialValue,
+        value: [],
       });
     }
   }, [
@@ -59,7 +65,7 @@ export const useSlatePluginsEffects = ({
     initialValue,
     plugins,
     setInitialState,
-    state,
+    storeState,
     value,
   ]);
 
@@ -78,19 +84,28 @@ export const useSlatePluginsEffects = ({
     setEnabled(enabled);
   }, [enabled, setEnabled]);
 
+  // Slate plugins
   useEffect(() => {
-    if (storeEditor && !enabled) {
+    setPlugins(plugins ?? [getReactPlugin(), getHistoryPlugin()]);
+  }, [plugins, setPlugins]);
+
+  useEffect(() => {
+    plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
+  }, [plugins, setPluginKeys]);
+
+  useEffect(() => {
+    if (storeEditor && !storeEnabled) {
       setEditor(undefined);
     }
-  }, [enabled, setEditor, storeEditor]);
+  }, [storeEnabled, setEditor, storeEditor]);
 
   // Slate.editor
   useEffect(() => {
-    if (!storeEditor && enabled) {
+    if (!storeEditor && storeEnabled) {
       setEditor(
         pipe(
           editor ?? createEditor(),
-          withSlatePlugins({ id, plugins, options, components })
+          withSlatePlugins({ id, plugins: storePlugins, options, components })
         )
       );
     }
@@ -102,15 +117,7 @@ export const useSlatePluginsEffects = ({
     options,
     plugins,
     setEditor,
-    enabled,
+    storeEnabled,
+    storePlugins,
   ]);
-
-  // Slate plugins
-  useEffect(() => {
-    plugins && setPlugins(plugins);
-  }, [plugins, setPlugins]);
-
-  useEffect(() => {
-    plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
-  }, [plugins, setPluginKeys]);
 };
