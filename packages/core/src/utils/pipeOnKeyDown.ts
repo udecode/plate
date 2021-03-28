@@ -7,7 +7,7 @@ import { SPEditor } from '../types/SPEditor';
  */
 export const pipeOnKeyDown = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): EditableProps['onKeyDown'] => {
   const onKeyDowns = plugins.flatMap(
     (plugin) => plugin.onKeyDown?.(editor) ?? []

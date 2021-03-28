@@ -4,7 +4,7 @@ import { SPEditor } from '../types/SPEditor';
 
 export const pipeOnChange = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): ReturnType<OnChange> => {
   const onChanges = plugins.flatMap(
     (plugin) => plugin.onChange?.(editor) ?? []

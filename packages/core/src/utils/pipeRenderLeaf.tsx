@@ -9,7 +9,7 @@ import { SPEditor } from '../types/SPEditor';
  */
 export const pipeRenderLeaf = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): EditableProps['renderLeaf'] => {
   const renderLeafs = plugins.flatMap(
     (plugin) => plugin.renderLeaf?.(editor) ?? []
