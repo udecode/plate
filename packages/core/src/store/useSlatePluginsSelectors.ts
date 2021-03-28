@@ -3,6 +3,7 @@ import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { State } from '../types/SlatePluginsStore';
 import { SPEditor } from '../types/SPEditor';
+import { TDescendant } from '../types/TDescendant';
 import { TEditor } from '../types/TEditor';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
 
@@ -20,7 +21,8 @@ export const useStoreEditor = <
 
 export const useStoreEditorEnabled = (id?: string) =>
   useStoreState(id)?.enabled;
-export const useStoreEditorValue = (id?: string) => useStoreState(id)?.value;
+export const useStoreEditorValue = (id?: string): TDescendant[] | undefined =>
+  useStoreState(id)?.value;
 export const useStoreSlatePlugins = (id?: string) => useStoreState(id)?.plugins;
 
 export const useStoreSlatePluginKeys = (id?: string) =>
