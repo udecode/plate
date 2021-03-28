@@ -223,6 +223,7 @@ module.exports = {
     'no-useless-constructor': 'off',
 
     // new
+    'jest/no-commented-out-tests': 'off',
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/no-non-null-assertion': 'off',
