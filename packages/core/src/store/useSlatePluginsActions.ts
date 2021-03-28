@@ -1,15 +1,13 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import { SlatePluginsActions, State } from '../types/SlatePluginsStore';
+import { SPEditor } from '../types/SPEditor';
 import { pipe } from '../utils/pipe';
 import { withSlatePlugins } from '../utils/withSlatePlugins';
-import { getInitialState } from './getInitialState';
 import { slatePluginsStore } from './useSlatePluginsStore';
 import { getSetStateByKey } from './zustand.utils';
 
-const s = slatePluginsStore;
-const get = s.getState;
-const set = s.setState;
+const { getState: get, setState: set } = slatePluginsStore;
 
 export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
   useMemo(() => {
@@ -20,32 +18,49 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
     return {
       setEditor,
       clearState: (id = storeId) => {
-        return set((state) => {
+        set((state) => {
           delete state[id];
-
           return state;
         });
       },
-      setInitialState: (id = storeId) =>
-        set((state) =>
-          state[id]
+      setInitialState: (v = {}, id = storeId) =>
+        set((state) => {
+          const {
+            enabled = true,
+            value = [{ children: [{ text: '' }] }],
+            plugins = [],
+            pluginKeys = [],
+          } = v;
+
+          return state[id]
             ? state
             : {
-                [id]: getInitialState(),
-              }
-        ),
-      resetEditorKey: (id = storeId) => {
-        const { editor } = get()[id] as any;
-        const { plugins } = get()[id];
+                [id]: {
+                  enabled,
+                  plugins,
+                  pluginKeys,
+                  value,
+                },
+              };
+        }),
+      resetEditor: (id = storeId) => {
+        const state = get()[id];
+        if (!state) return;
+        const { editor, plugins } = get()[id];
 
         setEditor(
           pipe(
             createEditor(),
-            withSlatePlugins({ id, plugins, options: editor?.options })
+            withSlatePlugins({
+              id,
+              plugins,
+              options: (editor as SPEditor).options,
+            })
           ),
           id
         );
       },
+      setEnabled: getSetStateByKey<State['enabled']>('enabled', storeId),
       setPlugins: getSetStateByKey<State['plugins']>('plugins', storeId),
       setValue: getSetStateByKey<State['value']>('value', storeId),
       setPluginKeys: getSetStateByKey<State['pluginKeys']>(

@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { createEditor } from 'slate';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useStoreEditor } from '../../store/useSlatePluginsSelectors';
+import {
+  useStoreEditor,
+  useStoreState,
+} from '../../store/useSlatePluginsSelectors';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -12,9 +15,10 @@ import { withSlatePlugins } from '../../utils/withSlatePlugins';
  * Dynamically updating the options will update the store state.
  */
 export const useSlatePluginsEffects = ({
-  id,
+  id = 'main',
   value,
   editor,
+  enabled = true,
   components,
   options,
   initialValue,
@@ -26,21 +30,38 @@ export const useSlatePluginsEffects = ({
     setEditor,
     setPlugins,
     setPluginKeys,
+    setEnabled,
     clearState,
   } = useSlatePluginsActions(id);
   const storeEditor = useStoreEditor(id);
+  const state = useStoreState(id);
 
-  useEffect(() => {
-    setInitialState();
-  }, [setInitialState]);
-
-  // Clear the state by id on unmount.
+  // Clear the state on unmount.
   useEffect(
     () => () => {
       clearState();
     },
     [clearState]
   );
+
+  useEffect(() => {
+    if (!state) {
+      setInitialState({
+        enabled,
+        plugins,
+        pluginKeys: [],
+        value: value ?? initialValue,
+      });
+    }
+  }, [
+    clearState,
+    enabled,
+    initialValue,
+    plugins,
+    setInitialState,
+    state,
+    value,
+  ]);
 
   // Slate.value
   useEffect(() => {
@@ -53,17 +74,36 @@ export const useSlatePluginsEffects = ({
     value && setValue(value);
   }, [setValue, value]);
 
+  useEffect(() => {
+    setEnabled(enabled);
+  }, [enabled, setEnabled]);
+
+  useEffect(() => {
+    if (storeEditor && !enabled) {
+      setEditor(undefined);
+    }
+  }, [enabled, setEditor, storeEditor]);
+
   // Slate.editor
   useEffect(() => {
-    if (storeEditor) return;
-
-    setEditor(
-      pipe(
-        createEditor(),
-        withSlatePlugins({ id, plugins, options, components })
-      )
-    );
-  }, [storeEditor, components, editor, id, options, plugins, setEditor]);
+    if (!storeEditor && enabled) {
+      setEditor(
+        pipe(
+          editor ?? createEditor(),
+          withSlatePlugins({ id, plugins, options, components })
+        )
+      );
+    }
+  }, [
+    storeEditor,
+    components,
+    editor,
+    id,
+    options,
+    plugins,
+    setEditor,
+    enabled,
+  ]);
 
   // Slate plugins
   useEffect(() => {
