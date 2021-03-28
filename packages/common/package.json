@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-common",
-  "version": "1.0.0-alpha.12",
+  "version": "1.0.0-alpha.13",
   "description": "Slate plugins common",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/common#readme",
@@ -33,7 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.12",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.13",
     "is-hotkey": "^0.1.6"
   },
   "publishConfig": {
