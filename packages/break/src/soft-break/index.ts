@@ -4,4 +4,4 @@
 
 export * from './getSoftBreakOnKeyDown';
 export * from './types';
-export * from './getSoftBreakPlugin';
+export * from './createSoftBreakPlugin';

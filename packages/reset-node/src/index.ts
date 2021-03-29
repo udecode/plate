@@ -4,4 +4,4 @@
 
 export * from './getResetNodeOnKeyDown';
 export * from './types';
-export * from './getResetNodePlugin';
+export * from './createResetNodePlugin';

@@ -4,6 +4,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DragIndicator } from '@styled-icons/material/DragIndicator';
 import {
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
@@ -22,8 +24,6 @@ import {
   ELEMENT_UL,
   getComponent,
   getSelectableElement,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
   StyledElement,
 } from '@udecode/slate-plugins';
 import { Plugins } from '../examples/playground.stories';
@@ -34,7 +34,7 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents({
+const components = createSlatePluginsComponents({
   [ELEMENT_PARAGRAPH]: getComponent(StyledElement, {
     styles: {
       root: {
@@ -91,7 +91,7 @@ Object.keys(components).forEach((key) => {
     });
   }
 });
-const options = getSlatePluginsOptions();
+const options = createSlatePluginsOptions();
 
 export const Example = () => (
   <DndProvider backend={HTML5Backend}>

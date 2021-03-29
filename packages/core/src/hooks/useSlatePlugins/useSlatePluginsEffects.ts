@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { createEditor } from 'slate';
-import { getHistoryPlugin } from '../../plugins/getHistoryPlugin';
-import { getReactPlugin } from '../../plugins/getReactPlugin';
+import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
+import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
   useStoreEditor,
@@ -86,7 +86,7 @@ export const useSlatePluginsEffects = ({
 
   // Slate plugins
   useEffect(() => {
-    setPlugins(plugins ?? [getReactPlugin(), getHistoryPlugin()]);
+    setPlugins(plugins ?? [createReactPlugin(), createHistoryPlugin()]);
   }, [plugins, setPlugins]);
 
   useEffect(() => {

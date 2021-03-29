@@ -7,7 +7,7 @@ export * from './getCodeBlockDeserialize';
 export * from './getCodeBlockDecorate';
 export * from './getCodeBlockRenderLeaf';
 export * from './types';
-export * from './getCodeBlockPlugin';
+export * from './createCodeBlockPlugin';
 export * from './getCodeBlockOnKeyDown';
 export * from './withCodeBlock';
 export * from './queries/index';

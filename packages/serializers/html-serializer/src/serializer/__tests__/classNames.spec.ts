@@ -1,5 +1,5 @@
-import { getAlignPlugin } from '../../../../../elements/alignment/src/getAlignPlugin';
-import { getBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { createAlignPlugin } from '../../../../../elements/alignment/src/createAlignPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
@@ -8,7 +8,7 @@ it('serialize with slate className', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -29,7 +29,7 @@ it('serialize with slate classNames: a+slate', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -50,7 +50,7 @@ it('serialize with slate classNames: slate+b', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -71,7 +71,7 @@ it('serialize with classNames: a+slate+b', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -92,7 +92,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -115,7 +115,7 @@ it('serialize with slate classNames: multiple tags', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
@@ -139,7 +139,7 @@ it('serialize with custom preserved classname: a+custom', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],
@@ -166,7 +166,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin(), getBoldPlugin()],
+      plugins: [createAlignPlugin(), createBoldPlugin()],
       nodes: [
         {
           type: 'align_center',
@@ -197,7 +197,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
 
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],

@@ -1,14 +1,14 @@
 import React from 'react';
 import {
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createNormalizeTypesPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createTrailingBlockPlugin,
   ELEMENT_H1,
   ELEMENT_PARAGRAPH,
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getNormalizeTypesPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getTrailingBlockPlugin,
   SlatePlugins,
   withNormalizeTypes,
   withTrailingBlock,
@@ -24,16 +24,16 @@ export default {
   subcomponents: { withTrailingNode: withTrailingBlock },
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getNormalizeTypesPlugin({
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createNormalizeTypesPlugin({
     rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
   }),
-  getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+  createTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
 ];
 
 export const Example = () => (

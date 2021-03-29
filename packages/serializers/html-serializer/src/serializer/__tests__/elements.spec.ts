@@ -1,12 +1,12 @@
 import {
-  getAlignPlugin,
-  getBlockquotePlugin,
-  getHeadingPlugin,
-  getImagePlugin,
-  getLinkPlugin,
-  getListPlugin,
-  getParagraphPlugin,
-  getTablePlugin,
+  createAlignPlugin,
+  createBlockquotePlugin,
+  createHeadingPlugin,
+  createImagePlugin,
+  createLinkPlugin,
+  createListPlugin,
+  createParagraphPlugin,
+  createTablePlugin,
 } from '../../../../../slate-plugins/src/index';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
@@ -17,7 +17,7 @@ const editor = createEditorPlugins({});
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [getListPlugin()],
+      plugins: [createListPlugin()],
       nodes: [
         {
           type: 'ul',
@@ -41,7 +41,7 @@ it('serialize list to html', () => {
 it('serialize link to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getLinkPlugin()],
+      plugins: [createLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -61,7 +61,7 @@ it('serialize blockquote to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [getBlockquotePlugin()],
+        plugins: [createBlockquotePlugin()],
         nodes: [
           {
             type: 'blockquote',
@@ -76,7 +76,7 @@ it('serialize blockquote to html', () => {
 it('serialize headings to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [getHeadingPlugin()],
+      plugins: [createHeadingPlugin()],
       nodes: [
         {
           type: 'h1',
@@ -101,7 +101,7 @@ it('serialize headings to html', () => {
 it('serialize paragraph to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getParagraphPlugin()],
+      plugins: [createParagraphPlugin()],
       nodes: [
         {
           type: 'p',
@@ -116,7 +116,7 @@ it('serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [getImagePlugin()],
+        plugins: [createImagePlugin()],
         nodes: [
           {
             type: 'img',
@@ -133,7 +133,7 @@ it('serialize image to html', () => {
 it('serialize table to html', () => {
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [getTablePlugin()],
+      plugins: [createTablePlugin()],
       nodes: [
         {
           type: 'table',
@@ -170,7 +170,7 @@ it('serialize table to html', () => {
 it('serialize alignments to html', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [getAlignPlugin()],
+      plugins: [createAlignPlugin()],
       nodes: [
         { type: 'align_center', children: [{ text: 'I am centered text!' }] },
       ],

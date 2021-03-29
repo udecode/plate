@@ -3,11 +3,11 @@
 
 import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { getImagePlugin } from '../../../../../../elements/image/src/getImagePlugin';
-import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
-import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
-import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
-import { getBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
+import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
+import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
+import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
@@ -52,11 +52,11 @@ const editor = createEditorPlugins({
 });
 
 const plugins: SlatePlugin[] = [
-  getImagePlugin(),
-  getLinkPlugin(),
-  getParagraphPlugin(),
-  getTablePlugin(),
-  getBoldPlugin(),
+  createImagePlugin(),
+  createLinkPlugin(),
+  createParagraphPlugin(),
+  createTablePlugin(),
+  createBoldPlugin(),
 ];
 const input2 = getHtmlDocument(html).body;
 

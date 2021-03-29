@@ -1,16 +1,16 @@
 import React from 'react';
 import {
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValuePreview } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
-import { getPreviewPlugin } from './preview-markdown/getPreviewPlugin';
+import { createPreviewPlugin } from './preview-markdown/createPreviewPlugin';
 
 const id = 'Examples/Preview Markdown';
 
@@ -18,13 +18,13 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins: SlatePlugin[] = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getPreviewPlugin(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createPreviewPlugin(),
 ];
 
 export const Example = () => (

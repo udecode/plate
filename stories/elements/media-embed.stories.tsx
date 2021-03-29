@@ -1,13 +1,13 @@
 import React from 'react';
 import {
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createMediaEmbedPlugin,
+  createReactPlugin,
+  createSelectOnBackspacePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   ELEMENT_IMAGE,
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getMediaEmbedPlugin,
-  getReactPlugin,
-  getSelectOnBackspacePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValueEmbeds } from '../config/initialValues';
@@ -19,14 +19,14 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getMediaEmbedPlugin(),
-  getSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createMediaEmbedPlugin(),
+  createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
 ];
 
 export const Example = () => (

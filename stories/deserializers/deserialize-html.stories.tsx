@@ -1,20 +1,20 @@
 import React, { useMemo } from 'react';
 import {
-  getBasicElementPlugins,
-  getBasicMarkPlugins,
-  getDeserializeHTMLPlugin,
-  getHighlightPlugin,
-  getHistoryPlugin,
-  getImagePlugin,
-  getLinkPlugin,
-  getListPlugin,
-  getMediaEmbedPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
-  getTablePlugin,
-  getTodoListPlugin,
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createDeserializeHTMLPlugin,
+  createHighlightPlugin,
+  createHistoryPlugin,
+  createImagePlugin,
+  createLinkPlugin,
+  createListPlugin,
+  createMediaEmbedPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
+  createTablePlugin,
+  createTodoListPlugin,
   SlatePlugins,
   useMentionPlugin,
 } from '@udecode/slate-plugins';
@@ -27,30 +27,30 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 
 export const Example = () => {
   const { plugin: mentionPlugin } = useMentionPlugin();
 
   const pluginsMemo = useMemo(() => {
     const plugins = [
-      getReactPlugin(),
-      getHistoryPlugin(),
-      ...getBasicElementPlugins(),
-      ...getBasicMarkPlugins(),
-      getImagePlugin(),
-      getLinkPlugin(),
-      getListPlugin(),
-      getTablePlugin(),
-      getTodoListPlugin(),
-      getMediaEmbedPlugin(),
-      getHighlightPlugin(),
-      getSoftBreakPlugin(optionsSoftBreakPlugin),
+      createReactPlugin(),
+      createHistoryPlugin(),
+      ...createBasicElementPlugins(),
+      ...createBasicMarkPlugins(),
+      createImagePlugin(),
+      createLinkPlugin(),
+      createListPlugin(),
+      createTablePlugin(),
+      createTodoListPlugin(),
+      createMediaEmbedPlugin(),
+      createHighlightPlugin(),
+      createSoftBreakPlugin(optionsSoftBreakPlugin),
       mentionPlugin,
     ];
 
-    plugins.push(getDeserializeHTMLPlugin({ plugins }));
+    plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
     return plugins;
   }, [mentionPlugin]);

@@ -1,16 +1,16 @@
 import React from 'react';
 import {
-  getBasicElementPlugins,
-  getBasicMarkPlugins,
-  getDeserializeMDPlugin,
-  getHistoryPlugin,
-  getImagePlugin,
-  getLinkPlugin,
-  getListPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getTablePlugin,
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createDeserializeMDPlugin,
+  createHistoryPlugin,
+  createImagePlugin,
+  createLinkPlugin,
+  createListPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createTablePlugin,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValuePasteMd } from '../config/initialValues';
@@ -22,18 +22,18 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  ...getBasicMarkPlugins(),
-  getImagePlugin(),
-  getLinkPlugin(),
-  getListPlugin(),
-  getTablePlugin(),
-  getDeserializeMDPlugin(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  ...createBasicMarkPlugins(),
+  createImagePlugin(),
+  createLinkPlugin(),
+  createListPlugin(),
+  createTablePlugin(),
+  createDeserializeMDPlugin(),
 ];
 
 export const Example = () => (

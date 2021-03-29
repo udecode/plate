@@ -4,11 +4,11 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/getSlatePluginsOptions';
+import { createSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/createSlatePluginsOptions';
 import {
-  getDeserializeHTMLPlugin,
+  createDeserializeHTMLPlugin,
   withDeserializeHTML,
-} from '../../getDeserializeHTMLPlugin';
+} from '../../createDeserializeHTMLPlugin';
 
 jsx;
 
@@ -39,7 +39,7 @@ it('should do nothing', () => {
 
   const editor = createEditorPlugins({
     editor: input,
-    plugins: [getDeserializeHTMLPlugin()],
+    plugins: [createDeserializeHTMLPlugin()],
   });
 
   editor.insertData(data as any);

@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import {
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   OnChange,
   SlatePlugin,
   SlatePlugins,
@@ -18,8 +18,8 @@ import { useComboboxIsOpen } from './combobox/selectors/useComboboxIsOpen';
 import { useComboboxStore } from './combobox/useComboboxStore';
 import { TagCombobox } from './tag/components/TagCombobox';
 import { TagElement } from './tag/components/TagElement';
+import { createTagPlugin } from './tag/createTagPlugin';
 import { ELEMENT_TAG } from './tag/defaults';
-import { getTagPlugin } from './tag/getTagPlugin';
 import { useTagOnChange } from './tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './tag/hooks/useTagOnSelectItem';
 
@@ -29,10 +29,10 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents({
+const components = createSlatePluginsComponents({
   [ELEMENT_TAG]: TagElement,
 });
-const options = getSlatePluginsOptions();
+const options = createSlatePluginsOptions();
 
 // Handle multiple combobox
 const useComboboxOnChange = (): OnChange => {
@@ -76,9 +76,9 @@ export const Example = () => {
 
   const plugins: SlatePlugin[] = useMemo(
     () => [
-      getReactPlugin(),
-      getHistoryPlugin(),
-      getTagPlugin(),
+      createReactPlugin(),
+      createHistoryPlugin(),
+      createTagPlugin(),
       {
         onChange: comboboxOnChange,
         onKeyDown: comboboxOnKeyDown,

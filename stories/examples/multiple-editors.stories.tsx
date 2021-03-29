@@ -1,17 +1,17 @@
 import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
+  createBasicElementPlugins,
+  createExitBreakPlugin,
+  createHistoryPlugin,
+  createImagePlugin,
+  createReactPlugin,
+  createResetNodePlugin,
+  createSelectOnBackspacePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
   ELEMENT_IMAGE,
-  getBasicElementPlugins,
-  getExitBreakPlugin,
-  getHistoryPlugin,
-  getImagePlugin,
-  getReactPlugin,
-  getResetNodePlugin,
-  getSelectOnBackspacePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
   SlatePlugin,
   SlatePlugins,
 } from '@udecode/slate-plugins';
@@ -33,27 +33,27 @@ export default {
   title: 'Examples/Multiple Editors',
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 
 const mainPlugins: SlatePlugin[] = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getResetNodePlugin(optionsResetBlockTypePlugin),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-  getExitBreakPlugin(optionsExitBreakPlugin),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createResetNodePlugin(optionsResetBlockTypePlugin),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
 ];
 
 const imagePlugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getImagePlugin(),
-  getSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createImagePlugin(),
+  createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
 ];
 
-const corePlugins = [getReactPlugin(), getHistoryPlugin()];
+const corePlugins = [createReactPlugin(), createHistoryPlugin()];
 
 const Wrapper = styled.div`
   display: flex;

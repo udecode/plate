@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import {
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   ELEMENT_MENTION,
-  getBasicElementPlugins,
   getComponent,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
   MentionElement,
   MentionSelect,
   SlatePlugin,
@@ -23,12 +23,12 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents({
+const components = createSlatePluginsComponents({
   [ELEMENT_MENTION]: getComponent(MentionElement, {
     renderLabel: renderMentionLabel,
   }),
 });
-const options = getSlatePluginsOptions();
+const options = createSlatePluginsOptions();
 
 export const Example = () => {
   const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
@@ -37,9 +37,9 @@ export const Example = () => {
 
   const plugins: SlatePlugin[] = useMemo(
     () => [
-      getReactPlugin(),
-      getHistoryPlugin(),
-      ...getBasicElementPlugins(),
+      createReactPlugin(),
+      createHistoryPlugin(),
+      ...createBasicElementPlugins(),
       mentionPlugin,
     ],
     [mentionPlugin]

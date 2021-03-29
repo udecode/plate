@@ -6,7 +6,7 @@ export * from './defaults';
 export * from './getTableDeserialize';
 export * from './types';
 export * from './getTableOnKeyDown';
-export * from './getTablePlugin';
+export * from './createTablePlugin';
 export * from './withTable';
 export * from './queries/index';
 export * from './transforms/index';

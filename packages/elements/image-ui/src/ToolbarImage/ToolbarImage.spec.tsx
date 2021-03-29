@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
-import { getImagePlugin } from '@udecode/slate-plugins-image';
+import { createImagePlugin } from '@udecode/slate-plugins-image';
 import { SlatePlugins } from '../../../../core/src/components/SlatePlugins';
-import { getSlatePluginsOptions } from '../../../../slate-plugins/src/utils/getSlatePluginsOptions';
+import { createSlatePluginsOptions } from '../../../../slate-plugins/src/utils/createSlatePluginsOptions';
 import { ToolbarImage } from './ToolbarImage';
 import { input1, input2, output2 } from './ToolbarImage.fixtures';
 
@@ -12,7 +12,7 @@ describe('ToolbarImage', () => {
     // it('should render', () => {
     //   const editor = createEditorPlugins({
     //     editor: input1,
-    //     plugins: [getParagraphPlugin(), getImagePlugin()],
+    //     plugins: [createParagraphPlugin(), createImagePlugin()],
     //   });
     //
     //   jest
@@ -22,8 +22,8 @@ describe('ToolbarImage', () => {
     //   const { getByTestId } = render(
     //     <SlatePlugins
     //       initialValue={editor.children}
-    //       plugins={[getParagraphPlugin(), getImagePlugin()]}
-    //       options={getSlatePluginsOptions()}
+    //       plugins={[createParagraphPlugin(), createImagePlugin()]}
+    //       options={createSlatePluginsOptions()}
     //     >
     //       <ToolbarImage type={ELEMENT_IMAGE} icon={null} />
     //     </SlatePlugins>
@@ -76,8 +76,8 @@ describe('ToolbarImage', () => {
       const { getByTestId } = render(
         <SlatePlugins
           initialValue={editor.children}
-          plugins={[getImagePlugin()]}
-          options={getSlatePluginsOptions()}
+          plugins={[createImagePlugin()]}
+          options={createSlatePluginsOptions()}
         >
           <ToolbarImage type={ELEMENT_H1} icon={null} />
         </SlatePlugins>

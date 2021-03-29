@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { getMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/getMediaEmbedPlugin';
+import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
 
@@ -32,8 +32,8 @@ const output = (
 
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
-    const plugins = [getMediaEmbedPlugin()];
-    plugins.push(getDeserializeHTMLPlugin({ plugins }));
+    const plugins = [createMediaEmbedPlugin()];
+    plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
     const editor = createEditorPlugins({
       editor: input,
