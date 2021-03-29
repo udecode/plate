@@ -3,4 +3,4 @@
  */
 
 export * from './types';
-export * from './getBasicElementPlugins';
+export * from './createBasicElementPlugins';

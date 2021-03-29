@@ -4,24 +4,24 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { getSlateClass } from '@udecode/slate-plugins-core';
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { getSoftBreakPlugin } from '../../../../../../break/src/soft-break/getSoftBreakPlugin';
+import { createSoftBreakPlugin } from '../../../../../../break/src/soft-break/createSoftBreakPlugin';
+import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
 import { ELEMENT_ALIGN_CENTER } from '../../../../../../elements/alignment/src/defaults';
-import { getAlignPlugin } from '../../../../../../elements/alignment/src/getAlignPlugin';
-import { getBlockquotePlugin } from '../../../../../../elements/block-quote/src/getBlockquotePlugin';
+import { createBlockquotePlugin } from '../../../../../../elements/block-quote/src/createBlockquotePlugin';
+import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugin';
 import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/defaults';
-import { getCodeBlockPlugin } from '../../../../../../elements/code-block/src/getCodeBlockPlugin';
-import { getHeadingPlugin } from '../../../../../../elements/heading/src/getHeadingPlugin';
-import { getImagePlugin } from '../../../../../../elements/image/src/getImagePlugin';
-import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
-import { getListPlugin } from '../../../../../../elements/list/src/getListPlugin';
+import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
+import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
+import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
+import { createListPlugin } from '../../../../../../elements/list/src/createListPlugin';
 import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/constants';
+import { createTodoListPlugin } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
-import { getTodoListPlugin } from '../../../../../../elements/list/src/todo-list/getTodoListPlugin';
-import { getMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/getMediaEmbedPlugin';
+import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
 import { useMentionPlugin } from '../../../../../../elements/mention/src/useMentionPlugin';
-import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
-import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
+import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../../../../../../find-replace/src/useFindReplacePlugin';
 import { getBoldDeserialize } from '../../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
 import { getCodeDeserialize } from '../../../../../../marks/basic-marks/src/code/getCodeDeserialize';
@@ -142,20 +142,20 @@ const output = (
 
 it('should be', () => {
   const plugins = renderHook(() => [
-    getBlockquotePlugin(),
-    getTodoListPlugin(),
-    getHeadingPlugin({ levels: 1 }),
-    getImagePlugin(),
-    getLinkPlugin(),
-    getListPlugin(),
+    createBlockquotePlugin(),
+    createTodoListPlugin(),
+    createHeadingPlugin({ levels: 1 }),
+    createImagePlugin(),
+    createLinkPlugin(),
+    createListPlugin(),
     useMentionPlugin().plugin,
-    getParagraphPlugin(),
-    getCodeBlockPlugin(),
-    getTablePlugin(),
-    getMediaEmbedPlugin(),
+    createParagraphPlugin(),
+    createCodeBlockPlugin(),
+    createTablePlugin(),
+    createMediaEmbedPlugin(),
     useFindReplacePlugin().plugin,
-    getSoftBreakPlugin(),
-    getAlignPlugin(),
+    createSoftBreakPlugin(),
+    createAlignPlugin(),
     { deserialize: getBoldDeserialize() },
     { deserialize: getHighlightDeserialize() },
     { deserialize: getCodeDeserialize() },

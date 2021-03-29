@@ -8,7 +8,7 @@ import {
   ELEMENT_UL,
 } from '../../../../../elements/list/src/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
-import { withNodeId } from '../../../../../node-id/src/getNodeIdPlugin';
+import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;

@@ -2,9 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { getBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
 
@@ -33,8 +33,8 @@ const output = (
 
 describe('when inserting empty html', () => {
   it('should do nothing', () => {
-    const plugins = [getBoldPlugin()];
-    plugins.push(getDeserializeHTMLPlugin({ plugins }));
+    const plugins = [createBoldPlugin()];
+    plugins.push(createDeserializeHTMLPlugin({ plugins }));
     const editor = createEditorPlugins({
       editor: input,
       plugins,

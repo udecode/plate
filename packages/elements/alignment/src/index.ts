@@ -4,5 +4,5 @@
 
 export * from './defaults';
 export * from './getAlignDeserialize';
-export * from './getAlignPlugin';
+export * from './createAlignPlugin';
 export * from './transforms/index';

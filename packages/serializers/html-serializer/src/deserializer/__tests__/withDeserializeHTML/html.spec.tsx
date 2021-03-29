@@ -2,9 +2,9 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { getHeadingPlugin } from '../../../../../../elements/heading/src/getHeadingPlugin';
+import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
 
@@ -34,8 +34,8 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [getHeadingPlugin()];
-      plugins.push(getDeserializeHTMLPlugin({ plugins }));
+      const plugins = [createHeadingPlugin()];
+      plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
         plugins,
@@ -66,8 +66,8 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [getHeadingPlugin()];
-      plugins.push(getDeserializeHTMLPlugin({ plugins }));
+      const plugins = [createHeadingPlugin()];
+      plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
         plugins,

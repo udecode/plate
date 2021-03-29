@@ -4,7 +4,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
-import { withNodeId } from '../../../../../node-id/src/getNodeIdPlugin';
+import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;

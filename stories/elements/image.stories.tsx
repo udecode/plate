@@ -1,14 +1,14 @@
 import React from 'react';
 import { Image } from '@styled-icons/material';
 import {
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createImagePlugin,
+  createReactPlugin,
+  createSelectOnBackspacePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   ELEMENT_IMAGE,
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getImagePlugin,
-  getReactPlugin,
-  getSelectOnBackspacePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
   HeadingToolbar,
   SlatePlugins,
   ToolbarImage,
@@ -22,14 +22,14 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getImagePlugin(),
-  getSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createImagePlugin(),
+  createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
 ];
 
 export const Example = () => (

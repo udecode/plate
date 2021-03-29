@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Search } from '@styled-icons/material';
 import {
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   SlatePlugin,
   SlatePlugins,
   ToolbarSearchHighlight,
@@ -20,17 +20,17 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 
 export const Example = () => {
   const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
   const plugins: SlatePlugin[] = useMemo(
     () => [
-      getReactPlugin(),
-      getHistoryPlugin(),
-      ...getBasicElementPlugins(),
+      createReactPlugin(),
+      createHistoryPlugin(),
+      ...createBasicElementPlugins(),
       searchHighlightPlugin,
     ],
     [searchHighlightPlugin]

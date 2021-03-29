@@ -9,7 +9,7 @@ import { SPEditor } from '../types/SPEditor';
  */
 export const pipeDecorate = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): EditableProps['decorate'] => {
   const decorates = plugins.flatMap(
     (plugin) => plugin.decorate?.(editor) ?? []

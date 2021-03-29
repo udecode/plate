@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { RenderLeafProps } from 'slate-react';
 import {
-  getBoldPlugin,
-  getImagePlugin,
+  createBoldPlugin,
+  createImagePlugin,
   MARK_BOLD,
   TRenderElementProps,
 } from '../../../../../slate-plugins/src/index';
@@ -12,7 +12,7 @@ import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
   {
-    ...getImagePlugin(),
+    ...createImagePlugin(),
     serialize: {
       element: ({ element }: TRenderElementProps) =>
         React.createElement('img', { src: element.url }),
@@ -45,7 +45,7 @@ it('custom serialize bold to html', () => {
     serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
       plugins: [
         {
-          ...getBoldPlugin(),
+          ...createBoldPlugin(),
           serialize: {
             leaf: ({ leaf, children }: RenderLeafProps) =>
               leaf[MARK_BOLD] && !!leaf.text

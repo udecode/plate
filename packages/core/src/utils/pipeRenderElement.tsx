@@ -10,7 +10,7 @@ import { SPRenderElementProps } from '../types/SPRenderElementProps';
  */
 export const pipeRenderElement = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): EditableProps['renderElement'] => {
   const renderElements = plugins.flatMap(
     (plugin) => plugin.renderElement?.(editor) ?? []

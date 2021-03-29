@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
 import { MARK_ITALIC } from '../../../../../../marks/basic-marks/src/italic/defaults';
-import { withAutoformat } from '../../../../getAutoformatPlugin';
+import { withAutoformat } from '../../../../createAutoformatPlugin';
 
 jsx;
 

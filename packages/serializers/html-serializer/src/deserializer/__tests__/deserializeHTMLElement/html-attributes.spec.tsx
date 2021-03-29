@@ -2,7 +2,7 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { getTablePlugin } from '../../../../../../elements/table/src/getTablePlugin';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
@@ -11,7 +11,7 @@ const html =
 const element = getHtmlDocument(html).body;
 
 const input = {
-  plugins: [getTablePlugin()],
+  plugins: [createTablePlugin()],
   element,
 };
 

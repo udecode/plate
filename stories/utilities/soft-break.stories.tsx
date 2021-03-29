@@ -1,17 +1,17 @@
 import React from 'react';
 import {
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createExitBreakPlugin,
+  createHistoryPlugin,
+  createListPlugin,
+  createReactPlugin,
+  createResetNodePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
+  createTrailingBlockPlugin,
   ELEMENT_PARAGRAPH,
-  getBasicElementPlugins,
-  getBasicMarkPlugins,
-  getExitBreakPlugin,
-  getHistoryPlugin,
-  getListPlugin,
-  getReactPlugin,
-  getResetNodePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
-  getTrailingBlockPlugin,
   HeadingToolbar,
   SlatePlugin,
   SlatePlugins,
@@ -31,18 +31,18 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins: SlatePlugin[] = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  ...getBasicMarkPlugins(),
-  getListPlugin(),
-  getResetNodePlugin(optionsResetBlockTypePlugin),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-  getExitBreakPlugin(optionsExitBreakPlugin),
-  getTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  ...createBasicMarkPlugins(),
+  createListPlugin(),
+  createResetNodePlugin(optionsResetBlockTypePlugin),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
+  createTrailingBlockPlugin({ type: options[ELEMENT_PARAGRAPH].type }),
 ];
 
 export const Example = () => (

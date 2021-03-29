@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { Editor } from 'slate';
-import { withInlineVoid } from '../plugins/getInlineVoidPlugin';
+import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
+import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
+import { createReactPlugin } from '../plugins/createReactPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';
@@ -23,7 +25,7 @@ export interface WithSlatePluginsOptions {
  */
 export const withSlatePlugins = <TOutput = {}>({
   id = 'main',
-  plugins = [],
+  plugins = [createReactPlugin(), createHistoryPlugin()],
   options = {},
   components = {},
 }: WithSlatePluginsOptions = {}) => <T extends Editor>(e: T) => {

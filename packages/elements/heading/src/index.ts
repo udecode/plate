@@ -5,5 +5,5 @@
 export * from './defaults';
 export * from './getHeadingDeserialize';
 export * from './types';
-export * from './getHeadingPlugin';
+export * from './createHeadingPlugin';
 export * from './getHeadingRenderElement';

@@ -6,6 +6,7 @@ import {
   useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
 import { SlateProps } from '../../types/SlateProps';
+import { SPEditor } from '../../types/SPEditor';
 import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { pipeOnChange } from '../../utils/pipeOnChange';
@@ -18,7 +19,7 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = useSlatePluginsActions(id);
-  const editor = useStoreEditor(id);
+  const editor = useStoreEditor<SPEditor | undefined>(id);
   const value = useStoreEditorValue(id);
   const plugins = useStoreSlatePlugins(id);
 
@@ -29,7 +30,7 @@ export const useSlateProps = ({
       onChange: (newValue: TNode[]) => {
         setValue(newValue);
 
-        pipeOnChange(editor, plugins)(newValue);
+        editor && pipeOnChange(editor, plugins)(newValue);
 
         _onChange?.(newValue);
       },

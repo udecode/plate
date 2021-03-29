@@ -4,4 +4,4 @@
 
 export * from './getExitBreakOnKeyDown';
 export * from './types';
-export * from './getExitBreakPlugin';
+export * from './createExitBreakPlugin';

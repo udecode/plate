@@ -1,12 +1,12 @@
 import { getSlateClass } from '@udecode/slate-plugins-core';
 import { CLASS_TODO_LIST_CHECKED } from '../../../../../elements/list/src/todo-list/constants';
+import { createTodoListPlugin } from '../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { ELEMENT_TODO_LI } from '../../../../../elements/list/src/todo-list/defaults';
-import { getTodoListPlugin } from '../../../../../elements/list/src/todo-list/getTodoListPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize elements using useSlateStatic', () => {
-  const plugins = [getTodoListPlugin()];
+  const plugins = [createTodoListPlugin()];
   const editor = createEditorPlugins({ plugins });
   const render = serializeHTMLFromNodes(editor, {
     plugins,

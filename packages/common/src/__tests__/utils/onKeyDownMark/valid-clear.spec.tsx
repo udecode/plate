@@ -4,7 +4,7 @@ import { MARK_BOLD, MARK_ITALIC } from '@udecode/slate-plugins-basic-marks';
 import { getToggleMarkOnKeyDown } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { getBoldPlugin } from '../../../../../marks/basic-marks/src/bold/getBoldPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 
 jsx;
@@ -37,7 +37,7 @@ const output = (
 
 const editor = createEditorPlugins({
   editor: input,
-  plugins: [getBoldPlugin()],
+  plugins: [createBoldPlugin()],
   options: { bold: { hotkey: 'ctrl+b', clear: MARK_ITALIC } },
 });
 

@@ -4,4 +4,4 @@
 
 export * from './defaults';
 export * from './getBoldDeserialize';
-export * from './getBoldPlugin';
+export * from './createBoldPlugin';
