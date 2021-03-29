@@ -1,28 +1,27 @@
-import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
 import { State } from './SlatePluginsStore';
-import { TDescendant } from './TDescendant';
+import { TEditor } from './TEditor';
 
 /**
  * `useSlatePluginsEffects` options
  */
 export interface UseSlatePluginsEffectsOptions
-  extends Partial<Pick<State, 'editor' | 'value'>> {
+  extends Partial<Pick<State, 'value' | 'enabled' | 'plugins'>> {
   /**
    * Unique id to store multiple editor states. Default is 'main'.
    */
   id?: string;
 
   /**
+   * Controlled editor.
+   */
+  editor?: TEditor;
+
+  /**
    * Initial value of the editor.
    * Default is `[{children: [{text: ''}]}]`.
    */
-  initialValue?: TDescendant[];
-
-  /**
-   * The plugins are applied in the order they are specified.
-   */
-  plugins?: SlatePlugin[];
+  initialValue?: State['value'];
 
   options?: SlatePluginsOptions;
 

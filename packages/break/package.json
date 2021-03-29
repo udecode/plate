@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-break",
-  "version": "1.0.0-alpha.8",
+  "version": "1.0.0-alpha.13",
   "description": "Slate plugins break",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/break#readme",
@@ -33,8 +33,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.8",
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.8"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.13",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.13"
   },
   "publishConfig": {
     "access": "public"

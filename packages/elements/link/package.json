@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-link",
-  "version": "1.0.0-alpha.8",
+  "version": "1.0.0-alpha.13",
   "description": "Slate plugins link",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/link#readme",
@@ -33,9 +33,9 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.8",
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.8",
-    "@udecode/slate-plugins-normalizers": "^1.0.0-alpha.8"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.13",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.13",
+    "@udecode/slate-plugins-normalizers": "^1.0.0-alpha.13"
   },
   "publishConfig": {
     "access": "public"

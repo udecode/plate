@@ -1,33 +1,37 @@
-import { useCallback } from 'react';
-import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import { SlatePluginsState, State } from '../types/SlatePluginsStore';
 import { SPEditor } from '../types/SPEditor';
+import { TEditor } from '../types/TEditor';
 import { useSlatePluginsStore } from './useSlatePluginsStore';
+
+export const getState = (
+  state: SlatePluginsState,
+  id = 'main'
+): State | undefined => state[id];
+
+export const useStoreState = (id?: string) =>
+  useSlatePluginsStore((state) => getState(state, id));
 
 /**
  * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
  */
 export const useStoreEditor = <
-  TEditor extends Editor = ReactEditor & HistoryEditor & SPEditor
+  T extends TEditor | undefined = ReactEditor & HistoryEditor
 >(
-  id = 'main'
+  id?: string
 ) =>
-  useSlatePluginsStore(
-    useCallback((state) => state[id]?.editor as TEditor, [id])
-  );
+  useSlatePluginsStore((state) => getState(state, id)?.editor) as T & SPEditor;
 
-export const useStoreEditorValue = (id = 'main') =>
-  useSlatePluginsStore(useCallback((state) => state[id]?.value ?? [], [id]));
+export const useStoreEditorEnabled = (id?: string) =>
+  useSlatePluginsStore((state) => getState(state, id)?.enabled);
+export const useStoreEditorValue = (id?: string) =>
+  useSlatePluginsStore((state) => getState(state, id)?.value);
+export const useStoreSlatePlugins = (id?: string) =>
+  useSlatePluginsStore((state) => getState(state, id)?.plugins);
 
-export const useStoreSlatePlugins = (id = 'main') =>
-  useSlatePluginsStore(useCallback((state) => state[id]?.plugins ?? [], [id]));
+export const useStoreSlatePluginKeys = (id?: string) =>
+  useSlatePluginsStore((state) => getState(state, id)?.pluginKeys);
 
-export const useStoreSlatePluginKeys = (id = 'main') =>
-  useSlatePluginsStore(
-    useCallback((state) => state[id]?.pluginKeys ?? [], [id])
-  );
-
-export const useStoreEditorOptions = (id = 'main') =>
-  useStoreEditor(id).options as SlatePluginsOptions;
+export const useStoreEditorOptions = (id?: string) =>
+  useStoreEditor(id)?.options;

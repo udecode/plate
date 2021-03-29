@@ -7,7 +7,7 @@ import { SPEditor } from '../types/SPEditor';
  */
 export const pipeOnDOMBeforeInput = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: SlatePlugin[] = []
 ): EditableProps['onDOMBeforeInput'] => {
   const onDOMBeforeInputs = plugins.flatMap(
     (plugin) => plugin.onDOMBeforeInput?.(editor) ?? []

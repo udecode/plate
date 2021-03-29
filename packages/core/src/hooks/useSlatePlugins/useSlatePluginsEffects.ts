@@ -1,7 +1,14 @@
 import { useEffect } from 'react';
 import { createEditor } from 'slate';
+import { getHistoryPlugin } from '../../plugins/getHistoryPlugin';
+import { getReactPlugin } from '../../plugins/getReactPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import { useStoreEditor } from '../../store/useSlatePluginsSelectors';
+import {
+  useStoreEditor,
+  useStoreEditorEnabled,
+  useStoreSlatePlugins,
+  useStoreState,
+} from '../../store/useSlatePluginsSelectors';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -12,9 +19,10 @@ import { withSlatePlugins } from '../../utils/withSlatePlugins';
  * Dynamically updating the options will update the store state.
  */
 export const useSlatePluginsEffects = ({
-  id,
+  id = 'main',
   value,
   editor,
+  enabled = true,
   components,
   options,
   initialValue,
@@ -26,21 +34,40 @@ export const useSlatePluginsEffects = ({
     setEditor,
     setPlugins,
     setPluginKeys,
+    setEnabled,
     clearState,
   } = useSlatePluginsActions(id);
   const storeEditor = useStoreEditor(id);
+  const storeEnabled = useStoreEditorEnabled(id);
+  const storeState = useStoreState(id);
+  const storePlugins = useStoreSlatePlugins(id);
 
-  useEffect(() => {
-    setInitialState();
-  }, [setInitialState]);
-
-  // Clear the state by id on unmount.
+  // Clear the state on unmount.
   useEffect(
     () => () => {
       clearState();
     },
     [clearState]
   );
+
+  useEffect(() => {
+    if (!storeState) {
+      setInitialState({
+        enabled: true,
+        plugins: [],
+        pluginKeys: [],
+        value: [],
+      });
+    }
+  }, [
+    clearState,
+    enabled,
+    initialValue,
+    plugins,
+    setInitialState,
+    storeState,
+    value,
+  ]);
 
   // Slate.value
   useEffect(() => {
@@ -53,24 +80,44 @@ export const useSlatePluginsEffects = ({
     value && setValue(value);
   }, [setValue, value]);
 
-  // Slate.editor
   useEffect(() => {
-    if (storeEditor) return;
-
-    setEditor(
-      pipe(
-        createEditor(),
-        withSlatePlugins({ id, plugins, options, components })
-      )
-    );
-  }, [storeEditor, components, editor, id, options, plugins, setEditor]);
+    setEnabled(enabled);
+  }, [enabled, setEnabled]);
 
   // Slate plugins
   useEffect(() => {
-    plugins && setPlugins(plugins);
+    setPlugins(plugins ?? [getReactPlugin(), getHistoryPlugin()]);
   }, [plugins, setPlugins]);
 
   useEffect(() => {
     plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
   }, [plugins, setPluginKeys]);
+
+  useEffect(() => {
+    if (storeEditor && !storeEnabled) {
+      setEditor(undefined);
+    }
+  }, [storeEnabled, setEditor, storeEditor]);
+
+  // Slate.editor
+  useEffect(() => {
+    if (!storeEditor && storeEnabled) {
+      setEditor(
+        pipe(
+          editor ?? createEditor(),
+          withSlatePlugins({ id, plugins: storePlugins, options, components })
+        )
+      );
+    }
+  }, [
+    storeEditor,
+    components,
+    editor,
+    id,
+    options,
+    plugins,
+    setEditor,
+    storeEnabled,
+    storePlugins,
+  ]);
 };

@@ -1,5 +1,9 @@
 import React from 'react';
-import { SlatePlugins } from '@udecode/slate-plugins';
+import {
+  SlatePlugins,
+  useSlatePluginsActions,
+  useStoreEditorEnabled,
+} from '@udecode/slate-plugins';
 import { initialValuePlainText } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 
@@ -10,10 +14,34 @@ export default {
   component: SlatePlugins,
 };
 
-export const Example = () => (
-  <SlatePlugins
-    id={id}
-    editableProps={editableProps}
-    initialValue={initialValuePlainText}
-  />
-);
+export const Example = () => {
+  const { setEnabled, resetEditor } = useSlatePluginsActions(id);
+  const enabled = useStoreEditorEnabled(id);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => {
+          setEnabled(!enabled);
+        }}
+      >
+        {enabled ? 'Disable editor' : 'Enable editor'}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          resetEditor(id);
+        }}
+      >
+        Reset editor
+      </button>
+      <p />
+      <SlatePlugins
+        id={id}
+        editableProps={editableProps}
+        initialValue={initialValuePlainText}
+      />
+    </div>
+  );
+};
