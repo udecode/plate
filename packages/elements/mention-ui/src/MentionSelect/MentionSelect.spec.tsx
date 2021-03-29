@@ -20,6 +20,7 @@ describe('when MentionSelect', () => {
           options={mentionables}
           valueIndex={0}
           onClickMention={() => {}}
+          searchValue=""
         />
       );
 
@@ -61,6 +62,7 @@ describe('when MentionSelect', () => {
           at={editor.selection}
           options={mentionables}
           valueIndex={0}
+          searchValue=""
           onClickMention={() => {}}
         />
       );
