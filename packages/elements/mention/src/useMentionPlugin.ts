@@ -41,6 +41,7 @@ export const useMentionPlugin = ({
 }: MentionPluginOptions = {}): {
   plugin: SlatePlugin;
   getMentionSelectProps: () => GetMentionSelectProps;
+  searchValue: string;
 } => {
   const [targetRange, setTargetRange] = useState<Range | null>(null);
   const [valueIndex, setValueIndex] = useState(0);
@@ -148,8 +149,10 @@ export const useMentionPlugin = ({
         valueIndex,
         options: values,
         onClickMention: onAddMention,
+        searchValue: search,
       }),
-      [onAddMention, targetRange, valueIndex, values]
+      [onAddMention, search, targetRange, valueIndex, values]
     ),
+    searchValue: search,
   };
 };
