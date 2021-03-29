@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
 import {
-  getBasicElementPlugins,
-  getBasicMarkPlugins,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   HeadingToolbar,
   useSlatePlugins,
   useStoreEditor,
@@ -24,15 +24,15 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents({
+const components = createSlatePluginsComponents({
   [EDITABLE_VOID]: EditableVoidElement,
 });
-const options = getSlatePluginsOptions();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  ...getBasicMarkPlugins(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  ...createBasicMarkPlugins(),
 ];
 
 export const Example = () => {

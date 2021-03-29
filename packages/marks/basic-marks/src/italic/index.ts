@@ -4,4 +4,4 @@
 
 export * from './defaults';
 export * from './getItalicDeserialize';
-export * from './getItalicPlugin';
+export * from './createItalicPlugin';

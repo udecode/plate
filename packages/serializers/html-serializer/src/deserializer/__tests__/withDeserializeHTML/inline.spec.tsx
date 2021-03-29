@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
-import { getLinkPlugin } from '../../../../../../elements/link/src/getLinkPlugin';
-import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
+import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
+import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getDeserializeHTMLPlugin } from '../../getDeserializeHTMLPlugin';
+import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
 
@@ -33,8 +33,8 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const plugins = [getParagraphPlugin(), getLinkPlugin()];
-  plugins.push(getDeserializeHTMLPlugin({ plugins }));
+  const plugins = [createParagraphPlugin(), createLinkPlugin()];
+  plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
   const editor = createEditorPlugins({
     editor: input,

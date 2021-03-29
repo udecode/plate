@@ -1,16 +1,16 @@
 import React from 'react';
 import {
-  getBasicElementPlugins,
-  getExitBreakPlugin,
-  getHistoryPlugin,
-  getImagePlugin,
-  getListPlugin,
-  getReactPlugin,
-  getResetNodePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
-  getTodoListPlugin,
+  createBasicElementPlugins,
+  createExitBreakPlugin,
+  createHistoryPlugin,
+  createImagePlugin,
+  createListPlugin,
+  createReactPlugin,
+  createResetNodePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
+  createTodoListPlugin,
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
@@ -29,18 +29,18 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getImagePlugin(),
-  getTodoListPlugin(),
-  getListPlugin(),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-  getExitBreakPlugin(optionsExitBreakPlugin),
-  getResetNodePlugin(optionsResetBlockTypePlugin),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createImagePlugin(),
+  createTodoListPlugin(),
+  createListPlugin(),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
+  createResetNodePlugin(optionsResetBlockTypePlugin),
 ];
 
 export const Example = () => (

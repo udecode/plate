@@ -4,4 +4,4 @@
 
 export * from './defaults';
 export * from './getHighlightDeserialize';
-export * from './getHighlightPlugin';
+export * from './createHighlightPlugin';

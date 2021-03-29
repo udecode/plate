@@ -1,17 +1,17 @@
 import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
-  getBlockquotePlugin,
-  getCodeBlockPlugin,
-  getExitBreakPlugin,
-  getHeadingPlugin,
-  getHistoryPlugin,
-  getParagraphPlugin,
-  getReactPlugin,
-  getResetNodePlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
+  createBlockquotePlugin,
+  createCodeBlockPlugin,
+  createExitBreakPlugin,
+  createHeadingPlugin,
+  createHistoryPlugin,
+  createParagraphPlugin,
+  createReactPlugin,
+  createResetNodePlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
@@ -30,18 +30,18 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  getParagraphPlugin(),
-  getBlockquotePlugin(),
-  getCodeBlockPlugin(),
-  getHeadingPlugin(),
-  getResetNodePlugin(optionsResetBlockTypePlugin),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-  getExitBreakPlugin(optionsExitBreakPlugin),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  createParagraphPlugin(),
+  createBlockquotePlugin(),
+  createCodeBlockPlugin(),
+  createHeadingPlugin(),
+  createResetNodePlugin(optionsResetBlockTypePlugin),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
 ];
 
 export const Example = () => (

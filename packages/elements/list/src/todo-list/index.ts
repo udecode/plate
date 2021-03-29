@@ -6,4 +6,4 @@ export * from './constants';
 export * from './defaults';
 export * from './getTodoListDeserialize';
 export * from './types';
-export * from './getTodoListPlugin';
+export * from './createTodoListPlugin';

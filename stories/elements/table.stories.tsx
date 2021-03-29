@@ -1,14 +1,14 @@
 import React from 'react';
 import {
-  getBasicElementPlugins,
-  getBasicMarkPlugins,
-  getExitBreakPlugin,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getSoftBreakPlugin,
-  getTablePlugin,
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createExitBreakPlugin,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createSoftBreakPlugin,
+  createTablePlugin,
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
@@ -26,16 +26,16 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  ...getBasicMarkPlugins(),
-  getTablePlugin(),
-  getSoftBreakPlugin(optionsSoftBreakPlugin),
-  getExitBreakPlugin(optionsExitBreakPlugin),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  ...createBasicMarkPlugins(),
+  createTablePlugin(),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
 ];
 
 export const Example = () => (

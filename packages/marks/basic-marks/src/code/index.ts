@@ -4,4 +4,4 @@
 
 export * from './defaults';
 export * from './getCodeDeserialize';
-export * from './getCodePlugin';
+export * from './createCodePlugin';

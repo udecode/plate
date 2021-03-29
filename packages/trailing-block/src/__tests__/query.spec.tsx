@@ -4,7 +4,7 @@ import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../elements/heading/src/defaults';
-import { withTrailingBlock } from '../getTrailingBlockPlugin';
+import { withTrailingBlock } from '../createTrailingBlockPlugin';
 
 jsx;
 

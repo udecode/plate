@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
-import { withNodeId } from '../../../../../node-id/src/getNodeIdPlugin';
+import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
 
 jsx;
 

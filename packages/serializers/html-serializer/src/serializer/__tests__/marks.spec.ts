@@ -1,14 +1,14 @@
-import { getBasicMarkPlugins } from '../../../../../marks/basic-marks/src/getBasicMarkPlugins';
-import { getHighlightPlugin } from '../../../../../marks/highlight/src/getHighlightPlugin';
-import { getKbdPlugin } from '../../../../../marks/kbd/src/getKbdPlugin';
+import { createBasicMarkPlugins } from '../../../../../marks/basic-marks/src/createBasicMarkPlugins';
+import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
 import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
-  ...getBasicMarkPlugins(),
-  getHighlightPlugin(),
-  getKbdPlugin(),
+  ...createBasicMarkPlugins(),
+  createHighlightPlugin(),
+  createKbdPlugin(),
 ];
 const editor = createEditorPlugins({ plugins });
 

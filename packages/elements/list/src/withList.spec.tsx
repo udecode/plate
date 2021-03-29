@@ -3,9 +3,9 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
-import { getLinkPlugin } from '../../link/src/getLinkPlugin';
-import { getParagraphPlugin } from '../../paragraph/src/getParagraphPlugin';
-import { getListPlugin } from './getListPlugin';
+import { createLinkPlugin } from '../../link/src/createLinkPlugin';
+import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
+import { createListPlugin } from './createListPlugin';
 
 jsx;
 
@@ -39,7 +39,11 @@ describe('normalizeList', () => {
 
       const editor = createEditorPlugins({
         editor: input,
-        plugins: [getParagraphPlugin(), getListPlugin(), getLinkPlugin()],
+        plugins: [
+          createParagraphPlugin(),
+          createListPlugin(),
+          createLinkPlugin(),
+        ],
       });
 
       editor.insertText('o');

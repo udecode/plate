@@ -2,7 +2,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeId } from '../../../../../node-id/src/getNodeIdPlugin';
+import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;

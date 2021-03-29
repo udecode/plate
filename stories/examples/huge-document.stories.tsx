@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   SlatePlugins,
 } from '@udecode/slate-plugins';
-import { getHeadingPlugin } from '@udecode/slate-plugins-heading';
-import { getParagraphPlugin } from '@udecode/slate-plugins-paragraph';
+import { createHeadingPlugin } from '@udecode/slate-plugins-heading';
+import { createParagraphPlugin } from '@udecode/slate-plugins-paragraph';
 import { createEditor, Descendant } from 'slate';
 import { Editable, RenderElementProps, Slate, withReact } from 'slate-react';
 import { initialValueHugeDocument } from '../config/initialValues';
@@ -19,13 +19,13 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  getHeadingPlugin(),
-  getParagraphPlugin(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  createHeadingPlugin(),
+  createParagraphPlugin(),
 ];
 
 export const WithSlatePlugins = () => (

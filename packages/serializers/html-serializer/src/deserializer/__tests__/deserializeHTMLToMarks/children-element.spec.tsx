@@ -2,16 +2,16 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { getParagraphPlugin } from '../../../../../../elements/paragraph/src/getParagraphPlugin';
-import { getBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/getBoldPlugin';
-import { getItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/getItalicPlugin';
+import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/createItalicPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 jsx;
 
 const input = {
-  plugins: [getParagraphPlugin(), getBoldPlugin(), getItalicPlugin()],
+  plugins: [createParagraphPlugin(), createBoldPlugin(), createItalicPlugin()],
   element: document.createElement('strong'),
   children: [
     <hli>

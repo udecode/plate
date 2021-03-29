@@ -1,18 +1,18 @@
 import React from 'react';
 import {
-  getBasicElementPlugins,
-  getBoldPlugin,
-  getCodePlugin,
-  getHistoryPlugin,
-  getItalicPlugin,
-  getKbdPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
-  getStrikethroughPlugin,
-  getSubscriptPlugin,
-  getSuperscriptPlugin,
-  getUnderlinePlugin,
+  createBasicElementPlugins,
+  createBoldPlugin,
+  createCodePlugin,
+  createHistoryPlugin,
+  createItalicPlugin,
+  createKbdPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createStrikethroughPlugin,
+  createSubscriptPlugin,
+  createSuperscriptPlugin,
+  createUnderlinePlugin,
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
@@ -26,20 +26,20 @@ export default {
   title: id,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getBoldPlugin(),
-  getItalicPlugin(),
-  getUnderlinePlugin(),
-  getStrikethroughPlugin(),
-  getSubscriptPlugin(),
-  getSuperscriptPlugin(),
-  getCodePlugin(),
-  getKbdPlugin(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createBoldPlugin(),
+  createItalicPlugin(),
+  createUnderlinePlugin(),
+  createStrikethroughPlugin(),
+  createSubscriptPlugin(),
+  createSuperscriptPlugin(),
+  createCodePlugin(),
+  createKbdPlugin(),
 ];
 
 export const Example = () => (

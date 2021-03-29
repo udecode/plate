@@ -1,9 +1,9 @@
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
-import { getTablePlugin } from '../getTablePlugin';
+import { createTablePlugin } from '../createTablePlugin';
 import { withTable } from '../withTable';
 import { content, out, output2 } from './fixtures';
 
-const plugins = [getTablePlugin()];
+const plugins = [createTablePlugin()];
 
 describe('withTable', () => {
   it('should prevent cell deletions on deleteBackward from outside the table', () => {

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from '@styled-icons/material';
 import {
-  getBasicElementPlugins,
-  getHistoryPlugin,
-  getLinkPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createLinkPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   HeadingToolbar,
   SlatePlugins,
   ToolbarLink,
@@ -18,16 +18,16 @@ const id = 'Elements/Link';
 
 export default {
   title: id,
-  component: getLinkPlugin,
+  component: createLinkPlugin,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicElementPlugins(),
-  getLinkPlugin(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createLinkPlugin(),
 ];
 
 export const Example = () => (

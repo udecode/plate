@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   BalloonToolbar,
-  getBasicMarkPlugins,
-  getHistoryPlugin,
-  getReactPlugin,
-  getSlatePluginsComponents,
-  getSlatePluginsOptions,
+  createBasicMarkPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValueBalloonToolbar } from '../config/initialValues';
@@ -19,12 +19,12 @@ export default {
   component: BalloonToolbar,
 };
 
-const components = getSlatePluginsComponents();
-const options = getSlatePluginsOptions();
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
 const plugins = [
-  getReactPlugin(),
-  getHistoryPlugin(),
-  ...getBasicMarkPlugins(),
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicMarkPlugins(),
 ];
 
 export const Example = () => (

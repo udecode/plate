@@ -1,11 +1,11 @@
 import {
+  createSlatePluginsOptions,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_PARAGRAPH,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
   ExitBreakPluginOptions,
-  getSlatePluginsOptions,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
@@ -15,7 +15,7 @@ import {
 } from '@udecode/slate-plugins';
 import { MENTIONABLES } from './mentionables';
 
-export const options = getSlatePluginsOptions();
+export const options = createSlatePluginsOptions();
 
 export const optionsMentionPlugin = {
   mentionables: MENTIONABLES,

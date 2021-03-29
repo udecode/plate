@@ -4,4 +4,4 @@
 
 export * from './defaults';
 export * from './getBlockquoteDeserialize';
-export * from './getBlockquotePlugin';
+export * from './createBlockquotePlugin';

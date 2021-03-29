@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
-import { getLinkPlugin } from '@udecode/slate-plugins-link';
+import { createLinkPlugin } from '@udecode/slate-plugins-link';
 import * as SlateReact from 'slate-react';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { ToolbarLink } from './ToolbarLink';
@@ -19,7 +19,7 @@ describe('ToolbarLink', () => {
     it('should render', () => {
       const editor = createEditorPlugins({
         editor: input1,
-        plugins: [getLinkPlugin()],
+        plugins: [createLinkPlugin()],
       });
 
       jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
@@ -40,7 +40,7 @@ describe('ToolbarLink', () => {
     it('should render', () => {
       const editor = createEditorPlugins({
         editor: input2,
-        plugins: [getLinkPlugin()],
+        plugins: [createLinkPlugin()],
       });
 
       jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
@@ -68,7 +68,7 @@ describe('ToolbarLink', () => {
     it('should render', () => {
       const editor = createEditorPlugins({
         editor: input3,
-        plugins: [getLinkPlugin()],
+        plugins: [createLinkPlugin()],
       });
 
       jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);

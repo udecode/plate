@@ -8,7 +8,7 @@ export * from './getListDeleteFragment';
 export * from './getListDeserialize';
 export * from './getListInsertBreak';
 export * from './types';
-export * from './getListPlugin';
+export * from './createListPlugin';
 export * from './getListOnKeyDown';
 export * from './withList';
 export * from './normalizers/index';

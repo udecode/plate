@@ -5,7 +5,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { options } from '../../../../../stories/config/pluginOptions';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
-import { withNormalizeTypes } from '../../getNormalizeTypesPlugin';
+import { withNormalizeTypes } from '../../createNormalizeTypesPlugin';
 
 jsx;
 
