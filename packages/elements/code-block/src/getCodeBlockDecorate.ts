@@ -62,28 +62,28 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
     if (isElement(node) && node.type === code_block.type) {
       const text = Node.string(node);
       // const langName: any = parent.lang || 'markup';
-      const langName: any = 'javascript';
+      const langName: any = '';
       const lang = languages[langName];
 
-      // if (lang) {
-      const tokens = tokenize(text, lang);
-      let offset = 0;
+      if (lang) {
+        const tokens = tokenize(text, lang);
+        let offset = 0;
 
-      for (const element of tokens) {
-        if (typeof element === 'string') {
-          offset += element.length;
-        } else {
-          const token: Token = element;
-          ranges.push({
-            anchor: { path, offset },
-            focus: { path, offset: offset + token.length },
-            className: `prism-token token ${token.type} `,
-            prism: true,
-          });
-          offset += token.length;
+        for (const element of tokens) {
+          if (typeof element === 'string') {
+            offset += element.length;
+          } else {
+            const token: Token = element;
+            ranges.push({
+              anchor: { path, offset },
+              focus: { path, offset: offset + token.length },
+              className: `prism-token token ${token.type} `,
+              prism: true,
+            });
+            offset += token.length;
+          }
         }
       }
-      // }
     }
     return ranges;
   };
