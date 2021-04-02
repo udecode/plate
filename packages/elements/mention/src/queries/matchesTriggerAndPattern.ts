@@ -1,8 +1,9 @@
 import { escapeRegExp, getText } from '@udecode/slate-plugins-common';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Point } from 'slate';
 
 export const matchesTriggerAndPattern = (
-  editor: Editor,
+  editor: TEditor,
   { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
 ) => {
   // Point at the start of line

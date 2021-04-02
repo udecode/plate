@@ -9,14 +9,14 @@ export const KEYS_TABLE = [ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR, ELEMENT_TD];
 
 export const DEFAULTS_TH: Partial<SlatePluginOptions> = {
   getNodeProps: ({ element }) => ({
-    colSpan: (element?.attributes as any)?.colspan,
-    rowSpan: (element?.attributes as any)?.rowspan,
+    colSpan: element?.attributes?.colspan,
+    rowSpan: element?.attributes?.rowspan,
   }),
 };
 
 export const DEFAULTS_TD: Partial<SlatePluginOptions> = {
   getNodeProps: ({ element }) => ({
-    colSpan: (element?.attributes as any)?.colspan,
-    rowSpan: (element?.attributes as any)?.rowspan,
+    colSpan: element?.attributes?.colspan,
+    rowSpan: element?.attributes?.rowspan,
   }),
 };

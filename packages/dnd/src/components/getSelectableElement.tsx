@@ -1,9 +1,10 @@
 import React, { forwardRef, useMemo } from 'react';
 import {
   SPRenderElementProps,
+  TEditor,
   useTSlateStatic,
 } from '@udecode/slate-plugins-core';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { Selectable } from './Selectable';
 import { SelectableProps } from './Selectable.types';
@@ -12,7 +13,7 @@ export interface GetSelectabelElementOptions
   extends Pick<SelectableProps, 'dragIcon' | 'styles'> {
   component: any;
   level?: number;
-  filter?: (editor: Editor, path: Path) => boolean;
+  filter?: (editor: TEditor, path: Path) => boolean;
   allowReadOnly?: boolean;
 }
 

@@ -2,6 +2,7 @@ import {
   deleteFragment,
   ELEMENT_DEFAULT,
   getPreviousPath,
+  insertNodes,
   isExpanded,
 } from '@udecode/slate-plugins-common';
 import {
@@ -53,7 +54,7 @@ export const removeListItem = (
 
     // 1
     let tempLiPath = Path.next(liPath);
-    Transforms.insertNodes(
+    insertNodes<TElement>(
       editor,
       {
         type: getSlatePluginType(editor, ELEMENT_LI),
@@ -63,7 +64,7 @@ export const removeListItem = (
             children: [{ text: '' }],
           },
         ],
-      } as any,
+      },
       { at: tempLiPath }
     );
 

@@ -1,4 +1,9 @@
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { insertNodes } from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ELEMENT_MENTION } from '../defaults';
 import { MentionNode, MentionNodeData } from '../types';
@@ -19,7 +24,7 @@ export const insertMention = (
     ...data,
   };
 
-  Transforms.insertNodes(editor, mentionNode);
+  insertNodes<MentionNode>(editor, mentionNode);
   Transforms.move(editor);
   if (insertSpaceAfterMention) {
     Transforms.insertText(editor, ' ');

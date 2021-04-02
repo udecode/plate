@@ -1,6 +1,14 @@
-import { getNodes, someNode, wrapNodes } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
+import {
+  getNodes,
+  setNodes,
+  someNode,
+  wrapNodes,
+} from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
@@ -13,9 +21,9 @@ export const toggleCodeBlock = (editor: SPEditor) => {
 
   unwrapCodeBlock(editor);
 
-  Transforms.setNodes(editor, {
+  setNodes<TElement>(editor, {
     type: getSlatePluginType(editor, ELEMENT_CODE_LINE),
-  } as any);
+  });
 
   if (!isActive) {
     const codeBlock = {
@@ -37,7 +45,7 @@ export const toggleCodeBlock = (editor: SPEditor) => {
 
     for (const [, path] of nodes) {
       // Transforms.wrapNodes(editor, codeLine, {
-      Transforms.setNodes(editor, codeLine, {
+      setNodes<TElement>(editor, codeLine, {
         at: path,
       });
     }

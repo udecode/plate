@@ -1,4 +1,5 @@
 import { getText } from '@udecode/slate-plugins-common';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
@@ -7,7 +8,7 @@ import { OutdentCodeLineOptions } from './outdentCodeLine';
  * delete it.
  */
 export const deleteStartSpace = (
-  editor: Editor,
+  editor: TEditor,
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

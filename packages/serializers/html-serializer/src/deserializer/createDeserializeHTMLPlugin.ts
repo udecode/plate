@@ -1,5 +1,6 @@
 import {
   isBlockAboveEmpty,
+  setNodes,
   SlateDocumentFragment,
 } from '@udecode/slate-plugins-common';
 import {
@@ -7,6 +8,7 @@ import {
   getSlatePluginWithOverrides,
   SlatePlugin,
   SPEditor,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
@@ -53,7 +55,7 @@ export const withDeserializeHTML = ({
         firstNodeType &&
         !inlineTypes.includes(firstNodeType)
       ) {
-        Transforms.setNodes(editor, { type: fragment[0].type } as any);
+        setNodes<TElement>(editor, { type: fragment[0].type });
       }
 
       return fragment;

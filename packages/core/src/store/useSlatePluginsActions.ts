@@ -1,32 +1,42 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
+import shallow from 'zustand/shallow';
 import { SlatePluginsActions, State } from '../types/SlatePluginsStore';
 import { SPEditor } from '../types/SPEditor';
 import { pipe } from '../utils/pipe';
 import { withSlatePlugins } from '../utils/withSlatePlugins';
-import { slatePluginsStore } from './useSlatePluginsStore';
+import {
+  slatePluginsStore,
+  useSlatePluginsStore,
+} from './useSlatePluginsStore';
 import { getSetStateByKey } from './zustand.utils';
 
 const { getState: get, setState: set } = slatePluginsStore;
 
-export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
-  useMemo(() => {
+export const useSlatePluginsActions = (
+  storeId?: string | null
+): SlatePluginsActions => {
+  const storeKeys = useSlatePluginsStore((s) => Object.keys(s), shallow);
+
+  const stateId = storeId ?? storeKeys[0] ?? 'main';
+
+  return useMemo(() => {
     const setEditor: SlatePluginsActions['setEditor'] = getSetStateByKey<
       State['editor']
-    >('editor', storeId);
+    >('editor', stateId);
 
-    const setValue = getSetStateByKey<State['value']>('value', storeId);
+    const setValue = getSetStateByKey<State['value']>('value', stateId);
 
     return {
       setEditor,
       setValue,
-      clearState: (id = storeId) => {
+      clearState: (id = stateId) => {
         set((state) => {
           delete state[id];
           return state;
         });
       },
-      setInitialState: (v = {}, id = storeId) =>
+      setInitialState: (v = {}, id = stateId) =>
         set((state) => {
           const {
             enabled = true,
@@ -46,7 +56,7 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
                 },
               };
         }),
-      resetEditor: (id = storeId) => {
+      resetEditor: (id = stateId) => {
         const state = get()[id];
         if (!state) return;
         const { editor, plugins } = state;
@@ -63,11 +73,12 @@ export const useSlatePluginsActions = (storeId = 'main'): SlatePluginsActions =>
           id
         );
       },
-      setEnabled: getSetStateByKey<State['enabled']>('enabled', storeId),
-      setPlugins: getSetStateByKey<State['plugins']>('plugins', storeId),
+      setEnabled: getSetStateByKey<State['enabled']>('enabled', stateId),
+      setPlugins: getSetStateByKey<State['plugins']>('plugins', stateId),
       setPluginKeys: getSetStateByKey<State['pluginKeys']>(
         'pluginKeys',
-        storeId
+        stateId
       ),
     };
-  }, [storeId]);
+  }, [stateId]);
+};

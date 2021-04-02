@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/slate-plugins-core';
 import { Editor, Location, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { MatchOptions } from '../types/Editor.types';
 import { match } from './match';
@@ -13,7 +13,7 @@ export type FindNodeOptions<T extends TNode = TNode> = {
  * Find node matching the condition.
  */
 export const findNode = <T extends TNode = TNode>(
-  editor: Editor,
+  editor: TEditor,
   options: FindNodeOptions<T>
 ): NodeEntry<T> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.

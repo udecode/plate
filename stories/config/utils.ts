@@ -4,6 +4,7 @@ import {
   ELEMENT_UL,
   SlateDocumentDescendant,
   SlateDocumentFragment,
+  TElement,
 } from '@udecode/slate-plugins';
 import { Text } from 'slate';
 import { options } from './pluginOptions';
@@ -42,7 +43,7 @@ export const createList = (
             children: marks,
           },
         ],
-      } as any;
+      } as TElement;
     }
   ) as SlateDocumentFragment;
 

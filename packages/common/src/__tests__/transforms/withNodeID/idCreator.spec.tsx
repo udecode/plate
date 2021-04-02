@@ -1,6 +1,7 @@
 /** @jsx jsx */
+import { TEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
 
 jsx;
@@ -15,7 +16,7 @@ const input = (
 ) as any;
 
 it('should add a random id to the new element', () => {
-  const editor: Editor = withNodeId()(input);
+  const editor: TEditor = withNodeId()(input);
 
   Transforms.splitNodes(editor);
 

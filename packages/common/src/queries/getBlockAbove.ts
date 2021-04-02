@@ -1,5 +1,4 @@
-import { TAncestor } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { TAncestor, TEditor } from '@udecode/slate-plugins-core';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getAbove } from './getAbove';
 
@@ -7,7 +6,7 @@ import { getAbove } from './getAbove';
  * Get the block above a location (default: selection).
  */
 export const getBlockAbove = <T extends TAncestor = TAncestor>(
-  editor: Editor,
+  editor: TEditor,
   options: EditorAboveOptions<T> = {}
 ) =>
   getAbove<T>(editor, {

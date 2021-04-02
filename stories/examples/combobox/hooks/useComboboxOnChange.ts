@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { isCollapsed } from '@udecode/slate-plugins';
-import { Editor, Range } from 'slate';
+import { isCollapsed, TEditor } from '@udecode/slate-plugins';
+import { Range } from 'slate';
 import { useComboboxStore } from '../useComboboxStore';
 import { getTextFromTrigger } from '../utils/getTextFromTrigger';
 
@@ -13,7 +13,7 @@ export const useComboboxOnChange = ({
   key,
   trigger,
 }: {
-  editor: Editor;
+  editor: TEditor;
   key: string;
   trigger: string;
 }) => {

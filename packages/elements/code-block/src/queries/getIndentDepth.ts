@@ -1,9 +1,9 @@
 import { getText } from '@udecode/slate-plugins-common';
-import { Editor } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = (
-  editor: Editor,
+  editor: TEditor,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

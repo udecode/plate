@@ -1,11 +1,15 @@
 import {
   ELEMENT_DEFAULT,
   getNodes,
+  setNodes,
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_LI } from '../defaults';
 import { unwrapList } from './unwrapList';
 
@@ -16,9 +20,9 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
 
   unwrapList(editor);
 
-  Transforms.setNodes(editor, {
+  setNodes<TElement>(editor, {
     type: getSlatePluginType(editor, ELEMENT_DEFAULT),
-  } as any);
+  });
 
   if (!isActive) {
     const list = { type, children: [] };
@@ -36,7 +40,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
     };
 
     for (const [, path] of nodes) {
-      Transforms.wrapNodes(editor, listItem, {
+      wrapNodes(editor, listItem, {
         at: path,
       });
     }

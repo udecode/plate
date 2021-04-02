@@ -1,10 +1,16 @@
-import { ErrorHandler, getNode } from '@udecode/slate-plugins-common';
+import {
+  ErrorHandler,
+  getNode,
+  insertNodes,
+  setNodes,
+} from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
   isElement,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
-import { Path, Transforms } from 'slate';
+import { Path } from 'slate';
 
 interface Rule {
   /**
@@ -47,19 +53,23 @@ export const withNormalizeTypes = ({
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {
-              Transforms.setNodes(editor, { type: strictType } as any, {
-                at: path,
-              });
+              setNodes<TElement>(
+                editor,
+                { type: strictType },
+                {
+                  at: path,
+                }
+              );
               return true;
             }
           } else {
             try {
-              Transforms.insertNodes(
+              insertNodes<TElement>(
                 editor,
                 {
-                  type: strictType ?? type,
+                  type: strictType ?? type!,
                   children: [{ text: '' }],
-                } as any,
+                },
                 { at: path }
               );
               return true;

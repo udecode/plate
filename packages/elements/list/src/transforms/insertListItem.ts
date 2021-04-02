@@ -2,9 +2,15 @@ import {
   ELEMENT_DEFAULT,
   getAbove,
   getParent,
+  insertNodes,
   isBlockTextEmptyAfterSelection,
+  wrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
@@ -45,12 +51,12 @@ export const insertListItem = (editor: SPEditor) => {
      * If start, insert a list item before
      */
     if (isStart) {
-      Transforms.insertNodes(
+      insertNodes<TElement>(
         editor,
         {
           type: liType,
           children: [{ type: pType, children: [{ text: '' }] }],
-        } as any,
+        },
         { at: listItemPath }
       );
       return true;
@@ -62,12 +68,12 @@ export const insertListItem = (editor: SPEditor) => {
     if (!isEnd) {
       Editor.withoutNormalizing(editor, () => {
         Transforms.splitNodes(editor);
-        Transforms.wrapNodes(
+        wrapNodes(
           editor,
           {
             type: liType,
             children: [],
-          } as any,
+          },
           { at: nextParagraphPath }
         );
         Transforms.moveNodes(editor, {
@@ -84,12 +90,12 @@ export const insertListItem = (editor: SPEditor) => {
        * If end, insert a list item after and select it
        */
       const marks = Editor.marks(editor) || {};
-      Transforms.insertNodes(
+      insertNodes<TElement>(
         editor,
         {
           type: liType,
           children: [{ type: pType, children: [{ text: '', ...marks }] }],
-        } as any,
+        },
         { at: nextListItemPath }
       );
       Transforms.select(editor, nextListItemPath);

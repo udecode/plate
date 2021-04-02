@@ -1,4 +1,4 @@
-import { isText } from '@udecode/slate-plugins-core';
+import { isText, TEditor } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
@@ -9,7 +9,7 @@ import { getParent } from './getParent';
  * If there is no leaf after the selected leaf, return {@link Editor.isEnd}.
  * Else, check if the next leaves are empty.
  */
-export const isBlockTextEmptyAfterSelection = (editor: Editor) => {
+export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
   if (!editor.selection) return false;
 
   const blockAbove = getBlockAbove(editor);

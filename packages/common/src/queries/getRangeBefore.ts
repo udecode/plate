@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Location, Range } from 'slate';
 import { getPointBefore, PointBeforeOptions } from './getPointBefore';
 
@@ -7,7 +8,7 @@ export interface RangeBeforeOptions extends PointBeforeOptions {}
  * Get range from {@link getPointBefore} to the end point of `at`.
  */
 export const getRangeBefore = (
-  editor: Editor,
+  editor: TEditor,
   at: Location,
   options?: RangeBeforeOptions
 ): Range | undefined => {
