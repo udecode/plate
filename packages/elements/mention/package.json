@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-mention",
-  "version": "1.0.0-alpha.14",
+  "version": "1.0.0-alpha.15",
   "description": "Slate plugins mention",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/mention#readme",
@@ -32,8 +32,8 @@
     "slate": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.14",
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.14"
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.15",
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.15"
   },
   "publishConfig": {
     "access": "public"
