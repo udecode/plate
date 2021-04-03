@@ -22,7 +22,7 @@ export const getState = (
   return state[keys[0]];
 };
 
-export const useStoreState = (id?: string) =>
+export const useStoreState = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id), shallow);
 
 /**
@@ -31,21 +31,21 @@ export const useStoreState = (id?: string) =>
 export const useStoreEditor = <
   T extends TEditor | undefined = ReactEditor & HistoryEditor
 >(
-  id?: string
+  id?: string | null
 ) =>
   useSlatePluginsStore((state) => getState(state, id)?.editor) as
     | (T & SPEditor)
     | undefined;
 
-export const useStoreEditorEnabled = (id?: string) =>
+export const useStoreEditorEnabled = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.enabled);
-export const useStoreEditorValue = (id?: string) =>
+export const useStoreEditorValue = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.value);
-export const useStoreSlatePlugins = (id?: string) =>
+export const useStoreSlatePlugins = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.plugins);
 
-export const useStoreSlatePluginKeys = (id?: string) =>
+export const useStoreSlatePluginKeys = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.pluginKeys);
 
-export const useStoreEditorOptions = (id?: string) =>
+export const useStoreEditorOptions = (id?: string | null) =>
   useStoreEditor(id)?.options;

@@ -2,8 +2,6 @@ import {
   ELEMENT_LI,
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
-  SlateDocumentDescendant,
-  SlateDocumentFragment,
   TElement,
 } from '@udecode/slate-plugins';
 import { Text } from 'slate';
@@ -23,29 +21,27 @@ export const createParagraph = (text: string, mark?: string) => {
 export const createList = (
   items: string[],
   { splitSeparator = '`' }: { splitSeparator?: string } = {}
-): SlateDocumentFragment => {
-  const children = items.map(
-    (item): SlateDocumentDescendant => {
-      const texts = item.split(splitSeparator);
-      const marks: Text[] = texts.map((text, index) => {
-        const res: any = { text };
-        if (index % 2 === 1) {
-          res.code = true;
-        }
-        return res;
-      });
+): TElement[] => {
+  const children: TElement[] = items.map((item) => {
+    const texts = item.split(splitSeparator);
+    const marks: Text[] = texts.map((text, index) => {
+      const res: any = { text };
+      if (index % 2 === 1) {
+        res.code = true;
+      }
+      return res;
+    });
 
-      return {
-        type: options[ELEMENT_LI].type,
-        children: [
-          {
-            type: options[ELEMENT_PARAGRAPH].type,
-            children: marks,
-          },
-        ],
-      } as TElement;
-    }
-  ) as SlateDocumentFragment;
+    return {
+      type: options[ELEMENT_LI].type,
+      children: [
+        {
+          type: options[ELEMENT_PARAGRAPH].type,
+          children: marks,
+        },
+      ],
+    };
+  });
 
   return [
     {

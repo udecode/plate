@@ -18,7 +18,7 @@ export const useSlatePluginsActions = (
 ): SlatePluginsActions => {
   const storeKeys = useSlatePluginsStore((s) => Object.keys(s), shallow);
 
-  const stateId = storeId ?? storeKeys[0] ?? 'main';
+  const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
     const setEditor: SlatePluginsActions['setEditor'] = getSetStateByKey<
@@ -30,34 +30,33 @@ export const useSlatePluginsActions = (
     return {
       setEditor,
       setValue,
-      clearState: (id = stateId) => {
+      clearState: (id = stateId) =>
+        id &&
         set((state) => {
           delete state[id];
-          return state;
-        });
-      },
-      setInitialState: (v = {}, id = stateId) =>
+        }),
+      setInitialState: (
+        {
+          enabled = true,
+          value = [{ children: [{ text: '' }] }],
+          plugins = [],
+          pluginKeys = [],
+        } = {},
+        id = stateId
+      ) =>
+        id &&
         set((state) => {
-          const {
-            enabled = true,
-            value = [{ children: [{ text: '' }] }],
-            plugins = [],
-            pluginKeys = [],
-          } = v;
+          if (state[id]) return;
 
-          return state[id]
-            ? state
-            : {
-                [id]: {
-                  enabled,
-                  plugins,
-                  pluginKeys,
-                  value,
-                },
-              };
+          state[id] = {
+            enabled,
+            plugins,
+            pluginKeys,
+            value,
+          };
         }),
       resetEditor: (id = stateId) => {
-        const state = get()[id];
+        const state = !!id && get()[id];
         if (!state) return;
         const { editor, plugins } = state;
 

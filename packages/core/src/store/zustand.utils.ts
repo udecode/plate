@@ -7,16 +7,21 @@ export const getStateById = (state: SlatePluginsState, id: string) => {
   return state[id] ?? {};
 };
 
-export const mergeState = (stateToMerge: Partial<State>, stateId: string) => {
+export const mergeState = (stateToMerge: Partial<State>, stateId?: string) =>
+  stateId &&
   set((state) => ({
     [stateId]: { ...getStateById(state, stateId), ...stateToMerge },
   }));
-};
 
-export const getSetStateByKey = <T>(key: string, stateId: string) => (
+export const getSetStateByKey = <T>(key: string, stateId?: string) => (
   value: T,
   id = stateId
 ) =>
-  set((state) => ({
-    [id]: { ...getStateById(state, id), [key]: value },
-  }));
+  id &&
+  set((state) => {
+    if (!state[id]) return;
+
+    return {
+      [id]: { ...getStateById(state, id), [key]: value },
+    };
+  });

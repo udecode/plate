@@ -28,6 +28,7 @@ export const useSlatePluginsEffects = ({
   plugins,
 }: UseSlatePluginsEffectsOptions) => {
   const {
+    setInitialState,
     setValue,
     setEditor,
     setPlugins,
@@ -37,7 +38,6 @@ export const useSlatePluginsEffects = ({
   } = useSlatePluginsActions(id);
   const storeEditor = useStoreEditor(id);
   const storeEnabled = useStoreEditorEnabled(id);
-  // const storeState = useStoreState(id);
   const storePlugins = useStoreSlatePlugins(id);
 
   // Clear the state on unmount.
@@ -45,31 +45,17 @@ export const useSlatePluginsEffects = ({
     () => () => {
       clearState();
     },
-    [clearState]
+    [clearState, id]
   );
 
-  // const a = useSlatePluginsStore((s) => Object.keys(s));
-  // console.log(a);
-
-  // useEffect(() => {
-  //   if (!storeState) {
-  //     setInitialState({
-  //       enabled: true,
-  //       plugins: [],
-  //       pluginKeys: [],
-  //       value: [],
-  //     });
-  //   }
-  // }, [
-  //   clearState,
-  //   enabled,
-  //   id,
-  //   initialValue,
-  //   plugins,
-  //   setInitialState,
-  //   storeState,
-  //   value,
-  // ]);
+  useEffect(() => {
+    setInitialState({
+      enabled: true,
+      plugins: [],
+      pluginKeys: [],
+      value: [],
+    });
+  }, [setInitialState]);
 
   // Slate.value
   useEffect(() => {
