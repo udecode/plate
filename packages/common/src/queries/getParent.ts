@@ -1,4 +1,4 @@
-import { TAncestor } from '@udecode/slate-plugins-core';
+import { TAncestor, TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Location, NodeEntry } from 'slate';
 import { EditorParentOptions } from '../types/Editor.types';
 
@@ -7,7 +7,7 @@ import { EditorParentOptions } from '../types/Editor.types';
  * Returns undefined if there is no parent.
  */
 export const getParent = <T extends TAncestor = TAncestor>(
-  editor: Editor,
+  editor: TEditor,
   at: Location,
   options?: EditorParentOptions
 ): NodeEntry<T> | undefined => {

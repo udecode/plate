@@ -5,9 +5,10 @@ import {
   createReactPlugin,
   SlatePlugin,
   SlatePluginOptions,
+  TEditor,
   withSlatePlugins,
 } from '@udecode/slate-plugins-core';
-import { createEditor, Editor } from 'slate';
+import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { createSlatePluginsComponents } from './createSlatePluginsComponents';
 import {
@@ -30,7 +31,7 @@ export const createEditorPlugins = <T extends string = string>({
   options,
   components,
 }: {
-  editor?: Editor;
+  editor?: TEditor;
   plugins?: SlatePlugin[];
   options?: Partial<Record<SlatePluginKey | T, Partial<SlatePluginOptions>>>;
   components?: Partial<Record<SlatePluginKey | T, ReactNode>>;

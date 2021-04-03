@@ -73,8 +73,8 @@ type RenderElement = (
   props: TRenderElementProps
 ) => JSX.Element | undefined;
 type RenderLeaf = (props: RenderLeafProps) => JSX.Element;
-type OnKeyDown = (e: any, editor: Editor, props?: any) => void;
-type OnDOMBeforeInput = (event: Event, editor: Editor) => void;
+type OnKeyDown = (e: any, editor: TEditor, props?: any) => void;
+type OnDOMBeforeInput = (event: Event, editor: TEditor) => void;
 ```
 
 You can find its documentation at [https://docs.slatejs.org/](https://docs.slatejs.org/).

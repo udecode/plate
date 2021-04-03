@@ -2,6 +2,7 @@ import {
   InsertNodesOptions,
   isExpanded,
   isSelectionAtBlockStart,
+  setNodes,
   someNode,
   wrapNodes,
 } from '@udecode/slate-plugins-common';
@@ -10,7 +11,6 @@ import {
   SPEditor,
   TElement,
 } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
 /**
@@ -39,12 +39,12 @@ export const insertCodeBlock = (
     editor.insertBreak();
   }
 
-  Transforms.setNodes(
+  setNodes<TElement>(
     editor,
     {
       type: getSlatePluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: '' }],
-    } as any,
+    },
     insertNodesOptions
   );
 

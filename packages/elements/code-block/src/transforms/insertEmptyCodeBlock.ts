@@ -1,10 +1,11 @@
 import {
   ELEMENT_DEFAULT,
+  insertNodes,
   isBlockAboveEmpty,
   isExpanded,
 } from '@udecode/slate-plugins-common';
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { Editor, Path, Transforms } from 'slate';
+import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { Editor, Path } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
 
@@ -25,9 +26,9 @@ export const insertEmptyCodeBlock = (
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
     const selectionPath = Editor.path(editor, editor.selection);
     const insertPath = Path.next(selectionPath.slice(0, level + 1));
-    Transforms.insertNodes(
+    insertNodes<TElement>(
       editor,
-      { type: defaultType, children: [{ text: '' }] } as any,
+      { type: defaultType, children: [{ text: '' }] },
       {
         at: insertPath,
         select: true,

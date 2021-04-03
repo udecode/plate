@@ -1,4 +1,5 @@
-import { Editor, Location, Path, Point, Range } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
+import { Location, Path, Point, Range } from 'slate';
 
 /**
  * Get the point from a location (default: selection).
@@ -7,7 +8,7 @@ import { Editor, Location, Path, Point, Range } from 'slate';
  * If `focus` is true, get the focus point.
  */
 export const getPointFromLocation = (
-  editor: Editor,
+  editor: TEditor,
   {
     at = editor.selection,
     focus,

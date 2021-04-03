@@ -1,15 +1,17 @@
 import {
   ELEMENT_DEFAULT,
   getLastNode,
+  insertNodes,
   queryNode,
   QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
   isElement,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
-import { Path, Transforms } from 'slate';
+import { Path } from 'slate';
 
 export interface WithTrailingBlock extends QueryNodeOptions {
   /**
@@ -42,12 +44,12 @@ export const withTrailingBlock = ({
         lastNode.type !== type &&
         queryNode(entry, query)
       ) {
-        Transforms.insertNodes(
+        insertNodes<TElement>(
           editor,
           {
             type,
             children: [{ text: '' }],
-          } as any,
+          },
           { at: Path.next(lastPath) }
         );
         return;

@@ -1,4 +1,4 @@
-import { match } from '@udecode/slate-plugins-common';
+import { match, wrapNodes } from '@udecode/slate-plugins-common';
 import { SPEditor, TElement } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
@@ -33,9 +33,9 @@ export const moveListItemDown = (
 
     if (!sublist) {
       // Create new sublist
-      Transforms.wrapNodes(
+      wrapNodes(
         editor,
-        { type: listNode.type, children: [] } as any,
+        { type: listNode.type, children: [] },
         { at: listItemPath }
       );
     }

@@ -1,12 +1,11 @@
-import {
-  isBlockAboveEmpty,
-  SlateDocumentFragment,
-} from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
 import {
   getInlineTypes,
   getSlatePluginWithOverrides,
   SlatePlugin,
   SPEditor,
+  TDescendant,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
@@ -21,13 +20,13 @@ export interface WithDeserializeHTMLOptions {
    * Default: if the block above is empty and the first fragment node type is not inline,
    * set the selected node type to the first fragment node type.
    */
-  preInsert?: (fragment: SlateDocumentFragment) => SlateDocumentFragment;
+  preInsert?: (fragment: TDescendant[]) => TDescendant[];
 
   /**
    * Function called to insert the deserialized html.
    * Default: Transforms.insertFragment.
    */
-  insert?: (fragment: SlateDocumentFragment) => void;
+  insert?: (fragment: TDescendant[]) => void;
 }
 
 /**
@@ -53,7 +52,7 @@ export const withDeserializeHTML = ({
         firstNodeType &&
         !inlineTypes.includes(firstNodeType)
       ) {
-        Transforms.setNodes(editor, { type: fragment[0].type } as any);
+        setNodes<TElement>(editor, { type: fragment[0].type });
       }
 
       return fragment;

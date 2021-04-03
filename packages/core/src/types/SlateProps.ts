@@ -1,13 +1,11 @@
 import * as React from 'react';
-import { Node } from 'slate';
 import { ReactEditor } from 'slate-react';
-
-export type SlatePropsOnChange = (value: Node[]) => void;
+import { TDescendant } from './TDescendant';
 
 export interface SlateProps {
   [key: string]: unknown;
   editor: ReactEditor;
-  value: Node[];
+  value: TDescendant[];
   children: React.ReactNode;
-  onChange: SlatePropsOnChange;
+  onChange: (value: SlateProps['value']) => void;
 }

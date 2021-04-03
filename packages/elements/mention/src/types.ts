@@ -1,12 +1,12 @@
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { Element, Range } from 'slate';
+import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { Range } from 'slate';
 
 export interface MentionNodeData {
   value: string;
   [key: string]: any;
 }
 
-export interface MentionNode extends Element, MentionNodeData {}
+export type MentionNode = TElement<MentionNodeData>;
 
 // useMention options
 export interface MentionPluginOptions {

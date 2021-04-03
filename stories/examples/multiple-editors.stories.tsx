@@ -14,8 +14,8 @@ import {
   ELEMENT_IMAGE,
   SlatePlugin,
   SlatePlugins,
+  TNode,
 } from '@udecode/slate-plugins';
-import { Node } from 'slate';
 import styled from 'styled-components';
 import {
   initialValueBasicElements,
@@ -75,7 +75,7 @@ const Editor = ({
   plugins,
 }: {
   id?: string;
-  initialValue?: Node[];
+  initialValue?: TNode[];
   plugins?: SlatePlugin[];
 }) => (
   <WrapperEditor>

@@ -1,14 +1,15 @@
 import {
   ELEMENT_DEFAULT,
   getBlockAbove,
+  insertNodes,
   isExpanded,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   queryNode,
 } from '@udecode/slate-plugins-common';
-import { OnKeyDown } from '@udecode/slate-plugins-core';
+import { OnKeyDown, TEditor, TElement } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
-import { Editor, Path, Transforms } from 'slate';
+import { Editor, Path } from 'slate';
 import { ExitBreakOnKeyDownOptions } from './types';
 
 /**
@@ -16,7 +17,7 @@ import { ExitBreakOnKeyDownOptions } from './types';
  * If it is and if the selection is expanded, delete its content.
  */
 export const exitBreakAtEdges = (
-  editor: Editor,
+  editor: TEditor,
   {
     start,
     end,
@@ -88,9 +89,9 @@ export const getExitBreakOnKeyDown = ({
           insertPath = Path.next(selectionPath.slice(0, level + 1));
         }
 
-        Transforms.insertNodes(
+        insertNodes<TElement>(
           editor,
-          { type: defaultType, children: [{ text: '' }] } as any,
+          { type: defaultType, children: [{ text: '' }] },
           {
             at: insertPath,
             select: !isStart,

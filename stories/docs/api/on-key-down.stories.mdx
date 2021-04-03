@@ -32,7 +32,7 @@ export const onKeyDownBold = (options?: BoldPluginOptions) => {
 ### Custom
 
 ```js
-export const onKeyDownBold = ({ type, hotkey, clear }: MarkOnKeyDownOptions) => (e: any, editor: Editor) => {
+export const onKeyDownBold = ({ type, hotkey, clear }: MarkOnKeyDownOptions) => (e: any, editor: TEditor) => {
   if (isHotkey(hotkey, e)) {
     e.preventDefault();
     toggleMark(editor, type, clear);

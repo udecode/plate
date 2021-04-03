@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Path, Point, Range, Span } from 'slate';
 
 export interface UnhangRangeOptions {
@@ -10,7 +11,7 @@ export interface UnhangRangeOptions {
  * Return {@link Editor.unhangRange} if `unhang` is true and if `at` (default: selection) is a range.
  */
 export const unhangRange = (
-  editor: Editor,
+  editor: TEditor,
   options: UnhangRangeOptions = {}
 ) => {
   const { at = editor.selection, voids, unhang = true } = options;

@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import {
   Editor,
   Location,
@@ -10,7 +11,7 @@ import {
 import { mergeNodes } from './mergeNodes';
 
 export const deleteFragment = (
-  editor: Editor,
+  editor: TEditor,
   options: {
     at?: Location;
     distance?: number;
@@ -19,8 +20,8 @@ export const deleteFragment = (
     hanging?: boolean;
     voids?: boolean;
     test?: any;
-    moveNode?: (editor: Editor, options: { at: Path; to: Path }) => void;
-    removeEmptyAncestor?: (editor: Editor, options: { at: Path }) => void;
+    moveNode?: (editor: TEditor, options: { at: Path; to: Path }) => void;
+    removeEmptyAncestor?: (editor: TEditor, options: { at: Path }) => void;
   } = {}
 ): void => {
   Editor.withoutNormalizing(editor, () => {
