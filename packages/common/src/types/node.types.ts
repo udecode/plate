@@ -1,1 +1,1 @@
-export const ELEMENT_DEFAULT = 'div';
+export const ELEMENT_DEFAULT = 'p';
