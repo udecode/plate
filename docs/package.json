@@ -11,15 +11,23 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "tailwind": "tailwind build tailwind/tailwind.css -o src/css/tailwind.output.css",
+    "tailwind:w": "nodemon --exec \"tailwind build tailwind/tailwind.css -o src/css/tailwind.output.css\""
   },
   "dependencies": {
     "@docusaurus/core": "2.0.0-alpha.72",
     "@docusaurus/preset-classic": "2.0.0-alpha.72",
+    "@docusaurus/theme-live-codeblock": "^2.0.0-alpha.72",
     "@mdx-js/react": "^1.6.21",
     "clsx": "^1.1.1",
+    "docusaurus-plugin-sass": "^0.1.12",
+    "my-loaders": "file:plugins/my-loaders",
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "react-icons": "^4.2.0",
+    "styled-icons": "^10.31.0",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "browserslist": {
     "production": [
@@ -39,6 +47,7 @@
     "@types/react": "^17.0.3",
     "@types/react-helmet": "^6.1.0",
     "@types/react-router-dom": "^5.1.7",
+    "nodemon": "^2.0.7",
     "typescript": "^4.2.3"
   }
 }

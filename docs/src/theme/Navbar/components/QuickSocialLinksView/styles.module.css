@@ -1,0 +1,18 @@
+.IconContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 25px;
+
+    cursor: pointer;
+    color: var(--ifm-navbar-link-color);
+}
+
+.Icon:hover {
+    color: var(--ifm-navbar-link-active-color);
+}
