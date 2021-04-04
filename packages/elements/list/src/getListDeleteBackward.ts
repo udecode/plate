@@ -1,5 +1,6 @@
 import {
   deleteFragment,
+  ELEMENT_DEFAULT,
   isCollapsed,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
@@ -11,7 +12,7 @@ import { hasListChild } from './queries/hasListChild';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
-import { ELEMENT_LI, ELEMENT_LIC } from './defaults';
+import { ELEMENT_LI } from './defaults';
 
 export const getListDeleteBackward = (
   editor: SPEditor,
@@ -56,7 +57,7 @@ export const getListDeleteBackward = (
     rules: [
       {
         types: [getSlatePluginType(editor, ELEMENT_LI)],
-        defaultType: getSlatePluginType(editor, ELEMENT_LIC),
+        defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
         predicate: () => isSelectionAtBlockStart(editor),
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },

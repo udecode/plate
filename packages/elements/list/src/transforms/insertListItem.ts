@@ -19,12 +19,12 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
  */
 export const insertListItem = (editor: SPEditor) => {
   const liType = getSlatePluginType(editor, ELEMENT_LI);
-  const cType = getSlatePluginType(editor, ELEMENT_LIC);
+  const licType = getSlatePluginType(editor, ELEMENT_LIC);
 
   if (editor.selection) {
-    const paragraphEntry = getAbove(editor, { match: { type: cType } });
-    if (!paragraphEntry) return;
-    const [, paragraphPath] = paragraphEntry;
+    const licEntry = getAbove(editor, { match: { type: licType } });
+    if (!licEntry) return;
+    const [, paragraphPath] = licEntry;
 
     const listItemEntry = getParent(editor, paragraphPath);
     if (!listItemEntry) return;
@@ -54,7 +54,7 @@ export const insertListItem = (editor: SPEditor) => {
         editor,
         {
           type: liType,
-          children: [{ type: cType, children: [{ text: '' }] }],
+          children: [{ type: licType, children: [{ text: '' }] }],
         },
         { at: listItemPath }
       );
@@ -93,7 +93,7 @@ export const insertListItem = (editor: SPEditor) => {
         editor,
         {
           type: liType,
-          children: [{ type: cType, children: [{ text: '', ...marks }] }],
+          children: [{ type: licType, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );

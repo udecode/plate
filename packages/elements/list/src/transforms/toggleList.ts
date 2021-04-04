@@ -1,4 +1,5 @@
 import {
+  ELEMENT_DEFAULT,
   getNodes,
   setNodes,
   someNode,
@@ -20,7 +21,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
   unwrapList(editor);
 
   setNodes<TElement>(editor, {
-    type: getSlatePluginType(editor, ELEMENT_LIC),
+    type: getSlatePluginType(editor, ELEMENT_DEFAULT),
   });
 
   if (!isActive) {
@@ -29,9 +30,10 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
 
     const nodes = [
       ...getNodes(editor, {
-        match: { type: getSlatePluginType(editor, ELEMENT_LIC) },
+        match: { type: getSlatePluginType(editor, ELEMENT_DEFAULT) },
       }),
     ];
+    setNodes(editor, { type: getSlatePluginType(editor, ELEMENT_LIC) });
 
     const listItem = {
       type: getSlatePluginType(editor, ELEMENT_LI),
