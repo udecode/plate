@@ -19,6 +19,7 @@ const output = (
     <hh1>test</hh1>
     <hh1>test2</hh1>
     <hp>p</hp>
+    <hdefault />
   </editor>
 ) as any;
 

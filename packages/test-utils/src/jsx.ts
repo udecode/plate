@@ -1,3 +1,4 @@
+import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
 import { createHyperscript } from 'slate-hyperscript';
 import { createText } from './hyperscript/creators';
 
@@ -69,6 +70,7 @@ export const jsx = createHyperscript({
     htodoli: { type: ELEMENT_TODO_LI },
     htr: { type: ELEMENT_TR },
     hul: { type: ELEMENT_UL },
+    hdefault: { type: ELEMENT_DEFAULT },
   },
   creators: {
     htext: createText,

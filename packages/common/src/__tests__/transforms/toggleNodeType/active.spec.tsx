@@ -18,10 +18,10 @@ const input = ((
 
 const output = (
   <editor>
-    <hp>
+    <hdefault>
       test
       <cursor />
-    </hp>
+    </hdefault>
   </editor>
 ) as any;
 

@@ -21,7 +21,7 @@ const output = (
   <editor>
     <hul>
       <hli>
-        <hp>hello</hp>
+        <hdefault>hello</hdefault>
       </hli>
     </hul>
   </editor>
