@@ -1,5 +1,4 @@
 import {
-  ELEMENT_DEFAULT,
   getAbove,
   getParent,
   insertNodes,
@@ -12,7 +11,7 @@ import {
   TElement,
 } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range, Transforms } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 
 /**
  * Insert list item if selection in li>p.
@@ -20,10 +19,10 @@ import { ELEMENT_LI } from '../defaults';
  */
 export const insertListItem = (editor: SPEditor) => {
   const liType = getSlatePluginType(editor, ELEMENT_LI);
-  const pType = getSlatePluginType(editor, ELEMENT_DEFAULT);
+  const cType = getSlatePluginType(editor, ELEMENT_LIC);
 
   if (editor.selection) {
-    const paragraphEntry = getAbove(editor, { match: { type: pType } });
+    const paragraphEntry = getAbove(editor, { match: { type: cType } });
     if (!paragraphEntry) return;
     const [, paragraphPath] = paragraphEntry;
 
@@ -55,7 +54,7 @@ export const insertListItem = (editor: SPEditor) => {
         editor,
         {
           type: liType,
-          children: [{ type: pType, children: [{ text: '' }] }],
+          children: [{ type: cType, children: [{ text: '' }] }],
         },
         { at: listItemPath }
       );
@@ -94,7 +93,7 @@ export const insertListItem = (editor: SPEditor) => {
         editor,
         {
           type: liType,
-          children: [{ type: pType, children: [{ text: '', ...marks }] }],
+          children: [{ type: cType, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );
