@@ -1,4 +1,3 @@
-import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
 import { createHyperscript } from 'slate-hyperscript';
 import { createText } from './hyperscript/creators';
 
@@ -27,6 +26,7 @@ const ELEMENT_UL = 'ul';
 const ELEMENT_BLOCKQUOTE = 'blockquote';
 const ELEMENT_CODE_BLOCK = 'code_block';
 const ELEMENT_CODE_LINE = 'code_line';
+const ELEMENT_DIV = 'div';
 
 declare global {
   namespace JSX {
@@ -70,7 +70,7 @@ export const jsx = createHyperscript({
     htodoli: { type: ELEMENT_TODO_LI },
     htr: { type: ELEMENT_TR },
     hul: { type: ELEMENT_UL },
-    hdefault: { type: ELEMENT_DEFAULT },
+    hdefault: { type: ELEMENT_DIV },
   },
   creators: {
     htext: createText,
