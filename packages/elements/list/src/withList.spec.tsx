@@ -28,10 +28,10 @@ describe('normalizeList', () => {
         <editor>
           <hul>
             <hli>
-              <hdefault>
+              <hlic>
                 hello <ha>link</ha>
                 <htext />
-              </hdefault>
+              </hlic>
             </hli>
           </hul>
         </editor>
