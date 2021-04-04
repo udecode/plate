@@ -26,6 +26,7 @@ const ELEMENT_UL = 'ul';
 const ELEMENT_BLOCKQUOTE = 'blockquote';
 const ELEMENT_CODE_BLOCK = 'code_block';
 const ELEMENT_CODE_LINE = 'code_line';
+const ELEMENT_LIC = 'lic';
 
 declare global {
   namespace JSX {
@@ -69,6 +70,8 @@ export const jsx = createHyperscript({
     htodoli: { type: ELEMENT_TODO_LI },
     htr: { type: ELEMENT_TR },
     hul: { type: ELEMENT_UL },
+    hdefault: { type: ELEMENT_PARAGRAPH },
+    hlic: { type: ELEMENT_LIC },
   },
   creators: {
     htext: createText,

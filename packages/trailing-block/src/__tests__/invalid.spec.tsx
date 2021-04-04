@@ -18,9 +18,9 @@ const output = (
   <editor>
     <hh1>test</hh1>
     <hh1>test2</hh1>
-    <hp>
+    <hdefault>
       <htext />
-    </hp>
+    </hdefault>
   </editor>
 ) as any;
 
