@@ -1,54 +1,58 @@
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 
 const githubOrgUrl = 'https://github.com/udecode';
-const domain = 'https://slate-plugins-next.netlify.app/';
+const projectName = 'slate-plugins';
+const githubUrl = `${githubOrgUrl}/${projectName}`;
+const domain = 'https://slate-plugins-next.udecode.io';
+const domainExamples = domain;
+const domainAPI = 'https://slate-plugins-api.udecode.io/globals.html';
 const npmOrgUrl = 'https://www.npmjs.com/package/@udecode';
 
 const customFields = {
+  title: 'Slate Plugins',
+  tagline: 'Build your editor in a clean way.',
   copyright: `© ${new Date().getFullYear()} Ziad Beyens. All rights reserved.`,
   domain,
   githubOrgUrl,
-  githubUrl: `${githubOrgUrl}/slate-plugins`,
-  githubDocsUrl: `${githubOrgUrl}/slate-plugins/docs`,
+  githubUrl,
+  githubDocsUrl: `${githubOrgUrl}/docs`,
   npmCoreUrl: `${npmOrgUrl}/slate-plugins`,
   announcementBarContent:
     'If you like slate-plugins, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/udecode/slate-plugins">GitHub</a> 🎉 !️',
 };
 
 module.exports = {
-  title: 'Slate Plugins',
-  tagline: 'A plugin framework for building rich text editors with slate',
+  title: customFields.title,
+  tagline: customFields.tagline,
   url: customFields.domain,
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'udecode', // Usually your GitHub org/user name.
-  projectName: 'slate-plugins', // Usually your repo name.
+  projectName, // Usually your repo name.
   themes: ['@docusaurus/theme-live-codeblock'],
-  plugins: ['docusaurus-plugin-sass', 'my-loaders'],
+  plugins: ['docusaurus-plugin-sass'],
   customFields: { ...customFields },
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
     },
-    announcementBar: {
-      id: 'github-star',
-      content: customFields.announcementBarContent,
-      backgroundColor: '#ff6288',
-      textColor: 'white',
-    },
+    // announcementBar: {
+    //   id: 'github-star',
+    //   content: customFields.announcementBarContent,
+    // },
     prism: {
       defaultLanguage: 'typescript',
-      theme: require('prism-react-renderer/themes/github'),
+      theme: require('prism-react-renderer/themes/dracula'),
       darkTheme: require('prism-react-renderer/themes/dracula'),
     },
     navbar: {
       title: 'Slate Plugins',
-      // logo: {
-      //   alt: 'Slate Plugins Logo',
-      //   src: 'img/logo.svg',
-      // },
+      logo: {
+        alt: 'Slate Plugins Logo',
+        src: 'img/logo.svg',
+      },
       hideOnScroll: true,
       items: [
         {
@@ -67,19 +71,19 @@ module.exports = {
         {
           // A full-page navigation, used for navigating outside of the website.
           // You should only use either `to` or `href`.
-          href: 'https://slate-plugins-next.netlify.app/',
+          href: domainExamples,
           label: 'Examples',
           position: 'right',
         },
         {
-          href: 'https://slate-plugins-api.netlify.app/globals.html',
+          href: domainAPI,
           label: 'API',
           position: 'right',
         },
         {
           // A full-page navigation, used for navigating outside of the website.
           // You should only use either `to` or `href`.
-          href: 'https://github.com/udecode/slate-plugins',
+          href: githubUrl,
           label: 'GitHub',
           position: 'right',
         },
@@ -93,41 +97,53 @@ module.exports = {
       // style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'RESOURCES',
           items: [
             {
-              label: 'Getting Started',
+              label: 'Docs',
               to: 'docs/',
             },
+            {
+              label: 'Examples',
+              to: domainExamples,
+            },
+            {
+              label: 'API Reference',
+              to: domainAPI,
+            },
+            {
+              label: 'Releases',
+              href: `${githubUrl}/releases`,
+            },
           ],
         },
         {
-          title: 'Community',
+          title: 'COMMUNITY',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Forum & Support',
+              href: `${githubUrl}/discussions`,
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              label: 'Stargazers',
+              href: `${githubUrl}/stargazers`,
             },
+            {
+              label: 'Slack',
+              href: 'https://slate-js.slack.com/messages/slate-plugins',
+            },
+          ],
+        },
+        {
+          title: 'MORE',
+          items: [
             {
               label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: 'blog',
+              href: 'https://twitter.com/zbeyens',
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/zbeyens',
             },
           ],
         },

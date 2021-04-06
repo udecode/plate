@@ -16,6 +16,12 @@
 // Admonitions
 // ==============================================================================
 
+//.admonition,
+//.admonition-icon {
+//  color: white;
+//  ring-color: white;
+//}
+
 .admonition-success {
   background-color: var(--ifm-admonition-background-color-success);
   border-left-color: var(--ifm-admonition-color-success);
@@ -30,6 +36,11 @@
 .admonition-danger {
   background-color: var(--ifm-admonition-background-color-error);
   border-left-color: var(--ifm-admonition-color-error);
+}
+
+.admonition {
+  color: white;
+  --ra-admonition-icon-color: white;
 }
 
 //.admonition-secondary,

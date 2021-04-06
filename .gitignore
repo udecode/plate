@@ -103,4 +103,3 @@ storybook-static/
 
 # Local
 packages/slate-plugins/docs/
-docs/src/css/tailwind.output.css

@@ -11,12 +11,7 @@
   --ifm-color-orange-dark: #f25a00;
   --ifm-color-green: #6aaf19;
   --ifm-color-red: #f92672;
-  //--ifm-color-red: rgb(255, 121, 198);
   --ifm-color-yellow: #feec4c;
-  --ifm-color-gray: #9f9f8f;
-  --ifm-color-text-gray: rgba(159, 166, 178);
-  --ifm-color-divider: rgb(210, 214, 220);
-  --ifm-color-gray-light: rgb(249, 250, 251);
 
   // Background
   --ifm-color-background: var(--ifm-color-white);
@@ -52,30 +47,30 @@
   --ifm-lightest-value: 50%;
 
   --ifm-color-primary: var(--ifm-color-red);
-  --ifm-color-primary-dark: rgb(48, 108, 206);
-  --ifm-color-primary-darker: rgb(45, 102, 195);
-  --ifm-color-primary-darkest: rgb(37, 84, 160);
-  --ifm-color-primary-light: rgb(83, 140, 233);
-  --ifm-color-primary-lighter: rgb(114, 161, 237);
-  --ifm-color-primary-lightest: rgb(154, 188, 242);
+  --ifm-color-primary-dark: #f80a60;
+  --ifm-color-primary-darker: #ed075a;
+  --ifm-color-primary-darkest: #c3054a;
+  --ifm-color-primary-light: #fa4284;
+  --ifm-color-primary-lighter: #fa508d;
+  --ifm-color-primary-lightest: #fb7aa8;
 
-  --ifm-color-secondary: #ebedf0;
-  --ifm-color-secondary-dark: rgb(212, 213, 216);
-  --ifm-color-secondary-darker: rgb(200, 201, 204);
-  --ifm-color-secondary-darkest: rgb(164, 166, 168);
-  --ifm-color-secondary-light: rgb(238, 240, 242);
-  --ifm-color-secondary-lighter: rgb(241, 242, 245);
-  --ifm-color-secondary-lightest: rgb(245, 246, 248);
+  --ifm-color-secondary: var(--ifm-color-gray-100);
+  --ifm-color-secondary-dark: var(--ifm-color-gray-200);
+  --ifm-color-secondary-darker: var(--ifm-color-gray-300);
+  --ifm-color-secondary-darkest: var(--ifm-color-gray-400);
+  --ifm-color-secondary-light: var(--ifm-color-gray-100);
+  --ifm-color-secondary-lighter: var(--ifm-color-gray-50);
+  --ifm-color-secondary-lightest: var(--ifm-color-gray-50);
 
   --ifm-color-success: var(--ifm-color-green);
-  --ifm-color-success-dark: rgb(0, 148, 0);
-  --ifm-color-success-darker: rgb(0, 139, 0);
-  --ifm-color-success-darkest: rgb(0, 115, 0);
-  --ifm-color-success-light: rgb(38, 178, 38);
-  --ifm-color-success-lighter: rgb(77, 191, 77);
-  --ifm-color-success-lightest: rgb(128, 210, 128);
+  --ifm-color-success-dark: #5f9e17;
+  --ifm-color-success-darker: #5a9515;
+  --ifm-color-success-darkest: #4a7b11;
+  --ifm-color-success-light: #75c11c;
+  --ifm-color-success-lighter: #7ac91d;
+  --ifm-color-success-lightest: #8ae024;
 
-  --ifm-color-info: #54c7ec;
+  --ifm-color-info: var(--ifm-color-blue);
   --ifm-color-info-dark: rgb(76, 179, 212);
   --ifm-color-info-darker: rgb(71, 169, 201);
   --ifm-color-info-darkest: rgb(59, 139, 165);
@@ -103,15 +98,17 @@
   --ifm-color-black: #000;
 
   --ifm-color-gray-0: var(--ifm-color-white);
-  --ifm-color-gray-100: #f5f6f7;
-  --ifm-color-gray-200: #ebedf0;
-  --ifm-color-gray-300: #dadde1;
-  --ifm-color-gray-400: #ccd0d5;
-  --ifm-color-gray-500: #bec3c9;
-  --ifm-color-gray-600: #8d949e;
-  --ifm-color-gray-700: #606770;
-  --ifm-color-gray-800: #444950;
-  --ifm-color-gray-900: #1c1e21;
+  --ifm-color-gray-50: #f9fafb;
+  --ifm-color-gray-100: #f3f4f6;
+  --ifm-color-gray-200: #e5e7eb;
+  --ifm-color-gray-300: #d1d5db;
+  --ifm-color-gray-400: #9ca3af;
+  --ifm-color-gray: #9f9f8f;
+  --ifm-color-gray-500: #6b7280;
+  --ifm-color-gray-600: #4b5563;
+  --ifm-color-gray-700: #374151;
+  --ifm-color-gray-800: #1f2937;
+  --ifm-color-gray-900: #111827;
   --ifm-color-gray-1000: var(--ifm-color-black);
 
   --ifm-color-emphasis-0: var(--ifm-color-gray-0);
@@ -258,7 +255,7 @@
   --ifm-card-border-radius: calc(var(--ifm-global-radius) * 2);
   --ifm-card-horizontal-spacing: var(--ifm-global-spacing);
   --ifm-card-vertical-spacing: var(--ifm-global-spacing);
-  --ifm-toc-border-color: var(--ifm-color-divider);
+  --ifm-toc-border-color: var(--ifm-color-gray-200);
   --ifm-toc-link-color: var(--ifm-color-content-secondary);
   --ifm-toc-padding-vertical: 0.5rem;
   --ifm-toc-padding-horizontal: 0.5rem;
@@ -266,9 +263,9 @@
   --ifm-dropdown-font-weight: var(--ifm-font-weight-semibold);
   --ifm-dropdown-link-color: var(--ifm-font-color-base);
   --ifm-dropdown-hover-background-color: var(--ifm-hover-overlay);
-  --ifm-footer-background-color: var(--ifm-color-gray-light);
-  --ifm-footer-color: var(--ifm-color-text-gray);
-  --ifm-footer-link-color: var(--ifm-color-emphasis-700);
+  --ifm-footer-background-color: var(--ifm-color-gray-50);
+  --ifm-footer-color: var(--ifm-color-gray-400);
+  --ifm-footer-link-color: var(--ifm-color-emphasis-500);
   --ifm-footer-link-hover-color: var(--ifm-color-primary);
   --ifm-footer-link-horizontal-spacing: 0.5rem;
   --ifm-footer-padding-horizontal: calc(var(--ifm-spacing-horizontal) * 2);
@@ -334,13 +331,13 @@ html[data-theme="dark"] {
   --ifm-color-white-darkest: #c5c5e9;
   --ifm-color-pink: #ff79c6;
   --ifm-color-purple: #bd93f9;
-  --ifm-color-orange: #ffb86c;
+  //--ifm-color-orange: #ffb86c;
+  --ifm-color-orange: #fd971f;
   --ifm-color-orange-dark: #f25a00;
-  --ifm-color-green: #50fa7b;
+  --ifm-color-green: #49aa19;
   --ifm-color-red: #ff5555;
   //--ifm-color-red: rgb(255, 121, 198);
   --ifm-color-yellow: #f1fa8c;
-  --ifm-color-gray: #6272a4;
 
   // ==============================================================================
   // Theme Colors
@@ -349,18 +346,35 @@ html[data-theme="dark"] {
   // Primary
   // See 'General Docusaurs'
   --ifm-color-primary: var(--ifm-color-blue);
+  --ifm-color-primary-dark: #64e2fc;
+  --ifm-color-primary-darker: #51defc;
+  --ifm-color-primary-darkest: #17d3fb;
+  --ifm-color-primary-light: #b2f0fe;
+  --ifm-color-primary-lighter: #c5f4fe;
+  --ifm-color-primary-lightest: #ffffff;
+
+  --ifm-color-secondary: #ff79c6;
+  --ifm-color-secondary-dark: #ff53b6;
+  --ifm-color-secondary-darker: #ff41ae;
+  --ifm-color-secondary-darkest: #ff0896;
+  --ifm-color-secondary-light: #ff9fd6;
+  --ifm-color-secondary-lighter: #ffb1de;
+  --ifm-color-secondary-lightest: #ffeaf6;
+
   --ifm-color-on-primary: var(--ifm-color-black);
-  --ifm-color-white: #ffffff;
 
   // Background
-  --ifm-background-color: #272b36;
-  --ifm-background-surface-color: #272b36;
+  --ifm-background-color: var(--ifm-color-gray-800);
+  --ifm-background-surface-color: var(--ifm-color-gray-800);
   --ifm-color-background: var(--ifm-color-black-light);
   --ifm-color-background-2: var(--ifm-color-black-light);
   --ifm-color-background-3: var(--ifm-color-black-lighter);
   --ifm-color-on-background: var(--ifm-color-white);
   --ifm-color-on-background-2: var(--ifm-color-purple-lighter);
   --ifm-color-on-background-3: var(--ifm-color-purple-light);
+
+  --ifm-footer-background-color: var(--ifm-color-gray-800);
+  --ifm-footer-link-color: var(--ifm-color-gray-400);
 
   // Surface
   //--ifm-color-surface: var(--ifm-color-gray);
@@ -380,7 +394,12 @@ html[data-theme="dark"] {
   --ifm-color-success: var(--ifm-color-green);
   --ifm-color-on-success: var(--ifm-color-black);
 
+  --ifm-color-info: #28c6e4;
+
   // Error
   --ifm-color-error: var(--ifm-color-red);
   --ifm-color-on-error: var(--ifm-color-black);
+
+  --ifm-admonition-background-color-error: var(--ifm-color-red);
+  --ifm-admonition-color-error: var(--ifm-color-red);
 }
