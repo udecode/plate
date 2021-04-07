@@ -130,6 +130,17 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "karthikeyan676",
+      "name": "Karthikeyan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24937683?v=4",
+      "profile": "https://github.com/karthikeyan676",
+      "contributions": [
+        "plugin",
+        "example",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
