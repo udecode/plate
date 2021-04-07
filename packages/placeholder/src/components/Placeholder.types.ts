@@ -14,4 +14,5 @@ export interface PlaceholderStyleSet extends RootStyleSet {
 export interface PlaceholderProps
   extends StyledElementProps<{}, PlaceholderStyleProps, PlaceholderStyleSet> {
   placeholder: string;
+  hideOnBlur?: boolean;
 }

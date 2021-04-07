@@ -22,13 +22,16 @@ export const PlaceholderBase = ({
   styles,
   className,
   element,
+  hideOnBlur,
 }: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
   const canShowPlaceholder = useMemo(() => {
     const string = Node.string(element);
-    return (focused && selected && !string) || false;
-  }, [focused, selected, element]);
+    return (
+      (!hideOnBlur && !string) || (hideOnBlur && focused && selected && !string)
+    );
+  }, [element, hideOnBlur, focused, selected]);
   const classNames = getClassNames(styles, {
     className,
   });

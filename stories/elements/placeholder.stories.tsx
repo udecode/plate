@@ -12,6 +12,8 @@ import {
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   createSoftBreakPlugin,
+  ELEMENT_H1,
+  ELEMENT_H2,
   ELEMENT_PARAGRAPH,
   getPlaceholderElement,
   HeadingToolbar,
@@ -33,11 +35,32 @@ export default {
 };
 
 const components = createSlatePluginsComponents();
+
+const placeholders = {
+  [ELEMENT_PARAGRAPH]: {
+    label: "Type '/' to open weapons",
+    styles: {
+      placeholder: {},
+    },
+    hideOnBlur: true,
+  },
+  [ELEMENT_H1]: {
+    label: 'Heading 1',
+    styles: {
+      placeholder: {
+        fontSize: '30px',
+      },
+    },
+    hideOnBlur: false,
+  },
+};
 Object.keys(components).forEach((key) => {
-  if ([ELEMENT_PARAGRAPH].includes(key)) {
+  if (Object.keys(placeholders).includes(key)) {
     components[key] = getPlaceholderElement({
       component: components[key],
-      placeholder: 'Enter rich text here',
+      placeholder: placeholders[key].label,
+      styles: placeholders[key].styles,
+      hideOnBlur: placeholders[key].hideOnBlur,
     });
   }
 });
