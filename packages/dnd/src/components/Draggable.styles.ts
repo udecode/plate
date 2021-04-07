@@ -1,16 +1,16 @@
-import { SelectableStyleProps, SelectableStyleSet } from './Selectable.types';
+import { DraggableStyleProps, DraggableStyleSet } from './Draggable.types';
 
 const classNames = {
-  root: 'slate-Selectable',
+  root: 'slate-Draggable',
   gutterLeft: 'slate-gutter-left',
 };
 
-export const getSelectableStyles = ({
+export const getDraggableStyles = ({
   className,
   direction,
   isDragging,
   selected,
-}: SelectableStyleProps): SelectableStyleSet => {
+}: DraggableStyleProps): DraggableStyleSet => {
   return {
     root: [
       classNames.root,

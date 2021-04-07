@@ -7,7 +7,7 @@ import { createParagraphPlugin } from '../../../elements/paragraph/src/createPar
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { createSlatePluginsComponents } from '../../../slate-plugins/src/utils/createSlatePluginsComponents';
 import { createSlatePluginsOptions } from '../../../slate-plugins/src/utils/createSlatePluginsOptions';
-import { getSelectableElement } from './getSelectableElement';
+import { withDraggable } from './withDraggable';
 
 const options = createSlatePluginsOptions();
 const components = createSlatePluginsComponents();
@@ -24,9 +24,7 @@ const initialValue = [
 
 it('should render draggable component', () => {
   const _components = createSlatePluginsComponents({
-    p: getSelectableElement({
-      component: components[ELEMENT_PARAGRAPH],
-    }),
+    p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
   const { container } = render(
@@ -39,13 +37,13 @@ it('should render draggable component', () => {
       />
     </DndProvider>
   );
-  expect(container.querySelector('.slate-Selectable')).toBeInTheDocument();
+  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
 });
 
 // eslint-disable-next-line jest/no-commented-out-tests
 // it('should filter based on level', () => {
 //   const _components = createSlatePluginsComponents({
-//     p: getSelectableElement({
+//     p: getDraggableElement({
 //       component: components[ELEMENT_PARAGRAPH],
 //       level: 0,
 //     }),
@@ -61,14 +59,12 @@ it('should render draggable component', () => {
 //       />
 //     </DndProvider>
 //   );
-//   expect(container.querySelector('.slate-Selectable')).not.toBeInTheDocument();
+//   expect(container.querySelector('.slate-Draggable')).not.toBeInTheDocument();
 // });
 
 it('should not be draggable if readOnly', () => {
   const _components = createSlatePluginsComponents({
-    p: getSelectableElement({
-      component: components[ELEMENT_PARAGRAPH],
-    }),
+    p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
   const { container } = render(
@@ -82,13 +78,12 @@ it('should not be draggable if readOnly', () => {
       />
     </DndProvider>
   );
-  expect(container.querySelector('.slate-Selectable')).not.toBeInTheDocument();
+  expect(container.querySelector('.slate-Draggable')).not.toBeInTheDocument();
 });
 
 it('should be draggable in readOnly if allowReadOnly', () => {
   const _components = createSlatePluginsComponents({
-    p: getSelectableElement({
-      component: components[ELEMENT_PARAGRAPH],
+    p: withDraggable(components[ELEMENT_PARAGRAPH], {
       allowReadOnly: true,
     }),
   });
@@ -103,5 +98,5 @@ it('should be draggable in readOnly if allowReadOnly', () => {
       />
     </DndProvider>
   );
-  expect(container.querySelector('.slate-Selectable')).toBeInTheDocument();
+  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
 });

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 
 /**
- * Get component with additional props.
+ * HOC adding props.
  */
-export const getComponent: <T>(
+export const withProps: <T>(
   Component: FunctionComponent<T>,
   props: Partial<T>
 ) => FunctionComponent<any> = (Component, props) => (_props) => (

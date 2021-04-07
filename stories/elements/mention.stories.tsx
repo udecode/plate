@@ -6,12 +6,12 @@ import {
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   ELEMENT_MENTION,
-  getComponent,
   MentionElement,
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
   useMentionPlugin,
+  withProps,
 } from '@udecode/slate-plugins';
 import { initialValueMentions } from '../config/initialValues';
 import { editableProps, optionsMentionPlugin } from '../config/pluginOptions';
@@ -24,7 +24,7 @@ export default {
 };
 
 const components = createSlatePluginsComponents({
-  [ELEMENT_MENTION]: getComponent(MentionElement, {
+  [ELEMENT_MENTION]: withProps(MentionElement, {
     renderLabel: renderMentionLabel,
   }),
 });

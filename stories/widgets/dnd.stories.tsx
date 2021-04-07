@@ -22,9 +22,9 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  getComponent,
-  getSelectableElement,
   StyledElement,
+  withDraggables,
+  withProps,
 } from '@udecode/slate-plugins';
 import { Plugins } from '../examples/playground.stories';
 
@@ -34,8 +34,8 @@ export default {
   title: id,
 };
 
-const components = createSlatePluginsComponents({
-  [ELEMENT_PARAGRAPH]: getComponent(StyledElement, {
+let components = createSlatePluginsComponents({
+  [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
     styles: {
       root: {
         margin: 0,
@@ -45,52 +45,45 @@ const components = createSlatePluginsComponents({
   }),
 });
 
-Object.keys(components).forEach((key) => {
-  if (
-    [
-      ELEMENT_PARAGRAPH,
-      ELEMENT_BLOCKQUOTE,
-      ELEMENT_TODO_LI,
-      ELEMENT_H1,
-      ELEMENT_H2,
-      ELEMENT_H3,
-      ELEMENT_H4,
-      ELEMENT_H5,
-      ELEMENT_H6,
-      ELEMENT_IMAGE,
-      ELEMENT_LINK,
-      ELEMENT_OL,
-      ELEMENT_UL,
-      ELEMENT_TABLE,
-      ELEMENT_MEDIA_EMBED,
-      ELEMENT_CODE_BLOCK,
-    ].includes(key)
-  ) {
-    const rootKeys = [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL];
-
-    components[key] = getSelectableElement({
-      component: components[key],
-      level: rootKeys.includes(key) ? 0 : undefined,
-      dragIcon: (
-        <DragIndicator
-          style={{
-            width: 18,
-            height: 18,
-            color: 'rgba(55, 53, 47, 0.3)',
-          }}
-        />
-      ),
-      styles: {
-        blockAndGutter: {
-          padding: '4px 0',
-        },
-        blockToolbarWrapper: {
-          height: '1.5em',
-        },
-      },
-    });
-  }
+components = withDraggables(components, {
+  pluginKeys: [
+    ELEMENT_PARAGRAPH,
+    ELEMENT_BLOCKQUOTE,
+    ELEMENT_TODO_LI,
+    ELEMENT_H1,
+    ELEMENT_H2,
+    ELEMENT_H3,
+    ELEMENT_H4,
+    ELEMENT_H5,
+    ELEMENT_H6,
+    ELEMENT_IMAGE,
+    ELEMENT_LINK,
+    ELEMENT_OL,
+    ELEMENT_UL,
+    ELEMENT_TABLE,
+    ELEMENT_MEDIA_EMBED,
+    ELEMENT_CODE_BLOCK,
+  ],
+  rootPluginKeys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+  dragIcon: (
+    <DragIndicator
+      style={{
+        width: 18,
+        height: 18,
+        color: 'rgba(55, 53, 47, 0.3)',
+      }}
+    />
+  ),
+  styles: {
+    blockAndGutter: {
+      padding: '4px 0',
+    },
+    blockToolbarWrapper: {
+      height: '1.5em',
+    },
+  },
 });
+
 const options = createSlatePluginsOptions();
 
 export const Example = () => (
