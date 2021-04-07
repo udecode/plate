@@ -72,7 +72,8 @@
     "@udecode/slate-plugins-table-ui": "^1.0.0-alpha.16",
     "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.16",
     "@udecode/slate-plugins-trailing-block": "^1.0.0-alpha.16",
-    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.16"
+    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.16",
+    "@udecode/slate-plugins-placeholder": "^1.0.0-alpha.1"
   },
   "publishConfig": {
     "access": "public"
