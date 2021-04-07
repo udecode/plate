@@ -4,27 +4,27 @@ import Tippy from '@tippyjs/react';
 import { mergeStyles } from '@uifabric/styling';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useDndBlock } from '../hooks/useDndBlock';
-import { grabberTooltipProps } from './grabberTooltipProps';
-import { getSelectableStyles } from './Selectable.styles';
+import { getDraggableStyles } from './Draggable.styles';
 import {
-  SelectableProps,
-  SelectableStyleProps,
-  SelectableStyleSet,
-} from './Selectable.types';
+  DraggableProps,
+  DraggableStyleProps,
+  DraggableStyleSet,
+} from './Draggable.types';
+import { grabberTooltipProps } from './grabberTooltipProps';
 
 const getClassNames = classNamesFunction<
-  SelectableStyleProps,
-  SelectableStyleSet
+  DraggableStyleProps,
+  DraggableStyleSet
 >();
 
-export const SelectableBase = ({
+export const DraggableBase = ({
   children,
   element,
   className,
   styles,
   componentRef,
   dragIcon,
-}: SelectableProps) => {
+}: DraggableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const multiRootRef = useMergedRef(componentRef, rootRef);
@@ -83,10 +83,10 @@ export const SelectableBase = ({
   );
 };
 
-export const Selectable = styled<
-  SelectableProps,
-  SelectableStyleProps,
-  SelectableStyleSet
->(SelectableBase, getSelectableStyles, undefined, {
-  scope: 'Selectable',
+export const Draggable = styled<
+  DraggableProps,
+  DraggableStyleProps,
+  DraggableStyleSet
+>(DraggableBase, getDraggableStyles, undefined, {
+  scope: 'Draggable',
 });

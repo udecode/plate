@@ -39,7 +39,6 @@ import {
   ELEMENT_IMAGE,
   ELEMENT_MENTION,
   ELEMENT_PARAGRAPH,
-  getComponent,
   HeadingToolbar,
   MentionElement,
   MentionSelect,
@@ -50,6 +49,7 @@ import {
   ToolbarSearchHighlight,
   useFindReplacePlugin,
   useMentionPlugin,
+  withProps,
 } from '@udecode/slate-plugins';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
@@ -77,7 +77,7 @@ export default {
 };
 
 const defaultComponents = createSlatePluginsComponents({
-  [ELEMENT_MENTION]: getComponent(MentionElement, {
+  [ELEMENT_MENTION]: withProps(MentionElement, {
     renderLabel: renderMentionLabel,
   }),
 });

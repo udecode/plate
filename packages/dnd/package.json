@@ -40,8 +40,8 @@
     "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.16",
     "@uifabric/styling": "^7.18.0",
     "@uifabric/utilities": "^7.33.4",
-    "react-dnd": "^13.1.1",
-    "react-dnd-html5-backend": "^12.1.1"
+    "react-dnd": "^14.0.2",
+    "react-dnd-html5-backend": "^14.0.0"
   },
   "publishConfig": {
     "access": "public"

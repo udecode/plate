@@ -6,7 +6,7 @@ import {
 } from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
 
-export interface SelectableStyleProps extends ClassName {
+export interface DraggableStyleProps extends ClassName {
   direction: '' | 'top' | 'bottom';
   isDragging: boolean;
 
@@ -14,7 +14,7 @@ export interface SelectableStyleProps extends ClassName {
   selected?: boolean;
 }
 
-export interface SelectableStyleSet extends RootStyleSet {
+export interface DraggableStyleSet extends RootStyleSet {
   /**
    * Block and gutter.
    */
@@ -58,8 +58,8 @@ export interface SelectableStyleSet extends RootStyleSet {
   dropLine?: IStyle;
 }
 
-export interface SelectableProps
-  extends StyledElementProps<{}, SelectableStyleProps, SelectableStyleSet> {
+export interface DraggableProps
+  extends StyledElementProps<{}, DraggableStyleProps, DraggableStyleSet> {
   componentRef?: any;
 
   dragIcon?: React.ReactNode;
