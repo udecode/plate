@@ -38,7 +38,9 @@ export const PlaceholderBase = ({
   return (
     <div className={classNames.root}>
       {canShowPlaceholder ? (
-        <span className={classNames.placeholder}>{placeholder}</span>
+        <span className={classNames.placeholder} contentEditable={false}>
+          {placeholder}
+        </span>
       ) : null}
       {children}
     </div>
