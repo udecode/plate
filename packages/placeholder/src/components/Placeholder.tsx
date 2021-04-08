@@ -36,18 +36,21 @@ export const PlaceholderBase = ({
 
   const classNames = getClassNames(styles, {
     className,
+    enabled,
   });
 
-  return (
-    <div className={classNames.root}>
-      {children}
-      {enabled && (
-        <span className={classNames.placeholder} contentEditable={false}>
-          {placeholder}
-        </span>
-      )}
-    </div>
-  );
+  return React.Children.map(children, (child) => {
+    const Element = child.props.element.type;
+    return (
+      <Element
+        {...child.props.attributes}
+        className={`${child.props.className} ${classNames.root}`}
+        placeholder={placeholder}
+      >
+        {child.props.children}
+      </Element>
+    );
+  });
 };
 
 export const Placeholder = styled<

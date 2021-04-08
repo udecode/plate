@@ -9,9 +9,24 @@ const classNames = {
 
 export const getPlaceholderStyles = ({
   className,
+  enabled,
 }: PlaceholderStyleProps): PlaceholderStyleSet => {
   return {
-    root: [classNames.root, className, { position: 'relative' }],
+    root: [
+      classNames.root,
+      className,
+      {
+        position: 'relative',
+        selectors: {
+          '::before': {
+            content: 'attr(placeholder)',
+            display: 'block',
+            position: 'absolute',
+            opacity: enabled ? 0.3 : 0,
+          },
+        },
+      },
+    ],
     placeholder: [
       {
         position: 'absolute',
