@@ -1,5 +1,3 @@
-const path = require('path');
-
 module.exports = {
   stories: [
     '../stories/docs/**/intro.stories.mdx',
@@ -10,8 +8,9 @@ module.exports = {
     '../stories/examples/**/*.stories.@(tsx|mdx)',
     '../stories/elements/**/*.stories.@(tsx|mdx)',
     '../stories/marks/**/*.stories.@(tsx|mdx)',
-    '../stories/deserializers/**/*.stories.@(tsx|mdx)',
+    '../stories/hoc/**/*.stories.@(tsx|mdx)',
     '../stories/components/**/*.stories.@(tsx|mdx)',
+    '../stories/deserializers/**/*.stories.@(tsx|mdx)',
     '../stories/widgets/**/*.stories.@(tsx|mdx)',
     '../stories/docs/api/*.stories.@(tsx|mdx)',
     '../stories/**/*.stories.@(tsx|mdx)',

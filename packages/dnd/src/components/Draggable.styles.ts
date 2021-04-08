@@ -26,10 +26,8 @@ export const getDraggableStyles = ({
       },
       className,
     ],
-    block: {},
-    blockAndGutter: {
-      paddingTop: 3,
-      paddingBottom: 3,
+    block: {
+      overflow: 'auto',
     },
     gutterLeft: [
       {
@@ -44,14 +42,13 @@ export const getDraggableStyles = ({
     ],
     blockToolbarWrapper: {
       display: 'flex',
-      // alignItems: 'center',
       height: '1.5em',
     },
     blockToolbar: {
-      width: 18,
-      height: 18,
       marginRight: 4,
       pointerEvents: 'auto',
+      display: 'flex',
+      alignItems: 'center',
     },
     dragButton: {
       minWidth: 18,

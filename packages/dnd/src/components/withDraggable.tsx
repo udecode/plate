@@ -1,8 +1,8 @@
-import React, { forwardRef, FunctionComponent, useMemo } from 'react';
+import React, { forwardRef, useMemo } from 'react';
+import { createNodesWithHOC } from '@udecode/slate-plugins-common';
 import {
   SPRenderElementProps,
   TEditor,
-  TRenderElementProps,
   useTSlateStatic,
 } from '@udecode/slate-plugins-core';
 import { Path } from 'slate';
@@ -18,7 +18,7 @@ export interface WithDraggableOptions
 }
 
 export const withDraggable = (
-  Component: FunctionComponent<TRenderElementProps>,
+  Component: any,
   {
     styles,
     level,
@@ -26,8 +26,8 @@ export const withDraggable = (
     allowReadOnly = false,
     dragIcon,
   }: WithDraggableOptions = {}
-) =>
-  forwardRef((props: SPRenderElementProps, ref) => {
+) => {
+  return forwardRef((props: SPRenderElementProps, ref) => {
     const { attributes, element } = props;
     const editor = useTSlateStatic();
     const readOnly = useReadOnly();
@@ -35,6 +35,7 @@ export const withDraggable = (
       editor,
       element,
     ]);
+
     const filteredOut = useMemo(
       () =>
         (Number.isInteger(level) && level !== path.length - 1) ||
@@ -58,3 +59,6 @@ export const withDraggable = (
       </Draggable>
     );
   });
+};
+
+export const withDraggables = createNodesWithHOC(withDraggable);
