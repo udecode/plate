@@ -36,7 +36,7 @@ const plugins = [
 ];
 
 export const Example = () => {
-  const editor = useStoreEditor(id);
+  const editor = useStoreEditor(id)!;
 
   const handleBlur = useCallback(() => {
     ReactEditor.deselect(editor);

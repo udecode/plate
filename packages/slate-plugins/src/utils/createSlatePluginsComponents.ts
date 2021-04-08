@@ -62,9 +62,6 @@ import { TableElement } from '@udecode/slate-plugins-table-ui';
 import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
 import { SlatePluginKey } from './createSlatePluginsOptions';
 
-const baseMargin = 4.8;
-const baseFontSize = 16;
-
 export const createSlatePluginsComponents = <T extends string = string>(
   overrides?: Partial<Record<SlatePluginKey | T, FunctionComponent<any>>>
 ) => {
@@ -104,14 +101,10 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h1',
       styles: {
         root: {
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 2.5}px`,
-          fontSize: `${(baseFontSize * 20) / 11}px`,
-          lineHeight: '36px',
-          selectors: {
-            ':not(:first-child)': { marginTop: '30px' },
-          },
+          margin: '2em 0 4px',
+          fontSize: '1.875em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -119,14 +112,10 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h2',
       styles: {
         root: {
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 1.5}px`,
-          fontSize: `${(baseFontSize * 16) / 11}px`,
-          lineHeight: '28px',
-          selectors: {
-            ':not(:first-child)': { marginTop: '18px' },
-          },
+          margin: '1.4em 0 1px',
+          fontSize: '1.5em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -134,14 +123,11 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h3',
       styles: {
         root: {
+          margin: '1em 0 1px',
           color: '#434343',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 1.25}px`,
-          fontSize: `${(baseFontSize * 14) / 11}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.25em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -149,14 +135,11 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h4',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${(baseFontSize * 12) / 11}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -164,14 +147,11 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h5',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${baseFontSize}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -179,15 +159,11 @@ export const createSlatePluginsComponents = <T extends string = string>(
       as: 'h6',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          fontStyle: 'italic',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${baseFontSize}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
@@ -198,9 +174,31 @@ export const createSlatePluginsComponents = <T extends string = string>(
     [ELEMENT_MENTION]: MentionElement,
     [ELEMENT_UL]: withProps(StyledElement, {
       as: 'ul',
+      styles: {
+        root: {
+          margin: 0,
+          paddingInlineStart: '24px',
+        },
+      },
     }),
-    [ELEMENT_OL]: withProps(StyledElement, { as: 'ol' }),
-    [ELEMENT_PARAGRAPH]: withProps(StyledElement, { as: 'p' }),
+    [ELEMENT_OL]: withProps(StyledElement, {
+      as: 'ol',
+      styles: {
+        root: {
+          margin: 0,
+          paddingInlineStart: '24px',
+        },
+      },
+    }),
+    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
+      as: 'p',
+      styles: {
+        root: {
+          margin: 0,
+          padding: '4px 0',
+        },
+      },
+    }),
     [ELEMENT_TABLE]: TableElement,
     [ELEMENT_TD]: withProps(StyledElement, {
       as: 'td',

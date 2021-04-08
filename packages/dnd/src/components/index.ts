@@ -5,6 +5,5 @@
 export * from './Draggable.styles';
 export * from './Draggable';
 export * from './Draggable.types';
-export * from './withDraggables';
 export * from './grabberTooltipProps';
 export * from './withDraggable';

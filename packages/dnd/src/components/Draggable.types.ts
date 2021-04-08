@@ -1,10 +1,12 @@
 import React from 'react';
+import { TEditor } from '@udecode/slate-plugins-core';
 import {
   ClassName,
   RootStyleSet,
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
+import { Path } from 'slate';
 
 export interface DraggableStyleProps extends ClassName {
   direction: '' | 'top' | 'bottom';
@@ -63,4 +65,8 @@ export interface DraggableProps
   componentRef?: any;
 
   dragIcon?: React.ReactNode;
+
+  level?: number;
+  filter?: (editor: TEditor, path: Path) => boolean;
+  allowReadOnly?: boolean;
 }

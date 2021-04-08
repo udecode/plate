@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React, { useMemo } from 'react';
+import { createNodeHOC, createNodesHOC } from '@udecode/slate-plugins-common';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { Node } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
@@ -9,8 +10,6 @@ import {
   PlaceholderStyleSet,
 } from './Placeholder.types';
 
-const { useMemo } = React;
-
 const getClassNames = classNamesFunction<
   PlaceholderStyleProps,
   PlaceholderStyleSet
@@ -18,30 +17,34 @@ const getClassNames = classNamesFunction<
 
 export const PlaceholderBase = ({
   children,
-  placeholder,
-  styles,
-  className,
   element,
-  hideOnBlur,
+  className,
+  styles,
+  placeholder,
+  hideOnBlur = true,
 }: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
-  const canShowPlaceholder = useMemo(() => {
+
+  const enabled = useMemo(() => {
     const string = Node.string(element);
+
     return (
       (!hideOnBlur && !string) || (hideOnBlur && focused && selected && !string)
     );
   }, [element, hideOnBlur, focused, selected]);
+
   const classNames = getClassNames(styles, {
     className,
   });
+
   return (
-    <div className={classNames.root}>
-      {canShowPlaceholder ? (
+    <div>
+      {enabled && (
         <span className={classNames.placeholder} contentEditable={false}>
           {placeholder}
         </span>
-      ) : null}
+      )}
       {children}
     </div>
   );
@@ -54,3 +57,6 @@ export const Placeholder = styled<
 >(PlaceholderBase, getPlaceholderStyles, undefined, {
   scope: 'Placeholder',
 });
+
+export const withPlaceholder = createNodeHOC(Placeholder);
+export const withPlaceholders = createNodesHOC(Placeholder);

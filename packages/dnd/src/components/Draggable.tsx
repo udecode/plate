@@ -27,6 +27,7 @@ export const DraggableBase = ({
 }: DraggableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const dragWrapperRef = useRef(null);
   const multiRootRef = useMergedRef(componentRef, rootRef);
 
   const { dropLine, dragRef, isDragging } = useDndBlock({
@@ -34,7 +35,6 @@ export const DraggableBase = ({
     blockRef: rootRef,
   });
 
-  const dragWrapperRef = useRef(null);
   const multiDragRef = useMergedRef(dragRef, dragWrapperRef);
 
   const classNames = getClassNames(styles, {
@@ -64,17 +64,15 @@ export const DraggableBase = ({
         contentEditable={false}
       >
         <div className={classNames.blockToolbarWrapper}>
-          <div className={classNames.blockToolbar}>
+          <div className={classNames.blockToolbar} ref={multiDragRef}>
             <Tippy {...grabberTooltipProps}>
-              <div ref={multiDragRef}>
-                <button
-                  type="button"
-                  className={classNames.dragButton}
-                  onMouseDown={(e: any) => e.stopPropagation()}
-                >
-                  {dragIcon}
-                </button>
-              </div>
+              <button
+                type="button"
+                className={classNames.dragButton}
+                onMouseDown={(e: any) => e.stopPropagation()}
+              >
+                {dragIcon}
+              </button>
             </Tippy>
           </div>
         </div>

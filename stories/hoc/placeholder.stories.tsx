@@ -12,14 +12,11 @@ import {
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   createSoftBreakPlugin,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_PARAGRAPH,
-  getPlaceholderElement,
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
-import { initialValueBasicElements } from '../config/initialValues';
+import { initialValuePlaceholder } from '../config/initialValues';
+import { withStyledPlaceHolders } from '../config/placeholders';
 import {
   editableProps,
   optionsExitBreakPlugin,
@@ -28,42 +25,16 @@ import {
 } from '../config/pluginOptions';
 import { ToolbarButtonsBasicElements } from '../config/Toolbars';
 
-const id = 'Elements/Block Placeholder';
+const id = 'HOC/Placeholder';
 
 export default {
   title: id,
 };
 
-const components = createSlatePluginsComponents();
+let components = createSlatePluginsComponents();
 
-const placeholders = {
-  [ELEMENT_PARAGRAPH]: {
-    label: "Type '/' to open weapons",
-    styles: {
-      placeholder: {},
-    },
-    hideOnBlur: true,
-  },
-  [ELEMENT_H1]: {
-    label: 'Heading 1',
-    styles: {
-      placeholder: {
-        fontSize: '30px',
-      },
-    },
-    hideOnBlur: false,
-  },
-};
-Object.keys(components).forEach((key) => {
-  if (Object.keys(placeholders).includes(key)) {
-    components[key] = getPlaceholderElement({
-      component: components[key],
-      placeholder: placeholders[key].label,
-      styles: placeholders[key].styles,
-      hideOnBlur: placeholders[key].hideOnBlur,
-    });
-  }
-});
+components = withStyledPlaceHolders(components);
+
 const options = createSlatePluginsOptions();
 const plugins = [
   createReactPlugin(),
@@ -84,7 +55,7 @@ export const Example = () => (
     components={components}
     options={options}
     editableProps={editableProps}
-    initialValue={initialValueBasicElements}
+    initialValue={initialValuePlaceholder}
   >
     <HeadingToolbar>
       <ToolbarButtonsBasicElements />
