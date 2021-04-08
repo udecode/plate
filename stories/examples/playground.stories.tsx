@@ -53,6 +53,7 @@ import {
 } from '@udecode/slate-plugins';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
+import { withStyledPlaceHolders } from '../config/placeholders';
 import {
   editableProps,
   optionsExitBreakPlugin,
@@ -76,11 +77,13 @@ export default {
   title: id,
 };
 
-const defaultComponents = createSlatePluginsComponents({
+let defaultComponents = createSlatePluginsComponents({
   [ELEMENT_MENTION]: withProps(MentionElement, {
     renderLabel: renderMentionLabel,
   }),
 });
+defaultComponents = withStyledPlaceHolders(defaultComponents);
+
 const defaultOptions = createSlatePluginsOptions();
 
 export const Plugins = ({

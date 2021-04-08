@@ -1,20 +1,20 @@
 {
   "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.17",
   "description": "Slate plugins placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ],  
+  ],
   "scripts": {
     "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "yarn rollup",
     "build:w": "yarn rollup -w",
     "rollup": "rollup -c=../../rollup.config.js",
-    "test": "jest" 
+    "test": "jest"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
