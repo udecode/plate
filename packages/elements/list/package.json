@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-list",
-  "version": "1.0.0-alpha.16",
+  "version": "1.0.0-alpha.18",
   "description": "Slate plugins list",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/list#readme",
@@ -33,9 +33,9 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.16",
+    "@udecode/slate-plugins-common": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-core": "^1.0.0-alpha.16",
-    "@udecode/slate-plugins-reset-node": "^1.0.0-alpha.16"
+    "@udecode/slate-plugins-reset-node": "^1.0.0-alpha.18"
   },
   "publishConfig": {
     "access": "public"
