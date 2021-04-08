@@ -16,7 +16,6 @@ import {
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import { initialValuePlaceholder } from '../config/initialValues';
-import { withStyledPlaceHolders } from '../config/placeholders';
 import {
   editableProps,
   optionsExitBreakPlugin,
@@ -24,6 +23,7 @@ import {
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
 import { ToolbarButtonsBasicElements } from '../config/Toolbars';
+import { withStyledPlaceHolders } from '../config/withStyledPlaceHolders';
 
 const id = 'HOC/Placeholder';
 

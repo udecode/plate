@@ -53,7 +53,6 @@ import {
 } from '@udecode/slate-plugins';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
-import { withStyledPlaceHolders } from '../config/placeholders';
 import {
   editableProps,
   optionsExitBreakPlugin,
@@ -70,6 +69,7 @@ import {
   ToolbarButtonsList,
   ToolbarButtonsTable,
 } from '../config/Toolbars';
+import { withStyledPlaceHolders } from '../config/withStyledPlaceHolders';
 
 const id = 'Examples/Playground';
 
