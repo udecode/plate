@@ -39,13 +39,13 @@ export const PlaceholderBase = ({
   });
 
   return (
-    <div>
+    <div className={classNames.root}>
+      {children}
       {enabled && (
         <span className={classNames.placeholder} contentEditable={false}>
           {placeholder}
         </span>
       )}
-      {children}
     </div>
   );
 };

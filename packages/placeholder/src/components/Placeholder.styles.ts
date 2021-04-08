@@ -11,9 +11,15 @@ export const getPlaceholderStyles = ({
   className,
 }: PlaceholderStyleProps): PlaceholderStyleSet => {
   return {
-    root: [classNames.root, className],
+    root: [classNames.root, className, { position: 'relative' }],
     placeholder: [
-      { position: 'absolute', pointerEvents: 'none', opacity: 0.3 },
+      {
+        position: 'absolute',
+        pointerEvents: 'none',
+        opacity: 0.3,
+        top: 0,
+        left: 0,
+      },
     ],
   };
 };
