@@ -37,12 +37,12 @@ export const PlaceholderBase = ({
   });
   return (
     <div className={classNames.root}>
+      {children}
       {canShowPlaceholder ? (
         <span className={classNames.placeholder} contentEditable={false}>
           {placeholder}
         </span>
       ) : null}
-      {children}
     </div>
   );
 };
