@@ -44,7 +44,9 @@ export const PlaceholderBase = ({
     return (
       <Element
         {...child.props.attributes}
-        className={`${child.props.className} ${classNames.root}`}
+        className={`${child.props.className}  ${
+          enabled && classNames.placeholder
+        }`}
         placeholder={placeholder}
       >
         {child.props.children}
