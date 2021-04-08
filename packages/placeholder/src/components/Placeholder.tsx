@@ -40,18 +40,13 @@ export const PlaceholderBase = ({
   });
 
   return React.Children.map(children, (child) => {
-    const Element = child.props.element.type;
-    return (
-      <Element
-        {...child.props.attributes}
-        className={`${child.props.className}  ${
-          enabled && classNames.placeholder
-        }`}
-        placeholder={placeholder}
-      >
-        {child.props.children}
-      </Element>
-    );
+    return React.cloneElement(child, {
+      ...child.props.attributes,
+      className: `${child.props.className}  ${
+        enabled && classNames.placeholder
+      }`,
+      placeholder,
+    });
   });
 };
 
