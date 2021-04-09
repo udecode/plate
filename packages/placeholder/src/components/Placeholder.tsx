@@ -22,6 +22,7 @@ export const PlaceholderBase = ({
   styles,
   placeholder,
   hideOnBlur = true,
+  nodeProps,
 }: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
@@ -36,18 +37,17 @@ export const PlaceholderBase = ({
 
   const classNames = getClassNames(styles, {
     className,
+    enabled,
   });
 
-  return (
-    <div className={classNames.root}>
-      {children}
-      {enabled && (
-        <span className={classNames.placeholder} contentEditable={false}>
-          {placeholder}
-        </span>
-      )}
-    </div>
-  );
+  return React.Children.map(children, (child) => {
+    return React.cloneElement(child, {
+      className: `${child.props.className}  ${
+        enabled && classNames.placeholder
+      }`,
+      nodeProps: { ...nodeProps, placeholder },
+    });
+  });
 };
 
 export const Placeholder = styled<
