@@ -22,6 +22,7 @@ export const PlaceholderBase = ({
   styles,
   placeholder,
   hideOnBlur = true,
+  nodeProps,
 }: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
@@ -44,7 +45,7 @@ export const PlaceholderBase = ({
       className: `${child.props.className}  ${
         enabled && classNames.placeholder
       }`,
-      placeholder,
+      nodeProps: { ...nodeProps, placeholder },
     });
   });
 };

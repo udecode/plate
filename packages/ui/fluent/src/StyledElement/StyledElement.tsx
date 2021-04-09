@@ -18,19 +18,13 @@ export const StyledElementBase = ({
   styles,
   as: Tag = 'div',
   nodeProps,
-  placeholder,
 }: StyledElementProps) => {
   const classNames = getClassNames(styles, {
     className,
   });
 
   return (
-    <Tag
-      {...attributes}
-      className={classNames.root}
-      {...nodeProps}
-      placeholder={placeholder}
-    >
+    <Tag {...attributes} className={classNames.root} {...nodeProps}>
       {children}
     </Tag>
   );
