@@ -10,4 +10,5 @@ export type StyledElementProps<
   TElement = Element,
   TStyleProps = ClassName,
   TStyleSet = RootStyleSet
-> = SPRenderElementProps<TElement> & StyledProps<TStyleProps, TStyleSet>;
+> = SPRenderElementProps<TElement> &
+  StyledProps<TStyleProps, TStyleSet> & { placeholder?: string };
