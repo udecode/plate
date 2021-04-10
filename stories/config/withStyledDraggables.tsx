@@ -38,7 +38,6 @@ export const withStyledDraggables = (components: any) => {
         ELEMENT_H5,
         ELEMENT_H6,
         ELEMENT_IMAGE,
-        ELEMENT_LINK,
         ELEMENT_OL,
         ELEMENT_UL,
         ELEMENT_TABLE,
