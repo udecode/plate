@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-alpha.18",
+  "version": "1.0.0-alpha.19",
   "description": "Slate plugins placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",

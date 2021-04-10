@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "1.0.0-alpha.18",
+  "version": "1.0.0-alpha.19",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/slate-plugins#readme",
@@ -66,11 +66,11 @@
     "@udecode/slate-plugins-node-id": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-normalizers": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-paragraph": "^1.0.0-alpha.18",
-    "@udecode/slate-plugins-placeholder": "^1.0.0-alpha.18",
+    "@udecode/slate-plugins-placeholder": "^1.0.0-alpha.19",
     "@udecode/slate-plugins-reset-node": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-select": "^1.0.0-alpha.18",
-    "@udecode/slate-plugins-table": "^1.0.0-alpha.18",
-    "@udecode/slate-plugins-table-ui": "^1.0.0-alpha.18",
+    "@udecode/slate-plugins-table": "^1.0.0-alpha.19",
+    "@udecode/slate-plugins-table-ui": "^1.0.0-alpha.19",
     "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-trailing-block": "^1.0.0-alpha.18",
     "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.18"
