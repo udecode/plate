@@ -64,6 +64,9 @@ export interface DraggableProps
   extends StyledElementProps<{}, DraggableStyleProps, DraggableStyleSet> {
   componentRef?: any;
 
+  /**
+   * Custom drag button.
+   */
   buttonRender?: ({
     element,
   }: { element: Element } & React.DetailedHTMLProps<
