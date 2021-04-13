@@ -1,5 +1,6 @@
 import React from 'react';
 import { DragIndicator } from '@styled-icons/material/DragIndicator';
+import Tippy from '@tippyjs/react';
 import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
@@ -10,13 +11,13 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_IMAGE,
-  ELEMENT_LINK,
   ELEMENT_MEDIA_EMBED,
   ELEMENT_OL,
   ELEMENT_PARAGRAPH,
   ELEMENT_TABLE,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
+  grabberTooltipProps,
   withDraggables,
 } from '@udecode/slate-plugins';
 
@@ -44,14 +45,18 @@ export const withStyledDraggables = (components: any) => {
         ELEMENT_MEDIA_EMBED,
         ELEMENT_CODE_BLOCK,
       ],
-      dragIcon: (
-        <DragIndicator
-          style={{
-            width: 18,
-            height: 18,
-            color: 'rgba(55, 53, 47, 0.3)',
-          }}
-        />
+      buttonRender: ({ element, ...otherProps }) => (
+        <Tippy {...grabberTooltipProps}>
+          <button type="button" {...otherProps}>
+            <DragIndicator
+              style={{
+                width: 18,
+                height: 18,
+                color: 'rgba(55, 53, 47, 0.3)',
+              }}
+            />
+          </button>
+        </Tippy>
       ),
     },
     {

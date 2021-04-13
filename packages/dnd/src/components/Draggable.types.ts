@@ -6,7 +6,7 @@ import {
   StyledElementProps,
 } from '@udecode/slate-plugins-ui-fluent';
 import { IStyle } from '@uifabric/styling';
-import { Path } from 'slate';
+import { Element, Path } from 'slate';
 
 export interface DraggableStyleProps extends ClassName {
   direction: '' | 'top' | 'bottom';
@@ -64,7 +64,12 @@ export interface DraggableProps
   extends StyledElementProps<{}, DraggableStyleProps, DraggableStyleSet> {
   componentRef?: any;
 
-  dragIcon?: React.ReactNode;
+  buttonRender?: ({
+    element,
+  }: { element: Element } & React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  >) => JSX.Element;
 
   level?: number;
   filter?: (editor: TEditor, path: Path) => boolean;
