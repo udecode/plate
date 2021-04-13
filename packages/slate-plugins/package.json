@@ -29,6 +29,7 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.60.0",
+    "slate-history": ">=0.60.0",
     "slate-hyperscript": ">=0.60.0",
     "slate-react": ">=0.60.0"
   },
