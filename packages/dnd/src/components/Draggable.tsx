@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import Tippy from '@tippyjs/react';
 import { mergeStyles } from '@uifabric/styling';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useDndBlock } from '../hooks/useDndBlock';
@@ -10,7 +9,6 @@ import {
   DraggableStyleProps,
   DraggableStyleSet,
 } from './Draggable.types';
-import { grabberTooltipProps } from './grabberTooltipProps';
 
 const getClassNames = classNamesFunction<
   DraggableStyleProps,
@@ -23,7 +21,7 @@ export const DraggableBase = ({
   className,
   styles,
   componentRef,
-  dragIcon,
+  buttonRender: DragButton,
 }: DraggableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -65,15 +63,13 @@ export const DraggableBase = ({
       >
         <div className={classNames.blockToolbarWrapper}>
           <div className={classNames.blockToolbar} ref={multiDragRef}>
-            <Tippy {...grabberTooltipProps}>
-              <button
-                type="button"
+            {DragButton && (
+              <DragButton
+                element={element}
                 className={classNames.dragButton}
                 onMouseDown={(e: any) => e.stopPropagation()}
-              >
-                {dragIcon}
-              </button>
-            </Tippy>
+              />
+            )}
           </div>
         </div>
       </div>
