@@ -47,7 +47,7 @@ export interface DraggableStyleSet extends RootStyleSet {
   /**
    * Button to dnd the block, in the block toolbar.
    */
-  dragButton?: IStyle;
+  dragHandle?: IStyle;
 
   /**
    * Icon of the drag button, in the drag icon.
@@ -65,9 +65,9 @@ export interface DraggableProps
   componentRef?: any;
 
   /**
-   * Custom drag button.
+   * An override to render the drag handle.
    */
-  buttonRender?: ({
+  onRenderDragHandle?: ({
     element,
   }: { element: Element } & React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,

@@ -11,7 +11,7 @@ import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
 export interface WithDraggableOptions
-  extends Pick<DraggableProps, 'buttonRender' | 'styles'> {
+  extends Pick<DraggableProps, 'onRenderDragHandle' | 'styles'> {
   level?: number;
   filter?: (editor: TEditor, path: Path) => boolean;
   allowReadOnly?: boolean;
@@ -24,7 +24,7 @@ export const withDraggable = (
     level,
     filter,
     allowReadOnly = false,
-    buttonRender,
+    onRenderDragHandle,
   }: WithDraggableOptions = {}
 ) => {
   return forwardRef((props: SPRenderElementProps, ref) => {
@@ -53,7 +53,7 @@ export const withDraggable = (
         element={element}
         componentRef={ref}
         styles={styles}
-        buttonRender={buttonRender}
+        onRenderDragHandle={onRenderDragHandle}
       >
         <Component {...props} />
       </Draggable>

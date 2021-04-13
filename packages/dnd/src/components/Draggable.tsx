@@ -21,7 +21,7 @@ export const DraggableBase = ({
   className,
   styles,
   componentRef,
-  buttonRender: DragButton,
+  onRenderDragHandle: DragHandle,
 }: DraggableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -63,10 +63,10 @@ export const DraggableBase = ({
       >
         <div className={classNames.blockToolbarWrapper}>
           <div className={classNames.blockToolbar} ref={multiDragRef}>
-            {DragButton && (
-              <DragButton
+            {DragHandle && (
+              <DragHandle
                 element={element}
-                className={classNames.dragButton}
+                className={classNames.dragHandle}
                 onMouseDown={(e: any) => e.stopPropagation()}
               />
             )}

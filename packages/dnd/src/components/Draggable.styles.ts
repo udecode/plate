@@ -50,7 +50,7 @@ export const getDraggableStyles = ({
       display: 'flex',
       alignItems: 'center',
     },
-    dragButton: {
+    dragHandle: {
       minWidth: 18,
       height: 18,
       padding: 0,
