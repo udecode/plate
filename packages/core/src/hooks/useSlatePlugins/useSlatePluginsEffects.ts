@@ -66,7 +66,9 @@ export const useSlatePluginsEffects = ({
   // Slate.value
   useEffect(() => {
     value && setValue(value);
-  }, [setValue, value]);
+
+    !initialValue && !value && setValue([{ children: [{ text: '' }] }]);
+  }, [initialValue, setValue, value]);
 
   useEffect(() => {
     setEnabled(enabled);
