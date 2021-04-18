@@ -1,13 +1,12 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[Conventional Commits](https://conventionalcommits.org) for commit
+guidelines.
 
-Until 1.0.0 is released, breaking changes will be added as minor or
-patch version bumps.
+## > v0.70.0
 
-This changelog file is not maintained anymore. Check the
-[releases](https://github.com/udecode/slate-plugins/releases) instead.
+See the [releases](https://github.com/udecode/slate-plugins/releases).
 
 ## v0.70.0
 

@@ -108,7 +108,7 @@ yarn add @udecode/slate-plugins
 You will also need these peer dependencies (slate >= 0.60):
 
 ```bash
-yarn add slate slate-hyperscript slate-react react react-dom
+yarn add slate slate-react slate-history slate-hyperscript react react-dom
 ```
 
 Alternatively you can install only the packages you need:
@@ -147,6 +147,7 @@ yarn add @udecode/slate-plugins-mention-ui
 yarn add @udecode/slate-plugins-node-id
 yarn add @udecode/slate-plugins-normalizers
 yarn add @udecode/slate-plugins-paragraph
+yarn add @udecode/slate-plugins-placeholder
 yarn add @udecode/slate-plugins-reset-node
 yarn add @udecode/slate-plugins-select
 yarn add @udecode/slate-plugins-table

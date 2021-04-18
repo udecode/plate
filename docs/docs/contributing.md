@@ -1,4 +1,6 @@
-# Contributing to slate-plugins
+---
+title: Contributing
+---
 
 Thanks for your interest in improving `slate-plugins`! We are a
 community-driven project and welcome contributions of all kinds: from
