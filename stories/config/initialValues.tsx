@@ -40,6 +40,25 @@ import { createList, createParagraph, getNodesWithRandomId } from './utils';
 
 jsx;
 
+export const initialValueEmpty: any = (
+  <fragment>
+    <hp>
+      <htext />
+    </hp>
+  </fragment>
+);
+
+export const initialValuePlaceholder: any = (
+  <fragment>
+    <hh1>
+      <htext />
+    </hh1>
+    <hp>
+      <htext />
+    </hp>
+  </fragment>
+);
+
 export const initialValueEmbeds: any = (
   <fragment>
     <hh2>🎥 Media Embed</hh2>
@@ -60,7 +79,9 @@ export const initialValueEmbeds: any = (
 
 export const initialValueForcedLayout: any = (
   <fragment>
-    <hh1>👮 Title</hh1>
+    <hh1>
+      <htext />
+    </hh1>
     <hp>
       This example shows how to enforce your layout with domain-specific
       constraints. This document will always have a title block at the top and a

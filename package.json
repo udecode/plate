@@ -131,7 +131,9 @@
   },
   "dependencies": {
     "prismjs": "^1.23.0",
-    "styled-icons": "^10.28.0"
+    "@styled-icons/boxicons-regular": "^10.23.0",
+    "@styled-icons/material": "^10.28.0",
+    "@styled-icons/foundation": "^10.28.0"
   },
   "resolutions": {
     "eslint-plugin-prettier": "3.3.1",

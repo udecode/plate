@@ -1,0 +1,50 @@
+{
+  "name": "@udecode/slate-plugins-placeholder",
+  "version": "1.0.0-alpha.20",
+  "description": "Slate plugins placeholder",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-core": "^1.0.0-alpha.20",
+    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.20",
+    "@uifabric/styling": "^7.18.0",
+    "@uifabric/utilities": "^7.33.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/udecode/slate-plugins.git"
+  },
+  "keywords": [
+    "slate",
+    "placeholder",
+    "slate",
+    "plugins"
+  ],
+  "author": "Karthikeyan U",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "homepage": "https://github.com/udecode/slate-plugins#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}

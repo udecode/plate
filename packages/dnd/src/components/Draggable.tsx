@@ -1,32 +1,31 @@
 import React, { useRef } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import Tippy from '@tippyjs/react';
 import { mergeStyles } from '@uifabric/styling';
 import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useDndBlock } from '../hooks/useDndBlock';
-import { grabberTooltipProps } from './grabberTooltipProps';
-import { getSelectableStyles } from './Selectable.styles';
+import { getDraggableStyles } from './Draggable.styles';
 import {
-  SelectableProps,
-  SelectableStyleProps,
-  SelectableStyleSet,
-} from './Selectable.types';
+  DraggableProps,
+  DraggableStyleProps,
+  DraggableStyleSet,
+} from './Draggable.types';
 
 const getClassNames = classNamesFunction<
-  SelectableStyleProps,
-  SelectableStyleSet
+  DraggableStyleProps,
+  DraggableStyleSet
 >();
 
-export const SelectableBase = ({
+export const DraggableBase = ({
   children,
   element,
   className,
   styles,
   componentRef,
-  dragIcon,
-}: SelectableProps) => {
+  onRenderDragHandle: DragHandle,
+}: DraggableProps) => {
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const dragWrapperRef = useRef(null);
   const multiRootRef = useMergedRef(componentRef, rootRef);
 
   const { dropLine, dragRef, isDragging } = useDndBlock({
@@ -34,7 +33,6 @@ export const SelectableBase = ({
     blockRef: rootRef,
   });
 
-  const dragWrapperRef = useRef(null);
   const multiDragRef = useMergedRef(dragRef, dragWrapperRef);
 
   const classNames = getClassNames(styles, {
@@ -64,18 +62,14 @@ export const SelectableBase = ({
         contentEditable={false}
       >
         <div className={classNames.blockToolbarWrapper}>
-          <div className={classNames.blockToolbar}>
-            <Tippy {...grabberTooltipProps}>
-              <div ref={multiDragRef}>
-                <button
-                  type="button"
-                  className={classNames.dragButton}
-                  onMouseDown={(e: any) => e.stopPropagation()}
-                >
-                  {dragIcon}
-                </button>
-              </div>
-            </Tippy>
+          <div className={classNames.blockToolbar} ref={multiDragRef}>
+            {DragHandle && (
+              <DragHandle
+                element={element}
+                className={classNames.dragHandle}
+                onMouseDown={(e: any) => e.stopPropagation()}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -83,10 +77,10 @@ export const SelectableBase = ({
   );
 };
 
-export const Selectable = styled<
-  SelectableProps,
-  SelectableStyleProps,
-  SelectableStyleSet
->(SelectableBase, getSelectableStyles, undefined, {
-  scope: 'Selectable',
+export const Draggable = styled<
+  DraggableProps,
+  DraggableStyleProps,
+  DraggableStyleSet
+>(DraggableBase, getDraggableStyles, undefined, {
+  scope: 'Draggable',
 });

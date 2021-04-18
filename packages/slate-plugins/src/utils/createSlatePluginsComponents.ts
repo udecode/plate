@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { FunctionComponent } from 'react';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
@@ -24,7 +24,7 @@ import {
   CodeBlockElement,
   CodeLineElement,
 } from '@udecode/slate-plugins-code-block-ui';
-import { getComponent } from '@udecode/slate-plugins-common';
+import { withProps } from '@udecode/slate-plugins-common';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
 import {
   ELEMENT_H1,
@@ -62,35 +62,32 @@ import { TableElement } from '@udecode/slate-plugins-table-ui';
 import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
 import { SlatePluginKey } from './createSlatePluginsOptions';
 
-const baseMargin = 4.8;
-const baseFontSize = 16;
-
 export const createSlatePluginsComponents = <T extends string = string>(
-  overrides?: Partial<Record<SlatePluginKey | T, ReactNode>>
+  overrides?: Partial<Record<SlatePluginKey | T, FunctionComponent<any>>>
 ) => {
   const components = {
-    [ELEMENT_ALIGN_CENTER]: getComponent(StyledElement, {
+    [ELEMENT_ALIGN_CENTER]: withProps(StyledElement, {
       styles: {
         root: {
           textAlign: 'center',
         },
       },
     }),
-    [ELEMENT_ALIGN_JUSTIFY]: getComponent(StyledElement, {
+    [ELEMENT_ALIGN_JUSTIFY]: withProps(StyledElement, {
       styles: {
         root: {
           textAlign: 'justify',
         },
       },
     }),
-    [ELEMENT_ALIGN_LEFT]: getComponent(StyledElement, {
+    [ELEMENT_ALIGN_LEFT]: withProps(StyledElement, {
       styles: {
         root: {
           textAlign: 'left',
         },
       },
     }),
-    [ELEMENT_ALIGN_RIGHT]: getComponent(StyledElement, {
+    [ELEMENT_ALIGN_RIGHT]: withProps(StyledElement, {
       styles: {
         root: {
           textAlign: 'right',
@@ -100,109 +97,110 @@ export const createSlatePluginsComponents = <T extends string = string>(
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
-    [ELEMENT_H1]: getComponent(StyledElement, {
+    [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',
       styles: {
         root: {
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 2.5}px`,
-          fontSize: `${(baseFontSize * 20) / 11}px`,
-          lineHeight: '36px',
-          selectors: {
-            ':not(:first-child)': { marginTop: '30px' },
-          },
+          margin: '2em 0 4px',
+          fontSize: '1.875em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
-    [ELEMENT_H2]: getComponent(StyledElement, {
+    [ELEMENT_H2]: withProps(StyledElement, {
       as: 'h2',
       styles: {
         root: {
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 1.5}px`,
-          fontSize: `${(baseFontSize * 16) / 11}px`,
-          lineHeight: '28px',
-          selectors: {
-            ':not(:first-child)': { marginTop: '18px' },
-          },
+          margin: '1.4em 0 1px',
+          fontSize: '1.5em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
-    [ELEMENT_H3]: getComponent(StyledElement, {
+    [ELEMENT_H3]: withProps(StyledElement, {
       as: 'h3',
       styles: {
         root: {
+          margin: '1em 0 1px',
           color: '#434343',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin * 1.25}px`,
-          fontSize: `${(baseFontSize * 14) / 11}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.25em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
-    [ELEMENT_H4]: getComponent(StyledElement, {
+    [ELEMENT_H4]: withProps(StyledElement, {
       as: 'h4',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${(baseFontSize * 12) / 11}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
-    [ELEMENT_H5]: getComponent(StyledElement, {
+    [ELEMENT_H5]: withProps(StyledElement, {
       as: 'h5',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${baseFontSize}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
-    [ELEMENT_H6]: getComponent(StyledElement, {
+    [ELEMENT_H6]: withProps(StyledElement, {
       as: 'h6',
       styles: {
         root: {
+          margin: '0.75em 0 0',
           color: '#666666',
-          fontWeight: '400',
-          fontStyle: 'italic',
-          marginTop: 0,
-          marginBottom: `${baseMargin}px`,
-          fontSize: `${baseFontSize}px`,
-          selectors: {
-            ':not(:first-child)': { marginTop: '8px' },
-          },
+          fontSize: '1.1em',
+          fontWeight: '500',
+          lineHeight: '1.3',
         },
       },
     }),
     [ELEMENT_IMAGE]: ImageElement,
-    [ELEMENT_LI]: getComponent(StyledElement, { as: 'li' }),
+    [ELEMENT_LI]: withProps(StyledElement, { as: 'li' }),
     [ELEMENT_LINK]: LinkElement,
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
     [ELEMENT_MENTION]: MentionElement,
-    [ELEMENT_UL]: getComponent(StyledElement, {
+    [ELEMENT_UL]: withProps(StyledElement, {
       as: 'ul',
+      styles: {
+        root: {
+          margin: 0,
+          paddingInlineStart: '24px',
+        },
+      },
     }),
-    [ELEMENT_OL]: getComponent(StyledElement, { as: 'ol' }),
-    [ELEMENT_PARAGRAPH]: getComponent(StyledElement, { as: 'p' }),
+    [ELEMENT_OL]: withProps(StyledElement, {
+      as: 'ol',
+      styles: {
+        root: {
+          margin: 0,
+          paddingInlineStart: '24px',
+        },
+      },
+    }),
+    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
+      as: 'p',
+      styles: {
+        root: {
+          margin: 0,
+          padding: '4px 0',
+        },
+      },
+    }),
     [ELEMENT_TABLE]: TableElement,
-    [ELEMENT_TD]: getComponent(StyledElement, {
+    [ELEMENT_TD]: withProps(StyledElement, {
       as: 'td',
       styles: {
         root: {
@@ -218,7 +216,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
         },
       },
     }),
-    [ELEMENT_TH]: getComponent(StyledElement, {
+    [ELEMENT_TH]: withProps(StyledElement, {
       as: 'th',
       styles: {
         root: {
@@ -236,9 +234,9 @@ export const createSlatePluginsComponents = <T extends string = string>(
       },
     }),
     [ELEMENT_TODO_LI]: TodoListElement,
-    [ELEMENT_TR]: getComponent(StyledElement, { as: 'tr' }),
-    [MARK_BOLD]: getComponent(StyledLeaf, { as: 'strong' }),
-    [MARK_CODE]: getComponent(StyledLeaf, {
+    [ELEMENT_TR]: withProps(StyledElement, { as: 'tr' }),
+    [MARK_BOLD]: withProps(StyledLeaf, { as: 'strong' }),
+    [MARK_CODE]: withProps(StyledLeaf, {
       as: 'code',
       styles: {
         root: {
@@ -253,7 +251,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
         },
       },
     }),
-    [MARK_HIGHLIGHT]: getComponent(StyledLeaf, {
+    [MARK_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'mark',
       styles: {
         root: {
@@ -261,8 +259,8 @@ export const createSlatePluginsComponents = <T extends string = string>(
         },
       },
     }),
-    [MARK_ITALIC]: getComponent(StyledLeaf, { as: 'em' }),
-    [MARK_KBD]: getComponent(StyledLeaf, {
+    [MARK_ITALIC]: withProps(StyledLeaf, { as: 'em' }),
+    [MARK_KBD]: withProps(StyledLeaf, {
       as: 'kbd',
       styles: {
         root: {
@@ -280,7 +278,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
         },
       },
     }),
-    [MARK_SEARCH_HIGHLIGHT]: getComponent(StyledLeaf, {
+    [MARK_SEARCH_HIGHLIGHT]: withProps(StyledLeaf, {
       as: 'span',
       styles: {
         root: {
@@ -288,10 +286,10 @@ export const createSlatePluginsComponents = <T extends string = string>(
         },
       },
     }),
-    [MARK_STRIKETHROUGH]: getComponent(StyledLeaf, { as: 's' }),
-    [MARK_SUBSCRIPT]: getComponent(StyledLeaf, { as: 'sub' }),
-    [MARK_SUPERSCRIPT]: getComponent(StyledLeaf, { as: 'sup' }),
-    [MARK_UNDERLINE]: getComponent(StyledLeaf, { as: 'u' }),
+    [MARK_STRIKETHROUGH]: withProps(StyledLeaf, { as: 's' }),
+    [MARK_SUBSCRIPT]: withProps(StyledLeaf, { as: 'sub' }),
+    [MARK_SUPERSCRIPT]: withProps(StyledLeaf, { as: 'sup' }),
+    [MARK_UNDERLINE]: withProps(StyledLeaf, { as: 'u' }),
   };
 
   if (overrides) {
@@ -300,5 +298,5 @@ export const createSlatePluginsComponents = <T extends string = string>(
     });
   }
 
-  return components as Record<SlatePluginKey | T, ReactNode>;
+  return components as Record<SlatePluginKey | T, FunctionComponent>;
 };

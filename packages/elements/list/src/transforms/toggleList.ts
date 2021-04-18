@@ -10,7 +10,7 @@ import {
   SPEditor,
   TElement,
 } from '@udecode/slate-plugins-core';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
@@ -33,6 +33,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
         match: { type: getSlatePluginType(editor, ELEMENT_DEFAULT) },
       }),
     ];
+    setNodes(editor, { type: getSlatePluginType(editor, ELEMENT_LIC) });
 
     const listItem = {
       type: getSlatePluginType(editor, ELEMENT_LI),

@@ -20,10 +20,10 @@ const event = new KeyboardEvent('keydown');
 
 const output = (
   <editor>
-    <hp>
+    <hdefault>
       <htext />
       <cursor />
-    </hp>
+    </hdefault>
     <hp>test</hp>
   </editor>
 ) as any;
