@@ -13,7 +13,7 @@ import { ReactEditor } from 'slate-react';
 import { createSlatePluginsComponents } from './createSlatePluginsComponents';
 import {
   createSlatePluginsOptions,
-  SlatePluginKey,
+  DefaultSlatePluginKey,
 } from './createSlatePluginsOptions';
 
 /**
@@ -33,8 +33,12 @@ export const createEditorPlugins = <T extends string = string>({
 }: {
   editor?: TEditor;
   plugins?: SlatePlugin[];
-  options?: Partial<Record<SlatePluginKey | T, Partial<SlatePluginOptions>>>;
-  components?: Partial<Record<SlatePluginKey | T, FunctionComponent<any>>>;
+  options?: Partial<
+    Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
+  >;
+  components?: Partial<
+    Record<DefaultSlatePluginKey | T, FunctionComponent<any>>
+  >;
 } = {}) => {
   return withSlatePlugins<ReactEditor>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],

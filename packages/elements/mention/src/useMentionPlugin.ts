@@ -38,6 +38,7 @@ export const useMentionPlugin = ({
     c.value.toLowerCase().includes(search.toLowerCase()),
   mentionableSearchPattern,
   insertSpaceAfterMention,
+  pluginKey = ELEMENT_MENTION,
 }: MentionPluginOptions = {}): {
   plugin: SlatePlugin;
   getMentionSelectProps: () => GetMentionSelectProps;
@@ -56,11 +57,11 @@ export const useMentionPlugin = ({
     (editor: SPEditor, data: MentionNodeData) => {
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
-        insertMention(editor, { data, insertSpaceAfterMention });
+        insertMention(editor, { data, insertSpaceAfterMention, pluginKey });
         return setTargetRange(null);
       }
     },
-    [targetRange, insertSpaceAfterMention]
+    [targetRange, insertSpaceAfterMention, pluginKey]
   );
 
   const onKeyDownMention: OnKeyDown = useCallback(
@@ -132,15 +133,15 @@ export const useMentionPlugin = ({
   return {
     plugin: useMemo(
       () => ({
-        pluginKeys: ELEMENT_MENTION,
+        pluginKeys: pluginKey,
         onChange: onChangeMention,
-        renderElement: getRenderElement(ELEMENT_MENTION),
+        renderElement: getRenderElement(pluginKey),
         onKeyDown: onKeyDownMention,
-        deserialize: getMentionDeserialize(),
-        inlineTypes: getSlatePluginTypes(ELEMENT_MENTION),
-        voidTypes: getSlatePluginTypes(ELEMENT_MENTION),
+        deserialize: getMentionDeserialize(pluginKey),
+        inlineTypes: getSlatePluginTypes(pluginKey),
+        voidTypes: getSlatePluginTypes(pluginKey),
       }),
-      [onChangeMention, onKeyDownMention]
+      [onChangeMention, onKeyDownMention, pluginKey]
     ),
 
     getMentionSelectProps: useCallback(
