@@ -9,6 +9,14 @@ import { RenderLeaf } from './RenderLeaf';
 import { Serialize } from './Serialize';
 import { WithOverride } from './WithOverride';
 
+export interface SlatePluginKey {
+  /**
+   * Custom plugin key to be used when creating multiple same plugins with different options.
+   * @default options.type
+   */
+  pluginKey?: string;
+}
+
 /**
  * Slate plugin interface built on top of Slate and Editable.
  */
@@ -69,5 +77,4 @@ export interface SlatePlugin {
   serialize?: Serialize;
 
   pluginKeys?: string | string[];
-  // pluginKeys?: T | T[];
 }

@@ -71,7 +71,7 @@ import {
   ELEMENT_TR,
 } from '@udecode/slate-plugins-table';
 
-export type SlatePluginKey =
+export type DefaultSlatePluginKey =
   | typeof ELEMENT_ALIGN_CENTER
   | typeof ELEMENT_ALIGN_JUSTIFY
   | typeof ELEMENT_ALIGN_LEFT
@@ -114,9 +114,11 @@ export type SlatePluginKey =
  * @param overrides merge into the default options
  */
 export const createSlatePluginsOptions = <T extends string = string>(
-  overrides?: Partial<Record<SlatePluginKey | T, Partial<SlatePluginOptions>>>
+  overrides?: Partial<
+    Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
+  >
 ) => {
-  const options: Record<SlatePluginKey, Partial<SlatePluginOptions>> = {
+  const options: Record<DefaultSlatePluginKey, Partial<SlatePluginOptions>> = {
     [ELEMENT_ALIGN_CENTER]: {},
     [ELEMENT_ALIGN_JUSTIFY]: {},
     [ELEMENT_ALIGN_LEFT]: {},
@@ -162,8 +164,10 @@ export const createSlatePluginsOptions = <T extends string = string>(
   }
 
   Object.keys(options).forEach((key) => {
-    options[key].type = key;
+    if (!options[key].type) {
+      options[key].type = key;
+    }
   });
 
-  return options as Record<SlatePluginKey | T, SlatePluginOptions>;
+  return options as Record<DefaultSlatePluginKey | T, SlatePluginOptions>;
 };
