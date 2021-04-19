@@ -21,6 +21,7 @@ module.exports = {
       label: 'Guides',
       items: [
         'guides/basic-editor',
+        'guides/plugins',
         'guides/creating-plugins',
         'guides/styling',
       ],

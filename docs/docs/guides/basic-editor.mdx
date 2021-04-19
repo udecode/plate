@@ -29,17 +29,16 @@ This looks the same than a `<textarea>`.
 Let's add a placeholder and some padding using `editableProps` props.
 
 ```tsx live
-() => (
-  <SlatePlugins
-    id="1"
-    editableProps={{
-      placeholder: 'Type…',
-      style: {
-        padding: '15px',
-      },
-    }}
-  />
-)
+() => {
+  const editableProps = {
+    placeholder: 'Type…',
+    style: {
+      padding: '15px',
+    },
+  };
+
+  return <SlatePlugins id="1" editableProps={editableProps} />;
+}
 ```
 
 :::note
@@ -51,29 +50,60 @@ This is optional for the first one.
 
 ### Value
 
-Let's set the initial value of the editor.
+Let's set the initial value of the editor to one block of text.
 
 ```tsx live
-() => (
-  <SlatePlugins
-    id="2"
-    editableProps={editableProps}
-    initialValue={[
-      {
-        children: [
-          {
-            text:
-              'This is editable plain text without plugins, just like a <textarea>!',
-          },
-        ],
-      },
-    ]}
-  />
-)
+() => {
+  const initialValuePlainText = [
+    {
+      children: [
+        {
+          text:
+            'This is editable plain text without plugins, just like a <textarea>!',
+        },
+      ],
+    },
+  ];
+
+  return (
+    <SlatePlugins
+      id="2"
+      editableProps={editableProps}
+      initialValue={initialValuePlainText}
+    />
+  );
+}
 ```
 
+### Change Handler
 
+Now we would like to listen to editor changes so we can save the value somewhere.
+Let's use `onChange` props.
 
-<!-- If you want to add more features to your editor, just extend the `plugins` list. That's it! -->
+```tsx live
+() => {
+  const [debugValue, setDebugValue] = useState(null);
 
-<!-- The following guide will explain you more in details `EditablePlugins` and how to create your own plugins. -->
+  return (
+    <SlatePlugins
+      id="3"
+      editableProps={editableProps}
+      initialValue={initialValuePlainText}
+      onChange={(newValue) => {
+        setDebugValue(newValue);
+        // save newValue...
+      }}
+    >
+      value: {JSON.stringify(debugValue)}
+    </SlatePlugins>
+  );
+}
+```
+
+:::note
+
+You can see that `SlatePlugins` children are rendered before the editable component.
+
+:::
+
+Now we're ready to use plugins!

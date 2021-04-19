@@ -1,5 +1,3 @@
-/** @type {import('@docusaurus/types').DocusaurusConfig} */
-
 const githubOrgUrl = 'https://github.com/udecode';
 const projectName = 'slate-plugins';
 const githubUrl = `${githubOrgUrl}/${projectName}`;
@@ -17,8 +15,7 @@ const customFields = {
   githubUrl,
   githubDocsUrl: `${githubOrgUrl}/docs`,
   npmCoreUrl: `${npmOrgUrl}/slate-plugins`,
-  announcementBarContent:
-    'If you like slate-plugins, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/udecode/slate-plugins">GitHub</a> 🎉 !️',
+  announcementBarContent: `If you like slate-plugins, give it a star on <a target="_blank" rel="noopener noreferrer" href="${githubUrl}">GitHub</a> 🎉 !️`,
 };
 
 module.exports = {
@@ -158,7 +155,7 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: `${githubUrl}/edit/docs`,
+          editUrl: `${githubUrl}/edit/docs/docs`,
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
@@ -166,7 +163,7 @@ module.exports = {
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
-          editUrl: 'https://github.com/udecode/slate-plugins/',
+          editUrl: githubUrl,
           remarkPlugins: [
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],

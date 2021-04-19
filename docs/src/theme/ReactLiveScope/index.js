@@ -6,20 +6,62 @@
  */
 
 import React from 'react';
-import { SlatePlugins } from '@udecode/slate-plugins';
+import {
+  createBlockquotePlugin,
+  createCodeBlockPlugin,
+  createHeadingPlugin,
+  createHistoryPlugin,
+  createParagraphPlugin,
+  createReactPlugin,
+  SlatePlugins,
+} from '@udecode/slate-plugins';
+import {
+  initialValueBasicElements,
+  initialValuePlainText,
+} from '../../../../stories/config/initialValues';
+
+const editableProps = {
+  placeholder: 'Type…',
+  style: {
+    padding: '15px',
+  },
+};
+
+const pluginsBasicElements = [
+  createReactPlugin(), // withReact
+  createHistoryPlugin(), // withHistory
+  createParagraphPlugin(), // paragraph element
+  createBlockquotePlugin(), // blockquote element
+  createCodeBlockPlugin(), // code block element
+  createHeadingPlugin(), // heading elements
+];
+
+const a = () => {
+  const [debugValue, setDebugValue] = useState(null);
+
+  return (
+    <SlatePlugins
+      id="3"
+      editableProps={editableProps}
+      initialValue={initialValuePlainText}
+      onChange={(value) => {
+        setDebugValue(debugValue);
+      }}
+    >
+      {debugValue}
+    </SlatePlugins>
+  );
+};
 
 // Add react-live imports you need here
 const ReactLiveScope = {
   React,
   ...React,
   SlatePlugins,
-  editableProps: {
-    placeholder: 'Type…',
-    spellCheck: true,
-    style: {
-      padding: '15px',
-    },
-  },
+  editableProps,
+  initialValuePlainText,
+  initialValueBasicElements,
+  pluginsBasicElements,
 };
 
 export default ReactLiveScope;
