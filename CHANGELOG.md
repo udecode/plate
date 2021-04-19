@@ -839,8 +839,8 @@ useMention(CHARACTERS, {
 
 ### Features
 
-- `pipe`: new helper to avoid the wrapper hell when using `withOverrides`.
-  You can now have an array of plugins `withOverrides`.
+- `pipe`: new helper to avoid the wrapper hell when using `withPlugins`.
+  You can now have an array of plugins `withPlugins`.
 - `EditablePlugins`: new props for adding your dependencies to the
   corresponding `useCallback`.
   - `decorateDeps`

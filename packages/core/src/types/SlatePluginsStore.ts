@@ -2,6 +2,14 @@ import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 import { SPEditor } from './SPEditor';
 import { TDescendant } from './TDescendant';
 
+/**
+ * A unique id used to store the editor state by id.
+ * Required if rendering multiple `SlatePlugins`.
+ * Optional otherwise.
+ * @default 'main'
+ */
+export type EditorId = string | null | undefined;
+
 export type State = {
   /**
    * Slate editor. Default uses `withReact`, `withHistoryPersist` and `withRandomKey` plugins.
@@ -31,6 +39,9 @@ export type State = {
   value: TDescendant[];
 };
 
+/**
+ * @see {@link EditorId}
+ */
 export type SlatePluginsState = Record<string, State>;
 
 export type SlatePluginsActions = {

@@ -40,7 +40,7 @@ export const Example = () => {
       <SlatePlugins
         id={id}
         editableProps={editableProps}
-        // initialValue={initialValuePlainText}
+        initialValue={initialValuePlainText}
       />
     </div>
   );

@@ -16,11 +16,15 @@
 // Admonitions
 // ==============================================================================
 
-//.admonition,
-//.admonition-icon {
-//  color: white;
-//  ring-color: white;
-//}
+.admonition {
+  color: white;
+  --ra-admonition-icon-color: white;
+}
+
+.admonition-note {
+  color: var(--ifm-font-color-base);
+  --ra-admonition-icon-color: var(--ifm-font-color-base);
+}
 
 .admonition-success {
   background-color: var(--ifm-admonition-background-color-success);
@@ -36,11 +40,6 @@
 .admonition-danger {
   background-color: var(--ifm-admonition-background-color-error);
   border-left-color: var(--ifm-admonition-color-error);
-}
-
-.admonition {
-  color: white;
-  --ra-admonition-icon-color: white;
 }
 
 //.admonition-secondary,

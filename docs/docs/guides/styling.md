@@ -1,3 +1,4 @@
 ---
+slug: /styling
 title: Styling
 ---

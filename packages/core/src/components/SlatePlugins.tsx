@@ -9,7 +9,14 @@ import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
 export interface SlatePluginsProps
   extends UseSlatePluginsEffectsOptions,
     UseSlatePropsOptions {
+  /**
+   * The children rendered inside `Slate` before the `Editable` component.
+   */
   children?: React.ReactNode;
+
+  /**
+   * The props for the `Editable` component.
+   */
   editableProps?: EditableProps;
 }
 

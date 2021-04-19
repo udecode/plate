@@ -1,5 +1,12 @@
+import { FunctionComponent } from 'react';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps } from './GetNodeProps';
+
+/**
+ * React component rendering a slate element or leaf.
+ * @default DefaultElement | DefaultLeaf
+ */
+export type SlatePluginComponent = FunctionComponent | null | undefined;
 
 export interface SlatePluginOptions {
   [key: string]: any;
@@ -10,11 +17,7 @@ export interface SlatePluginOptions {
    */
   type: string;
 
-  /**
-   * React component to render a slate element or leaf.
-   * @default DefaultElement | DefaultLeaf
-   */
-  component?: any;
+  component?: SlatePluginComponent;
 
   /**
    * Default type of slate blocks.
@@ -43,4 +46,16 @@ export interface SlatePluginOptions {
   deserialize?: Partial<DeserializeOptions>;
 }
 
-export type SlatePluginsOptions = Record<string, SlatePluginOptions>;
+/**
+ * A unique key to store the plugin options by key.
+ */
+export type PluginKey = string;
+
+/**
+ * Slate plugins options stored by plugin key.
+ * Each plugin can access the options by its plugin key.
+ *
+ * @default {}
+ * @see {@link PluginKey}
+ */
+export type SlatePluginsOptions = Record<PluginKey, SlatePluginOptions>;

@@ -1,4 +1,5 @@
 ---
+slug: /contributing
 title: Contributing
 ---
 

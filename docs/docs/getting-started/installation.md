@@ -1,11 +1,12 @@
 ---
+slug: /installation
 title: Installation
 ---
 
 Slate Plugins is essentially a set of npm packages that can be installed
 over npm.
 
-You can install all the packages simultaneously:
+You can install all the packages bundled together:
 
 ```bash npm2yarn
 npm install @udecode/slate-plugins

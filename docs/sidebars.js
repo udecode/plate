@@ -3,26 +3,42 @@ module.exports = {
     {
       type: 'category',
       label: 'Slate Plugins',
-      items: ['introduction', 'design-principles', 'contributing'],
+      items: [
+        'slate-plugins/introduction',
+        'slate-plugins/design-principles',
+        'slate-plugins/contributing',
+      ],
+      collapsed: false,
     },
     {
       type: 'category',
       label: 'Getting Started',
-      items: [
-        'installation',
-        'my-first-editor',
-        'configuration',
-        'create-a-page',
-        'create-a-document',
-        'create-a-blog-post',
-        'markdown-features',
-        'thank-you',
-      ],
+      items: ['getting-started/installation'],
+      collapsed: false,
     },
     {
       type: 'category',
       label: 'Guides',
-      items: ['creating-plugins', 'styling'],
+      items: [
+        'guides/basic-editor',
+        'guides/creating-plugins',
+        'guides/styling',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'API Reference',
+      items: [
+        {
+          type: 'category',
+          label: 'Core',
+          items: ['api/slate-plugins'],
+          collapsed: false,
+        },
+        // 'api/slate-plugins',
+      ],
+      collapsed: false,
     },
   ],
 };

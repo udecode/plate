@@ -2,7 +2,8 @@
   "private": true,
   "license": "MIT",
   "workspaces": [
-    "packages/**"
+    "packages/**",
+    "docs"
   ],
   "scripts": {
     "build": "lerna exec -- yarn build",

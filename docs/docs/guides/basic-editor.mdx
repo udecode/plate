@@ -1,0 +1,79 @@
+---
+title: Basic Editor
+slug: /basic-editor
+---
+
+:::note
+
+We're using flexible playgrounds for live editing React code.
+
+:::
+
+### Default Editor
+
+Let's start with the smallest editor implementation.
+
+```tsx
+import React from 'react';
+import { SlatePlugins } from '@udecode/slate-plugins'
+```
+
+```tsx live
+() => <SlatePlugins />
+```
+
+This looks the same than a `<textarea>`.
+
+### Styling
+
+Let's add a placeholder and some padding using `editableProps` props.
+
+```tsx live
+() => (
+  <SlatePlugins
+    id="1"
+    editableProps={{
+      placeholder: 'Type…',
+      style: {
+        padding: '15px',
+      },
+    }}
+  />
+)
+```
+
+:::note
+
+Once you render multiple `SlatePlugins`, you'll need to pass unique `id` to each.
+This is optional for the first one.
+
+:::
+
+### Value
+
+Let's set the initial value of the editor.
+
+```tsx live
+() => (
+  <SlatePlugins
+    id="2"
+    editableProps={editableProps}
+    initialValue={[
+      {
+        children: [
+          {
+            text:
+              'This is editable plain text without plugins, just like a <textarea>!',
+          },
+        ],
+      },
+    ]}
+  />
+)
+```
+
+
+
+<!-- If you want to add more features to your editor, just extend the `plugins` list. That's it! -->
+
+<!-- The following guide will explain you more in details `EditablePlugins` and how to create your own plugins. -->
