@@ -60,10 +60,10 @@ import {
 } from '@udecode/slate-plugins-table';
 import { TableElement } from '@udecode/slate-plugins-table-ui';
 import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
-import { SlatePluginKey } from './createSlatePluginsOptions';
+import { DefaultSlatePluginKey } from './createSlatePluginsOptions';
 
 export const createSlatePluginsComponents = <T extends string = string>(
-  overrides?: Partial<Record<SlatePluginKey | T, FunctionComponent<any>>>
+  overrides?: Partial<Record<DefaultSlatePluginKey | T, FunctionComponent<any>>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: withProps(StyledElement, {
@@ -298,5 +298,5 @@ export const createSlatePluginsComponents = <T extends string = string>(
     });
   }
 
-  return components as Record<SlatePluginKey | T, FunctionComponent>;
+  return components as Record<DefaultSlatePluginKey | T, FunctionComponent>;
 };
