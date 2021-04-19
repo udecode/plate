@@ -51,6 +51,4 @@ export interface GetMentionSelectProps {
    * Callback called when clicking on a mention option
    */
   onClickMention?: (editor: SPEditor, option: MentionNodeData) => void;
-
-  searchValue: string;
 }

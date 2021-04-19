@@ -150,9 +150,8 @@ export const useMentionPlugin = ({
         valueIndex,
         options: values,
         onClickMention: onAddMention,
-        searchValue: search,
       }),
-      [onAddMention, search, targetRange, valueIndex, values]
+      [onAddMention, targetRange, valueIndex, values]
     ),
     searchValue: search,
   };
