@@ -6,6 +6,7 @@ import { IComboboxItem } from './components/Combobox.types';
 export enum ComboboxKey {
   TAG = 'tag',
   SLASH_COMMAND = 'slash_command',
+  EMOJI = 'emoji',
 }
 
 export type ComboboxState = {
