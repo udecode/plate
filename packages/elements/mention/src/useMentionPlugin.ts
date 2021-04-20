@@ -58,7 +58,6 @@ export const useMentionPlugin = ({
       if (targetRange !== null) {
         Transforms.select(editor, targetRange);
         insertMention(editor, { data, insertSpaceAfterMention, pluginKey });
-        return setTargetRange(null);
       }
     },
     [targetRange, insertSpaceAfterMention, pluginKey]
