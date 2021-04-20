@@ -49,5 +49,8 @@ it('should go down', () => {
   });
 
   expect(editor.children).toEqual(output.children);
+  act(() => {
+    result.current.plugin.onChange?.(editor)([]);
+  });
   expect(result.current.getMentionSelectProps().at).toEqual(null);
 });
