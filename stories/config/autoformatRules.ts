@@ -1,6 +1,7 @@
 import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -11,7 +12,9 @@ import {
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  insertCodeBlock,
+  getParent,
+  insertEmptyCodeBlock,
+  isType,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -64,7 +67,15 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['*', '-'],
       preFormat,
       format: (editor) => {
-        toggleList(editor as SPEditor, { type: options[ELEMENT_UL].type });
+        if (editor.selection) {
+          const [node] = getParent(editor, editor.selection);
+          if (
+            !isType(editor, node, ELEMENT_CODE_BLOCK) &&
+            !isType(editor, node, ELEMENT_CODE_LINE)
+          ) {
+            toggleList(editor as SPEditor, { type: options[ELEMENT_UL].type });
+          }
+        }
       },
     },
     {
@@ -72,7 +83,15 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['1.', '1)'],
       preFormat,
       format: (editor) => {
-        toggleList(editor as SPEditor, { type: options[ELEMENT_OL].type });
+        if (editor.selection) {
+          const [node] = getParent(editor, editor.selection);
+          if (
+            !isType(editor, node, ELEMENT_CODE_BLOCK) &&
+            !isType(editor, node, ELEMENT_CODE_LINE)
+          ) {
+            toggleList(editor as SPEditor, { type: options[ELEMENT_OL].type });
+          }
+        }
       },
     },
     {
@@ -127,7 +146,9 @@ export const optionsAutoformat: WithAutoformatOptions = {
       triggerAtBlockStart: false,
       preFormat,
       format: (editor) => {
-        insertCodeBlock(editor as SPEditor, { select: true });
+        insertEmptyCodeBlock(editor as SPEditor, {
+          insertNodesOptions: { select: true },
+        });
       },
     },
   ],
