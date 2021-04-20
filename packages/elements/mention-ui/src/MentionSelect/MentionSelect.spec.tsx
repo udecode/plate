@@ -20,7 +20,6 @@ describe('when MentionSelect', () => {
           options={mentionables}
           valueIndex={0}
           onClickMention={() => {}}
-          searchValue=""
         />
       );
 
