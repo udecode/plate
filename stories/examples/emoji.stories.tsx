@@ -72,10 +72,14 @@ const useEmojiPlugin = (): SlatePlugin => {
 
         if (emojiName in emojiIndex.emojis) {
           Transforms.select(editor, markupRange);
-          Transforms.insertText(
-            editor,
-            (emojiIndex.emojis[emojiName] as BaseEmoji).native
-          );
+
+          let emoji = emojiIndex.emojis[emojiName];
+          // if the emoji has skin variants the index returns an object indexed
+          // by the numbers 1-6. for now opt for 1 (generic)
+          if (!('id' in emoji)) {
+            emoji = emoji['1'];
+          }
+          Transforms.insertText(editor, (emoji as BaseEmoji).native);
           Transforms.collapse(editor, { edge: 'end' });
           return false;
         }
