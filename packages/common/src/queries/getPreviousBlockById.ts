@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry } from 'slate';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 import { findNode } from './findNode';
@@ -9,7 +9,7 @@ import { queryNode } from './queryNode';
  * If not found, find the first block by id and return [null, its previous path]
  */
 export const getPreviousBlockById = (
-  editor: Editor,
+  editor: TEditor,
   id: string,
   query?: QueryNodeOptions
 ): NodeEntry<Node> | undefined => {

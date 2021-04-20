@@ -1,4 +1,5 @@
 /* eslint-disable no-constant-condition */
+import { TEditor } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';
 import { Editor, Location, Path, Point } from 'slate';
@@ -46,7 +47,7 @@ export interface PointBeforeOptions extends BeforeOptions {
  * TODO: support for sequence of any characters.
  */
 export const getPointBefore = (
-  editor: Editor,
+  editor: TEditor,
   at: Location,
   options?: PointBeforeOptions
 ) => {

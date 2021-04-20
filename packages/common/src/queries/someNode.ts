@@ -1,5 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { TEditor, TNode } from '@udecode/slate-plugins-core';
 import { findNode, FindNodeOptions } from './findNode';
 
 /**
@@ -7,7 +6,7 @@ import { findNode, FindNodeOptions } from './findNode';
  * returns false.
  */
 export const someNode = <T extends TNode = TNode>(
-  editor: Editor,
+  editor: TEditor,
   options: FindNodeOptions<T>
 ) => {
   return !!findNode<T>(editor, options);

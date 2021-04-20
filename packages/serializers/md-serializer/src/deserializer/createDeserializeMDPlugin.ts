@@ -1,6 +1,8 @@
+import { setNodes } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
   SPEditor,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
@@ -25,7 +27,7 @@ export const withDeserializeMD = (): WithOverride<ReactEditor & SPEditor> => (
       if (!fragment.length) return;
 
       if (fragment[0].type) {
-        Transforms.setNodes(editor, { type: fragment[0].type } as any);
+        setNodes<TElement>(editor, { type: fragment[0].type });
       }
 
       Transforms.insertFragment(editor, fragment);

@@ -1,5 +1,5 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
-import { Editor } from 'slate';
 import { isMarkActive } from '../queries/isMarkActive';
 import { removeMark } from './removeMark';
 
@@ -9,7 +9,7 @@ import { removeMark } from './removeMark';
  * @param clear marks to clear when adding mark
  */
 export const toggleMark = (
-  editor: Editor,
+  editor: TEditor,
   key: string,
   clear: string | string[] = []
 ) => {

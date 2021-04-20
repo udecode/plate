@@ -1,8 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { insertNodes } from '../../../transforms/insertNodes';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
@@ -29,7 +30,7 @@ it('should add an id to the new elements', () => {
     withHistory(input)
   );
 
-  Transforms.insertNodes(
+  insertNodes(
     editor,
     (
       <fragment>

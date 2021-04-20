@@ -1,8 +1,10 @@
 /** @jsx jsx */
+import { TElement } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { insertNodes } from '../../../transforms/insertNodes';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
@@ -30,7 +32,7 @@ it('should reset the id', () => {
     resetExistingID: true,
   })(withHistory(input));
 
-  Transforms.insertNodes(
+  insertNodes<TElement>(
     editor,
     (
       <fragment>

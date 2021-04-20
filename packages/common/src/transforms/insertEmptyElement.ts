@@ -1,18 +1,19 @@
-import { Editor, Transforms } from 'slate';
+import { TEditor, TElement } from '@udecode/slate-plugins-core';
 import { getQueryOptions } from '../queries/match';
 import { InsertNodesOptions } from '../types/Transforms.types';
+import { insertNodes } from './insertNodes';
 
 export const insertEmptyElement = (
-  editor: Editor,
+  editor: TEditor,
   type: string,
   options?: InsertNodesOptions
 ) => {
-  Transforms.insertNodes(
+  insertNodes<TElement>(
     editor,
     {
       type,
       children: [{ text: '' }],
-    } as any,
+    },
     getQueryOptions(editor, options)
   );
 };

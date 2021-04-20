@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Path, Point } from 'slate';
 import { getBlockAbove } from './getBlockAbove';
 
@@ -5,7 +6,7 @@ import { getBlockAbove } from './getBlockAbove';
  * If the start point is inside an inline void, get the point before or after it.
  */
 export const getPointNextToVoid = (
-  editor: Editor,
+  editor: TEditor,
   {
     at,
     after,

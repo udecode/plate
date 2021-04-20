@@ -36,7 +36,7 @@ const options = createSlatePluginsOptions();
 
 // Handle multiple combobox
 const useComboboxOnChange = (): OnChange => {
-  const editor = useStoreEditor(id);
+  const editor = useStoreEditor(id)!;
 
   const tagOnChange = useTagOnChange(editor, MENTIONABLES);
   const isOpen = useComboboxIsOpen();

@@ -1,7 +1,7 @@
 import {
   deleteFragment,
-  ELEMENT_DEFAULT,
   getPreviousPath,
+  insertNodes,
   isExpanded,
 } from '@udecode/slate-plugins-common';
 import {
@@ -10,7 +10,7 @@ import {
   TElement,
 } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -53,17 +53,17 @@ export const removeListItem = (
 
     // 1
     let tempLiPath = Path.next(liPath);
-    Transforms.insertNodes(
+    insertNodes<TElement>(
       editor,
       {
         type: getSlatePluginType(editor, ELEMENT_LI),
         children: [
           {
-            type: getSlatePluginType(editor, ELEMENT_DEFAULT),
+            type: getSlatePluginType(editor, ELEMENT_LIC),
             children: [{ text: '' }],
           },
         ],
-      } as any,
+      },
       { at: tempLiPath }
     );
 

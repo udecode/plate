@@ -3,11 +3,12 @@ import {
   getText,
   removeMark,
 } from '@udecode/slate-plugins-common';
-import { Editor, Range, Transforms } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
+import { Range, Transforms } from 'slate';
 import { AutoformatRule } from '../types';
 
 export const autoformatInline = (
-  editor: Editor,
+  editor: TEditor,
   {
     type,
     between,

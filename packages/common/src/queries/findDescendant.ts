@@ -2,7 +2,7 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
-import { TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { FindNodeOptions } from './findNode';
 import { match } from './match';
@@ -11,7 +11,7 @@ import { match } from './match';
  * Get the first descendant node matching the condition.
  */
 export const findDescendant = <T extends TNode = TNode>(
-  editor: Editor,
+  editor: TEditor,
   options: FindNodeOptions<T>
 ): NodeEntry<T> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.

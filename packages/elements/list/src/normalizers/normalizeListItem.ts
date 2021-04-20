@@ -1,8 +1,4 @@
-import {
-  ELEMENT_DEFAULT,
-  getChildren,
-  insertEmptyElement,
-} from '@udecode/slate-plugins-common';
+import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   SPEditor,
@@ -10,7 +6,7 @@ import {
   TElement,
 } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
 
 /**
@@ -27,7 +23,7 @@ export const normalizeListItem = (
   const allValidLiChildrenTypes = [
     getSlatePluginType(editor, ELEMENT_UL),
     getSlatePluginType(editor, ELEMENT_OL),
-    getSlatePluginType(editor, ELEMENT_DEFAULT),
+    getSlatePluginType(editor, ELEMENT_LIC),
     ...validLiChildrenTypes,
   ];
 
@@ -36,7 +32,7 @@ export const normalizeListItem = (
   const firstChild: TDescendant = listItemNode.children?.[0];
 
   if (!firstChild) {
-    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_DEFAULT), {
+    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
       at: firstChildPath,
     });
     return true;
@@ -49,8 +45,8 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a <p> tag as a first element
-  if (firstChild.type !== getSlatePluginType(editor, ELEMENT_DEFAULT)) {
-    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_DEFAULT), {
+  if (firstChild.type !== getSlatePluginType(editor, ELEMENT_LIC)) {
+    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
       at: firstChildPath,
     });
   }

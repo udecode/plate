@@ -1,7 +1,4 @@
-import {
-  normalizeDescendantsToDocumentFragment,
-  SlateDocumentFragment,
-} from '@udecode/slate-plugins-common';
+import { normalizeDescendantsToDocumentFragment } from '@udecode/slate-plugins-common';
 import {
   SlatePlugin,
   SPEditor,
@@ -22,7 +19,7 @@ export const deserializeHTMLToDocumentFragment = (
     plugins: SlatePlugin[];
     element: HTMLElement | string;
   }
-): SlateDocumentFragment => {
+): TDescendant[] => {
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }

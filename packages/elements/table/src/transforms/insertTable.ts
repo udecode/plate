@@ -1,6 +1,9 @@
-import { someNode } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
+import { insertNodes, someNode } from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_TABLE } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
@@ -14,6 +17,6 @@ export const insertTable = (
       match: { type: getSlatePluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    Transforms.insertNodes(editor, getEmptyTableNode(editor, { header }));
+    insertNodes<TElement>(editor, getEmptyTableNode(editor, { header }));
   }
 };

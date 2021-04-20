@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-core",
-  "version": "1.0.0-alpha.14",
+  "version": "1.0.0-alpha.23",
   "description": "Slate plugins core",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/core#readme",
@@ -30,6 +30,7 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.60.0",
+    "slate-history": ">=0.60.0",
     "slate-react": ">=0.60.0"
   },
   "dependencies": {

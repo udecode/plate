@@ -1,16 +1,16 @@
-import { SelectableStyleProps, SelectableStyleSet } from './Selectable.types';
+import { DraggableStyleProps, DraggableStyleSet } from './Draggable.types';
 
 const classNames = {
-  root: 'slate-Selectable',
+  root: 'slate-Draggable',
   gutterLeft: 'slate-gutter-left',
 };
 
-export const getSelectableStyles = ({
+export const getDraggableStyles = ({
   className,
   direction,
   isDragging,
   selected,
-}: SelectableStyleProps): SelectableStyleSet => {
+}: DraggableStyleProps): DraggableStyleSet => {
   return {
     root: [
       classNames.root,
@@ -26,10 +26,8 @@ export const getSelectableStyles = ({
       },
       className,
     ],
-    block: {},
-    blockAndGutter: {
-      paddingTop: 3,
-      paddingBottom: 3,
+    block: {
+      overflow: 'auto',
     },
     gutterLeft: [
       {
@@ -44,16 +42,15 @@ export const getSelectableStyles = ({
     ],
     blockToolbarWrapper: {
       display: 'flex',
-      // alignItems: 'center',
       height: '1.5em',
     },
     blockToolbar: {
-      width: 18,
-      height: 18,
       marginRight: 4,
       pointerEvents: 'auto',
+      display: 'flex',
+      alignItems: 'center',
     },
-    dragButton: {
+    dragHandle: {
       minWidth: 18,
       height: 18,
       padding: 0,
