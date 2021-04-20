@@ -1,8 +1,4 @@
-import {
-  getSlatePluginType,
-  SlatePluginKey,
-  SPEditor,
-} from '@udecode/slate-plugins-core';
+import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
 /**
  * Does the node match the type provided.
@@ -11,7 +7,7 @@ import castArray from 'lodash/castArray';
 export const isType = (
   editor: SPEditor,
   node: any,
-  pluginKey?: SlatePluginKey | SlatePluginKey[]
+  pluginKey?: string | string[]
 ) => {
   const keys = castArray(pluginKey);
   keys.forEach((key) => {
