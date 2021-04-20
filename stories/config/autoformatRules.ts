@@ -2,6 +2,7 @@ import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
+  ELEMENT_DEFAULT,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -147,6 +148,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
       preFormat,
       format: (editor) => {
         insertEmptyCodeBlock(editor as SPEditor, {
+          defaultType: ELEMENT_DEFAULT,
           insertNodesOptions: { select: true },
         });
       },
