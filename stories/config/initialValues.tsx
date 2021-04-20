@@ -35,8 +35,7 @@ import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as faker from 'faker';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
-import { options } from './pluginOptions';
-import { createList, createParagraph, getNodesWithRandomId } from './utils';
+import { createElement, createList, getNodesWithRandomId } from './utils';
 
 jsx;
 
@@ -304,7 +303,7 @@ export const initialValueMentions: any = (
 
 export const initialValuePasteHtml: any = [
   {
-    type: options[ELEMENT_H1].type,
+    type: ELEMENT_H1,
     children: [
       {
         text: '🍪 Deserialize HTML',
@@ -312,7 +311,7 @@ export const initialValuePasteHtml: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -328,11 +327,11 @@ export const initialValuePasteHtml: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [{ text: 'This is an example of doing exactly that!' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -344,7 +343,7 @@ export const initialValuePasteHtml: any = [
 
 export const initialValuePasteMd: any = [
   {
-    type: options[ELEMENT_H1].type,
+    type: ELEMENT_H1,
     children: [
       {
         text: '🍩 Deserialize Markdown',
@@ -352,7 +351,7 @@ export const initialValuePasteMd: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -368,17 +367,17 @@ export const initialValuePasteMd: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [{ text: 'This is an example of doing exactly that!' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'Try it out for yourself! Copy and paste Markdown content from ',
       },
       {
-        type: options[ELEMENT_LINK].type,
+        type: ELEMENT_LINK,
         url: 'https://markdown-it.github.io/',
         children: [{ text: 'https://markdown-it.github.io/' }],
       },
@@ -389,7 +388,7 @@ export const initialValuePasteMd: any = [
 
 export const initialValuePlainText: any = [
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -400,85 +399,64 @@ export const initialValuePlainText: any = [
 ];
 
 export const initialValueBasicMarks: any = [
+  createElement('💅 Marks', { type: ELEMENT_H1 }),
+  createElement('💧 Basic Marks', { type: ELEMENT_H2 }),
+  createElement(
+    'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.'
+  ),
+  createElement(
+    'You can customize the type, the component and the hotkey for each of these.'
+  ),
+  createElement('This text is bold.', { mark: MARK_BOLD }),
+  createElement('This text is italic.', { mark: MARK_ITALIC }),
+  createElement('This text is underlined.', {
+    mark: MARK_UNDERLINE,
+  }),
   {
-    type: options[ELEMENT_H1].type,
-    children: [
-      {
-        text: '💅 Marks',
-      },
-    ],
-  },
-  {
-    type: options[ELEMENT_H2].type,
-    children: [
-      {
-        text: '💧 Basic Marks',
-      },
-    ],
-  },
-  {
-    type: options[ELEMENT_PARAGRAPH].type,
-    children: [
-      {
-        text:
-          'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.',
-      },
-    ],
-  },
-  {
-    type: options[ELEMENT_PARAGRAPH].type,
-    children: [
-      {
-        text:
-          'You can customize the type, the component and the hotkey for each of these.',
-      },
-    ],
-  },
-  createParagraph('This text is bold.', options[MARK_BOLD].type),
-  createParagraph('This text is italic.', options[MARK_ITALIC].type),
-  createParagraph('This text is underlined.', options[MARK_UNDERLINE].type),
-  {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'This text is bold, italic and underlined.',
-        [options[MARK_BOLD].type]: true,
-        [options[MARK_ITALIC].type]: true,
-        [options[MARK_UNDERLINE].type]: true,
+        [MARK_BOLD]: true,
+        [MARK_ITALIC]: true,
+        [MARK_UNDERLINE]: true,
       },
     ],
   },
-  createParagraph(
-    'This is a strikethrough text.',
-    options[MARK_STRIKETHROUGH].type
-  ),
-  createParagraph('This is an inline code.', options[MARK_CODE].type),
+  createElement('This is a strikethrough text.', {
+    mark: MARK_STRIKETHROUGH,
+  }),
+  createElement('This is an inline code.', { mark: MARK_CODE }),
+];
+
+export const initialValueMarks = [
+  ...initialValueBasicMarks,
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'These are ' },
-      { text: 'a subscript', [options[MARK_SUBSCRIPT].type]: true },
+      { text: 'a subscript', [MARK_SUBSCRIPT]: true },
       { text: ' and ' },
-      { text: 'a superscript', [options[MARK_SUPERSCRIPT].type]: true },
+      { text: 'a superscript', [MARK_SUPERSCRIPT]: true },
       { text: '.' },
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'You can also press ' },
-      { text: 'Super + B', [options[MARK_KBD].type]: true },
+      { text: 'Super + B', [MARK_KBD]: true },
       { text: ' to mark selected text bold or ' },
-      { text: 'Super + I', [options[MARK_KBD].type]: true },
+      { text: 'Super + I', [MARK_KBD]: true },
       { text: ' to mark it italic.' },
     ],
   },
-  createParagraph('There are many other keyboard shortcuts.'),
+  createElement('There are many other keyboard shortcuts.'),
 ];
 
 export const initialValueHighlight: any = [
   {
-    type: options[ELEMENT_H2].type,
+    type: ELEMENT_H2,
     children: [
       {
         text: '🌈 Highlight',
@@ -486,14 +464,14 @@ export const initialValueHighlight: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'The Highlight plugin enables support for ',
       },
       {
         text: 'highlights',
-        [options[MARK_HIGHLIGHT].type]: true,
+        [MARK_HIGHLIGHT]: true,
       },
       {
         text:
@@ -504,55 +482,21 @@ export const initialValueHighlight: any = [
 ];
 
 export const initialValueBasicElements: any = [
+  createElement('🧱 Elements', { type: ELEMENT_H1 }),
+  createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
+  createElement('These are the most common elements, known as blocks:'),
+  createElement('Heading 1', { type: ELEMENT_H1 }),
+  createElement('Heading 2', { type: ELEMENT_H2 }),
+  createElement('Heading 3', { type: ELEMENT_H3 }),
+  createElement('Heading 4', { type: ELEMENT_H4 }),
+  createElement('Heading 5', { type: ELEMENT_H5 }),
+  createElement('Heading 6', { type: ELEMENT_H6 }),
+  createElement('Blockquote', { type: ELEMENT_BLOCKQUOTE }),
   {
-    type: options[ELEMENT_H1].type,
-    children: [{ text: '🧱 Elements' }],
-  },
-  {
-    type: options[ELEMENT_H2].type,
-    children: [{ text: '🔥 Basic Elements' }],
-  },
-  {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_CODE_BLOCK,
     children: [
       {
-        text: 'These are the most common elements, known as blocks:',
-      },
-    ],
-  },
-  {
-    type: options[ELEMENT_H1].type,
-    children: [{ text: 'Heading 1' }],
-  },
-  {
-    type: options[ELEMENT_H2].type,
-    children: [{ text: 'Heading 2' }],
-  },
-  {
-    type: options[ELEMENT_H3].type,
-    children: [{ text: 'Heading 3' }],
-  },
-  {
-    type: options[ELEMENT_H4].type,
-    children: [{ text: 'Heading 4' }],
-  },
-  {
-    type: options[ELEMENT_H5].type,
-    children: [{ text: 'Heading 5' }],
-  },
-  {
-    type: options[ELEMENT_H6].type,
-    children: [{ text: 'Heading 6' }],
-  },
-  {
-    type: options[ELEMENT_BLOCKQUOTE].type,
-    children: [{ text: 'Blockquote' }],
-  },
-  {
-    type: options[ELEMENT_CODE_BLOCK].type,
-    children: [
-      {
-        type: options[ELEMENT_CODE_LINE].type,
+        type: ELEMENT_CODE_LINE,
         children: [
           {
             text: "const a = 'Hello';",
@@ -560,7 +504,7 @@ export const initialValueBasicElements: any = [
         ],
       },
       {
-        type: options[ELEMENT_CODE_LINE].type,
+        type: ELEMENT_CODE_LINE,
         children: [
           {
             text: "const b = 'World';",
@@ -573,38 +517,38 @@ export const initialValueBasicElements: any = [
 
 export const initialValueList: any = [
   {
-    type: options[ELEMENT_H2].type,
+    type: ELEMENT_H2,
     children: [{ text: '✍️ List' }],
   },
-  { type: options[ELEMENT_PARAGRAPH].type, children: [{ text: '' }] },
+  { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] },
   {
-    type: options[ELEMENT_UL].type,
+    type: ELEMENT_UL,
     children: [
       {
-        type: options[ELEMENT_LI].type,
+        type: ELEMENT_LI,
         children: [
           {
-            type: options[ELEMENT_PARAGRAPH].type,
+            type: ELEMENT_PARAGRAPH,
             children: [{ text: 'Bulleted list' }],
           },
           {
-            type: options[ELEMENT_UL].type,
+            type: ELEMENT_UL,
             children: [
               {
-                type: options[ELEMENT_LI].type,
+                type: ELEMENT_LI,
                 children: [
                   {
-                    type: options[ELEMENT_PARAGRAPH].type,
+                    type: ELEMENT_PARAGRAPH,
                     children: [{ text: 'support' }],
                   },
                   {
-                    type: options[ELEMENT_UL].type,
+                    type: ELEMENT_UL,
                     children: [
                       {
-                        type: options[ELEMENT_LI].type,
+                        type: ELEMENT_LI,
                         children: [
                           {
-                            type: options[ELEMENT_PARAGRAPH].type,
+                            type: ELEMENT_PARAGRAPH,
                             children: [{ text: 'a' }],
                           },
                         ],
@@ -614,20 +558,20 @@ export const initialValueList: any = [
                 ],
               },
               {
-                type: options[ELEMENT_LI].type,
+                type: ELEMENT_LI,
                 children: [
                   {
-                    type: options[ELEMENT_PARAGRAPH].type,
+                    type: ELEMENT_PARAGRAPH,
                     children: [{ text: 'nesting' }],
                   },
                   {
-                    type: options[ELEMENT_UL].type,
+                    type: ELEMENT_UL,
                     children: [
                       {
-                        type: options[ELEMENT_LI].type,
+                        type: ELEMENT_LI,
                         children: [
                           {
-                            type: options[ELEMENT_PARAGRAPH].type,
+                            type: ELEMENT_PARAGRAPH,
                             children: [{ text: 'b' }],
                           },
                         ],
@@ -641,10 +585,10 @@ export const initialValueList: any = [
         ],
       },
       {
-        type: options[ELEMENT_LI].type,
+        type: ELEMENT_LI,
         children: [
           {
-            type: options[ELEMENT_PARAGRAPH].type,
+            type: ELEMENT_PARAGRAPH,
             children: [{ text: 'c' }],
           },
         ],
@@ -652,13 +596,13 @@ export const initialValueList: any = [
     ],
   },
   {
-    type: options[ELEMENT_OL].type,
+    type: ELEMENT_OL,
     children: [
       {
-        type: options[ELEMENT_LI].type,
+        type: ELEMENT_LI,
         children: [
           {
-            type: options[ELEMENT_PARAGRAPH].type,
+            type: ELEMENT_PARAGRAPH,
             children: [{ text: 'Numbered list' }],
           },
         ],
@@ -666,7 +610,7 @@ export const initialValueList: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -675,55 +619,55 @@ export const initialValueList: any = [
     ],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: true,
     children: [{ text: 'Slide to the left.' }],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: true,
     children: [{ text: 'Slide to the right.' }],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: false,
     children: [{ text: 'Criss-cross.' }],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: true,
     children: [{ text: 'Criss-cross!' }],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: false,
     children: [{ text: 'Cha cha real smooth…' }],
   },
   {
-    type: options[ELEMENT_TODO_LI].type,
+    type: ELEMENT_TODO_LI,
     checked: false,
     children: [{ text: "Let's go to work!" }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [{ text: 'Try it out for yourself!' }],
   },
 ];
 
 export const initialValueSearchHighlighting: any = [
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
           'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
       },
-      { text: 'decorations', [options[MARK_BOLD].type]: true },
+      { text: 'decorations', [MARK_BOLD]: true },
       { text: ' to them in realtime.' },
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'Try it out for yourself by typing in the search box above!',
@@ -733,68 +677,68 @@ export const initialValueSearchHighlighting: any = [
 ];
 
 const createTable = () => ({
-  type: options[ELEMENT_TABLE].type,
+  type: ELEMENT_TABLE,
   children: [
     {
-      type: options[ELEMENT_TR].type,
+      type: ELEMENT_TR,
       children: [
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('')],
+          type: ELEMENT_TD,
+          children: [createElement('')],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('Human', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('Human', { mark: MARK_BOLD })],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('Dog', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('Dog', { mark: MARK_BOLD })],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('Cat', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('Cat', { mark: MARK_BOLD })],
         },
       ],
     },
     {
-      type: options[ELEMENT_TR].type,
+      type: ELEMENT_TR,
       children: [
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('# of Feet', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('# of Feet', { mark: MARK_BOLD })],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('2')],
+          type: ELEMENT_TD,
+          children: [createElement('2')],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('4')],
+          type: ELEMENT_TD,
+          children: [createElement('4')],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('4')],
+          type: ELEMENT_TD,
+          children: [createElement('4')],
         },
       ],
     },
     {
-      type: options[ELEMENT_TR].type,
+      type: ELEMENT_TR,
       children: [
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('# of Lives', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('# of Lives', { mark: MARK_BOLD })],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('1')],
+          type: ELEMENT_TD,
+          children: [createElement('1')],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('1')],
+          type: ELEMENT_TD,
+          children: [createElement('1')],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('9')],
+          type: ELEMENT_TD,
+          children: [createElement('9')],
         },
       ],
     },
@@ -802,28 +746,28 @@ const createTable = () => ({
 });
 
 const createSpanningTable = () => ({
-  type: options[ELEMENT_TABLE].type,
+  type: ELEMENT_TABLE,
   children: [
     {
-      type: options[ELEMENT_TR].type,
+      type: ELEMENT_TR,
       children: [
         {
-          type: options[ELEMENT_TH].type,
+          type: ELEMENT_TH,
           attributes: { colspan: '2' },
-          children: [createParagraph('Heading', options[MARK_BOLD].type)],
+          children: [createElement('Heading', { mark: MARK_BOLD })],
         },
       ],
     },
     {
-      type: options[ELEMENT_TR].type,
+      type: ELEMENT_TR,
       children: [
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('Cell 1', options[MARK_BOLD].type)],
+          type: ELEMENT_TD,
+          children: [createElement('Cell 1', { mark: MARK_BOLD })],
         },
         {
-          type: options[ELEMENT_TD].type,
-          children: [createParagraph('Cell 2')],
+          type: ELEMENT_TD,
+          children: [createElement('Cell 2')],
         },
       ],
     },
@@ -832,7 +776,7 @@ const createSpanningTable = () => ({
 
 export const initialValueTables: any = [
   {
-    type: options[ELEMENT_H2].type,
+    type: ELEMENT_H2,
     children: [
       {
         text: '🏓 Table',
@@ -840,7 +784,7 @@ export const initialValueTables: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -850,7 +794,7 @@ export const initialValueTables: any = [
   },
   createTable(),
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -860,7 +804,7 @@ export const initialValueTables: any = [
   },
   createSpanningTable(),
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -872,11 +816,11 @@ export const initialValueTables: any = [
 
 export const initialValueSoftBreak: any = [
   {
-    type: options[ELEMENT_H1].type,
+    type: ELEMENT_H1,
     children: [{ text: '🍦 Soft Break ⇧⏎' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'You can define a set of rules with:',
@@ -888,22 +832,22 @@ export const initialValueSoftBreak: any = [
     'query – filter the block types where the rule applies, e.g. pressing ⏎ will insert a soft break only inside block quotes and code blocks.',
   ]),
   {
-    type: options[ELEMENT_BLOCKQUOTE].type,
+    type: ELEMENT_BLOCKQUOTE,
     children: [{ text: 'Try here ⏎' }],
   },
   {
-    type: options[ELEMENT_CODE_BLOCK].type,
+    type: ELEMENT_CODE_BLOCK,
     children: [{ text: 'And ⏎ here.' }],
   },
 ];
 
 export const initialValueExitBreak: any = [
   {
-    type: options[ELEMENT_H1].type,
+    type: ELEMENT_H1,
     children: [{ text: '⏎ Exit Break ⏎' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'You can define a set of rules with:',
@@ -917,15 +861,15 @@ export const initialValueExitBreak: any = [
     'before – If true, exit to the previous block. e.g. press ⇧⌘⏎ to exit before the selected block 👆',
   ]),
   {
-    type: options[ELEMENT_BLOCKQUOTE].type,
+    type: ELEMENT_BLOCKQUOTE,
     children: [{ text: 'Try here ⌘⏎' }],
   },
   {
-    type: options[ELEMENT_CODE_BLOCK].type,
+    type: ELEMENT_CODE_BLOCK,
     children: [{ text: 'And in the middle ⌘⏎ of the block.' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [{ text: 'It also works for nested blocks:' }],
   },
   createTable(),
@@ -950,7 +894,7 @@ export const initialValuePlayground: any = getNodesWithRandomId([
 
 export const initialValueVoids: any = [
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text:
@@ -963,7 +907,7 @@ export const initialValueVoids: any = [
     children: [{ text: '' }],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: '',
@@ -974,7 +918,7 @@ export const initialValueVoids: any = [
 
 export const initialValueIframe: any = [
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'In this example, the document gets rendered into a controlled ',
@@ -994,7 +938,7 @@ export const initialValueIframe: any = [
     ],
   },
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       {
         text: 'This also the only reliable method to preview any ',
@@ -1012,7 +956,7 @@ export const initialValueIframe: any = [
 
 export const initialValueCombobox: any = [
   {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'Example using useCombobox from downshift with # trigger: ' },
       { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
@@ -1027,13 +971,13 @@ const hugeDocument: TDescendant[] = [];
 
 for (let h = 0; h < HEADINGS; h++) {
   hugeDocument.push({
-    type: options[ELEMENT_H1].type,
+    type: ELEMENT_H1,
     children: [{ text: faker.lorem.sentence() }],
   });
 
   for (let p = 0; p < PARAGRAPHS; p++) {
     hugeDocument.push({
-      type: options[ELEMENT_PARAGRAPH].type,
+      type: ELEMENT_PARAGRAPH,
       children: [{ text: faker.lorem.paragraph() }],
     });
   }

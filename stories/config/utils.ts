@@ -7,17 +7,27 @@ import {
 import { Text } from 'slate';
 import { options } from './pluginOptions';
 
-export const createParagraph = (text: string, mark?: string) => {
+export const createElement = (
+  text = '',
+  {
+    type = ELEMENT_PARAGRAPH,
+    mark,
+  }: {
+    type?: string;
+    mark?: string;
+  } = {}
+) => {
   const leaf = { text };
   if (mark) {
     leaf[mark] = true;
   }
 
   return {
-    type: options[ELEMENT_PARAGRAPH].type,
+    type,
     children: [leaf],
   };
 };
+
 export const createList = (
   items: string[],
   { splitSeparator = '`' }: { splitSeparator?: string } = {}

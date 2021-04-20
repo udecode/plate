@@ -13,17 +13,27 @@ module.exports = {
     {
       type: 'category',
       label: 'Getting Started',
-      items: ['getting-started/installation'],
+      items: [
+        'getting-started/installation',
+        'getting-started/basic-editor',
+        'getting-started/basic-plugins',
+      ],
       collapsed: false,
     },
     {
       type: 'category',
       label: 'Guides',
       items: [
-        'guides/basic-editor',
-        'guides/plugins',
+        // 'guides/plugins',
+        'guides/store',
+        {
+          type: 'category',
+          label: 'Styling',
+          items: ['guides/css', 'guides/components'],
+          collapsed: false,
+        },
+        'guides/configuration',
         'guides/creating-plugins',
-        'guides/styling',
       ],
       collapsed: false,
     },

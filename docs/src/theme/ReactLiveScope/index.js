@@ -8,15 +8,51 @@
 import React from 'react';
 import {
   createBlockquotePlugin,
+  createBoldPlugin,
   createCodeBlockPlugin,
+  createCodePlugin,
   createHeadingPlugin,
   createHistoryPlugin,
+  createItalicPlugin,
   createParagraphPlugin,
   createReactPlugin,
+  createSlatePluginsComponents,
+  createSlatePluginsOptions,
+  createStrikethroughPlugin,
+  createUnderlinePlugin,
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  ELEMENT_LI,
+  ELEMENT_LINK,
+  ELEMENT_OL,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TH,
+  ELEMENT_TODO_LI,
+  ELEMENT_TR,
+  ELEMENT_UL,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_HIGHLIGHT,
+  MARK_ITALIC,
+  MARK_KBD,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
   SlatePlugins,
 } from '@udecode/slate-plugins';
 import {
   initialValueBasicElements,
+  initialValueBasicMarks,
   initialValuePlainText,
 } from '../../../../stories/config/initialValues';
 
@@ -27,16 +63,32 @@ const editableProps = {
   },
 };
 
-const pluginsBasicElements = [
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
+
+const pluginsBasic = [
+  // elements
   createReactPlugin(), // withReact
   createHistoryPlugin(), // withHistory
   createParagraphPlugin(), // paragraph element
   createBlockquotePlugin(), // blockquote element
   createCodeBlockPlugin(), // code block element
   createHeadingPlugin(), // heading elements
+
+  // marks
+  createBoldPlugin(), // bold mark
+  createItalicPlugin(), // italic mark
+  createUnderlinePlugin(), // underline mark
+  createStrikethroughPlugin(), // strikethrough mark
+  createCodePlugin(), // code mark
 ];
 
-const a = () => {
+const initialValueBasic = [
+  ...initialValueBasicElements,
+  ...initialValueBasicMarks,
+];
+
+const A = () => {
   const [debugValue, setDebugValue] = useState(null);
 
   return (
@@ -60,8 +112,49 @@ const ReactLiveScope = {
   SlatePlugins,
   editableProps,
   initialValuePlainText,
-  initialValueBasicElements,
-  pluginsBasicElements,
+  initialValueBasic,
+  createReactPlugin,
+  createHistoryPlugin,
+  createParagraphPlugin,
+  createBlockquotePlugin,
+  createCodeBlockPlugin,
+  createHeadingPlugin,
+  createBoldPlugin,
+  createItalicPlugin,
+  createUnderlinePlugin,
+  createStrikethroughPlugin,
+  createCodePlugin,
+  pluginsBasic,
+  components,
+  options,
+  ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  ELEMENT_LI,
+  ELEMENT_LINK,
+  ELEMENT_OL,
+  ELEMENT_PARAGRAPH,
+  ELEMENT_TABLE,
+  ELEMENT_TD,
+  ELEMENT_TH,
+  ELEMENT_TODO_LI,
+  ELEMENT_TR,
+  ELEMENT_UL,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_HIGHLIGHT,
+  MARK_ITALIC,
+  MARK_KBD,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
 };
 
 export default ReactLiveScope;
