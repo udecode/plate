@@ -26,7 +26,10 @@ import {
  * - options
  * - components
  */
-export const createEditorPlugins = <E extends SPEditor & ReactEditor = SPEditor & ReactEditor, T extends string = string>({
+export const createEditorPlugins = <
+  E extends SPEditor & ReactEditor = SPEditor & ReactEditor,
+  T extends string = string
+>({
   editor = createEditor(),
   plugins = [],
   options,

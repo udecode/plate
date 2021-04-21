@@ -14,7 +14,10 @@ export interface SlatePluginsProps<T extends SPEditor = SPEditor>
   editableProps?: EditableProps;
 }
 
-export const SlatePlugins = <T extends SPEditor = SPEditor>({ children, ...options }: SlatePluginsProps<T>) => {
+export const SlatePlugins = <T extends SPEditor = SPEditor>({
+  children,
+  ...options
+}: SlatePluginsProps<T>) => {
   const { slateProps, editableProps } = useSlatePlugins(options);
 
   if (!slateProps.editor) return null;

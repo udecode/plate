@@ -10,7 +10,9 @@ import { deserializeHTMLElement } from './deserializeHTMLElement';
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHTMLToDocumentFragment = <T extends SPEditor = SPEditor>(
+export const deserializeHTMLToDocumentFragment = <
+  T extends SPEditor = SPEditor
+>(
   editor: T,
   {
     plugins,

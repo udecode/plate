@@ -1,9 +1,4 @@
 import React, { useMemo } from 'react';
-import { ReactEditor } from 'slate-react';
-import {
-  SlatePlugin,
-  SPEditor
-} from '@udecode/slate-plugins-core';
 import {
   createBasicElementPlugins,
   createBasicMarkPlugins,
@@ -23,6 +18,8 @@ import {
   SlatePlugins,
   useMentionPlugin,
 } from '@udecode/slate-plugins';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
+import { ReactEditor } from 'slate-react';
 import { initialValuePasteHtml } from '../config/initialValues';
 import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
 

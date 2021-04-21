@@ -8,6 +8,7 @@ import {
   SlatePlugins,
   SPEditor,
 } from '@udecode/slate-plugins-core';
+import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../../../../stories/config/autoformatRules';
 import { initialValuePlayground } from '../../../../stories/config/initialValues';
 import {
@@ -59,7 +60,6 @@ import { createTrailingBlockPlugin } from '../../../trailing-block/src/createTra
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
 import { createSlatePluginsComponents } from '../utils/createSlatePluginsComponents';
 import { createSlatePluginsOptions } from '../utils/createSlatePluginsOptions';
-import { ReactEditor } from 'slate-react';
 
 const components = createSlatePluginsComponents();
 const options = createSlatePluginsOptions();

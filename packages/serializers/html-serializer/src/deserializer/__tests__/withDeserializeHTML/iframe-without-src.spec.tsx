@@ -34,7 +34,9 @@ const output = (
 
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
-    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [createMediaEmbedPlugin()];
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+      createMediaEmbedPlugin(),
+    ];
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
     const editor = createEditorPlugins({

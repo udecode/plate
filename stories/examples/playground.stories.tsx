@@ -52,6 +52,7 @@ import {
   useMentionPlugin,
   withProps,
 } from '@udecode/slate-plugins';
+import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {
@@ -71,7 +72,6 @@ import {
   ToolbarButtonsTable,
 } from '../config/Toolbars';
 import { withStyledPlaceHolders } from '../config/withStyledPlaceHolders';
-import { ReactEditor } from 'slate-react';
 
 const id = 'Examples/Playground';
 

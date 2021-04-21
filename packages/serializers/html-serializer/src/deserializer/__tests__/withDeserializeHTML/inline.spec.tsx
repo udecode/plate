@@ -35,7 +35,10 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [createParagraphPlugin(), createLinkPlugin()];
+  const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+    createParagraphPlugin(),
+    createLinkPlugin(),
+  ];
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
   const editor = createEditorPlugins({
