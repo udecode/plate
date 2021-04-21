@@ -1,21 +1,16 @@
 import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
 import { State } from './SlatePluginsStore';
-import { TEditor } from './TEditor';
+import { SPEditor } from './SPEditor';
 
 /**
  * `useSlatePluginsEffects` options
  */
-export interface UseSlatePluginsEffectsOptions
-  extends Partial<Pick<State, 'value' | 'enabled' | 'plugins'>> {
+export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
+  extends Partial<Pick<State<T>, 'editor' | 'value' | 'enabled' | 'plugins'>> {
   /**
    * Unique id to store multiple editor states. Default is 'main'.
    */
   id?: string;
-
-  /**
-   * Controlled editor.
-   */
-  editor?: TEditor;
 
   /**
    * Initial value of the editor.

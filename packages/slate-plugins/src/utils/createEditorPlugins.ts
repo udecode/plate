@@ -5,6 +5,7 @@ import {
   createReactPlugin,
   SlatePlugin,
   SlatePluginOptions,
+  SPEditor,
   TEditor,
   withSlatePlugins,
 } from '@udecode/slate-plugins-core';
@@ -40,7 +41,7 @@ export const createEditorPlugins = <T extends string = string>({
     Record<DefaultSlatePluginKey | T, FunctionComponent<any>>
   >;
 } = {}) => {
-  return withSlatePlugins<ReactEditor>({
+  return withSlatePlugins<SPEditor & ReactEditor>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
     options: createSlatePluginsOptions(options),
     components: createSlatePluginsComponents(components),

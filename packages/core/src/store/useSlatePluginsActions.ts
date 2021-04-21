@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
-import { createEditor } from 'slate';
+import { createEditor, Editor } from 'slate';
 import shallow from 'zustand/shallow';
-import { SlatePluginsActions, State } from '../types/SlatePluginsStore';
+import {
+  SlatePluginsActions,
+  SlatePluginsState,
+  State,
+} from '../types/SlatePluginsStore';
 import { SPEditor } from '../types/SPEditor';
 import { pipe } from '../utils/pipe';
 import { withSlatePlugins } from '../utils/withSlatePlugins';
@@ -13,19 +17,19 @@ import { getSetStateByKey } from './zustand.utils';
 
 const { getState: get, setState: set } = slatePluginsStore;
 
-export const useSlatePluginsActions = (
+export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
   storeId?: string | null
-): SlatePluginsActions => {
+): SlatePluginsActions<T> => {
   const storeKeys = useSlatePluginsStore((s) => Object.keys(s), shallow);
 
   const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
-    const setEditor: SlatePluginsActions['setEditor'] = getSetStateByKey<
-      State['editor']
+    const setEditor: SlatePluginsActions<T>['setEditor'] = getSetStateByKey<
+      State<T>['editor']
     >('editor', stateId);
 
-    const setValue = getSetStateByKey<State['value']>('value', stateId);
+    const setValue = getSetStateByKey<State<T>['value']>('value', stateId);
 
     return {
       setEditor,
@@ -45,7 +49,7 @@ export const useSlatePluginsActions = (
         id = stateId
       ) =>
         id &&
-        set((state) => {
+        set((state: SlatePluginsState<T>) => {
           if (state[id]) return;
 
           state[id] = {
@@ -61,20 +65,20 @@ export const useSlatePluginsActions = (
         const { editor, plugins } = state;
 
         setEditor(
-          pipe(
+          pipe<Editor, T>(
             createEditor(),
-            withSlatePlugins({
+            withSlatePlugins<T>({
               id,
               plugins,
-              options: (editor as SPEditor).options,
+              options: editor?.options,
             })
           ),
           id
         );
       },
-      setEnabled: getSetStateByKey<State['enabled']>('enabled', stateId),
-      setPlugins: getSetStateByKey<State['plugins']>('plugins', stateId),
-      setPluginKeys: getSetStateByKey<State['pluginKeys']>(
+      setEnabled: getSetStateByKey<State<T>['enabled']>('enabled', stateId),
+      setPlugins: getSetStateByKey<State<T>['plugins']>('plugins', stateId),
+      setPluginKeys: getSetStateByKey<State<T>['pluginKeys']>(
         'pluginKeys',
         stateId
       ),
