@@ -6,4 +6,4 @@ import { TNode } from '../TNode';
  * To prevent the next handler from running, return false.
  * @see {@link SlatePropsOnChange}
  */
-export type OnChange = (editor: SPEditor) => (value: TNode[]) => boolean | void;
+export type OnChange<T extends SPEditor = SPEditor> = (editor: T) => (value: TNode[]) => boolean | void;
