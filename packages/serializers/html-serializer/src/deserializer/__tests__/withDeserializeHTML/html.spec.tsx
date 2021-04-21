@@ -1,7 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
+import { ReactEditor } from 'slate-react';
 import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
@@ -34,7 +36,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [createHeadingPlugin()];
+      const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [createHeadingPlugin()];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
@@ -66,7 +68,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins = [createHeadingPlugin()];
+      const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [createHeadingPlugin()];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,

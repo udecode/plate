@@ -4,7 +4,9 @@ import { render } from '@testing-library/react';
 import {
   createHistoryPlugin,
   createReactPlugin,
+  SlatePlugin,
   SlatePlugins,
+  SPEditor,
 } from '@udecode/slate-plugins-core';
 import { optionsAutoformat } from '../../../../stories/config/autoformatRules';
 import { initialValuePlayground } from '../../../../stories/config/initialValues';
@@ -57,6 +59,7 @@ import { createTrailingBlockPlugin } from '../../../trailing-block/src/createTra
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
 import { createSlatePluginsComponents } from '../utils/createSlatePluginsComponents';
 import { createSlatePluginsOptions } from '../utils/createSlatePluginsOptions';
+import { ReactEditor } from 'slate-react';
 
 const components = createSlatePluginsComponents();
 const options = createSlatePluginsOptions();
@@ -67,7 +70,7 @@ const SlatePluginsContainer = () => {
     optionsMentionPlugin
   );
 
-  const plugins = [
+  const plugins: SlatePlugin<SPEditor & ReactEditor>[] = [
     createReactPlugin(),
     createHistoryPlugin(),
     createBlockquotePlugin(),

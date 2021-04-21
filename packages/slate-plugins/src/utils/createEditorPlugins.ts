@@ -26,14 +26,14 @@ import {
  * - options
  * - components
  */
-export const createEditorPlugins = <T extends string = string>({
+export const createEditorPlugins = <E extends SPEditor & ReactEditor = SPEditor & ReactEditor, T extends string = string>({
   editor = createEditor(),
   plugins = [],
   options,
   components,
 }: {
   editor?: TEditor;
-  plugins?: SlatePlugin[];
+  plugins?: SlatePlugin<E>[];
   options?: Partial<
     Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
   >;
@@ -41,7 +41,7 @@ export const createEditorPlugins = <T extends string = string>({
     Record<DefaultSlatePluginKey | T, FunctionComponent<any>>
   >;
 } = {}) => {
-  return withSlatePlugins<SPEditor & ReactEditor>({
+  return withSlatePlugins<E>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
     options: createSlatePluginsOptions(options),
     components: createSlatePluginsComponents(components),

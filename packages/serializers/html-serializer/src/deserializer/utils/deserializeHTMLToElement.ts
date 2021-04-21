@@ -12,14 +12,14 @@ jsx;
 /**
  * Deserialize HTML to Element.
  */
-export const deserializeHTMLToElement = (
-  editor: SPEditor,
+export const deserializeHTMLToElement = <T extends SPEditor = SPEditor>(
+  editor: T,
   {
     plugins,
     element,
     children,
   }: {
-    plugins: SlatePlugin[];
+    plugins: SlatePlugin<T>[];
     element: HTMLElement;
     children: DeserializeHTMLChildren[];
   }

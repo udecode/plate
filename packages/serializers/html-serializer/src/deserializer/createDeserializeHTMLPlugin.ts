@@ -12,8 +12,8 @@ import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
-export interface WithDeserializeHTMLOptions {
-  plugins?: SlatePlugin[];
+export interface WithDeserializeHTMLOptions<T extends SPEditor = SPEditor & ReactEditor> {
+  plugins?: SlatePlugin<T>[];
 
   /**
    * Function called before inserting the deserialized html.
@@ -32,10 +32,10 @@ export interface WithDeserializeHTMLOptions {
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHTML = ({
+export const withDeserializeHTML = <T extends ReactEditor & SPEditor = ReactEditor & SPEditor>({
   plugins = [],
   ...options
-}: WithDeserializeHTMLOptions = {}): WithOverride<ReactEditor & SPEditor> => (
+}: WithDeserializeHTMLOptions<T> = {}): WithOverride<T> => (
   editor
 ) => {
   const { insertData } = editor;

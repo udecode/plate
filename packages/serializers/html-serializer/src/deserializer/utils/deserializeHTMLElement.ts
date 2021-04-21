@@ -5,13 +5,13 @@ import { deserializeHTMLNode } from './deserializeHTMLNode';
 /**
  * Deserialize HTML element.
  */
-export const deserializeHTMLElement = (
-  editor: SPEditor,
+export const deserializeHTMLElement = <T extends SPEditor = SPEditor>(
+  editor: T,
   {
     plugins,
     element,
   }: {
-    plugins: SlatePlugin[];
+    plugins: SlatePlugin<T>[];
     element: HTMLElement;
   }
 ): DeserializeHTMLReturn => {

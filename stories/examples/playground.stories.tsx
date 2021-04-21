@@ -44,6 +44,7 @@ import {
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
+  SPEditor,
   ToolbarImage,
   ToolbarLink,
   ToolbarSearchHighlight,
@@ -70,6 +71,7 @@ import {
   ToolbarButtonsTable,
 } from '../config/Toolbars';
 import { withStyledPlaceHolders } from '../config/withStyledPlaceHolders';
+import { ReactEditor } from 'slate-react';
 
 const id = 'Examples/Playground';
 
@@ -95,8 +97,8 @@ export const Plugins = ({
     optionsMentionPlugin
   );
 
-  const pluginsMemo: SlatePlugin[] = useMemo(() => {
-    const plugins = [
+  const pluginsMemo = useMemo(() => {
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
       createReactPlugin(),
       createHistoryPlugin(),
       createParagraphPlugin(),

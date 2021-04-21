@@ -1,4 +1,9 @@
 import React, { useMemo } from 'react';
+import { ReactEditor } from 'slate-react';
+import {
+  SlatePlugin,
+  SPEditor
+} from '@udecode/slate-plugins-core';
 import {
   createBasicElementPlugins,
   createBasicMarkPlugins,
@@ -34,7 +39,7 @@ export const Example = () => {
   const { plugin: mentionPlugin } = useMentionPlugin();
 
   const pluginsMemo = useMemo(() => {
-    const plugins = [
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
       createReactPlugin(),
       createHistoryPlugin(),
       ...createBasicElementPlugins(),
