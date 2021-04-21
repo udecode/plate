@@ -20,7 +20,7 @@ export interface SlatePluginKey {
 /**
  * Slate plugin interface built on top of Slate and Editable.
  */
-export interface SlatePlugin {
+export interface SlatePlugin<T extends SPEditor = SPEditor> {
   /**
    * Editor method overriders
    */
@@ -29,47 +29,47 @@ export interface SlatePlugin {
   /**
    * @see {@link OnChange}
    */
-  onChange?: OnChange;
+  onChange?: OnChange<T>;
 
   /**
    * Inline element types
    */
-  inlineTypes?: (editor: SPEditor) => string[];
+  inlineTypes?: (editor: T) => string[];
 
   /**
    * Void element types
    */
-  voidTypes?: (editor: SPEditor) => string[];
+  voidTypes?: (editor: T) => string[];
 
   /**
    * @see {@link Decorate}
    */
-  decorate?: Decorate;
+  decorate?: Decorate<T>;
 
   /**
    * @see {@link RenderElement}
    */
-  renderElement?: RenderElement;
+  renderElement?: RenderElement<T>;
 
   /**
    * @see {@link RenderLeaf}
    */
-  renderLeaf?: RenderLeaf;
+  renderLeaf?: RenderLeaf<T>;
 
   /**
    * @see {@link OnKeyDown}
    */
-  onKeyDown?: OnKeyDown | null;
+  onKeyDown?: OnKeyDown<T> | null;
 
   /**
    * @see {@link OnDOMBeforeInput}
    */
-  onDOMBeforeInput?: OnDOMBeforeInput;
+  onDOMBeforeInput?: OnDOMBeforeInput<T>;
 
   /**
    * @see {@link DeserializeHtml}
    */
-  deserialize?: Deserialize;
+  deserialize?: Deserialize<T>;
 
   /**
    * @see {@link SerializeHtml}
