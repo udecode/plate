@@ -13,7 +13,7 @@ export const insertMediaEmbed = (
     url,
     pluginKey = ELEMENT_MEDIA_EMBED,
   }: {
-    url: MediaEmbedNodeData;
+    url: MediaEmbedNodeData | undefined;
   } & SlatePluginKey
 ): void => {
   if (!editor.selection) return;
