@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createEditor, Editor } from 'slate';
+import { createEditor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
@@ -94,7 +94,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   useEffect(() => {
     if (!storeEditor && storeEnabled) {
       setEditor(
-        pipe<Editor, T>(
+        pipe(
           editor ?? createEditor(),
           withSlatePlugins<T>({
             id,

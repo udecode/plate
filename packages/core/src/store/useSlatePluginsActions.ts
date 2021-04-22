@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { createEditor, Editor } from 'slate';
+import { createEditor } from 'slate';
 import shallow from 'zustand/shallow';
 import {
   SlatePluginsActions,
@@ -65,7 +65,7 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
         const { editor, plugins } = state;
 
         setEditor(
-          pipe<Editor, T>(
+          pipe(
             createEditor(),
             withSlatePlugins<T>({
               id,

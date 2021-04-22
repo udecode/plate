@@ -1,11 +1,12 @@
 import { ReactNode } from 'react';
-import { Editor } from 'slate';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { WithOverride } from '../types/SlatePlugin/WithOverride';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';
+import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
@@ -28,8 +29,8 @@ export const withSlatePlugins = <T extends SPEditor = SPEditor>({
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options = {},
   components = {},
-}: WithSlatePluginsOptions<T> = {}) => <E extends Editor>(e: E) => {
-  let editor = e as T & E;
+}: WithSlatePluginsOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
+  let editor = e as typeof e & T;
   editor.id = id;
 
   if (components) {
