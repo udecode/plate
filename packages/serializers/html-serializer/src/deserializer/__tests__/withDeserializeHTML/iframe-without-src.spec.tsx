@@ -1,6 +1,8 @@
 /** @jsx jsx */
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
+import { ReactEditor } from 'slate-react';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
@@ -32,7 +34,9 @@ const output = (
 
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
-    const plugins = [createMediaEmbedPlugin()];
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+      createMediaEmbedPlugin(),
+    ];
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
     const editor = createEditorPlugins({

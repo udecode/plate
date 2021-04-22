@@ -11,8 +11,8 @@ import { DeserializeHTMLChildren } from '../types';
 
 jsx;
 
-export interface DeserializeMarksProps {
-  plugins: SlatePlugin[];
+export interface DeserializeMarksProps<T extends SPEditor = SPEditor> {
+  plugins: SlatePlugin<T>[];
   element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }
@@ -21,9 +21,9 @@ export interface DeserializeMarksProps {
  * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
-export const deserializeHTMLToMarks = (
-  editor: SPEditor,
-  { plugins, element, children }: DeserializeMarksProps
+export const deserializeHTMLToMarks = <T extends SPEditor = SPEditor>(
+  editor: T,
+  { plugins, element, children }: DeserializeMarksProps<T>
 ) => {
   let leaf = {};
 

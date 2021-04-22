@@ -9,9 +9,9 @@ import { SPEditor } from '../types/SPEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
-export interface WithSlatePluginsOptions {
+export interface WithSlatePluginsOptions<T extends SPEditor = SPEditor> {
   id?: string;
-  plugins?: SlatePlugin[];
+  plugins?: SlatePlugin<T>[];
   options?: SlatePluginsOptions;
   components?: Record<string, ReactNode>;
 }
@@ -23,13 +23,13 @@ export interface WithSlatePluginsOptions {
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: {@link SlatePluginsOptions}
  */
-export const withSlatePlugins = <TOutput = {}>({
+export const withSlatePlugins = <T extends SPEditor = SPEditor>({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options = {},
   components = {},
-}: WithSlatePluginsOptions = {}) => <T extends Editor>(e: T) => {
-  let editor = e as T & SPEditor & TOutput;
+}: WithSlatePluginsOptions<T> = {}) => <E extends Editor>(e: E) => {
+  let editor = e as T & E;
   editor.id = id;
 
   if (components) {

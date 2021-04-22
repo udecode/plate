@@ -18,6 +18,8 @@ import {
   SlatePlugins,
   useMentionPlugin,
 } from '@udecode/slate-plugins';
+import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
+import { ReactEditor } from 'slate-react';
 import { initialValuePasteHtml } from '../config/initialValues';
 import { editableProps, optionsSoftBreakPlugin } from '../config/pluginOptions';
 
@@ -34,7 +36,7 @@ export const Example = () => {
   const { plugin: mentionPlugin } = useMentionPlugin();
 
   const pluginsMemo = useMemo(() => {
-    const plugins = [
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
       createReactPlugin(),
       createHistoryPlugin(),
       ...createBasicElementPlugins(),
