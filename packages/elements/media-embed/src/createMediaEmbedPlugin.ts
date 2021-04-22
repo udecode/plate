@@ -12,6 +12,8 @@ import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
  */
 export const createMediaEmbedPlugin = ({
   pluginKey = ELEMENT_MEDIA_EMBED,
+}: {
+  pluginKey?: string;
 }): SlatePlugin => ({
   pluginKeys: pluginKey,
   renderElement: getRenderElement(pluginKey),
