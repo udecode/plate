@@ -15,6 +15,7 @@ import {
   ELEMENT_UL,
   getParent,
   insertEmptyCodeBlock,
+  isElement,
   isType,
   MARK_BOLD,
   MARK_CODE,
@@ -69,8 +70,11 @@ export const optionsAutoformat: WithAutoformatOptions = {
       preFormat,
       format: (editor) => {
         if (editor.selection) {
-          const [node] = getParent(editor, editor.selection);
+          const parentEntry = getParent(editor, editor.selection);
+          if (!parentEntry) return;
+          const [node] = parentEntry;
           if (
+            isElement(node) &&
             !isType(editor, node, ELEMENT_CODE_BLOCK) &&
             !isType(editor, node, ELEMENT_CODE_LINE)
           ) {
@@ -85,8 +89,11 @@ export const optionsAutoformat: WithAutoformatOptions = {
       preFormat,
       format: (editor) => {
         if (editor.selection) {
-          const [node] = getParent(editor, editor.selection);
+          const parentEntry = getParent(editor, editor.selection);
+          if (!parentEntry) return;
+          const [node] = parentEntry;
           if (
+            isElement(node) &&
             !isType(editor, node, ELEMENT_CODE_BLOCK) &&
             !isType(editor, node, ELEMENT_CODE_LINE)
           ) {
