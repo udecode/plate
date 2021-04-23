@@ -75,10 +75,12 @@ export const optionsAutoformat: WithAutoformatOptions = {
           const [node] = parentEntry;
           if (
             isElement(node) &&
-            !isType(editor, node, ELEMENT_CODE_BLOCK) &&
-            !isType(editor, node, ELEMENT_CODE_LINE)
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_BLOCK) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
           ) {
-            toggleList(editor as SPEditor, { type: options[ELEMENT_UL].type });
+            toggleList((editor as any) as SPEditor, {
+              type: options[ELEMENT_UL].type,
+            });
           }
         }
       },
@@ -94,10 +96,12 @@ export const optionsAutoformat: WithAutoformatOptions = {
           const [node] = parentEntry;
           if (
             isElement(node) &&
-            !isType(editor, node, ELEMENT_CODE_BLOCK) &&
-            !isType(editor, node, ELEMENT_CODE_LINE)
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_BLOCK) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
           ) {
-            toggleList(editor as SPEditor, { type: options[ELEMENT_OL].type });
+            toggleList((editor as any) as SPEditor, {
+              type: options[ELEMENT_OL].type,
+            });
           }
         }
       },
@@ -154,7 +158,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
       triggerAtBlockStart: false,
       preFormat,
       format: (editor) => {
-        insertEmptyCodeBlock(editor as SPEditor, {
+        insertEmptyCodeBlock((editor as any) as SPEditor, {
           defaultType: ELEMENT_DEFAULT,
           insertNodesOptions: { select: true },
         });
