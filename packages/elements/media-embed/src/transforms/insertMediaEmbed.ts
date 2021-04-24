@@ -10,11 +10,9 @@ import { MediaEmbedNodeData } from '../types';
 export const insertMediaEmbed = (
   editor: SPEditor,
   {
-    url,
+    url = '',
     pluginKey = ELEMENT_MEDIA_EMBED,
-  }: {
-    url: MediaEmbedNodeData | undefined;
-  } & SlatePluginKey
+  }: Partial<MediaEmbedNodeData> & SlatePluginKey
 ): void => {
   if (!editor.selection) return;
   const selectionParentEntry = getParent(editor, editor.selection);
