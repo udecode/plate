@@ -10,6 +10,6 @@ import { TRenderLeafProps } from '../TRenderLeafProps';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf = (
-  editor: SPEditor
+export type RenderLeaf<T extends SPEditor = SPEditor> = (
+  editor: T
 ) => (props: TRenderLeafProps) => JSX.Element;

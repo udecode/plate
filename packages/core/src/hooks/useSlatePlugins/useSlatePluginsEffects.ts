@@ -8,6 +8,7 @@ import {
   useStoreEditorEnabled,
   useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
+import { SPEditor } from '../../types/SPEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -17,7 +18,7 @@ import { withSlatePlugins } from '../../utils/withSlatePlugins';
  * Effects to update the slate plugins store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const useSlatePluginsEffects = ({
+export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   id = 'main',
   value,
   editor,
@@ -26,7 +27,7 @@ export const useSlatePluginsEffects = ({
   options,
   initialValue,
   plugins,
-}: UseSlatePluginsEffectsOptions) => {
+}: UseSlatePluginsEffectsOptions<T>) => {
   const {
     setInitialState,
     setValue,
@@ -35,7 +36,7 @@ export const useSlatePluginsEffects = ({
     setPluginKeys,
     setEnabled,
     clearState,
-  } = useSlatePluginsActions(id);
+  } = useSlatePluginsActions<T>(id);
   const storeEditor = useStoreEditor(id);
   const storeEnabled = useStoreEditorEnabled(id);
   const storePlugins = useStoreSlatePlugins(id);
@@ -95,7 +96,12 @@ export const useSlatePluginsEffects = ({
       setEditor(
         pipe(
           editor ?? createEditor(),
-          withSlatePlugins({ id, plugins: storePlugins, options, components })
+          withSlatePlugins<T>({
+            id,
+            plugins: storePlugins,
+            options,
+            components,
+          })
         )
       );
     }

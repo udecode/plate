@@ -6,6 +6,6 @@ import { SPEditor } from '../SPEditor';
  * to true.
  * To prevent the next handler from running return false.
  */
-export type OnDOMBeforeInput = (
-  editor: SPEditor
+export type OnDOMBeforeInput<T extends SPEditor = SPEditor> = (
+  editor: T
 ) => (event: Event) => boolean | undefined | void;

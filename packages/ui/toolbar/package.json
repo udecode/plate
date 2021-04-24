@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-toolbar",
-  "version": "1.0.0-alpha.23",
+  "version": "1.0.0-alpha.25",
   "description": "Slate plugins toolbar",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/toolbar#readme",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.23",
+    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.25",
     "react-use": "^17.1.1"
   },
   "publishConfig": {

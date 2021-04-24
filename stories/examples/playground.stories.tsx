@@ -44,6 +44,7 @@ import {
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
+  SPEditor,
   ToolbarImage,
   ToolbarLink,
   ToolbarSearchHighlight,
@@ -51,6 +52,7 @@ import {
   useMentionPlugin,
   withProps,
 } from '@udecode/slate-plugins';
+import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {
@@ -95,8 +97,8 @@ export const Plugins = ({
     optionsMentionPlugin
   );
 
-  const pluginsMemo: SlatePlugin[] = useMemo(() => {
-    const plugins = [
+  const pluginsMemo = useMemo(() => {
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
       createReactPlugin(),
       createHistoryPlugin(),
       createParagraphPlugin(),

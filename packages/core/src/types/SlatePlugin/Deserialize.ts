@@ -15,8 +15,8 @@ export type DeserializeNode = {
 /**
  * HTML Deserializer for element and leaf.
  */
-export type Deserialize = (
-  editor: SPEditor
+export type Deserialize<T extends SPEditor = SPEditor> = (
+  editor: T
 ) => {
   element?: DeserializeNode[];
   leaf?: DeserializeNode[];

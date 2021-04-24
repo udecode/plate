@@ -1,17 +1,18 @@
 import { ReactNode } from 'react';
-import { Editor } from 'slate';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { WithOverride } from '../types/SlatePlugin/WithOverride';
 import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';
+import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
-export interface WithSlatePluginsOptions {
+export interface WithSlatePluginsOptions<T extends SPEditor = SPEditor> {
   id?: string;
-  plugins?: SlatePlugin[];
+  plugins?: SlatePlugin<T>[];
   options?: SlatePluginsOptions;
   components?: Record<string, ReactNode>;
 }
@@ -23,13 +24,13 @@ export interface WithSlatePluginsOptions {
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: {@link SlatePluginsOptions}
  */
-export const withSlatePlugins = <TOutput = {}>({
+export const withSlatePlugins = <T extends SPEditor = SPEditor>({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options = {},
   components = {},
-}: WithSlatePluginsOptions = {}) => <T extends Editor>(e: T) => {
-  let editor = e as T & SPEditor & TOutput;
+}: WithSlatePluginsOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
+  let editor = e as typeof e & T;
   editor.id = id;
 
   if (components) {

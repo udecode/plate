@@ -1,3 +1,4 @@
+import { SPEditor } from '../../types/SPEditor';
 import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
 import { useEditableProps } from './useEditableProps';
 import { useSlatePluginsEffects } from './useSlatePluginsEffects';
@@ -7,7 +8,7 @@ import { useSlateProps } from './useSlateProps';
  * Run `useSlatePluginsEffects` and props getter for `Slate` and `Editable` components.
  * Use `useSlatePluginsStore` to select store state.
  */
-export const useSlatePlugins = ({
+export const useSlatePlugins = <T extends SPEditor = SPEditor>({
   id,
   components,
   editor,
@@ -17,7 +18,7 @@ export const useSlatePlugins = ({
   plugins,
   onChange,
   editableProps,
-}: UseSlatePluginsOptions) => {
+}: UseSlatePluginsOptions<T>) => {
   useSlatePluginsEffects({
     id,
     components,

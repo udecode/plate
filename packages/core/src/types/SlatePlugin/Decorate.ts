@@ -6,6 +6,6 @@ import { SPEditor } from '../SPEditor';
  * If the function returns undefined then no ranges are modified.
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */
-export type Decorate = (
-  editor: SPEditor
+export type Decorate<T extends SPEditor = SPEditor> = (
+  editor: T
 ) => (entry: NodeEntry) => Range[] | undefined;

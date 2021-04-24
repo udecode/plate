@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import * as React from 'react';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 
@@ -13,7 +14,7 @@ export const input1 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 export const output1 = (
   <editor>

@@ -4,8 +4,11 @@ import { render } from '@testing-library/react';
 import {
   createHistoryPlugin,
   createReactPlugin,
+  SlatePlugin,
   SlatePlugins,
+  SPEditor,
 } from '@udecode/slate-plugins-core';
+import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../../../../stories/config/autoformatRules';
 import { initialValuePlayground } from '../../../../stories/config/initialValues';
 import {
@@ -67,7 +70,7 @@ const SlatePluginsContainer = () => {
     optionsMentionPlugin
   );
 
-  const plugins = [
+  const plugins: SlatePlugin<SPEditor & ReactEditor>[] = [
     createReactPlugin(),
     createHistoryPlugin(),
     createBlockquotePlugin(),
