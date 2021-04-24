@@ -24,7 +24,8 @@ export type State = {
   enabled?: boolean;
 
   /**
-   * Slate plugins. Default is [].
+   * Slate plugins.
+   * @default [createReactPlugin(), createHistoryPlugin()].
    */
   plugins: SlatePlugin[];
 

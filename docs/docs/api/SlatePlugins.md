@@ -3,8 +3,6 @@ slug: /SlatePlugins
 title: SlatePlugins
 ---
 
-## `SlatePlugins`
-
 ### `id`
 `string`
 

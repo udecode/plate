@@ -170,6 +170,11 @@ The `type` property is needed on elements as `SlatePlugins` will map a React com
 Everything actually works, but we didn't provide any `components` to render.
 The default element component is a `div` and the default leaf component is a `span`.
 
+:::info
+Slate plugins are headless without any CSS with a configurable behavior.
+You are in full control over markup and styling so you can stick your design system or use the provided one.
+:::
+
 ### Components & Options
 
 Let's pass the `components` and `options` provided by the library.
@@ -215,4 +220,5 @@ const options = createSlatePluginsOptions();
 Voilà!
 
 `SlatePlugins` hides a lot of complexity but what if we want to have more control on its state?
-Let's move on to the store!
+
+Let's move on to the store.

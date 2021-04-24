@@ -44,7 +44,7 @@ module.exports = {
         {
           type: 'category',
           label: 'Core',
-          items: ['api/slate-plugins'],
+          items: ['api/SlatePlugins', 'api/SlatePluginsState'],
           collapsed: false,
         },
         // 'api/slate-plugins',
