@@ -402,4 +402,15 @@ html[data-theme="dark"] {
 
   --ifm-admonition-background-color-error: var(--ifm-color-red);
   --ifm-admonition-color-error: var(--ifm-color-red);
+
+  --ifm-code-background: var(--ifm-color-emphasis-300);
+
+  [class="playgroundHeader__-node_modules-@docusaurus-theme-live-codeblock-src-theme-Playground-"] {
+    background-color: var(--ifm-color-emphasis-400);
+    color: white;
+  }
+
+  [class="playgroundPreview__-node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground-"] {
+    border: 1px solid var(--ifm-color-emphasis-400);
+  }
 }

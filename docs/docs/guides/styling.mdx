@@ -1,0 +1,175 @@
+---
+slug: /styling
+title: Styling
+---
+
+There is multiple ways to style your editor.
+
+## Components
+
+`SlatePlugins` accepts the `components` prop so you can pass all the components of your editor in one place.
+This way, the design is decoupled from the other props.
+
+It's an object whose property keys are [plugin keys](configuration##plugin-keys) and whose property values are React components.
+
+### Factory
+
+Slate Plugins provides a kit of components for all the plugins.
+
+You can either:
+
+- import and use `createSlatePluginsComponents` to create all the components.
+The first parameter can be used to override default components by plugin key.
+
+```ts
+// this will override the paragraph markup
+const components = createSlatePluginsComponents({
+  [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
+    as: 'div',
+  }),
+})
+```
+
+- or create your own factory:
+
+```ts
+export const createSlatePluginsComponents = (
+  overrides?: Partial<Record<DefaultSlatePluginKey, FunctionComponent<any>>>
+) => {
+  const components = {
+    [ELEMENT_ALIGN_CENTER]: AlignCenterElement,
+    [ELEMENT_ALIGN_JUSTIFY]: AlignJustifyElement,
+    [ELEMENT_ALIGN_LEFT]: AlignLeftElement,
+    [ELEMENT_ALIGN_RIGHT]: AlignRightElement,
+    [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
+    [ELEMENT_CODE_BLOCK]: CodeBlockElement,
+    [ELEMENT_CODE_LINE]: CodeLineElement,
+    [ELEMENT_H1]: Heading1Element,
+    [ELEMENT_H2]: Heading2Element,
+    [ELEMENT_H3]: Heading3Element,
+    [ELEMENT_H4]: Heading4Element,
+    [ELEMENT_H5]: Heading5Element,
+    [ELEMENT_H6]: Heading6Element,
+    [ELEMENT_IMAGE]: ImageElement,
+    [ELEMENT_LI]: ListItemElement,
+    [ELEMENT_LINK]: LinkElement,
+    [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
+    [ELEMENT_MENTION]: MentionElement,
+    [ELEMENT_UL]: BulletedListElement,
+    [ELEMENT_OL]: NumberedListElement,
+    [ELEMENT_PARAGRAPH]: ParagraphElement,
+    [ELEMENT_TABLE]: TableElement,
+    [ELEMENT_TD]: TableCellElement,
+    [ELEMENT_TH]: TableHeaderElement,
+    [ELEMENT_TODO_LI]: TodoListElement,
+    [ELEMENT_TR]: TableRowElement,
+    [MARK_BOLD]: BoldLeaf,
+    [MARK_CODE]: CodeLeaf,
+    [MARK_HIGHLIGHT]: HighlightLeaf,
+    [MARK_ITALIC]: ItalicLeaf,
+    [MARK_KBD]: KbdLeaf,
+    [MARK_SEARCH_HIGHLIGHT]: SearchHighlightLeaf,
+    [MARK_STRIKETHROUGH]: StrikethroughLeaf,
+    [MARK_SUBSCRIPT]: SubscriptLeaf,
+    [MARK_SUPERSCRIPT]: SuperscriptLeaf,
+    [MARK_UNDERLINE]: UnderlineLeaf,
+  };
+
+  if (overrides) {
+    Object.keys(overrides).forEach((key) => {
+      components[key] = overrides[key];
+    });
+  }
+
+  return components as Record<DefaultSlatePluginKey, FunctionComponent>;
+};
+```
+
+### Styled Components
+
+We provide components with overridable styles and markup:
+
+- [StyledElement](https://slate-plugins-api.udecode.io/globals.html#styledelement)
+  - This component can be used to style `Element` nodes (e.g. `p`, `h1`, `ul`, `li`,...).
+- [StyledLeaf](https://slate-plugins-api.udecode.io/globals.html#styledleaf)
+  - This component can be used to style `Leaf` nodes (e.g. `bold`, `italic`, `code`,...).
+
+`withProps` HOC can be used to override and add props to a component.
+
+
+#### `as` prop
+
+- A component type or primitive that is rendered as the type of the root element.
+- `StyledElement`'s default is `'div'`
+- `StyledLeaf`'s default `'span'`
+
+Example:
+
+```js
+const components = {
+  ...
+  [ELEMENT_H1]: withProps(StyledElement, {
+    as: 'h1',
+  }),
+  ...
+}
+```
+
+#### `styles` prop
+
+:::note
+This prop is subject to change for another CSS-in-JS solution in v1.
+:::
+
+We provide many styled components which accept a `styles` props.
+
+Unlike a `style` prop that only applies styles to the root component,
+the `styles` prop (provided by most Slate Plugins components)
+allows you to control the styling of every part of a component:
+the root, the children, and even sub-components.
+You can use this for one-off component customizations,
+or you can create a brand new component with these custom styles.
+
+A component consists of DOM elements, or "areas." Each of the areas should be targetable for styling.
+
+To find the available areas for a component, use intellisense or look at the component styling interface in the component's `Component.types.ts` file.
+
+```js
+const components = {
+  ...
+  [ELEMENT_H1]: withProps(StyledElement, {
+    styles: {
+      root: {
+        margin: '2em 0 4px',
+        fontSize: '1.875em',
+        fontWeight: '500',
+        lineHeight: '1.3',
+      },
+    },
+  }),
+  ...
+}
+```
+
+More in [FluentUI docs](https://github.com/microsoft/fluentui/wiki/Component-Styling).
+
+
+### Custom Components
+
+You can create your own component.
+
+- The custom element props interface should extend `SPRenderElementProps<TElement>` where `TElement` is the element type.
+- The custom leaf props interface should extend `SPRenderLeafProps<TText>` where `TText` is the leaf type.
+
+## CSS
+
+Slate plugins add a `class` attribute to all elements and leaves.
+
+It is equals to the [plugin key](configuration##plugin-keys) prefixed by `slate-`, for example:
+
+- `slate-p` for the paragraph
+- `slate-ul` for the list
+- `slate-li` for the list item
+- ...
+
+That way, you can style your nodes with class selectors.

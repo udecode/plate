@@ -3,11 +3,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Slate Plugins',
-      items: [
-        'slate-plugins/introduction',
-        'slate-plugins/design-principles',
-        'slate-plugins/contributing',
-      ],
+      items: ['slate-plugins/introduction', 'slate-plugins/contributing'],
       collapsed: false,
     },
     {
@@ -24,32 +20,34 @@ module.exports = {
       type: 'category',
       label: 'Guides',
       items: [
-        // 'guides/plugins',
+        'guides/SlatePlugins',
         'guides/store',
-        {
-          type: 'category',
-          label: 'Styling',
-          items: ['guides/css', 'guides/components'],
-          collapsed: false,
-        },
+        'guides/styling',
         'guides/configuration',
         'guides/creating-plugins',
-      ],
-      collapsed: false,
-    },
-    {
-      type: 'category',
-      label: 'API Reference',
-      items: [
         {
           type: 'category',
-          label: 'Core',
-          items: ['api/SlatePlugins', 'api/SlatePluginsState'],
+          label: 'Serializing',
+          items: ['guides/serializing-html', 'guides/serializing-md'],
           collapsed: false,
         },
-        // 'api/slate-plugins',
       ],
       collapsed: false,
     },
+
+    // {
+    //   type: 'category',
+    //   label: 'API Reference',
+    //   items: [
+    //     {
+    //       type: 'category',
+    //       label: 'Core',
+    //       items: [''],
+    //       collapsed: false,
+    //     },
+    //     // 'api/slate-plugins',
+    //   ],
+    //   collapsed: false,
+    // },
   ],
 };

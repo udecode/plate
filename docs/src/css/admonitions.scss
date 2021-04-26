@@ -42,11 +42,8 @@
   border-left-color: var(--ifm-admonition-color-error);
 }
 
-//.admonition-secondary,
-//.admonition-note,
-//.admonition-info,
-//.admonition-tip,
-//.admonition-important {
-//  background-color: var(--ifm-admonition-background-color);
-//  border-left-color: var(--ifm-admonition-color);
-//}
+html[data-theme="dark"] {
+  .alert {
+    background-color: transparent;
+  }
+}

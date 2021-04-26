@@ -66,6 +66,11 @@ module.exports = {
           position: 'right',
         },
         {
+          href: 'https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c',
+          label: 'Playground',
+          position: 'right',
+        },
+        {
           // A full-page navigation, used for navigating outside of the website.
           // You should only use either `to` or `href`.
           href: domainExamples,

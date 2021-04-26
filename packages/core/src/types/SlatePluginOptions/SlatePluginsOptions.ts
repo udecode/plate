@@ -12,11 +12,13 @@ export interface SlatePluginOptions {
   [key: string]: any;
 
   /**
-   * Element or mark type.
-   * @default plugin key
+   * Node properties to delete.
    */
-  type: string;
+  clear?: string | string[];
 
+  /**
+   * `SlatePlugins` maps each slate node to this component to render.
+   */
   component?: SlatePluginComponent;
 
   /**
@@ -26,14 +28,9 @@ export interface SlatePluginOptions {
   defaultType?: string;
 
   /**
-   * Hotkeys to listen to trigger a plugin action.
+   * `getElementDeserializer` and `getLeafDeserializer` options.
    */
-  hotkey?: string | string[];
-
-  /**
-   * Node fields to clear.
-   */
-  clear?: string | string[];
+  deserialize?: Partial<DeserializeOptions>;
 
   /**
    * @see {@link GetNodeProps}
@@ -41,9 +38,15 @@ export interface SlatePluginOptions {
   getNodeProps?: GetNodeProps;
 
   /**
-   * `getElementDeserializer` and `getLeafDeserializer` options
+   * Hotkeys to listen to trigger a plugin action.
    */
-  deserialize?: Partial<DeserializeOptions>;
+  hotkey?: string | string[];
+
+  /**
+   * Element or mark type.
+   * @default plugin key
+   */
+  type: string;
 }
 
 /**

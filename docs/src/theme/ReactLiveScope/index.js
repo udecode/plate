@@ -49,7 +49,9 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   SlatePlugins,
+  withProps,
 } from '@udecode/slate-plugins';
+import { CodeBlockElement } from '@udecode/slate-plugins-code-block-ui';
 import {
   initialValueBasicElements,
   initialValueBasicMarks,
@@ -63,7 +65,20 @@ const editableProps = {
   },
 };
 
-const components = createSlatePluginsComponents();
+const components = createSlatePluginsComponents({
+  code_block: withProps(CodeBlockElement, {
+    styles: {
+      root: {
+        backgroundColor: '#111827',
+        selectors: {
+          code: {
+            color: 'white',
+          },
+        },
+      },
+    },
+  }),
+});
 const options = createSlatePluginsOptions();
 
 const pluginsBasic = [

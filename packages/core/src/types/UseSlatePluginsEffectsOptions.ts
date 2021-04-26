@@ -3,24 +3,18 @@ import {
   SlatePluginsOptions,
 } from './SlatePluginOptions/SlatePluginsOptions';
 import { EditorId, State } from './SlatePluginsStore';
-import { TEditor } from './TEditor';
+import { SPEditor } from './SPEditor';
 
 /**
  * `useSlatePluginsEffects` options
  */
-export interface UseSlatePluginsEffectsOptions
-  extends Partial<Pick<State, 'value' | 'enabled' | 'plugins'>> {
+export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
+  extends Partial<Pick<State<T>, 'editor' | 'value' | 'enabled' | 'plugins'>> {
   id?: EditorId;
 
   /**
-   * Controlled editor without `withSlatePlugins`.
-   * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
-   */
-  editor?: TEditor;
-
-  /**
    * Initial value of the editor.
-   * @default [{ children: [{ text: '' }]}].
+   * @default [{ children: [{ text: '' }]}]
    */
   initialValue?: State['value'];
 

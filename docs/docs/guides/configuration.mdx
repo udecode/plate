@@ -2,3 +2,135 @@
 title: Configuration
 slug: /configuration
 ---
+
+`SlatePlugins` accepts the `options` prop ([SlatePluginsOptions](https://slate-plugins-api.udecode.io/globals.html#slatepluginsoptions)) so you can pass all
+the **common** plugin options of your editor in one place.
+
+It's an object whose property keys are [plugin keys](#plugin-keys) and whose property values are [SlatePluginOptions](https://slate-plugins-api.udecode.io/interfaces/slatepluginoptions.html).
+
+## Factory
+
+Slate Plugins provides default options for all the plugins.
+
+You can either:
+
+- import and use `createSlatePluginsOptions` to create all the options.
+The first parameter can be used to override default options by plugin key.
+
+```ts
+// this will override the paragraph hotkeys
+const options = createSlatePluginsComponents({
+  [ELEMENT_PARAGRAPH]: {
+    hotkey: ['mod+opt+0']
+  },
+})
+```
+
+- or create your own factory:
+
+```ts
+export const createSlatePluginsOptions = (
+  overrides?: Partial<
+    Record<DefaultSlatePluginKey, Partial<SlatePluginOptions>>
+  >
+) => {
+  const options: Record<DefaultSlatePluginKey, Partial<SlatePluginOptions>> = {
+    [ELEMENT_ALIGN_CENTER]: {},
+    [ELEMENT_ALIGN_JUSTIFY]: {},
+    [ELEMENT_ALIGN_LEFT]: {},
+    [ELEMENT_ALIGN_RIGHT]: {},
+    [ELEMENT_BLOCKQUOTE]: DEFAULTS_BLOCKQUOTE,
+    [ELEMENT_CODE_BLOCK]: DEFAULTS_CODE_BLOCK,
+    [ELEMENT_CODE_LINE]: {},
+    [ELEMENT_H1]: DEFAULTS_H1,
+    [ELEMENT_H2]: DEFAULTS_H2,
+    [ELEMENT_H3]: DEFAULTS_H3,
+    [ELEMENT_H4]: {},
+    [ELEMENT_H5]: {},
+    [ELEMENT_H6]: {},
+    [ELEMENT_IMAGE]: {},
+    [ELEMENT_LI]: {},
+    [ELEMENT_LINK]: {},
+    [ELEMENT_MEDIA_EMBED]: {},
+    [ELEMENT_MENTION]: {},
+    [ELEMENT_OL]: {},
+    [ELEMENT_PARAGRAPH]: DEFAULTS_PARAGRAPH,
+    [ELEMENT_TABLE]: {},
+    [ELEMENT_TD]: DEFAULTS_TD,
+    [ELEMENT_TH]: DEFAULTS_TH,
+    [ELEMENT_TODO_LI]: DEFAULTS_TODO_LIST,
+    [ELEMENT_TR]: {},
+    [ELEMENT_UL]: {},
+    [MARK_BOLD]: DEFAULTS_BOLD,
+    [MARK_CODE]: DEFAULTS_CODE,
+    [MARK_HIGHLIGHT]: DEFAULTS_HIGHLIGHT,
+    [MARK_ITALIC]: DEFAULTS_ITALIC,
+    [MARK_KBD]: {},
+    [MARK_SEARCH_HIGHLIGHT]: {},
+    [MARK_STRIKETHROUGH]: DEFAULTS_STRIKETHROUGH,
+    [MARK_SUBSCRIPT]: DEFAULTS_SUBSCRIPT,
+    [MARK_SUPERSCRIPT]: DEFAULTS_SUPERSCRIPT,
+    [MARK_UNDERLINE]: DEFAULTS_UNDERLINE,
+  };
+
+  if (overrides) {
+    Object.keys(overrides).forEach((key) => {
+      options[key] = overrides[key];
+    });
+  }
+
+  // default type is the plugin key
+  Object.keys(options).forEach((key) => {
+    if (!options[key].type) {
+      options[key].type = key;
+    }
+  });
+
+  return options as Record<DefaultSlatePluginKey, SlatePluginOptions>;
+};
+```
+
+## Plugin keys
+
+- Each plugin can define one or more `pluginKey` to support configuration.
+  - e.g. the bold plugin defines one `pluginKey`: `MARK_BOLD = 'bold'`
+  - e.g. the list plugin defines multiple `pluginKeys`:
+    - `ELEMENT_UL = 'ul'`
+    - `ELEMENT_OL = 'ol'`
+    - `ELEMENT_LI = 'li'`
+- Each node should have its own `pluginKey`. If a plugin features multiple nodes, it will define multiple `pluginKeys`.
+- ⚠️ This is not necessarily equal to `type`:
+  - `type` is used as a slate node type,
+  - `pluginKey` is used for slate plugins configuration.
+
+## Options
+
+### `clear`
+
+- Node properties to delete.
+
+### `component`
+
+- `SlatePlugins` maps each slate node to this component to render.
+
+### `defaultType`
+
+- Default type of slate blocks.
+
+### `deserialize`
+
+- `getElementDeserializer` and `getLeafDeserializer` options.
+
+### `getNodeProps`
+
+- Map slate node props to `nodeProps`. See [GetNodeProps](https://slate-plugins-api.udecode.io/globals.html#getnodeprops).
+- `SlatePlugins` will pass `nodeProps` to the `component`.
+
+### `hotkey`
+
+- Hotkeys to listen to trigger a plugin action.
+
+### `type`
+
+- Node type in Slate.
+- Default is the plugin key.
