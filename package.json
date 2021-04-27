@@ -140,7 +140,8 @@
     "eslint-plugin-prettier": "3.3.1",
     "prettier": "2.2.1",
     "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "react-dom": "17.0.1",
+    "terser": "4.8.0"
   },
   "version": "0.0.0"
 }

@@ -1,8 +1,8 @@
 const githubOrgUrl = 'https://github.com/udecode';
 const projectName = 'slate-plugins';
 const githubUrl = `${githubOrgUrl}/${projectName}`;
-const domain = 'https://slate-plugins-next.udecode.io';
-const domainExamples = domain;
+const domain = 'https://slate-plugins.udecode.io';
+const domainExamples = 'https://slate-plugins-next.udecode.io';
 const domainAPI = 'https://slate-plugins-api.udecode.io/globals.html';
 const npmOrgUrl = 'https://www.npmjs.com/package/@udecode';
 
@@ -22,7 +22,7 @@ module.exports = {
   title: customFields.title,
   tagline: customFields.tagline,
   url: customFields.domain,
-  baseUrl: '/',
+  baseUrl: '/docs',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',

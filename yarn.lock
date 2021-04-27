@@ -4619,49 +4619,49 @@
     eslint-visitor-keys "^2.0.0"
 
 "@udecode/slate-plugins@file:packages/slate-plugins":
-  version "1.0.0-alpha.22"
+  version "1.0.0-alpha.25"
   dependencies:
-    "@udecode/slate-plugins-alignment" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-alignment-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-autoformat" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-basic-elements" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-basic-marks" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-block-quote" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-block-quote-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-break" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-code-block" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-code-block-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-common" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-core" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-dnd" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-find-replace" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-find-replace-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-heading" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-highlight" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-html-serializer" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-image" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-image-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-kbd" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-link" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-link-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-list" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-list-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-md-serializer" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-media-embed" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-media-embed-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-mention" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-mention-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-node-id" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-normalizers" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-paragraph" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-placeholder" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-reset-node" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-select" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-table" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-table-ui" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-toolbar" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-trailing-block" "^1.0.0-alpha.22"
-    "@udecode/slate-plugins-ui-fluent" "^1.0.0-alpha.22"
+    "@udecode/slate-plugins-alignment" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-alignment-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-autoformat" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-basic-elements" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-basic-marks" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-block-quote" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-block-quote-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-break" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-code-block" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-code-block-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-common" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-core" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-dnd" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-find-replace" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-find-replace-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-heading" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-highlight" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-html-serializer" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-image" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-image-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-kbd" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-link" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-link-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-list" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-list-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-md-serializer" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-media-embed" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-media-embed-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-mention" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-mention-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-node-id" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-normalizers" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-paragraph" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-placeholder" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-reset-node" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-select" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-table" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-table-ui" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-toolbar" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-trailing-block" "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-ui-fluent" "^1.0.0-alpha.25"
 
 "@uifabric/foundation@^7.9.26":
   version "7.9.26"
@@ -17852,7 +17852,7 @@ source-map-resolve@^0.6.0:
     atob "^2.1.2"
     decode-uri-component "^0.2.0"
 
-source-map-support@^0.5.16, source-map-support@^0.5.6, source-map-support@~0.5.12, source-map-support@~0.5.19:
+source-map-support@^0.5.16, source-map-support@^0.5.6, source-map-support@~0.5.12:
   version "0.5.19"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.19.tgz#a98b62f86dcaf4f67399648c085291ab9e8fed61"
   integrity sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==
@@ -17887,7 +17887,7 @@ source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.0, source-map@~0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-source-map@^0.7.3, source-map@~0.7.2:
+source-map@^0.7.3:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
   integrity sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==
@@ -18688,7 +18688,7 @@ terser-webpack-plugin@^4.1.0:
     terser "^5.3.4"
     webpack-sources "^1.4.3"
 
-terser@^4.1.2, terser@^4.6.3, terser@^4.8.0:
+terser@4.8.0, terser@^4.1.2, terser@^4.6.3, terser@^4.8.0, terser@^5.0.0, terser@^5.3.4:
   version "4.8.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-4.8.0.tgz#63056343d7c70bb29f3af665865a46fe03a0df17"
   integrity sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==
@@ -18696,15 +18696,6 @@ terser@^4.1.2, terser@^4.6.3, terser@^4.8.0:
     commander "^2.20.0"
     source-map "~0.6.1"
     source-map-support "~0.5.12"
-
-terser@^5.0.0, terser@^5.3.4:
-  version "5.6.1"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.6.1.tgz#a48eeac5300c0a09b36854bf90d9c26fb201973c"
-  integrity sha512-yv9YLFQQ+3ZqgWCUk+pvNJwgUTdlIxUk1WTN+RnaFJe2L7ipG2csPT0ra2XRm7Cs8cxN7QXmK1rFzEwYEQkzXw==
-  dependencies:
-    commander "^2.20.0"
-    source-map "~0.7.2"
-    source-map-support "~0.5.19"
 
 test-exclude@^6.0.0:
   version "6.0.0"
