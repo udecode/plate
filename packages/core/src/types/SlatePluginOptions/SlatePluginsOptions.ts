@@ -1,4 +1,6 @@
 import { FunctionComponent } from 'react';
+import { SPRenderElementProps } from '../SPRenderElementProps';
+import { SPRenderLeafProps } from '../SPRenderLeafProps';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps } from './GetNodeProps';
 
@@ -6,7 +8,9 @@ import { GetNodeProps } from './GetNodeProps';
  * React component rendering a slate element or leaf.
  * @default DefaultElement | DefaultLeaf
  */
-export type SlatePluginComponent = FunctionComponent | null | undefined;
+export type SlatePluginComponent = FunctionComponent<
+  SPRenderElementProps | SPRenderLeafProps
+>;
 
 export interface SlatePluginOptions {
   [key: string]: any;

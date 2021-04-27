@@ -34,7 +34,7 @@ const components = createSlatePluginsComponents({
 
 ```ts
 export const createSlatePluginsComponents = (
-  overrides?: Partial<Record<DefaultSlatePluginKey, FunctionComponent<any>>>
+  overrides?: Partial<Record<DefaultSlatePluginKey, SlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: AlignCenterElement,
@@ -81,7 +81,7 @@ export const createSlatePluginsComponents = (
     });
   }
 
-  return components as Record<DefaultSlatePluginKey, FunctionComponent>;
+  return components as Record<DefaultSlatePluginKey, SlatePluginComponent>;
 };
 ```
 
