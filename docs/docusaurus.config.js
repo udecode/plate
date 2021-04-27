@@ -22,7 +22,7 @@ module.exports = {
   title: customFields.title,
   tagline: customFields.tagline,
   url: customFields.domain,
-  baseUrl: '/docs',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
