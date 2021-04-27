@@ -28,7 +28,7 @@ No software is bug-free. So, if you got an issue, follow these steps:
   - To speed up the issue fixing process, send us the steps to reproduce
     or a sample repo with the issue you faced:
 
-### Testing against `master`
+### Testing against `next`
 
 To test your project against the current latest version of
 `slate-plugins`, you can clone the repository and link it with
@@ -118,7 +118,7 @@ in your settings.
 
 The best way to help figure out an issue you are having is to produce a
 minimal reproduction using
-[our CodeSandbox](https://codesandbox.io/s/slate-plugins-reproductions-yxr3q)
+[our CodeSandbox](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
 
 ### Updating Tests
 
@@ -150,8 +150,9 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
-jsx;
 import { jsx } from "@udecode/slate-plugins-test-utils";
+
+jsx;
 ```
 
 Example of `input` and `output` being an editor containing one
@@ -205,10 +206,10 @@ merge the PR.
 If you are looking for a way to help the project, triaging issues is a
 great place to start. Here's how you can help:
 
-### Responding to issues
+### Responding to questions
 
-Issues that are tagged `question / support` or `needs reproduction` are
-great places to help. If you can answer a question, it will help the
+[Q&A](https://github.com/udecode/slate-plugins/discussions/categories/q-a) is a
+great place to help. If you can answer a question, it will help the
 asker as well as anyone who has a similar question. Also in the future
 if anyone has that same question they can easily find it by searching.
 If an issue needs reproduction, you may be able to guide the reporter
@@ -222,13 +223,11 @@ can help label issues and respond to reporters.
 
 We use the following label scheme to categorize issues:
 
-- **type** - `bug`, `feature`, `question / support`, `discussion`,
-  `dependencies`, `maintenance`.
-- **area** - `plugin: x`, `plugin:list`, `plugin:common`, `ui`, etc.
+- **type** - `bug`, `feature`, `dependencies`, `maintenance`.
+- **area** - `plugin:x`, `plugin:list`, `plugin:common`, `ui`, etc.
 - **status** - `needs reproduction`, etc.
 
 All issues should have a `type` label.
-`bug`/`feature`/`question`/`discussion` are self-explanatory.
 `dependencies` is for keeping package dependencies up to date.
 `maintenance` is a catch-all for any kind of cleanup or refactoring.
 
@@ -255,10 +254,6 @@ author to try and create a reproduction, or have a go yourself.
 - `bug`s should be closed when the issue is fixed and released.
 - `feature`s, `maintenance`s, should be closed when released or if the
   feature is deemed not appropriate.
-- `question / support`s should be closed when the question has been
-  answered. If the questioner drops offline, a reasonable period to wait
-  is two weeks.
-- `discussion`s should be closed at a maintainer's discretion.
 
 ## Development Guide
 
@@ -276,15 +271,13 @@ If you run into trouble here, make sure your node, npm, and **_yarn_**
 are on the latest versions (yarn at least v1.3.2).
 
 1. `cd ~` (optional)
-2. `git clone https://github.com/udecode/slate-plugins.git`
-   _bonus_: use your own fork for this step
+2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
 3. `cd slate-plugins`
 4. `yarn install`
 5. `yarn build` once
-6. Run storybook:
-   7. If editing package source files, watch both these files and the
-      stories: `yarn storybook:w`
-   8. Otherwise, just watch the stories by running: `yarn storybook`
+6. Run storybook: a) if editing package source files, watch both these
+   files and the stories: `yarn storybook:w` b) otherwise, just watch
+   the stories by running: `yarn storybook`
 
 ### Working with Storybook
 

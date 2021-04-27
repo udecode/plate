@@ -26,7 +26,7 @@ export const useStoreState = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id), shallow);
 
 /**
- * Slate editor with generic type (default is `ReactEditor & HistoryEditor & RandomKeyEditor`).
+ * Get editor.
  */
 export const useStoreEditor = <
   T extends TEditor | undefined = ReactEditor & HistoryEditor

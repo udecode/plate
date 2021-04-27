@@ -103,4 +103,5 @@ storybook-static/
 
 # Local
 packages/slate-plugins/docs/
-/docs
+# Local Netlify folder
+.netlify

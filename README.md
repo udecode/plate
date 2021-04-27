@@ -9,16 +9,15 @@ slate-plugins
   <a target="_blank" href="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg"><img src="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg" /></a>
   <a target="_blank" href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg" alt="Tested with Jest"></a>
   <a target="_blank" href="https://github.com/udecode/slate-plugins/blob/master/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
-  <a target="_blank" href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://slate-slack.herokuapp.com/badge.svg?logo=slack" /></a>
+  <a target="_blank" href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
 </div>
 <div align="center">
   <a target="_blank" href="https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c" alt="Live Demo CodeSandbox"><img src="https://img.shields.io/badge/Live%20Demo-CodeSandbox-blue?logo=codesandbox" height="25" /></a>
-  <a target="_blank" href="https://slate-plugins-next.netlify.app/?path=/story/examples-playground--plugins" alt="Playground Storybook"><img src="https://img.shields.io/badge/Playground-Storybook-ff4684?logo=storybook" height="25" /></a>
+  <a target="_blank" href="https://slate-plugins-next.netlify.app/?path=/story/examples-playground--plugins" alt="Examples Storybook"><img src="https://img.shields.io/badge/Examples-Storybook-ff4684?logo=storybook" height="25" /></a>
 </div>
 </p>
 
-> **We are working hard on v1 docs. Storybook docs are still for
-> v0.75.**
+## Visit [slate-plugins.udecode.io](https://slate-plugins.udecode.io/) for docs, guides, API and more!
 
 ## Introduction
 
@@ -36,12 +35,6 @@ build your editor right away with **minimal** slate knowledge.
 state management for an optimal development experience. This repository
 comes with a lot of plugins as elements, marks, serializers,
 normalizers, queries, transforms, components and so on.
-
-<!--[API documentation](https://slate-plugins-api.netlify.app/).-->
-
-<!--[Try out our plugins](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)-->
-<!--and-->
-<!--[create yours in a few minutes](https://slate-plugins-next.netlify.app/?path=/docs/docs-guide--page)!-->
 
 - 🏎 Simple Start
 
@@ -80,94 +73,6 @@ normalizers, queries, transforms, components and so on.
 <!--- -->
 <!--  📖 [API](https://slate-plugins-api.netlify.app/) generated with-->
 <!--  [TypeDoc](https://typedoc.org/).-->
-
-## Table of contents
-
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [Packages](#packages)
-  * [Core libraries](#core-libraries)
-  * [Element Plugins](#element-plugins)
-  * [Mark Plugins](#mark-plugins)
-  * [Serializer Plugins](#serializer-plugins)
-  * [Plugins](#plugins)
-- [Contributing](CONTRIBUTING.md)
-  * [Development scripts](#development-scripts)
-  * [Contributors](#contributors)
-- [License](#license)
-
-## Installation
-
-You can install all the packages simultaneously:
-
-```bash
-yarn add @udecode/slate-plugins
-```
-
-You will also need these peer dependencies (slate >= 0.60):
-
-```bash
-yarn add slate slate-hyperscript slate-react react react-dom
-```
-
-Alternatively you can install only the packages you need:
-
-```bash
-yarn add @udecode/slate-plugins-alignment
-yarn add @udecode/slate-plugins-alignment-ui
-yarn add @udecode/slate-plugins-autoformat
-yarn add @udecode/slate-plugins-basic-elements
-yarn add @udecode/slate-plugins-basic-marks
-yarn add @udecode/slate-plugins-block-quote
-yarn add @udecode/slate-plugins-block-quote-ui
-yarn add @udecode/slate-plugins-break
-yarn add @udecode/slate-plugins-code-block
-yarn add @udecode/slate-plugins-code-block-ui
-yarn add @udecode/slate-plugins-common
-yarn add @udecode/slate-plugins-core
-yarn add @udecode/slate-plugins-dnd
-yarn add @udecode/slate-plugins-find-replace
-yarn add @udecode/slate-plugins-find-replace-ui
-yarn add @udecode/slate-plugins-heading
-yarn add @udecode/slate-plugins-highlight
-yarn add @udecode/slate-plugins-html-serializer
-yarn add @udecode/slate-plugins-image
-yarn add @udecode/slate-plugins-image-ui
-yarn add @udecode/slate-plugins-kbd
-yarn add @udecode/slate-plugins-link
-yarn add @udecode/slate-plugins-link-ui
-yarn add @udecode/slate-plugins-list
-yarn add @udecode/slate-plugins-list-ui
-yarn add @udecode/slate-plugins-md-serializer
-yarn add @udecode/slate-plugins-media-embed
-yarn add @udecode/slate-plugins-media-embed-ui
-yarn add @udecode/slate-plugins-mention
-yarn add @udecode/slate-plugins-mention-ui
-yarn add @udecode/slate-plugins-node-id
-yarn add @udecode/slate-plugins-normalizers
-yarn add @udecode/slate-plugins-paragraph
-yarn add @udecode/slate-plugins-reset-node
-yarn add @udecode/slate-plugins-select
-yarn add @udecode/slate-plugins-table
-yarn add @udecode/slate-plugins-table-ui
-yarn add @udecode/slate-plugins-toolbar
-yarn add @udecode/slate-plugins-trailing-block
-yarn add @udecode/slate-plugins-ui-fluent
-```
-
-## Usage
-
-Most plugins are used in
-[this storybook playground](https://slate-plugins-next.netlify.app/?path=/story/examples-playground--plugins).
-
-For guidance on using `@udecode/slate-plugins` visit (**v1 docs WIP**):
-[slate-plugins-next.netlify.app](https://slate-plugins-next.netlify.app/)
-and checkout our [API](https://slate-plugins-api.netlify.app/)
-documentation.
-
-For additional help, join us in
-[Slate Slack](https://join.slack.com/t/slate-js/shared_invite/zt-f8t986ip-7dA1DyiqPpzootz1snKXkw).
 
 ## Packages
 
@@ -238,58 +143,27 @@ For additional help, join us in
 | [`@udecode/slate-plugins-ui-fluent`](packages/ui/fluent)             | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-ui-fluent.svg" alt="@udecode/slate-plugins-ui-fluent npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-ui-fluent)                   | Common UI utilities with [fluentui](https://github.com/microsoft/fluentui). |
 | [`@udecode/slate-plugins-test-utils`](packages/test-utils/)          | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-test-utils.svg" alt="@udecode/slate-plugins-test-utils npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-test-utils)                | Test utilities.                                                             |
 
-## [Contributing](CONTRIBUTING.md)
+### Author's Note
 
-🌟 Stars and 📥 Pull requests to `@udecode/slate-plugins` are welcome!
-Don't hesitate to **share your plugins** here. Read our
-[contributing guide](CONTRIBUTING.md) to get started, or find us on
+>  [@zbeyens](https://github.com/zbeyens): I'm building an app with an
+>  editor like many of you and my first initiative was to spend months
+>  to share this work, while hundreds of developers were coding and
+>  debugging the exact same features. Open-source is a long-term
+>  investment for a **bug-free product and reducing technical debt**, so
+>  I can only encourage you to join this collaboration. Our goal is to
+>  build a fully-featured editor.
+
+#### [Become a Sponsor!](https://github.com/sponsors/zbeyens)
+
+### Contributors
+
+🌟 Stars and 📥 Pull requests are welcome! Don't hesitate to **share
+your plugins** here. Read our [contributing guide](CONTRIBUTING.md) to
+get started, or find us on
 [Slack](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1), we will
 take the time to guide you.
 
-### Development scripts
-
-Useful scripts include:
-
-#### `yarn`
-
-> Installs package dependencies
-
-#### `yarn build`
-
-> Build the local packages.
-
-#### `yarn storybook`
-
-> Starts storybook (after `yarn build`).
-
-#### `yarn storybook:w`
-
-> Starts storybook dev and watch package files (after `yarn build`).
-
-#### `yarn lint`
-
-> boolean check if code conforms to linting eslint rules
-
-#### `yarn test`
-
-> Test with Jest
-
-#### `yarn release`
-
-> Lint, test, build and push a release to git and npm will ask for
-> version in interactive mode - using lerna.
-
-### Author's Note
-
->  [@zbeyens](https://github.com/zbeyens): I'm building an app with
->  an editor like many of you and my first initiative was to spend
->  months to share this work, while hundreds of developers were coding
->  and debugging the exact same features. Open-source is a long-term
->  investment for a **bug-free product and reducing technical debt**, so
->  I can only encourage you to join this collaboration. At the end, a
->  fully-featured editor will be shared here. DRY.
-
-### Contributors
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -317,6 +191,9 @@ Useful scripts include:
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
+Contributions of any kind welcome!
 
 ## License
 

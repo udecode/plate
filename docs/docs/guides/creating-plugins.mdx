@@ -1,0 +1,152 @@
+---
+slug: /creating-plugins
+title: Creating Plugins
+---
+
+Slate plugins are objects passed to the [plugins](SlatePlugins#plugins) prop of `SlatePlugins`.
+
+## Plugin Factory
+
+A plugin factory is a function where...
+
+- the naming convention is `create...Plugin`
+- the return type is a [SlatePlugin](https://slate-plugins-api.udecode.io/interfaces/slateplugin.html) object.
+- the first parameter should be an (optional) object for options.
+
+Let's create a few plugins to cover the plugin properties.
+
+### Element Plugin
+
+A plugin to add an element: a paragraph as a block controlled by slate:
+
+```ts
+export const createParagraphPlugin = (): SlatePlugin => ({
+  deserialize: getParagraphDeserialize(),
+  onKeyDown: getToggleElementOnKeyDown(ELEMENT_PARAGRAPH),
+  pluginKeys: ELEMENT_PARAGRAPH,
+  renderElement: getRenderElement(ELEMENT_PARAGRAPH),
+});
+```
+
+- [deserialize](#deserialize)
+  - to enable HTML deserialization, set a deserializer.
+- [renderElement](#renderelement)
+  - to enable element rendering, use [getRenderElement](https://slate-plugins-api.udecode.io/globals.html#getrenderelement)
+- [onKeyDown](#onkeydown)
+  - to enable block toggling with a hotkey, use `getToggleElementOnKeyDown`
+- [pluginKeys](#pluginkeys)
+  - set the paragraph key.
+
+### Inline & Void Element Plugin
+
+A plugin to add an inline and void element: a tag uncontrolled by slate:
+
+```ts
+export const createTagPlugin = (): SlatePlugin => ({
+  deserialize: getTagDeserialize(),
+  renderElement: getRenderElement(ELEMENT_TAG),
+  inlineTypes: getSlatePluginTypes(ELEMENT_TAG),
+  voidTypes: getSlatePluginTypes(ELEMENT_TAG),
+});
+```
+
+- [inlineTypes](#inlinetypes)
+  - set the tag key to make it inline.
+- [voidTypes](#voidtypes)
+  - set the tag key to make it void.
+
+### Leaf Plugin
+
+Finally, a plugin to add a leaf: a highlight mark.
+
+```ts
+export const createHighlightPlugin = (): SlatePlugin => ({
+  pluginKeys: MARK_HIGHLIGHT,
+  renderLeaf: getRenderLeaf(MARK_HIGHLIGHT),
+  deserialize: getHighlightDeserialize(),
+  onKeyDown: getToggleMarkOnKeyDown(MARK_HIGHLIGHT),
+});
+```
+
+- [renderLeaf](#renderleaf)
+  - to enable leaf rendering, use [getRenderLeaf](https://slate-plugins-api.udecode.io/globals.html#getrenderleaf)
+- [onKeyDown](#onkeydown)
+  - to enable mark toggling with a hotkey, use `getToggleMarkOnKeyDown`
+
+### Overrider Plugin
+
+Finally, a plugin to add an editor method overrider:
+
+```ts
+export const createReactPlugin = {
+  withOverrides: withReact
+};
+```
+
+## `SlatePlugin`
+
+### `decorate`
+
+- Function used to decorate ranges.
+- If the function returns undefined then no ranges are modified.
+- If the function returns an array the returned ranges are merged with the ranges called by other plugins.
+- See https://docs.slatejs.org/concepts/09-rendering#decorations
+
+### `deserialize`
+
+- HTML Deserializer for element and leaf.
+
+### `inlineTypes`
+
+- Inline element types
+
+### `onChange`
+
+- Function called whenever a change occurs in the editor.
+- To prevent the next handler from running, return `false`.
+
+### `onDOMBeforeInput`
+
+- Function used to handle `beforeInput` events.
+- To prevent the next handler from running return `false`.
+
+### `onKeyDown`
+
+- Function called on key down event.
+- To prevent the next handler from running, return `false`.
+
+### `pluginKeys`
+
+- Plugin keys to support configuration.
+
+### `renderElement`
+
+- Function used to render an element.
+- If the function returns `undefined` then the next `RenderElement` function is called.
+- If the function renders a JSX element then that JSX element is rendered.
+- See https://docs.slatejs.org/concepts/09-rendering
+
+### `renderLeaf`
+
+- Function used to render the children of a leaf.
+- If the function returns `undefined` then the next `RenderLeaf` function is called and the current children are not modified.
+- The children passed to the function may be the result of a previous plugin.
+- To wrap the previous plugin simply return the passed children.
+- You do not need to add the attributes to your return value.
+- The attributes are added by default.
+- `RenderLeaf` always returns a JSX element (even if unmodified) to support multiple marks on a node.
+- See https://docs.slatejs.org/concepts/09-rendering#leaves
+
+### `serialize`
+
+- HTML Serializer for element and leaf.
+
+### `voidTypes`
+
+- Void element types.
+
+### `withOverrides`
+
+- Editor method overriders.
+- See https://docs.slatejs.org/concepts/08-plugins
+

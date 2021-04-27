@@ -1,0 +1,228 @@
+---
+title: Basic Plugins
+slug: /basic-plugins
+---
+
+:::note
+
+The following undeclared variables and types are imported from `@udecode/slate-plugins`.
+
+:::
+
+This guide will use existing plugins. For creating new plugins, [see this section](./creating-plugins).
+
+If you don't provide any plugins to `SlatePlugins` as done in the previous section, `createReactPlugin()` and `createHistoryPlugin()` will be used as default.
+
+### Plugins
+
+Let's add basic elements and marks using the `plugins` props.
+
+```tsx
+const pluginsBasic = [
+  // editor
+  createReactPlugin(),          // withReact
+  createHistoryPlugin(),        // withHistory
+
+  // elements
+  createParagraphPlugin(),      // paragraph element
+  createBlockquotePlugin(),     // blockquote element
+  createCodeBlockPlugin(),      // code block element
+  createHeadingPlugin(),        // heading elements
+
+  // marks
+  createBoldPlugin(),           // bold mark
+  createItalicPlugin(),         // italic mark
+  createUnderlinePlugin(),      // underline mark
+  createStrikethroughPlugin(),  // strikethrough mark
+  createCodePlugin(),           // code mark
+];
+
+// Quick helper to create a block element with (marked) text
+export const createElement = (
+  text = '',
+  {
+    type = ELEMENT_PARAGRAPH,
+    mark,
+  }: {
+    type?: string;
+    mark?: string;
+  } = {}
+) => {
+  const leaf = { text };
+  if (mark) {
+    leaf[mark] = true;
+  }
+
+  return {
+    type,
+    children: [leaf],
+  };
+};
+
+const initialValueBasicElements = [
+  createElement('🧱 Elements', { type: ELEMENT_H1 }),
+  createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
+  createElement('These are the most common elements, known as blocks:'),
+  createElement('Heading 1', { type: ELEMENT_H1 }),
+  createElement('Heading 2', { type: ELEMENT_H2 }),
+  createElement('Heading 3', { type: ELEMENT_H3 }),
+  createElement('Heading 4', { type: ELEMENT_H4 }),
+  createElement('Heading 5', { type: ELEMENT_H5 }),
+  createElement('Heading 6', { type: ELEMENT_H6 }),
+  createElement('Blockquote', { type: ELEMENT_BLOCKQUOTE }),
+  {
+    type: ELEMENT_CODE_BLOCK,
+    children: [
+      {
+        type: ELEMENT_CODE_LINE,
+        children: [
+          {
+            text: "const a = 'Hello';",
+          },
+        ],
+      },
+      {
+        type: ELEMENT_CODE_LINE,
+        children: [
+          {
+            text: "const b = 'World';",
+          },
+        ],
+      },
+    ],
+  },
+  createElement('💅 Marks', { type: ELEMENT_H1 }),
+  createElement('💧 Basic Marks', { type: ELEMENT_H2 }),
+  createElement(
+    'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.'
+  ),
+  createElement(
+    'You can customize the type, the component and the hotkey for each of these.'
+  ),
+  createElement('This text is bold.', { mark: MARK_BOLD }),
+  createElement('This text is italic.', { mark: MARK_ITALIC }),
+  createElement('This text is underlined.', {
+    mark: MARK_UNDERLINE,
+  }),
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'This text is bold, italic and underlined.',
+        [MARK_BOLD]: true,
+        [MARK_ITALIC]: true,
+        [MARK_UNDERLINE]: true,
+      },
+    ],
+  },
+  createElement('This is a strikethrough text.', {
+    mark: MARK_STRIKETHROUGH,
+  }),
+  createElement('This is an inline code.', { mark: MARK_CODE }),
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      { text: 'These are ' },
+      { text: 'a subscript', [MARK_SUBSCRIPT]: true },
+      { text: ' and ' },
+      { text: 'a superscript', [MARK_SUPERSCRIPT]: true },
+      { text: '.' },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      { text: 'You can also press ' },
+      { text: 'Super + B', [MARK_KBD]: true },
+      { text: ' to mark selected text bold or ' },
+      { text: 'Super + I', [MARK_KBD]: true },
+      { text: ' to mark it italic.' },
+    ],
+  },
+  createElement('There are many other keyboard shortcuts.'),
+]
+```
+
+:::note
+The `type` property is needed on elements as `SlatePlugins` will map a React component to each type.
+:::
+
+```tsx live
+() => {
+  const [debugValue, setDebugValue] = useState(null);
+  const onChangeDebug = (newValue) => {
+    setDebugValue(`value ${JSON.stringify(newValue)}`);
+  }
+
+  return (
+    <>
+      <SlatePlugins
+        id="1"
+        editableProps={editableProps}
+        initialValue={initialValueBasic}
+        plugins={pluginsBasic}
+        onChange={onChangeDebug}
+      />
+      {debugValue}
+    </>
+  );
+}
+```
+
+Everything actually works, but we didn't provide any `components` to render.
+The default element component is a `div` and the default leaf component is a `span`.
+
+:::info
+Slate plugins are bundled without any default component or options,
+meaning that you're in full control over markup and styling
+so you can plug-in your design system or the provided one.
+:::
+
+### Components & Options
+
+Let's pass the `components` and `options` provided by the library.
+
+```tsx
+const components = createSlatePluginsComponents();
+const options = createSlatePluginsOptions();
+```
+
+```tsx live
+() => {
+  // try to remove some plugins!
+  const pluginsBasicElements = [
+    // editor
+    createReactPlugin(),          // withReact
+    createHistoryPlugin(),        // withHistory
+
+    // elements
+    createParagraphPlugin(),      // paragraph element
+    createBlockquotePlugin(),     // blockquote element
+    createCodeBlockPlugin(),      // code block element
+    createHeadingPlugin(),        // heading elements
+
+    // marks
+    createBoldPlugin(),           // bold mark
+    createItalicPlugin(),         // italic mark
+    createUnderlinePlugin(),      // underline mark
+    createStrikethroughPlugin(),  // strikethrough mark
+    createCodePlugin(),           // code mark
+  ];
+
+  return (
+    <SlatePlugins
+      id="2"
+      editableProps={editableProps}
+      initialValue={initialValueBasic}
+      plugins={pluginsBasicElements}
+      components={components}
+      options={options}
+    />
+  );
+}
+```
+
+Voilà!
+
+`SlatePlugins` hides a lot of complexity but what if we want to have more control on its state?
+See the [store section](store).
