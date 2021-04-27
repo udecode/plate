@@ -32,13 +32,31 @@ module.exports = {
   plugins: ['docusaurus-plugin-sass'],
   customFields: { ...customFields },
   themeConfig: {
-    colorMode: {
-      respectPrefersColorScheme: true,
-    },
+    // algolia: {
+    //   apiKey: 'YOUR_API_KEY',
+    //   indexName: 'YOUR_INDEX_NAME',
+    //
+    //   // Optional: see doc section below
+    //   contextualSearch: false,
+    //
+    //   // Optional: see doc section below
+    //   appId: 'YOUR_APP_ID',
+    //
+    //   // Optional: Algolia search parameters
+    //   searchParameters: {},
+    // },
     // announcementBar: {
     //   id: 'github-star',
     //   content: customFields.announcementBarContent,
     // },
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
+    googleAnalytics: {
+      trackingID: 'UA-195622178-1',
+      // Optional fields.
+      anonymizeIP: true, // Should IPs be anonymized?
+    },
     prism: {
       defaultLanguage: 'typescript',
       theme: require('prism-react-renderer/themes/dracula'),

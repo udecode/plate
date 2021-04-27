@@ -16,7 +16,7 @@ export const Header = () => {
   return (
     <header className="relative bg-white dark:bg-gray-800 overflow-hidden">
       <div className="py-24 mx-auto container px-4 relative">
-        <div className="jsx-2867072947 w-96 h-auto absolute transform right-20 top-1/2 h-0 -translate-y-1/2">
+        <div className="hidden lg:block jsx-2867072947 w-96 h-auto absolute transform right-20 top-1/2 h-0 -translate-y-1/2">
           {!isDarkTheme ? (
             <Logo className="w-full h-full" />
           ) : (

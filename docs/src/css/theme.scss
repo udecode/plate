@@ -238,7 +238,7 @@
   --ifm-breadcrumb-separator-filter: none;
   --ifm-breadcrumb-separator-size: 0.5rem;
   --ifm-breadcrumb-separator-size-multiplier: 1.25;
-  --ifm-button-background-color: inherit;
+  --ifm-button-background-color: white;
   --ifm-button-border-color: var(--ifm-button-background-color);
   --ifm-button-border-width: var(--ifm-global-border-width);
   --ifm-button-color: var(--ifm-font-color-base-inverse);
@@ -412,5 +412,33 @@ html[data-theme="dark"] {
 
   [class="playgroundPreview__-node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground-"] {
     border: 1px solid var(--ifm-color-emphasis-400);
+  }
+
+  .button--secondary {
+    --ifm-button-border-color: var(--ifm-color-gray-200);
+  }
+
+  .button--secondary:not(.button--outline) {
+    --ifm-button-background-color: var(--ifm-color-gray-200);
+  }
+
+  .button--secondary:not(.button--outline):hover {
+    --ifm-button-background-color: var(--ifm-color-gray-300);
+    --ifm-button-border-color: var(--ifm-color-gray-300);
+  }
+
+  /* Increase specificity. */
+
+  .button--secondary:active,
+  .button--secondary.button--active {
+    --ifm-button-border-color: var(--ifm-color-gray-400);
+    --ifm-button-background-color: var(--ifm-color-gray-400);
+
+    background-color: var(
+      --ifm-color-gray-400
+    ); /* Has to be explicitly defined because .button--outline has quite high specificity. */
+    border-color: var(
+      --ifm-color-gray-400
+    ); /* Has to be explicitly defined because .button--outline has quite high specificity. */
   }
 }
