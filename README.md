@@ -68,8 +68,6 @@ normalizers, queries, transforms, components and so on.
 <!--- 📓-->
 <!--  [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)-->
 <!--  and-->
-<!--  [Demos](https://slate-plugins-next.netlify.app/?path=/story/plugins-playground--plugins)-->
-<!--  on Storybook.-->
 <!--- -->
 <!--  📖 [API](https://slate-plugins-api.netlify.app/) generated with-->
 <!--  [TypeDoc](https://typedoc.org/).-->
