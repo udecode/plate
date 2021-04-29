@@ -14,6 +14,62 @@ This repo uses yarn workspaces, so you should install `yarn` as the
 package manager. See
 [installation guide](https://yarnpkg.com/en/docs/install).
 
+## Development Guide
+
+### Initial Setup
+
+If you run into trouble here, make sure your node, npm, and **_yarn_**
+are on the latest versions (yarn at least v1.3.2).
+
+1. `cd ~` (optional)
+2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
+3. `cd slate-plugins`
+
+#### Editing packages
+
+1. `yarn install`
+2. `yarn build`
+3. `yarn storybook:w`
+
+#### Editing stories
+
+1. `yarn install`
+2. `yarn build`
+3. `yarn storybook`
+
+Within the `stories` folder, you will find examples of plugins
+implementations.
+
+These show many of the options and plugins available. We highly
+encourage you to use these to develop/test contributions on.
+
+#### Editing docs
+
+1. `cd docs`
+2. `yarn install`
+3. `yarn start`
+
+## Release Guide
+
+This section is for maintainers who will be creating releases. It
+assumes:
+
+- yarn >= 1.3.2
+
+The current manual release sequence is as follows:
+
+- If you want to synchronize the exports, run `yarn cti` to
+  automatically update the index files.
+- Lint, test, build locally.
+- To create a release PR with GitHub Actions, comment a GitHub issue
+  starting by:
+  - `/create release patch` for patch version.
+  - `/create release minor` for minor version.
+- Once the release PR is created, set the changelog in the description
+  content as it will be published on release page.
+- If the checks pass, the owners of the repository can merge the release
+  PR so it will automatically release the new version on npm and GitHub.
+
 ## Issues
 
 No software is bug-free. So, if you got an issue, follow these steps:
@@ -30,6 +86,12 @@ No software is bug-free. So, if you got an issue, follow these steps:
   - Share error logs, screenshots and etc.
   - To speed up the issue fixing process, send us the steps to reproduce
     or a sample repo with the issue you faced:
+
+### Reproductions
+
+The best way to help figure out an issue you are having is to produce a
+minimal reproduction using
+[our CodeSandbox](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
 
 ### Testing against `next`
 
@@ -116,12 +178,6 @@ warnings and errors within your editor.
 
 If you're using WebStorm, you should enable `Run eslint --fix on save`
 in your settings.
-
-### Reproductions
-
-The best way to help figure out an issue you are having is to produce a
-minimal reproduction using
-[our CodeSandbox](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
 
 ### Updating Tests
 
@@ -257,57 +313,4 @@ author to try and create a reproduction, or have a go yourself.
 - `bug`s should be closed when the issue is fixed and released.
 - `feature`s, `maintenance`s, should be closed when released or if the
   feature is deemed not appropriate.
-
-## Development Guide
-
-### Prerequisites
-
-Please have the **_latest_** stable versions of the following on your
-machine
-
-- node
-- yarn
-
-### Initial Setup
-
-If you run into trouble here, make sure your node, npm, and **_yarn_**
-are on the latest versions (yarn at least v1.3.2).
-
-1. `cd ~` (optional)
-2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
-3. `cd slate-plugins`
-4. `yarn install`
-5. `yarn build` once
-6. Run storybook: a) if editing package source files, watch both these
-   files and the stories: `yarn storybook:w` b) otherwise, just watch
-   the stories by running: `yarn storybook`
-
-### Working with Storybook
-
-Within the `stories` folder, you will find examples of plugins
-implementations.
-
-These show many of the options and plugins available. We highly
-encourage you to use these to develop/test contributions on.
-
-## Release Guide
-
-This section is for maintainers who will be creating releases. It
-assumes:
-
-- yarn >= 1.3.2
-
-The current manual release sequence is as follows:
-
-- If you want to synchronize the exports, run `yarn cti` to
-  automatically update the index files.
-- Lint, test, build locally.
-- To create a release PR with GitHub Actions, comment a GitHub issue
-  starting by:
-  - `/create release patch` for patch version.
-  - `/create release minor` for minor version.
-- Once the release PR is created, set the changelog in the description
-  content as it will be published on release page.
-- If the checks pass, the owners of the repository can merge the release
-  PR so it will automatically release the new version on npm and GitHub.
 
