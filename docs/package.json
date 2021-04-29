@@ -30,6 +30,10 @@
     "postcss-import": "^12.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "slate": "0.60.11",
+    "slate-history": "0.60.11",
+    "slate-hyperscript": "0.60.11",
+    "slate-react": "0.60.11",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "browserslist": {
