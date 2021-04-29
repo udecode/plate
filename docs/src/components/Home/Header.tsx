@@ -40,7 +40,7 @@ export const Header = () => {
                     'button  button--primary button--lg mr-2',
                     styles.getStarted
                   )}
-                  to={useBaseUrl('docs/')}
+                  to={useBaseUrl('docs/installation')}
                 >
                   Get Started
                 </Link>
