@@ -119,27 +119,6 @@ const initialValueBasicElements = [
     mark: MARK_STRIKETHROUGH,
   }),
   createElement('This is an inline code.', { mark: MARK_CODE }),
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      { text: 'These are ' },
-      { text: 'a subscript', [MARK_SUBSCRIPT]: true },
-      { text: ' and ' },
-      { text: 'a superscript', [MARK_SUPERSCRIPT]: true },
-      { text: '.' },
-    ],
-  },
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      { text: 'You can also press ' },
-      { text: 'Super + B', [MARK_KBD]: true },
-      { text: ' to mark selected text bold or ' },
-      { text: 'Super + I', [MARK_KBD]: true },
-      { text: ' to mark it italic.' },
-    ],
-  },
-  createElement('There are many other keyboard shortcuts.'),
 ]
 ```
 
