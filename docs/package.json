@@ -17,10 +17,10 @@
     "tailwind:w": "nodemon"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.73",
-    "@docusaurus/preset-classic": "2.0.0-alpha.73",
-    "@docusaurus/remark-plugin-npm2yarn": "^2.0.0-alpha.73",
-    "@docusaurus/theme-live-codeblock": "^2.0.0-alpha.73",
+    "@docusaurus/core": "2.0.0-alpha.74",
+    "@docusaurus/preset-classic": "2.0.0-alpha.74",
+    "@docusaurus/remark-plugin-npm2yarn": "2.0.0-alpha.74",
+    "@docusaurus/theme-live-codeblock": "2.0.0-alpha.74",
     "@mdx-js/react": "^1.6.21",
     "@udecode/slate-plugins": "^1.0.0-alpha.25",
     "@udecode/slate-plugins-test-utils": "^1.0.0-alpha.18",
@@ -28,6 +28,8 @@
     "docusaurus-plugin-sass": "^0.1.12",
     "faker": "^5.5.3",
     "postcss-import": "^12.0.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "browserslist": {
@@ -43,7 +45,7 @@
     ]
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^2.0.0-alpha.73",
+    "@docusaurus/module-type-aliases": "2.0.0-alpha.74",
     "@tsconfig/docusaurus": "^1.0.2",
     "@types/react": "^17.0.3",
     "@types/react-helmet": "^6.1.0",
