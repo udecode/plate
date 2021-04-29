@@ -46,6 +46,7 @@
     "@types/react-helmet": "^6.1.0",
     "@types/react-router-dom": "^5.1.7",
     "@udecode/slate-plugins": "^1.0.0-alpha.25",
+    "@udecode/slate-plugins-test-utils": "^1.0.0-alpha.18",
     "nodemon": "^2.0.7",
     "typescript": "^4.2.3"
   }

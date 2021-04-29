@@ -7,6 +7,7 @@
 
 import React from 'react';
 import {
+  CodeBlockElement,
   createBlockquotePlugin,
   createBoldPlugin,
   createCodeBlockPlugin,
@@ -51,7 +52,6 @@ import {
   SlatePlugins,
   withProps,
 } from '@udecode/slate-plugins';
-import { CodeBlockElement } from '@udecode/slate-plugins-code-block-ui';
 import {
   initialValueBasicElements,
   initialValueBasicMarks,
