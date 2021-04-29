@@ -20,8 +20,8 @@ const Content = () => {
 export default function Home() {
   return (
     <Layout
-      title="Slate Plugins - Rich text editor plugin system"
-      description="A plugin framework for building rich text editors with slate."
+      title="Rapidly build your rich-text editor with Slate"
+      description="Documentation for the Slate Plugins framework."
     >
       <Content />
     </Layout>

@@ -8,7 +8,7 @@ const npmOrgUrl = 'https://www.npmjs.com/package/@udecode';
 
 const customFields = {
   title: 'Slate Plugins',
-  tagline: 'Build your editor in a clean way.',
+  tagline: 'Rapidly build your rich-text editor with Slate',
   copyright: `© ${new Date().getFullYear()} Ziad Beyens. All rights reserved.`,
   domain,
   githubOrgUrl,
