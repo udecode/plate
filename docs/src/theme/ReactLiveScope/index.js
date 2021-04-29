@@ -56,7 +56,7 @@ import {
   initialValueBasicElements,
   initialValueBasicMarks,
   initialValuePlainText,
-} from '../../../../stories/config/initialValues';
+} from '../../config/initialValues';
 
 const editableProps = {
   placeholder: 'Type…',
