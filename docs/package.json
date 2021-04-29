@@ -26,6 +26,7 @@
     "@udecode/slate-plugins-test-utils": "^1.0.0-alpha.18",
     "clsx": "^1.1.1",
     "docusaurus-plugin-sass": "^0.1.12",
+    "faker": "^5.5.3",
     "postcss-import": "^12.0.1",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
@@ -47,7 +48,6 @@
     "@types/react": "^17.0.3",
     "@types/react-helmet": "^6.1.0",
     "@types/react-router-dom": "^5.1.7",
-    "faker": "^5.5.3",
     "nodemon": "^2.0.7",
     "typescript": "^4.2.3"
   }
