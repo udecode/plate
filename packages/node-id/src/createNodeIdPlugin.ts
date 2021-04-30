@@ -2,20 +2,21 @@ import {
   defaultsDeepToNodes,
   mergeDeepToNodes,
   QueryNodeOptions,
-} from '@udecode/slate-plugins-common';
+  someNode,
+} from "@udecode/slate-plugins-common"
 import {
   getSlatePluginWithOverrides,
   isDescendant,
   isElement,
   TNode,
   WithOverride,
-} from '@udecode/slate-plugins-core';
-import cloneDeep from 'lodash/cloneDeep';
-import { Editor, NodeEntry, Operation } from 'slate';
-import { HistoryEditor } from 'slate-history';
+} from "@udecode/slate-plugins-core"
+import cloneDeep from "lodash/cloneDeep"
+import { Editor, NodeEntry, Operation } from "slate"
+import { HistoryEditor } from "slate-history"
 
 export interface NodeIdEditor extends HistoryEditor {
-  removedIDs: Set<any>;
+  removedIDs: Set<any>
 }
 
 export interface WithNodeIdProps extends QueryNodeOptions {
@@ -23,32 +24,32 @@ export interface WithNodeIdProps extends QueryNodeOptions {
    * Node key to store the id.
    * @default 'id'
    */
-  idKey?: string;
+  idKey?: string
 
   /**
    * ID factory, e.g. `uuid`
    * @default () => Date.now()
    */
-  idCreator?: Function;
+  idCreator?: Function
 
   /**
    * Filter `Text` nodes.
    * @default true
    */
-  filterText?: boolean;
+  filterText?: boolean
 
   /**
    * The existing id is still reset even if the id already exists.
    * @default false
    */
-  resetExistingID?: boolean;
+  resetExistingID?: boolean
 }
 
 /**
  * Enables support for inserting nodes with an id key.
  */
 export const withNodeId = ({
-  idKey = 'id',
+  idKey = "id",
   idCreator = () => Date.now(),
   filterText = true,
   resetExistingID = false,
@@ -56,29 +57,38 @@ export const withNodeId = ({
   allow,
   exclude,
 }: WithNodeIdProps = {}): WithOverride<HistoryEditor, NodeIdEditor> => (e) => {
-  const editor = e as typeof e & NodeIdEditor;
+  const editor = e as typeof e & NodeIdEditor
 
-  const { apply } = editor;
+  const { apply } = editor
 
-  const idPropsCreator = () => ({ [idKey]: idCreator() });
+  const idPropsCreator = () => ({ [idKey]: idCreator() })
 
-  editor.removedIDs = new Set();
+  editor.removedIDs = new Set()
 
   editor.apply = (operation) => {
-    if (operation.type === 'insert_node') {
+    if (operation.type === "insert_node") {
       const newFilter = (entry: NodeEntry<TNode>) => {
-        const [node] = entry;
+        const [node] = entry
         return filter(entry) && filterText
           ? isElement(node)
-          : isDescendant(node);
-      };
+          : isDescendant(node)
+      }
 
-      const node = cloneDeep(operation.node) as TNode;
+      const node = cloneDeep(operation.node) as TNode
+      // console.log({
+      //   node: JSON.stringify(node),
+      //   someNode: someNode(editor, { match: { id: node[idKey] } }),
+      //   operation: JSON.stringify(operation),
+      // })
+      if (someNode(editor, { match: { id: node[idKey] } })) {
+        // the id in the new node is already being used in the editor, we need to replace it with a new id
+        node[idKey] = idCreator()
+      }
 
       // it will not overwrite ids once it's set as it's read-only
       const applyDeepToNodes = resetExistingID
         ? mergeDeepToNodes
-        : defaultsDeepToNodes;
+        : defaultsDeepToNodes
       applyDeepToNodes({
         node,
         source: idPropsCreator,
@@ -87,23 +97,33 @@ export const withNodeId = ({
           allow,
           exclude,
         },
-      });
+      })
 
       return apply({
         ...operation,
         node,
-      });
+      })
     }
 
     if (
-      operation.type === 'split_node' &&
+      operation.type === "split_node" &&
       (!filterText || (operation.properties as Partial<TNode>).type)
     ) {
-      let id = operation.properties[idKey];
-      if (editor.removedIDs.has(id)) {
-        editor.removedIDs.delete(id);
-      } else {
-        id = idCreator();
+      let id = operation.properties[idKey]
+      // console.log({
+      //   properties: JSON.stringify(operation.properties),
+      //   someNode: someNode(editor, {
+      //     match: { [idKey]: (operation.properties as Partial<TNode>)[idKey] },
+      //   }),
+      //   operation: JSON.stringify(operation),
+      // })
+      if (
+        someNode(editor, {
+          match: { [idKey]: (operation.properties as Partial<TNode>)[idKey] },
+        })
+      ) {
+        // the id in the new node is already being used in the editor, we need to replace it with a new id
+        id = idCreator()
       }
 
       return apply({
@@ -112,47 +132,16 @@ export const withNodeId = ({
           ...operation.properties,
           [idKey]: id,
         },
-      });
+      })
     }
 
-    if (
-      operation.type === 'merge_node' &&
-      (!filterText || (operation.properties as Partial<TNode>).type)
-    ) {
-      // console.log('IS IN REDOS ===', isOperationIn(editor, operation.properties?.id, editor.history.redos), operation)
-      // console.log('IS IN UNDOS ===', isOperationIn(editor, operation.properties?.id, editor.history.undos), operation)
-
-      if (isOperationInUndos(editor, operation) || isOperationInRedos(editor, operation)) {
-        editor.removedIDs.add((operation.properties as Partial<TNode>).id);
-      }
-      
-    }
-
-    return apply(operation);
-  };
-
-  return editor;
-};
-
-function isOperationIn(editor: HistoryEditor, current: Operation, ops: Operation[][]) {
-  // console.log({current, val: editor.children, ops})
-  if (ops.length > 0) {
-    const batch = ops[ops.length - 1]
-    return !!batch.find((op: Operation) => op === current)
+    return apply(operation)
   }
 
-  return false
-}
-
-function isOperationInRedos(e: HistoryEditor, op: Operation) {
-  return isOperationIn(e, op, e.history.redos)
-}
-
-function isOperationInUndos(e: HistoryEditor, op: Operation) {
-  return isOperationIn(e, op, e.history.undos)
+  return editor
 }
 
 /**
  * @see {@link withNodeId}
  */
-export const createNodeIdPlugin = getSlatePluginWithOverrides(withNodeId);
+export const createNodeIdPlugin = getSlatePluginWithOverrides(withNodeId)
