@@ -11,7 +11,7 @@ import {
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import cloneDeep from 'lodash/cloneDeep';
-import { NodeEntry } from 'slate';
+import { Editor, NodeEntry, Operation } from 'slate';
 import { HistoryEditor } from 'slate-history';
 
 export interface NodeIdEditor extends HistoryEditor {
@@ -119,7 +119,13 @@ export const withNodeId = ({
       operation.type === 'merge_node' &&
       (!filterText || (operation.properties as Partial<TNode>).type)
     ) {
-      editor.removedIDs.add((operation.properties as Partial<TNode>).id);
+      // console.log('IS IN REDOS ===', isOperationIn(editor, operation.properties?.id, editor.history.redos), operation)
+      // console.log('IS IN UNDOS ===', isOperationIn(editor, operation.properties?.id, editor.history.undos), operation)
+
+      if (isOperationInUndos(editor, operation) || isOperationInRedos(editor, operation)) {
+        editor.removedIDs.add((operation.properties as Partial<TNode>).id);
+      }
+      
     }
 
     return apply(operation);
@@ -127,6 +133,24 @@ export const withNodeId = ({
 
   return editor;
 };
+
+function isOperationIn(editor: HistoryEditor, current: Operation, ops: Operation[][]) {
+  // console.log({current, val: editor.children, ops})
+  if (ops.length > 0) {
+    const batch = ops[ops.length - 1]
+    return !!batch.find((op: Operation) => op === current)
+  }
+
+  return false
+}
+
+function isOperationInRedos(e: HistoryEditor, op: Operation) {
+  return isOperationIn(e, op, e.history.redos)
+}
+
+function isOperationInUndos(e: HistoryEditor, op: Operation) {
+  return isOperationIn(e, op, e.history.undos)
+}
 
 /**
  * @see {@link withNodeId}
