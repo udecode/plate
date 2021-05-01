@@ -1,7 +1,8 @@
-import { Editor, Transforms } from 'slate';
+import { TEditor, TElement } from '@udecode/slate-plugins-core';
 import { someNode } from '../queries/someNode';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { ELEMENT_DEFAULT } from '../types/node.types';
+import { setNodes } from './setNodes';
 
 export interface ToggleNodeTypeOptions {
   /**
@@ -20,7 +21,7 @@ export interface ToggleNodeTypeOptions {
  * Don't do anything if activeType === inactiveType.
  */
 export const toggleNodeType = (
-  editor: Editor,
+  editor: TEditor,
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<EditorNodesOptions, 'match'>
 ) => {
@@ -35,7 +36,7 @@ export const toggleNodeType = (
 
   if (isActive && activeType === inactiveType) return;
 
-  Transforms.setNodes(editor, {
+  setNodes<TElement>(editor, {
     type: isActive ? inactiveType : activeType,
-  } as any);
+  });
 };

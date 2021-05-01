@@ -2,9 +2,9 @@
  * Slate plugin overriding the `editor` methods.
  * Naming convention is `with*`.
  */
-import { Editor } from 'slate';
+import { TEditor } from '../TEditor';
 
 export type WithOverride<
-  TEditorInput extends Editor = Editor,
+  TEditorInput extends TEditor = TEditor,
   TEditorOutputExtension = {}
 > = <T extends TEditorInput>(editor: T) => T & TEditorOutputExtension;

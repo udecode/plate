@@ -3,7 +3,7 @@ import {
   getSelectionText,
   isSelectionExpanded,
 } from '@udecode/slate-plugins-common';
-import { Editor } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { setPositionAtSelection } from './setPositionAtSelection';
 
 /**
@@ -14,7 +14,7 @@ export const useBalloonMove = ({
   ref,
   direction,
 }: {
-  editor: Editor;
+  editor: TEditor;
   ref: any;
   direction: 'top' | 'bottom';
 }) => {

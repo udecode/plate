@@ -1,9 +1,10 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry } from 'slate';
 
 /**
  * Get node entries range.
  */
-export const getNodesRange = (editor: Editor, nodeEntries: NodeEntry[]) => {
+export const getNodesRange = (editor: TEditor, nodeEntries: NodeEntry[]) => {
   if (!nodeEntries.length) return;
 
   const firstBlockPath = nodeEntries[0][1];

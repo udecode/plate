@@ -70,7 +70,9 @@ export const withTable = (): WithOverride<SPEditor> => (editor) => {
         match: matchCells,
       });
       for (const [, path] of cells) {
-        for (const [, childPath] of Node.children(editor, path)) {
+        for (const [, childPath] of Node.children(editor, path, {
+          reverse: true,
+        })) {
           Transforms.removeNodes(editor, { at: childPath });
         }
       }

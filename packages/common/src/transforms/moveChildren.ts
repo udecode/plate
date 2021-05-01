@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
 import { getNode } from '../queries/getNode';
 
@@ -29,7 +30,7 @@ export interface MoveChildrenOptions {
  * Returns the number of children moved.
  */
 export const moveChildren = (
-  editor: Editor,
+  editor: TEditor,
   { at, to, match, fromStartIndex = 0 }: MoveChildrenOptions
 ) => {
   let moved = 0;

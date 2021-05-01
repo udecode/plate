@@ -6,8 +6,10 @@ import {
 } from '@udecode/slate-plugins-core';
 import { ELEMENT_MENTION } from './defaults';
 
-export const getMentionDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, ELEMENT_MENTION);
+export const getMentionDeserialize = (
+  pluginKey = ELEMENT_MENTION
+): Deserialize => (editor) => {
+  const options = getSlatePluginOptions(editor, pluginKey);
 
   return {
     element: getNodeDeserializer({

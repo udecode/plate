@@ -1,5 +1,13 @@
-import { isCollapsed, unwrapNodes } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import {
+  insertNodes,
+  isCollapsed,
+  unwrapNodes,
+} from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 import { wrapLink } from './wrapLink';
@@ -27,11 +35,11 @@ export const upsertLinkAtSelection = (
   const type = getSlatePluginType(editor, ELEMENT_LINK);
 
   if (!wrap && isCollapsed(editor.selection)) {
-    return Transforms.insertNodes(editor, {
+    return insertNodes<TElement>(editor, {
       type,
       url,
       children: [{ text: url }],
-    } as any);
+    });
   }
 
   // if our cursor is inside an existing link, but don't have the text selected, select it now

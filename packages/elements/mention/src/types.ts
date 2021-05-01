@@ -1,15 +1,19 @@
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { Element, Range } from 'slate';
+import {
+  SlatePluginKey,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
+import { Range } from 'slate';
 
 export interface MentionNodeData {
   value: string;
   [key: string]: any;
 }
 
-export interface MentionNode extends Element, MentionNodeData {}
+export type MentionNode = TElement<MentionNodeData>;
 
 // useMention options
-export interface MentionPluginOptions {
+export interface MentionPluginOptions extends SlatePluginKey {
   mentionables?: MentionNodeData[];
 
   // Character triggering the mention select
@@ -47,6 +51,4 @@ export interface GetMentionSelectProps {
    * Callback called when clicking on a mention option
    */
   onClickMention?: (editor: SPEditor, option: MentionNodeData) => void;
-
-  searchValue: string;
 }

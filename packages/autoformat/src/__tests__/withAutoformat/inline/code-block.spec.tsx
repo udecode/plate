@@ -19,9 +19,9 @@ const input = (
 
 const output = (
   <editor>
-    <hp>hello</hp>
+    <hp>helloworld</hp>
     <hcodeblock>
-      <hcodeline>world</hcodeline>
+      <hcodeline>new</hcodeline>
     </hcodeblock>
   </editor>
 ) as any;
@@ -30,6 +30,7 @@ it('should autoformat', () => {
   const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
   editor.insertText('`');
+  editor.insertText('new');
 
   expect(input.children).toEqual(output.children);
 });

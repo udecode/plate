@@ -1,5 +1,9 @@
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
+import { insertNodes } from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_IMAGE } from '../defaults';
 
 export const insertImage = (editor: SPEditor, url: string | ArrayBuffer) => {
@@ -9,5 +13,5 @@ export const insertImage = (editor: SPEditor, url: string | ArrayBuffer) => {
     url,
     children: [text],
   };
-  Transforms.insertNodes(editor, image);
+  insertNodes<TElement>(editor, image);
 };

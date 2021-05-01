@@ -2,6 +2,7 @@ import {
   findDescendant,
   getLastChildPath,
   getParent,
+  insertNodes,
   moveChildren,
 } from '@udecode/slate-plugins-common';
 import { SPEditor, TElement } from '@udecode/slate-plugins-core';
@@ -68,9 +69,9 @@ export const moveListItemSublistItemsToListItemSublist = (
 
     const toListItemSublistPath = toListItemPath.concat([1]);
 
-    Transforms.insertNodes(
+    insertNodes<TElement>(
       editor,
-      { type: fromListType, children: [] } as any,
+      { type: fromListType, children: [] },
       { at: toListItemSublistPath }
     );
 

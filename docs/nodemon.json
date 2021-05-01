@@ -1,0 +1,5 @@
+{
+  "watch": ["./tailwind.config.js", "./tailwind/tailwind.css"],
+  "quiet": true,
+  "exec": "yarn tailwind"
+}

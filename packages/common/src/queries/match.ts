@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { castArray } from 'lodash';
 import { Editor } from 'slate';
 
@@ -33,7 +34,7 @@ export const matchPredicate = <T>(predicate?: Predicate<T>) => (obj: T) =>
  * - `match` can be an object predicate where one of the values should include the node value.
  * Example: { type: ['1', '2'] } will match the nodes having one of these 2 types.
  */
-export const getQueryOptions = <T>(editor: Editor, options: any) => {
+export const getQueryOptions = <T>(editor: TEditor, options: any) => {
   return {
     ...options,
     match: (n: T) =>

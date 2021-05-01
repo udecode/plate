@@ -38,6 +38,7 @@ export * from './isSelectionAtBlockStart';
 export * from './isSelectionExpanded';
 export * from './isStart';
 export * from './isTextByPath';
+export * from './isType';
 export * from './isWordAfterTrigger';
 export * from './match';
 export * from './queryEditor';

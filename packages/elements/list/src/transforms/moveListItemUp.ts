@@ -1,4 +1,9 @@
-import { getAbove, getNode, isLastChild } from '@udecode/slate-plugins-common';
+import {
+  getAbove,
+  getNode,
+  insertNodes,
+  isLastChild,
+} from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   SPEditor,
@@ -38,12 +43,12 @@ export const moveListItemUp = (
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        Transforms.insertNodes(
+        insertNodes<TElement>(
           editor,
           {
             type: listNode.type,
             children: [],
-          } as any,
+          },
           { at: toListPath }
         );
       }
@@ -86,12 +91,12 @@ export const moveListItemUp = (
     if (!isLastChild(list, liPath)) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        Transforms.insertNodes(
+        insertNodes<TElement>(
           editor,
           {
             type: listNode.type,
             children: [],
-          } as any,
+          },
           { at: toListPath }
         );
       }

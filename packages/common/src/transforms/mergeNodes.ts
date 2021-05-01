@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { TEditor } from '@udecode/slate-plugins-core';
 import {
   Editor,
   Element,
@@ -15,7 +16,7 @@ import {
  * removing any empty containing nodes after the merge if necessary.
  */
 export const mergeNodes = (
-  editor: Editor,
+  editor: TEditor,
   options: {
     at?: Location;
     // match?: NodeMatch;
@@ -27,12 +28,12 @@ export const mergeNodes = (
      * Default: if the node isn't already the next sibling of the previous node, move
      * it so that it is before merging.
      */
-    mergeNode?: (editor: Editor, options: { at: Path; to: Path }) => void;
+    mergeNode?: (editor: TEditor, options: { at: Path; to: Path }) => void;
     /**
      * Default: if there was going to be an empty ancestor of the node that was merged,
      * we remove it from the tree.
      */
-    removeEmptyAncestor?: (editor: Editor, options: { at: Path }) => void;
+    removeEmptyAncestor?: (editor: TEditor, options: { at: Path }) => void;
   } = {}
 ): void => {
   Editor.withoutNormalizing(editor, () => {

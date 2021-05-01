@@ -3,7 +3,7 @@ import { TText } from '../TText';
 
 /**
  * Map slate node props to `nodeProps`.
- * `nodeProps` is passed as a props to the React component.
+ * `nodeProps` is a prop passed to the `component`.
  */
 export type GetNodeProps = (options: {
   attributes: any;

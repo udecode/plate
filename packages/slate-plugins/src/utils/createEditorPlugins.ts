@@ -1,18 +1,20 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { ReactNode } from 'react';
 import {
   createHistoryPlugin,
   createReactPlugin,
   SlatePlugin,
+  SlatePluginComponent,
   SlatePluginOptions,
+  SPEditor,
+  TEditor,
   withSlatePlugins,
 } from '@udecode/slate-plugins-core';
-import { createEditor, Editor } from 'slate';
+import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { createSlatePluginsComponents } from './createSlatePluginsComponents';
 import {
   createSlatePluginsOptions,
-  SlatePluginKey,
+  DefaultSlatePluginKey,
 } from './createSlatePluginsOptions';
 
 /**
@@ -24,18 +26,23 @@ import {
  * - options
  * - components
  */
-export const createEditorPlugins = <T extends string = string>({
+export const createEditorPlugins = <
+  E extends SPEditor & ReactEditor = SPEditor & ReactEditor,
+  T extends string = string
+>({
   editor = createEditor(),
   plugins = [],
   options,
   components,
 }: {
-  editor?: Editor;
-  plugins?: SlatePlugin[];
-  options?: Partial<Record<SlatePluginKey | T, Partial<SlatePluginOptions>>>;
-  components?: Partial<Record<SlatePluginKey | T, ReactNode>>;
+  editor?: TEditor;
+  plugins?: SlatePlugin<E>[];
+  options?: Partial<
+    Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
+  >;
+  components?: Partial<Record<DefaultSlatePluginKey | T, SlatePluginComponent>>;
 } = {}) => {
-  return withSlatePlugins<ReactEditor>({
+  return withSlatePlugins<E>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
     options: createSlatePluginsOptions(options),
     components: createSlatePluginsComponents(components),

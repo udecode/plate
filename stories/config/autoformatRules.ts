@@ -1,6 +1,8 @@
 import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_DEFAULT,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -11,7 +13,10 @@ import {
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-  insertCodeBlock,
+  getParent,
+  insertEmptyCodeBlock,
+  isElement,
+  isType,
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -64,7 +69,20 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['*', '-'],
       preFormat,
       format: (editor) => {
-        toggleList(editor as SPEditor, { type: options[ELEMENT_UL].type });
+        if (editor.selection) {
+          const parentEntry = getParent(editor, editor.selection);
+          if (!parentEntry) return;
+          const [node] = parentEntry;
+          if (
+            isElement(node) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_BLOCK) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
+          ) {
+            toggleList((editor as any) as SPEditor, {
+              type: options[ELEMENT_UL].type,
+            });
+          }
+        }
       },
     },
     {
@@ -72,7 +90,20 @@ export const optionsAutoformat: WithAutoformatOptions = {
       markup: ['1.', '1)'],
       preFormat,
       format: (editor) => {
-        toggleList(editor as SPEditor, { type: options[ELEMENT_OL].type });
+        if (editor.selection) {
+          const parentEntry = getParent(editor, editor.selection);
+          if (!parentEntry) return;
+          const [node] = parentEntry;
+          if (
+            isElement(node) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_BLOCK) &&
+            !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
+          ) {
+            toggleList((editor as any) as SPEditor, {
+              type: options[ELEMENT_OL].type,
+            });
+          }
+        }
       },
     },
     {
@@ -127,7 +158,10 @@ export const optionsAutoformat: WithAutoformatOptions = {
       triggerAtBlockStart: false,
       preFormat,
       format: (editor) => {
-        insertCodeBlock(editor as SPEditor, { select: true });
+        insertEmptyCodeBlock((editor as any) as SPEditor, {
+          defaultType: ELEMENT_DEFAULT,
+          insertNodesOptions: { select: true },
+        });
       },
     },
   ],

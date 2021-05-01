@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { useTSlateStatic } from '@udecode/slate-plugins-core';
+import { setNodes } from '@udecode/slate-plugins-common';
+import { TElement, useTSlateStatic } from '@udecode/slate-plugins-core';
+import { MediaEmbedNodeData } from '@udecode/slate-plugins-media-embed';
 import { ClassName, getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
-import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import {
@@ -52,7 +53,11 @@ export const MediaEmbedElementBase = ({
           url={url}
           onChange={(val: string) => {
             const path = ReactEditor.findPath(editor, element);
-            Transforms.setNodes(editor, { url: val } as any, { at: path });
+            setNodes<TElement<MediaEmbedNodeData>>(
+              editor,
+              { url: val },
+              { at: path }
+            );
           }}
         />
       </div>

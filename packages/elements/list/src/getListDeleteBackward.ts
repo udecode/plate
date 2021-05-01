@@ -59,7 +59,7 @@ export const getListDeleteBackward = (
         types: [getSlatePluginType(editor, ELEMENT_LI)],
         defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
         predicate: () => isSelectionAtBlockStart(editor),
-        onReset: (_editor) => unwrapList(_editor),
+        onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
   })(editor)(null);

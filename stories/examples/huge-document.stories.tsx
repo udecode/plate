@@ -5,6 +5,7 @@ import {
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   SlatePlugins,
+  TElement,
 } from '@udecode/slate-plugins';
 import { createHeadingPlugin } from '@udecode/slate-plugins-heading';
 import { createParagraphPlugin } from '@udecode/slate-plugins-paragraph';
@@ -40,7 +41,7 @@ export const WithSlatePlugins = () => (
 );
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {
-  switch ((element as any).type) {
+  switch ((element as TElement).type) {
     case 'h1':
       return <h1 {...attributes}>{children}</h1>;
     default:

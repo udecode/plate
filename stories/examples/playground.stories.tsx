@@ -39,18 +39,20 @@ import {
   ELEMENT_IMAGE,
   ELEMENT_MENTION,
   ELEMENT_PARAGRAPH,
-  getComponent,
   HeadingToolbar,
   MentionElement,
   MentionSelect,
   SlatePlugin,
   SlatePlugins,
+  SPEditor,
   ToolbarImage,
   ToolbarLink,
   ToolbarSearchHighlight,
   useFindReplacePlugin,
   useMentionPlugin,
+  withProps,
 } from '@udecode/slate-plugins';
+import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../config/autoformatRules';
 import { initialValuePlayground } from '../config/initialValues';
 import {
@@ -69,6 +71,7 @@ import {
   ToolbarButtonsList,
   ToolbarButtonsTable,
 } from '../config/Toolbars';
+import { withStyledPlaceHolders } from '../config/withStyledPlaceHolders';
 
 const id = 'Examples/Playground';
 
@@ -76,11 +79,13 @@ export default {
   title: id,
 };
 
-const defaultComponents = createSlatePluginsComponents({
-  [ELEMENT_MENTION]: getComponent(MentionElement, {
+let defaultComponents = createSlatePluginsComponents({
+  [ELEMENT_MENTION]: withProps(MentionElement, {
     renderLabel: renderMentionLabel,
   }),
 });
+defaultComponents = withStyledPlaceHolders(defaultComponents);
+
 const defaultOptions = createSlatePluginsOptions();
 
 export const Plugins = ({
@@ -92,8 +97,8 @@ export const Plugins = ({
     optionsMentionPlugin
   );
 
-  const pluginsMemo: SlatePlugin[] = useMemo(() => {
-    const plugins = [
+  const pluginsMemo = useMemo(() => {
+    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
       createReactPlugin(),
       createHistoryPlugin(),
       createParagraphPlugin(),

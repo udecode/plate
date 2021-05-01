@@ -42,4 +42,5 @@ export * from '@udecode/slate-plugins-table-ui';
 export * from '@udecode/slate-plugins-toolbar';
 export * from '@udecode/slate-plugins-trailing-block';
 export * from '@udecode/slate-plugins-ui-fluent';
+export * from '@udecode/slate-plugins-placeholder';
 export * from './utils/index';

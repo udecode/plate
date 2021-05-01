@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Point } from 'slate';
 import { getText } from './getText';
 
@@ -7,7 +8,7 @@ const AFTER_MATCH_REGEX = /^(\s|$)/;
 /**
  * Is a point at the end of a word
  */
-export const isPointAtWordEnd = (editor: Editor, { at }: { at: Point }) => {
+export const isPointAtWordEnd = (editor: TEditor, { at }: { at: Point }) => {
   // Point after at
   const after = Editor.after(editor, at);
 

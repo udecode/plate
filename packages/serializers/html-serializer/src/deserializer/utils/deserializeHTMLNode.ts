@@ -9,9 +9,9 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHTMLNode = (
-  editor: SPEditor,
-  plugins: SlatePlugin[]
+export const deserializeHTMLNode = <T extends SPEditor = SPEditor>(
+  editor: T,
+  plugins: SlatePlugin<T>[]
 ) => (node: HTMLElement | ChildNode): DeserializeHTMLReturn => {
   // text node
   const textNode = deserializeHTMLToText(node);

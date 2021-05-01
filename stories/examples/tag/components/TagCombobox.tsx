@@ -15,7 +15,9 @@ export const TagComboboxComponent = () => {
 export const TagCombobox = () => {
   const key = useComboboxStore((state) => state.key);
 
-  if (key !== ComboboxKey.TAG) return null;
-
-  return <TagComboboxComponent />;
+  return (
+    <div style={key !== ComboboxKey.TAG ? { display: 'none' } : {}}>
+      <TagComboboxComponent />
+    </div>
+  );
 };

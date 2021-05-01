@@ -1,44 +1,45 @@
-import {
-  isBlockAboveEmpty,
-  SlateDocumentFragment,
-} from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
 import {
   getInlineTypes,
   getSlatePluginWithOverrides,
   SlatePlugin,
   SPEditor,
+  TDescendant,
+  TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
-export interface WithDeserializeHTMLOptions {
-  plugins?: SlatePlugin[];
+export interface WithDeserializeHTMLOptions<
+  T extends SPEditor = SPEditor & ReactEditor
+> {
+  plugins?: SlatePlugin<T>[];
 
   /**
    * Function called before inserting the deserialized html.
    * Default: if the block above is empty and the first fragment node type is not inline,
    * set the selected node type to the first fragment node type.
    */
-  preInsert?: (fragment: SlateDocumentFragment) => SlateDocumentFragment;
+  preInsert?: (fragment: TDescendant[]) => TDescendant[];
 
   /**
    * Function called to insert the deserialized html.
    * Default: Transforms.insertFragment.
    */
-  insert?: (fragment: SlateDocumentFragment) => void;
+  insert?: (fragment: TDescendant[]) => void;
 }
 
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHTML = ({
+export const withDeserializeHTML = <
+  T extends ReactEditor & SPEditor = ReactEditor & SPEditor
+>({
   plugins = [],
   ...options
-}: WithDeserializeHTMLOptions = {}): WithOverride<ReactEditor & SPEditor> => (
-  editor
-) => {
+}: WithDeserializeHTMLOptions<T> = {}): WithOverride<T> => (editor) => {
   const { insertData } = editor;
 
   const {
@@ -53,7 +54,7 @@ export const withDeserializeHTML = ({
         firstNodeType &&
         !inlineTypes.includes(firstNodeType)
       ) {
-        Transforms.setNodes(editor, { type: fragment[0].type } as any);
+        setNodes<TElement>(editor, { type: fragment[0].type });
       }
 
       return fragment;

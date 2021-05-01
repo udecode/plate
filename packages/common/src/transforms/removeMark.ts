@@ -1,10 +1,11 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Range, Text, Transforms } from 'slate';
 
 /**
  * Remove mark and trigger `onChange` if collapsed selection.
  */
 export const removeMark = (
-  editor: Editor,
+  editor: TEditor,
   {
     key,
     shouldChange = true,

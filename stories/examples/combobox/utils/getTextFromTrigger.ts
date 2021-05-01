@@ -1,4 +1,5 @@
 import { escapeRegExp, getText } from '@udecode/slate-plugins';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Point } from 'slate';
 
 /**
@@ -7,7 +8,7 @@ import { Editor, Point } from 'slate';
  * TODO: move to plugins
  */
 export const getTextFromTrigger = (
-  editor: Editor,
+  editor: TEditor,
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   const escapedTrigger = escapeRegExp(trigger);

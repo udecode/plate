@@ -1,11 +1,11 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/slate-plugins-core';
 import { Editor } from 'slate';
 import { unhangRange, UnhangRangeOptions } from '../transforms/unhangRange';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { getQueryOptions } from './match';
 
 export const getNodes = <T extends TNode>(
-  editor: Editor,
+  editor: TEditor,
   options: EditorNodesOptions & UnhangRangeOptions = {}
 ) => {
   unhangRange(editor, options);

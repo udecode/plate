@@ -1,0 +1,114 @@
+---
+title: Store
+slug: /store
+---
+
+`SlatePlugins` is using a [zustand](https://github.com/pmndrs/zustand) store with a state by **id** to support multiple editor instances.
+
+If rendering only one editor, the store id is optional, the default being `'main'`.
+
+## Store
+
+The hook store [useSlatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsstore) can be used to subscribe to changes in React.
+
+The vanilla store [slatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#slatepluginsstore) can be used outside React.
+
+## State
+
+### `editor`
+
+- Slate editor.
+- Default is `pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))`
+
+### `enabled`
+
+- If `true`, slate plugins will create the editor with `withSlatePlugins`.
+- If `false`, slate plugins will remove the editor from the store.
+- Default is `true`.
+
+### `plugins`
+
+- Slate plugins.
+- Default is `[createReactPlugin(), createHistoryPlugin()]`.
+
+### `pluginKeys`
+
+- Element keys used by the plugins.
+
+### `value`
+
+- Editor value.
+- Default is `[{ children: [{ text: '' }]}]`.
+
+## Actions
+
+All the actions are returned by [useSlatePluginsActions](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsactions).
+
+If using multiple stores, you should set the first parameter to the store id you want to update.
+
+### `clearState`
+
+- Remove state by id. Called by `SlatePlugins` on unmount.
+
+### `resetEditor`
+
+- Set a new editor with slate plugins.
+
+### `setEditor`
+
+- Set `editor`.
+
+### `setEnabled`
+
+- Set `enabled`.
+
+### `setInitialState`
+
+- Set initial state by id. Called by SlatePlugins on mount.
+
+### `setPlugins`
+
+- Set `plugins`.
+
+### `setPluginKeys`
+
+- Set `pluginKeys`.
+
+### `setValue`
+
+- This is internally used by `Editable.onChange` callback when the editor value is used.
+- Except when resetting the editor with `resetEditor`, you should not use it as it would break the history.
+- If you want to update `value` with history support, you should use [Slate transforms](https://docs.slatejs.org/concepts/04-transforms) like `Transforms.setNodes`.
+
+## Selectors
+
+### `useStoreState`
+
+- Get the whole [state](#state) by id.
+
+### `useStoreEditor`
+
+- Get [editor](#editor).
+
+### `useStoreEditorEnabled`
+
+- Get [enabled](#enabled).
+
+### `useStoreEditorOptions`
+
+- Get [pluginKeys](#pluginkeys).
+
+### `useStoreEditorValue`
+
+- Get [value](#value).
+
+### `useStoreSlatePlugins`
+
+- Get [plugins](#plugins).
+
+### `useStoreSlatePluginKeys`
+
+- Get [pluginKeys](#pluginkeys).
+
+
+

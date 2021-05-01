@@ -22,10 +22,10 @@ const event = new KeyboardEvent('keydown');
 const output = (
   <editor>
     <hp>te</hp>
-    <hp>
+    <hdefault>
       <htext />
       <cursor />
-    </hp>
+    </hdefault>
   </editor>
 ) as any;
 

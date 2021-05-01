@@ -16,7 +16,10 @@ import {
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
-import { initialValueBasicMarks } from '../config/initialValues';
+import {
+  initialValueBasicMarks,
+  initialValueMarks,
+} from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { ToolbarButtonsBasicMarks } from '../config/Toolbars';
 
@@ -49,7 +52,7 @@ export const Example = () => (
     components={components}
     options={options}
     editableProps={editableProps}
-    initialValue={initialValueBasicMarks}
+    initialValue={initialValueMarks}
   >
     <HeadingToolbar>
       <ToolbarButtonsBasicMarks />

@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Point } from 'slate';
 import { escapeRegExp } from '../utils/escapeRegexp';
 import { getText } from './getText';
@@ -7,7 +8,7 @@ import { getText } from './getText';
  * https://github.com/ianstormtaylor/slate/blob/master/packages/slate/src/utils/string.ts#L6
  */
 export const isWordAfterTrigger = (
-  editor: Editor,
+  editor: TEditor,
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   // Point at the start of previous word (excluding punctuation)

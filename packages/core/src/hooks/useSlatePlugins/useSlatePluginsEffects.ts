@@ -7,8 +7,8 @@ import {
   useStoreEditor,
   useStoreEditorEnabled,
   useStoreSlatePlugins,
-  useStoreState,
 } from '../../store/useSlatePluginsSelectors';
+import { SPEditor } from '../../types/SPEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -18,7 +18,7 @@ import { withSlatePlugins } from '../../utils/withSlatePlugins';
  * Effects to update the slate plugins store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const useSlatePluginsEffects = ({
+export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   id = 'main',
   value,
   editor,
@@ -27,7 +27,7 @@ export const useSlatePluginsEffects = ({
   options,
   initialValue,
   plugins,
-}: UseSlatePluginsEffectsOptions) => {
+}: UseSlatePluginsEffectsOptions<T>) => {
   const {
     setInitialState,
     setValue,
@@ -36,10 +36,9 @@ export const useSlatePluginsEffects = ({
     setPluginKeys,
     setEnabled,
     clearState,
-  } = useSlatePluginsActions(id);
+  } = useSlatePluginsActions<T>(id);
   const storeEditor = useStoreEditor(id);
   const storeEnabled = useStoreEditorEnabled(id);
-  const storeState = useStoreState(id);
   const storePlugins = useStoreSlatePlugins(id);
 
   // Clear the state on unmount.
@@ -47,27 +46,17 @@ export const useSlatePluginsEffects = ({
     () => () => {
       clearState();
     },
-    [clearState]
+    [clearState, id]
   );
 
   useEffect(() => {
-    if (!storeState) {
-      setInitialState({
-        enabled: true,
-        plugins: [],
-        pluginKeys: [],
-        value: [],
-      });
-    }
-  }, [
-    clearState,
-    enabled,
-    initialValue,
-    plugins,
-    setInitialState,
-    storeState,
-    value,
-  ]);
+    setInitialState({
+      enabled: true,
+      plugins: [],
+      pluginKeys: [],
+      value: [],
+    });
+  }, [setInitialState]);
 
   // Slate.value
   useEffect(() => {
@@ -78,7 +67,9 @@ export const useSlatePluginsEffects = ({
   // Slate.value
   useEffect(() => {
     value && setValue(value);
-  }, [setValue, value]);
+
+    !initialValue && !value && setValue([{ children: [{ text: '' }] }]);
+  }, [initialValue, setValue, value]);
 
   useEffect(() => {
     setEnabled(enabled);
@@ -105,7 +96,12 @@ export const useSlatePluginsEffects = ({
       setEditor(
         pipe(
           editor ?? createEditor(),
-          withSlatePlugins({ id, plugins: storePlugins, options, components })
+          withSlatePlugins<T>({
+            id,
+            plugins: storePlugins,
+            options,
+            components,
+          })
         )
       );
     }

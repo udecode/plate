@@ -46,7 +46,7 @@ it('should be', () => {
   const resetBlockTypesListRule = {
     types: [ELEMENT_LI],
     defaultType: ELEMENT_PARAGRAPH,
-    onReset: unwrapList,
+    onReset: unwrapList as any,
   };
 
   getResetNodeOnKeyDown({

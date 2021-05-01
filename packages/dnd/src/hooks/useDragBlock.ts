@@ -1,16 +1,17 @@
 import { useDrag } from 'react-dnd';
-import { Editor } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
 
-export const useDragBlock = (editor: Editor, id: string) => {
+export const useDragBlock = (editor: TEditor, id: string) => {
   return useDrag(
     () => ({
-      item: { type: 'block', id },
+      type: 'block',
+      item() {
+        document.body.classList.add('dragging');
+        return { id };
+      },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-      begin: () => {
-        document.body.classList.add('dragging');
-      },
       end: () => {
         document.body.classList.remove('dragging');
       },

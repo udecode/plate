@@ -6,7 +6,15 @@ describe('useSlatePlugins', () => {
     it('should be', () => {
       const { result } = renderHook(() => useSlatePlugins({}));
 
-      expect(result.current.slateProps.value).toEqual([]);
+      expect(result.current.slateProps.value).toEqual([
+        {
+          children: [
+            {
+              text: '',
+            },
+          ],
+        },
+      ]);
     });
   });
 });

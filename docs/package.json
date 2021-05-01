@@ -1,0 +1,60 @@
+{
+  "name": "slate-plugins-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "prebuild": "yarn tailwind",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "tailwind": "tailwind build tailwind/tailwind.css -o src/css/tailwind.output.css",
+    "tailwind:w": "nodemon"
+  },
+  "dependencies": {
+    "@docusaurus/core": "2.0.0-alpha.74",
+    "@docusaurus/preset-classic": "2.0.0-alpha.74",
+    "@docusaurus/remark-plugin-npm2yarn": "2.0.0-alpha.74",
+    "@docusaurus/theme-live-codeblock": "2.0.0-alpha.74",
+    "@mdx-js/react": "^1.6.21",
+    "@udecode/slate-plugins": "^1.0.0-alpha.25",
+    "@udecode/slate-plugins-test-utils": "^1.0.0-alpha.18",
+    "clsx": "^1.1.1",
+    "docusaurus-plugin-sass": "^0.1.12",
+    "faker": "^5.5.3",
+    "postcss-import": "^12.0.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "slate": "0.60.11",
+    "slate-history": "0.60.11",
+    "slate-hyperscript": "0.60.11",
+    "slate-react": "0.60.11",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "2.0.0-alpha.74",
+    "@tsconfig/docusaurus": "^1.0.2",
+    "@types/react": "^17.0.3",
+    "@types/react-helmet": "^6.1.0",
+    "@types/react-router-dom": "^5.1.7",
+    "nodemon": "^2.0.7",
+    "typescript": "^4.2.3"
+  }
+}

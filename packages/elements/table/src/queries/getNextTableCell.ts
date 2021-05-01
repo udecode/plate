@@ -1,8 +1,9 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, NodeEntry, Path } from 'slate';
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export function getNextTableCell(
-  editor: Editor,
+  editor: TEditor,
   currentCell: NodeEntry,
   currentPath: Path,
   currentRow: NodeEntry

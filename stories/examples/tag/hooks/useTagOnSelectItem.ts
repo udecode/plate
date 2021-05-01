@@ -2,7 +2,9 @@ import { useCallback } from 'react';
 import {
   getBlockAbove,
   getSlatePluginType,
+  insertNodes,
   SPEditor,
+  TElement,
 } from '@udecode/slate-plugins';
 import { Editor, Transforms } from 'slate';
 import { IComboboxItem } from '../../combobox/components/Combobox.types';
@@ -36,11 +38,11 @@ export const useTagOnSelectItem = () => {
 
         // select the tag text and insert the tag element
         Transforms.select(editor, targetRange);
-        Transforms.insertNodes(editor, {
+        insertNodes<TElement>(editor, {
           type,
           children: [{ text: '' }],
           value: item.text,
-        } as any);
+        });
         // move the selection after the tag element
         Transforms.move(editor);
 

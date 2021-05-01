@@ -4,7 +4,7 @@ import {
   getSelectionText,
   isSelectionExpanded,
 } from '@udecode/slate-plugins-common';
-import { Editor } from 'slate';
+import { TEditor } from '@udecode/slate-plugins-core';
 
 /**
  * Hide if not selecting.
@@ -16,7 +16,7 @@ export const useBalloonShow = ({
   ref,
   hiddenDelay,
 }: {
-  editor: Editor;
+  editor: TEditor;
   ref: any;
   hiddenDelay: number;
 }) => {

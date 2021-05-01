@@ -6,8 +6,10 @@ import {
 } from '@udecode/slate-plugins-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 
-export const getMediaEmbedDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, ELEMENT_MEDIA_EMBED);
+export const getMediaEmbedDeserialize = (
+  pluginKey = ELEMENT_MEDIA_EMBED
+): Deserialize => (editor) => {
+  const options = getSlatePluginOptions(editor, pluginKey);
 
   return {
     element: getNodeDeserializer({

@@ -1,3 +1,4 @@
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Editor, Path, Range } from 'slate';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getBlockAbove } from './getBlockAbove';
@@ -6,7 +7,7 @@ import { getBlockAbove } from './getBlockAbove';
  * Is the range (default: selection) across blocks.
  */
 export const isRangeAcrossBlocks = (
-  editor: Editor,
+  editor: TEditor,
   {
     at,
     ...options

@@ -1,4 +1,5 @@
 import { isExpanded } from '@udecode/slate-plugins-common';
+import { TEditor } from '@udecode/slate-plugins-core';
 import { Ancestor, Editor, Node, NodeEntry, Transforms } from 'slate';
 
 export interface IndentCodeLineOptions {
@@ -13,7 +14,7 @@ export interface IndentCodeLineOptions {
  * Indentation = 2 spaces.
  */
 export const indentCodeLine = (
-  editor: Editor,
+  editor: TEditor,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
