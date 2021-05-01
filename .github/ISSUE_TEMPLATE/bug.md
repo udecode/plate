@@ -1,9 +1,9 @@
 ---
 
-name: "🚨 Bug"  
-about: A bug that occurs in slate-plugins logic  
-title: ''  
-labels: bug  
+name: "🚨 Bug"
+about: A bug that occurs in slate-plugins logic
+title: ''
+labels: bug
 assignees: ''
 
 ---
@@ -40,9 +40,9 @@ issue.)
 
 **Environment**
 
-- Slate Version: [e.g. 0.59]
-- Operating System: [e.g. iOS]
-- Browser: [e.g. Chrome, Safari]
+- Slate Version: (e.g. 0.59)
+- Operating System: (e.g. iOS)
+- Browser: (e.g. Chrome, Safari)
 
 **Context**
 
