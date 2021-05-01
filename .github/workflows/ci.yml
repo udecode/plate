@@ -3,16 +3,13 @@ name: CI
 on:
   - push
   - pull_request
+#paths-ignore:
+#    - '**.md'
 
 jobs:
-  ci:
+  lint:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        command:
-          - 'test'
-          - 'lint'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -22,18 +19,24 @@ jobs:
         with:
           node-version: 12
 
-      - name: Run ${{ matrix.command }}
-        run: yarn && yarn build && yarn ${{ matrix.command }}
+      - name: Run lint
+        run: yarn && yarn lint
         env:
           CI: true
 
-#      - name: Install
-#        run: yarn
-#          - name: Build
-#            run: yarn build
-#          - name: Lint
-#            run: yarn lint
-#          - name: Generate coverage report
-#            run: yarn test:cov
-#          - name: Upload coverage to Codecov
-#            uses: codecov/codecov-action@v1
+  test:
+    name: ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Run test
+        run: yarn && yarn build && yarn test
+        env:
+          CI: true
