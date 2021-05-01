@@ -7,9 +7,14 @@ on:
 #    - '**.md'
 
 jobs:
-  lint:
+  ci:
     name: ${{ matrix.command }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command:
+          - 'lint'
+          - 'test'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -20,23 +25,6 @@ jobs:
           node-version: 12
 
       - name: Run lint
-        run: yarn && yarn lint
-        env:
-          CI: true
-
-  test:
-    name: ${{ matrix.command }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 12
-
-      - name: Run test
-        run: yarn && yarn build && yarn test
+        run: yarn && yarn build && yarn ${{ matrix.command }}
         env:
           CI: true
