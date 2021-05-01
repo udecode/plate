@@ -33,7 +33,7 @@ export const useStoreEditor = <
 >(
   id?: string | null
 ) =>
-  useSlatePluginsStore((state) => getState(state, id)?.editor) as
+  useSlatePluginsStore((state) => getState(state, id)?.editorRef) as
     | (T & SPEditor)
     | undefined;
 

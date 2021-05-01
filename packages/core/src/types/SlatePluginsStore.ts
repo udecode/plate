@@ -12,10 +12,16 @@ export type EditorId = string | null | undefined;
 
 export type State<T extends SPEditor = SPEditor> = {
   /**
-   * Slate editor.
+   * Slate editor reference.
    * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
    */
-  editor?: T;
+  editorRef?: T;
+
+  /**
+   * Slate editor state.
+   * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
+   */
+  editorState?: T;
 
   /**
    * If true, slate plugins will create the editor with `withSlatePlugins`.
@@ -66,7 +72,7 @@ export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
    */
   resetEditor: (id?: string) => void;
 
-  setEditor: (value: State<T>['editor'], id?: string) => void;
+  setEditor: (value: State<T>['editorRef'], id?: string) => void;
 
   setEnabled: (value: State<T>['enabled'], id?: string) => void;
   setPlugins: (value: State<T>['plugins'], id?: string) => void;
