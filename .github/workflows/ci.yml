@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  ci:
+    name: ${{ matrix.command }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command:
+          - 'test'
+          - 'lint'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Run ${{ matrix.command }}
+        run: yarn && yarn build && yarn ${{ matrix.command }}
+        env:
+          CI: true
+
+#      - name: Install
+#        run: yarn
+#          - name: Build
+#            run: yarn build
+#          - name: Lint
+#            run: yarn lint
+#          - name: Generate coverage report
+#            run: yarn test:cov
+#          - name: Upload coverage to Codecov
+#            uses: codecov/codecov-action@v1

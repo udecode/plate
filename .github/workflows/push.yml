@@ -1,25 +1,25 @@
-name: ci
-on:
-  push:
-    branches:
-    - master
-    - next
-    paths-ignore:
-    - '**.md'
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: Install
-      run: yarn
-    - name: Build
-      run: yarn build
-    - name: Lint
-      run: yarn lint
-    - name: Text
-      run: yarn test
-
+#name: ci
+#on:
+#  push:
+#    branches:
+#    - master
+#    - next
+#    paths-ignore:
+#    - '**.md'
+#jobs:
+#  ci:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v1
+#    - uses: actions/setup-node@v1
+#      with:
+#        node-version: 12
+#    - name: Install
+#      run: yarn
+#    - name: Build
+#      run: yarn build
+#    - name: Lint
+#      run: yarn lint
+#    - name: Text
+#      run: yarn test
+#
