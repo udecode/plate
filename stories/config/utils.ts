@@ -1,11 +1,11 @@
 import {
   ELEMENT_LI,
+  ELEMENT_LIC,
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
   TElement,
 } from '@udecode/slate-plugins';
 import { Text } from 'slate';
-import { options } from './pluginOptions';
 
 export const createElement = (
   text = '',
@@ -43,10 +43,10 @@ export const createList = (
     });
 
     return {
-      type: options[ELEMENT_LI].type,
+      type: ELEMENT_LI,
       children: [
         {
-          type: options[ELEMENT_PARAGRAPH].type,
+          type: ELEMENT_LIC,
           children: marks,
         },
       ],
@@ -55,7 +55,7 @@ export const createList = (
 
   return [
     {
-      type: options[ELEMENT_UL].type,
+      type: ELEMENT_UL,
       children,
     },
   ];

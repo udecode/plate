@@ -11,6 +11,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_LI,
+  ELEMENT_LIC,
   ELEMENT_LINK,
   ELEMENT_OL,
   ELEMENT_PARAGRAPH,
@@ -31,11 +32,11 @@ import {
   MARK_UNDERLINE,
   TDescendant,
 } from '@udecode/slate-plugins';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import {jsx} from '@udecode/slate-plugins-test-utils';
 import * as faker from 'faker';
-import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
-import { ELEMENT_TAG } from '../examples/tag/defaults';
-import { createElement, createList, getNodesWithRandomId } from './utils';
+import {EDITABLE_VOID} from '../examples/editable-voids/defaults';
+import {ELEMENT_TAG} from '../examples/tag/defaults';
+import {createElement, createList, getNodesWithRandomId} from './utils';
 
 jsx;
 
@@ -183,96 +184,96 @@ export const initialValueAutoformat: any = (
     <hp>While typing:</hp>
     <hul>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>**</htext> or <htext code>__</htext> on either side
           of your text followed by <htext code>space</htext> to **bold**.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>*</htext> or <htext code>_</htext> on either side of
           your text followed by <htext code>space</htext> to *italicize*.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>`</htext> on either side of your text followed by{' '}
           <htext code>space</htext> to create `inline code`.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>~~</htext> on either side of your text followed by{' '}
           <htext code>space</htext> to ~~strikethrough~~.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>```</htext> to create a code block below.
-        </hp>
+        </hlic>
       </hli>
     </hul>
     <hp>At the beginning of any new block or existing block, try these:</hp>
     <hul>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>*</htext>, <htext code>-</htext> or{' '}
           <htext code>+</htext> followed by <htext code>space</htext> to create
           a bulleted list.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>1.</htext> or <htext code>1)</htext> followed by{' '}
           <htext code>space</htext> to create a numbered list.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>&gt;</htext> followed by <htext code>space</htext> to
           create a block quote.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>```</htext> to create a code block.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>#</htext> followed by <htext code>space</htext> to
           create an H1 heading.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>##</htext> followed by <htext code>space</htext> to
           create an H2 sub-heading.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>###</htext> followed by <htext code>space</htext> to
           create an H3 sub-heading.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>####</htext> followed by <htext code>space</htext> to
           create an H4 sub-heading.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>#####</htext> followed by <htext code>space</htext>{' '}
           to create an H5 sub-heading.
-        </hp>
+        </hlic>
       </hli>
       <hli>
-        <hp>
+        <hlic>
           Type <htext code>######</htext> followed by <htext code>space</htext>{' '}
           to create an H6 sub-heading.
-        </hp>
+        </hlic>
       </hli>
     </hul>
   </fragment>
@@ -520,7 +521,7 @@ export const initialValueList: any = [
     type: ELEMENT_H2,
     children: [{ text: '✍️ List' }],
   },
-  { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] },
+  { type: ELEMENT_LIC, children: [{ text: '' }] },
   {
     type: ELEMENT_UL,
     children: [
@@ -528,7 +529,7 @@ export const initialValueList: any = [
         type: ELEMENT_LI,
         children: [
           {
-            type: ELEMENT_PARAGRAPH,
+            type: ELEMENT_LIC,
             children: [{ text: 'Bulleted list' }],
           },
           {
@@ -538,7 +539,7 @@ export const initialValueList: any = [
                 type: ELEMENT_LI,
                 children: [
                   {
-                    type: ELEMENT_PARAGRAPH,
+                    type: ELEMENT_LIC,
                     children: [{ text: 'support' }],
                   },
                   {
@@ -548,7 +549,7 @@ export const initialValueList: any = [
                         type: ELEMENT_LI,
                         children: [
                           {
-                            type: ELEMENT_PARAGRAPH,
+                            type: ELEMENT_LIC,
                             children: [{ text: 'a' }],
                           },
                         ],
@@ -561,7 +562,7 @@ export const initialValueList: any = [
                 type: ELEMENT_LI,
                 children: [
                   {
-                    type: ELEMENT_PARAGRAPH,
+                    type: ELEMENT_LIC,
                     children: [{ text: 'nesting' }],
                   },
                   {
@@ -571,7 +572,7 @@ export const initialValueList: any = [
                         type: ELEMENT_LI,
                         children: [
                           {
-                            type: ELEMENT_PARAGRAPH,
+                            type: ELEMENT_LIC,
                             children: [{ text: 'b' }],
                           },
                         ],
@@ -588,7 +589,7 @@ export const initialValueList: any = [
         type: ELEMENT_LI,
         children: [
           {
-            type: ELEMENT_PARAGRAPH,
+            type: ELEMENT_LIC,
             children: [{ text: 'c' }],
           },
         ],
@@ -602,7 +603,7 @@ export const initialValueList: any = [
         type: ELEMENT_LI,
         children: [
           {
-            type: ELEMENT_PARAGRAPH,
+            type: ELEMENT_LIC,
             children: [{ text: 'Numbered list' }],
           },
         ],
