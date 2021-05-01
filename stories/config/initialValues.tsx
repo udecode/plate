@@ -32,11 +32,11 @@ import {
   MARK_UNDERLINE,
   TDescendant,
 } from '@udecode/slate-plugins';
-import {jsx} from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as faker from 'faker';
-import {EDITABLE_VOID} from '../examples/editable-voids/defaults';
-import {ELEMENT_TAG} from '../examples/tag/defaults';
-import {createElement, createList, getNodesWithRandomId} from './utils';
+import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
+import { ELEMENT_TAG } from '../examples/tag/defaults';
+import { createElement, createList, getNodesWithRandomId } from './utils';
 
 jsx;
 
