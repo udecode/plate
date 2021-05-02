@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "build": "lerna exec -- yarn build",
-    "build:master": "lerna exec --since master -- yarn build",
+    "build:main": "lerna exec --since main -- yarn build",
     "build:next": "lerna exec --since next -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "build-storybook": "yarn build && build-storybook",

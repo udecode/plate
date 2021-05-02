@@ -8,7 +8,7 @@ slate-plugins
   <a target="_blank" href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a target="_blank" href="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg"><img src="https://codecov.io/gh/udecode/slate-plugins/branch/next/graph/badge.svg" /></a>
   <a target="_blank" href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg" alt="Tested with Jest"></a>
-  <a target="_blank" href="https://github.com/udecode/slate-plugins/blob/master/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
+  <a target="_blank" href="https://github.com/udecode/slate-plugins/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
   <a target="_blank" href="https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
 </div>
 <div align="center">

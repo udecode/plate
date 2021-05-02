@@ -3,13 +3,13 @@ name: CI
 on:
   push:
     branches:
-    - master
+    - main
     - next
     paths-ignore:
     - '**.md*'
   pull_request:
     branches:
-    - master
+    - main
     - next
     paths-ignore:
     - '**.md*'

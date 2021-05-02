@@ -25,7 +25,7 @@ new logic works, and why you decided to solve it the way you did.
 - [x] The relevant examples still work: (Run examples with `yarn
       storybook`.)
 - [ ] You've
-      [added a changeset](https://github.com/atlassian/changesets/blob/master/docs/adding-a-changeset.md)
+      [added a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)
       if changing functionality. (Add one with `yarn changeset add`.)
 
 <!--

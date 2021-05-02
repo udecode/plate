@@ -46,5 +46,7 @@
     "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
-  "changesets": []
+  "changesets": [
+    "brave-gifts-think"
+  ]
 }
