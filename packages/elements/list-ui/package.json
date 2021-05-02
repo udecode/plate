@@ -1,9 +1,9 @@
 {
   "name": "@udecode/slate-plugins-list-ui",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-next.26",
   "description": "Slate plugins list-ui",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/list-ui#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/list-ui#readme",
   "bugs": {
     "url": "https://github.com/udecode/slate-plugins/issues"
   },
@@ -33,8 +33,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-list": "^1.0.0-alpha.25",
-    "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-list": "1.0.0-next.26",
+    "@udecode/slate-plugins-toolbar": "1.0.0-next.26"
   },
   "publishConfig": {
     "access": "public"

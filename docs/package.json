@@ -22,7 +22,7 @@
     "@docusaurus/remark-plugin-npm2yarn": "2.0.0-alpha.74",
     "@docusaurus/theme-live-codeblock": "2.0.0-alpha.74",
     "@mdx-js/react": "^1.6.21",
-    "@udecode/slate-plugins": "^1.0.0-alpha.25",
+    "@udecode/slate-plugins": "1.0.0-alpha.25",
     "@udecode/slate-plugins-test-utils": "^1.0.0-alpha.18",
     "clsx": "^1.1.1",
     "docusaurus-plugin-sass": "^0.1.12",

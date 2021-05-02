@@ -1,16 +1,8 @@
-# Change Log
+# @udecode/slate-plugins-core
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
-
-## 0.60.2 (2020-07-01)
-
-**Note:** Version bump only for package @udecode/slate-plugins-core
+## 1.0.0-next.26
+### Patch Changes
 
 
 
-
-
-## 0.60.1 (2020-06-30)
-
-**Note:** Version bump only for package @udecode/slate-plugins-core
+- [#658](https://github.com/udecode/slate-plugins/pull/658) [`201a7993`](https://github.com/udecode/slate-plugins/commit/201a799342ff88405e120182d8554e70b726beea) Thanks [@zbeyens](https://github.com/zbeyens)! - test

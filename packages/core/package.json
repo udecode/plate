@@ -1,9 +1,9 @@
 {
   "name": "@udecode/slate-plugins-core",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-next.26",
   "description": "Slate plugins core",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/core#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/core#readme",
   "bugs": {
     "url": "https://github.com/udecode/slate-plugins/issues"
   },
