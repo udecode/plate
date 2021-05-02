@@ -30,8 +30,9 @@ jobs:
       # https://github.com/atlassian/changesets/blob/master/docs/snapshot-releases.md
       - name: Create release pull request
         run: |
-          yarn changeset version --snapshot
-          yarn changeset publish --tag next
+          yarn changeset pre enter next || true
+          yarn changeset version
+          yarn changeset publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
