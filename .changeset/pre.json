@@ -5,7 +5,7 @@
     "@udecode/slate-plugins-autoformat": "1.0.0-alpha.25",
     "@udecode/slate-plugins-break": "1.0.0-alpha.25",
     "@udecode/slate-plugins-common": "1.0.0-alpha.25",
-    "@udecode/slate-plugins-core": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-core": "1.0.0-alpha.26",
     "@udecode/slate-plugins-dnd": "1.0.0-alpha.25",
     "@udecode/slate-plugins-alignment": "1.0.0-alpha.25",
     "@udecode/slate-plugins-alignment-ui": "1.0.0-alpha.25",
@@ -46,5 +46,8 @@
     "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
-  "changesets": []
+  "changesets": [
+    "silly-kids-tell",
+    "silly-kids-tell2"
+  ]
 }
