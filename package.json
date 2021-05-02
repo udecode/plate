@@ -18,7 +18,7 @@
     "lint": "eslint \"{packages/**/src,stories}/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",
     "prebuild": "yarn clean",
-    "prerelease": "cross-env NODE_ENV=production yarn build && yarn test && yarn lint",
+    "prerelease": "yarn build && yarn test && yarn lint",
     "release:publish:latext": "lerna publish --force-publish",
     "release:publish:next": "lerna publish --dist-tag next --force-publish",
     "release:publish:experimental": "lerna publish --dist-tag experimental",
