@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-next.26",
   "description": "Slate plugins placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -23,8 +23,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-core": "1.0.0-alpha.25",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-core": "1.0.0-next.26",
+    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.26",
     "@uifabric/styling": "^7.18.0",
     "@uifabric/utilities": "^7.33.4"
   },

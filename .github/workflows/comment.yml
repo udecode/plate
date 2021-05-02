@@ -54,7 +54,7 @@ jobs:
       - name: Prepare release
         run: yarn prerelease
 
-      # https://github.com/atlassian/changesets/blob/master/docs/snapshot-releases.md
+      # https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md
       - name: Release to @pr channel
         run: |
           yarn changeset version --snapshot

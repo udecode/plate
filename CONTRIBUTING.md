@@ -243,7 +243,7 @@ a PR if tests are failing. If you need any help, the best way is to
 include a short description of what you contributed and, if it is a code
 change, instructions for how to manually test out the change. This is
 informally enforced by our
-[PR template](https://github.com/udecode/slate-plugins/blob/master/.github/PULL_REQUEST_TEMPLATE.md).
+[PR template](https://github.com/udecode/slate-plugins/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 If your PR is reviewed as only needing trivial changes (e.g. small typos
 etc), and you have commit access then you can merge the PR after making
 those changes.
@@ -270,7 +270,7 @@ asker as well as anyone who has a similar question. Also in the future
 if anyone has that same question they can easily find it by searching.
 If an issue needs reproduction, you may be able to guide the reporter
 toward one, or even reproduce it yourself using
-[this technique](https://github.com/udecode/slate-plugins/blob/master/CONTRIBUTING.md#reproductions).
+[this technique](https://github.com/udecode/slate-plugins/blob/main/CONTRIBUTING.md#reproductions).
 
 ### Triaging issues
 
