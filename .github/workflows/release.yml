@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         channel:
-          - next
+#          - next
           - latest
     steps:
       - name: Checkout repo
@@ -44,11 +44,11 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # https://github.com/atlassian/changesets/blob/master/docs/snapshot-releases.md
-      - name: Release to @next channel
-        if: matrix.channel == 'next'
-        run: |
-          yarn changeset version --snapshot
-          yarn changeset publish --tag next
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Release to @next channel
+#        if: matrix.channel == 'next'
+#        run: |
+#          yarn changeset version --snapshot
+#          yarn changeset publish --tag next
+#        env:
+#          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
