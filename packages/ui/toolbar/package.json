@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/slate-plugins-ui-fluent": "^1.0.0-alpha.25",
+    "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
     "react-use": "^17.1.1"
   },
   "publishConfig": {

@@ -33,7 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.25",
+    "@udecode/slate-plugins-core": "1.0.0-alpha.25",
     "is-hotkey": "^0.1.6"
   },
   "publishConfig": {

@@ -33,8 +33,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-table": "^1.0.0-alpha.25",
-    "@udecode/slate-plugins-toolbar": "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-table": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
   "publishConfig": {
     "access": "public"

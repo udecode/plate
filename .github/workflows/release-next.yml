@@ -1,0 +1,38 @@
+name: Release Next
+
+on:
+  push:
+    branches:
+      - next
+
+jobs:
+  release:
+    name: Release Next
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Prepare release
+        run: yarn prerelease
+
+      # https://github.com/atlassian/changesets/blob/master/docs/snapshot-releases.md
+      - name: Create release pull request
+        run: |
+          yarn changeset pre enter next || true
+          yarn changeset version
+          yarn changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
