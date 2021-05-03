@@ -25,14 +25,18 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
   const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
-    const setEditor: SlatePluginsActions<T>['setEditor'] = getSetStateByKey<
+    const setEditorRef: SlatePluginsActions<T>['setEditorRef'] = getSetStateByKey<
       State<T>['editorRef']
     >('editorRef', stateId);
+    const setEditorState: SlatePluginsActions<T>['setEditorState'] = getSetStateByKey<
+      State<T>['editorState']
+    >('editorState', stateId);
 
     const setValue = getSetStateByKey<State<T>['value']>('value', stateId);
 
     return {
-      setEditor,
+      setEditorRef,
+      setEditorState,
       setValue,
       clearState: (id = stateId) =>
         id &&
@@ -64,7 +68,7 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
         if (!state) return;
         const { editorRef, plugins } = state;
 
-        setEditor(
+        setEditorRef(
           pipe(
             createEditor(),
             withSlatePlugins<T>({

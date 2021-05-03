@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import { useTSlate } from '@udecode/slate-plugins-core';
+import { useEditorState } from '@udecode/slate-plugins-core';
 import { ELEMENT_UL, toggleList } from '@udecode/slate-plugins-list';
 import {
   ToolbarButtonProps,
@@ -11,7 +11,7 @@ export const ToolbarList = ({
   type = ELEMENT_UL,
   ...props
 }: ToolbarButtonProps & { type?: string }) => {
-  const editor = useTSlate();
+  const editor = useEditorState();
 
   return (
     <ToolbarElement

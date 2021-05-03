@@ -72,7 +72,8 @@ export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
    */
   resetEditor: (id?: string) => void;
 
-  setEditor: (value: State<T>['editorRef'], id?: string) => void;
+  setEditorRef: (value: State<T>['editorRef'], id?: string) => void;
+  setEditorState: (value: State<T>['editorState'], id?: string) => void;
 
   setEnabled: (value: State<T>['enabled'], id?: string) => void;
   setPlugins: (value: State<T>['plugins'], id?: string) => void;

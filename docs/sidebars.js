@@ -25,6 +25,7 @@ module.exports = {
         'guides/styling',
         'guides/configuration',
         'guides/creating-plugins',
+        'guides/multiple-editors',
         {
           type: 'category',
           label: 'Serializing',

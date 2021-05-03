@@ -8,7 +8,7 @@ export interface ToggleNodeTypeOptions {
   /**
    * If there is no node type above the selection, set the selected node type to activeType.
    */
-  activeType: string;
+  activeType?: string;
 
   /**
    * If there is a node type above the selection, set the selected node type to inactiveType.
@@ -26,6 +26,8 @@ export const toggleNodeType = (
   editorNodesOptions?: Omit<EditorNodesOptions, 'match'>
 ) => {
   const { activeType, inactiveType = ELEMENT_DEFAULT } = options;
+
+  if (!activeType) return;
 
   const isActive = someNode(editor, {
     ...editorNodesOptions,

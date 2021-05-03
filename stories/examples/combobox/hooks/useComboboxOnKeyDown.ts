@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { OnKeyDown, SPEditor } from '@udecode/slate-plugins';
+import { SPEditor } from '@udecode/slate-plugins';
+import { KeyboardHandler } from '@udecode/slate-plugins-core';
 import { IComboboxItem } from '../components/Combobox.types';
 import { useComboboxIsOpen } from '../selectors/useComboboxIsOpen';
 import { useComboboxStore } from '../useComboboxStore';
@@ -12,7 +13,7 @@ export const useComboboxOnKeyDown = ({
   onSelectItem,
 }: {
   onSelectItem: (editor: SPEditor, item: IComboboxItem) => any;
-}): OnKeyDown => {
+}): KeyboardHandler => {
   const itemIndex = useComboboxStore((state) => state.itemIndex);
   const setItemIndex = useComboboxStore((state) => state.setItemIndex);
   const closeMenu = useComboboxStore((state) => state.closeMenu);

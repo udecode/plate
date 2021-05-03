@@ -6,17 +6,27 @@
  */
 
 import React from 'react';
+import { FormatQuote } from '@styled-icons/material/FormatQuote';
+import { Looks3 } from '@styled-icons/material/Looks3';
+import { Looks4 } from '@styled-icons/material/Looks4';
+import { Looks5 } from '@styled-icons/material/Looks5';
+import { Looks6 } from '@styled-icons/material/Looks6';
+import { LooksOne } from '@styled-icons/material/LooksOne';
+import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
   CodeBlockElement,
+  createBasicElementPlugins,
   createBlockquotePlugin,
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
   createHeadingPlugin,
   createHistoryPlugin,
+  createImagePlugin,
   createItalicPlugin,
   createParagraphPlugin,
   createReactPlugin,
+  createSelectOnBackspacePlugin,
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   createStrikethroughPlugin,
@@ -30,6 +40,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_IMAGE,
   ELEMENT_LI,
   ELEMENT_LINK,
   ELEMENT_OL,
@@ -40,6 +51,8 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  getSlatePluginType,
+  HeadingToolbar,
   MARK_BOLD,
   MARK_CODE,
   MARK_HIGHLIGHT,
@@ -50,11 +63,14 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   SlatePlugins,
+  ToolbarElement,
+  useFocusedEditorState,
   withProps,
 } from '@udecode/slate-plugins';
 import {
   initialValueBasicElements,
   initialValueBasicMarks,
+  initialValueImages,
   initialValuePlainText,
 } from '../../../../stories/config/initialValues';
 
@@ -81,16 +97,16 @@ const components = createSlatePluginsComponents({
 });
 const options = createSlatePluginsOptions();
 
-const pluginsBasic = [
-  // elements
-  createReactPlugin(), // withReact
-  createHistoryPlugin(), // withHistory
+const pluginsCore = [createReactPlugin(), createHistoryPlugin()];
+
+const pluginsBasicElements = [
   createParagraphPlugin(), // paragraph element
   createBlockquotePlugin(), // blockquote element
   createCodeBlockPlugin(), // code block element
   createHeadingPlugin(), // heading elements
+];
 
-  // marks
+const pluginsBasicMarks = [
   createBoldPlugin(), // bold mark
   createItalicPlugin(), // italic mark
   createUnderlinePlugin(), // underline mark
@@ -98,25 +114,63 @@ const pluginsBasic = [
   createCodePlugin(), // code mark
 ];
 
+const pluginsBasic = [
+  ...pluginsCore,
+  ...pluginsBasicElements,
+  ...pluginsBasicMarks,
+];
+
+export const pluginsImage = [
+  ...pluginsCore,
+  ...createBasicElementPlugins(),
+  createImagePlugin(),
+  createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+];
+
 const initialValueBasic = [
   ...initialValueBasicElements,
   ...initialValueBasicMarks,
 ];
 
-const A = () => {
-  const [debugValue, setDebugValue] = useState(null);
+const ToolbarButtonsBasicElements = () => {
+  const editor = useFocusedEditorState();
+  console.log(editor);
 
   return (
-    <SlatePlugins
-      id="3"
-      editableProps={editableProps}
-      initialValue={initialValuePlainText}
-      onChange={(value) => {
-        setDebugValue(debugValue);
-      }}
-    >
-      {debugValue}
-    </SlatePlugins>
+    <>
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H1)}
+        icon={<LooksOne />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H2)}
+        icon={<LooksTwo />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H3)}
+        icon={<Looks3 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H4)}
+        icon={<Looks4 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H5)}
+        icon={<Looks5 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H6)}
+        icon={<Looks6 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+        icon={<FormatQuote />}
+      />
+      {/* <ToolbarCodeBlock */}
+      {/*  type={useSlatePluginType(ELEMENT_CODE_BLOCK)} */}
+      {/*  icon={<CodeBlock />} */}
+      {/* /> */}
+    </>
   );
 };
 
@@ -124,24 +178,6 @@ const A = () => {
 const ReactLiveScope = {
   React,
   ...React,
-  SlatePlugins,
-  editableProps,
-  initialValuePlainText,
-  initialValueBasic,
-  createReactPlugin,
-  createHistoryPlugin,
-  createParagraphPlugin,
-  createBlockquotePlugin,
-  createCodeBlockPlugin,
-  createHeadingPlugin,
-  createBoldPlugin,
-  createItalicPlugin,
-  createUnderlinePlugin,
-  createStrikethroughPlugin,
-  createCodePlugin,
-  pluginsBasic,
-  components,
-  options,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
@@ -161,6 +197,8 @@ const ReactLiveScope = {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  ToolbarButtonsBasicElements,
+  HeadingToolbar,
   MARK_BOLD,
   MARK_CODE,
   MARK_HIGHLIGHT,
@@ -170,6 +208,28 @@ const ReactLiveScope = {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  SlatePlugins,
+  components,
+  corePlugins: pluginsCore,
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodeBlockPlugin,
+  createCodePlugin,
+  createHeadingPlugin,
+  createHistoryPlugin,
+  createItalicPlugin,
+  createParagraphPlugin,
+  createReactPlugin,
+  createStrikethroughPlugin,
+  createUnderlinePlugin,
+  editableProps,
+  initialValueBasic,
+  initialValueImages,
+  initialValuePlainText,
+  options,
+  pluginsCore,
+  pluginsBasic,
+  pluginsImage,
 };
 
 export default ReactLiveScope;

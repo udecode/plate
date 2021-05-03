@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { useTSlateStatic } from '@udecode/slate-plugins-core';
+import { useEditorRef } from '@udecode/slate-plugins-core';
 import { useDragBlock } from './useDragBlock';
 import { useDropBlockOnEditor } from './useDropBlockOnEditor';
 
@@ -13,7 +13,7 @@ export const useDndBlock = ({
   blockRef: any;
   removePreview?: boolean;
 }) => {
-  const editor = useTSlateStatic();
+  const editor = useEditorRef();
 
   const [dropLine, setDropLine] = useState<'' | 'top' | 'bottom'>('');
 

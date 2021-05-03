@@ -1,9 +1,9 @@
 import { getSlatePluginType } from '../utils/getSlatePluginType';
-import { useTSlateStatic } from './useTSlateStatic';
+import { useEditorRef } from './useEditorRef';
 
 /**
  * @see {@link getSlatePluginType}
  */
 export const useSlatePluginType = (pluginKey: string) => {
-  return getSlatePluginType(useTSlateStatic(), pluginKey);
+  return getSlatePluginType(useEditorRef(), pluginKey);
 };

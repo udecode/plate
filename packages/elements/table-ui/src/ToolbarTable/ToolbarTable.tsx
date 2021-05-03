@@ -3,7 +3,10 @@ import {
   getPreventDefaultHandler,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, useTSlate } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  useEditorState,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_TABLE } from '@udecode/slate-plugins-table';
 import { ToolbarButton } from '@udecode/slate-plugins-toolbar';
 import { ToolbarTableProps } from './ToolbarTable.types';
@@ -13,7 +16,7 @@ export const ToolbarTable = ({
   header,
   ...props
 }: ToolbarTableProps) => {
-  const editor = useTSlate();
+  const editor = useEditorState();
 
   return (
     <ToolbarButton

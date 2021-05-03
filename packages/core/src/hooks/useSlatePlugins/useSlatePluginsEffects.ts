@@ -4,8 +4,8 @@ import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
 import {
-  useStoreEditor,
   useStoreEditorEnabled,
+  useStoreEditorRef,
   useStoreSlatePlugins,
 } from '../../store/useSlatePluginsSelectors';
 import { SPEditor } from '../../types/SPEditor';
@@ -31,13 +31,14 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   const {
     setInitialState,
     setValue,
-    setEditor,
+    setEditorRef,
+    setEditorState,
     setPlugins,
     setPluginKeys,
     setEnabled,
     clearState,
   } = useSlatePluginsActions<T>(id);
-  const storeEditor = useStoreEditor(id);
+  const storeEditor = useStoreEditorRef<T>(id);
   const storeEnabled = useStoreEditorEnabled(id);
   const storePlugins = useStoreSlatePlugins(id);
 
@@ -86,14 +87,14 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
 
   useEffect(() => {
     if (storeEditor && !storeEnabled) {
-      setEditor(undefined);
+      setEditorRef(undefined);
     }
-  }, [storeEnabled, setEditor, storeEditor]);
+  }, [storeEnabled, storeEditor, setEditorRef]);
 
   // Slate.editor
   useEffect(() => {
     if (!storeEditor && storeEnabled) {
-      setEditor(
+      setEditorRef(
         pipe(
           editor ?? createEditor(),
           withSlatePlugins<T>({
@@ -112,8 +113,8 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     id,
     options,
     plugins,
-    setEditor,
     storeEnabled,
     storePlugins,
+    setEditorRef,
   ]);
 };

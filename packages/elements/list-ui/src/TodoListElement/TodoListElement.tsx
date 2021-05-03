@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { setNodes } from '@udecode/slate-plugins-common';
-import { TElement, useTSlateStatic } from '@udecode/slate-plugins-core';
+import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
 import { TodoListItemNodeData } from '@udecode/slate-plugins-list';
 import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -29,7 +29,7 @@ export const TodoListElementBase = ({
   styles,
   nodeProps,
 }: TodoListElementProps) => {
-  const editor = useTSlateStatic();
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
 
   const { checked } = element;

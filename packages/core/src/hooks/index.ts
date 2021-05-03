@@ -4,8 +4,8 @@
 
 export * from './useEditorId';
 export * from './useEditorOptions';
+export * from './useEditorRef';
+export * from './useEditorState';
 export * from './useSlatePluginOptions';
 export * from './useSlatePluginType';
-export * from './useTSlate';
-export * from './useTSlateStatic';
 export * from './useSlatePlugins/index';

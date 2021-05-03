@@ -1,9 +1,9 @@
 import { getSlatePluginOptions } from '../utils/getSlatePluginOptions';
-import { useTSlateStatic } from './useTSlateStatic';
+import { useEditorRef } from './useEditorRef';
 
 /**
  * @see {@link getSlatePluginOptions}
  */
 export const useSlatePluginOptions = (pluginKey: string) => {
-  return getSlatePluginOptions(useTSlateStatic(), pluginKey);
+  return getSlatePluginOptions(useEditorRef(), pluginKey);
 };

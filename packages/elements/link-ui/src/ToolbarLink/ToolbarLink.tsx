@@ -5,7 +5,10 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, useTSlate } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  useEditorState,
+} from '@udecode/slate-plugins-core';
 import {
   ELEMENT_LINK,
   upsertLinkAtSelection,
@@ -16,7 +19,7 @@ import {
 } from '@udecode/slate-plugins-toolbar';
 
 export const ToolbarLink = (props: ToolbarButtonProps) => {
-  const editor = useTSlate();
+  const editor = useEditorState();
   const type = getSlatePluginType(editor, ELEMENT_LINK);
   const isLink = someNode(editor, { match: { type } });
 

@@ -2,7 +2,6 @@ import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
 import React from 'react';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
-import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Subscript } from '@styled-icons/foundation/Subscript';
 import { Superscript } from '@styled-icons/foundation/Superscript';
 import { BorderAll } from '@styled-icons/material/BorderAll';
@@ -41,7 +40,6 @@ import {
   ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_RIGHT,
   ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -50,6 +48,7 @@ import {
   ELEMENT_H6,
   ELEMENT_OL,
   ELEMENT_UL,
+  getSlatePluginType,
   insertTable,
   MARK_BOLD,
   MARK_CODE,
@@ -60,32 +59,54 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   ToolbarAlign,
-  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarList,
   ToolbarMark,
   ToolbarTable,
+  useFocusedEditorRef,
   useSlatePluginType,
 } from '@udecode/slate-plugins';
 
-export const ToolbarButtonsBasicElements = () => (
-  <>
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H1)} icon={<LooksOne />} />
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H2)} icon={<LooksTwo />} />
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H3)} icon={<Looks3 />} />
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H4)} icon={<Looks4 />} />
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H5)} icon={<Looks5 />} />
-    <ToolbarElement type={useSlatePluginType(ELEMENT_H6)} icon={<Looks6 />} />
-    <ToolbarElement
-      type={useSlatePluginType(ELEMENT_BLOCKQUOTE)}
-      icon={<FormatQuote />}
-    />
-    <ToolbarCodeBlock
-      type={useSlatePluginType(ELEMENT_CODE_BLOCK)}
-      icon={<CodeBlock />}
-    />
-  </>
-);
+export const ToolbarButtonsBasicElements = () => {
+  const editor = useFocusedEditorRef();
+
+  return (
+    <>
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H1)}
+        icon={<LooksOne />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H2)}
+        icon={<LooksTwo />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H3)}
+        icon={<Looks3 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H4)}
+        icon={<Looks4 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H5)}
+        icon={<Looks5 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_H6)}
+        icon={<Looks6 />}
+      />
+      <ToolbarElement
+        type={editor && getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+        icon={<FormatQuote />}
+      />
+      {/* <ToolbarCodeBlock */}
+      {/*  type={useSlatePluginType(ELEMENT_CODE_BLOCK)} */}
+      {/*  icon={<CodeBlock />} */}
+      {/* /> */}
+    </>
+  );
+};
 
 export const ToolbarButtonsList = () => (
   <>

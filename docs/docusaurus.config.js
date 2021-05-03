@@ -32,19 +32,10 @@ module.exports = {
   plugins: ['docusaurus-plugin-sass'],
   customFields: { ...customFields },
   themeConfig: {
-    // algolia: {
-    //   apiKey: 'YOUR_API_KEY',
-    //   indexName: 'YOUR_INDEX_NAME',
-    //
-    //   // Optional: see doc section below
-    //   contextualSearch: false,
-    //
-    //   // Optional: see doc section below
-    //   appId: 'YOUR_APP_ID',
-    //
-    //   // Optional: Algolia search parameters
-    //   searchParameters: {},
-    // },
+    algolia: {
+      apiKey: 'bca3ec311a129061145bf733a2bda13d',
+      indexName: 'slate-plugins',
+    },
     // announcementBar: {
     //   id: 'github-star',
     //   content: customFields.announcementBarContent,

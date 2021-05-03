@@ -7,7 +7,7 @@ import {
   OnChange,
   SlatePlugin,
   SlatePlugins,
-  useStoreEditor,
+  useStoreEditorRef,
 } from '@udecode/slate-plugins';
 import { initialValueCombobox } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
@@ -36,7 +36,7 @@ const options = createSlatePluginsOptions();
 
 // Handle multiple combobox
 const useComboboxOnChange = (): OnChange => {
-  const editor = useStoreEditor(id)!;
+  const editor = useStoreEditorRef(id)!;
 
   const tagOnChange = useTagOnChange(editor, MENTIONABLES);
   const isOpen = useComboboxIsOpen();

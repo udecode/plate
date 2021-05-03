@@ -1,9 +1,9 @@
 import { getEditorOptions } from '../utils/getEditorOptions';
-import { useTSlateStatic } from './useTSlateStatic';
+import { useEditorRef } from './useEditorRef';
 
 /**
  * @see {@link getEditorOptions}
  */
 export const useEditorOptions = () => {
-  return getEditorOptions(useTSlateStatic());
+  return getEditorOptions(useEditorRef());
 };

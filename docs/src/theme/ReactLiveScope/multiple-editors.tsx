@@ -1,51 +1,29 @@
-import 'prismjs/themes/prism.css';
 import React from 'react';
 import {
   createBasicElementPlugins,
-  createExitBreakPlugin,
   createHistoryPlugin,
   createImagePlugin,
   createReactPlugin,
-  createResetNodePlugin,
   createSelectOnBackspacePlugin,
   createSlatePluginsComponents,
   createSlatePluginsOptions,
-  createSoftBreakPlugin,
   ELEMENT_IMAGE,
   SlatePlugin,
   SlatePlugins,
   TNode,
 } from '@udecode/slate-plugins';
 import styled from 'styled-components';
-import {
-  initialValueBasicElements,
-  initialValueImages,
-  initialValuePlainText,
-} from '../config/initialValues';
-import {
-  editableProps,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from '../config/pluginOptions';
-
-export default {
-  title: 'Examples/Multiple Editors',
-};
 
 const components = createSlatePluginsComponents();
 const options = createSlatePluginsOptions();
 
-const mainPlugins: SlatePlugin[] = [
+export const mainPlugins: SlatePlugin[] = [
   createReactPlugin(),
   createHistoryPlugin(),
   ...createBasicElementPlugins(),
-  createResetNodePlugin(optionsResetBlockTypePlugin),
-  createSoftBreakPlugin(optionsSoftBreakPlugin),
-  createExitBreakPlugin(optionsExitBreakPlugin),
 ];
 
-const imagePlugins = [
+export const imagePlugins = [
   createReactPlugin(),
   createHistoryPlugin(),
   ...createBasicElementPlugins(),
@@ -53,7 +31,7 @@ const imagePlugins = [
   createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
 ];
 
-const corePlugins = [createReactPlugin(), createHistoryPlugin()];
+export const corePlugins = [createReactPlugin(), createHistoryPlugin()];
 
 const Wrapper = styled.div`
   display: flex;
@@ -68,7 +46,7 @@ const WrapperEditor = styled.div`
   padding: 16px;
 `;
 
-const Editor = ({
+export const MultipleEditor = ({
   id,
   initialValue,
   plugins,
@@ -83,24 +61,8 @@ const Editor = ({
       plugins={plugins}
       components={components}
       options={options}
-      editableProps={editableProps}
+      // editableProps={editableProps}
       initialValue={initialValue}
     />
   </WrapperEditor>
-);
-
-export const Example = () => (
-  <Wrapper>
-    <Editor plugins={mainPlugins} initialValue={initialValueBasicElements} />
-    <Editor
-      id="image"
-      plugins={imagePlugins}
-      initialValue={initialValueImages}
-    />
-    <Editor
-      id="core"
-      plugins={corePlugins}
-      initialValue={initialValuePlainText}
-    />
-  </Wrapper>
 );

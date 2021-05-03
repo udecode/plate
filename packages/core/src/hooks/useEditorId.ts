@@ -1,7 +1,7 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { SPEditor } from '../types/SPEditor';
-import { useTSlateStatic } from './useTSlateStatic';
+import { useEditorRef } from './useEditorRef';
 
 export interface IdEditor {
   id: string;
@@ -15,4 +15,4 @@ export const useEditorId = <
     IdEditor &
     HistoryEditor &
     SPEditor
->() => useTSlateStatic<TEditor>().id;
+>() => useEditorRef<TEditor>().id;

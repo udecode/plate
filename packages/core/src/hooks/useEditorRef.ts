@@ -6,6 +6,6 @@ import { TEditor } from '../types/TEditor';
 /**
  * Typed {@link useSlateStatic} & SPEditor.
  */
-export const useTSlateStatic = <
+export const useEditorRef = <
   T extends TEditor = ReactEditor & HistoryEditor
 >() => (useSlateStatic() as unknown) as T & SPEditor;

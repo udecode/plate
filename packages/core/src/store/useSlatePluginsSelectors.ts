@@ -10,10 +10,10 @@ import { useSlatePluginsStore } from './useSlatePluginsStore';
  * If id is defined, get the state by id.
  * Else, get the first state.
  */
-export const getState = (
-  state: SlatePluginsState,
+export const getState = <T extends SPEditor = SPEditor>(
+  state: SlatePluginsState<T>,
   id?: string | null
-): State | undefined => {
+): State<T> | undefined => {
   if (id) return state[id];
 
   const keys = Object.keys(state);
@@ -26,16 +26,18 @@ export const useStoreState = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id), shallow);
 
 /**
- * Get editor.
+ * Get editor ref.
  */
-export const useStoreEditor = <
-  T extends TEditor | undefined = ReactEditor & HistoryEditor
->(
+export const useStoreEditorRef = <T extends SPEditor = SPEditor>(
   id?: string | null
-) =>
-  useSlatePluginsStore((state) => getState(state, id)?.editorRef) as
-    | (T & SPEditor)
-    | undefined;
+) => useSlatePluginsStore((state) => getState<T>(state as any, id)?.editorRef);
+
+/**
+ * Get editor state.
+ */
+export const useStoreEditorState = <T extends SPEditor = SPEditor>(
+  id?: string | null
+) => useSlatePluginsStore((state) => getState<T>(state as any, id)?.editorRef);
 
 export const useStoreEditorEnabled = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.enabled);
@@ -48,4 +50,4 @@ export const useStoreSlatePluginKeys = (id?: string | null) =>
   useSlatePluginsStore((state) => getState(state, id)?.pluginKeys);
 
 export const useStoreEditorOptions = (id?: string | null) =>
-  useStoreEditor(id)?.options;
+  useStoreEditorRef(id)?.options;

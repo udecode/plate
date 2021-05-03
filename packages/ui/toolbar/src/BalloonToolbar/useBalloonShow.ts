@@ -16,14 +16,14 @@ export const useBalloonShow = ({
   ref,
   hiddenDelay,
 }: {
-  editor: TEditor;
+  editor?: TEditor;
   ref: any;
   hiddenDelay: number;
 }) => {
   const [hidden, setHidden] = useState(true);
 
-  const selectionExpanded = isSelectionExpanded(editor);
-  const selectionText = getSelectionText(editor);
+  const selectionExpanded = editor && isSelectionExpanded(editor);
+  const selectionText = editor && getSelectionText(editor);
 
   const show = useCallback(() => {
     if (ref.current && hidden && selectionExpanded) {
@@ -37,7 +37,7 @@ export const useBalloonShow = ({
     if (!hiddenDelay) {
       show();
     }
-  }, [selectionText.length, reset, hiddenDelay, show]);
+  }, [selectionText?.length, reset, hiddenDelay, show]);
 
   /**
    * Hide if not selecting.
@@ -55,7 +55,7 @@ export const useBalloonShow = ({
     reset,
     selectionExpanded,
     show,
-    selectionText.length,
+    selectionText?.length,
     ref,
   ]);
 
@@ -68,7 +68,7 @@ export const useBalloonShow = ({
 
     reset();
     setHidden(true);
-  }, [hiddenDelay, selectionText.length, reset]);
+  }, [hiddenDelay, selectionText?.length, reset]);
 
   return [hidden];
 };

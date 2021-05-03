@@ -7,8 +7,8 @@ import {
 import {
   getRenderElement,
   getSlatePluginTypes,
+  KeyboardHandler,
   OnChange,
-  OnKeyDown,
   SlatePlugin,
   SPEditor,
 } from '@udecode/slate-plugins-core';
@@ -63,7 +63,7 @@ export const useMentionPlugin = ({
     [targetRange, insertSpaceAfterMention, pluginKey]
   );
 
-  const onKeyDownMention: OnKeyDown = useCallback(
+  const onKeyDownMention: KeyboardHandler = useCallback(
     (editor) => (e) => {
       if (targetRange) {
         if (e.key === 'ArrowDown') {
