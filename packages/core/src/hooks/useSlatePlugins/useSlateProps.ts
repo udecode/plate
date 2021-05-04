@@ -32,7 +32,7 @@ export const useSlateProps = ({
 
         editor && pipeOnChange(editor, plugins)(newValue);
 
-        _onChange?.(newValue);
+        _onChange?.(newValue, editor);
       },
       value,
     }),

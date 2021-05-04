@@ -1,3 +1,4 @@
+import { SPEditor } from './SPEditor';
 import { TNode } from './TNode';
 import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
 
@@ -9,5 +10,5 @@ export interface UseSlatePropsOptions
   /**
    * Controlled callback called when the editor state changes.
    */
-  onChange?: (value: TNode[]) => void;
+  onChange?: (value: TNode[], editor: SPEditor | undefined) => void;
 }
