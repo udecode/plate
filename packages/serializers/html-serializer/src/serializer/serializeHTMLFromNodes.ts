@@ -17,7 +17,7 @@ const trimWhitespace = (rawHtml: string): string =>
 // Remove redundant data attributes
 const stripSlateDataAttributes = (rawHtml: string): string =>
   rawHtml
-    .replace(/( data-slate)(-node|-type)="[^"]+"/gm, '')
+    .replace(/( data-slate)(-node|-type|-leaf)="[^"]+"/gm, '')
     .replace(/( data-testid)="[^"]+"/gm, '');
 
 /**
