@@ -1,5 +1,4 @@
 import {
-  DOMHandler,
   getSlatePluginType,
   KeyboardHandler,
   mapSlatePluginKeysToOptions,
@@ -23,7 +22,7 @@ export const getToggleElementOnKeyDown = <T extends SPEditor = SPEditor>(
     const hotkeys = castArray(hotkey);
 
     for (const key of hotkeys) {
-      if (isHotkey(key, e)) {
+      if (isHotkey(key, e as any)) {
         e.preventDefault();
         toggleNodeType(editor, {
           activeType: type,

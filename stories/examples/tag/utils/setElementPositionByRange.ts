@@ -13,6 +13,7 @@ export const setElementPositionByRange = (
   const el = ref.current;
   if (!el) return;
 
+  console.log(editor);
   const domRange = ReactEditor.toDOMRange(editor, at);
   const rect = domRange.getBoundingClientRect();
   el.style.top = `${rect.top + window.pageYOffset + 24}px`;

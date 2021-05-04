@@ -1,42 +1,27 @@
 import {
-  AnimationEventHandler,
-  ClipboardEventHandler,
-  CompositionEventHandler,
-  DragEventHandler,
-  FocusEventHandler,
-  FormEventHandler,
-  KeyboardEventHandler,
-  MouseEventHandler,
-  PointerEventHandler,
-  ReactEventHandler,
-  TouchEventHandler,
-  TransitionEventHandler,
-  UIEventHandler,
-  WheelEventHandler,
+  AnimationEvent,
+  ClipboardEvent,
+  CompositionEvent,
+  DragEvent,
+  FocusEvent,
+  FormEvent,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEvent,
+  SyntheticEvent,
+  TouchEvent,
+  TransitionEvent,
+  UIEvent,
+  WheelEvent,
 } from 'react';
 import { SPEditor } from '../SPEditor';
-
-type AnimationEvent = Parameters<AnimationEventHandler>[0];
-type ClipboardEvent = Parameters<ClipboardEventHandler>[0];
-type CompositionEvent = Parameters<CompositionEventHandler>[0];
-type DragEvent = Parameters<DragEventHandler>[0];
-type FocusEvent = Parameters<FocusEventHandler>[0];
-type FormEvent = Parameters<FormEventHandler>[0];
-type KeyboardEvent = Parameters<KeyboardEventHandler>[0];
-type MouseEvent = Parameters<MouseEventHandler>[0];
-type PointerEvent = Parameters<PointerEventHandler>[0];
-type ReactEvent = Parameters<ReactEventHandler>[0];
-type TouchEvent = Parameters<TouchEventHandler>[0];
-type TransitionEvent = Parameters<TransitionEventHandler>[0];
-type UIEvent = Parameters<UIEventHandler>[0];
-type WheelEvent = Parameters<WheelEventHandler>[0];
 
 type ReturnType = boolean | void;
 
 export type DOMHandler<
   K extends keyof DOMHandlers,
   T extends SPEditor = SPEditor
-> = DOMHandlers<T>[K];
+> = NonNullable<DOMHandlers<T>[K]>;
 
 export type KeyboardHandler<T extends SPEditor = SPEditor> = DOMHandler<
   'onKeyDown',
@@ -85,10 +70,10 @@ export interface DOMHandlers<T extends SPEditor = SPEditor> {
   onInvalidCapture?: (editor: T) => (event: FormEvent) => ReturnType;
 
   // Image Events
-  onLoad?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onError?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onErrorCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
+  onLoad?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onError?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onErrorCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
 
   // Keyboard Events
   onKeyDown?: (editor: T) => (event: KeyboardEvent) => ReturnType;
@@ -99,50 +84,56 @@ export interface DOMHandlers<T extends SPEditor = SPEditor> {
   onKeyUpCapture?: (editor: T) => (event: KeyboardEvent) => ReturnType;
 
   // Media Events
-  onAbort?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onAbortCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onCanPlay?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onCanPlayCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onCanPlayThrough?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onCanPlayThroughCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onDurationChange?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onDurationChangeCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEmptied?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEmptiedCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEncrypted?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEncryptedCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEnded?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onEndedCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadedData?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadedDataCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadedMetadata?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadedMetadataCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadStart?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onLoadStartCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPause?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPauseCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPlay?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPlayCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPlaying?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onPlayingCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onProgress?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onProgressCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onRateChange?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onRateChangeCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSeeked?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSeekedCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSeeking?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSeekingCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onStalled?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onStalledCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSuspend?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSuspendCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onTimeUpdate?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onTimeUpdateCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onVolumeChange?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onVolumeChangeCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onWaiting?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onWaitingCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
+  onAbort?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onAbortCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onCanPlay?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onCanPlayCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onCanPlayThrough?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onCanPlayThroughCapture?: (
+    editor: T
+  ) => (event: SyntheticEvent) => ReturnType;
+  onDurationChange?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onDurationChangeCapture?: (
+    editor: T
+  ) => (event: SyntheticEvent) => ReturnType;
+  onEmptied?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onEmptiedCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onEncrypted?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onEncryptedCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onEnded?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onEndedCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadedData?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadedDataCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadedMetadata?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadedMetadataCapture?: (
+    editor: T
+  ) => (event: SyntheticEvent) => ReturnType;
+  onLoadStart?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onLoadStartCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPause?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPauseCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPlay?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPlayCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPlaying?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onPlayingCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onProgress?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onProgressCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onRateChange?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onRateChangeCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSeeked?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSeekedCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSeeking?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSeekingCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onStalled?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onStalledCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSuspend?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSuspendCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onTimeUpdate?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onTimeUpdateCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onVolumeChange?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onVolumeChangeCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onWaiting?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onWaitingCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
 
   // MouseEvents
   onAuxClick?: (editor: T) => (event: MouseEvent) => ReturnType;
@@ -183,8 +174,8 @@ export interface DOMHandlers<T extends SPEditor = SPEditor> {
   onMouseUpCapture?: (editor: T) => (event: MouseEvent) => ReturnType;
 
   // Selection Events
-  onSelect?: (editor: T) => (event: ReactEvent) => ReturnType;
-  onSelectCapture?: (editor: T) => (event: ReactEvent) => ReturnType;
+  onSelect?: (editor: T) => (event: SyntheticEvent) => ReturnType;
+  onSelectCapture?: (editor: T) => (event: SyntheticEvent) => ReturnType;
 
   // Touch Events
   onTouchCancel?: (editor: T) => (event: TouchEvent) => ReturnType;

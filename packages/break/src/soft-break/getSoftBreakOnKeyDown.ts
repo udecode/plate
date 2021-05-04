@@ -10,7 +10,7 @@ export const getSoftBreakOnKeyDown = ({
   if (!entry) return;
 
   rules.forEach(({ hotkey, query }) => {
-    if (isHotkey(hotkey, event) && queryNode(entry, query)) {
+    if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
       event.preventDefault();
 
       editor.insertText('\n');

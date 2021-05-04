@@ -6,13 +6,6 @@
  */
 
 import React from 'react';
-import { FormatQuote } from '@styled-icons/material/FormatQuote';
-import { Looks3 } from '@styled-icons/material/Looks3';
-import { Looks4 } from '@styled-icons/material/Looks4';
-import { Looks5 } from '@styled-icons/material/Looks5';
-import { Looks6 } from '@styled-icons/material/Looks6';
-import { LooksOne } from '@styled-icons/material/LooksOne';
-import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
   CodeBlockElement,
   createBasicElementPlugins,
@@ -51,7 +44,6 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
-  getSlatePluginType,
   HeadingToolbar,
   MARK_BOLD,
   MARK_CODE,
@@ -63,8 +55,6 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   SlatePlugins,
-  ToolbarElement,
-  useFocusedEditorState,
   withProps,
 } from '@udecode/slate-plugins';
 import {
@@ -73,6 +63,10 @@ import {
   initialValueImages,
   initialValuePlainText,
 } from '../../../../stories/config/initialValues';
+import {
+  ToolbarButtonsBasicElements,
+  ToolbarButtonsBasicMarks,
+} from '../../../../stories/config/Toolbars';
 
 const editableProps = {
   placeholder: 'Type…',
@@ -123,6 +117,7 @@ const pluginsBasic = [
 export const pluginsImage = [
   ...pluginsCore,
   ...createBasicElementPlugins(),
+  ...pluginsBasicMarks,
   createImagePlugin(),
   createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
 ];
@@ -132,47 +127,46 @@ const initialValueBasic = [
   ...initialValueBasicMarks,
 ];
 
-const ToolbarButtonsBasicElements = () => {
-  const editor = useFocusedEditorState();
-  console.log(editor);
-
-  return (
-    <>
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H1)}
-        icon={<LooksOne />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H2)}
-        icon={<LooksTwo />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H3)}
-        icon={<Looks3 />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H4)}
-        icon={<Looks4 />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H5)}
-        icon={<Looks5 />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_H6)}
-        icon={<Looks6 />}
-      />
-      <ToolbarElement
-        type={editor && getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
-        icon={<FormatQuote />}
-      />
-      {/* <ToolbarCodeBlock */}
-      {/*  type={useSlatePluginType(ELEMENT_CODE_BLOCK)} */}
-      {/*  icon={<CodeBlock />} */}
-      {/* /> */}
-    </>
-  );
-};
+// const ToolbarButtonsBasicElements = () => {
+//   const editor = useStoreEditorRef(useEventEditorId('focus'));
+//
+//   return (
+//     <>
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H1)}
+//         icon={<LooksOne />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H2)}
+//         icon={<LooksTwo />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H3)}
+//         icon={<Looks3 />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H4)}
+//         icon={<Looks4 />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H5)}
+//         icon={<Looks5 />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_H6)}
+//         icon={<Looks6 />}
+//       />
+//       <ToolbarElement
+//         type={getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+//         icon={<FormatQuote />}
+//       />
+//       {/* <ToolbarCodeBlock */}
+//       {/*  type={useSlatePluginType(ELEMENT_CODE_BLOCK)} */}
+//       {/*  icon={<CodeBlock />} */}
+//       {/* /> */}
+//     </>
+//   );
+// };
 
 // Add react-live imports you need here
 const ReactLiveScope = {
@@ -198,6 +192,7 @@ const ReactLiveScope = {
   ELEMENT_TR,
   ELEMENT_UL,
   ToolbarButtonsBasicElements,
+  ToolbarButtonsBasicMarks,
   HeadingToolbar,
   MARK_BOLD,
   MARK_CODE,

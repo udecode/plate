@@ -1,5 +1,8 @@
 import * as React from 'react';
-import { useEditorRef } from '@udecode/slate-plugins-core';
+import {
+  useEventEditorId,
+  useStoreEditorRef,
+} from '@udecode/slate-plugins-core';
 import { insertImage } from '@udecode/slate-plugins-image';
 import {
   ToolbarButton,
@@ -14,11 +17,13 @@ export interface ToolbarImageProps extends ToolbarButtonProps {
 }
 
 export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
-  const editor = useEditorRef();
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
       onMouseDown={async (event) => {
+        if (!editor) return;
+
         event.preventDefault();
 
         let url;

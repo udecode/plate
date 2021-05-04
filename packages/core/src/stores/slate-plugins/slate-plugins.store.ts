@@ -1,12 +1,12 @@
 import create from 'zustand';
 import createVanillaStore from 'zustand/vanilla';
-import { SlatePluginsState } from '../types/SlatePluginsStore';
+import { SlatePluginsStates } from '../../types/SlatePluginsStore';
 
 /**
  * Slate plugins vanilla store.
  * @see zustand vanilla store
  */
-export const slatePluginsStore = createVanillaStore<SlatePluginsState>(
+export const slatePluginsStore = createVanillaStore<SlatePluginsStates>(
   () => ({})
 );
 

@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react';
 import {
   deleteFragment,
   ELEMENT_DEFAULT,
@@ -62,5 +63,5 @@ export const getListDeleteBackward = (
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(document.createEvent('KeyboardEvent'));
+  })(editor)(new KeyboardEvent('keydown') as any);
 };

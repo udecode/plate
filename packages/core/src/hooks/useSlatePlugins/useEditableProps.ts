@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { editorActions } from '../../store/editor.actions';
-import {
-  useStoreEditorRef,
-  useStoreSlatePlugins,
-} from '../../store/useSlatePluginsSelectors';
+import { eventEditorActions } from '../../stores/event-editor/event-editor.actions';
+import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
+import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -13,7 +11,7 @@ import { pipeRenderElement } from '../../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../../utils/pipeRenderLeaf';
 
 export const useEditableProps = ({
-  id,
+  id = 'main',
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
   const editor = useStoreEditorRef(id);
@@ -24,11 +22,10 @@ export const useEditableProps = ({
       ...(_plugins ?? []),
       {
         onFocus: () => () => {
-          console.log('yep');
-          editorActions.setFocusedEditorId(id);
+          eventEditorActions.setEventEditorId('focus', id);
         },
         onBlur: () => () => {
-          editorActions.setBlurredEditorId(id);
+          eventEditorActions.setEventEditorId('blur', id);
         },
       },
     ],

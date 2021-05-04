@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import { getPreventDefaultHandler, PortalBody } from '@udecode/slate-plugins';
-import { useEditorState } from '@udecode/slate-plugins-core';
+import {
+  getPreventDefaultHandler,
+  PortalBody,
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins';
 import {
   ComboboxItem,
   ComboboxRoot,
@@ -21,10 +25,10 @@ export const Combobox = ({ onSelectItem, onRenderItem }: ComboboxProps) => {
   const isOpen = useComboboxIsOpen();
 
   const ref = React.useRef<any>(null);
-  const editor = useEditorState();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   useEffect(() => {
-    setElementPositionByRange(editor, { ref, at });
+    editor && setElementPositionByRange(editor, { ref, at });
   }, [at, editor]);
 
   const menuProps = combobox ? combobox.getMenuProps() : { ref: null };
@@ -48,11 +52,9 @@ export const Combobox = ({ onSelectItem, onRenderItem }: ComboboxProps) => {
                   item,
                   index,
                 })}
-                onMouseDown={getPreventDefaultHandler(
-                  onSelectItem,
-                  editor,
-                  item
-                )}
+                onMouseDown={
+                  editor && getPreventDefaultHandler(onSelectItem, editor, item)
+                }
               >
                 {Item}
               </ComboboxItem>

@@ -27,7 +27,7 @@ export const toggleNodeType = (
 ) => {
   const { activeType, inactiveType = ELEMENT_DEFAULT } = options;
 
-  if (!activeType) return;
+  if (!activeType || !editor.selection) return;
 
   const isActive = someNode(editor, {
     ...editorNodesOptions,

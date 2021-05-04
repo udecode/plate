@@ -2,7 +2,7 @@ import {
   SlatePluginComponent,
   SlatePluginsOptions,
 } from './SlatePluginOptions/SlatePluginsOptions';
-import { EditorId, State } from './SlatePluginsStore';
+import { EditorId, SlatePluginsState } from './SlatePluginsStore';
 import { SPEditor } from './SPEditor';
 
 /**
@@ -10,17 +10,17 @@ import { SPEditor } from './SPEditor';
  */
 export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
   extends Partial<
-    Pick<State<T>, 'editorRef' | 'value' | 'enabled' | 'plugins'>
+    Pick<SlatePluginsState<T>, 'editorRef' | 'value' | 'enabled' | 'plugins'>
   > {
   id?: EditorId;
 
-  editor?: State['editorRef'];
+  editor?: SlatePluginsState['editorRef'];
 
   /**
    * Initial value of the editor.
    * @default [{ children: [{ text: '' }]}]
    */
-  initialValue?: State['value'];
+  initialValue?: SlatePluginsState['value'];
 
   options?: SlatePluginsOptions;
 

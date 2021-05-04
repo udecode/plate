@@ -2,12 +2,10 @@ import { useEffect } from 'react';
 import { createEditor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
-import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import {
-  useStoreEditorEnabled,
-  useStoreEditorRef,
-  useStoreSlatePlugins,
-} from '../../store/useSlatePluginsSelectors';
+import { useStoreEditorEnabled } from '../../stores/slate-plugins/selectors/useStoreEditorEnabled';
+import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
+import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
+import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
 import { SPEditor } from '../../types/SPEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
@@ -32,7 +30,6 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     setInitialState,
     setValue,
     setEditorRef,
-    setEditorState,
     setPlugins,
     setPluginKeys,
     setEnabled,

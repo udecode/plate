@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { KeyboardEvent, useCallback, useMemo, useState } from 'react';
 import {
   isCollapsed,
   isPointAtWordEnd,
@@ -64,7 +64,7 @@ export const useMentionPlugin = ({
   );
 
   const onKeyDownMention: KeyboardHandler = useCallback(
-    (editor) => (e) => {
+    (editor) => (e: KeyboardEvent) => {
       if (targetRange) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();

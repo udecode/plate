@@ -5,6 +5,8 @@ import { TEditor } from '../types/TEditor';
 
 /**
  * Typed {@link useSlate} & SPEditor.
+ * Needs to be called in a child component of `SlatePlugins`.
+ * Else, use `useStoreEditorState`.
  */
 export const useEditorState = <
   T extends TEditor = ReactEditor & HistoryEditor

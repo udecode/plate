@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import { useEditorState } from '@udecode/slate-plugins-core';
+import {
+  useEditorState,
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins-core';
 import { ELEMENT_UL, toggleList } from '@udecode/slate-plugins-list';
 import {
   ToolbarButtonProps,
@@ -11,14 +15,17 @@ export const ToolbarList = ({
   type = ELEMENT_UL,
   ...props
 }: ToolbarButtonProps & { type?: string }) => {
-  const editor = useEditorState();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarElement
       type={type}
-      onMouseDown={getPreventDefaultHandler(toggleList, editor, {
-        type,
-      })}
+      onMouseDown={
+        editor &&
+        getPreventDefaultHandler(toggleList, editor, {
+          type,
+        })
+      }
       {...props}
     />
   );

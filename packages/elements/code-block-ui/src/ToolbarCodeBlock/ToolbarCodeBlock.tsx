@@ -7,7 +7,8 @@ import {
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
-  useEditorState,
+  useEventEditorId,
+  useStoreEditorState,
 } from '@udecode/slate-plugins-core';
 import {
   ToolbarButtonProps,
@@ -20,15 +21,18 @@ export const ToolbarCodeBlock = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = useEditorState();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarElement
       type={getSlatePluginType(editor, ELEMENT_CODE_BLOCK)}
-      onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
-        insertNodesOptions: { select: true },
-        ...options,
-      })}
+      onMouseDown={
+        editor &&
+        getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
+          insertNodesOptions: { select: true },
+          ...options,
+        })
+      }
       {...props}
     />
   );

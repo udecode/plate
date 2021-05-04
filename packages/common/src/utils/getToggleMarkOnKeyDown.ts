@@ -13,7 +13,7 @@ export const getToggleMarkOnKeyDown = <T extends SPEditor = SPEditor>(
 
   if (!hotkey) return;
 
-  if (isHotkey(hotkey, e as KeyboardEvent)) {
+  if (isHotkey(hotkey, e as any)) {
     e.preventDefault();
 
     toggleMark(editor, type, clear);

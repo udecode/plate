@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
-import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import {
-  useStoreEditorRef,
-  useStoreEditorValue,
-  useStoreSlatePlugins,
-} from '../../store/useSlatePluginsSelectors';
+import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
+import { useStoreEditorValue } from '../../stores/slate-plugins/selectors/useStoreEditorValue';
+import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
+import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
 import { SlateProps } from '../../types/SlateProps';
 import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';

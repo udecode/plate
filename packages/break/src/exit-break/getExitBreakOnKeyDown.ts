@@ -77,7 +77,7 @@ export const getExitBreakOnKeyDown = <T extends SPEditor = SPEditor>({
       before,
       defaultType = ELEMENT_DEFAULT,
     }) => {
-      if (isHotkey(hotkey, event) && queryNode(entry, query)) {
+      if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
         if (!editor.selection) return;
 
         const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, query);

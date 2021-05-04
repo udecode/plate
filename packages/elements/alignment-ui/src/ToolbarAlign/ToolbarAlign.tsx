@@ -4,7 +4,10 @@ import {
   getPreventDefaultHandler,
   someNode,
 } from '@udecode/slate-plugins-common';
-import { useEditorState } from '@udecode/slate-plugins-core';
+import {
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins-core';
 import {
   ToolbarButton,
   ToolbarButtonProps,
@@ -20,15 +23,19 @@ export const ToolbarAlign = ({
   unwrapTypes = KEYS_ALIGN,
   ...props
 }: ToolbarAlignProps) => {
-  const editor = useEditorState();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
-      active={!!type && someNode(editor, { match: { type } })}
-      onMouseDown={getPreventDefaultHandler(upsertAlign, editor, {
-        type,
-        unwrapTypes,
-      })}
+      active={!!editor?.selection && someNode(editor, { match: { type } })}
+      onMouseDown={
+        editor
+          ? getPreventDefaultHandler(upsertAlign, editor, {
+              type,
+              unwrapTypes,
+            })
+          : undefined
+      }
       {...props}
     />
   );

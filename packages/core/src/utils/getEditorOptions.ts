@@ -4,5 +4,5 @@ import { SPEditor } from '../types/SPEditor';
 /**
  * Get editor.options.
  */
-export const getEditorOptions = (editor: SPEditor): SlatePluginsOptions =>
-  (editor as SPEditor)?.options ?? {};
+export const getEditorOptions = (editor?: SPEditor): SlatePluginsOptions =>
+  editor?.options ?? {};

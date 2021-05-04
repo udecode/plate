@@ -13,6 +13,8 @@ export const toggleMark = (
   key: string,
   clear: string | string[] = []
 ) => {
+  if (!editor.selection) return;
+
   const isActive = isMarkActive(editor, key);
 
   if (isActive) {
