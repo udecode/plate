@@ -15,10 +15,6 @@ import cloneDeep from "lodash/cloneDeep"
 import { Editor, NodeEntry, Operation } from "slate"
 import { HistoryEditor } from "slate-history"
 
-export interface NodeIdEditor extends HistoryEditor {
-  removedIDs: Set<any>
-}
-
 export interface WithNodeIdProps extends QueryNodeOptions {
   /**
    * Node key to store the id.
@@ -56,14 +52,12 @@ export const withNodeId = ({
   filter = () => true,
   allow,
   exclude,
-}: WithNodeIdProps = {}): WithOverride<HistoryEditor, NodeIdEditor> => (e) => {
-  const editor = e as typeof e & NodeIdEditor
+}: WithNodeIdProps = {}): WithOverride<HistoryEditor> => (e) => {
+  const editor = e as typeof e & HistoryEditor
 
   const { apply } = editor
 
   const idPropsCreator = () => ({ [idKey]: idCreator() })
-
-  editor.removedIDs = new Set()
 
   editor.apply = (operation) => {
     if (operation.type === "insert_node") {
@@ -75,15 +69,11 @@ export const withNodeId = ({
       }
 
       const node = cloneDeep(operation.node) as TNode
-      // console.log({
-      //   node: JSON.stringify(node),
-      //   someNode: someNode(editor, { match: { id: node[idKey] } }),
-      //   operation: JSON.stringify(operation),
-      // })
-      if (someNode(editor, { match: { id: node[idKey] } })) {
-        // the id in the new node is already being used in the editor, we need to replace it with a new id
-        node[idKey] = idCreator()
-      }
+      
+      // the id in the new node is already being used in the editor, we need to replace it with a new id
+      // if (someNode(editor, { match: { [idKey]: node[idKey] } })) {
+      //   node[idKey] = idCreator()
+      // }
 
       // it will not overwrite ids once it's set as it's read-only
       const applyDeepToNodes = resetExistingID
@@ -110,13 +100,7 @@ export const withNodeId = ({
       (!filterText || (operation.properties as Partial<TNode>).type)
     ) {
       let id = operation.properties[idKey]
-      // console.log({
-      //   properties: JSON.stringify(operation.properties),
-      //   someNode: someNode(editor, {
-      //     match: { [idKey]: (operation.properties as Partial<TNode>)[idKey] },
-      //   }),
-      //   operation: JSON.stringify(operation),
-      // })
+      
       if (
         someNode(editor, {
           match: { [idKey]: (operation.properties as Partial<TNode>)[idKey] },
