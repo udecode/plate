@@ -5,8 +5,9 @@ title: Multiple Editors
 
 Slate Plugins support multiple editor instances by using the [id](SlatePlugins#id) prop.
 
-Let's render 3 editors with a common toolbar.
+### Example
 
+Let's render 3 editors with common heading and balloon toolbars.
 
 ```tsx live
 () => {
@@ -33,20 +34,46 @@ Let's render 3 editors with a common toolbar.
         <ToolbarButtonsBasicMarks />
       </HeadingToolbar>
 
+      <BallonToolbarMarks />
+
       <div className="flex">
-        <MultipleEditor plugins={pluginsBasic} initialValue={initialValueBasic} />
+        <MultipleEditor plugins={pluginsBasic} initialValue={initialValueBasicElements} />
+        <MultipleEditor
+          id="marks"
+          plugins={pluginsBasic}
+          initialValue={initialValueBasicMarks}
+        />
         <MultipleEditor
           id="image"
           plugins={pluginsImage}
           initialValue={initialValueImages}
         />
-        <MultipleEditor
-          id="core"
-          plugins={pluginsCore}
-          initialValue={initialValuePlainText}
-        />
       </div>
     </div>
   )
 }
+```
+
+### Focus editor
+
+The toolbar actions require an `editor` with a defined `selection`, so it needs to be focused.
+[SlatePlugins](SlatePlugins) stores the [id](SlatePlugins#id) of the last focused `editor` in `eventEditorStore`,
+which can be then used by the toolbar actions (or any component outside [SlatePlugins](SlatePlugins))
+to retrieve the [editor](store#editor) from the store to operate on.
+
+### Event editor
+
+You can extend `eventEditorStore` with any event using `eventEditorActions.setEventEditorId`.
+It's an object whose keys are event names (e.g. `'focus'`) and whose values are [editor ids](SlatePlugins#id).
+
+[SlatePlugins](SlatePlugins) will store these events out of the box:
+
+- `focus` using `onFocus`
+- `blur` using `onBlur`
+
+Usage:
+
+```ts
+const id = useEventEditorId('focus');
+const editor = useStoreEditorState(id);
 ```

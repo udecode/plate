@@ -64,6 +64,7 @@ import {
   initialValuePlainText,
 } from '../../../../stories/config/initialValues';
 import {
+  BallonToolbarMarks,
   ToolbarButtonsBasicElements,
   ToolbarButtonsBasicMarks,
 } from '../../../../stories/config/Toolbars';
@@ -127,51 +128,25 @@ const initialValueBasic = [
   ...initialValueBasicMarks,
 ];
 
-// const ToolbarButtonsBasicElements = () => {
-//   const editor = useStoreEditorRef(useEventEditorId('focus'));
-//
-//   return (
-//     <>
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H1)}
-//         icon={<LooksOne />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H2)}
-//         icon={<LooksTwo />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H3)}
-//         icon={<Looks3 />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H4)}
-//         icon={<Looks4 />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H5)}
-//         icon={<Looks5 />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_H6)}
-//         icon={<Looks6 />}
-//       />
-//       <ToolbarElement
-//         type={getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
-//         icon={<FormatQuote />}
-//       />
-//       {/* <ToolbarCodeBlock */}
-//       {/*  type={useSlatePluginType(ELEMENT_CODE_BLOCK)} */}
-//       {/*  icon={<CodeBlock />} */}
-//       {/* /> */}
-//     </>
-//   );
-// };
-
 // Add react-live imports you need here
 const ReactLiveScope = {
   React,
   ...React,
+  BallonToolbarMarks,
+  components,
+  corePlugins: pluginsCore,
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodeBlockPlugin,
+  createCodePlugin,
+  createHeadingPlugin,
+  createHistoryPlugin,
+  createItalicPlugin,
+  createParagraphPlugin,
+  createReactPlugin,
+  createStrikethroughPlugin,
+  createUnderlinePlugin,
+  editableProps,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
@@ -191,9 +166,12 @@ const ReactLiveScope = {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
-  ToolbarButtonsBasicElements,
-  ToolbarButtonsBasicMarks,
   HeadingToolbar,
+  initialValueBasic,
+  initialValueBasicElements,
+  initialValueBasicMarks,
+  initialValueImages,
+  initialValuePlainText,
   MARK_BOLD,
   MARK_CODE,
   MARK_HIGHLIGHT,
@@ -203,28 +181,15 @@ const ReactLiveScope = {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  SlatePlugins,
-  components,
-  corePlugins: pluginsCore,
-  createBlockquotePlugin,
-  createBoldPlugin,
-  createCodeBlockPlugin,
-  createCodePlugin,
-  createHeadingPlugin,
-  createHistoryPlugin,
-  createItalicPlugin,
-  createParagraphPlugin,
-  createReactPlugin,
-  createStrikethroughPlugin,
-  createUnderlinePlugin,
-  editableProps,
-  initialValueBasic,
-  initialValueImages,
-  initialValuePlainText,
   options,
-  pluginsCore,
   pluginsBasic,
+  pluginsBasicElements,
+  pluginsBasicMarks,
+  pluginsCore,
   pluginsImage,
+  SlatePlugins,
+  ToolbarButtonsBasicElements,
+  ToolbarButtonsBasicMarks,
 };
 
 export default ReactLiveScope;

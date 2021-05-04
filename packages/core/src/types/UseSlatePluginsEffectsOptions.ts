@@ -10,11 +10,9 @@ import { SPEditor } from './SPEditor';
  */
 export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
   extends Partial<
-    Pick<SlatePluginsState<T>, 'editorRef' | 'value' | 'enabled' | 'plugins'>
+    Pick<SlatePluginsState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
   > {
   id?: EditorId;
-
-  editor?: SlatePluginsState['editorRef'];
 
   /**
    * Initial value of the editor.

@@ -9,7 +9,7 @@ import {
 import { SPEditor } from '../../types/SPEditor';
 import { pipe } from '../../utils/pipe';
 import { withSlatePlugins } from '../../utils/withSlatePlugins';
-import { getSetStateByKey } from '../zustand.utils';
+import { getSetStateByKey, getStateById } from '../zustand.utils';
 import { slatePluginsStore, useSlatePluginsStore } from './slate-plugins.store';
 
 const { getState: get, setState: set } = slatePluginsStore;
@@ -22,12 +22,9 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
   const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
-    const setEditorRef: SlatePluginsActions<T>['setEditorRef'] = getSetStateByKey<
-      SlatePluginsState<T>['editorRef']
-    >('editorRef', stateId);
-    const setEditorState: SlatePluginsActions<T>['setEditorState'] = getSetStateByKey<
-      SlatePluginsState<T>['editorState']
-    >('editorState', stateId);
+    const setEditor: SlatePluginsActions<T>['setEditor'] = getSetStateByKey<
+      SlatePluginsState<T>['editor']
+    >('editor', stateId);
 
     const setValue = getSetStateByKey<SlatePluginsState<T>['value']>(
       'value',
@@ -35,8 +32,7 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
     );
 
     return {
-      setEditorRef,
-      setEditorState,
+      setEditor,
       setValue,
       clearState: (id = stateId) =>
         id &&
@@ -68,20 +64,30 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
       resetEditor: (id = stateId) => {
         const state = !!id && get()[id];
         if (!state) return;
-        const { editorRef, plugins } = state;
+        const { editor, plugins } = state;
 
-        setEditorRef(
+        setEditor(
           pipe(
             createEditor(),
             withSlatePlugins<T>({
               id,
               plugins,
-              options: editorRef?.options,
+              options: editor?.options,
             })
           ),
           id
         );
       },
+      incrementKeyChange: (id = stateId) =>
+        set((state) => {
+          if (!state[id]) return {};
+
+          const prev = state[id]?.keyChange ?? 1;
+
+          return {
+            [id]: { ...getStateById(state, id), keyChange: prev + 1 },
+          };
+        }),
       setEnabled: getSetStateByKey<SlatePluginsState<T>['enabled']>(
         'enabled',
         stateId

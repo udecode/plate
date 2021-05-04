@@ -16,13 +16,12 @@ export type SlatePluginsState<T extends SPEditor = SPEditor> = {
    * Slate editor reference.
    * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
    */
-  editorRef?: T;
+  editor?: T;
 
   /**
-   * Slate editor state.
-   * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
+   * A key that is incremented on each editor change.
    */
-  editorState?: T;
+  keyChange?: number;
 
   /**
    * If true, slate plugins will create the editor with `withSlatePlugins`.
@@ -75,13 +74,9 @@ export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
    */
   resetEditor: (id?: string) => void;
 
-  setEditorRef: (value: SlatePluginsState<T>['editorRef'], id?: string) => void;
-  setEditorState: (
-    value: SlatePluginsState<T>['editorState'],
-    id?: string
-  ) => void;
+  setEditor: (value: SlatePluginsState<T>['editor'], id?: string) => void;
   setSelection: (value: SlatePluginsState<T>['selection'], id?: string) => void;
-
+  incrementKeyChange: (id?: string) => void;
   setEnabled: (value: SlatePluginsState<T>['enabled'], id?: string) => void;
   setPlugins: (value: SlatePluginsState<T>['plugins'], id?: string) => void;
   setPluginKeys: (

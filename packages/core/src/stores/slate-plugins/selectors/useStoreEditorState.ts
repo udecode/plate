@@ -1,30 +1,21 @@
-import { useCallback } from 'react';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { SPEditor } from '../../../types/SPEditor';
 import { useSlatePluginsStore } from '../slate-plugins.store';
 import { getSlatePluginsState } from './getSlatePluginsState';
+import { useStoreEditorRef } from './useStoreEditorRef';
 
 /**
- * Get editor state.
+ * Get editor state which is updated on editor change.
  */
 export const useStoreEditorState = <
   T extends SPEditor = SPEditor & ReactEditor & HistoryEditor
 >(
   id?: string | null
 ) => {
-  useSlatePluginsStore(
-    useCallback(
-      (state) =>
-        getSlatePluginsState<T>(state as any, id)?.editorState?.keyChange,
-      [id]
-    )
+  const a = useSlatePluginsStore(
+    (state) => getSlatePluginsState<T>(state as any, id)?.keyChange
   );
 
-  return useSlatePluginsStore(
-    useCallback(
-      (state) => getSlatePluginsState<T>(state as any, id)?.editorState,
-      [id]
-    )
-  );
+  return useStoreEditorRef(id);
 };

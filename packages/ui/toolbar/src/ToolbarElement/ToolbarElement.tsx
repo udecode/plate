@@ -21,8 +21,6 @@ export const ToolbarElement = ({
 }: ToolbarElementProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
-  console.log(useEventEditorId('focus'), editor?.selection);
-
   return (
     <ToolbarButton
       active={!!editor?.selection && someNode(editor, { match: { type } })}

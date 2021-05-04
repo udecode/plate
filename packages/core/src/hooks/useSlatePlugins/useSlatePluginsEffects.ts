@@ -29,7 +29,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   const {
     setInitialState,
     setValue,
-    setEditorRef,
+    setEditor,
     setPlugins,
     setPluginKeys,
     setEnabled,
@@ -54,7 +54,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
       pluginKeys: [],
       value: [],
     });
-  }, [setInitialState]);
+  }, [id, setInitialState]);
 
   // Slate.value
   useEffect(() => {
@@ -84,14 +84,14 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
 
   useEffect(() => {
     if (storeEditor && !storeEnabled) {
-      setEditorRef(undefined);
+      setEditor(undefined);
     }
-  }, [storeEnabled, storeEditor, setEditorRef]);
+  }, [storeEnabled, storeEditor, setEditor]);
 
   // Slate.editor
   useEffect(() => {
     if (!storeEditor && storeEnabled) {
-      setEditorRef(
+      setEditor(
         pipe(
           editor ?? createEditor(),
           withSlatePlugins<T>({
@@ -112,6 +112,6 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     plugins,
     storeEnabled,
     storePlugins,
-    setEditorRef,
+    setEditor,
   ]);
 };

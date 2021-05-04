@@ -5,8 +5,7 @@ const { setState: set } = eventEditorStore;
 
 export const eventEditorActions: EventEditorActions = {
   setEventEditorId: (event, value) =>
-    set((state) => {
-      state[event] = value;
-      return state;
-    }),
+    set(() => ({
+      [event]: value,
+    })),
 };

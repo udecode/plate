@@ -135,7 +135,7 @@
     "typedoc": "^0.19.2",
     "typescript": "^4.2.2",
     "use-why-did-you-update": "^0.1.0",
-    "zustand": "^3.3.3"
+    "zustand": "^3.4.2"
   },
   "dependencies": {
     "prismjs": "^1.23.0",

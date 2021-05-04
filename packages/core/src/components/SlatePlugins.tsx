@@ -33,7 +33,7 @@ export const SlatePlugins = <T extends SPEditor = SPEditor>({
   return (
     <Slate {...(slateProps as SlateProps)}>
       {children}
-      <EditorStateEffect />
+      <EditorStateEffect id={options.id} />
       <Editable {...editableProps} />
     </Slate>
   );

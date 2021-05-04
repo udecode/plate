@@ -6,7 +6,7 @@ import { useSlatePluginsStore } from '../slate-plugins.store';
 import { getSlatePluginsState } from './getSlatePluginsState';
 
 /**
- * Get editor ref.
+ * Get editor ref which is never updated.
  */
 export const useStoreEditorRef = <
   T extends SPEditor = SPEditor & ReactEditor & HistoryEditor
@@ -14,8 +14,7 @@ export const useStoreEditorRef = <
   id?: string | null
 ) =>
   useSlatePluginsStore(
-    useCallback(
-      (state) => getSlatePluginsState<T>(state as any, id)?.editorRef,
-      [id]
-    )
+    useCallback((state) => getSlatePluginsState<T>(state as any, id)?.editor, [
+      id,
+    ])
   );

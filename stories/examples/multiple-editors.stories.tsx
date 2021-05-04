@@ -16,6 +16,7 @@ import {
   SlatePlugins,
   TNode,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
 import styled from 'styled-components';
 import {
   initialValueBasicElements,
@@ -28,6 +29,10 @@ import {
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../config/pluginOptions';
+import {
+  ToolbarButtonsBasicElements,
+  ToolbarButtonsBasicMarks,
+} from '../config/Toolbars';
 
 export default {
   title: 'Examples/Multiple Editors',
@@ -89,18 +94,30 @@ const Editor = ({
   </WrapperEditor>
 );
 
-export const Example = () => (
-  <Wrapper>
-    <Editor plugins={mainPlugins} initialValue={initialValueBasicElements} />
-    <Editor
-      id="image"
-      plugins={imagePlugins}
-      initialValue={initialValueImages}
-    />
-    <Editor
-      id="core"
-      plugins={corePlugins}
-      initialValue={initialValuePlainText}
-    />
-  </Wrapper>
-);
+export const Example = () => {
+  return (
+    <div>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+        <ToolbarButtonsBasicMarks />
+      </HeadingToolbar>
+
+      <Wrapper>
+        <Editor
+          plugins={mainPlugins}
+          initialValue={initialValueBasicElements}
+        />
+        <Editor
+          id="image"
+          plugins={imagePlugins}
+          initialValue={initialValueImages}
+        />
+        <Editor
+          id="core"
+          plugins={corePlugins}
+          initialValue={initialValuePlainText}
+        />
+      </Wrapper>
+    </div>
+  );
+};
