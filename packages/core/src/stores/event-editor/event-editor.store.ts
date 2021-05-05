@@ -2,9 +2,10 @@ import create from 'zustand';
 import createVanillaStore from 'zustand/vanilla';
 import { EventEditorState } from '../../types/EventEditorStore';
 
+// export const eventEditorStore = proxy<EventEditorState>({});
+
 /**
- * Vanilla store where the keys are event names and the values are editor ids..
- * @see zustand vanilla store
+ * Store where the keys are event names and the values are editor ids.
  */
 export const eventEditorStore = createVanillaStore<EventEditorState>(
   () => ({})

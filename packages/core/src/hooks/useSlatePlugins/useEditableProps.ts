@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { eventEditorActions } from '../../stores/event-editor/event-editor.actions';
+import { setEventEditorId } from '../../stores/event-editor/event-editor.actions';
 import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
 import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
@@ -22,10 +22,11 @@ export const useEditableProps = ({
       ...(_plugins ?? []),
       {
         onFocus: () => () => {
-          eventEditorActions.setEventEditorId('focus', id);
+          console.log('FOCUS', id);
+          setEventEditorId('focus', id);
         },
         onBlur: () => () => {
-          eventEditorActions.setEventEditorId('blur', id);
+          setEventEditorId('blur', id);
         },
       },
     ],

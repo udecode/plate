@@ -99,7 +99,7 @@ export const Example = () => {
     <div>
       <HeadingToolbar>
         <ToolbarButtonsBasicElements />
-        <ToolbarButtonsBasicMarks />
+        {/* <ToolbarButtonsBasicMarks /> */}
       </HeadingToolbar>
 
       <Wrapper>

@@ -62,7 +62,7 @@ it('should be', () => {
         predicate: isSelectionAtBlockStart,
       },
     ],
-  })(editor)(new KeyboardEvent('keydown'));
+  })(editor)(new KeyboardEvent('keydown') as any);
 
   expect(editor.children).toEqual(output.children);
 });

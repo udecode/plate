@@ -83,10 +83,11 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
           if (!state[id]) return {};
 
           const prev = state[id]?.keyChange ?? 1;
+          console.log(id, prev);
 
           return {
             [id]: { ...getStateById(state, id), keyChange: prev + 1 },
-          };
+          } as any;
         }),
       setEnabled: getSetStateByKey<SlatePluginsState<T>['enabled']>(
         'enabled',

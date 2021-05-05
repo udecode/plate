@@ -13,9 +13,11 @@ export const useStoreEditorState = <
 >(
   id?: string | null
 ) => {
-  const a = useSlatePluginsStore(
-    (state) => getSlatePluginsState<T>(state as any, id)?.keyChange
-  );
+  const a = useSlatePluginsStore((state) => {
+    // console.log('AA', getSlatePluginsState<T>(state as any, id));
+    return getSlatePluginsState<T>(state as any, id)?.keyChange;
+  });
+  // console.log('BB', a);
 
   return useStoreEditorRef(id);
 };

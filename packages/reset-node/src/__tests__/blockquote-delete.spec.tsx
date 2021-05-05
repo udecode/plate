@@ -40,7 +40,7 @@ it('should render', () => {
         predicate: isSelectionAtBlockStart,
       },
     ],
-  })(input)(new KeyboardEvent('keydown'));
+  })(input)(new KeyboardEvent('keydown') as any);
 
   expect(input.children).toEqual(output.children);
 });

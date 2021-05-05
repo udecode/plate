@@ -57,19 +57,11 @@ Let's render 3 editors with common heading and balloon toolbars.
 ### Focus editor
 
 The toolbar actions require an `editor` with a defined `selection`, so it needs to be focused.
-[SlatePlugins](SlatePlugins) stores the [id](SlatePlugins#id) of the last focused `editor` in `eventEditorStore`,
-which can be then used by the toolbar actions (or any component outside [SlatePlugins](SlatePlugins))
-to retrieve the [editor](store#editor) from the store to operate on.
 
-### Event editor
+[SlatePlugins](SlatePlugins) stores the [id](SlatePlugins#id) of the last focused editor in [eventEditorStore](store#event-editor-store),
+which can then be used by the toolbar actions (or any component outside [SlatePlugins](SlatePlugins))
+to get the [editor](store#editor) from [slatePluginsStore](store#slate-plugins-store).
 
-You can extend `eventEditorStore` with any event using `eventEditorActions.setEventEditorId`.
-It's an object whose keys are event names (e.g. `'focus'`) and whose values are [editor ids](SlatePlugins#id).
-
-[SlatePlugins](SlatePlugins) will store these events out of the box:
-
-- `focus` using `onFocus`
-- `blur` using `onBlur`
 
 Usage:
 

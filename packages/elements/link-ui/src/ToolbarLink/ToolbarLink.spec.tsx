@@ -2,7 +2,8 @@ import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
 import { createLinkPlugin } from '@udecode/slate-plugins-link';
-import * as SlateReact from 'slate-react';
+import { setEventEditorId } from '../../../../core/src/stores/event-editor/event-editor.actions';
+import { slatePluginsStore } from '../../../../core/src/stores/slate-plugins/slate-plugins.store';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { ToolbarLink } from './ToolbarLink';
 import {
@@ -22,7 +23,8 @@ describe('ToolbarLink', () => {
         plugins: [createLinkPlugin()],
       });
 
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      slatePluginsStore.setState((state) => ({ main: { editor } as any }));
+      setEventEditorId('focus', editor.id);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -42,8 +44,10 @@ describe('ToolbarLink', () => {
         editor: input2,
         plugins: [createLinkPlugin()],
       });
+      editor.selection = {} as any;
 
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      slatePluginsStore.setState((state) => ({ main: { editor } as any }));
+      setEventEditorId('focus', editor.id);
       const prompt = jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/changed.png');
@@ -71,7 +75,9 @@ describe('ToolbarLink', () => {
         plugins: [createLinkPlugin()],
       });
 
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      slatePluginsStore.setState((state) => ({ main: { editor } as any }));
+      setEventEditorId('focus', editor.id);
+
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(
