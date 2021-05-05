@@ -16,10 +16,7 @@ import {
   HeadingToolbar,
   SlatePlugins,
 } from '@udecode/slate-plugins';
-import {
-  initialValueBasicMarks,
-  initialValueMarks,
-} from '../config/initialValues';
+import { initialValueMarks } from '../config/initialValues';
 import { editableProps } from '../config/pluginOptions';
 import { ToolbarButtonsBasicMarks } from '../config/Toolbars';
 
