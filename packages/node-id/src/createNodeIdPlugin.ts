@@ -69,11 +69,10 @@ export const withNodeId = ({
       }
 
       const node = cloneDeep(operation.node) as TNode
-      
       // the id in the new node is already being used in the editor, we need to replace it with a new id
-      // if (someNode(editor, { match: { [idKey]: node[idKey] } })) {
-      //   node[idKey] = idCreator()
-      // }
+      if (someNode(editor, { match: { [idKey]: node[idKey] } })) {
+        delete node[idKey]
+      }
 
       // it will not overwrite ids once it's set as it's read-only
       const applyDeepToNodes = resetExistingID
