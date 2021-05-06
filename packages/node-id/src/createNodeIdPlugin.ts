@@ -53,7 +53,7 @@ export const withNodeId = ({
   allow,
   exclude,
 }: WithNodeIdProps = {}): WithOverride<HistoryEditor> => (e) => {
-  const editor = e as typeof e & HistoryEditor;
+  const editor = e;
 
   const { apply } = editor;
 
