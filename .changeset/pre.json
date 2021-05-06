@@ -47,6 +47,7 @@
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
   "changesets": [
+    "polite-goats-watch",
     "wet-tables-rush"
   ]
 }
