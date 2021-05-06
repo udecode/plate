@@ -96,7 +96,7 @@ export const withNodeId = ({
 
     if (
       operation.type === 'split_node' &&
-      (!filterText || (operation.properties as Partial<TNode>).type)
+      idKey in operation.properties
     ) {
       let id = operation.properties[idKey];
 
