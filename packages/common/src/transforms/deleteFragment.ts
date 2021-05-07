@@ -164,8 +164,6 @@ export const deleteFragment = (
         at: endRef.current,
         hanging: true,
         voids,
-        mergeNode: moveNode,
-        removeEmptyAncestor,
       });
     }
 
