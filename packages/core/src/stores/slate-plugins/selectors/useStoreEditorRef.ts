@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { SPEditor } from '../../../types/SPEditor';
@@ -14,7 +13,5 @@ export const useStoreEditorRef = <
   id?: string | null
 ) =>
   useSlatePluginsStore(
-    useCallback((state) => getSlatePluginsState<T>(state as any, id)?.editor, [
-      id,
-    ])
+    (state) => getSlatePluginsState<T>(state as any, id)?.editor
   );

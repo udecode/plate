@@ -6,7 +6,6 @@ import { useEventEditorStore } from '../event-editor.store';
  */
 export const useEventEditorId = (event: EditorEvent) =>
   useEventEditorStore((state) => {
-    console.log(state);
     return state[event];
   });
 

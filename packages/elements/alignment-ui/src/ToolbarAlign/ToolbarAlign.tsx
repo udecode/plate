@@ -27,7 +27,9 @@ export const ToolbarAlign = ({
 
   return (
     <ToolbarButton
-      active={!!editor?.selection && someNode(editor, { match: { type } })}
+      active={
+        !!editor?.selection && !!type && someNode(editor, { match: { type } })
+      }
       onMouseDown={
         editor
           ? getPreventDefaultHandler(upsertAlign, editor, {

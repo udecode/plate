@@ -35,7 +35,63 @@ module.exports = {
       ],
       collapsed: false,
     },
-
+    {
+      type: 'category',
+      label: 'Plugins',
+      items: [
+        {
+          type: 'category',
+          label: 'Elements',
+          items: [
+            'plugins/alignment',
+            'plugins/basic-elements',
+            'plugins/image',
+            'plugins/link',
+            'plugins/list',
+            'plugins/media-embed',
+            'plugins/mention',
+            'plugins/table',
+          ],
+          collapsed: false,
+        },
+        {
+          type: 'category',
+          label: 'Marks',
+          items: ['plugins/basic-marks', 'plugins/highlight', 'plugins/kbd'],
+          collapsed: false,
+        },
+        {
+          type: 'category',
+          label: 'Utils',
+          items: [
+            'plugins/autoformat',
+            'plugins/exit-break',
+            'plugins/soft-break',
+            'plugins/forced-layout',
+          ],
+          collapsed: false,
+        },
+        {
+          type: 'category',
+          label: 'Decorators',
+          items: ['plugins/find-replace'],
+          collapsed: false,
+        },
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Components',
+      items: ['components/dnd', 'components/placeholder'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Examples',
+      items: ['examples/editable-voids'],
+      collapsed: false,
+    },
     // {
     //   type: 'category',
     //   label: 'API Reference',

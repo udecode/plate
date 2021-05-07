@@ -1,151 +1,118 @@
+"use strict";
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import React, {useCallback, useState, useEffect} from 'react';
-import clsx from 'clsx';
-import SearchBar from '@theme/SearchBar';
-import Toggle from '@theme/Toggle';
-import useThemeContext from '@theme/hooks/useThemeContext';
-import {useThemeConfig} from '@docusaurus/theme-common';
-import useHideableNavbar from '@theme/hooks/useHideableNavbar';
-import useLockBodyScroll from '@theme/hooks/useLockBodyScroll';
-import useWindowSize, {windowSizes} from '@theme/hooks/useWindowSize';
-import NavbarItem from '@theme/NavbarItem';
-import Logo from '@theme/Logo';
-import IconMenu from '@theme/IconMenu';
-import styles from './styles.module.css'; // retrocompatible with v1
-
-const DefaultNavItemPosition = 'right'; // If split links by left/right
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+exports.__esModule = true;
+var react_1 = __importStar(require("react"));
+var theme_common_1 = require("@docusaurus/theme-common");
+var useHideableNavbar_1 = __importDefault(require("@theme/hooks/useHideableNavbar"));
+var useLockBodyScroll_1 = __importDefault(require("@theme/hooks/useLockBodyScroll"));
+var useThemeContext_1 = __importDefault(require("@theme/hooks/useThemeContext"));
+var useWindowSize_1 = __importStar(require("@theme/hooks/useWindowSize"));
+var IconMenu_1 = __importDefault(require("@theme/IconMenu"));
+var Logo_1 = __importDefault(require("@theme/Logo"));
+var NavbarItem_1 = __importDefault(require("@theme/NavbarItem"));
+var SearchBar_1 = __importDefault(require("@theme/SearchBar"));
+var Toggle_1 = __importDefault(require("@theme/Toggle"));
+var clsx_1 = __importDefault(require("clsx"));
+var index_1 = __importDefault(require("./components/QuickSocialLinksView/index"));
+var styles_module_css_1 = __importDefault(require("./styles.module.css"));
+// retrocompatible with v1
+var DefaultNavItemPosition = 'right';
+// If split links by left/right
 // if position is unspecified, fallback to right (as v1)
-
 function splitNavItemsByPosition(items) {
-  const leftItems = items.filter(
-    (item) => (item.position ?? DefaultNavItemPosition) === 'left',
-  );
-  const rightItems = items.filter(
-    (item) => (item.position ?? DefaultNavItemPosition) === 'right',
-  );
-  return {
-    leftItems,
-    rightItems,
-  };
+    var leftItems = items.filter(function (item) { var _a; return ((_a = item.position) !== null && _a !== void 0 ? _a : DefaultNavItemPosition) === 'left'; });
+    var rightItems = items.filter(function (item) { var _a; return ((_a = item.position) !== null && _a !== void 0 ? _a : DefaultNavItemPosition) === 'right'; });
+    return {
+        leftItems: leftItems,
+        rightItems: rightItems,
+    };
 }
-
 function Navbar() {
-  const {
-    navbar: {items, hideOnScroll, style},
-    colorMode: {disableSwitch: disableColorModeSwitch},
-  } = useThemeConfig();
-  const [sidebarShown, setSidebarShown] = useState(false);
-  const {isDarkTheme, setLightTheme, setDarkTheme} = useThemeContext();
-  const {navbarRef, isNavbarVisible} = useHideableNavbar(hideOnScroll);
-  useLockBodyScroll(sidebarShown);
-  const showSidebar = useCallback(() => {
-    setSidebarShown(true);
-  }, [setSidebarShown]);
-  const hideSidebar = useCallback(() => {
-    setSidebarShown(false);
-  }, [setSidebarShown]);
-  const onToggleChange = useCallback(
-    (e) => (e.target.checked ? setDarkTheme() : setLightTheme()),
-    [setLightTheme, setDarkTheme],
-  );
-  const windowSize = useWindowSize();
-  useEffect(() => {
-    if (windowSize === windowSizes.desktop) {
-      setSidebarShown(false);
-    }
-  }, [windowSize]);
-  const hasSearchNavbarItem = items.some((item) => item.type === 'search');
-  const {leftItems, rightItems} = splitNavItemsByPosition(items);
-  return (
-    <nav
-      ref={navbarRef}
-      className={clsx('navbar', 'navbar--fixed-top', {
-        'navbar--dark': style === 'dark',
-        'navbar--primary': style === 'primary',
-        'navbar-sidebar--show': sidebarShown,
-        [styles.navbarHideable]: hideOnScroll,
-        [styles.navbarHidden]: hideOnScroll && !isNavbarVisible,
-      })}>
-      <div className="navbar__inner">
-        <div className="navbar__items">
-          {items != null && items.length !== 0 && (
-            <button
-              aria-label="Navigation bar toggle"
-              className="navbar__toggle"
-              type="button"
-              tabIndex={0}
-              onClick={showSidebar}
-              onKeyDown={showSidebar}>
-              <IconMenu />
-            </button>
-          )}
-          <Logo
-            className="navbar__brand"
-            imageClassName="navbar__logo"
-            titleClassName={clsx('navbar__title')}
-          />
-          {leftItems.map((item, i) => (
-            <NavbarItem {...item} key={i} />
-          ))}
-        </div>
-        <div className="navbar__items navbar__items--right">
-          {rightItems.map((item, i) => (
-            <NavbarItem {...item} key={i} />
-          ))}
-          {!disableColorModeSwitch && (
-            <Toggle
-              className={styles.displayOnlyInLargeViewport}
-              aria-label="Dark mode toggle"
-              checked={isDarkTheme}
-              onChange={onToggleChange}
-            />
-          )}
-          {!hasSearchNavbarItem && <SearchBar />}
-        </div>
-      </div>
-      <div
-        role="presentation"
-        className="navbar-sidebar__backdrop"
-        onClick={hideSidebar}
-      />
-      <div className="navbar-sidebar">
-        <div className="navbar-sidebar__brand">
-          <Logo
-            className="navbar__brand"
-            imageClassName="navbar__logo"
-            titleClassName="navbar__title"
-            onClick={hideSidebar}
-          />
-          {!disableColorModeSwitch && sidebarShown && (
-            <Toggle
-              aria-label="Dark mode toggle in sidebar"
-              checked={isDarkTheme}
-              onChange={onToggleChange}
-            />
-          )}
-        </div>
-        <div className="navbar-sidebar__items">
-          <div className="menu">
-            <ul className="menu__list">
-              {items.map((item, i) => (
-                <NavbarItem
-                  mobile
-                  {...item} // TODO fix typing
-                  onClick={hideSidebar}
-                  key={i}
-                />
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
+    var _a;
+    var _b = theme_common_1.useThemeConfig(), _c = _b.navbar, items = _c.items, hideOnScroll = _c.hideOnScroll, style = _c.style, disableColorModeSwitch = _b.colorMode.disableSwitch;
+    var _d = react_1.useState(false), sidebarShown = _d[0], setSidebarShown = _d[1];
+    var _e = useThemeContext_1["default"](), isDarkTheme = _e.isDarkTheme, setLightTheme = _e.setLightTheme, setDarkTheme = _e.setDarkTheme;
+    var _f = useHideableNavbar_1["default"](hideOnScroll), navbarRef = _f.navbarRef, isNavbarVisible = _f.isNavbarVisible;
+    useLockBodyScroll_1["default"](sidebarShown);
+    var showSidebar = react_1.useCallback(function () {
+        setSidebarShown(true);
+    }, [setSidebarShown]);
+    var hideSidebar = react_1.useCallback(function () {
+        setSidebarShown(false);
+    }, [setSidebarShown]);
+    var onToggleChange = react_1.useCallback(function (e) { return (e.target.checked ? setDarkTheme() : setLightTheme()); }, [setLightTheme, setDarkTheme]);
+    var windowSize = useWindowSize_1["default"]();
+    react_1.useEffect(function () {
+        if (windowSize === useWindowSize_1.windowSizes.desktop) {
+            setSidebarShown(false);
+        }
+    }, [windowSize]);
+    var hasSearchNavbarItem = items.some(function (item) { return item.type === 'search'; });
+    var _g = splitNavItemsByPosition(items), leftItems = _g.leftItems, rightItems = _g.rightItems;
+    return (react_1["default"].createElement("nav", { ref: navbarRef, className: clsx_1["default"]('navbar', 'navbar--fixed-top', (_a = {
+                'navbar--dark': style === 'dark',
+                'navbar--primary': style === 'primary',
+                'navbar-sidebar--show': sidebarShown
+            },
+            _a[styles_module_css_1["default"].navbarHideable] = hideOnScroll,
+            _a[styles_module_css_1["default"].navbarHidden] = hideOnScroll && !isNavbarVisible,
+            _a)) },
+        react_1["default"].createElement("div", { className: "navbar__inner" },
+            react_1["default"].createElement("div", { className: "navbar__items" },
+                items != null && items.length !== 0 && (react_1["default"].createElement("button", { "aria-label": "Navigation bar toggle", className: "navbar__toggle", type: "button", tabIndex: 0, onClick: showSidebar, onKeyDown: showSidebar },
+                    react_1["default"].createElement(IconMenu_1["default"], null))),
+                react_1["default"].createElement(Logo_1["default"], { className: "navbar__brand", imageClassName: "navbar__logo", titleClassName: clsx_1["default"]('navbar__title') }),
+                leftItems.map(function (item, i) { return (react_1["default"].createElement(NavbarItem_1["default"], __assign({}, item, { key: i }))); })),
+            react_1["default"].createElement("div", { className: "navbar__items navbar__items--right" },
+                rightItems.map(function (item, i) { return (react_1["default"].createElement(NavbarItem_1["default"], __assign({}, item, { key: i }))); }),
+                react_1["default"].createElement(index_1["default"], { className: styles_module_css_1["default"].displayOnlyInLargeViewport }),
+                !disableColorModeSwitch && (react_1["default"].createElement(Toggle_1["default"], { className: styles_module_css_1["default"].displayOnlyInLargeViewport, "aria-label": "Dark mode toggle", checked: isDarkTheme, onChange: onToggleChange })),
+                !hasSearchNavbarItem && react_1["default"].createElement(SearchBar_1["default"], null))),
+        react_1["default"].createElement("div", { role: "presentation", className: "navbar-sidebar__backdrop", onClick: hideSidebar }),
+        react_1["default"].createElement("div", { className: "navbar-sidebar" },
+            react_1["default"].createElement("div", { className: "navbar-sidebar__brand" },
+                react_1["default"].createElement(Logo_1["default"], { className: "navbar__brand", imageClassName: "navbar__logo", titleClassName: "navbar__title", onClick: hideSidebar }),
+                !disableColorModeSwitch && sidebarShown && (react_1["default"].createElement(Toggle_1["default"], { "aria-label": "Dark mode toggle in sidebar", checked: isDarkTheme, onChange: onToggleChange }))),
+            react_1["default"].createElement("div", { className: "navbar-sidebar__items" },
+                react_1["default"].createElement("div", { className: "menu" },
+                    react_1["default"].createElement("ul", { className: "menu__list" }, items.map(function (item, i) { return (react_1["default"].createElement(NavbarItem_1["default"], __assign({ mobile: true }, item, { onClick: hideSidebar, key: i }))); })))))));
 }
-
-export default Navbar;
+exports["default"] = Navbar;

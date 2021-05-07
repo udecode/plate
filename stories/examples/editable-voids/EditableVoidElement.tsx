@@ -1,6 +1,36 @@
 import React, { useState } from 'react';
-import { SPRenderElementProps } from '@udecode/slate-plugins-core';
-import { Example } from '../../elements/basic-elements.stories';
+import {
+  createBasicElementPlugins,
+  createHistoryPlugin,
+  createReactPlugin,
+} from '@udecode/slate-plugins';
+import {
+  createExitBreakPlugin,
+  createSoftBreakPlugin,
+} from '@udecode/slate-plugins-break';
+import {
+  SlatePlugins,
+  SPRenderElementProps,
+} from '@udecode/slate-plugins-core';
+import { createResetNodePlugin } from '@udecode/slate-plugins-reset-node';
+import { components } from '../../../docs/src/theme/ReactLiveScope/index';
+import { initialValueBasicElements } from '../../config/initialValues';
+import {
+  editableProps,
+  options,
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
+} from '../../config/pluginOptions';
+
+const plugins = [
+  createReactPlugin(),
+  createHistoryPlugin(),
+  ...createBasicElementPlugins(),
+  createResetNodePlugin(optionsResetBlockTypePlugin),
+  createSoftBreakPlugin(optionsSoftBreakPlugin),
+  createExitBreakPlugin(optionsExitBreakPlugin),
+];
 
 export const EditableVoidElement = ({
   attributes,
@@ -39,7 +69,14 @@ export const EditableVoidElement = ({
         Right
         <h4>Tell us about yourself:</h4>
         <div style={{ padding: '20px', border: '2px solid #ddd' }}>
-          <Example />
+          <SlatePlugins
+            id="editable-void-basic-elements"
+            plugins={plugins}
+            components={components}
+            options={options}
+            editableProps={editableProps}
+            initialValue={initialValueBasicElements}
+          />
         </div>
       </div>
       {children}

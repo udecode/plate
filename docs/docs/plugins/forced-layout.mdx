@@ -1,0 +1,30 @@
+---
+slug: /plugins/forced-layout
+title: Forced Layout
+---
+
+- `createNormalizeTypesPlugin`
+- `createTrailingBlockPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+    createNormalizeTypesPlugin({
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    }),
+  ];
+
+  return (
+    <SlatePlugins
+      id="forced-layout"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueForcedLayout}
+    />
+  );
+}
+```

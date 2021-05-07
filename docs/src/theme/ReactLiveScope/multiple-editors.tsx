@@ -12,7 +12,19 @@ import {
   SlatePlugins,
   TNode,
 } from '@udecode/slate-plugins';
+import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
 import styled from 'styled-components';
+import { createExitBreakPlugin } from '../../../../packages/break/src/exit-break/createExitBreakPlugin';
+import { createSoftBreakPlugin } from '../../../../packages/break/src/soft-break/createSoftBreakPlugin';
+import { createResetNodePlugin } from '../../../../packages/reset-node/src/createResetNodePlugin';
+import { initialValueBasicElements } from '../../../../stories/config/initialValues';
+import {
+  editableProps,
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
+} from '../../../../stories/config/pluginOptions';
+import { ToolbarButtonsBasicElements } from '../../../../stories/config/Toolbars';
 
 const components = createSlatePluginsComponents();
 const options = createSlatePluginsOptions();
@@ -46,23 +58,28 @@ const WrapperEditor = styled.div`
   padding: 16px;
 `;
 
-export const MultipleEditor = ({
-  id,
-  initialValue,
-  plugins,
-}: {
-  id?: string;
-  initialValue?: TNode[];
-  plugins?: SlatePlugin[];
-}) => (
-  <WrapperEditor>
-    <SlatePlugins
-      id={id}
-      plugins={plugins}
-      components={components}
-      options={options}
-      // editableProps={editableProps}
-      initialValue={initialValue}
-    />
-  </WrapperEditor>
-);
+export const BasicElements = () => {
+  const plugins = [
+    // ...pluginsCore,
+    ...createBasicElementPlugins(),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="basic-elements"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasicElements}
+      />
+    </>
+  );
+};

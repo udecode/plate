@@ -22,7 +22,6 @@ export const useEditableProps = ({
       ...(_plugins ?? []),
       {
         onFocus: () => () => {
-          console.log('FOCUS', id);
           setEventEditorId('focus', id);
         },
         onBlur: () => () => {

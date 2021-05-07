@@ -1,4 +1,10 @@
 {
   "extends": "@tsconfig/docusaurus/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
+    }
+  },
   "include": ["src", "../stories/config"]
 }

@@ -1,0 +1,35 @@
+---
+slug: /plugins/link
+title: Link
+---
+
+### `createLinkPlugin`
+
+A link is an inline element:
+- default `type` is `'a'`
+- `url` is the url of the link.
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createLinkPlugin()
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarLink icon={<Link />} />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="link"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueLinks}
+      />
+    </>
+  );
+}
+```

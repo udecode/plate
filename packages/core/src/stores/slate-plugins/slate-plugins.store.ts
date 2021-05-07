@@ -10,6 +10,10 @@ export const slatePluginsStore = createVanillaStore<SlatePluginsStates>(
   () => ({})
 );
 
+// export const slatePluginsAtom = atomWithStore(slatePluginsStore);
+
+// const factory = () => atom<SlatePluginsState>({});
+
 /**
  * Slate plugins store.
  * @see zustand store

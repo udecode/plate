@@ -1,0 +1,32 @@
+---
+slug: /plugins/image
+title: Image
+---
+
+### `createImagePlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createImagePlugin(),
+    createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarImage icon={<Image />} />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="image"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueImages}
+      />
+    </>
+  );
+}
+```

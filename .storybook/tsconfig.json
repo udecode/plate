@@ -3,7 +3,69 @@
   "compilerOptions": {
     "noEmit": false,
     "paths": {
-      "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
+      "@udecode/slate-plugins": ["./packages/slate-plugins/src"],
+      "@udecode/slate-plugins-common": ["packages/common/src"],
+      "@udecode/slate-plugins-core": ["packages/core/src"],
+      "@udecode/slate-plugins-basic-elements": [
+        "packages/elements/basic-elements/src"
+      ],
+      "@udecode/slate-plugins-alignment": ["packages/elements/alignment/src"],
+      "@udecode/slate-plugins-alignment-ui": [
+        "packages/elements/alignment-ui/src"
+      ],
+      "@udecode/slate-plugins-block-quote": [
+        "packages/elements/block-quote/src"
+      ],
+      "@udecode/slate-plugins-block-quote-ui": [
+        "packages/elements/block-quote-ui/src"
+      ],
+      "@udecode/slate-plugins-code-block": ["packages/elements/code-block/src"],
+      "@udecode/slate-plugins-code-block-ui": [
+        "packages/elements/code-block-ui/src"
+      ],
+      "@udecode/slate-plugins-heading": ["packages/elements/heading/src"],
+      "@udecode/slate-plugins-image": ["packages/elements/image/src"],
+      "@udecode/slate-plugins-image-ui": ["packages/elements/image-ui/src"],
+      "@udecode/slate-plugins-link": ["packages/elements/link/src"],
+      "@udecode/slate-plugins-link-ui": ["packages/elements/link-ui/src"],
+      "@udecode/slate-plugins-list": ["packages/elements/list/src"],
+      "@udecode/slate-plugins-list-ui": ["packages/elements/list-ui/src"],
+      "@udecode/slate-plugins-media-embed": [
+        "packages/elements/media-embed/src"
+      ],
+      "@udecode/slate-plugins-media-embed-ui": [
+        "packages/elements/media-embed-ui/src"
+      ],
+      "@udecode/slate-plugins-mention": ["packages/elements/mention/src"],
+      "@udecode/slate-plugins-mention-ui": ["packages/elements/mention-ui/src"],
+      "@udecode/slate-plugins-paragraph": ["packages/elements/paragraph/src"],
+      "@udecode/slate-plugins-table": ["packages/elements/table/src"],
+      "@udecode/slate-plugins-table-ui": ["packages/elements/table-ui/src"],
+      "@udecode/slate-plugins-basic-marks": ["packages/marks/basic-marks/src"],
+      "@udecode/slate-plugins-highlight": ["packages/marks/highlight/src"],
+      "@udecode/slate-plugins-kbd": ["packages/marks/kbd/src"],
+      "@udecode/slate-plugins-html-serializer": [
+        "packages/serializers/html-serializer/src"
+      ],
+      "@udecode/slate-plugins-md-serializer": [
+        "packages/serializers/md-serializer/src"
+      ],
+      "@udecode/slate-plugins-slate-plugins": ["packages/slate-plugins/src"],
+      "@udecode/slate-plugins-autoformat": ["packages/autoformat/src"],
+      "@udecode/slate-plugins-break": ["packages/break/src"],
+      "@udecode/slate-plugins-dnd": ["packages/dnd/src"],
+      "@udecode/slate-plugins-find-replace": ["packages/find-replace/src"],
+      "@udecode/slate-plugins-find-replace-ui": [
+        "packages/find-replace-ui/src"
+      ],
+      "@udecode/slate-plugins-node-id": ["packages/node-id/src"],
+      "@udecode/slate-plugins-normalizers": ["packages/normalizers/src"],
+      "@udecode/slate-plugins-reset-node": ["packages/reset-node/src"],
+      "@udecode/slate-plugins-select": ["packages/select/src"],
+      "@udecode/slate-plugins-trailing-block": ["packages/trailing-block/src"],
+      "@udecode/slate-plugins-toolbar": ["packages/ui/toolbar/src"],
+      "@udecode/slate-plugins-ui-fluent": ["packages/ui/fluent/src"],
+      "@udecode/slate-plugins-test-utils": ["packages/test-utils/src"]
     }
   },
   "exclude": ["**/node_modules"]

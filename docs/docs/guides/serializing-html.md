@@ -3,8 +3,63 @@ slug: /serializing-html
 title: HTML
 ---
 
-_TODO_
-
 ## Serializer
 
+Use `serializeHTMLFromNodes`:
+
+```ts live
+() => {
+  const nodes = [
+    ...initialValueBasic
+  ];
+  
+  const editor = createEditorPlugins();
+
+  const html = serializeHTMLFromNodes(editor, {
+    plugins: pluginsBasic,
+    nodes,
+  })
+
+  return (
+    <HighlightHTML code={html} />
+  );
+}
+```
+
 ## Deserializer
+
+```ts live
+() => {
+  const { plugin: mentionPlugin } = useMentionPlugin();
+
+  const plugins = useMemo(() => {
+    const _plugins = [
+      ...pluginsBasic,
+      createImagePlugin(),
+      createLinkPlugin(),
+      createListPlugin(),
+      createTablePlugin(),
+      createTodoListPlugin(),
+      createMediaEmbedPlugin(),
+      createHighlightPlugin(),
+      createSoftBreakPlugin(optionsSoftBreakPlugin),
+      mentionPlugin,
+    ];
+
+    _plugins.push(createDeserializeHTMLPlugin({ plugins }));
+
+    return _plugins;
+  }, [mentionPlugin]);
+
+  return (
+    <SlatePlugins
+      id="deserialize-html"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePasteHtml}
+    />
+  );
+}
+```

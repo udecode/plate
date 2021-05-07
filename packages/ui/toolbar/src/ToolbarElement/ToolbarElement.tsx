@@ -19,7 +19,6 @@ export const ToolbarElement = ({
   inactiveType,
   ...props
 }: ToolbarElementProps) => {
-  console.log(useEventEditorId('focus'));
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (

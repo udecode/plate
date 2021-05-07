@@ -21,13 +21,8 @@ import {
 
 export const ToolbarLink = (props: ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
-  // console.log(eventEditorStore.getState());
-  // console.log(useEventEditorId('focus'));
-  // console.log(editor);
-  console.log(useEventEditorId('focus'));
-  console.log(editor);
+
   const type = getSlatePluginType(editor, ELEMENT_LINK);
-  // console.log(type);
   const isLink = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (

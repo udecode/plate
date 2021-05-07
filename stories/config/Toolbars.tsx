@@ -1,32 +1,36 @@
-import {CodeAlt} from '@styled-icons/boxicons-regular/CodeAlt';
-import {CodeBlock} from '@styled-icons/boxicons-regular/CodeBlock';
-import {Subscript} from '@styled-icons/foundation/Subscript';
-import {Superscript} from '@styled-icons/foundation/Superscript';
-import {BorderAll} from '@styled-icons/material/BorderAll';
-import {BorderBottom} from '@styled-icons/material/BorderBottom';
-import {BorderClear} from '@styled-icons/material/BorderClear';
-import {BorderLeft} from '@styled-icons/material/BorderLeft';
-import {BorderRight} from '@styled-icons/material/BorderRight';
-import {BorderTop} from '@styled-icons/material/BorderTop';
-import {FormatAlignCenter} from '@styled-icons/material/FormatAlignCenter';
-import {FormatAlignJustify} from '@styled-icons/material/FormatAlignJustify';
-import {FormatAlignLeft} from '@styled-icons/material/FormatAlignLeft';
-import {FormatAlignRight} from '@styled-icons/material/FormatAlignRight';
-import {FormatBold} from '@styled-icons/material/FormatBold';
-import {FormatItalic} from '@styled-icons/material/FormatItalic';
-import {FormatListBulleted} from '@styled-icons/material/FormatListBulleted';
-import {FormatListNumbered} from '@styled-icons/material/FormatListNumbered';
-import {FormatQuote} from '@styled-icons/material/FormatQuote';
-import {FormatStrikethrough} from '@styled-icons/material/FormatStrikethrough';
-import {FormatUnderlined} from '@styled-icons/material/FormatUnderlined';
-import {Keyboard} from '@styled-icons/material/Keyboard';
-import {Looks3} from '@styled-icons/material/Looks3';
-import {Looks4} from '@styled-icons/material/Looks4';
-import {Looks5} from '@styled-icons/material/Looks5';
-import {Looks6} from '@styled-icons/material/Looks6';
-import {LooksOne} from '@styled-icons/material/LooksOne';
-import {LooksTwo} from '@styled-icons/material/LooksTwo';
-import {TippyProps} from '@tippyjs/react';
+import 'tippy.js/animations/scale.css';
+import 'tippy.js/dist/tippy.css';
+import React from 'react';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
+import { Subscript } from '@styled-icons/foundation/Subscript';
+import { Superscript } from '@styled-icons/foundation/Superscript';
+import { BorderAll } from '@styled-icons/material/BorderAll';
+import { BorderBottom } from '@styled-icons/material/BorderBottom';
+import { BorderClear } from '@styled-icons/material/BorderClear';
+import { BorderLeft } from '@styled-icons/material/BorderLeft';
+import { BorderRight } from '@styled-icons/material/BorderRight';
+import { BorderTop } from '@styled-icons/material/BorderTop';
+import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
+import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
+import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
+import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
+import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatItalic } from '@styled-icons/material/FormatItalic';
+import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
+import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
+import { FormatQuote } from '@styled-icons/material/FormatQuote';
+import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
+import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
+import { Keyboard } from '@styled-icons/material/Keyboard';
+import { Looks3 } from '@styled-icons/material/Looks3';
+import { Looks4 } from '@styled-icons/material/Looks4';
+import { Looks5 } from '@styled-icons/material/Looks5';
+import { Looks6 } from '@styled-icons/material/Looks6';
+import { LooksOne } from '@styled-icons/material/LooksOne';
+import { LooksTwo } from '@styled-icons/material/LooksTwo';
+import { TippyProps } from '@tippyjs/react';
 import {
   addColumn,
   addRow,
@@ -63,12 +67,10 @@ import {
   ToolbarTable,
   useStoreEditorRef,
 } from '@udecode/slate-plugins';
-import {ELEMENT_CODE_BLOCK} from '@udecode/slate-plugins-code-block';
-import {useEventEditorId} from '@udecode/slate-plugins-core';
-import React from 'react';
-import 'tippy.js/animations/scale.css';
-import 'tippy.js/dist/tippy.css';
-import {ToolbarCodeBlock} from '../../packages/elements/code-block-ui/src/ToolbarCodeBlock/ToolbarCodeBlock';
+import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-code-block';
+import { ToolbarCodeBlock } from '@udecode/slate-plugins-code-block-ui';
+import { useEventEditorId } from '@udecode/slate-plugins-core';
+import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -176,10 +178,6 @@ export const ToolbarButtonsBasicMarks = () => {
         icon={<CodeAlt />}
       />
       <ToolbarMark
-        type={getSlatePluginType(editor, MARK_KBD)}
-        icon={<Keyboard />}
-      />
-      <ToolbarMark
         type={getSlatePluginType(editor, MARK_SUPERSCRIPT)}
         clear={getSlatePluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
@@ -190,6 +188,28 @@ export const ToolbarButtonsBasicMarks = () => {
         icon={<Subscript />}
       />
     </>
+  );
+};
+
+export const ToolbarKbd = () => {
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+  return (
+    <ToolbarMark
+      type={getSlatePluginType(editor, MARK_KBD)}
+      icon={<Keyboard />}
+    />
+  );
+};
+
+export const ToolbarHighlight = () => {
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+  return (
+    <ToolbarMark
+      type={getSlatePluginType(editor, MARK_HIGHLIGHT)}
+      icon={<Highlight />}
+    />
   );
 };
 

@@ -430,29 +430,22 @@ export const initialValueBasicMarks: any = [
   createElement('This is an inline code.', { mark: MARK_CODE }),
 ];
 
-export const initialValueMarks = [
-  ...initialValueBasicMarks,
+export const initialValueKbd = [
   {
     type: ELEMENT_PARAGRAPH,
     children: [
-      { text: 'These are ' },
-      { text: 'a subscript', [MARK_SUBSCRIPT]: true },
-      { text: ' and ' },
-      { text: 'a superscript', [MARK_SUPERSCRIPT]: true },
-      { text: '.' },
-    ],
-  },
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      { text: 'You can also press ' },
-      { text: 'Super + B', [MARK_KBD]: true },
+      { text: 'Press ' },
+      { text: '⌘+B', [MARK_KBD]: true },
       { text: ' to mark selected text bold or ' },
-      { text: 'Super + I', [MARK_KBD]: true },
+      { text: '⌘+I', [MARK_KBD]: true },
       { text: ' to mark it italic.' },
     ],
   },
-  createElement('There are many other keyboard shortcuts.'),
+];
+
+export const initialValueMarks = [
+  ...initialValueBasicMarks,
+  ...initialValueKbd,
 ];
 
 export const initialValueHighlight: any = [

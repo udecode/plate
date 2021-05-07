@@ -1,0 +1,27 @@
+---
+slug: /components/dnd
+title: Drag & Drop
+---
+
+```ts live
+() => {
+  let componentsDnd = withStyledPlaceHolders(components);
+  componentsDnd = withStyledDraggables(components);
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="dnd"
+        plugins={pluginsBasic}
+        components={componentsDnd}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasic}
+      />
+    </DndProvider>
+  );
+}
+```
