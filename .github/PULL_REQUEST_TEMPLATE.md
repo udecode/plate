@@ -22,11 +22,7 @@ new logic works, and why you decided to solve it the way you did.
 - [x] The tests pass with `yarn test`.
 - [x] The linter passes with `yarn lint`. (Fix errors with `yarn lint
       --fix`.)
-- [x] The relevant examples still work: (Run examples with `yarn
-      storybook`.)
-- [ ] You've
-      [added a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)
-      if changing functionality. (Add one with `yarn changeset add`.)
+- [x] The relevant examples still work: (Run examples with `yarn docs`.)
 
 <!--
 
