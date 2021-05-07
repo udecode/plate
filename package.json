@@ -12,6 +12,7 @@
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",
+    "docs": "cd docs && yarn start",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"{packages/**/src,docs/src}/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",

@@ -7,7 +7,7 @@ import { input, output } from './onMouseDown.fixture';
 
 it('should render', () => {
   const editor = input;
-  jest.spyOn(core, 'useStoreEditorRef').mockReturnValue(editor);
+  jest.spyOn(core, 'useStoreEditorState').mockReturnValue(editor as any);
 
   const { getByTestId } = render(
     <ToolbarElement type={ELEMENT_H1} icon={null} />
