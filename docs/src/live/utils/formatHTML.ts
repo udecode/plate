@@ -5,11 +5,11 @@ export function formatHTML(html) {
   const pre = [];
 
   html = html
-    .replace(new RegExp('<pre>((.|\\t|\\n|\\r)+)?</pre>'), function (x) {
+    .replace(new RegExp('<pre>((.|\\t|\\n|\\r)+)?</pre>'), (x) => {
       pre.push({ indent: '', tag: x });
       return `<--TEMPPRE${i++}/-->`;
     })
-    .replace(new RegExp('<[^<>]+>[^<]?', 'g'), function (x) {
+    .replace(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
       let ret;
       const tag = /<\/?([^\s/>]+)/.exec(x)[1];
       const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);

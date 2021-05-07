@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
+import * as core from '@udecode/slate-plugins-core';
 import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
 import { createImagePlugin } from '@udecode/slate-plugins-image';
 import { SlatePlugins } from '../../../../core/src/components/SlatePlugins';
 import { createSlatePluginsOptions } from '../../../../slate-plugins/src/utils/createSlatePluginsOptions';
 import { ToolbarImage } from './ToolbarImage';
 import { input1, input2, output2 } from './ToolbarImage.fixtures';
+
+const plugins = [createImagePlugin()];
 
 describe('ToolbarImage', () => {
   describe('when with url', () => {
@@ -36,11 +39,7 @@ describe('ToolbarImage', () => {
     // });
 
     it('should invoke getUrlImage when provided', () => {
-      const editor = input1;
-
-      // jest
-      //   .spyOn(SlatePlugins, 'useTSlateStatic')
-      //   .mockReturnValue(editor as any);
+      jest.spyOn(core, 'useStoreEditorRef').mockReturnValue(input1);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -66,16 +65,12 @@ describe('ToolbarImage', () => {
 
   describe('when without url', () => {
     it('should render', () => {
-      const editor = input2;
-
-      // jest
-      //   .spyOn(SlatePlugins, 'useTSlateStatic')
-      //   .mockReturnValue(editor as any);
+      jest.spyOn(core, 'useStoreEditorRef').mockReturnValue(input2);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(
         <SlatePlugins
-          initialValue={editor.children}
+          initialValue={input2.children}
           plugins={[createImagePlugin()]}
           options={createSlatePluginsOptions()}
         >
@@ -86,7 +81,7 @@ describe('ToolbarImage', () => {
       const element = getByTestId('ToolbarButton');
       fireEvent.mouseDown(element);
 
-      expect(editor.children).toEqual(output2.children);
+      expect(input2.children).toEqual(output2.children);
     });
   });
 });

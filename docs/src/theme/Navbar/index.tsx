@@ -16,28 +16,7 @@ import Logo from '@theme/Logo';
 import NavbarItem from '@theme/NavbarItem';
 import SearchBar from '@theme/SearchBar';
 import Toggle from '@theme/Toggle';
-import {
-  MARK_CODE,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-} from '@udecode/slate-plugins-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-code-block';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/slate-plugins-heading';
-import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
-import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
-import { ELEMENT_OL } from '@udecode/slate-plugins-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
-import { ELEMENT_TD, ELEMENT_TH } from '@udecode/slate-plugins-table';
 import clsx from 'clsx';
-import { ELEMENT_LIC } from '../../../../packages/elements/list/src/defaults';
 import QuickSocialLinksView from './components/QuickSocialLinksView/index';
 import styles from './styles.module.css';
 

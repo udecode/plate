@@ -3,8 +3,7 @@ import useMergedRef from '@react-hook/merged-ref';
 import {
   getPreventDefaultHandler,
   PortalBody,
-  useEventEditorId,
-  useStoreEditorState,
+  useEditorState,
 } from '@udecode/slate-plugins';
 import {
   ComboboxItem,
@@ -25,7 +24,8 @@ export const Combobox = ({ onSelectItem, onRenderItem }: ComboboxProps) => {
   const isOpen = useComboboxIsOpen();
 
   const ref = React.useRef<any>(null);
-  const editor = useStoreEditorState(useEventEditorId('focus'));
+  const editor = useEditorState();
+  // const _editor = useStoreEditorState(useEventEditorId('focus'));
 
   useEffect(() => {
     editor && setElementPositionByRange(editor, { ref, at });

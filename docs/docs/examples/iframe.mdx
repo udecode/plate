@@ -1,0 +1,28 @@
+---
+slug: /examples/iframe
+title: IFrame
+---
+
+```ts live
+() => {
+  const editor = useStoreEditorRef('iframe');
+
+  const componentsIFrame = {
+    ...components,
+    [EDITABLE_VOID]: EditableVoidElement,
+  };
+
+  return (
+    <IFrame>
+      <SlatePlugins
+        id="iframe"
+        plugins={pluginsBasic}
+        components={componentsIFrame}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueIframe}
+      />
+    </IFrame>
+  );
+}
+```

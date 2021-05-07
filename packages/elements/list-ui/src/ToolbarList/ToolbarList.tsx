@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
 import {
-  useEditorState,
   useEventEditorId,
   useStoreEditorState,
 } from '@udecode/slate-plugins-core';

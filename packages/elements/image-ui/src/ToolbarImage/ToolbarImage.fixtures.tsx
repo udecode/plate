@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
 
 jsx;
 
@@ -33,7 +32,7 @@ export const input2 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 export const output2 = (
   <editor>

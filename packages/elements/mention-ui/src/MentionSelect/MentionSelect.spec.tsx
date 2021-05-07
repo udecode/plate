@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
+import * as core from '@udecode/slate-plugins-core';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
-import * as SlateReact from 'slate-react';
-import { TEditor } from '../../../../core/src/types/TEditor';
 import { mentionables } from '../../../mention/src/__tests__/useMention/onKeyDown/mentionables.fixture';
 import { MentionSelect } from './MentionSelect';
 
 describe('when MentionSelect', () => {
   describe('when at is null', () => {
     it('should render null', () => {
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(null as any);
+      jest.spyOn(core, 'useStoreEditorRef').mockReturnValue(undefined);
 
       const { queryByTestId } = render(
         <MentionSelect
@@ -29,7 +29,7 @@ describe('when MentionSelect', () => {
 
   describe('when at is the selection', () => {
     it('should render', () => {
-      const editor = createEditor() as TEditor;
+      const editor = createEditor() as SPEditor;
       editor.children = [
         {
           type: ELEMENT_PARAGRAPH,
@@ -46,7 +46,7 @@ describe('when MentionSelect', () => {
         focus: { path: [0, 0], offset: 0 },
       };
 
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(null as any);
+      jest.spyOn(core, 'useStoreEditorRef').mockReturnValue(editor);
       jest.spyOn(ReactEditor, 'toDOMRange').mockReturnValue({
         getBoundingClientRect: () => ({
           top: 1,

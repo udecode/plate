@@ -21,6 +21,7 @@ export const getTagElementStyles = ({
         lineHeight: '1.2',
 
         outline: selectedFocused ? 'rgb(0, 120, 212) auto 1px' : undefined,
+
         selectors: {
           ':hover .slate-TagElement-link': {
             // color: selectedFocused ? '#40a9ff !important' : undefined,

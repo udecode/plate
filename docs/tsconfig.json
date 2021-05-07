@@ -6,5 +6,7 @@
       "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
     }
   },
-  "include": ["src", "../stories/config"]
+  "include": ["src",
+    "./src/live/config"
+  ]
 }

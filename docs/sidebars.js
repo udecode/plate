@@ -26,15 +26,10 @@ module.exports = {
         'guides/configuration',
         'guides/creating-plugins',
         'guides/multiple-editors',
-        {
-          type: 'category',
-          label: 'Serializing',
-          items: ['guides/serializing-html', 'guides/serializing-md'],
-          collapsed: false,
-        },
       ],
       collapsed: false,
     },
+    'playground',
     {
       type: 'category',
       label: 'Plugins',
@@ -62,6 +57,12 @@ module.exports = {
         },
         {
           type: 'category',
+          label: 'Decorators',
+          items: ['plugins/find-replace'],
+          collapsed: false,
+        },
+        {
+          type: 'category',
           label: 'Utils',
           items: [
             'plugins/autoformat',
@@ -73,8 +74,8 @@ module.exports = {
         },
         {
           type: 'category',
-          label: 'Decorators',
-          items: ['plugins/find-replace'],
+          label: 'Serializing',
+          items: ['plugins/serializing-html', 'plugins/serializing-md'],
           collapsed: false,
         },
       ],
@@ -89,7 +90,14 @@ module.exports = {
     {
       type: 'category',
       label: 'Examples',
-      items: ['examples/editable-voids'],
+      items: [
+        'examples/introduction',
+        'examples/combobox',
+        'examples/editable-voids',
+        'examples/huge-document',
+        'examples/iframe',
+        'examples/preview-markdown',
+      ],
       collapsed: false,
     },
     // {

@@ -5,6 +5,11 @@ title: Editable Voids
 
 ```ts live
 () => {
+  const componentsEditableVoids = {
+    ...components,
+    [EDITABLE_VOID]: EditableVoidElement,
+  }
+
   const plugins = [
     ...pluginsBasic,
     createEditableVoidPlugin(),
@@ -14,7 +19,7 @@ title: Editable Voids
     <SlatePlugins
       id="editable-voids"
       plugins={plugins}
-      components={components}
+      components={componentsEditableVoids}
       options={options}
       editableProps={editableProps}
       initialValue={initialValueVoids}

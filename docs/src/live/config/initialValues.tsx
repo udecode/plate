@@ -27,8 +27,6 @@ import {
   MARK_ITALIC,
   MARK_KBD,
   MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   TDescendant,
 } from '@udecode/slate-plugins';
@@ -961,19 +959,23 @@ export const initialValueCombobox: any = [
 
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
-const hugeDocument: TDescendant[] = [];
 
-for (let h = 0; h < HEADINGS; h++) {
-  hugeDocument.push({
-    type: ELEMENT_H1,
-    children: [{ text: faker.lorem.sentence() }],
-  });
+export const getHugeDocument = () => {
+  const hugeDocument: TDescendant[] = [];
 
-  for (let p = 0; p < PARAGRAPHS; p++) {
+  for (let h = 0; h < HEADINGS; h++) {
     hugeDocument.push({
-      type: ELEMENT_PARAGRAPH,
-      children: [{ text: faker.lorem.paragraph() }],
+      type: ELEMENT_H1,
+      children: [{ text: faker.lorem.sentence() }],
     });
+
+    for (let p = 0; p < PARAGRAPHS; p++) {
+      hugeDocument.push({
+        type: ELEMENT_PARAGRAPH,
+        children: [{ text: faker.lorem.paragraph() }],
+      });
+    }
   }
-}
-export const initialValueHugeDocument: any = hugeDocument;
+
+  return hugeDocument;
+};

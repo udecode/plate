@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import { useEditorState } from '@udecode/slate-plugins-core';
+import {
+  useEventEditorId,
+  useStoreEditorRef,
+} from '@udecode/slate-plugins-core';
 import { MentionNodeData } from '@udecode/slate-plugins-mention';
 import {
   ClassName,
@@ -33,7 +36,7 @@ export const MentionSelectBase = ({
   });
 
   const ref: any = useRef();
-  const editor = useEditorState();
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
 
   useEffect(() => {
     if (editor && at && options.length > 0) {

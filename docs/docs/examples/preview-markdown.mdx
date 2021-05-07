@@ -1,0 +1,24 @@
+---
+slug: /examples/preview-markdown
+title: Preview Markdown
+---
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createPreviewPlugin(),
+  ];
+
+  return (
+    <SlatePlugins
+      id="editable-voids"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePreview}
+    />
+  );
+}
+```

@@ -1,0 +1,106 @@
+---
+slug: /playground
+title: Playground
+---
+
+The following playground uses most of the provided plugins.
+
+```ts live
+() => {
+  let defaultComponents = createSlatePluginsComponents({
+    [ELEMENT_MENTION]: withProps(MentionElement, {
+      renderLabel: renderMentionLabel,
+    }),
+  });
+  defaultComponents = withStyledPlaceHolders(defaultComponents);
+
+  const defaultOptions = createSlatePluginsOptions();
+
+  const Editor = ({
+    components = defaultComponents,
+    options = defaultOptions,
+  }) => {
+    const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
+    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
+      optionsMentionPlugin
+    );
+
+    const pluginsMemo = useMemo(() => {
+      const plugins = [
+        createReactPlugin(),
+        createHistoryPlugin(),
+        createParagraphPlugin(),
+        createBlockquotePlugin(),
+        createTodoListPlugin(),
+        createHeadingPlugin(),
+        createImagePlugin(),
+        createLinkPlugin(),
+        createListPlugin(),
+        createTablePlugin(),
+        createMediaEmbedPlugin(),
+        createCodeBlockPlugin(),
+        createAlignPlugin(),
+        createBoldPlugin(),
+        createCodePlugin(),
+        createItalicPlugin(),
+        createHighlightPlugin(),
+        createUnderlinePlugin(),
+        createStrikethroughPlugin(),
+        createSubscriptPlugin(),
+        createSuperscriptPlugin(),
+        createKbdPlugin(),
+        createNodeIdPlugin(),
+        createAutoformatPlugin(optionsAutoformat),
+        createResetNodePlugin(optionsResetBlockTypePlugin),
+        createSoftBreakPlugin(optionsSoftBreakPlugin),
+        createExitBreakPlugin(optionsExitBreakPlugin),
+        createNormalizeTypesPlugin({
+          rules: [{ path: [0, 0], strictType: ELEMENT_H1 }],
+        }),
+        createTrailingBlockPlugin({
+          type: ELEMENT_PARAGRAPH,
+          level: 1,
+        }),
+        createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
+        mentionPlugin,
+        searchHighlightPlugin,
+      ];
+
+      plugins.push(createDeserializeHTMLPlugin({ plugins }));
+
+      return plugins;
+    }, [mentionPlugin, options, searchHighlightPlugin]);
+
+    return (
+      <SlatePlugins
+        id="playground"
+        plugins={pluginsMemo}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValuePlayground}
+      >
+        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+        <HeadingToolbar>
+          <ToolbarButtonsBasicElements />
+          <ToolbarButtonsList />
+          <ToolbarButtonsBasicMarks />
+          <ToolbarButtonsAlign />
+          <ToolbarLink icon={<Link />} />
+          <ToolbarImage icon={<Image />} />
+          <ToolbarButtonsTable />
+        </HeadingToolbar>
+
+        <BallonToolbarMarks />
+
+        <MentionSelect
+          {...getMentionSelectProps()}
+          renderLabel={renderMentionLabel}
+        />
+      </SlatePlugins>
+    );
+  }
+
+  return <Editor />;
+}
+```

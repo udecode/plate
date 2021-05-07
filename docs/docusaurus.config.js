@@ -4,7 +4,7 @@ const githubOrgUrl = 'https://github.com/udecode';
 const projectName = 'slate-plugins';
 const githubUrl = `${githubOrgUrl}/${projectName}`;
 const domain = 'https://slate-plugins.udecode.io';
-const domainExamples = 'https://slate-plugins-next.udecode.io';
+const domainExamples = '/docs/examples/introduction';
 const domainAPI = 'https://slate-plugins-api.udecode.io/globals.html';
 const npmOrgUrl = 'https://www.npmjs.com/package/@udecode';
 

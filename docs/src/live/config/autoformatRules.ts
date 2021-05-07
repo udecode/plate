@@ -26,7 +26,7 @@ import {
   unwrapList,
   WithAutoformatOptions,
 } from '@udecode/slate-plugins';
-import { AutoformatRule } from '../../packages/autoformat/src/types';
+import { AutoformatRule } from '../../../../packages/autoformat/src/types';
 import { options } from './pluginOptions';
 
 const preFormat: AutoformatRule['preFormat'] = (editor) =>

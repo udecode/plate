@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../../stories/config/autoformatRules';
+import { optionsAutoformat } from '../../../../../../docs/src/live/config/autoformatRules';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;

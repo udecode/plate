@@ -13,7 +13,6 @@ import {
   SPRenderElementProps,
 } from '@udecode/slate-plugins-core';
 import { createResetNodePlugin } from '@udecode/slate-plugins-reset-node';
-import { components } from '../../../docs/src/theme/ReactLiveScope/index';
 import { initialValueBasicElements } from '../../config/initialValues';
 import {
   editableProps,
@@ -22,6 +21,7 @@ import {
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../../config/pluginOptions';
+import { components } from '../../live';
 
 const plugins = [
   createReactPlugin(),
