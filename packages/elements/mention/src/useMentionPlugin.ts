@@ -147,6 +147,7 @@ export const useMentionPlugin = ({
       () => ({
         at: targetRange,
         valueIndex,
+        setValueIndex,
         options: values,
         onClickMention: onAddMention,
       }),

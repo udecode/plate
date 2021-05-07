@@ -1,6 +1,13 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.27
+
+### Patch Changes
+
+- [#670](https://github.com/udecode/slate-plugins/pull/670) [`88d49713`](https://github.com/udecode/slate-plugins/commit/88d497138c2f8a1ce51af6910c5052b1ddf8dabc) Thanks [@ngfk](https://github.com/ngfk)! - unwrap and reset to default element when removing a list item (first element, non-nested)
+
 ## 1.0.0-next.26
+
 ### Patch Changes
 
 - Updated dependencies [[`201a7993`](https://github.com/udecode/slate-plugins/commit/201a799342ff88405e120182d8554e70b726beea)]:
