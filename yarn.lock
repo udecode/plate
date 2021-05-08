@@ -7653,11 +7653,6 @@ jest@^26.6.3:
     import-local "^3.0.2"
     jest-cli "^26.6.3"
 
-jotai@^0.16.3:
-  version "0.16.3"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-0.16.3.tgz#8ecd82cdf6a5b473fc37c919a48bdd7f5ecc87bf"
-  integrity sha512-qE8ONzak80Bfa8TssXVBv25hfQDL7G6HEH+nbc5N0w3CaJcqjKRRC5E0IUkWowMN3/NpPRfQXS4H+39AVrOfMg==
-
 js-cookie@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/js-cookie/-/js-cookie-2.2.1.tgz#69e106dc5d5806894562902aa5baec3744e9b2b8"
@@ -9169,11 +9164,6 @@ onetime@^5.1.0:
   integrity sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==
   dependencies:
     mimic-fn "^2.1.0"
-
-optics-ts@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/optics-ts/-/optics-ts-2.1.0.tgz#dcfd20297ff77ed169d326792733a71e933e801e"
-  integrity sha512-SJIwf16fwyo9+O+x303BifrWZ/H6Du/hS1zz4UERYt9BaRvxBID9XCYZlQ3c2aIrqeG64AxLcRy8VC/OYUkS9A==
 
 optionator@^0.8.1:
   version "0.8.3"

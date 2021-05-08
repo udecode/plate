@@ -8,6 +8,3 @@ export const useEventEditorId = (event: EditorEvent) =>
   useEventEditorStore((state) => {
     return state[event];
   });
-
-// export const useEventEditorId = (event: EditorEvent) =>
-//   useSnapshot(eventEditorStore)[event];

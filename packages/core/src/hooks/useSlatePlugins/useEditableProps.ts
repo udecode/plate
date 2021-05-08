@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { setEventEditorId } from '../../stores/event-editor/event-editor.actions';
+import { setEventEditorId } from '../../stores/event-editor/actions/setEventEditorId';
 import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
 import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
