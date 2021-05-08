@@ -3,4 +3,5 @@
  */
 
 export * from './EditablePlugins';
+export * from './EditorStateEffect';
 export * from './SlatePlugins';

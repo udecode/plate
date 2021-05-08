@@ -1,0 +1,31 @@
+---
+slug: /plugins/table
+title: Table
+---
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createTablePlugin(),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsTable />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="table"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueTables}
+      />
+    </>
+  );
+}
+```

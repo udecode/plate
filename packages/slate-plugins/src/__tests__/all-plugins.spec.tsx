@@ -9,16 +9,16 @@ import {
   SPEditor,
 } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
-import { optionsAutoformat } from '../../../../stories/config/autoformatRules';
-import { initialValuePlayground } from '../../../../stories/config/initialValues';
+import { optionsAutoformat } from '../../../../docs/src/live/config/autoformatRules';
+import { initialValuePlayground } from '../../../../docs/src/live/config/initialValues';
 import {
   editableProps,
   optionsExitBreakPlugin,
   optionsMentionPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
-} from '../../../../stories/config/pluginOptions';
-import { renderMentionLabel } from '../../../../stories/config/renderMentionLabel';
+} from '../../../../docs/src/live/config/pluginOptions';
+import { renderMentionLabel } from '../../../../docs/src/live/config/renderMentionLabel';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -26,7 +26,7 @@ import {
   ToolbarButtonsBasicMarks,
   ToolbarButtonsList,
   ToolbarButtonsTable,
-} from '../../../../stories/config/Toolbars';
+} from '../../../../docs/src/live/config/Toolbars';
 import { createAutoformatPlugin } from '../../../autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../break/src/soft-break/createSoftBreakPlugin';

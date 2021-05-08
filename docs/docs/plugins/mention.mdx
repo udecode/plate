@@ -1,0 +1,65 @@
+---
+slug: /plugins/mention
+title: Mention
+---
+
+### `useMentionPlugin`
+
+```ts live
+() => {
+  const components = createSlatePluginsComponents({
+    [ELEMENT_MENTION]: withProps(MentionElement, {
+      renderLabel: renderMentionLabel,
+    }),
+  });
+
+  const renderMentionLabel = (mentionable) => {
+    const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
+    if (!entry) return 'unknown option';
+    return `${entry.name} - ${entry.email}`;
+  };
+
+  const optionsMentionPlugin = {
+    mentionables: MENTIONABLES,
+    maxSuggestions: 10,
+    insertSpaceAfterMention: false,
+    trigger: '@',
+    mentionableFilter: (s) => (mentionable) =>
+      mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
+      mentionable.name.toLowerCase().includes(s.toLowerCase()),
+    mentionableSearchPattern: '\\S*',
+  };
+
+  const Editor = () => {
+    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
+      optionsMentionPlugin
+    );
+
+    const plugins = useMemo(
+      () => [
+        ...pluginsBasic,
+        mentionPlugin,
+      ],
+      [mentionPlugin]
+    );
+
+    return (
+      <SlatePlugins
+        id="mention"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueMentions}
+      >
+        <MentionSelect
+          {...getMentionSelectProps()}
+          renderLabel={renderMentionLabel}
+        />
+      </SlatePlugins>
+    );
+  };
+
+  return <Editor />
+}
+```

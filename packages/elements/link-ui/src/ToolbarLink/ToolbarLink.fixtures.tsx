@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /** @jsx jsx */
 import * as React from 'react';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
 
 jsx;
 
@@ -13,7 +12,7 @@ export const input1 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 export const output1 = (
   <editor>
@@ -36,7 +35,7 @@ export const input2 = ((
       </ha>
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 export const output2 = (
   <editor>
@@ -58,7 +57,7 @@ export const input3 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as SPEditor;
 
 export const output3 = (
   <editor>

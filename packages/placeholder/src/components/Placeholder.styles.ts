@@ -21,6 +21,7 @@ export const getPlaceholderStyles = ({
             display: 'block',
             position: 'absolute',
             opacity: 0.3,
+            cursor: 'text',
           },
         },
       },

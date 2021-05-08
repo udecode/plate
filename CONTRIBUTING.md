@@ -7,66 +7,6 @@ discussion to documentation to bugfixes to feature improvements.
 Please review this document to help to streamline the process and save
 everyone's precious time.
 
-This repo uses yarn workspaces, so you should install `yarn` as the
-package manager. See
-[installation guide](https://yarnpkg.com/en/docs/install).
-
-## Development Guide
-
-### Initial Setup
-
-If you run into trouble here, make sure your node, npm, and **_yarn_**
-are on the latest versions (yarn at least v1.3.2).
-
-1. `cd ~` (optional)
-2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
-3. `cd slate-plugins`
-
-#### Editing packages
-
-1. `yarn install`
-2. `yarn build`
-3. `yarn storybook:w`
-
-#### Editing stories
-
-1. `yarn install`
-2. `yarn build`
-3. `yarn storybook`
-
-Within the `stories` folder, you will find examples of plugins
-implementations.
-
-These show many of the options and plugins available. We highly
-encourage you to use these to develop/test contributions on.
-
-#### Editing docs
-
-1. `cd docs`
-2. `yarn install`
-3. `yarn start`
-
-## Release Guide
-
-This section is for maintainers who will be creating releases. It
-assumes:
-
-- yarn >= 1.3.2
-
-The current manual release sequence is as follows:
-
-- If you want to synchronize the exports, run `yarn cti` to
-  automatically update the index files.
-- Lint, test, build locally.
-- To create a release PR with GitHub Actions, comment a GitHub issue
-  starting by:
-  - `/create release patch` for patch version.
-  - `/create release minor` for minor version.
-- Once the release PR is created, set the changelog in the description
-  content as it will be published on release page.
-- If the checks pass, the owners of the repository can merge the release
-  PR so it will automatically release the new version on npm and GitHub.
-
 ## Issues
 
 No software is bug-free. So, if you got an issue, follow these steps:
@@ -80,7 +20,7 @@ No software is bug-free. So, if you got an issue, follow these steps:
   information:
   - Clear title (shorter is better).
   - Describe the issue in clear language.
-  - Share error logs, screenshots and etc.
+  - Share error logs, screenshots, etc.
   - To speed up the issue fixing process, send us the steps to reproduce
     or a sample repo with the issue you faced:
 
@@ -90,23 +30,39 @@ The best way to help figure out an issue you are having is to produce a
 minimal reproduction using
 [our CodeSandbox](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
 
-### Testing against `next`
 
-To test your project against the current latest version of
-`slate-plugins`, you can clone the repository and link it with
-`yarn`. Try following these steps:
+## Development Guide
 
-#### 1. Download the latest version of this project, and build it:
+### Initial Setup
+
+This repo uses yarn workspaces, so you should install `yarn` as the
+package manager. See
+[installation guide](https://yarnpkg.com/en/docs/install).
+
+1. `cd ~` (optional)
+2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
+3. `cd slate-plugins`
+4. `yarn`
+
+### Docs
+
+5. `cd docs`
+6. `yarn`
+7. `yarn start`
+
+### Editing
+
+#### Run Linter
+
+We use eslint as a linter for all code (including typescript code).
+
+All you have to run is:
 
 ```sh
-git clone https://github.com/udecode/slate-plugins.git
-cd slate-plugins
-yarn
+yarn lint --fix
 ```
 
-#### 2a. Run unit tests
-
-<!--You can use one of the example projects in `examples/` to develop on.-->
+#### Run unit tests
 
 This command will list all the suites and options for running tests.
 
@@ -120,63 +76,7 @@ to `yarn test` with specific parameters. Available modes include
 tests in watch mode, output code coverage, and run selected test suites
 serially in the current process.
 
-<!--You can use the `--update` flag to update snapshots or screenshots as-->
-<!--needed.-->
-
-<!--You can also pick suites from CLI. Suites available are listed below.-->
-
-<!--##### Core & Examples Tests-->
-
-<!--`yarn test --core`-->
-
-<!--This option executes tests from `<rootdir>/app/react`,-->
-<!--`<rootdir>/app/vue`, and `<rootdir>/lib`. Before the tests are run, the-->
-<!--project must be bootstrapped with core. You can accomplish this with-->
-<!--`yarn bootstrap --core`-->
-
-#### 2b. Run Linter
-
-We use eslint as a linter for all code (including typescript code).
-
-All you have to run is:
-
-```sh
-yarn lint --fix
-```
-
-It can be immensely helpful to get feedback in your editor, if you're
-using VSCode, you should install the `eslint` plugin and configure it
-with these settings:
-
-```json
-// .vscode/settings.json
-{
-  "eslint.packageManager": "yarn",
-  "eslint.options": {
-    "cache": true,
-    "cacheLocation": ".cache/eslint",
-    "extensions": [".js", ".jsx", ".mjs", ".json", ".ts", ".tsx"]
-  },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "eslint.alwaysShowStatus": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  }
-}
-```
-
-This should enable auto-fix for all source files, and give linting
-warnings and errors within your editor.
-
-If you're using WebStorm, you should enable `Run eslint --fix on save`
-in your settings.
-
-### Updating Tests
+#### Updating Tests
 
 Before any contributions are submitted in a PR, make sure to add or
 update meaningful tests. A PR that has failing tests will be regarded as
@@ -187,18 +87,6 @@ folder structure and naming convention, as defined below.
 ```sh
 # Proper naming convention and structure for test files
 +-- filename_to_test.spec.ts
-```
-
-Write your tests using the following convention (if only one case):
-
-```ts
-const input = 1;
-
-const output = 1;
-
-it("should be", () => {
-  expect(input).toEqual(output);
-});
 ```
 
 When using `slate-hyperscript`, include this at the top of the file:
@@ -226,7 +114,29 @@ const output = ((
     <hp>test</hp>
   </editor>
 ) as any) as Editor;
+
+it("should be", () => {
+  expect(input).toEqual(output);
+});
 ```
+
+## Release Guide
+
+This section is for anyone wanting a release. The current release
+sequence is as follows:
+
+- Commit your changes:
+  - If you want to synchronize the exports, run `yarn cti` to
+    automatically update the index files.
+  - Lint, test, build should pass.
+- Open a PR against `main` and
+  [add a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md).
+- To create a [snapshot release](https://github.com/atlassian/changesets/blob/main/docs/snapshot-releases.md), maintainers can comment a GitHub
+  issue starting with `/release:next`.
+- Merge the PR, triggering the bot to create a PR release.
+- Review the final changesets.
+- Merge the PR release, triggering the bot to release the changed
+  packages on npm.
 
 ## Pull Requests (PRs)
 

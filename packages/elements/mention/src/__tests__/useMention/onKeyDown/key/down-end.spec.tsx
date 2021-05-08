@@ -34,17 +34,17 @@ it('should go down then back to the first index', () => {
 
   act(() => {
     result.current.plugin.onKeyDown?.(editor)(
-      new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      new KeyboardEvent('keydown', { key: 'ArrowDown' }) as any
     );
   });
   act(() => {
     result.current.plugin.onKeyDown?.(editor)(
-      new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      new KeyboardEvent('keydown', { key: 'ArrowDown' }) as any
     );
   });
   act(() => {
     result.current.plugin.onKeyDown?.(editor)(
-      new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      new KeyboardEvent('keydown', { key: 'ArrowDown' }) as any
     );
   });
 

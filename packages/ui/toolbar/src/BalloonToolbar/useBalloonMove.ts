@@ -14,16 +14,16 @@ export const useBalloonMove = ({
   ref,
   direction,
 }: {
-  editor: TEditor;
+  editor?: TEditor;
   ref: any;
   direction: 'top' | 'bottom';
 }) => {
-  const selectionExpanded = isSelectionExpanded(editor);
-  const selectionText = getSelectionText(editor);
+  const selectionExpanded = editor && isSelectionExpanded(editor);
+  const selectionText = editor && getSelectionText(editor);
 
   useEffect(() => {
     ref.current &&
       selectionExpanded &&
       setPositionAtSelection(ref.current, direction);
-  }, [direction, selectionText.length, selectionExpanded, ref]);
+  }, [direction, selectionText?.length, selectionExpanded, ref]);
 };

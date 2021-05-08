@@ -2,12 +2,10 @@ import { useEffect } from 'react';
 import { createEditor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
-import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import {
-  useStoreEditor,
-  useStoreEditorEnabled,
-  useStoreSlatePlugins,
-} from '../../store/useSlatePluginsSelectors';
+import { useStoreEditorEnabled } from '../../stores/slate-plugins/selectors/useStoreEditorEnabled';
+import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
+import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
+import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
 import { SPEditor } from '../../types/SPEditor';
 import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
@@ -37,7 +35,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     setEnabled,
     clearState,
   } = useSlatePluginsActions<T>(id);
-  const storeEditor = useStoreEditor(id);
+  const storeEditor = useStoreEditorRef<T>(id);
   const storeEnabled = useStoreEditorEnabled(id);
   const storePlugins = useStoreSlatePlugins(id);
 
@@ -56,7 +54,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
       pluginKeys: [],
       value: [],
     });
-  }, [setInitialState]);
+  }, [id, setInitialState]);
 
   // Slate.value
   useEffect(() => {
@@ -88,7 +86,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     if (storeEditor && !storeEnabled) {
       setEditor(undefined);
     }
-  }, [storeEnabled, setEditor, storeEditor]);
+  }, [storeEnabled, storeEditor, setEditor]);
 
   // Slate.editor
   useEffect(() => {
@@ -112,8 +110,8 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     id,
     options,
     plugins,
-    setEditor,
     storeEnabled,
     storePlugins,
+    setEditor,
   ]);
 };

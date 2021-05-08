@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { KeyboardEvent, useCallback, useMemo, useState } from 'react';
 import {
   isCollapsed,
   isPointAtWordEnd,
@@ -7,8 +7,8 @@ import {
 import {
   getRenderElement,
   getSlatePluginTypes,
+  KeyboardHandler,
   OnChange,
-  OnKeyDown,
   SlatePlugin,
   SPEditor,
 } from '@udecode/slate-plugins-core';
@@ -63,8 +63,8 @@ export const useMentionPlugin = ({
     [targetRange, insertSpaceAfterMention, pluginKey]
   );
 
-  const onKeyDownMention: OnKeyDown = useCallback(
-    (editor) => (e) => {
+  const onKeyDownMention: KeyboardHandler = useCallback(
+    (editor) => (e: KeyboardEvent) => {
       if (targetRange) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();

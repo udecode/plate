@@ -55,11 +55,15 @@ export const withSlatePlugins = <T extends SPEditor = SPEditor>({
     editor.key = Math.random();
   }
 
-  // Plugins inline and void types
-  editor = pipe(editor, withInlineVoid({ plugins }));
+  const _plugins: SlatePlugin<T>[] = [
+    ...plugins,
+    {
+      withOverrides: withInlineVoid({ plugins }),
+    },
+  ];
 
   // Plugins withOverrides
-  const withOverrides = flatMapByKey(plugins, 'withOverrides');
+  const withOverrides = flatMapByKey(_plugins, 'withOverrides');
   editor = pipe(editor, ...withOverrides);
 
   return editor;

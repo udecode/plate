@@ -1,0 +1,41 @@
+---
+slug: /components/slate-plugins
+title: SlatePlugins
+---
+
+```ts live
+() => {
+  const id = 'slate-plugins';
+  const { setEnabled, resetEditor } = useSlatePluginsActions(id);
+  const enabled = useStoreEditorEnabled(id);
+
+  return (
+    <>
+      <button
+        className="cursor-pointer"
+        type="button"
+        onClick={() => {
+          setEnabled(!enabled);
+        }}
+      >
+        {enabled ? 'Disable editor' : 'Enable editor'}
+      </button>
+      <button
+        className="ml-2 cursor-pointer"
+        type="button"
+        onClick={() => {
+          resetEditor(id);
+        }}
+      >
+        Reset editor (history)
+      </button>
+      <p />
+      <SlatePlugins
+        id={id}
+        editableProps={editableProps}
+        initialValue={initialValuePlainText}
+      />
+    </>
+  );
+}
+```

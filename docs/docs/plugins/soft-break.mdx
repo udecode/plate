@@ -1,0 +1,31 @@
+---
+slug: /plugins/soft-break
+title: Soft Break
+---
+
+### `createSoftBreakPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createListPlugin(),
+    createTablePlugin(),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+  ];
+
+  return (
+    <SlatePlugins
+      id="soft-break"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueSoftBreak}
+    />
+  );
+}
+```
