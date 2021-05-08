@@ -2,6 +2,7 @@
 "@udecode/slate-plugins-core": minor
 ---
 
+changes:
 - `useEditableProps` (used by `SlatePlugins`):
   - new fields returned: all handler props from the plugins (if defined)
   - new core plugins with the following fields:

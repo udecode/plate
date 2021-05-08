@@ -2,6 +2,7 @@
 "@udecode/slate-plugins-core": major
 ---
 
+changes:
 - renamed:
   - `useTSlate` to `useEditorState`
   - `useTSlateStatic` to `useEditorRef`
