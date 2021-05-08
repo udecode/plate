@@ -32,6 +32,8 @@ import {
   useFindReplacePlugin,
   useMentionPlugin,
   useSlatePlugins,
+  useSlatePluginsActions,
+  useStoreEditorEnabled,
   withProps,
 } from '@udecode/slate-plugins';
 import {
@@ -106,6 +108,7 @@ import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
   initialValueAutoformat,
+  initialValueBalloonToolbar,
   initialValueBasicElements,
   initialValueBasicMarks,
   initialValueCombobox,
@@ -235,6 +238,8 @@ const ReactLiveScope = {
   ...React,
   initialValuePlayground,
   optionsMentionPlugin,
+  useSlatePluginsActions,
+  useStoreEditorEnabled,
   renderMentionLabel,
   useComboboxOnChange,
   Slate,
@@ -313,6 +318,7 @@ const ReactLiveScope = {
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
+  initialValueBalloonToolbar,
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_IMAGE,

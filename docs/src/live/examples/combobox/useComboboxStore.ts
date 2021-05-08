@@ -39,40 +39,34 @@ export type ComboboxState = {
   closeMenu: () => void;
 };
 
-export const useComboboxStore = createStore('combobox')<ComboboxState>(
-  (set) => ({
-    key: ComboboxKey.SLASH_COMMAND,
-    setKey: setStoreValue(set, 'key', 'setKey'),
+export const useComboboxStore = createStore()<ComboboxState>((set) => ({
+  key: ComboboxKey.SLASH_COMMAND,
+  setKey: setStoreValue(set, 'key', 'setKey'),
 
-    maxSuggestions: 10,
-    setMaxSuggestions: setStoreValue(
-      set,
-      'maxSuggestions',
-      'setMaxSuggestions'
-    ),
+  maxSuggestions: 10,
+  setMaxSuggestions: setStoreValue(set, 'maxSuggestions', 'setMaxSuggestions'),
 
-    search: '',
-    setSearch: setStoreValue(set, 'search', 'setSearch'),
+  search: '',
+  setSearch: setStoreValue(set, 'search', 'setSearch'),
 
-    items: [],
-    setItems: setStoreValue(set, 'items', 'setItems'),
+  items: [],
+  setItems: setStoreValue(set, 'items', 'setItems'),
 
-    targetRange: null,
-    setTargetRange: setStoreValue(set, 'targetRange', 'setTargetRange'),
+  targetRange: null,
+  setTargetRange: setStoreValue(set, 'targetRange', 'setTargetRange'),
 
-    itemIndex: 0,
-    setItemIndex: setStoreValue(set, 'itemIndex', 'setItemIndex'),
+  itemIndex: 0,
+  setItemIndex: setStoreValue(set, 'itemIndex', 'setItemIndex'),
 
-    combobox: null,
-    setCombobox: setStoreValue(set, 'combobox', 'setCombobox'),
+  combobox: null,
+  setCombobox: setStoreValue(set, 'combobox', 'setCombobox'),
 
-    closeMenu: () => {
-      set((state) => {
-        state.targetRange = null;
-        state.items = [];
-        state.search = '';
-        state.itemIndex = 0;
-      });
-    },
-  })
-);
+  closeMenu: () => {
+    set((state) => {
+      state.targetRange = null;
+      state.items = [];
+      state.search = '';
+      state.itemIndex = 0;
+    });
+  },
+}));

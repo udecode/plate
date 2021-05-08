@@ -391,7 +391,7 @@ export const initialValuePlainText: any = [
     children: [
       {
         text:
-          'This is editable plain text without plugins, just like a <textarea>!',
+          'This is editable plain text with react and history plugins, just like a <textarea>!',
       },
     ],
   },

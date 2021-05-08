@@ -84,7 +84,12 @@ module.exports = {
     {
       type: 'category',
       label: 'Components',
-      items: ['components/dnd', 'components/placeholder'],
+      items: [
+        'components/balloon-toolbar',
+        'components/dnd',
+        'components/placeholder',
+        'components/slate-plugins',
+      ],
       collapsed: false,
     },
     {
