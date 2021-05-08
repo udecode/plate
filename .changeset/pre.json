@@ -47,7 +47,11 @@
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
   "changesets": [
+    "core-major-eight-poems-travel",
+    "core-minor-eight-poems-travel",
+    "perfect-trainers-camp",
     "polite-goats-watch",
-    "wet-tables-rush"
+    "wet-tables-rush",
+    "yellow-tips-smile"
   ]
 }
