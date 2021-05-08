@@ -83,7 +83,6 @@ import {
   ELEMENT_TR,
 } from '@udecode/slate-plugins-table';
 import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
-import { prettyPrint } from 'html';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { createAlignPlugin } from '../../../packages/elements/alignment/src/createAlignPlugin';
@@ -377,7 +376,6 @@ const ReactLiveScope = {
   pluginsBasicMarks,
   pluginsCore,
   pluginsImage,
-  prettyPrint,
   Search,
   serializeHTMLFromNodes,
   SlatePlugins,
