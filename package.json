@@ -14,7 +14,7 @@
     "cti:clean": "lerna exec -- cti clean ./src",
     "docs": "cd docs && yarn start",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
-    "lint": "eslint \"{packages/**/src}/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
     "postversionup": "yarn commit-version && git push",
     "prebuild": "yarn clean",
     "prerelease": "yarn build && yarn test && yarn lint",

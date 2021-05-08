@@ -1,4 +1,3 @@
-import { KeyboardEvent } from 'react';
 import {
   deleteFragment,
   ELEMENT_DEFAULT,

@@ -40,7 +40,7 @@ export const getListInsertBreak = (editor: SPEditor) => {
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(document.createEvent('KeyboardEvent') as any);
+  })(editor)(new KeyboardEvent('keydown') as any);
   if (didReset) return true;
 
   /**
