@@ -4,7 +4,10 @@ import {
   isMarkActive,
   toggleMark,
 } from '@udecode/slate-plugins-common';
-import { useTSlate } from '@udecode/slate-plugins-core';
+import {
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarMarkProps } from './ToolbarMark.types';
 
@@ -12,12 +15,16 @@ import { ToolbarMarkProps } from './ToolbarMark.types';
  * Toolbar button to toggle the mark of the leaves in selection.
  */
 export const ToolbarMark = ({ type, clear, ...props }: ToolbarMarkProps) => {
-  const editor = useTSlate();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
-      active={isMarkActive(editor, type)}
-      onMouseDown={getPreventDefaultHandler(toggleMark, editor, type, clear)}
+      active={!!editor?.selection && isMarkActive(editor, type)}
+      onMouseDown={
+        editor
+          ? getPreventDefaultHandler(toggleMark, editor, type, clear)
+          : undefined
+      }
       {...props}
     />
   );

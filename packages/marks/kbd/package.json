@@ -1,9 +1,9 @@
 {
   "name": "@udecode/slate-plugins-kbd",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-next.29",
   "description": "Slate plugins kbd",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/master/packages/kbd#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/kbd#readme",
   "bugs": {
     "url": "https://github.com/udecode/slate-plugins/issues"
   },
@@ -33,8 +33,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "^1.0.0-alpha.25",
-    "@udecode/slate-plugins-core": "^1.0.0-alpha.25"
+    "@udecode/slate-plugins-common": "1.0.0-next.29",
+    "@udecode/slate-plugins-core": "1.0.0-next.29"
   },
   "publishConfig": {
     "access": "public"

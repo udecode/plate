@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { DefaultLeaf } from 'slate-react';
 import { RenderNodeOptions } from '../types/SlatePluginOptions/RenderNodeOptions';
+import { SlatePluginComponent } from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { TRenderLeafProps } from '../types/TRenderLeafProps';
 import { getSlateClass } from './getSlateClass';
 
@@ -11,7 +12,7 @@ import { getSlateClass } from './getSlateClass';
  */
 export const getEditableRenderLeaf = ({
   type,
-  component: Leaf = DefaultLeaf,
+  component: Leaf = DefaultLeaf as SlatePluginComponent,
   getNodeProps,
 }: RenderNodeOptions) => ({
   children,

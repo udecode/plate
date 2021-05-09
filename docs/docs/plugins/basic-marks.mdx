@@ -1,0 +1,41 @@
+---
+slug: /plugins/basic-marks
+title: Basic Marks
+---
+
+### `createBasicMarksPlugin`
+
+Returns a list of the following plugins:
+- `createBoldPlugin()` for the `bold` mark
+- `createItalicPlugin()` for the `italic` mark
+- `createUnderlinePlugin()` for the `underline` mark
+- `createStrikethroughPlugin()` for the `strikethrough` mark
+- `createSubscriptPlugin()` for the `subscript` mark
+- `createSuperscriptPlugin()` for the `superscript` mark
+- `createCodePlugin()` for the `code` mark
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsCore,
+    ...pluginsBasicElements,
+    ...createBasicMarkPlugins(),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicMarks />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="basic-marks"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasicMarks}
+      />
+    </>
+  );
+}
+```

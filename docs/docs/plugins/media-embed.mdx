@@ -1,0 +1,27 @@
+---
+slug: /plugins/media-embed
+title: Media Embed
+---
+
+### `createMediaEmbedPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createMediaEmbedPlugin(),
+    createSelectOnBackspacePlugin({ allow: [ELEMENT_MEDIA_EMBED] }),
+  ];
+
+  return (
+    <SlatePlugins
+      id="media-embed"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueEmbeds}
+    />
+  );
+}
+```

@@ -1,0 +1,38 @@
+---
+slug: /plugins/find-replace
+title: Find & Replace
+---
+
+:::note
+"Replace" feature is not yet supported
+:::
+
+### `useFindReplacePlugin`
+
+```ts live
+() => {
+  const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
+
+  const plugins = useMemo(
+    () => [
+      ...pluginsBasic,
+      searchHighlightPlugin,
+    ],
+    [searchHighlightPlugin]
+  );
+
+  return (
+    <>
+      <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+      <SlatePlugins
+        id="find-replace"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueSearchHighlighting}
+      />
+    </>
+  );
+}
+```

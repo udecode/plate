@@ -41,6 +41,7 @@ module.exports = {
           alwaysTryTypes: true,
         },
       },
+      typescript: {},
     },
     react: { version: 'detect' },
   },
@@ -71,7 +72,10 @@ module.exports = {
     'import/no-dynamic-require': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-named-as-default-member': 'off',
-    'import/no-unresolved': 'error',
+    'import/no-unresolved': [
+      'error',
+      { ignore: ['^@theme', '^@docusaurus', '^@generated'] },
+    ],
     'import/prefer-default-export': 'off', // Allow single Named-export
     'import/order': ['off', { 'newlines-between': 'always' }],
     'simple-import-sort/imports': [

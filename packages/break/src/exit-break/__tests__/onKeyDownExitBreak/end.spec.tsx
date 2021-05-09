@@ -17,7 +17,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent('keydown');
+const event = new KeyboardEvent('keydown') as any;
 
 const output = (
   <editor>

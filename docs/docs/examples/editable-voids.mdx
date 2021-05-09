@@ -1,0 +1,29 @@
+---
+slug: /examples/editable-voids
+title: Editable Voids
+---
+
+```ts live
+() => {
+  const componentsEditableVoids = {
+    ...components,
+    [EDITABLE_VOID]: EditableVoidElement,
+  }
+
+  const plugins = [
+    ...pluginsBasic,
+    createEditableVoidPlugin(),
+  ];
+
+  return (
+    <SlatePlugins
+      id="editable-voids"
+      plugins={plugins}
+      components={componentsEditableVoids}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueVoids}
+    />
+  );
+}
+```

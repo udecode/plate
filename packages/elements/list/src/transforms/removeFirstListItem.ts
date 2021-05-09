@@ -20,7 +20,7 @@ export const removeFirstListItem = (
   const [, listPath] = list;
   const [, listItemPath] = listItem;
 
-  if (!isListNested(editor, listPath) && isFirstChild(listItemPath)) {
+  if (!isListNested(editor, listPath) && !isFirstChild(listItemPath)) {
     moveListItemUp(editor, { list, listItem });
 
     return true;

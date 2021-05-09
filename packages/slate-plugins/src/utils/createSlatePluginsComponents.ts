@@ -1,4 +1,3 @@
-import { FunctionComponent } from 'react';
 import {
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
@@ -25,6 +24,7 @@ import {
   CodeLineElement,
 } from '@udecode/slate-plugins-code-block-ui';
 import { withProps } from '@udecode/slate-plugins-common';
+import { SlatePluginComponent } from '@udecode/slate-plugins-core';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
 import {
   ELEMENT_H1,
@@ -63,7 +63,7 @@ import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
 import { DefaultSlatePluginKey } from './createSlatePluginsOptions';
 
 export const createSlatePluginsComponents = <T extends string = string>(
-  overrides?: Partial<Record<DefaultSlatePluginKey | T, FunctionComponent<any>>>
+  overrides?: Partial<Record<DefaultSlatePluginKey | T, SlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: withProps(StyledElement, {
@@ -298,5 +298,5 @@ export const createSlatePluginsComponents = <T extends string = string>(
     });
   }
 
-  return components as Record<DefaultSlatePluginKey | T, FunctionComponent>;
+  return components as Record<DefaultSlatePluginKey | T, SlatePluginComponent>;
 };

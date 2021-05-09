@@ -9,7 +9,6 @@ import { styled } from '@uifabric/utilities';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 
 const getClassNames = getRootClassNames();
-
 /**
  *   CodeBlockElement with no default styles.
  * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)

@@ -1,20 +1,29 @@
+import { FunctionComponent } from 'react';
+import { SPRenderElementProps } from '../SPRenderElementProps';
+import { SPRenderLeafProps } from '../SPRenderLeafProps';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps } from './GetNodeProps';
+
+/**
+ * React component rendering a slate element or leaf.
+ * @default DefaultElement | DefaultLeaf
+ */
+export type SlatePluginComponent = FunctionComponent<
+  SPRenderElementProps | SPRenderLeafProps
+>;
 
 export interface SlatePluginOptions {
   [key: string]: any;
 
   /**
-   * Element or mark type.
-   * @default plugin key
+   * Node properties to delete.
    */
-  type: string;
+  clear?: string | string[];
 
   /**
-   * React component to render a slate element or leaf.
-   * @default DefaultElement | DefaultLeaf
+   * `SlatePlugins` maps each slate node to this component to render.
    */
-  component?: any;
+  component?: SlatePluginComponent;
 
   /**
    * Default type of slate blocks.
@@ -23,14 +32,9 @@ export interface SlatePluginOptions {
   defaultType?: string;
 
   /**
-   * Hotkeys to listen to trigger a plugin action.
+   * `getElementDeserializer` and `getLeafDeserializer` options.
    */
-  hotkey?: string | string[];
-
-  /**
-   * Node fields to clear.
-   */
-  clear?: string | string[];
+  deserialize?: Partial<DeserializeOptions>;
 
   /**
    * @see {@link GetNodeProps}
@@ -38,9 +42,27 @@ export interface SlatePluginOptions {
   getNodeProps?: GetNodeProps;
 
   /**
-   * `getElementDeserializer` and `getLeafDeserializer` options
+   * Hotkeys to listen to trigger a plugin action.
    */
-  deserialize?: Partial<DeserializeOptions>;
+  hotkey?: string | string[];
+
+  /**
+   * Element or mark type.
+   * @default plugin key
+   */
+  type: string;
 }
 
-export type SlatePluginsOptions = Record<string, SlatePluginOptions>;
+/**
+ * A unique key to store the plugin options by key.
+ */
+export type PluginKey = string;
+
+/**
+ * Slate plugins options stored by plugin key.
+ * Each plugin can access the options by its plugin key.
+ *
+ * @default {}
+ * @see {@link PluginKey}
+ */
+export type SlatePluginsOptions = Record<PluginKey, SlatePluginOptions>;

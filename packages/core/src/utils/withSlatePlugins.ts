@@ -1,20 +1,22 @@
-import { ReactNode } from 'react';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { WithOverride } from '../types/SlatePlugin/WithOverride';
-import { SlatePluginsOptions } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import {
+  SlatePluginComponent,
+  SlatePluginsOptions,
+} from '../types/SlatePluginOptions/SlatePluginsOptions';
 import { SPEditor } from '../types/SPEditor';
 import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
 export interface WithSlatePluginsOptions<T extends SPEditor = SPEditor> {
-  id?: string;
+  id?: string | null;
   plugins?: SlatePlugin<T>[];
   options?: SlatePluginsOptions;
-  components?: Record<string, ReactNode>;
+  components?: Record<string, SlatePluginComponent>;
 }
 
 /**
@@ -31,7 +33,7 @@ export const withSlatePlugins = <T extends SPEditor = SPEditor>({
   components = {},
 }: WithSlatePluginsOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
   let editor = e as typeof e & T;
-  editor.id = id;
+  editor.id = id as string;
 
   if (components) {
     // Merge components into options
@@ -53,11 +55,15 @@ export const withSlatePlugins = <T extends SPEditor = SPEditor>({
     editor.key = Math.random();
   }
 
-  // Plugins inline and void types
-  editor = pipe(editor, withInlineVoid({ plugins }));
+  const _plugins: SlatePlugin<T>[] = [
+    ...plugins,
+    {
+      withOverrides: withInlineVoid({ plugins }),
+    },
+  ];
 
   // Plugins withOverrides
-  const withOverrides = flatMapByKey(plugins, 'withOverrides');
+  const withOverrides = flatMapByKey(_plugins, 'withOverrides');
   editor = pipe(editor, ...withOverrides);
 
   return editor;

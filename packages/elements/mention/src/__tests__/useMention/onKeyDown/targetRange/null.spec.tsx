@@ -16,7 +16,9 @@ it('should be', () => {
   const { result } = renderHook(() => useMentionPlugin());
 
   act(() => {
-    result.current.plugin.onKeyDown?.(input)(new KeyboardEvent('ArrowDown'));
+    result.current.plugin.onKeyDown?.(input)(
+      new KeyboardEvent('ArrowDown') as any
+    );
   });
 
   expect(result.current.getMentionSelectProps().valueIndex).toBe(0);

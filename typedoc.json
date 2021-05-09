@@ -12,6 +12,6 @@
   "includeVersion": true,
   "mode": "file",
   "name": "@udecode/slate-plugins",
-  "out": "./docs",
+  "out": "./doc",
   "readme": "./README.md"
 }
