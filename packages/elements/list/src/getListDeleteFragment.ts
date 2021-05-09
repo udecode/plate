@@ -1,9 +1,7 @@
 import {
   deleteFragment,
   getAbove,
-  getBlockAbove,
   getParent,
-  moveChildren,
 } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
