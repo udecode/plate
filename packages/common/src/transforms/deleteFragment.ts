@@ -20,14 +20,10 @@ export const deleteFragment = (
     hanging?: boolean;
     voids?: boolean;
     test?: any;
-    moveNode?: (editor: TEditor, options: { at: Path; to: Path }) => void;
-    removeEmptyAncestor?: (editor: TEditor, options: { at: Path }) => void;
   } = {}
 ): void => {
   Editor.withoutNormalizing(editor, () => {
     const {
-      moveNode,
-      removeEmptyAncestor,
       reverse = false,
       unit = 'character',
       distance = 1,
