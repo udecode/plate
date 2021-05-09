@@ -1,0 +1,40 @@
+---
+slug: /plugins/basic-elements
+title: Basic Elements
+---
+
+### `createBasicElementPlugins`
+
+Returns a list of the following plugins:
+- `createBlockquotePlugin()` for the `blockquote` element
+- `createCodeBlockPlugin()` for the `code_block` element
+- `createHeadingPlugin()` for the `h1`, `h2`,... elements
+- `createParagraphPlugin()` for the `p` element
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsCore,
+    ...createBasicElementPlugins(),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="basic-elements"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasicElements}
+      />
+    </>
+  );
+}
+```

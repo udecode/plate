@@ -5,7 +5,11 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, useTSlate } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginType,
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins-core';
 import {
   ELEMENT_LINK,
   upsertLinkAtSelection,
@@ -16,14 +20,17 @@ import {
 } from '@udecode/slate-plugins-toolbar';
 
 export const ToolbarLink = (props: ToolbarButtonProps) => {
-  const editor = useTSlate();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
+
   const type = getSlatePluginType(editor, ELEMENT_LINK);
-  const isLink = someNode(editor, { match: { type } });
+  const isLink = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
     <ToolbarButton
       active={isLink}
       onMouseDown={(event) => {
+        if (!editor) return;
+
         event.preventDefault();
         let prevUrl = '';
 

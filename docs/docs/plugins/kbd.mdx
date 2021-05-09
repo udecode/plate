@@ -1,0 +1,31 @@
+---
+slug: /plugins/kbd
+title: Keyboard Input
+---
+
+### `createKbdPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createKbdPlugin(),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarKbd />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="kbd"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueKbd}
+      />
+    </>
+  );
+}
+```

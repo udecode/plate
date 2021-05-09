@@ -1,15 +1,19 @@
-import { getSlatePluginOptions, OnKeyDown } from '@udecode/slate-plugins-core';
+import {
+  getSlatePluginOptions,
+  KeyboardHandler,
+  SPEditor,
+} from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { toggleMark } from '../transforms/toggleMark';
 
-export const getToggleMarkOnKeyDown = (pluginKey: string): OnKeyDown => (
-  editor
-) => (e) => {
+export const getToggleMarkOnKeyDown = <T extends SPEditor = SPEditor>(
+  pluginKey: string
+): KeyboardHandler<T> => (editor) => (e) => {
   const { hotkey, type, clear } = getSlatePluginOptions(editor, pluginKey);
 
   if (!hotkey) return;
 
-  if (isHotkey(hotkey, e)) {
+  if (isHotkey(hotkey, e as any)) {
     e.preventDefault();
 
     toggleMark(editor, type, clear);

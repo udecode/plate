@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { setNodes } from '@udecode/slate-plugins-common';
-import { TElement, useTSlateStatic } from '@udecode/slate-plugins-core';
+import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
 import { MediaEmbedNodeData } from '@udecode/slate-plugins-media-embed';
 import { ClassName, getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -31,7 +31,7 @@ export const MediaEmbedElementBase = ({
     // Other style props
   });
 
-  const editor = useTSlateStatic();
+  const editor = useEditorRef();
   const { url } = element;
 
   return (

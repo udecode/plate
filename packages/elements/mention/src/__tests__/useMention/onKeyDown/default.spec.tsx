@@ -30,7 +30,7 @@ it('should go down', () => {
 
   act(() => {
     result.current.plugin.onKeyDown?.(editor)(
-      new KeyboardEvent('keydown', { key: 'a' })
+      new KeyboardEvent('keydown', { key: 'a' }) as any
     );
   });
 

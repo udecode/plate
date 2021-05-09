@@ -1,6 +1,6 @@
 import { unwrapNodes } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
 export const unwrapList = (editor: SPEditor) => {
   unwrapNodes(editor, {
@@ -14,5 +14,8 @@ export const unwrapList = (editor: SPEditor) => {
       ],
     },
     split: true,
+  });
+  unwrapNodes(editor, {
+    match: { type: getSlatePluginType(editor, ELEMENT_LIC) },
   });
 };

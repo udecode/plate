@@ -1,0 +1,30 @@
+---
+slug: /plugins/autoformat
+title: Autoformat
+---
+
+### `createAutoformatPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createListPlugin(),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+    createAutoformatPlugin(optionsAutoformat),
+  ];
+
+  return (
+    <SlatePlugins
+      id="autoformat"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueAutoformat}
+    />
+  );
+}
+```

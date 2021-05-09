@@ -7,7 +7,12 @@ import {
   isSelectionAtBlockStart,
   queryNode,
 } from '@udecode/slate-plugins-common';
-import { OnKeyDown, TEditor, TElement } from '@udecode/slate-plugins-core';
+import {
+  KeyboardHandler,
+  SPEditor,
+  TEditor,
+  TElement,
+} from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { Editor, Path } from 'slate';
 import { ExitBreakOnKeyDownOptions } from './types';
@@ -53,12 +58,14 @@ export const exitBreakAtEdges = (
   };
 };
 
-export const getExitBreakOnKeyDown = ({
+export const getExitBreakOnKeyDown = <T extends SPEditor = SPEditor>({
   rules = [
     { hotkey: 'mod+enter' },
     { hotkey: 'mod+shift+enter', before: true },
   ],
-}: ExitBreakOnKeyDownOptions = {}): OnKeyDown => (editor) => (event) => {
+}: ExitBreakOnKeyDownOptions = {}): KeyboardHandler<T> => (editor) => (
+  event
+) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 
@@ -70,7 +77,7 @@ export const getExitBreakOnKeyDown = ({
       before,
       defaultType = ELEMENT_DEFAULT,
     }) => {
-      if (isHotkey(hotkey, event) && queryNode(entry, query)) {
+      if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
         if (!editor.selection) return;
 
         const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, query);

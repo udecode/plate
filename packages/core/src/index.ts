@@ -5,6 +5,6 @@
 export * from './components/index';
 export * from './hooks/index';
 export * from './plugins/index';
-export * from './store/index';
+export * from './stores/index';
 export * from './types/index';
 export * from './utils/index';

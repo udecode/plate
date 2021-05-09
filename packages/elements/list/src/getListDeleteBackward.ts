@@ -2,6 +2,7 @@ import {
   deleteFragment,
   ELEMENT_DEFAULT,
   isCollapsed,
+  isFirstChild,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
@@ -9,6 +10,7 @@ import { getResetNodeOnKeyDown } from '@udecode/slate-plugins-reset-node';
 import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { hasListChild } from './queries/hasListChild';
+import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
@@ -40,8 +42,7 @@ export const getListDeleteBackward = (
           });
         }
 
-        moved = true;
-
+        moved = !isFirstChild(listItem[1]) || isListNested(editor, list[1]);
         // moved = moveListItemUp(editor, { list, listItem });
       });
 
@@ -62,5 +63,5 @@ export const getListDeleteBackward = (
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(null);
+  })(editor)(new KeyboardEvent('keydown') as any);
 };

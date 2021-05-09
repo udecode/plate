@@ -3,7 +3,7 @@ import { createNodesWithHOC } from '@udecode/slate-plugins-common';
 import {
   SPRenderElementProps,
   TEditor,
-  useTSlateStatic,
+  useEditorRef,
 } from '@udecode/slate-plugins-core';
 import { Path } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
@@ -29,7 +29,7 @@ export const withDraggable = (
 ) => {
   return forwardRef((props: SPRenderElementProps, ref) => {
     const { attributes, element } = props;
-    const editor = useTSlateStatic();
+    const editor = useEditorRef();
     const readOnly = useReadOnly();
     const path = useMemo(() => ReactEditor.findPath(editor, element), [
       editor,

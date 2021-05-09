@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
+import * as core from '@udecode/slate-plugins-core';
 import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
 import { createLinkPlugin } from '@udecode/slate-plugins-link';
-import * as SlateReact from 'slate-react';
 import { createEditorPlugins } from '../../../../slate-plugins/src/utils/createEditorPlugins';
 import { ToolbarLink } from './ToolbarLink';
 import {
@@ -21,8 +21,7 @@ describe('ToolbarLink', () => {
         editor: input1,
         plugins: [createLinkPlugin()],
       });
-
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      jest.spyOn(core, 'useStoreEditorState').mockReturnValue(editor as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -42,8 +41,7 @@ describe('ToolbarLink', () => {
         editor: input2,
         plugins: [createLinkPlugin()],
       });
-
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      jest.spyOn(core, 'useStoreEditorState').mockReturnValue(editor as any);
       const prompt = jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/changed.png');
@@ -66,12 +64,8 @@ describe('ToolbarLink', () => {
 
   describe('when without url', () => {
     it('should render', () => {
-      const editor = createEditorPlugins({
-        editor: input3,
-        plugins: [createLinkPlugin()],
-      });
-
-      jest.spyOn(SlateReact, 'useSlate').mockReturnValue(editor as any);
+      const editor = input3;
+      jest.spyOn(core, 'useStoreEditorState').mockReturnValue(editor as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(

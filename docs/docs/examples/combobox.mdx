@@ -1,0 +1,90 @@
+---
+slug: /examples/combobox
+title: Combobox
+---
+
+WIP: https://codesandbox.io/s/slate-plugins-combobox-8kwnd?file=/index.tsx
+
+<!-- ```ts live -->
+<!-- () => { -->
+<!--   const id = 'combobox'; -->
+
+<!--   const componentsCombobox = { -->
+<!--     ...components, -->
+<!--     [ELEMENT_TAG]: TagElement, -->
+<!--   }; -->
+
+<!--   const optionsCombobox = createSlatePluginsOptions({ -->
+<!--     [ELEMENT_TAG]: {}, -->
+<!--   }); -->
+
+<!--   // Handle multiple combobox -->
+<!--   const useComboboxOnChange = () => { -->
+<!--     const editor = useStoreEditorRef(id); -->
+
+<!--     const tagOnChange = useTagOnChange(editor, MENTIONABLES); -->
+<!--     const isOpen = useComboboxIsOpen(); -->
+<!--     const closeMenu = useComboboxStore((state) => state.closeMenu); -->
+
+<!--     return useCallback( -->
+<!--       () => () => { -->
+<!--         let changed = false; -->
+<!--         changed = tagOnChange(); -->
+
+<!--         if (changed) return; -->
+
+<!--         if (!changed && isOpen) { -->
+<!--           closeMenu(); -->
+<!--         } -->
+<!--       }, -->
+<!--       [closeMenu, isOpen, tagOnChange] -->
+<!--     ); -->
+<!--   }; -->
+
+<!--   // Handle multiple combobox -->
+<!--   const ComboboxContainer = () => { -->
+<!--     useComboboxControls(); -->
+
+<!--     return <TagCombobox />; -->
+<!--   }; -->
+
+<!--   const Editor = () => { -->
+<!--     const comboboxOnChange = useComboboxOnChange(); -->
+
+<!--     const tagOnSelect = useTagOnSelectItem(); -->
+
+<!--     // Handle multiple combobox -->
+<!--     const comboboxOnKeyDown = useComboboxOnKeyDown({ -->
+<!--       onSelectItem: tagOnSelect, -->
+<!--     }); -->
+
+<!--     const plugins = useMemo( -->
+<!--       () => [ -->
+<!--         createReactPlugin(), -->
+<!--         createHistoryPlugin(), -->
+<!--         createTagPlugin(), -->
+<!--         { -->
+<!--           onChange: comboboxOnChange, -->
+<!--           onKeyDown: comboboxOnKeyDown, -->
+<!--         }, -->
+<!--       ], -->
+<!--       [comboboxOnChange, comboboxOnKeyDown] -->
+<!--     ); -->
+
+<!--     return ( -->
+<!--       <SlatePlugins -->
+<!--         id={id} -->
+<!--         plugins={plugins} -->
+<!--         components={componentsCombobox} -->
+<!--         options={optionsCombobox} -->
+<!--         editableProps={editableProps} -->
+<!--         initialValue={initialValueCombobox} -->
+<!--       > -->
+<!--         <ComboboxContainer /> -->
+<!--       </SlatePlugins> -->
+<!--     ); -->
+<!--   }; -->
+
+<!--   return <Editor /> -->
+<!-- } -->
+<!-- ``` -->

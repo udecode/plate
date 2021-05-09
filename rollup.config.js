@@ -38,6 +38,7 @@ const plugins = [
   // resolves local modules by default.
   resolve({
     browser: true,
+    // modulesOnly: true,
   }),
 
   typescript({
@@ -129,6 +130,11 @@ export default [
       ...Object.keys(PKG_JSON.dependencies || {}),
       ...Object.keys(PKG_JSON.peerDependencies || {}),
     ],
+    // external(id) {
+    //      return Object.keys(PKG_JSON.dependencies || {})
+    //        .concat(Object.keys(PKG_JSON.peerDependnencies || {}))
+    //        .includes(id.split('/')[0]);
+    //    },
     output: [
       // CommonJS (for Node)
       {

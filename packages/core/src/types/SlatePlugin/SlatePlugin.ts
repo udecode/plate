@@ -1,9 +1,8 @@
 import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
+import { DOMHandlers } from './DOMHandlers';
 import { OnChange } from './OnChange';
-import { OnDOMBeforeInput } from './OnDOMBeforeInput';
-import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
 import { Serialize } from './Serialize';
@@ -20,11 +19,22 @@ export interface SlatePluginKey {
 /**
  * Slate plugin interface built on top of Slate and Editable.
  */
-export interface SlatePlugin<T extends SPEditor = SPEditor> {
+export interface SlatePlugin<T extends SPEditor = SPEditor>
+  extends Partial<DOMHandlers<T>> {
   /**
-   * Editor method overriders
+   * @see {@link Decorate}
    */
-  withOverrides?: WithOverride | WithOverride[];
+  decorate?: Decorate<T>;
+
+  /**
+   * @see {@link DeserializeHtml}
+   */
+  deserialize?: Deserialize<T>;
+
+  /**
+   * Inline element types.
+   */
+  inlineTypes?: (editor: T) => string[];
 
   /**
    * @see {@link OnChange}
@@ -32,19 +42,9 @@ export interface SlatePlugin<T extends SPEditor = SPEditor> {
   onChange?: OnChange<T>;
 
   /**
-   * Inline element types
+   * Plugin keys to support configuration.
    */
-  inlineTypes?: (editor: T) => string[];
-
-  /**
-   * Void element types
-   */
-  voidTypes?: (editor: T) => string[];
-
-  /**
-   * @see {@link Decorate}
-   */
-  decorate?: Decorate<T>;
+  pluginKeys?: string | string[];
 
   /**
    * @see {@link RenderElement}
@@ -57,24 +57,17 @@ export interface SlatePlugin<T extends SPEditor = SPEditor> {
   renderLeaf?: RenderLeaf<T>;
 
   /**
-   * @see {@link OnKeyDown}
-   */
-  onKeyDown?: OnKeyDown<T> | null;
-
-  /**
-   * @see {@link OnDOMBeforeInput}
-   */
-  onDOMBeforeInput?: OnDOMBeforeInput<T>;
-
-  /**
-   * @see {@link DeserializeHtml}
-   */
-  deserialize?: Deserialize<T>;
-
-  /**
    * @see {@link SerializeHtml}
    */
   serialize?: Serialize;
 
-  pluginKeys?: string | string[];
+  /**
+   * Void element types.
+   */
+  voidTypes?: (editor: T) => string[];
+
+  /**
+   * Editor method overriders.
+   */
+  withOverrides?: WithOverride | WithOverride[];
 }

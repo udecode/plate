@@ -1,0 +1,58 @@
+---
+slug: /examples/huge-document
+title: Huge Document
+---
+
+```ts live
+() => {
+  const initialValueHugeDocument = getHugeDocument();
+  const _editableProps = {
+    ...editableProps,
+    // spellcheck adds some lag so we disable it
+    spellCheck: false,
+  };
+
+  const WithSlatePlugins = () => (
+    <SlatePlugins
+      id="huge-document"
+      plugins={pluginsBasic}
+      components={components}
+      options={options}
+      editableProps={_editableProps}
+      initialValue={initialValueHugeDocument}
+    />
+  );
+
+  const Element = ({ attributes, children, element }) => {
+    switch (element.type) {
+      case 'h1':
+        return <h1 {...attributes}>{children}</h1>;
+      default:
+        return <p {...attributes}>{children}</p>;
+    }
+  };
+
+  const WithoutSlatePlugins = () => {
+    const [value, setValue] = useState(initialValueHugeDocument);
+    const renderElement = useCallback((p) => <Element {...p} />, []);
+    const editor = useMemo(() => withReact(createEditor()), []);
+
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={useCallback((v) => setValue(v), [])}
+      >
+        <Editable renderElement={renderElement} {..._editableProps} />
+      </Slate>
+    );
+  }
+
+  return (
+    <div className="flex">
+      <WithSlatePlugins />
+      <WithoutSlatePlugins />
+    </div>
+  );
+}
+```

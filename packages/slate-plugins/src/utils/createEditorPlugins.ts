@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { FunctionComponent } from 'react';
 import {
   createHistoryPlugin,
   createReactPlugin,
   SlatePlugin,
+  SlatePluginComponent,
   SlatePluginOptions,
   SPEditor,
   TEditor,
@@ -40,9 +40,7 @@ export const createEditorPlugins = <
   options?: Partial<
     Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
   >;
-  components?: Partial<
-    Record<DefaultSlatePluginKey | T, FunctionComponent<any>>
-  >;
+  components?: Partial<Record<DefaultSlatePluginKey | T, SlatePluginComponent>>;
 } = {}) => {
   return withSlatePlugins<E>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],

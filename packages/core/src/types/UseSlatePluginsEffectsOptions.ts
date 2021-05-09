@@ -1,24 +1,31 @@
-import { SlatePluginsOptions } from './SlatePluginOptions/SlatePluginsOptions';
-import { State } from './SlatePluginsStore';
+import {
+  SlatePluginComponent,
+  SlatePluginsOptions,
+} from './SlatePluginOptions/SlatePluginsOptions';
+import { EditorId, SlatePluginsState } from './SlatePluginsStore';
 import { SPEditor } from './SPEditor';
 
 /**
  * `useSlatePluginsEffects` options
  */
 export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
-  extends Partial<Pick<State<T>, 'editor' | 'value' | 'enabled' | 'plugins'>> {
-  /**
-   * Unique id to store multiple editor states. Default is 'main'.
-   */
-  id?: string;
+  extends Partial<
+    Pick<SlatePluginsState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
+  > {
+  id?: EditorId;
 
   /**
    * Initial value of the editor.
-   * Default is `[{children: [{text: ''}]}]`.
+   * @default [{ children: [{ text: '' }]}]
    */
-  initialValue?: State['value'];
+  initialValue?: SlatePluginsState['value'];
 
   options?: SlatePluginsOptions;
 
-  components?: Record<string, any>;
+  /**
+   * Components stored by plugin key.
+   * These will be merged into `options`.
+   * @see {@link EditorId}
+   */
+  components?: Record<string, SlatePluginComponent>;
 }

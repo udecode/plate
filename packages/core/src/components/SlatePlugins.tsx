@@ -6,11 +6,19 @@ import { SlateProps } from '../types/SlateProps';
 import { SPEditor } from '../types/SPEditor';
 import { UseSlatePluginsEffectsOptions } from '../types/UseSlatePluginsEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
+import { EditorStateEffect } from './EditorStateEffect';
 
 export interface SlatePluginsProps<T extends SPEditor = SPEditor>
   extends UseSlatePluginsEffectsOptions<T>,
     UseSlatePropsOptions {
+  /**
+   * The children rendered inside `Slate` before the `Editable` component.
+   */
   children?: React.ReactNode;
+
+  /**
+   * The props for the `Editable` component.
+   */
   editableProps?: EditableProps;
 }
 
@@ -25,6 +33,7 @@ export const SlatePlugins = <T extends SPEditor = SPEditor>({
   return (
     <Slate {...(slateProps as SlateProps)}>
       {children}
+      <EditorStateEffect id={options.id} />
       <Editable {...editableProps} />
     </Slate>
   );
