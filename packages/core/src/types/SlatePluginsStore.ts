@@ -1,3 +1,4 @@
+import { Editor } from 'slate';
 import { SlatePlugin } from './SlatePlugin/SlatePlugin';
 import { SPEditor } from './SPEditor';
 import { TDescendant } from './TDescendant';
@@ -10,12 +11,17 @@ import { TDescendant } from './TDescendant';
  */
 export type EditorId = string | null | undefined;
 
-export type State<T extends SPEditor = SPEditor> = {
+export type SlatePluginsState<T extends SPEditor = SPEditor> = {
   /**
-   * Slate editor.
+   * Slate editor reference.
    * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
    */
   editor?: T;
+
+  /**
+   * A key that is incremented on each editor change.
+   */
+  keyChange?: number;
 
   /**
    * If true, slate plugins will create the editor with `withSlatePlugins`.
@@ -35,6 +41,8 @@ export type State<T extends SPEditor = SPEditor> = {
    */
   pluginKeys: string[];
 
+  selection: Editor['selection'];
+
   /**
    * Editor value.
    * @default [{ children: [{ text: '' }]}]
@@ -45,9 +53,9 @@ export type State<T extends SPEditor = SPEditor> = {
 /**
  * @see {@link EditorId}
  */
-export type SlatePluginsState<T extends SPEditor = SPEditor> = Record<
+export type SlatePluginsStates<T extends SPEditor = SPEditor> = Record<
   string,
-  State<T>
+  SlatePluginsState<T>
 >;
 
 export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
@@ -59,17 +67,21 @@ export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
   /**
    * Set initial state by id. Called by `SlatePlugins` on mount.
    */
-  setInitialState: (value?: Partial<State<T>>, id?: string) => void;
+  setInitialState: (value?: Partial<SlatePluginsState<T>>, id?: string) => void;
 
   /**
    * Set a new editor with slate plugins.
    */
   resetEditor: (id?: string) => void;
 
-  setEditor: (value: State<T>['editor'], id?: string) => void;
-
-  setEnabled: (value: State<T>['enabled'], id?: string) => void;
-  setPlugins: (value: State<T>['plugins'], id?: string) => void;
-  setPluginKeys: (value: State<T>['pluginKeys'], id?: string) => void;
-  setValue: (value: State<T>['value'], id?: string) => void;
+  setEditor: (value: SlatePluginsState<T>['editor'], id?: string) => void;
+  setSelection: (value: SlatePluginsState<T>['selection'], id?: string) => void;
+  incrementKeyChange: (id?: string) => void;
+  setEnabled: (value: SlatePluginsState<T>['enabled'], id?: string) => void;
+  setPlugins: (value: SlatePluginsState<T>['plugins'], id?: string) => void;
+  setPluginKeys: (
+    value: SlatePluginsState<T>['pluginKeys'],
+    id?: string
+  ) => void;
+  setValue: (value: SlatePluginsState<T>['value'], id?: string) => void;
 };

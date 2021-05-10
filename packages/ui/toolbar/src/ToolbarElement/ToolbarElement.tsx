@@ -4,7 +4,10 @@ import {
   someNode,
   toggleNodeType,
 } from '@udecode/slate-plugins-common';
-import { useTSlate } from '@udecode/slate-plugins-core';
+import {
+  useEventEditorId,
+  useStoreEditorState,
+} from '@udecode/slate-plugins-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarElementProps } from './ToolbarElement.types';
 
@@ -16,15 +19,18 @@ export const ToolbarElement = ({
   inactiveType,
   ...props
 }: ToolbarElementProps) => {
-  const editor = useTSlate();
+  const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
-      active={someNode(editor, { match: { type } })}
-      onMouseDown={getPreventDefaultHandler(toggleNodeType, editor, {
-        activeType: type,
-        inactiveType,
-      })}
+      active={!!editor?.selection && someNode(editor, { match: { type } })}
+      onMouseDown={
+        editor &&
+        getPreventDefaultHandler(toggleNodeType, editor, {
+          activeType: type,
+          inactiveType,
+        })
+      }
       {...props}
     />
   );

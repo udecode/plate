@@ -1,11 +1,11 @@
 import { isFirstChild } from '@udecode/slate-plugins-common';
-import { OnKeyDown } from '@udecode/slate-plugins-core';
+import { KeyboardHandler } from '@udecode/slate-plugins-core';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 import { moveListItemDown } from './transforms/moveListItemDown';
 import { moveListItemUp } from './transforms/moveListItemUp';
 
-export const getListOnKeyDown = (): OnKeyDown => (editor) => (e) => {
+export const getListOnKeyDown = (): KeyboardHandler => (editor) => (e) => {
   let moved: boolean | undefined = false;
 
   if (e.key === 'Tab') {

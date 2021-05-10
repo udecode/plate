@@ -1,0 +1,39 @@
+---
+slug: /plugins/alignment
+title: Alignment
+---
+
+### `createAlignPlugin`
+
+An align element aligns its children:
+- default `type` are:
+  - `'align_left'`
+  - `'align_center'`
+  - `'align_right'`
+  - `'align_justify'`
+- wrap node strategy
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createAlignPlugin()
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsAlign />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="alignment"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasicElements}
+      />
+    </>
+  );
+}
+```

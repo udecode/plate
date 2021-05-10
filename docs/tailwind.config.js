@@ -2,7 +2,7 @@ module.exports = {
   purge: ['./src/**/*.html', './src/**/*.js', './src/**/*.tsx'],
   darkMode: 'class', // or 'media' or 'class'
   corePlugins: { preflight: false },
-  important: '#tailwind',
+  important: true,
   theme: {
     extend: {
       colors: {

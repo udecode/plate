@@ -1,12 +1,9 @@
 import { useMemo } from 'react';
-import { useSlatePluginsActions } from '../../store/useSlatePluginsActions';
-import {
-  useStoreEditor,
-  useStoreEditorValue,
-  useStoreSlatePlugins,
-} from '../../store/useSlatePluginsSelectors';
+import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
+import { useStoreEditorValue } from '../../stores/slate-plugins/selectors/useStoreEditorValue';
+import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
+import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
 import { SlateProps } from '../../types/SlateProps';
-import { SPEditor } from '../../types/SPEditor';
 import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { pipeOnChange } from '../../utils/pipeOnChange';
@@ -19,7 +16,7 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = useSlatePluginsActions(id);
-  const editor = useStoreEditor<SPEditor | undefined>(id);
+  const editor = useStoreEditorRef(id);
   const value = useStoreEditorValue(id);
   const plugins = useStoreSlatePlugins(id);
 

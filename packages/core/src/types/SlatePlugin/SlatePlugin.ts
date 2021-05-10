@@ -1,9 +1,8 @@
 import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
+import { DOMHandlers } from './DOMHandlers';
 import { OnChange } from './OnChange';
-import { OnDOMBeforeInput } from './OnDOMBeforeInput';
-import { OnKeyDown } from './OnKeyDown';
 import { RenderElement } from './RenderElement';
 import { RenderLeaf } from './RenderLeaf';
 import { Serialize } from './Serialize';
@@ -20,7 +19,8 @@ export interface SlatePluginKey {
 /**
  * Slate plugin interface built on top of Slate and Editable.
  */
-export interface SlatePlugin<T extends SPEditor = SPEditor> {
+export interface SlatePlugin<T extends SPEditor = SPEditor>
+  extends Partial<DOMHandlers<T>> {
   /**
    * @see {@link Decorate}
    */
@@ -40,16 +40,6 @@ export interface SlatePlugin<T extends SPEditor = SPEditor> {
    * @see {@link OnChange}
    */
   onChange?: OnChange<T>;
-
-  /**
-   * @see {@link OnDOMBeforeInput}
-   */
-  onDOMBeforeInput?: OnDOMBeforeInput<T>;
-
-  /**
-   * @see {@link OnKeyDown}
-   */
-  onKeyDown?: OnKeyDown<T> | null;
 
   /**
    * Plugin keys to support configuration.

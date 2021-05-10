@@ -1,7 +1,8 @@
 import { getAbove } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginOptions,
-  OnKeyDown,
+  KeyboardHandler,
+  SPEditor,
   TElement,
 } from '@udecode/slate-plugins-core';
 import { Transforms } from 'slate';
@@ -10,7 +11,9 @@ import { getPreviousTableCell } from './queries/getPreviousTableCell';
 import { getTableCellEntry } from './queries/getTableCellEntry';
 import { ELEMENT_TABLE } from './defaults';
 
-export const getTableOnKeyDown = (): OnKeyDown => (editor) => (e) => {
+export const getTableOnKeyDown = <
+  T extends SPEditor = SPEditor
+>(): KeyboardHandler<T> => (editor) => (e) => {
   if (e.key === 'Tab') {
     e.preventDefault();
     const res = getTableCellEntry(editor, {});

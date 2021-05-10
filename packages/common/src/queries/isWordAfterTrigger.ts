@@ -5,7 +5,7 @@ import { getText } from './getText';
 
 /**
  * Is the word at the point after a trigger (punctuation character)
- * https://github.com/ianstormtaylor/slate/blob/master/packages/slate/src/utils/string.ts#L6
+ * https://github.com/ianstormtaylor/slate/blob/main/packages/slate/src/utils/string.ts#L6
  */
 export const isWordAfterTrigger = (
   editor: TEditor,

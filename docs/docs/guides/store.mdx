@@ -9,9 +9,29 @@ If rendering only one editor, the store id is optional, the default being `'main
 
 ## Store
 
+### Slate Plugins Store
+
+This store is an object whose property keys are [editor ids](SlatePlugins#id) and whose property values are [SlatePluginsState](#state).
+
 The hook store [useSlatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsstore) can be used to subscribe to changes in React.
 
 The vanilla store [slatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#slatepluginsstore) can be used outside React.
+
+### Event Editor Store
+
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [SlatePluginsState](#state).
+This is useful to store [multiple editors](multiple-editors) and select one based on DOM events.
+
+You can extend this store with any event using [setEventEditorId](store#seteventeditorid).
+
+[SlatePlugins](SlatePlugins) will store these events out of the box:
+
+- `focus` using `onFocus`
+- `blur` using `onBlur`
+
+The hook store [useEventEditorStore](https://slate-plugins-api.udecode.io/globals.html#useeventeditorstore) can be used to subscribe to changes in React.
+
+The vanilla store [eventEditorStore](https://slate-plugins-api.udecode.io/globals.html#eventeditorstore) can be used outside React.
 
 ## State
 
@@ -40,7 +60,7 @@ The vanilla store [slatePluginsStore](https://slate-plugins-api.udecode.io/globa
 - Editor value.
 - Default is `[{ children: [{ text: '' }]}]`.
 
-## Actions
+## Slate Plugins Actions
 
 All the actions are returned by [useSlatePluginsActions](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsactions).
 
@@ -80,7 +100,17 @@ If using multiple stores, you should set the first parameter to the store id you
 - Except when resetting the editor with `resetEditor`, you should not use it as it would break the history.
 - If you want to update `value` with history support, you should use [Slate transforms](https://docs.slatejs.org/concepts/04-transforms) like `Transforms.setNodes`.
 
+## Event Editor Actions
+
+### `setEventEditorId`
+
+- Set an [editor id](SlatePlugins#id) by `event` key.
+
 ## Selectors
+
+### `useEventEditorId`
+
+- Get the editor id by `event` key.
 
 ### `useStoreState`
 

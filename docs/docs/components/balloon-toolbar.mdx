@@ -1,0 +1,24 @@
+---
+slug: /components/balloon-toolbar
+title: Balloon Toolbar
+---
+
+```ts live
+() => {
+  const componentsPlaceholder = withStyledPlaceHolders(components);
+
+  return (
+    <>
+      <BallonToolbarMarks />
+      <SlatePlugins
+        id="balloon-toolbar"
+        plugins={pluginsBasic}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBalloonToolbar}
+      />
+    </>
+  );
+}
+```

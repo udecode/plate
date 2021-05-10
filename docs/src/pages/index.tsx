@@ -1,20 +1,31 @@
 import '../css/tailwind.output.css';
-import React from 'react';
+import React, { useEffect } from 'react';
 import useThemeContext from '@theme/hooks/useThemeContext';
 import Layout from '@theme/Layout';
-import clsx from 'clsx';
 import { HomeContent } from '../components/Home/HomeContent';
+
+const initTheme = () => {
+  // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+  if (
+    localStorage.theme === 'dark' ||
+    (!('theme' in localStorage) &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches)
+  ) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
 
 const Content = () => {
   const { isDarkTheme } = useThemeContext();
 
-  return (
-    <div id="tailwind">
-      <div className={clsx({ dark: isDarkTheme })}>
-        <HomeContent />
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    localStorage.theme = isDarkTheme ? 'dark' : 'light';
+    initTheme();
+  }, [isDarkTheme]);
+
+  return <HomeContent />;
 };
 
 export default function Home() {

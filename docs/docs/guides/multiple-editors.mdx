@@ -1,0 +1,75 @@
+---
+slug: /multiple-editors
+title: Multiple Editors
+---
+
+Slate Plugins support multiple editor instances by using the [id](SlatePlugins#id) prop.
+
+### Example
+
+Let's render 3 editors with common heading and balloon toolbars.
+
+```tsx live
+() => {
+  const MultipleEditor = ({
+    id,
+    initialValue,
+    plugins,
+  }) => (
+    <div className="flex-1 border border-gray-200 rounded-md m-2 p-4">
+      <SlatePlugins
+        id={id}
+        plugins={plugins}
+        components={components}
+        options={options}
+        initialValue={initialValue}
+      />
+    </div>
+  );
+
+  return (
+    <div>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+        <ToolbarButtonsBasicMarks />
+      </HeadingToolbar>
+
+      <BallonToolbarMarks />
+
+      <div className="flex">
+        <MultipleEditor
+          id="multiple-editors-basic"
+          plugins={pluginsBasic}
+          initialValue={initialValueBasicElements}
+        />
+        <MultipleEditor
+          id="multiple-editors-marks"
+          plugins={pluginsBasic}
+          initialValue={initialValueBasicMarks}
+        />
+        <MultipleEditor
+          id="multiple-editors-image"
+          plugins={pluginsImage}
+          initialValue={initialValueImages}
+        />
+      </div>
+    </div>
+  )
+}
+```
+
+### Focus editor
+
+The toolbar actions require an `editor` with a defined `selection`, so it needs to be focused.
+
+[SlatePlugins](SlatePlugins) stores the [id](SlatePlugins#id) of the last focused editor in [eventEditorStore](store#event-editor-store),
+which can then be used by the toolbar actions (or any component outside [SlatePlugins](SlatePlugins))
+to get the [editor](store#editor) from [slatePluginsStore](store#slate-plugins-store).
+
+
+Usage:
+
+```ts
+const id = useEventEditorId('focus');
+const editor = useStoreEditorState(id);
+```

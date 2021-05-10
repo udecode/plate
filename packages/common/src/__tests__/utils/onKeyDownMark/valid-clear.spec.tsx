@@ -21,7 +21,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent('keydown');
+const event = new KeyboardEvent('keydown') as any;
 
 const output = (
   <editor>
@@ -44,7 +44,7 @@ const editor = createEditorPlugins({
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  getToggleMarkOnKeyDown(MARK_BOLD)?.(editor)(event);
+  getToggleMarkOnKeyDown(MARK_BOLD)?.(editor)(event as any);
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
 });

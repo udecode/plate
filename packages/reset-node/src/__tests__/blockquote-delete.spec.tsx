@@ -4,7 +4,7 @@ import { isSelectionAtBlockStart } from '@udecode/slate-plugins-common';
 import { SPEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { options } from '../../../../stories/config/pluginOptions';
+import { options } from '../../../../docs/src/live/config/pluginOptions';
 import { ELEMENT_BLOCKQUOTE } from '../../../elements/block-quote/src/defaults';
 import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
 
@@ -40,7 +40,7 @@ it('should render', () => {
         predicate: isSelectionAtBlockStart,
       },
     ],
-  })(input)(new KeyboardEvent('keydown'));
+  })(input)(new KeyboardEvent('keydown') as any);
 
   expect(input.children).toEqual(output.children);
 });

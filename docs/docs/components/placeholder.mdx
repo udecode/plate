@@ -1,0 +1,26 @@
+---
+slug: /components/placeholder
+title: Placeholder
+---
+
+```ts live
+() => {
+  const componentsPlaceholder = withStyledPlaceHolders(components);
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsBasicElements />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="placeholder"
+        plugins={pluginsBasic}
+        components={componentsPlaceholder}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValuePlaceholder}
+      />
+    </>
+  );
+}
+```

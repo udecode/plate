@@ -18,7 +18,7 @@ const input = (
   </editor>
 ) as any;
 
-const event = new KeyboardEvent('keydown');
+const event = new KeyboardEvent('keydown') as any;
 
 const output = (
   <editor>
@@ -31,6 +31,6 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
   getSoftBreakOnKeyDown({
     rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
-  })(input)(event);
+  })(input)(event as any);
   expect(input.children).toEqual(output.children);
 });

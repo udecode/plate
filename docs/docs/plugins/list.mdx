@@ -1,0 +1,35 @@
+---
+slug: /plugins/list
+title: List
+---
+
+### `createListPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createTodoListPlugin(),
+    createListPlugin(),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsList />
+      </HeadingToolbar>
+      <SlatePlugins
+        id="list"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueList}
+      />
+    </>
+  );
+}
+```
