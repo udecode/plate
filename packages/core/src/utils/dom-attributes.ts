@@ -24,6 +24,7 @@ export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   'onBlurCapture',
 
   // Form Events
+  'onDOMBeforeInput',
   'onBeforeInput',
   'onBeforeInputCapture',
   'onInput',
