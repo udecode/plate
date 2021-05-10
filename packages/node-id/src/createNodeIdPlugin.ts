@@ -102,7 +102,7 @@ export const withNodeId = ({
 
       if (
         someNode(editor, {
-          match: { [idKey]: (operation.properties as Partial<TNode>)[idKey] },
+          match: { [idKey]: id },
           at: [],
         })
       ) {
