@@ -1,4 +1,5 @@
 import React from 'react';
+import { Image, Link, Search } from '@styled-icons/material';
 import { render } from '@testing-library/react';
 import {
   createHistoryPlugin,
@@ -111,14 +112,14 @@ const SlatePluginsContainer = () => {
       editableProps={editableProps}
       initialValue={initialValuePlayground}
     >
-      <ToolbarSearchHighlight icon="Search" setSearch={setSearch} />
+      <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
       <HeadingToolbar>
         <ToolbarButtonsBasicElements />
         <ToolbarButtonsList />
         <ToolbarButtonsBasicMarks />
         <ToolbarButtonsAlign />
-        <ToolbarLink icon="Link" />
-        <ToolbarImage icon="Image" />
+        <ToolbarLink icon={<Link />} />
+        <ToolbarImage icon={<Image />} />
         <ToolbarButtonsTable />
       </HeadingToolbar>
 

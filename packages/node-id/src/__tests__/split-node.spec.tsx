@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/slate-plugins-test-utils';
-import { Editor } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { withNodeId } from '../createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
@@ -10,36 +10,30 @@ jsx;
 const input = ((
   <editor>
     <hp id={10}>
-      test
-      <cursor />
+      tes
+      <cursor />t
     </hp>
   </editor>
 ) as any) as Editor;
 
 const output = (
   <editor>
-    <hp id={10}>test</hp>
-    <hli id={1}>
-      <hp id={2}>
-        <htext id={3}>inserted</htext>
-      </hp>
-    </hli>
+    <hp id={10}>tes</hp>
+    <hp id={1}>t</hp>
   </editor>
 ) as any;
 
-it('should add an id to the new nodes', () => {
+it('should add an id to the new element', () => {
   const editor = withNodeId({
     idCreator: idCreatorFixture,
-    filterText: false,
   })(withHistory(input));
 
-  editor.insertNode(
-    (
-      <hli>
-        <hp>inserted</hp>
-      </hli>
-    ) as any
-  );
+  Transforms.splitNodes(editor);
+
+  editor.undo();
+  editor.redo();
+  editor.undo();
+  editor.redo();
 
   expect(input.children).toEqual(output.children);
 });

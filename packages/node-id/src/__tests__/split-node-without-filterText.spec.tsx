@@ -2,8 +2,7 @@
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor, Transforms } from 'slate';
 import { withHistory } from 'slate-history';
-import { HistoryEditor } from 'slate-history/dist/history-editor';
-import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { withNodeId } from '../createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
@@ -11,29 +10,31 @@ jsx;
 const input = ((
   <editor>
     <hp id={10}>
-      <htext id={1}>tes</htext>
-      <htext id={2}>t</htext>
+      tes
+      <cursor />t
     </hp>
   </editor>
 ) as any) as Editor;
 
 const output = (
   <editor>
-    <hp id={10}>
-      <htext id={1}>tes</htext>
-      <htext id={2}>t</htext>
+    <hp id={10}>tes</hp>
+    <hp id={2}>
+      <htext id={1}>t</htext>
     </hp>
   </editor>
 ) as any;
 
-it('should recover the ids', () => {
-  const editor: HistoryEditor = withNodeId({
+it('should add an id to the new element and text', () => {
+  const editor = withNodeId({
     idCreator: idCreatorFixture,
     filterText: false,
   })(withHistory(input));
 
-  Transforms.mergeNodes(editor, { at: [0, 1] });
+  Transforms.splitNodes(editor);
+
   editor.undo();
+  editor.redo();
 
   expect(input.children).toEqual(output.children);
 });

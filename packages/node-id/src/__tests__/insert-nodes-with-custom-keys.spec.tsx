@@ -1,43 +1,44 @@
 /** @jsx jsx */
+import { insertNodes } from '@udecode/slate-plugins-common';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { withNodeId } from '../createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
 
 const input = ((
   <editor>
-    <hp id={10}>
-      test
-      <cursor />
-    </hp>
+    <hp foo={10}>test</hp>
   </editor>
 ) as any) as Editor;
 
 const output = (
   <editor>
-    <hp id={10}>test</hp>
-    <hli id={1}>
-      <hp id={2}>inserted</hp>
-    </hli>
+    <hp foo={10}>test</hp>
+    <hp foo={1}>inserted</hp>
+    <hp foo={2}>inserted</hp>
   </editor>
 ) as any;
 
 it('should add an id to the new elements', () => {
-  const editor = withNodeId({ idCreator: idCreatorFixture })(
+  const editor = withNodeId({ idCreator: idCreatorFixture, idKey: 'foo' })(
     withHistory(input)
   );
 
-  editor.insertNode(
+  insertNodes(
+    editor,
     (
-      <hli>
+      <fragment>
         <hp>inserted</hp>
-      </hli>
+        <hp>inserted</hp>
+      </fragment>
     ) as any
   );
 
+  editor.undo();
+  editor.redo();
   editor.undo();
   editor.redo();
 

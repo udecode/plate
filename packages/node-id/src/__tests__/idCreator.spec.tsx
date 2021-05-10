@@ -2,7 +2,7 @@
 import { TEditor } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Transforms } from 'slate';
-import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
+import { withNodeId } from '../createNodeIdPlugin';
 
 jsx;
 

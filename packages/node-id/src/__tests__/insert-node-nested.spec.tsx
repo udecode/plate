@@ -1,10 +1,8 @@
 /** @jsx jsx */
-import { TElement } from '@udecode/slate-plugins-core';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
-import { withNodeId } from '../../../../../node-id/src/createNodeIdPlugin';
-import { insertNodes } from '../../../transforms/insertNodes';
+import { withNodeId } from '../createNodeIdPlugin';
 import { idCreatorFixture } from './fixtures';
 
 jsx;
@@ -21,28 +19,25 @@ const input = ((
 const output = (
   <editor>
     <hp id={10}>test</hp>
-    <hp id={11}>inserted</hp>
-    <hp id={12}>inserted</hp>
+    <hli id={1}>
+      <hp id={2}>inserted</hp>
+    </hli>
   </editor>
 ) as any;
 
-it('should keep the id', () => {
+it('should add an id to the new elements', () => {
   const editor = withNodeId({ idCreator: idCreatorFixture })(
     withHistory(input)
   );
 
-  insertNodes<TElement>(
-    editor,
+  editor.insertNode(
     (
-      <fragment>
-        <hp id={11}>inserted</hp>
-        <hp id={12}>inserted</hp>
-      </fragment>
+      <hli>
+        <hp>inserted</hp>
+      </hli>
     ) as any
   );
 
-  editor.undo();
-  editor.redo();
   editor.undo();
   editor.redo();
 

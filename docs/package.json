@@ -31,8 +31,6 @@
     "prism-react-renderer": "^1.2.0",
     "prismjs": "^1.23.0",
     "ramda": "^0.27.1",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
     "react-icons": "^4.2.0",
     "slate": "0.60.11",
     "slate-history": "0.60.11",

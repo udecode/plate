@@ -1,13 +1,11 @@
 import {
   defaultsDeepToNodes,
-  mergeDeepToNodes,
+  queryNode,
   QueryNodeOptions,
   someNode,
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
-  isDescendant,
-  isElement,
   TNode,
   WithOverride,
 } from '@udecode/slate-plugins-core';
@@ -48,7 +46,6 @@ export const withNodeId = ({
   idKey = 'id',
   idCreator = () => Date.now(),
   filterText = true,
-  resetExistingID = false,
   filter = () => true,
   allow,
   exclude,
@@ -59,33 +56,32 @@ export const withNodeId = ({
 
   const idPropsCreator = () => ({ [idKey]: idCreator() });
 
+  const filterNode = (nodeEntry: NodeEntry<TNode>) => {
+    return (
+      filter(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
+    );
+  };
+
+  const query = {
+    filter: filterNode,
+    allow,
+    exclude,
+  };
+
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
-      const newFilter = (entry: NodeEntry<TNode>) => {
-        const [node] = entry;
-        return filter(entry) && filterText
-          ? isElement(node)
-          : isDescendant(node);
-      };
-
+      // clone to be able to write (read-only)
       const node = cloneDeep(operation.node) as TNode;
+
       // the id in the new node is already being used in the editor, we need to replace it with a new id
       if (someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })) {
         delete node[idKey];
       }
 
-      // it will not overwrite ids once it's set as it's read-only
-      const applyDeepToNodes = resetExistingID
-        ? mergeDeepToNodes
-        : defaultsDeepToNodes;
-      applyDeepToNodes({
+      defaultsDeepToNodes({
         node,
         source: idPropsCreator,
-        query: {
-          filter: newFilter,
-          allow,
-          exclude,
-        },
+        query,
       });
 
       return apply({
@@ -94,29 +90,36 @@ export const withNodeId = ({
       });
     }
 
-    if (
-      operation.type === 'split_node' &&
-      idKey in operation.properties
-    ) {
-      let id = operation.properties[idKey];
+    if (operation.type === 'split_node') {
+      const node = operation.properties as TNode;
 
-      if (
-        someNode(editor, {
-          match: { [idKey]: id },
-          at: [],
-        })
-      ) {
-        // the id in the new node is already being used in the editor, we need to replace it with a new id
-        id = idCreator();
+      // only for elements (node with a type) or all nodes if `filterText=false`
+      if (queryNode([node, []], query)) {
+        let id = operation.properties[idKey];
+
+        /**
+         * Create a new id if:
+         * - the id in the new node is already being used in the editor or,
+         * - the node has no id
+         */
+        if (
+          id === undefined ||
+          someNode(editor, {
+            match: { [idKey]: id },
+            at: [],
+          })
+        ) {
+          id = idCreator();
+        }
+
+        return apply({
+          ...operation,
+          properties: {
+            ...operation.properties,
+            [idKey]: id,
+          },
+        });
       }
-
-      return apply({
-        ...operation,
-        properties: {
-          ...operation.properties,
-          [idKey]: id,
-        },
-      });
     }
 
     return apply(operation);
