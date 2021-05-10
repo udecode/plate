@@ -32,10 +32,6 @@
     "prismjs": "^1.23.0",
     "ramda": "^0.27.1",
     "react-icons": "^4.2.0",
-    "slate": "0.60.11",
-    "slate-history": "0.60.11",
-    "slate-hyperscript": "0.60.11",
-    "slate-react": "0.60.11",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "zustand": "^3.4.2"
   },
