@@ -224,7 +224,7 @@ const pluginsImage = [
   ...createBasicElementPlugins(),
   ...pluginsBasicMarks,
   createImagePlugin(),
-  createSelectOnBackspacePlugin({ allow: [options[ELEMENT_IMAGE].type] }),
+  createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
 ];
 
 const initialValueBasic = [

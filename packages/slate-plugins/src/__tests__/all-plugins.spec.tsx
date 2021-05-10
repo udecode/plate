@@ -94,13 +94,13 @@ const SlatePluginsContainer = () => {
     createSoftBreakPlugin(optionsSoftBreakPlugin),
     createExitBreakPlugin(optionsExitBreakPlugin),
     createNormalizeTypesPlugin({
-      rules: [{ path: [0, 0], strictType: options[ELEMENT_H1].type }],
+      rules: [{ path: [0, 0], strictType: ELEMENT_H1 }],
     }),
     createTrailingBlockPlugin({
-      type: options[ELEMENT_PARAGRAPH].type,
+      type: ELEMENT_PARAGRAPH,
       level: 1,
     }),
-    createSelectOnBackspacePlugin({ allow: options[ELEMENT_IMAGE].type }),
+    createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
   ];
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
