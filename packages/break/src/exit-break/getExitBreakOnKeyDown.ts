@@ -8,6 +8,7 @@ import {
   queryNode,
 } from '@udecode/slate-plugins-common';
 import {
+  getSlatePluginType,
   KeyboardHandler,
   SPEditor,
   TEditor,
@@ -75,7 +76,7 @@ export const getExitBreakOnKeyDown = <T extends SPEditor = SPEditor>({
       query = {},
       level = 0,
       before,
-      defaultType = ELEMENT_DEFAULT,
+      defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT),
     }) => {
       if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
         if (!editor.selection) return;

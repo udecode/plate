@@ -6,8 +6,10 @@ import {
   QueryNodeOptions,
 } from '@udecode/slate-plugins-common';
 import {
+  getSlatePluginType,
   getSlatePluginWithOverrides,
   isElement,
+  SPEditor,
   TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
@@ -28,11 +30,14 @@ export interface WithTrailingBlock extends QueryNodeOptions {
  * Add a trailing block when the last node type is not `type`.
  */
 export const withTrailingBlock = ({
-  type = ELEMENT_DEFAULT,
+  type: _type,
   level = 0,
   ...query
 }: WithTrailingBlock = {}): WithOverride => (editor) => {
   const { normalizeNode } = editor;
+
+  const type =
+    _type ?? getSlatePluginType((editor as any) as SPEditor, ELEMENT_DEFAULT);
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {

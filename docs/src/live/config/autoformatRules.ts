@@ -1,4 +1,5 @@
 import {
+  AutoformatRule,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
@@ -26,8 +27,7 @@ import {
   unwrapList,
   WithAutoformatOptions,
 } from '@udecode/slate-plugins';
-import { AutoformatRule } from '../../../../packages/autoformat/src/types';
-import { options } from './pluginOptions';
+import { getSlatePluginType } from '@udecode/slate-plugins-core';
 
 const preFormat: AutoformatRule['preFormat'] = (editor) =>
   unwrapList(editor as SPEditor);
@@ -35,37 +35,37 @@ const preFormat: AutoformatRule['preFormat'] = (editor) =>
 export const optionsAutoformat: WithAutoformatOptions = {
   rules: [
     {
-      type: options[ELEMENT_H1].type,
+      type: ELEMENT_H1,
       markup: '#',
       preFormat,
     },
     {
-      type: options[ELEMENT_H2].type,
+      type: ELEMENT_H2,
       markup: '##',
       preFormat,
     },
     {
-      type: options[ELEMENT_H3].type,
+      type: ELEMENT_H3,
       markup: '###',
       preFormat,
     },
     {
-      type: options[ELEMENT_H4].type,
+      type: ELEMENT_H4,
       markup: '####',
       preFormat,
     },
     {
-      type: options[ELEMENT_H5].type,
+      type: ELEMENT_H5,
       markup: '#####',
       preFormat,
     },
     {
-      type: options[ELEMENT_H6].type,
+      type: ELEMENT_H6,
       markup: '######',
       preFormat,
     },
     {
-      type: options[ELEMENT_LI].type,
+      type: ELEMENT_LI,
       markup: ['*', '-'],
       preFormat,
       format: (editor) => {
@@ -79,14 +79,14 @@ export const optionsAutoformat: WithAutoformatOptions = {
             !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
           ) {
             toggleList((editor as any) as SPEditor, {
-              type: options[ELEMENT_UL].type,
+              type: ELEMENT_UL,
             });
           }
         }
       },
     },
     {
-      type: options[ELEMENT_LI].type,
+      type: ELEMENT_LI,
       markup: ['1.', '1)'],
       preFormat,
       format: (editor) => {
@@ -100,66 +100,66 @@ export const optionsAutoformat: WithAutoformatOptions = {
             !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
           ) {
             toggleList((editor as any) as SPEditor, {
-              type: options[ELEMENT_OL].type,
+              type: ELEMENT_OL,
             });
           }
         }
       },
     },
     {
-      type: options[ELEMENT_TODO_LI].type,
+      type: ELEMENT_TODO_LI,
       markup: ['[]'],
     },
     {
-      type: options[ELEMENT_BLOCKQUOTE].type,
+      type: ELEMENT_BLOCKQUOTE,
       markup: ['>'],
       preFormat,
     },
     {
-      type: options[MARK_BOLD].type,
+      type: MARK_BOLD,
       between: ['**', '**'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[MARK_BOLD].type,
+      type: MARK_BOLD,
       between: ['__', '__'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[MARK_ITALIC].type,
+      type: MARK_ITALIC,
       between: ['*', '*'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[MARK_ITALIC].type,
+      type: MARK_ITALIC,
       between: ['_', '_'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[MARK_CODE].type,
+      type: MARK_CODE,
       between: ['`', '`'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[MARK_STRIKETHROUGH].type,
+      type: MARK_STRIKETHROUGH,
       between: ['~~', '~~'],
       mode: 'inline',
       insertTrigger: true,
     },
     {
-      type: options[ELEMENT_CODE_BLOCK].type,
+      type: ELEMENT_CODE_BLOCK,
       markup: '``',
       trigger: '`',
       triggerAtBlockStart: false,
       preFormat,
       format: (editor) => {
-        insertEmptyCodeBlock((editor as any) as SPEditor, {
-          defaultType: ELEMENT_DEFAULT,
+        insertEmptyCodeBlock(editor as SPEditor, {
+          defaultType: getSlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),
           insertNodesOptions: { select: true },
         });
       },

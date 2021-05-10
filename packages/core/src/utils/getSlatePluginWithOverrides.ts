@@ -13,5 +13,5 @@ export const getSlatePluginWithOverrides = <
 >(
   withOverrides: V
 ) => (...options: Parameters<V>): SlatePlugin<T> => ({
-  withOverrides: withOverrides(options),
+  withOverrides: withOverrides(...(options as any)),
 });

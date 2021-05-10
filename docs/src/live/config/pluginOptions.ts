@@ -29,8 +29,8 @@ export const optionsMentionPlugin = {
 };
 
 const resetBlockTypesCommonRule = {
-  types: [options[ELEMENT_BLOCKQUOTE].type, options[ELEMENT_TODO_LI].type],
-  defaultType: options[ELEMENT_PARAGRAPH].type,
+  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
+  defaultType: ELEMENT_PARAGRAPH,
 };
 
 export const optionsResetBlockTypePlugin: ResetBlockTypePluginOptions = {
@@ -54,11 +54,7 @@ export const optionsSoftBreakPlugin: SoftBreakPluginOptions = {
     {
       hotkey: 'enter',
       query: {
-        allow: [
-          options[ELEMENT_CODE_BLOCK].type,
-          options[ELEMENT_BLOCKQUOTE].type,
-          options[ELEMENT_TD].type,
-        ],
+        allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
       },
     },
   ],
