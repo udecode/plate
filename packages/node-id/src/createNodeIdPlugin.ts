@@ -2,6 +2,7 @@ import {
   defaultsDeepToNodes,
   mergeDeepToNodes,
   QueryNodeOptions,
+  someNode,
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
@@ -13,10 +14,6 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
-
-export interface NodeIdEditor extends HistoryEditor {
-  removedIDs: Set<any>;
-}
 
 export interface WithNodeIdProps extends QueryNodeOptions {
   /**
@@ -55,14 +52,12 @@ export const withNodeId = ({
   filter = () => true,
   allow,
   exclude,
-}: WithNodeIdProps = {}): WithOverride<HistoryEditor, NodeIdEditor> => (e) => {
-  const editor = e as typeof e & NodeIdEditor;
+}: WithNodeIdProps = {}): WithOverride<HistoryEditor> => (e) => {
+  const editor = e;
 
   const { apply } = editor;
 
   const idPropsCreator = () => ({ [idKey]: idCreator() });
-
-  editor.removedIDs = new Set();
 
   editor.apply = (operation) => {
     if (operation.type === 'insert_node') {
@@ -74,6 +69,10 @@ export const withNodeId = ({
       };
 
       const node = cloneDeep(operation.node) as TNode;
+      // the id in the new node is already being used in the editor, we need to replace it with a new id
+      if (someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })) {
+        delete node[idKey];
+      }
 
       // it will not overwrite ids once it's set as it's read-only
       const applyDeepToNodes = resetExistingID
@@ -97,12 +96,17 @@ export const withNodeId = ({
 
     if (
       operation.type === 'split_node' &&
-      (!filterText || (operation.properties as Partial<TNode>).type)
+      idKey in operation.properties
     ) {
       let id = operation.properties[idKey];
-      if (editor.removedIDs.has(id)) {
-        editor.removedIDs.delete(id);
-      } else {
+
+      if (
+        someNode(editor, {
+          match: { [idKey]: id },
+          at: [],
+        })
+      ) {
+        // the id in the new node is already being used in the editor, we need to replace it with a new id
         id = idCreator();
       }
 
@@ -113,13 +117,6 @@ export const withNodeId = ({
           [idKey]: id,
         },
       });
-    }
-
-    if (
-      operation.type === 'merge_node' &&
-      (!filterText || (operation.properties as Partial<TNode>).type)
-    ) {
-      editor.removedIDs.add((operation.properties as Partial<TNode>).id);
     }
 
     return apply(operation);
