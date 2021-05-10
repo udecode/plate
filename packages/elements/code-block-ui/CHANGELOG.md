@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-code-block-ui
 
+## 1.0.0-next.30
+
+### Patch Changes
+
+- Updated dependencies [[`28f30c8a`](https://github.com/udecode/slate-plugins/commit/28f30c8a6b0a2d245d6f6403c8399f2e59d98b92)]:
+  - @udecode/slate-plugins-code-block@1.0.0-next.30
+  - @udecode/slate-plugins-toolbar@1.0.0-next.30
+
 ## 1.0.0-next.29
 
 ### Minor Changes

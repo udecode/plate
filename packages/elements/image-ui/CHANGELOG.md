@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-image-ui
 
+## 1.0.0-next.30
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/slate-plugins-image@1.0.0-next.30
+  - @udecode/slate-plugins-toolbar@1.0.0-next.30
+
 ## 1.0.0-next.29
 
 ### Minor Changes
