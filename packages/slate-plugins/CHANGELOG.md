@@ -1,5 +1,52 @@
 # Change Log
 
+## 1.0.0-next.30
+
+### Patch Changes
+
+- Updated dependencies [[`84b5feed`](https://github.com/udecode/slate-plugins/commit/84b5feedd20b12f0ec23e082d90314b045a69e62), [`33605a49`](https://github.com/udecode/slate-plugins/commit/33605a495ccc3fd9b4f6cfdaf2eb0e6e59bd7a67), [`28f30c8a`](https://github.com/udecode/slate-plugins/commit/28f30c8a6b0a2d245d6f6403c8399f2e59d98b92), [`c03b511e`](https://github.com/udecode/slate-plugins/commit/c03b511ee99edd813bd23475fe2e71a21a0061a9), [`75e6d25d`](https://github.com/udecode/slate-plugins/commit/75e6d25de0f9cf2487adecff54c2993ebc795aa0)]:
+  - @udecode/slate-plugins-list@1.0.0-next.30
+  - @udecode/slate-plugins-core@1.0.0-next.30
+  - @udecode/slate-plugins-break@1.0.0-next.30
+  - @udecode/slate-plugins-common@1.0.0-next.30
+  - @udecode/slate-plugins-code-block@1.0.0-next.30
+  - @udecode/slate-plugins-trailing-block@1.0.0-next.30
+  - @udecode/slate-plugins-node-id@1.0.0-next.30
+  - @udecode/slate-plugins-list-ui@1.0.0-next.30
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.30
+  - @udecode/slate-plugins-autoformat@1.0.0-next.30
+  - @udecode/slate-plugins-dnd@1.0.0-next.30
+  - @udecode/slate-plugins-alignment@1.0.0-next.30
+  - @udecode/slate-plugins-block-quote@1.0.0-next.30
+  - @udecode/slate-plugins-heading@1.0.0-next.30
+  - @udecode/slate-plugins-image@1.0.0-next.30
+  - @udecode/slate-plugins-link@1.0.0-next.30
+  - @udecode/slate-plugins-media-embed@1.0.0-next.30
+  - @udecode/slate-plugins-mention@1.0.0-next.30
+  - @udecode/slate-plugins-paragraph@1.0.0-next.30
+  - @udecode/slate-plugins-table@1.0.0-next.30
+  - @udecode/slate-plugins-find-replace@1.0.0-next.30
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.30
+  - @udecode/slate-plugins-highlight@1.0.0-next.30
+  - @udecode/slate-plugins-kbd@1.0.0-next.30
+  - @udecode/slate-plugins-normalizers@1.0.0-next.30
+  - @udecode/slate-plugins-placeholder@1.0.0-next.30
+  - @udecode/slate-plugins-reset-node@1.0.0-next.30
+  - @udecode/slate-plugins-select@1.0.0-next.30
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.30
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.30
+  - @udecode/slate-plugins-toolbar@1.0.0-next.30
+  - @udecode/slate-plugins-basic-elements@1.0.0-next.30
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.30
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.30
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.30
+  - @udecode/slate-plugins-image-ui@1.0.0-next.30
+  - @udecode/slate-plugins-link-ui@1.0.0-next.30
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.30
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.30
+  - @udecode/slate-plugins-table-ui@1.0.0-next.30
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.30
+
 ## 1.0.0-next.29
 
 ### Patch Changes
