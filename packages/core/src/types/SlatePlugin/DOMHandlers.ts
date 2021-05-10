@@ -58,6 +58,7 @@ export interface DOMHandlers<T extends SPEditor = SPEditor> {
   onBlurCapture?: (editor: T) => (event: FocusEvent) => ReturnType;
 
   // Form Events
+  onDOMBeforeInput?: (editor: T) => (event: Event) => ReturnType;
   onBeforeInput?: (editor: T) => (event: FormEvent) => ReturnType;
   onBeforeInputCapture?: (editor: T) => (event: FormEvent) => ReturnType;
   onInput?: (editor: T) => (event: FormEvent) => ReturnType;

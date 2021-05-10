@@ -19,5 +19,5 @@ changes:
     - `SlatePluginsState` to `SlatePluginsStates`
     - `State` to `SlatePluginsState`
   - removed:
-    - `OnDOMBeforeInput` in favor of
+    - `OnDOMBeforeInput` in favor of `DOMHandler<'onDOMBeforeInput'>`
     - `OnKeyDown` in favor of `KeyboardHandler`

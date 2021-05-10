@@ -53,13 +53,9 @@ props if `editor` is defined.
 
 - Pipes plugins `renderLeaf`.
 
-### `onDOMBeforeInput`
+### Handlers
 
-- Pipes plugins `onDOMBeforeInput`.
-
-### `onKeyDown`
-
-- Pipes plugins `onKeyDown`.
+- Pipes plugins DOM handlers, e.g. `onDOMBeforeInput`, `onKeyDown`, etc.
 
 ## Props
 
