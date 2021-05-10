@@ -7,6 +7,7 @@ import {
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginWithOverrides,
+  SPEditor,
   WithOverride,
 } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
@@ -112,6 +113,7 @@ export const withAutoformat = ({
 /**
  * @see {@link withAutoformat}
  */
-export const createAutoformatPlugin = getSlatePluginWithOverrides(
-  withAutoformat
-);
+export const createAutoformatPlugin = getSlatePluginWithOverrides<
+  SPEditor,
+  (opts: WithAutoformatOptions) => WithOverride<SPEditor>
+>(withAutoformat);
