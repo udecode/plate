@@ -10,6 +10,7 @@ import {
   Text,
   Transforms,
 } from 'slate';
+import { hasSingleChild } from '../queries/hasSingleChild';
 
 /**
  * Merge a node at a location with the previous node of the same depth,
@@ -105,7 +106,7 @@ export const mergeNodes = (
       at: path,
       mode: 'highest',
       match: (n) =>
-        levels.includes(n) && Element.isElement(n) && n.children.length === 1,
+        levels.includes(n) && Element.isElement(n) && hasSingleChild(n),
     });
 
     const emptyRef = emptyAncestor && Editor.pathRef(editor, emptyAncestor[1]);

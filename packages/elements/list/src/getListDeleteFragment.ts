@@ -1,9 +1,7 @@
 import {
   deleteFragment,
   getAbove,
-  getBlockAbove,
   getParent,
-  moveChildren,
 } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
 import { Editor, Range, Transforms } from 'slate';
@@ -36,25 +34,7 @@ export const getListDeleteFragment = (editor: SPEditor) => {
     /**
      * Delete fragment and move end block children to start block
      */
-    deleteFragment(editor, {
-      moveNode: (_editor, { at }) => {
-        if (!editor.selection) return;
-
-        const [, path] = Editor.node(editor, at);
-
-        const blockAbove = getBlockAbove(editor, {
-          at: Range.start(editor.selection),
-        });
-        if (!blockAbove) return;
-        const [blockAboveNode, blockAbovePath] = blockAbove;
-
-        moveChildren(editor, {
-          at: path,
-          to: blockAbovePath.concat(blockAboveNode.children.length),
-        });
-      },
-      removeEmptyAncestor: () => {},
-    });
+    deleteFragment(editor);
 
     const start = Editor.start(editor, editor.selection as Range);
     const liStart = getAbove(editor, {
