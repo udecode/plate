@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.31
+
+### Patch Changes
+
+- [#702](https://github.com/udecode/slate-plugins/pull/702) [`15cdf5d7`](https://github.com/udecode/slate-plugins/commit/15cdf5d7614734c78c31f290586d0d64b0cff3fd) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: when unwrapping list, set node to paragraph instead of unwrapping `lic`
+
 ## 1.0.0-next.30
 
 ### Patch Changes
