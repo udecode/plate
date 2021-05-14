@@ -32,6 +32,7 @@
     "prismjs": "^1.23.0",
     "ramda": "^0.27.1",
     "react-icons": "^4.2.0",
+    "sass": "^1.32.12",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "zustand": "^3.4.2"
   },
@@ -57,9 +58,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "resolutions": {
-    "react": "17.0.1",
-    "react-dom": "17.0.1"
   }
 }
