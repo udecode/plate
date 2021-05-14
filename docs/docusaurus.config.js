@@ -272,6 +272,10 @@ module.exports = {
             __dirname,
             '../packages/elements/paragraph/src'
           ),
+          '@udecode/slate-plugins-placeholder': path.resolve(
+            __dirname,
+            '../packages/placeholder/src'
+          ),
           '@udecode/slate-plugins-table': path.resolve(
             __dirname,
             '../packages/elements/table/src'
