@@ -15,6 +15,28 @@ An align element aligns its children:
 
 ```ts live
 () => {
+  const ToolbarButtonsAlign = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <>
+        <ToolbarAlign icon={<FormatAlignLeft />} />
+        <ToolbarAlign
+          type={getSlatePluginType(editor, ELEMENT_ALIGN_CENTER)}
+          icon={<FormatAlignCenter />}
+        />
+        <ToolbarAlign
+          type={getSlatePluginType(editor, ELEMENT_ALIGN_RIGHT)}
+          icon={<FormatAlignRight />}
+        />
+        <ToolbarAlign
+          type={getSlatePluginType(editor, ELEMENT_ALIGN_JUSTIFY)}
+          icon={<FormatAlignJustify />}
+        />
+      </>
+    );
+  };
+
   const plugins = [
     ...pluginsBasic,
     createAlignPlugin()

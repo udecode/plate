@@ -7,6 +7,23 @@ title: List
 
 ```ts live
 () => {
+  const ToolbarButtonsList = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <>
+        <ToolbarList
+          type={getSlatePluginType(editor, ELEMENT_UL)}
+          icon={<FormatListBulleted />}
+        />
+        <ToolbarList
+          type={getSlatePluginType(editor, ELEMENT_OL)}
+          icon={<FormatListNumbered />}
+        />
+      </>
+    );
+  };
+
   const plugins = [
     ...pluginsBasic,
     createTodoListPlugin(),

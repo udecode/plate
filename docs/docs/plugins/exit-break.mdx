@@ -7,6 +7,26 @@ title: Exit Break
 
 ```ts live
 () => {
+  const optionsExitBreakPlugin = {
+    rules: [
+      {
+        hotkey: 'mod+enter',
+      },
+      {
+        hotkey: 'mod+shift+enter',
+        before: true,
+      },
+      {
+        hotkey: 'enter',
+        query: {
+          start: true,
+          end: true,
+          allow: KEYS_HEADING,
+        },
+      },
+    ],
+  };
+
   const plugins = [
     ...pluginsBasic,
     createListPlugin(),

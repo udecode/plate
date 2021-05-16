@@ -13,6 +13,47 @@ Returns a list of the following plugins:
 
 ```ts live
 () => {
+  const ToolbarButtonsBasicElements = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <>
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H1)}
+          icon={<LooksOne />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H2)}
+          icon={<LooksTwo />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H3)}
+          icon={<Looks3 />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H4)}
+          icon={<Looks4 />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H5)}
+          icon={<Looks5 />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_H6)}
+          icon={<Looks6 />}
+        />
+        <ToolbarElement
+          type={getSlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+          icon={<FormatQuote />}
+        />
+        <ToolbarCodeBlock
+          type={getSlatePluginType(editor, ELEMENT_CODE_BLOCK)}
+          icon={<CodeBlock />}
+        />
+      </>
+    );
+  };
+
   const plugins = [
     ...pluginsCore,
     ...createBasicElementPlugins(),
@@ -20,6 +61,22 @@ Returns a list of the following plugins:
     createSoftBreakPlugin(optionsSoftBreakPlugin),
     createExitBreakPlugin(optionsExitBreakPlugin),
   ];
+
+  const styledComponents = {
+    ...components,
+    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
+      styles: {
+        root: {
+          backgroundColor: '#111827',
+          selectors: {
+            code: {
+              color: 'white',
+            },
+          },
+        },
+      },
+    }),
+  };
 
   return (
     <>
@@ -29,7 +86,7 @@ Returns a list of the following plugins:
       <SlatePlugins
         id="basic-elements"
         plugins={plugins}
-        components={components}
+        components={styledComponents}
         options={options}
         editableProps={editableProps}
         initialValue={initialValueBasicElements}

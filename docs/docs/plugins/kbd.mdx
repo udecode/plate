@@ -7,6 +7,17 @@ title: Keyboard Input
 
 ```ts live
 () => {
+  const ToolbarKbd = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <ToolbarMark
+        type={getSlatePluginType(editor, MARK_KBD)}
+        icon={<Keyboard />}
+      />
+    );
+  };
+
   const plugins = [
     ...pluginsBasic,
     createKbdPlugin(),

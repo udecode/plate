@@ -1,10 +1,41 @@
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
+import { Subscript } from '@styled-icons/foundation/Subscript';
+import { Superscript } from '@styled-icons/foundation/Superscript';
+import { BorderAll } from '@styled-icons/material/BorderAll';
+import { BorderBottom } from '@styled-icons/material/BorderBottom';
+import { BorderClear } from '@styled-icons/material/BorderClear';
+import { BorderLeft } from '@styled-icons/material/BorderLeft';
+import { BorderRight } from '@styled-icons/material/BorderRight';
+import { BorderTop } from '@styled-icons/material/BorderTop';
+import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
+import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
+import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
+import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
+import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatItalic } from '@styled-icons/material/FormatItalic';
+import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
+import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
+import { FormatQuote } from '@styled-icons/material/FormatQuote';
+import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
+import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import { Image } from '@styled-icons/material/Image';
+import { Keyboard } from '@styled-icons/material/Keyboard';
 import { Link } from '@styled-icons/material/Link';
+import { Looks3 } from '@styled-icons/material/Looks3';
+import { Looks4 } from '@styled-icons/material/Looks4';
+import { Looks5 } from '@styled-icons/material/Looks5';
+import { Looks6 } from '@styled-icons/material/Looks6';
+import { LooksOne } from '@styled-icons/material/LooksOne';
+import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { Search } from '@styled-icons/material/Search';
 import {
+  addColumn,
+  addRow,
   createAutoformatPlugin,
   createDeserializeHTMLPlugin,
   createDeserializeMDPlugin,
@@ -28,7 +59,18 @@ import {
   createTablePlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
+  deleteColumn,
+  deleteRow,
+  deleteTable,
+  ELEMENT_ALIGN_CENTER,
+  ELEMENT_ALIGN_JUSTIFY,
+  ELEMENT_ALIGN_RIGHT,
+  insertTable,
   SlatePlugins,
+  ToolbarAlign,
+  ToolbarElement,
+  ToolbarList,
+  ToolbarTable,
   useFindReplacePlugin,
   useMentionPlugin,
   useSlatePlugins,
@@ -54,8 +96,19 @@ import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
 } from '@udecode/slate-plugins-code-block';
-import { CodeBlockElement } from '@udecode/slate-plugins-code-block-ui';
-import { useStoreEditorRef } from '@udecode/slate-plugins-core';
+import {
+  CodeBlockElement,
+  ToolbarCodeBlock,
+} from '@udecode/slate-plugins-code-block-ui';
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from '@udecode/slate-plugins-common';
+import {
+  getSlatePluginType,
+  useEventEditorId,
+  useStoreEditorRef,
+} from '@udecode/slate-plugins-core';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -90,9 +143,11 @@ import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { createAlignPlugin } from '../../../packages/elements/alignment/src/createAlignPlugin';
 import { createBasicElementPlugins } from '../../../packages/elements/basic-elements/src/createBasicElementPlugins';
 import { createHeadingPlugin } from '../../../packages/elements/heading/src/createHeadingPlugin';
+import { KEYS_HEADING } from '../../../packages/elements/heading/src/defaults';
 import { ToolbarImage } from '../../../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
 import { ToolbarLink } from '../../../packages/elements/link-ui/src/ToolbarLink/ToolbarLink';
 import { ELEMENT_LIC } from '../../../packages/elements/list/src/defaults';
+import { unwrapList } from '../../../packages/elements/list/src/transforms/unwrapList';
 import { MentionSelect } from '../../../packages/elements/mention-ui/src/MentionSelect/MentionSelect';
 import { createParagraphPlugin } from '../../../packages/elements/paragraph/src/createParagraphPlugin';
 import { ToolbarSearchHighlight } from '../../../packages/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
@@ -104,6 +159,8 @@ import { createStrikethroughPlugin } from '../../../packages/marks/basic-marks/s
 import { createUnderlinePlugin } from '../../../packages/marks/basic-marks/src/underline/createUnderlinePlugin';
 import { createSelectOnBackspacePlugin } from '../../../packages/select/src/createSelectOnBackspacePlugin';
 import { serializeHTMLFromNodes } from '../../../packages/serializers/html-serializer/src/serializer/serializeHTMLFromNodes';
+import { BalloonToolbar } from '../../../packages/ui/toolbar/src/BalloonToolbar/BalloonToolbar';
+import { ToolbarMark } from '../../../packages/ui/toolbar/src/ToolbarMark/ToolbarMark';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
@@ -179,22 +236,9 @@ const editableProps = {
   },
 };
 
-export const components = createSlatePluginsComponents({
-  [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-    styles: {
-      root: {
-        backgroundColor: '#111827',
-        selectors: {
-          code: {
-            color: 'white',
-          },
-        },
-      },
-    },
-  }),
-});
+const components = createSlatePluginsComponents();
 
-export const options = createSlatePluginsOptions();
+const options = createSlatePluginsOptions();
 
 const pluginsCore = [createReactPlugin(), createHistoryPlugin()];
 
@@ -236,12 +280,59 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+  addColumn,
+  addRow,
+  deleteColumn,
+  deleteRow,
+  KEYS_HEADING,
+  deleteTable,
+  ELEMENT_ALIGN_CENTER,
+  ELEMENT_ALIGN_JUSTIFY,
+  ELEMENT_ALIGN_RIGHT,
+  insertTable,
+  ToolbarAlign,
+  ToolbarElement,
+  ToolbarList,
+  ToolbarTable,
+  ToolbarCodeBlock,
+  CodeAlt,
+  CodeBlock,
+  Highlight,
+  Subscript,
+  Superscript,
+  BorderAll,
+  BorderBottom,
+  BorderClear,
+  BorderLeft,
+  BorderRight,
+  BorderTop,
+  FormatAlignCenter,
+  FormatAlignJustify,
+  FormatAlignLeft,
+  FormatAlignRight,
+  FormatBold,
+  FormatItalic,
+  FormatListBulleted,
+  FormatListNumbered,
+  FormatQuote,
+  FormatStrikethrough,
+  FormatUnderlined,
+  Keyboard,
+  Looks3,
+  Looks4,
+  Looks5,
+  Looks6,
+  LooksOne,
+  LooksTwo,
   initialValuePlayground,
   optionsMentionPlugin,
   useSlatePluginsActions,
   useStoreEditorEnabled,
   renderMentionLabel,
   useComboboxOnChange,
+  CodeBlockElement,
   Slate,
   Editable,
   createSlatePluginsOptions,
@@ -283,6 +374,7 @@ const ReactLiveScope = {
   createDeserializeHTMLPlugin,
   createEditableVoidPlugin,
   createEditor,
+  unwrapList,
   createEditorPlugins,
   createExitBreakPlugin,
   createHeadingPlugin,
@@ -338,6 +430,9 @@ const ReactLiveScope = {
   HeadingToolbar,
   HTML5Backend,
   Image,
+  BalloonToolbar,
+  ToolbarMark,
+  getSlatePluginType,
   initialValueAutoformat,
   initialValueBasic,
   initialValueBasicElements,
@@ -359,6 +454,7 @@ const ReactLiveScope = {
   initialValueSoftBreak,
   initialValueTables,
   initialValueVoids,
+  useEventEditorId,
   Link,
   MARK_BOLD,
   MARK_CODE,
