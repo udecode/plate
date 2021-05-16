@@ -67,6 +67,7 @@ module.exports = {
           items: [
             'plugins/autoformat',
             'plugins/exit-break',
+            'plugins/reset-node',
             'plugins/soft-break',
             'plugins/forced-layout',
           ],

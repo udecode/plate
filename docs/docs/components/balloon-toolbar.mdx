@@ -5,6 +5,48 @@ title: Balloon Toolbar
 
 ```ts live
 () => {
+  const BallonToolbarMarks = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    const arrow = false;
+    const theme = 'dark';
+    const direction = 'top';
+    const hiddenDelay = 0;
+    const tooltip = {
+      arrow: true,
+      delay: 0,
+      duration: [200, 0],
+      hideOnClick: false,
+      offset: [0, 17],
+      placement: 'top',
+    };
+
+    return (
+      <BalloonToolbar
+        direction={direction}
+        hiddenDelay={hiddenDelay}
+        theme={theme}
+        arrow={arrow}
+      >
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_BOLD)}
+          icon={<FormatBold />}
+          tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_ITALIC)}
+          icon={<FormatItalic />}
+          tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_UNDERLINE)}
+          icon={<FormatUnderlined />}
+          tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
+        />
+      </BalloonToolbar>
+    );
+  }
+
   const componentsPlaceholder = withStyledPlaceHolders(components);
 
   return (

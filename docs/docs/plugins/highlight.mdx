@@ -7,6 +7,17 @@ title: Highlight
 
 ```ts live
 () => {
+  const ToolbarHighlight = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <ToolbarMark
+        type={getSlatePluginType(editor, MARK_HIGHLIGHT)}
+        icon={<Highlight />}
+      />
+    );
+  };
+
   const plugins = [
     ...pluginsBasic,
     createHighlightPlugin(),

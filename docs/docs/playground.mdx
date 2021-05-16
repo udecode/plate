@@ -3,23 +3,39 @@ slug: /playground
 title: Playground
 ---
 
+:::note
+
+Most of the following variables are exported from the library or defined in the corresponding example.
+For quick lookup, jump to the [source code](https://github.com/udecode/slate-plugins/blob/main/docs/src/live/live.tsx).
+
+:::
+
 The following playground uses most of the provided plugins.
 
 ```ts live
 () => {
-  let defaultComponents = createSlatePluginsComponents({
+  let styledComponents = createSlatePluginsComponents({
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
     }),
+    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
+      styles: {
+        root: {
+          backgroundColor: '#111827',
+          selectors: {
+            code: {
+              color: 'white',
+            },
+          },
+        },
+      },
+    }),
   });
-  defaultComponents = withStyledPlaceHolders(defaultComponents);
+  styledComponents = withStyledPlaceHolders(styledComponents);
 
   const defaultOptions = createSlatePluginsOptions();
 
-  const Editor = ({
-    components = defaultComponents,
-    options = defaultOptions,
-  }) => {
+  const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
     const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
       optionsMentionPlugin
@@ -75,8 +91,8 @@ The following playground uses most of the provided plugins.
       <SlatePlugins
         id="playground"
         plugins={pluginsMemo}
-        components={components}
-        options={options}
+        components={styledComponents}
+        options={defaultOptions}
         editableProps={editableProps}
         initialValue={initialValuePlayground}
       >

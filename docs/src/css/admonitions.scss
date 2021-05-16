@@ -45,5 +45,9 @@
 html[data-theme="dark"] {
   .alert {
     background-color: transparent;
+
+    a {
+      color: var(--ifm-color-primary);
+    }
   }
 }

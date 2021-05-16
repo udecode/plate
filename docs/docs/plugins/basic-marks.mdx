@@ -16,6 +16,45 @@ Returns a list of the following plugins:
 
 ```ts live
 () => {
+  const ToolbarButtonsBasicMarks = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <>
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_BOLD)}
+          icon={<FormatBold />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_ITALIC)}
+          icon={<FormatItalic />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_UNDERLINE)}
+          icon={<FormatUnderlined />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_STRIKETHROUGH)}
+          icon={<FormatStrikethrough />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_CODE)}
+          icon={<CodeAlt />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_SUPERSCRIPT)}
+          clear={getSlatePluginType(editor, MARK_SUBSCRIPT)}
+          icon={<Superscript />}
+        />
+        <ToolbarMark
+          type={getSlatePluginType(editor, MARK_SUBSCRIPT)}
+          clear={getSlatePluginType(editor, MARK_SUPERSCRIPT)}
+          icon={<Subscript />}
+        />
+      </>
+    );
+  };
+
   const plugins = [
     ...pluginsCore,
     ...pluginsBasicElements,

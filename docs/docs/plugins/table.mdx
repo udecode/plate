@@ -5,6 +5,17 @@ title: Table
 
 ```ts live
 () => {
+  const ToolbarButtonsTable = () => (
+    <>
+      <ToolbarTable icon={<BorderAll />} transform={insertTable} />
+      <ToolbarTable icon={<BorderClear />} transform={deleteTable} />
+      <ToolbarTable icon={<BorderBottom />} transform={addRow} />
+      <ToolbarTable icon={<BorderTop />} transform={deleteRow} />
+      <ToolbarTable icon={<BorderLeft />} transform={addColumn} />
+      <ToolbarTable icon={<BorderRight />} transform={deleteColumn} />
+    </>
+  );
+
   const plugins = [
     ...pluginsBasic,
     createTablePlugin(),
