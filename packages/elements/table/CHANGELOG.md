@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-table
 
+## 1.0.0-next.32
+
+### Patch Changes
+
+- [#713](https://github.com/udecode/slate-plugins/pull/713) [`73b77853`](https://github.com/udecode/slate-plugins/commit/73b77853cb38f61d4bfb31a0d604e947c130ee0f) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: added the core dep to avoid duplicated stores in the build
+
 ## 1.0.0-next.30
 
 ### Patch Changes
