@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-node-id
 
+## 1.0.0-next.32
+
+### Major Changes
+
+- [#714](https://github.com/udecode/slate-plugins/pull/714) [`a96dca85`](https://github.com/udecode/slate-plugins/commit/a96dca85a4aa9e7f97d867862fe9c44095abbd20) Thanks [@zbeyens](https://github.com/zbeyens)! - feat: new option `reuseId` which (true) reuse the node id on cut/paste and undo/redo or (false) always create a new id on insert/split node (default: false)
+
 ## 1.0.0-next.30
 
 ### Patch Changes

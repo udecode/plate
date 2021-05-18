@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-block-quote-ui",
-  "version": "1.0.0-next.30",
+  "version": "1.0.0-next.32",
   "description": "Slate plugins block-quote-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/block-quote-ui#readme",
@@ -33,7 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-block-quote": "1.0.0-next.30",
+    "@udecode/slate-plugins-block-quote": "1.0.0-next.32",
     "@udecode/slate-plugins-core": "1.0.0-next.30",
     "@udecode/slate-plugins-ui-fluent": "1.0.0-next.30"
   },

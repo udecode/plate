@@ -1,5 +1,34 @@
 # Change Log
 
+## 1.0.0-next.32
+
+### Patch Changes
+
+- Updated dependencies [[`73b77853`](https://github.com/udecode/slate-plugins/commit/73b77853cb38f61d4bfb31a0d604e947c130ee0f), [`a96dca85`](https://github.com/udecode/slate-plugins/commit/a96dca85a4aa9e7f97d867862fe9c44095abbd20)]:
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.32
+  - @udecode/slate-plugins-alignment@1.0.0-next.32
+  - @udecode/slate-plugins-basic-elements@1.0.0-next.32
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.32
+  - @udecode/slate-plugins-block-quote@1.0.0-next.32
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.32
+  - @udecode/slate-plugins-code-block@1.0.0-next.32
+  - @udecode/slate-plugins-image-ui@1.0.0-next.32
+  - @udecode/slate-plugins-image@1.0.0-next.32
+  - @udecode/slate-plugins-link-ui@1.0.0-next.32
+  - @udecode/slate-plugins-link@1.0.0-next.32
+  - @udecode/slate-plugins-list-ui@1.0.0-next.32
+  - @udecode/slate-plugins-list@1.0.0-next.32
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.32
+  - @udecode/slate-plugins-media-embed@1.0.0-next.32
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.32
+  - @udecode/slate-plugins-mention@1.0.0-next.32
+  - @udecode/slate-plugins-table-ui@1.0.0-next.32
+  - @udecode/slate-plugins-table@1.0.0-next.32
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.32
+  - @udecode/slate-plugins-find-replace@1.0.0-next.32
+  - @udecode/slate-plugins-node-id@1.0.0-next.32
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.32
+
 ## 1.0.0-next.31
 
 ### Patch Changes
