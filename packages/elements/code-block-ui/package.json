@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@udecode/slate-plugins-code-block": "1.0.0-next.30",
+    "@udecode/slate-plugins-core": "1.0.0-next.30",
     "@udecode/slate-plugins-toolbar": "1.0.0-next.30"
   },
   "publishConfig": {
