@@ -83,6 +83,7 @@ describe('when inserting nodes', () => {
       const editor = withNodeId({
         idCreator: getIdFactory(),
         exclude: [ELEMENT_PARAGRAPH],
+        reuseId: true,
       })(withHistory(input));
 
       editor.insertNode(
@@ -124,6 +125,7 @@ describe('when inserting nodes', () => {
 
       const editor = withNodeId({
         idCreator: getIdFactory(),
+        reuseId: true,
         allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
         exclude: [ELEMENT_PARAGRAPH],
       })(withHistory(input));
@@ -165,7 +167,7 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({ idCreator: getIdFactory() })(
+      const editor = withNodeId({ idCreator: getIdFactory(), reuseId: true })(
         withHistory(input)
       );
 
@@ -242,6 +244,48 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
+      const editor = withNodeId({ idCreator: getIdFactory(), reuseId: true })(
+        withHistory(input)
+      );
+
+      insertNodes(
+        editor,
+        (
+          <fragment>
+            <hp>inserted</hp>
+            <hp>inserted</hp>
+          </fragment>
+        ) as any
+      );
+
+      editor.undo();
+      editor.redo();
+      editor.undo();
+      editor.redo();
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when undo/redo without reuseId', () => {
+    it('should recover ids', () => {
+      const input = ((
+        <editor>
+          <hp id={10}>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any) as Editor;
+
+      const output = (
+        <editor>
+          <hp id={10}>test</hp>
+          <hp id={5}>inserted</hp>
+          <hp id={6}>inserted</hp>
+        </editor>
+      ) as any;
+
       const editor = withNodeId({ idCreator: getIdFactory() })(
         withHistory(input)
       );
@@ -281,9 +325,11 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({ idCreator: getIdFactory(), idKey: 'foo' })(
-        withHistory(input)
-      );
+      const editor = withNodeId({
+        idCreator: getIdFactory(),
+        idKey: 'foo',
+        reuseId: true,
+      })(withHistory(input));
 
       insertNodes(
         editor,
@@ -325,6 +371,7 @@ describe('when inserting nodes', () => {
 
       const editor = withNodeId({
         idCreator: getIdFactory(),
+        reuseId: true,
       })(withHistory(input));
 
       insertNodes<TElement>(
@@ -385,6 +432,40 @@ describe('when splitting nodes', () => {
         <editor>
           <hp id={10}>tes</hp>
           <hp id={1}>t</hp>
+        </editor>
+      ) as any;
+
+      const editor = withNodeId({
+        idCreator: getIdFactory(),
+        reuseId: true,
+      })(withHistory(input));
+
+      Transforms.splitNodes(editor);
+
+      editor.undo();
+      editor.redo();
+      editor.undo();
+      editor.redo();
+
+      expect(input.children).toEqual(output.children);
+    });
+  });
+
+  describe('when splitting p without reuseId', () => {
+    it('should add an id to the new p', () => {
+      const input = ((
+        <editor>
+          <hp id={10}>
+            tes
+            <cursor />t
+          </hp>
+        </editor>
+      ) as any) as Editor;
+
+      const output = (
+        <editor>
+          <hp id={10}>tes</hp>
+          <hp id={3}>t</hp>
         </editor>
       ) as any;
 
@@ -460,6 +541,7 @@ describe('when splitting nodes', () => {
       const editor = withNodeId({
         idCreator: getIdFactory(),
         filterText: false,
+        reuseId: true,
       })(withHistory(input));
 
       Transforms.splitNodes(editor);
@@ -496,6 +578,7 @@ describe('when merging nodes', () => {
       const editor: HistoryEditor = withNodeId({
         idCreator: getIdFactory(),
         filterText: false,
+        reuseId: true,
       })(withHistory(input));
 
       Transforms.mergeNodes(editor, { at: [0, 1] });

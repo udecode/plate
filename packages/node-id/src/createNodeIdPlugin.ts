@@ -33,10 +33,11 @@ export interface WithNodeIdProps extends QueryNodeOptions {
   filterText?: boolean;
 
   /**
-   * The existing id is still reset even if the id already exists.
+   * Reuse ids on undo/redo and copy/pasting if not existing in the document.
+   * This is disabled by default to avoid duplicate ids across documents.
    * @default false
    */
-  resetExistingID?: boolean;
+  reuseId?: boolean;
 }
 
 /**
@@ -47,6 +48,7 @@ export const withNodeId = ({
   idCreator = () => Date.now(),
   filterText = true,
   filter = () => true,
+  reuseId,
   allow,
   exclude,
 }: WithNodeIdProps = {}): WithOverride<HistoryEditor> => (e) => {
@@ -74,7 +76,10 @@ export const withNodeId = ({
       const node = cloneDeep(operation.node) as TNode;
 
       // the id in the new node is already being used in the editor, we need to replace it with a new id
-      if (someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })) {
+      if (
+        !reuseId ||
+        someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })
+      ) {
         delete node[idKey];
       }
 
@@ -103,6 +108,7 @@ export const withNodeId = ({
          * - the node has no id
          */
         if (
+          !reuseId ||
           id === undefined ||
           someNode(editor, {
             match: { [idKey]: id },
