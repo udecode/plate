@@ -35,6 +35,7 @@
   "dependencies": {
     "@udecode/slate-plugins-block-quote": "1.0.0-next.30",
     "@udecode/slate-plugins-code-block": "1.0.0-next.30",
+    "@udecode/slate-plugins-core": "1.0.0-next.30",
     "@udecode/slate-plugins-heading": "1.0.0-next.30",
     "@udecode/slate-plugins-paragraph": "1.0.0-next.30"
   },
