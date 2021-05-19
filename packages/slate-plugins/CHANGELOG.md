@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.0-next.33
+
+### Patch Changes
+
+- Updated dependencies [[`9e3246f3`](https://github.com/udecode/slate-plugins/commit/9e3246f3ae5c343d9e5d878ecc90b53776df0567)]:
+  - @udecode/slate-plugins-link-ui@1.0.0-next.33
+
 ## 1.0.0-next.32
 
 ### Patch Changes
