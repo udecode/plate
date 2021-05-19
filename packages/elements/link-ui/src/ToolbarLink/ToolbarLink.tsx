@@ -19,7 +19,14 @@ import {
   ToolbarButtonProps,
 } from '@udecode/slate-plugins-toolbar';
 
-export const ToolbarLink = (props: ToolbarButtonProps) => {
+export interface ToolbarLinkProps extends ToolbarButtonProps {
+    /**
+     * Default onMouseDown is getting the link url by calling this promise before inserting the image.
+     */
+    getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+}
+
+export const ToolbarLink = ({ getLinkUrl, ...props }: ToolbarLinkProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   const type = getSlatePluginType(editor, ELEMENT_LINK);
@@ -28,7 +35,7 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
   return (
     <ToolbarButton
       active={isLink}
-      onMouseDown={(event) => {
+      onMouseDown={async (event) => {
         if (!editor) return;
 
         event.preventDefault();
@@ -40,7 +47,14 @@ export const ToolbarLink = (props: ToolbarButtonProps) => {
         if (linkNode) {
           prevUrl = linkNode[0].url as string;
         }
-        const url = window.prompt(`Enter the URL of the link:`, prevUrl);
+
+        let url;
+        if (getLinkUrl) {
+            url = await getLinkUrl(prevUrl);
+        } else {
+            url = window.prompt(`Enter the URL of the link:`, prevUrl);
+        }
+
         if (!url) {
           linkNode &&
             editor.selection &&
