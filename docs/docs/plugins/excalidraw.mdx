@@ -1,0 +1,29 @@
+---
+slug: /plugins/excalidraw
+title: Excalidraw
+---
+
+### `createExcalidrawPlugin`
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createExcalidrawPlugin(),
+    createSelectOnBackspacePlugin({ allow: [ELEMENT_EXACLIDRAW] }),
+  ];
+
+  // FIXME initialValue
+  
+  return (
+    <SlatePlugins
+      id="excalidraw"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValueEmbeds}
+    />
+  );
+}
+```
