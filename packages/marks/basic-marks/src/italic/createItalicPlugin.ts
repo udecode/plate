@@ -1,6 +1,6 @@
 import { getToggleMarkOnKeyDown } from '@udecode/slate-plugins-common';
 import { getRenderLeaf, SlatePlugin } from '@udecode/slate-plugins-core';
-import { getCodeDeserialize } from '../code/getCodeDeserialize';
+import { getItalicDeserialize } from './getItalicDeserialize';
 import { MARK_ITALIC } from './defaults';
 
 /**
@@ -9,6 +9,6 @@ import { MARK_ITALIC } from './defaults';
 export const createItalicPlugin = (): SlatePlugin => ({
   pluginKeys: MARK_ITALIC,
   renderLeaf: getRenderLeaf(MARK_ITALIC),
-  deserialize: getCodeDeserialize(),
+  deserialize: getItalicDeserialize(),
   onKeyDown: getToggleMarkOnKeyDown(MARK_ITALIC),
 });
