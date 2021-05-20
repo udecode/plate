@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-basic-marks
 
+## 1.0.0-next.35
+
+### Patch Changes
+
+- [#720](https://github.com/udecode/slate-plugins/pull/720) [`53ebb551`](https://github.com/udecode/slate-plugins/commit/53ebb551d823b092e23b49370d9a924b853bd374) Thanks [@cawabunga](https://github.com/cawabunga)! - fix: deserialization of italic plugin
+
 ## 1.0.0-next.30
 
 ### Patch Changes
