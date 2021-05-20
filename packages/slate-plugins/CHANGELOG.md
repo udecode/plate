@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.0-next.35
+
+### Patch Changes
+
+- Updated dependencies [[`53ebb551`](https://github.com/udecode/slate-plugins/commit/53ebb551d823b092e23b49370d9a924b853bd374)]:
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.35
+
 ## 1.0.0-next.34
 
 ### Patch Changes

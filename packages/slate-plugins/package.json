@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "1.0.0-next.34",
+  "version": "1.0.0-next.35",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/slate-plugins#readme",
@@ -38,7 +38,7 @@
     "@udecode/slate-plugins-alignment-ui": "1.0.0-next.32",
     "@udecode/slate-plugins-autoformat": "1.0.0-next.30",
     "@udecode/slate-plugins-basic-elements": "1.0.0-next.32",
-    "@udecode/slate-plugins-basic-marks": "1.0.0-next.30",
+    "@udecode/slate-plugins-basic-marks": "1.0.0-next.35",
     "@udecode/slate-plugins-block-quote": "1.0.0-next.32",
     "@udecode/slate-plugins-block-quote-ui": "1.0.0-next.32",
     "@udecode/slate-plugins-break": "1.0.0-next.30",
