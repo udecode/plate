@@ -12,7 +12,7 @@ export const getExcalidrawElementStyles = ({
       },
       className,
     ],
-    iframeWrapper: {
+    excalidrawWrapper: {
       padding: '75% 0 0 0',
       position: 'relative',
     },
