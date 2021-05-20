@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.34
+
+### Patch Changes
+
+- [#700](https://github.com/udecode/slate-plugins/pull/700) [`33e0d16e`](https://github.com/udecode/slate-plugins/commit/33e0d16ebd7ace30fada72cb0ee98341c3917ca3) Thanks [@danlunde-ign](https://github.com/danlunde-ign)! - fix: strip data-slate-leaf from serialized html
+
 ## 1.0.0-next.30
 
 ### Patch Changes

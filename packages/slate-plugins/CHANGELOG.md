@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.0-next.34
+
+### Patch Changes
+
+- Updated dependencies [[`33e0d16e`](https://github.com/udecode/slate-plugins/commit/33e0d16ebd7ace30fada72cb0ee98341c3917ca3)]:
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.34
+
 ## 1.0.0-next.33
 
 ### Patch Changes
