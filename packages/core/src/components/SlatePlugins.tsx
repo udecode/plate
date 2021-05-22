@@ -22,9 +22,9 @@ export interface SlatePluginsProps<T extends SPEditor = SPEditor>
   editableProps?: EditableProps;
 
   /**
-   * Function to render <Editable />
+   * Custom `Editable` node.
    */
-  renderEditable?: (content: React.ReactNode) => React.ReactNode;
+  renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
 export const SlatePlugins = <T extends SPEditor = SPEditor>({
@@ -37,6 +37,7 @@ export const SlatePlugins = <T extends SPEditor = SPEditor>({
   if (!slateProps.editor) return null;
 
   const editable = <Editable {...editableProps} />;
+
   return (
     <Slate {...(slateProps as SlateProps)}>
       {children}
