@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": patch
+"@udecode/slate-plugins-core": minor
 ---
 
-feat: supporting customize editable render function
+feat: new `SlatePlugins` option - `renderEditable`: Custom `Editable` node
