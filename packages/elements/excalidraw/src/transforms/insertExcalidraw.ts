@@ -10,7 +10,6 @@ import { ExcalidrawNodeData } from '../types';
 export const insertExcalidraw = (
   editor: SPEditor,
   {
-    // url = '',
     pluginKey = ELEMENT_EXCALIDRAW,
   }: Partial<ExcalidrawNodeData> & SlatePluginKey
 ): void => {
@@ -22,7 +21,6 @@ export const insertExcalidraw = (
     editor,
     {
       type: pluginKey,
-      // url,
       children: [{ text: '' }],
     },
     { at: path }

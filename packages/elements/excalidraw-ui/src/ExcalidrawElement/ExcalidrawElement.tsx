@@ -12,7 +12,6 @@ import {
   ExcalidrawProps,
   SceneData,
 } from '@excalidraw/excalidraw/types/types';
-import { setNodes } from '@udecode/slate-plugins-common';
 import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
 import { ClassName, getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
 import { styled } from '@uifabric/utilities';
@@ -25,7 +24,6 @@ import {
   ExcalidrawElementProps,
   ExcalidrawElementStyleSet,
 } from './ExcalidrawElement.types';
-import { ExcalidrawUrlInput } from './ExcalidrawUrlInput';
 import InitialData from './InitialData';
 
 const getClassNames = getRootClassNames<ClassName, ExcalidrawElementStyleSet>();
@@ -49,7 +47,6 @@ export const ExcalidrawElementBase = ({
   const initialData = InitialData;
 
   const editor = useEditorRef();
-  const { url } = element;
 
   const excalidrawRef = useRef<ExcalidrawImperativeAPI>(null);
 
@@ -61,7 +58,7 @@ export const ExcalidrawElementBase = ({
   const [theme, setTheme] = useState<ExcalidrawProps['theme']>('light');
 
   const updateScene = () => {
-    const sceneData = {
+    const sceneData: SceneData = {
       elements: [
         {
           type: 'rectangle',
@@ -83,6 +80,8 @@ export const ExcalidrawElementBase = ({
           height: 141.9765625,
           seed: 1968410350,
           groupIds: [],
+          strokeSharpness: 'round',
+          boundElementIds: null,
         },
       ],
       appState: {
@@ -213,20 +212,6 @@ export const ExcalidrawElementBase = ({
             </div>
           </div>
         </div>
-
-        <ExcalidrawUrlInput
-          data-testid="ExcalidrawUrlInput"
-          className={classNames.input}
-          url={url}
-          onChange={(val: string) => {
-            const path = ReactEditor.findPath(editor, element);
-            setNodes<TElement<ExcalidrawNodeData>>(
-              editor,
-              { url: val },
-              { at: path }
-            );
-          }}
-        />
       </div>
       {children}
     </div>

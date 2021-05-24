@@ -7,8 +7,7 @@ import { ELEMENT_EXCALIDRAW } from './defaults';
 import { getExcalidrawDeserialize } from './getExcalidrawDeserialize';
 
 /**
- * Enables support for embeddable media such as YouTube
- * or Vimeo videos, Instagram posts and tweets or Google Maps.
+ * Enables support for Excalidraw drawing tool within a Slate document
  */
 export const createExcalidrawPlugin = ({
   pluginKey = ELEMENT_EXCALIDRAW,

@@ -26,7 +26,6 @@ export const getExcalidrawDeserialize = (
         // }
       },
       rules: [
-        // FIXME: What to do here.
         /* { nodeNames: 'IFRAME' }, */
         { className: getSlateClass(options.type) },
       ],
