@@ -41,22 +41,22 @@ describe('when last node is invalid', () => {
 describe('when level = 1', () => {
   const input = (
     <editor>
-      <block>
+      <element>
         <hh1>test</hh1>
         <hh1>test2</hh1>
-      </block>
+      </element>
     </editor>
   ) as any;
 
   const output = (
     <editor>
-      <block>
+      <element>
         <hh1>test</hh1>
         <hh1>test2</hh1>
         <hdefault>
           <htext />
         </hdefault>
-      </block>
+      </element>
     </editor>
   ) as any;
 
