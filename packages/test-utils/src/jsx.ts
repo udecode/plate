@@ -1,4 +1,5 @@
 import { createHyperscript } from 'slate-hyperscript';
+import { ELEMENT_EXCALIDRAW } from '../../elements/excalidraw';
 import { createText } from './hyperscript/creators';
 
 const ELEMENT_ALIGN_RIGHT = 'align_right';
@@ -50,6 +51,7 @@ export const jsx = createHyperscript({
     hcenter: { type: ELEMENT_ALIGN_CENTER },
     hcodeblock: { type: ELEMENT_CODE_BLOCK },
     hcodeline: { type: ELEMENT_CODE_LINE },
+    hexcalidraw: { type: ELEMENT_EXCALIDRAW },
     hh1: { type: ELEMENT_H1 },
     hh2: { type: ELEMENT_H2 },
     hh3: { type: ELEMENT_H3 },
