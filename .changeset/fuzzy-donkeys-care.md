@@ -1,5 +1,4 @@
 ---
-"@udecode/slate-plugins-common": patch
 "@udecode/slate-plugins-trailing-block": patch
 ---
 
