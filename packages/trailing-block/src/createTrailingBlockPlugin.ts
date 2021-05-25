@@ -8,7 +8,6 @@ import {
 import {
   getSlatePluginType,
   getSlatePluginWithOverrides,
-  isElement,
   SPEditor,
   TElement,
   WithOverride,
@@ -27,7 +26,7 @@ export interface WithTrailingBlock extends QueryNodeOptions {
 }
 
 /**
- * Add a trailing block when the last node type is not `type`.
+ * Add a trailing block when the last node type is not `type` and when the editor has .
  */
 export const withTrailingBlock = ({
   type: _type,
@@ -41,21 +40,23 @@ export const withTrailingBlock = ({
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
-      const entry = getLastNode(editor, level);
-      const [lastNode, lastPath] = entry;
+      const lastChild = getLastNode(editor, level);
+
+      const lastChildNode = lastChild?.[0];
 
       if (
-        isElement(lastNode) &&
-        lastNode.type !== type &&
-        queryNode(entry, query)
+        !lastChildNode ||
+        (lastChildNode.type !== type && queryNode(lastChild, query))
       ) {
+        const at = lastChild ? Path.next(lastChild[1]) : [0];
+
         insertNodes<TElement>(
           editor,
           {
             type,
             children: [{ text: '' }],
           },
-          { at: Path.next(lastPath) }
+          { at }
         );
         return;
       }

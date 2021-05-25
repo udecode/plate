@@ -22,10 +22,12 @@ const getLastChild = (node: TNode, level: number): TDescendant => {
 export const getLastNode = (
   editor: TEditor,
   level: number
-): NodeEntry<TDescendant> => {
+): NodeEntry<TDescendant> | undefined => {
   const { children } = editor;
 
   const lastNode = children[children.length - 1];
+
+  if (!lastNode) return;
 
   const [, lastPath] = Editor.last(editor, []);
 
