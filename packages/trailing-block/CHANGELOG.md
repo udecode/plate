@@ -1,5 +1,15 @@
 # @udecode/slate-plugins-trailing-block
 
+## 1.0.0-next.36
+
+### Patch Changes
+
+- [#728](https://github.com/udecode/slate-plugins/pull/728) [`3ecfc2b2`](https://github.com/udecode/slate-plugins/commit/3ecfc2b2d1fe65c3b772b63fe1ca046cc43e7aa0) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: insert a trailing block when the editor has 0 child
+
+- Updated dependencies [[`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f), [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-common@1.0.0-next.36
+  - @udecode/slate-plugins-core@1.0.0-next.36
+
 ## 1.0.0-next.30
 
 ### Patch Changes
