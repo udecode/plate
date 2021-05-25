@@ -32,6 +32,7 @@ import {
 } from '@udecode/slate-plugins';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as faker from 'faker';
+import { ELEMENT_EXCALIDRAW } from '../../../../packages/elements/excalidraw';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { createElement, createList, getNodesWithRandomId } from './utils';
@@ -72,6 +73,17 @@ export const initialValueEmbeds: any = (
       Try it out! This editor is built to handle Vimeo embeds, but you could
       handle any type.
     </hp>
+  </fragment>
+);
+
+export const initialValueExcalidraw: any = (
+  <fragment>
+    <hh2>✍️ Excalidraw</hh2>
+    <hp>Embed an Excalidraw within your Slate document!</hp>
+    <hexcalidraw>
+      <htext />
+    </hexcalidraw>
+    <hp>Try it out!</hp>
   </fragment>
 );
 
@@ -878,6 +890,7 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueMentions,
   ...initialValueImages,
   ...initialValueEmbeds,
+  ...initialValueExcalidraw,
   ...initialValueAutoformat,
   ...initialValueSoftBreak,
   ...initialValueExitBreak,
