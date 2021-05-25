@@ -1,5 +1,14 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.36
+
+### Patch Changes
+
+- [#731](https://github.com/udecode/slate-plugins/pull/731) [`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: `getLastNode` returns undefined when the editor has no children
+
+- Updated dependencies [[`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-core@1.0.0-next.36
+
 ## 1.0.0-next.30
 
 ### Patch Changes
