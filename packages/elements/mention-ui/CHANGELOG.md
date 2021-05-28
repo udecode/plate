@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-mention-ui
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/slate-plugins-mention@1.0.0-next.37
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.37
+
 ## 1.0.0-next.36
 
 ### Patch Changes

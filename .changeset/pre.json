@@ -47,6 +47,8 @@
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
   },
   "changesets": [
+    "blue-eels-mate",
+    "cold-lemons-taste",
     "core-major-eight-poems-travel",
     "core-minor-eight-poems-travel",
     "eight-parrots-unite",

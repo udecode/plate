@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-next.36",
+  "version": "1.0.0-next.37",
   "description": "Slate plugins placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@udecode/slate-plugins-core": "1.0.0-next.36",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.36",
+    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.37",
     "@uifabric/styling": "^7.18.0",
     "@uifabric/utilities": "^7.33.4"
   },

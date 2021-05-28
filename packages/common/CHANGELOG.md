@@ -1,5 +1,14 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.37
+
+### Major Changes
+
+- [#734](https://github.com/udecode/slate-plugins/pull/734) [`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c) Thanks [@cawabunga](https://github.com/cawabunga)! - changes:
+  - BREAKING CHANGE: `normalizeDescendantsToDocumentFragment` parameters are now: `(editor, { descendants })`. Used by the HTML deserializer.
+  - fix: Handles 1st constraint: "All Element nodes must contain at least one Text descendant."
+  - fix: Handles 3rd constraint: "Block nodes can only contain other blocks, or inline and text nodes."
+
 ## 1.0.0-next.36
 
 ### Patch Changes

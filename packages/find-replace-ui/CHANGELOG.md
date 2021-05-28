@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-find-replace-ui
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/slate-plugins-find-replace@1.0.0-next.37
+  - @udecode/slate-plugins-toolbar@1.0.0-next.37
+
 ## 1.0.0-next.36
 
 ### Patch Changes
