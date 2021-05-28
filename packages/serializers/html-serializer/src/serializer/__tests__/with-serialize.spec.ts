@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { SlatePlugin } from '@udecode/slate-plugins-core';
 import { RenderLeafProps } from 'slate-react';
 import {
   createBoldPlugin,
@@ -61,4 +62,52 @@ it('custom serialize bold to html', () => {
       ],
     })
   ).toEqual('Some paragraph of text with <b>bold</b> part.');
+});
+
+describe('multiple custom leaf serializers', () => {
+  const Bold = ({ children }: any): JSX.Element =>
+    React.createElement('b', {}, children);
+
+  const Italic = ({ children }: any): JSX.Element =>
+    React.createElement('i', {}, children);
+
+  const normalizeHTML = (html: string): string =>
+    new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
+
+  let editor = createEditorPlugins();
+
+  beforeEach(() => {
+    editor = createEditorPlugins();
+  });
+
+  it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
+    const pluginsWithoutSerializers: SlatePlugin[] = [
+      { renderLeaf: () => Bold }, // always bold
+      { renderLeaf: () => Italic }, // always italic
+    ];
+
+    const pluginsWithSerializers: SlatePlugin[] = [
+      {
+        renderLeaf: () => Bold,
+        serialize: { leaf: Bold },
+      },
+      {
+        renderLeaf: () => Italic,
+        serialize: { leaf: Italic },
+      },
+    ];
+
+    const result1 = serializeHTMLFromNodes(editor, {
+      plugins: pluginsWithoutSerializers,
+      nodes: [{ text: 'any text' }],
+    });
+
+    const result2 = serializeHTMLFromNodes(editor, {
+      plugins: pluginsWithSerializers,
+      nodes: [{ text: 'any text' }],
+    });
+
+    expect(normalizeHTML(result1)).toEqual(normalizeHTML(result2));
+    expect(normalizeHTML(result2)).toEqual('<i><b>any text</b></i>');
+  });
 });
