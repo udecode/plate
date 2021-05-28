@@ -135,7 +135,7 @@ const getLeaf = (
         createElementWithSlate({
           ...slateProps,
           children:
-            plugin.serialize?.leaf?.(leafProps) ??
+            plugin.serialize?.leaf?.(newLeafProps) ??
             plugin.renderLeaf?.(editor)(newLeafProps),
         })
       )
