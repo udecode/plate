@@ -1,5 +1,119 @@
 # Change Log
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies [[`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c), [`097d3f3d`](https://github.com/udecode/slate-plugins/commit/097d3f3d3517a5352b6a84bb63a5d97a39aed52f)]:
+  - @udecode/slate-plugins-common@1.0.0-next.37
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.37
+  - @udecode/slate-plugins-autoformat@1.0.0-next.37
+  - @udecode/slate-plugins-break@1.0.0-next.37
+  - @udecode/slate-plugins-dnd@1.0.0-next.37
+  - @udecode/slate-plugins-alignment@1.0.0-next.37
+  - @udecode/slate-plugins-block-quote@1.0.0-next.37
+  - @udecode/slate-plugins-code-block@1.0.0-next.37
+  - @udecode/slate-plugins-heading@1.0.0-next.37
+  - @udecode/slate-plugins-image@1.0.0-next.37
+  - @udecode/slate-plugins-link@1.0.0-next.37
+  - @udecode/slate-plugins-list@1.0.0-next.37
+  - @udecode/slate-plugins-media-embed@1.0.0-next.37
+  - @udecode/slate-plugins-mention@1.0.0-next.37
+  - @udecode/slate-plugins-paragraph@1.0.0-next.37
+  - @udecode/slate-plugins-table@1.0.0-next.37
+  - @udecode/slate-plugins-find-replace@1.0.0-next.37
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.37
+  - @udecode/slate-plugins-highlight@1.0.0-next.37
+  - @udecode/slate-plugins-kbd@1.0.0-next.37
+  - @udecode/slate-plugins-node-id@1.0.0-next.37
+  - @udecode/slate-plugins-normalizers@1.0.0-next.37
+  - @udecode/slate-plugins-reset-node@1.0.0-next.37
+  - @udecode/slate-plugins-select@1.0.0-next.37
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.37
+  - @udecode/slate-plugins-trailing-block@1.0.0-next.37
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.37
+  - @udecode/slate-plugins-toolbar@1.0.0-next.37
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.37
+  - @udecode/slate-plugins-basic-elements@1.0.0-next.37
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.37
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.37
+  - @udecode/slate-plugins-image-ui@1.0.0-next.37
+  - @udecode/slate-plugins-link-ui@1.0.0-next.37
+  - @udecode/slate-plugins-list-ui@1.0.0-next.37
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.37
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.37
+  - @udecode/slate-plugins-table-ui@1.0.0-next.37
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.37
+  - @udecode/slate-plugins-placeholder@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- Updated dependencies [[`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f), [`3ecfc2b2`](https://github.com/udecode/slate-plugins/commit/3ecfc2b2d1fe65c3b772b63fe1ca046cc43e7aa0), [`abe34bfa`](https://github.com/udecode/slate-plugins/commit/abe34bfa83265a9404ed911e03ba455dfa01a769), [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-common@1.0.0-next.36
+  - @udecode/slate-plugins-trailing-block@1.0.0-next.36
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.36
+  - @udecode/slate-plugins-core@1.0.0-next.36
+  - @udecode/slate-plugins-autoformat@1.0.0-next.36
+  - @udecode/slate-plugins-break@1.0.0-next.36
+  - @udecode/slate-plugins-dnd@1.0.0-next.36
+  - @udecode/slate-plugins-alignment@1.0.0-next.36
+  - @udecode/slate-plugins-block-quote@1.0.0-next.36
+  - @udecode/slate-plugins-code-block@1.0.0-next.36
+  - @udecode/slate-plugins-heading@1.0.0-next.36
+  - @udecode/slate-plugins-image@1.0.0-next.36
+  - @udecode/slate-plugins-link@1.0.0-next.36
+  - @udecode/slate-plugins-list@1.0.0-next.36
+  - @udecode/slate-plugins-media-embed@1.0.0-next.36
+  - @udecode/slate-plugins-mention@1.0.0-next.36
+  - @udecode/slate-plugins-paragraph@1.0.0-next.36
+  - @udecode/slate-plugins-table@1.0.0-next.36
+  - @udecode/slate-plugins-find-replace@1.0.0-next.36
+  - @udecode/slate-plugins-highlight@1.0.0-next.36
+  - @udecode/slate-plugins-kbd@1.0.0-next.36
+  - @udecode/slate-plugins-node-id@1.0.0-next.36
+  - @udecode/slate-plugins-normalizers@1.0.0-next.36
+  - @udecode/slate-plugins-reset-node@1.0.0-next.36
+  - @udecode/slate-plugins-select@1.0.0-next.36
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.36
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.36
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.36
+  - @udecode/slate-plugins-toolbar@1.0.0-next.36
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.36
+  - @udecode/slate-plugins-basic-elements@1.0.0-next.36
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.36
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.36
+  - @udecode/slate-plugins-image-ui@1.0.0-next.36
+  - @udecode/slate-plugins-link-ui@1.0.0-next.36
+  - @udecode/slate-plugins-list-ui@1.0.0-next.36
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.36
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.36
+  - @udecode/slate-plugins-table-ui@1.0.0-next.36
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.36
+  - @udecode/slate-plugins-placeholder@1.0.0-next.36
+
+## 1.0.0-next.35
+
+### Patch Changes
+
+- Updated dependencies [[`53ebb551`](https://github.com/udecode/slate-plugins/commit/53ebb551d823b092e23b49370d9a924b853bd374)]:
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.35
+
+## 1.0.0-next.34
+
+### Patch Changes
+
+- Updated dependencies [[`33e0d16e`](https://github.com/udecode/slate-plugins/commit/33e0d16ebd7ace30fada72cb0ee98341c3917ca3)]:
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.34
+
+## 1.0.0-next.33
+
+### Patch Changes
+
+- Updated dependencies [[`9e3246f3`](https://github.com/udecode/slate-plugins/commit/9e3246f3ae5c343d9e5d878ecc90b53776df0567)]:
+  - @udecode/slate-plugins-link-ui@1.0.0-next.33
+
 ## 1.0.0-next.32
 
 ### Patch Changes

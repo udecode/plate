@@ -1,5 +1,28 @@
 # @udecode/slate-plugins-basic-marks
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies [[`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c)]:
+  - @udecode/slate-plugins-common@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- [#726](https://github.com/udecode/slate-plugins/pull/726) [`abe34bfa`](https://github.com/udecode/slate-plugins/commit/abe34bfa83265a9404ed911e03ba455dfa01a769) Thanks [@cawabunga](https://github.com/cawabunga)! - fix: HTML deserialization of createStrikethroughPlugin, createSubscriptPlugin, createSuperscriptPlugin
+
+- Updated dependencies [[`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f), [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-common@1.0.0-next.36
+  - @udecode/slate-plugins-core@1.0.0-next.36
+
+## 1.0.0-next.35
+
+### Patch Changes
+
+- [#720](https://github.com/udecode/slate-plugins/pull/720) [`53ebb551`](https://github.com/udecode/slate-plugins/commit/53ebb551d823b092e23b49370d9a924b853bd374) Thanks [@cawabunga](https://github.com/cawabunga)! - fix: deserialization of italic plugin
+
 ## 1.0.0-next.30
 
 ### Patch Changes

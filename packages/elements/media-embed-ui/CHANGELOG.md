@@ -1,5 +1,22 @@
 # @udecode/slate-plugins-media-embed-ui
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/slate-plugins-media-embed@1.0.0-next.37
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- Updated dependencies [[`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-core@1.0.0-next.36
+  - @udecode/slate-plugins-media-embed@1.0.0-next.36
+  - @udecode/slate-plugins-ui-fluent@1.0.0-next.36
+
 ## 1.0.0-next.32
 
 ### Patch Changes

@@ -1,5 +1,28 @@
 # @udecode/slate-plugins-link-ui
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/slate-plugins-link@1.0.0-next.37
+  - @udecode/slate-plugins-toolbar@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- Updated dependencies [[`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-core@1.0.0-next.36
+  - @udecode/slate-plugins-link@1.0.0-next.36
+  - @udecode/slate-plugins-toolbar@1.0.0-next.36
+
+## 1.0.0-next.33
+
+### Patch Changes
+
+- [#716](https://github.com/udecode/slate-plugins/pull/716) [`9e3246f3`](https://github.com/udecode/slate-plugins/commit/9e3246f3ae5c343d9e5d878ecc90b53776df0567) Thanks [@Aedron](https://github.com/Aedron)! - feat: new option `getLinkUrl` for `ToolbarLink` (default: `window.prompt`)
+
 ## 1.0.0-next.32
 
 ### Patch Changes

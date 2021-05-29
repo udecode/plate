@@ -31,5 +31,7 @@ export const deserializeHTMLToDocumentFragment = <
     element,
   }) as TDescendant[];
 
-  return normalizeDescendantsToDocumentFragment(fragment);
+  return normalizeDescendantsToDocumentFragment(editor, {
+    descendants: fragment,
+  });
 };

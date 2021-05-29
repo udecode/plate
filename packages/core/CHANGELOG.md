@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-core
 
+## 1.0.0-next.36
+
+### Minor Changes
+
+- [#723](https://github.com/udecode/slate-plugins/pull/723) [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e) Thanks [@Aedron](https://github.com/Aedron)! - feat: new `SlatePlugins` option - `renderEditable`: Custom `Editable` node
+
 ## 1.0.0-next.30
 
 ### Patch Changes

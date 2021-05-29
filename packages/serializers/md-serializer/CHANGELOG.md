@@ -1,5 +1,32 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies [[`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c)]:
+  - @udecode/slate-plugins-common@1.0.0-next.37
+  - @udecode/slate-plugins-block-quote@1.0.0-next.37
+  - @udecode/slate-plugins-code-block@1.0.0-next.37
+  - @udecode/slate-plugins-heading@1.0.0-next.37
+  - @udecode/slate-plugins-link@1.0.0-next.37
+  - @udecode/slate-plugins-list@1.0.0-next.37
+  - @udecode/slate-plugins-paragraph@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- Updated dependencies [[`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f), [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-common@1.0.0-next.36
+  - @udecode/slate-plugins-core@1.0.0-next.36
+  - @udecode/slate-plugins-block-quote@1.0.0-next.36
+  - @udecode/slate-plugins-code-block@1.0.0-next.36
+  - @udecode/slate-plugins-heading@1.0.0-next.36
+  - @udecode/slate-plugins-link@1.0.0-next.36
+  - @udecode/slate-plugins-list@1.0.0-next.36
+  - @udecode/slate-plugins-paragraph@1.0.0-next.36
+
 ## 1.0.0-next.32
 
 ### Patch Changes

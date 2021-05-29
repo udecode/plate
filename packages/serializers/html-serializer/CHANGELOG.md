@@ -1,5 +1,34 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.37
+
+### Patch Changes
+
+- [#734](https://github.com/udecode/slate-plugins/pull/734) [`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c) Thanks [@cawabunga](https://github.com/cawabunga)! - changes:
+
+  - BREAKING CHANGE: `normalizeDescendantsToDocumentFragment` parameters are now: `(editor, { descendants })`. Used by the HTML deserializer.
+  - fix: Handles 1st constraint: "All Element nodes must contain at least one Text descendant."
+  - fix: Handles 3rd constraint: "Block nodes can only contain other blocks, or inline and text nodes."
+
+- [#735](https://github.com/udecode/slate-plugins/pull/735) [`097d3f3d`](https://github.com/udecode/slate-plugins/commit/097d3f3d3517a5352b6a84bb63a5d97a39aed52f) Thanks [@cawabunga](https://github.com/cawabunga)! - fix: calling leaf serializers with preceding serialization result
+
+- Updated dependencies [[`2cf618c3`](https://github.com/udecode/slate-plugins/commit/2cf618c3a0220ca03c1d95e0b51d1ff58d73578c)]:
+  - @udecode/slate-plugins-common@1.0.0-next.37
+
+## 1.0.0-next.36
+
+### Patch Changes
+
+- Updated dependencies [[`7cbd7bd9`](https://github.com/udecode/slate-plugins/commit/7cbd7bd95b64e06fde38dcd68935984de8f3a82f), [`806e1632`](https://github.com/udecode/slate-plugins/commit/806e16322e655802822079d8540a6983a9dfb06e)]:
+  - @udecode/slate-plugins-common@1.0.0-next.36
+  - @udecode/slate-plugins-core@1.0.0-next.36
+
+## 1.0.0-next.34
+
+### Patch Changes
+
+- [#700](https://github.com/udecode/slate-plugins/pull/700) [`33e0d16e`](https://github.com/udecode/slate-plugins/commit/33e0d16ebd7ace30fada72cb0ee98341c3917ca3) Thanks [@danlunde-ign](https://github.com/danlunde-ign)! - fix: strip data-slate-leaf from serialized html
+
 ## 1.0.0-next.30
 
 ### Patch Changes
