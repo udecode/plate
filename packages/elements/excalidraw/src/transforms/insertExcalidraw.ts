@@ -14,10 +14,13 @@ export const insertExcalidraw = (
   }: Partial<ExcalidrawNodeData> & SlatePluginKey
 ): void => {
   if (!editor.selection) return;
+
   const selectionParentEntry = getParent(editor, editor.selection);
   if (!selectionParentEntry) return;
+
   const [, path] = selectionParentEntry;
-  insertNodes<TElement>(
+
+  insertNodes<TElement<ExcalidrawNodeData>>(
     editor,
     {
       type: pluginKey,

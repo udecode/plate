@@ -25,10 +25,7 @@ export const getExcalidrawDeserialize = (
         };
         // }
       },
-      rules: [
-        /* { nodeNames: 'IFRAME' }, */
-        { className: getSlateClass(options.type) },
-      ],
+      rules: [{ className: getSlateClass(options.type) }],
       ...options.deserialize,
     }),
   };

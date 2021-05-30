@@ -1,5 +1,4 @@
 import { createHyperscript } from 'slate-hyperscript';
-import { ELEMENT_EXCALIDRAW } from '../../elements/excalidraw';
 import { createText } from './hyperscript/creators';
 
 const ELEMENT_ALIGN_RIGHT = 'align_right';
@@ -28,6 +27,7 @@ const ELEMENT_BLOCKQUOTE = 'blockquote';
 const ELEMENT_CODE_BLOCK = 'code_block';
 const ELEMENT_CODE_LINE = 'code_line';
 const ELEMENT_LIC = 'lic';
+const ELEMENT_EXCALIDRAW = 'excalidraw';
 
 declare global {
   namespace JSX {
