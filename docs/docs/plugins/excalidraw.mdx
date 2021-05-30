@@ -10,19 +10,22 @@ title: Excalidraw
   const plugins = [
     ...pluginsBasic,
     createExcalidrawPlugin(),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_EXACLIDRAW] }),
+    createSelectOnBackspacePlugin({ allow: [ELEMENT_EXCALIDRAW] }),
   ];
 
-  // FIXME initialValue
-  
+  const styledComponents = {
+    ...components,
+    [ELEMENT_EXCALIDRAW]: ExcalidrawElement
+  };
+
   return (
     <SlatePlugins
       id="excalidraw"
       plugins={plugins}
-      components={components}
+      components={styledComponents}
       options={options}
       editableProps={editableProps}
-      initialValue={initialValueEmbeds}
+      initialValue={initialValueExcalidraw}
     />
   );
 }

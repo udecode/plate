@@ -46,10 +46,10 @@ const Feature = ({ imageUrl, title, description }: any) => {
           <img className={styles.featureImage} src={imgUrl} alt={title} />
         </div>
       )}
-      <h3 className="text-xl leading-6 xl:text-2xl font-bold text-gray-900 dark:text-white">
+      <h3 tw="text-xl leading-6 xl:text-2xl font-bold text-gray-900 dark:text-white">
         {title}
       </h3>
-      <p className="text-base xl:text-lg lg:leading-normal leading-6 text-gray-600 dark:text-gray-300">
+      <p tw="text-base xl:text-lg lg:leading-normal leading-6 text-gray-600 dark:text-gray-300">
         {description}
       </p>
     </div>
@@ -60,8 +60,8 @@ export const MacroFeatures = () => {
   return (
     macroFeatures &&
     macroFeatures.length > 0 && (
-      <section className="border-gray-50 bg-gray-50 dark:bg-gray-850 flex items-center w-full text-lg border-t">
-        <div className="container py-24 mx-auto">
+      <section tw="border-gray-50 bg-gray-50 dark:bg-gray-850 flex items-center w-full text-lg border-t">
+        <div tw="container py-24 mx-auto px-4">
           <div className="row">
             {macroFeatures.map((props, idx) => (
               <Feature key={idx} {...props} />

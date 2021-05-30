@@ -32,9 +32,9 @@ import {
 } from '@udecode/slate-plugins';
 import { jsx } from '@udecode/slate-plugins-test-utils';
 import * as faker from 'faker';
-import { ELEMENT_EXCALIDRAW } from '../../../../packages/elements/excalidraw';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
+import { initialDataExcalidraw } from './initialDataExcalidraw';
 import { createElement, createList, getNodesWithRandomId } from './utils';
 
 jsx;
@@ -78,9 +78,9 @@ export const initialValueEmbeds: any = (
 
 export const initialValueExcalidraw: any = (
   <fragment>
-    <hh2>✍️ Excalidraw</hh2>
-    <hp>Embed an Excalidraw within your Slate document!</hp>
-    <hexcalidraw>
+    <hh2>🎨 Excalidraw</hh2>
+    <hp>Embed Excalidraw within your Slate document!</hp>
+    <hexcalidraw {...initialDataExcalidraw}>
       <htext />
     </hexcalidraw>
     <hp>Try it out!</hp>

@@ -42,6 +42,7 @@
     "@babel/core": "^7.13.1",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.13.0",
     "@babel/plugin-proposal-optional-chaining": "^7.13.0",
+    "@babel/plugin-transform-react-jsx": "^7.14.3",
     "@babel/preset-env": "^7.13.5",
     "@babel/preset-react": "^7.12.13",
     "@babel/preset-typescript": "^7.13.0",
@@ -61,7 +62,7 @@
     "@types/prismjs": "^1.16.3",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.1",
-    "@types/styled-components": "^5.1.7",
+    "@types/styled-components": "^5.1.9",
     "@typescript-eslint/eslint-plugin": "^4.15.2",
     "@typescript-eslint/parser": "^4.15.2",
     "@styled-icons/boxicons-regular": "^10.23.0",
@@ -74,6 +75,7 @@
     "babel-plugin-inline-json-import": "^0.3.2",
     "babel-plugin-prismjs": "2.0.1",
     "babel-plugin-styled-components": "^1.12.0",
+    "babel-plugin-twin": "^1.0.2",
     "barrelsby": "^2.2.0",
     "concurrently": "^6.0.0",
     "eslint": "7.20.0",
@@ -115,10 +117,11 @@
     "slate-history": "0.60.11",
     "slate-hyperscript": "0.60.11",
     "slate-react": "0.60.11",
-    "styled-components": "^5.2.1",
+    "tailwindcss": "^2.1.2",
     "ts-jest": "^26.5.2",
     "typedoc": "^0.19.2",
-    "typescript": "^4.2.2"
+    "typescript": "^4.2.2",
+    "twin.macro": "^2.4.2"
   },
   "resolutions": {
     "eslint-plugin-prettier": "3.3.1",

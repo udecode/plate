@@ -22,6 +22,7 @@ export * from './getRangeBefore';
 export * from './getRangeFromBlockStart';
 export * from './getSelectionText';
 export * from './getText';
+export * from './hasSingleChild';
 export * from './isAncestorEmpty';
 export * from './isBlockAboveEmpty';
 export * from './isBlockTextEmptyAfterSelection';

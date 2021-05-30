@@ -13,7 +13,7 @@ export const HomeContent = () => (
 
       <DemoHeader />
 
-      <section className="bg-gray-800 dark:bg-gray-900">
+      <section tw="bg-gray-800 dark:bg-gray-900">
         <Demo />
 
         <MicroFeatures />
