@@ -3,6 +3,7 @@ import {
   createBasicElementPlugins,
   createHistoryPlugin,
   createReactPlugin,
+  createSlatePluginsComponents,
 } from '@udecode/slate-plugins';
 import {
   createExitBreakPlugin,
@@ -21,7 +22,6 @@ import {
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../../config/pluginOptions';
-import { components } from '../../live';
 
 const plugins = [
   createReactPlugin(),
@@ -31,6 +31,8 @@ const plugins = [
   createSoftBreakPlugin(optionsSoftBreakPlugin),
   createExitBreakPlugin(optionsExitBreakPlugin),
 ];
+
+const components = createSlatePluginsComponents();
 
 export const EditableVoidElement = ({
   attributes,

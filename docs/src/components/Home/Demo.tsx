@@ -1,7 +1,8 @@
+import 'twin.macro';
 import React from 'react';
 
 export const Demo = () => (
-  <div className="relative px-4 max-w-7xl -mt-72 mx-auto w-full">
+  <div tw="relative px-4 max-w-7xl -mt-72 mx-auto w-full">
     <iframe
       src="https://codesandbox.io/embed/slate-plugins-playground-v1-2mh1c?autoresize=1&fontsize=16&theme=dark"
       style={{

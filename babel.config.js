@@ -1,4 +1,9 @@
 module.exports = {
-  presets: ['@babel/preset-env'],
+  plugins: [
+    'babel-plugin-macros',
+    ['styled-components', { ssr: true }],
+    '@babel/plugin-transform-react-jsx',
+  ],
+  presets: ['@babel/preset-react', '@babel/preset-typescript'],
   sourceType: 'unambiguous',
 };

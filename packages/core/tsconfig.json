@@ -1,4 +1,7 @@
 {
   "extends": "../../tsconfig",
+  "compilerOptions": {
+    "declarationDir": "./dist"
+  },
   "include": ["src"]
 }

@@ -21,7 +21,7 @@
   "scripts": {
     "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
-    "build": "yarn rollup",
+    "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"

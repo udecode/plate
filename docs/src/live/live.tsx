@@ -142,6 +142,9 @@ import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { createAlignPlugin } from '../../../packages/elements/alignment/src/createAlignPlugin';
 import { createBasicElementPlugins } from '../../../packages/elements/basic-elements/src/createBasicElementPlugins';
+import { ExcalidrawElement } from '../../../packages/elements/excalidraw/src/components/ExcalidrawElement/ExcalidrawElement';
+import { createExcalidrawPlugin } from '../../../packages/elements/excalidraw/src/createExcalidrawPlugin';
+import { ELEMENT_EXCALIDRAW } from '../../../packages/elements/excalidraw/src/defaults';
 import { createHeadingPlugin } from '../../../packages/elements/heading/src/createHeadingPlugin';
 import { KEYS_HEADING } from '../../../packages/elements/heading/src/defaults';
 import { ToolbarImage } from '../../../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
@@ -170,6 +173,7 @@ import {
   initialValueBasicMarks,
   initialValueCombobox,
   initialValueEmbeds,
+  initialValueExcalidraw,
   initialValueExitBreak,
   initialValueForcedLayout,
   initialValueHighlight,
@@ -282,6 +286,7 @@ const ReactLiveScope = {
   ...React,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
+  ExcalidrawElement,
   addColumn,
   addRow,
   deleteColumn,
@@ -376,6 +381,7 @@ const ReactLiveScope = {
   createEditor,
   unwrapList,
   createEditorPlugins,
+  createExcalidrawPlugin,
   createExitBreakPlugin,
   createHeadingPlugin,
   createHighlightPlugin,
@@ -406,6 +412,8 @@ const ReactLiveScope = {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
+  initialValueExcalidraw,
+  ELEMENT_EXCALIDRAW,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,

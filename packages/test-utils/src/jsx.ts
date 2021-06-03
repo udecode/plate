@@ -27,6 +27,7 @@ const ELEMENT_BLOCKQUOTE = 'blockquote';
 const ELEMENT_CODE_BLOCK = 'code_block';
 const ELEMENT_CODE_LINE = 'code_line';
 const ELEMENT_LIC = 'lic';
+const ELEMENT_EXCALIDRAW = 'excalidraw';
 
 declare global {
   namespace JSX {
@@ -50,6 +51,7 @@ export const jsx = createHyperscript({
     hcenter: { type: ELEMENT_ALIGN_CENTER },
     hcodeblock: { type: ELEMENT_CODE_BLOCK },
     hcodeline: { type: ELEMENT_CODE_LINE },
+    hexcalidraw: { type: ELEMENT_EXCALIDRAW },
     hh1: { type: ELEMENT_H1 },
     hh2: { type: ELEMENT_H2 },
     hh3: { type: ELEMENT_H3 },

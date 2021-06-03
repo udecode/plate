@@ -9,7 +9,6 @@ import globals from 'rollup-plugin-node-globals';
 import resolve from 'rollup-plugin-node-resolve';
 import external from 'rollup-plugin-peer-deps-external';
 import { terser } from 'rollup-plugin-terser';
-import typescript from 'rollup-plugin-typescript2';
 
 const PACKAGE_ROOT_PATH = process.cwd();
 const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
@@ -17,6 +16,7 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
   ? INPUT_FILE_PATH
   : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 const PKG_JSON = require(path.join(PACKAGE_ROOT_PATH, 'package.json'));
+const babelConfig = require('./babel.config');
 
 const isUmd = false;
 
@@ -41,12 +41,6 @@ const plugins = [
     // modulesOnly: true,
   }),
 
-  typescript({
-    clean: true,
-    tsconfig: path.join(PACKAGE_ROOT_PATH, 'tsconfig.build.json'),
-    useTsconfigDeclarationDir: true,
-  }),
-
   // Allow Rollup to resolve CommonJS modules, since it only resolves ES2015
   // modules by default.
   commonjs({
@@ -65,6 +59,7 @@ const plugins = [
   // Use Babel to transpile the result, limiting it to the source code.
   babel({
     presets: [
+      ...babelConfig.presets,
       [
         '@babel/preset-env',
         {
@@ -74,14 +69,12 @@ const plugins = [
           },
         },
       ],
-      '@babel/preset-react',
-      '@babel/preset-typescript',
     ],
     plugins: [
+      ...babelConfig.plugins,
       '@babel/plugin-proposal-optional-chaining',
       '@babel/plugin-proposal-nullish-coalescing-operator',
       'babel-plugin-dynamic-import-node',
-      'babel-plugin-styled-components',
       ['inline-json-import', {}],
       [
         'import',
