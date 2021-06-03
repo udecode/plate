@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaGithub } from 'react-icons/all';
+import { FaGithub } from 'react-icons/fa';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import clsx from 'clsx';
 import styles from './styles.module.css';

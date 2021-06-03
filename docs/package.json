@@ -29,7 +29,7 @@
     "prism-react-renderer": "^1.2.0",
     "prismjs": "^1.23.0",
     "ramda": "^0.27.1",
-    "react-icons": "^4.2.0",
+    "react-icons": "^",
     "sass": "^1.32.12",
     "styled-components": "^5.3.0",
     "tailwindcss": "^2.1.4",
