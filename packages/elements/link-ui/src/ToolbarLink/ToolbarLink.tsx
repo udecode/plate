@@ -20,10 +20,10 @@ import {
 } from '@udecode/slate-plugins-toolbar';
 
 export interface ToolbarLinkProps extends ToolbarButtonProps {
-    /**
-     * Default onMouseDown is getting the link url by calling this promise before inserting the image.
-     */
-    getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+  /**
+   * Default onMouseDown is getting the link url by calling this promise before inserting the image.
+   */
+  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
 
 export const ToolbarLink = ({ getLinkUrl, ...props }: ToolbarLinkProps) => {
@@ -50,9 +50,9 @@ export const ToolbarLink = ({ getLinkUrl, ...props }: ToolbarLinkProps) => {
 
         let url;
         if (getLinkUrl) {
-            url = await getLinkUrl(prevUrl);
+          url = await getLinkUrl(prevUrl);
         } else {
-            url = window.prompt(`Enter the URL of the link:`, prevUrl);
+          url = window.prompt(`Enter the URL of the link:`, prevUrl);
         }
 
         if (!url) {
