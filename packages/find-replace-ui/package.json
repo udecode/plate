@@ -21,7 +21,7 @@
   "scripts": {
     "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
-    "build": "tsc --p tsconfig.build.json && yarn rollup",
+    "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
@@ -33,6 +33,7 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
+    "@udecode/slate-plugins-common": "1.0.0-next.37",
     "@udecode/slate-plugins-core": "1.0.0-next.36",
     "@udecode/slate-plugins-find-replace": "1.0.0-next.37",
     "@udecode/slate-plugins-toolbar": "1.0.0-next.37"

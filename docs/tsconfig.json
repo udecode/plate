@@ -6,6 +6,8 @@
       "@udecode/slate-plugins": ["./packages/slate-plugins/src"]
     }
   },
-  "files": ["../scripts/twin.d.ts"],
+  "files": [
+    "../types/twin.d.ts"
+  ],
   "include": ["src", "./src/live/config"]
 }

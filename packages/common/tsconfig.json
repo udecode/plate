@@ -1,10 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "paths": {
-      "@udecode/slate-plugins-core": ["./packages/core/src"],
-      "@udecode/slate-plugins-test-utils": ["./packages/test-utils/src"]
-    }
+    "declarationDir": "./dist"
   },
   "include": ["./src"]
 }

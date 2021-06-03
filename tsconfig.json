@@ -1,13 +1,37 @@
 {
-  "extends": "./tsconfig.build.json",
-  "compilerOptions": {
-    "baseUrl": "."
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [7005]
   },
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "downlevelIteration": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es2017"
+  },
+  "files": ["types/twin.d.ts"],
   "exclude": [
     "node_modules",
     "**/node_modules",
+    "dist",
     "**/dist",
     "**/*.stories.*",
+    "**/*.spec*",
+    "**/*fixture*",
     "**/*template*"
   ]
 }
