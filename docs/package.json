@@ -44,7 +44,6 @@
     "@types/react-router-dom": "^5.1.7",
     "docusaurus-plugin-module-alias": "^0.0.2",
     "nodemon": "^2.0.7",
-    "twin.macro": "^2.4.2",
     "typescript": "^4.2.3"
   },
   "browserslist": {
