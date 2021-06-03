@@ -44,7 +44,8 @@
     "@udecode/slate-plugins-test-utils": "1.0.0-alpha.18",
     "@udecode/slate-plugins-trailing-block": "1.0.0-alpha.25",
     "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
-    "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25"
+    "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-excalidraw": "1.0.0-next.37"
   },
   "changesets": [
     "blue-eels-mate",
@@ -52,6 +53,7 @@
     "core-major-eight-poems-travel",
     "core-minor-eight-poems-travel",
     "eight-parrots-unite",
+    "eighty-days-flow",
     "fuzzy-donkeys-care-common",
     "fuzzy-donkeys-care",
     "little-suits-cross",
