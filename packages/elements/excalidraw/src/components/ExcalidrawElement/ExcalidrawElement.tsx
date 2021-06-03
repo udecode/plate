@@ -1,5 +1,4 @@
-import React, { useRef } from 'react';
-import Excalidraw from '@excalidraw/excalidraw';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/components/App';
 import { TExcalidrawProps } from '../../types';
 import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
@@ -15,6 +14,13 @@ export const ExcalidrawElement = ({
   libraryItems = [],
   excalidrawProps: _excalidrawProps,
 }: ExcalidrawElementProps) => {
+  const [Excalidraw, setExcalidraw] = useState<any>(null);
+  useEffect(() => {
+    import('@excalidraw/excalidraw').then((comp) =>
+      setExcalidraw(comp.default)
+    );
+  });
+
   const styles = getExcalidrawElementStyles(_styles);
   const _excalidrawRef = useRef<ExcalidrawImperativeAPI>(null);
 
@@ -42,7 +48,9 @@ export const ExcalidrawElement = ({
     <div {...attributes}>
       <div contentEditable={false}>
         <div css={styles?.excalidrawWrapper}>
-          <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />
+          {Excalidraw && (
+            <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />
+          )}
         </div>
       </div>
       {children}
