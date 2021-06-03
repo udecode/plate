@@ -1,3 +1,4 @@
+import 'twin.macro';
 import React from 'react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.scss';

@@ -1,3 +1,4 @@
+import 'twin.macro';
 import React from 'react';
 
 export const DemoHeader = () => (

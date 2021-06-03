@@ -1,3 +1,4 @@
+import 'twin.macro';
 import React from 'react';
 import CheckSvg from './check.svg';
 

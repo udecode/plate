@@ -1,3 +1,4 @@
+import 'twin.macro';
 import React from 'react';
 import { Demo } from './Demo';
 import { DemoHeader } from './DemoHeader';

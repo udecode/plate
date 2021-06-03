@@ -5,16 +5,13 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "prebuild": "yarn tailwind",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids",
-    "tailwind": "tailwind build tailwind/tailwind.css -o src/css/tailwind.output.css",
-    "tailwind:w": "nodemon"
+    "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
     "@docusaurus/core": "2.0.0-alpha.73",
@@ -33,7 +30,8 @@
     "ramda": "^0.27.1",
     "react-icons": "^4.2.0",
     "sass": "^1.32.12",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
+    "styled-components": "^5.3.0",
+    "tailwindcss": "^2.1.4",
     "zustand": "^3.4.2"
   },
   "devDependencies": {
