@@ -10,8 +10,8 @@ import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
 
 /**
- * If the list item has no child: insert an empty paragraph.
- * Else: move the children that are not valid to the paragraph.
+ * If the list item has no child: insert an empty list item container.
+ * Else: move the children that are not valid to the list item container.
  */
 export const normalizeListItem = (
   editor: SPEditor,
@@ -44,14 +44,14 @@ export const normalizeListItem = (
     .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
-  // Ensure that all lists have a <p> tag as a first element
+  // Ensure that all lists have a list item container as a first element
   if (firstChild.type !== getSlatePluginType(editor, ELEMENT_LIC)) {
     insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
       at: firstChildPath,
     });
   }
 
-  // Ensure that any text nodes under the list are inside the <p>
+  // Ensure that any text nodes under the list are inside the list item container
   for (const ref of inlinePathRefs.reverse()) {
     const path = ref.unref();
 
