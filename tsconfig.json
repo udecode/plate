@@ -5,7 +5,6 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
     "declarationMap": true,
     "downlevelIteration": true,
     "emitDeclarationOnly": true,
