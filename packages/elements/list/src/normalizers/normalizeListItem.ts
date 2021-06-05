@@ -1,10 +1,16 @@
-import { getChildren, insertEmptyElement } from '@udecode/slate-plugins-common';
+import {
+  getChildren,
+  insertEmptyElement,
+  match,
+  setNodes,
+} from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   SPEditor,
   TDescendant,
   TElement,
 } from '@udecode/slate-plugins-core';
+import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph/src';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
@@ -45,10 +51,32 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   // Ensure that all lists have a list item container as a first element
+  // Convert pre-1.0 slate's default use of paragraph to lic
+  if (firstChild.type === getSlatePluginType(editor, ELEMENT_PARAGRAPH)) {
+    return setNodes<TElement>(editor, {
+      type: getSlatePluginType(editor, ELEMENT_LIC),
+    });
+  }
   if (firstChild.type !== getSlatePluginType(editor, ELEMENT_LIC)) {
     insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
       at: firstChildPath,
     });
+  }
+
+  // fix accidental legacy normalization of lic > p > children => lic > children
+  if (match(firstChild, { type: getSlatePluginType(editor, ELEMENT_LIC) })) {
+    const listContainerChildPath: Path = firstChildPath.concat([0]);
+    const listContainerChild: TDescendant = firstChild.children?.[0];
+    if (
+      listContainerChild.type === getSlatePluginType(editor, ELEMENT_PARAGRAPH)
+    ) {
+      const paragraphChildPath: Path = listContainerChildPath.concat([0]);
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.liftNodes(editor, { at: paragraphChildPath });
+        // FIXME: I think the at for the following is wrong
+        Transforms.removeNodes(editor, { at: listContainerChildPath });
+      });
+    }
   }
 
   // Ensure that any text nodes under the list are inside the list item container
