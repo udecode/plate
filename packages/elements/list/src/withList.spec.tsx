@@ -10,8 +10,8 @@ import { createListPlugin } from './createListPlugin';
 jsx;
 
 describe('normalizeList', () => {
-  describe('when there is no p in li', () => {
-    it('should insert a p', () => {
+  describe('when there is no lic in li', () => {
+    it('should insert lic', () => {
       const input = ((
         <editor>
           <hul>
@@ -180,10 +180,7 @@ describe('normalizeList', () => {
                   </hp>
                 </element>
                 <element>
-                  <hp>
-                    world
-                    <cursor />
-                  </hp>
+                  <hp> world</hp>
                 </element>
               </hlic>
             </hli>
