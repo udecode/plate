@@ -53,7 +53,7 @@ describe('normalizeList', () => {
   });
 
   describe('when li > p > children', () => {
-    it('should set p to lic', () => {
+    it('should be li > lic > children', () => {
       const input = ((
         <editor>
           <hul>
