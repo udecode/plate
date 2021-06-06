@@ -51,4 +51,164 @@ describe('normalizeList', () => {
       expect(editor.children).toEqual(expected.children);
     });
   });
+
+  describe('when li > p > children', () => {
+    it('should set p to lic', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hp>
+                hell
+                <cursor />
+              </hp>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>hello</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins: [createParagraphPlugin(), createListPlugin()],
+      });
+
+      editor.insertText('o');
+
+      expect(editor.children).toEqual(expected.children);
+    });
+  });
+
+  describe('when li > lic > p > children', () => {
+    it('should be li > lic > children', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                <hp>
+                  hell
+                  <cursor />
+                </hp>
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>hello</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins: [createParagraphPlugin(), createListPlugin()],
+      });
+
+      editor.insertText('o');
+
+      expect(editor.children).toEqual(expected.children);
+    });
+  });
+
+  describe('when li > lic > block > block > children', () => {
+    it('should be li > lic > children', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                <element>
+                  <hp>
+                    hell
+                    <cursor />
+                  </hp>
+                </element>
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>hello</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins: [createParagraphPlugin(), createListPlugin()],
+      });
+
+      editor.insertText('o');
+
+      expect(editor.children).toEqual(expected.children);
+    });
+  });
+
+  describe('when li > lic > block > block > children', () => {
+    it('should be li > lic > children', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                <element>
+                  <hp>
+                    hell
+                    <cursor />
+                  </hp>
+                </element>
+                <element>
+                  <hp>
+                    world
+                    <cursor />
+                  </hp>
+                </element>
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>hello world</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const editor = createEditorPlugins({
+        editor: input,
+        plugins: [createParagraphPlugin(), createListPlugin()],
+      });
+
+      editor.insertText('o');
+
+      expect(editor.children).toEqual(expected.children);
+    });
+  });
 });
