@@ -166,8 +166,8 @@ describe('normalizeList', () => {
     });
   });
 
-  describe('when li > lic > block > block > children', () => {
-    it('should be li > lic > children', () => {
+  describe('when li > lic > many block > block > children', () => {
+    it('should be li > lic > children merged', () => {
       const input = ((
         <editor>
           <hul>
