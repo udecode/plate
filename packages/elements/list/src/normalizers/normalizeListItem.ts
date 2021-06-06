@@ -57,6 +57,7 @@ export const normalizeListItem = (
       type: getSlatePluginType(editor, ELEMENT_LIC),
     });
   }
+
   if (firstChild.type !== getSlatePluginType(editor, ELEMENT_LIC)) {
     insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
       at: firstChildPath,
