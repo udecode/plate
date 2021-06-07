@@ -2,4 +2,4 @@
 "@udecode/slate-plugins-list": patch
 ---
 
-fix - improve list-item-container normalization
+fix - improve lic (list-item-content) normalization
