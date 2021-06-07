@@ -10,7 +10,7 @@ export const ExcalidrawElement = ({
   nodeProps,
   element,
   styles: _styles,
-  scrollToContent = true,
+  scrollToContent = false,
   libraryItems = [],
   excalidrawProps: _excalidrawProps,
 }: ExcalidrawElementProps) => {
@@ -34,6 +34,7 @@ export const ExcalidrawElement = ({
       scrollToContent,
       libraryItems,
     },
+    detectScroll: false,
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
     // const path = ReactEditor.findPath(editor, element);
 
