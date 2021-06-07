@@ -10,7 +10,7 @@ export const ExcalidrawElement = ({
   nodeProps,
   element,
   styles: _styles,
-  scrollToContent = false,
+  scrollToContent = true,
   libraryItems = [],
   excalidrawProps: _excalidrawProps,
 }: ExcalidrawElementProps) => {
