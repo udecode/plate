@@ -31,7 +31,7 @@ export const getListNormalizer = (
     if (node.type === getSlatePluginType(editor, ELEMENT_LI)) {
       if (
         normalizeListItem(editor, {
-          nodeEntry: [node, path],
+          listItem: [node, path],
           validLiChildrenTypes,
         })
       ) {
