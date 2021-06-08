@@ -1,9 +1,11 @@
 import { HTMLProps } from 'react';
 import { TippyProps } from '@tippyjs/react';
+import { AnyObject } from '@udecode/slate-plugins-core';
 import { StyledProps } from '@udecode/slate-plugins-ui-fluent';
 
 export interface ToolbarButtonProps
-  extends StyledProps<ToolbarButtonStyleProps> {
+  extends StyledProps<ToolbarButtonStyleProps>,
+    AnyObject {
   /**
    * Is it active.
    */
@@ -20,8 +22,6 @@ export interface ToolbarButtonProps
   tooltip?: TippyProps;
 
   onMouseDown?: HTMLProps<HTMLSpanElement>['onMouseDown'];
-
-  [key: string]: any;
 }
 
 export interface ToolbarButtonStyleProps

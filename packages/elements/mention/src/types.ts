@@ -1,13 +1,13 @@
 import {
+  AnyObject,
   SlatePluginKey,
   SPEditor,
   TElement,
 } from '@udecode/slate-plugins-core';
 import { Range } from 'slate';
 
-export interface MentionNodeData {
+export interface MentionNodeData extends AnyObject {
   value: string;
-  [key: string]: any;
 }
 
 export type MentionNode = TElement<MentionNodeData>;

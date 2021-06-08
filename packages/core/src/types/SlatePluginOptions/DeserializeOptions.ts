@@ -1,3 +1,4 @@
+import { AnyObject } from '../utility/AnyObject';
 import { WithOptional } from '../utility/WithOptional';
 
 export interface GetNodeDeserializerRule {
@@ -34,7 +35,7 @@ export interface GetNodeDeserializerOptions {
   /**
    * Map HTML element to slate node.
    */
-  getNode: (el: HTMLElement) => { [key: string]: any } | undefined;
+  getNode: (el: HTMLElement) => AnyObject | undefined;
 
   /**
    * List of rules the element needs to follow to be deserialized to a slate node.

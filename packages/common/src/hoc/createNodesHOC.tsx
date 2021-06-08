@@ -1,20 +1,20 @@
 import { FunctionComponent } from 'react';
+import { AnyObject } from '@udecode/slate-plugins-core';
 import { castArray } from 'lodash';
 import { createNodeHOC } from './createNodeHOC';
 
-export type Options<T> = Partial<T> & {
-  [key: string]: any;
+export type Options<T> = Partial<T> &
+  AnyObject & {
+    /**
+     * Set HOC by key.
+     */
+    key?: string;
 
-  /**
-   * Set HOC by key.
-   */
-  key?: string;
-
-  /**
-   * Set HOC by key.
-   */
-  keys?: string[];
-};
+    /**
+     * Set HOC by key.
+     */
+    keys?: string[];
+  };
 
 const createHOC = <T,>(withHOC: any) => {
   return (components: any, options: Options<T> | Options<T>[]) => {
