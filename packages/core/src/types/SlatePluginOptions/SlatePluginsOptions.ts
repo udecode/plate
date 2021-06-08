@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 import { SPRenderElementProps } from '../SPRenderElementProps';
 import { SPRenderLeafProps } from '../SPRenderLeafProps';
+import { AnyObject } from '../utility/AnyObject';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps } from './GetNodeProps';
 
@@ -12,9 +13,7 @@ export type SlatePluginComponent = FunctionComponent<
   SPRenderElementProps | SPRenderLeafProps
 >;
 
-export interface SlatePluginOptions {
-  [key: string]: any;
-
+export interface SlatePluginOptions extends AnyObject {
   /**
    * Node properties to delete.
    */

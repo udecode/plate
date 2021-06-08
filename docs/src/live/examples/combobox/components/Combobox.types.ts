@@ -1,6 +1,7 @@
+import { AnyObject } from '@udecode/slate-plugins-core';
 import { ReactEditor } from 'slate-react';
 
-export interface RenderFunction<P = { [key: string]: any }> {
+export interface RenderFunction<P = AnyObject> {
   (
     props: P,
     defaultRender?: (props?: P) => JSX.Element | null

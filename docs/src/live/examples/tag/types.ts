@@ -1,9 +1,8 @@
-import { TElement } from '@udecode/slate-plugins-core';
+import { AnyObject, TElement } from '@udecode/slate-plugins-core';
 
 // Data of Element node
-export interface TagNodeData {
+export interface TagNodeData extends AnyObject {
   value: string;
-  [key: string]: any;
 }
 
 // Element node
