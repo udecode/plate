@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-core
 
+## 1.0.0-next.39
+
+### Patch Changes
+
+- [#756](https://github.com/udecode/slate-plugins/pull/756) [`b444071e`](https://github.com/udecode/slate-plugins/commit/b444071e2673803dba05c770c5dfbbde14f7a631) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: `TNode`, `TElement`, `TLeaf` types extended
+
 ## 1.0.0-next.36
 
 ### Minor Changes
