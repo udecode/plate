@@ -1,6 +1,6 @@
-import { ImportedDataState } from '@excalidraw/excalidraw/types/data/types';
-import { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
-import { ExcalidrawProps } from '@excalidraw/excalidraw/types/types';
+import { ImportedDataState } from '@excalidraw/excalidraw-next/types/data/types';
+import { ExcalidrawElement } from '@excalidraw/excalidraw-next/types/element/types';
+import { ExcalidrawProps } from '@excalidraw/excalidraw-next/types/types';
 
 // TODO: move to common
 export type GetStyles<T extends { styles?: any }> = (
