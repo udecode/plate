@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-excalidraw
 
+## 1.0.0-next.41
+
+### Patch Changes
+
+- [#759](https://github.com/udecode/slate-plugins/pull/759) [`7e3f811e`](https://github.com/udecode/slate-plugins/commit/7e3f811e2d53dddd42611967500feda8622482ca) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: disable autoFocus
+
 ## 1.0.0-next.40
 
 ### Patch Changes
