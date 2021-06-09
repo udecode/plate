@@ -1382,10 +1382,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@excalidraw/excalidraw@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@excalidraw/excalidraw/-/excalidraw-0.8.0.tgz#b95210581ffafb5f2e433c8a9fe1b64328d5ecbf"
-  integrity sha512-QSCorwl2NVZr1kv6+pSfMgxwb85v7qmjW37p0n+LMWrW+VgGWQxa3LtQqTIJ8OvdLNLNfO3kN7nHXNC4Z1h3ug==
+"@excalidraw/excalidraw-next@0.8.0-69b6fbb":
+  version "0.8.0-69b6fbb"
+  resolved "https://registry.yarnpkg.com/@excalidraw/excalidraw-next/-/excalidraw-next-0.8.0-69b6fbb.tgz#4b5c73fc27132992229e0546465706f16bdb19ce"
+  integrity sha512-DGuFgoZVcJ/PeEzBd5eyRfiMVL002ooZYMUT8A6QV9X7Vm4r50Tu57cmxMbCjDiLkdO68wDC4l+QsGWdCa1PdA==
 
 "@fluentui/dom-utilities@^1.1.2":
   version "1.1.2"
@@ -11959,10 +11959,10 @@ typedoc@^0.19.2:
     shelljs "^0.8.4"
     typedoc-default-themes "^0.11.4"
 
-typescript@^4.2.2:
-  version "4.2.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.4.tgz#8610b59747de028fda898a8aef0e103f156d0961"
-  integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
+typescript@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.2.tgz#399ab18aac45802d6f2498de5054fcbbe716a805"
+  integrity sha512-zZ4hShnmnoVnAHpVHWpTcxdv7dWP60S2FsydQLV8V5PbS3FifjWFFRiHSWpDJahly88PRyV5teTSLoq4eG7mKw==
 
 uglify-js@^3.1.4:
   version "3.13.5"

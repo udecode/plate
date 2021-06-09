@@ -95,17 +95,21 @@ import {
   createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
+  insertEmptyCodeBlock,
 } from '@udecode/slate-plugins-code-block';
 import {
   CodeBlockElement,
   ToolbarCodeBlock,
 } from '@udecode/slate-plugins-code-block-ui';
 import {
+  ELEMENT_DEFAULT,
+  getParent,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
+  isElement,
   useEventEditorId,
   useStoreEditorRef,
 } from '@udecode/slate-plugins-core';
@@ -126,6 +130,7 @@ import {
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
+  toggleList,
 } from '@udecode/slate-plugins-list';
 import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
 import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
@@ -140,6 +145,7 @@ import {
 import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
+import { isType } from '../../../packages/common/src/queries/isType';
 import { createAlignPlugin } from '../../../packages/elements/alignment/src/createAlignPlugin';
 import { createBasicElementPlugins } from '../../../packages/elements/basic-elements/src/createBasicElementPlugins';
 import { ExcalidrawElement } from '../../../packages/elements/excalidraw/src/components/ExcalidrawElement/ExcalidrawElement';
@@ -284,6 +290,12 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  isType,
+  insertEmptyCodeBlock,
+  ELEMENT_DEFAULT,
+  toggleList,
+  getParent,
+  isElement,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   ExcalidrawElement,

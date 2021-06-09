@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/components/App';
+import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw-next/types/types';
 import { TExcalidrawProps } from '../../types';
 import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
 import { ExcalidrawElementProps } from './ExcalidrawElement.types';
@@ -16,7 +16,7 @@ export const ExcalidrawElement = ({
 }: ExcalidrawElementProps) => {
   const [Excalidraw, setExcalidraw] = useState<any>(null);
   useEffect(() => {
-    import('@excalidraw/excalidraw').then((comp) =>
+    import('@excalidraw/excalidraw-next').then((comp) =>
       setExcalidraw(comp.default)
     );
   });
@@ -34,7 +34,7 @@ export const ExcalidrawElement = ({
       scrollToContent,
       libraryItems,
     },
-    detectScroll: false,
+    autoFocus: false,
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
     // const path = ReactEditor.findPath(editor, element);
 
