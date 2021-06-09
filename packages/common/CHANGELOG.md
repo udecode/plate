@@ -1,5 +1,12 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.39
+
+### Patch Changes
+
+- Updated dependencies [[`b444071e`](https://github.com/udecode/slate-plugins/commit/b444071e2673803dba05c770c5dfbbde14f7a631)]:
+  - @udecode/slate-plugins-core@1.0.0-next.39
+
 ## 1.0.0-next.37
 
 ### Major Changes
