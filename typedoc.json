@@ -6,12 +6,9 @@
     "**/*stories*/**",
     "**/*.development.*"
   ],
-  "excludeNotExported": true,
-  "excludeExternals": false,
-  "ignoreCompilerErrors": true,
   "includeVersion": true,
-  "mode": "file",
   "name": "@udecode/slate-plugins",
+  "entryPoints": ["packages/slate-plugins/src/index.tsx"],
   "out": "./doc",
   "readme": "./README.md"
 }

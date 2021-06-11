@@ -32,7 +32,7 @@
     "test:covwa": "yarn test:cov --watchAll",
     "test:w": "yarn test --watch",
     "test:wa": "yarn test --watchAll",
-    "typedoc": "npx typedoc",
+    "typedoc": "npx typedoc --tsconfig packages/slate-plugins/tsconfig.json",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --no-git-tag-version",
     "versionup:pre": "lerna version prerelease",
@@ -121,7 +121,7 @@
     "slate-react": "0.60.11",
     "tailwindcss": "^2.1.2",
     "ts-jest": "^26.5.2",
-    "typedoc": "^0.19.2",
+    "typedoc": "^0.21.0-beta.2",
     "typescript": "^4.3.2",
     "twin.macro": "^2.4.2"
   },
