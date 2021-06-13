@@ -1,4 +1,5 @@
 {
+  "disableOutputCheck": true,
   "exclude": [
     "**/*test*/**",
     "**/*fixture*/**",
@@ -9,6 +10,6 @@
   "includeVersion": true,
   "name": "@udecode/slate-plugins",
   "entryPoints": ["packages/slate-plugins/src/index.tsx"],
-  "out": "./doc",
+  "out": "./typedoc",
   "readme": "./README.md"
 }

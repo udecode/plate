@@ -103,6 +103,7 @@ storybook-static/
 
 # Local
 packages/slate-plugins/docs/
-doc/
+typedoc/
+!typedoc/_redirects
 # Local Netlify folder
 .netlify
