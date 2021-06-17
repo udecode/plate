@@ -75,10 +75,7 @@ The following playground uses most of the provided plugins.
         createNormalizeTypesPlugin({
           rules: [{ path: [0], strictType: ELEMENT_H1 }],
         }),
-        createTrailingBlockPlugin({
-          type: ELEMENT_PARAGRAPH,
-          level: 0,
-        }),
+        createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
         createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
         mentionPlugin,
         searchHighlightPlugin,
