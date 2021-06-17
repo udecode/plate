@@ -1,10 +1,7 @@
 {
-  "extends": "../../tsconfig",
+  "extends": "../../scripts/tsconfig.build.json",
   "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "./dist",
-    "declarationMap": true,
-    "emitDeclarationOnly": true
+    "declarationDir": "./dist"
   },
   "include": ["src"]
 }
