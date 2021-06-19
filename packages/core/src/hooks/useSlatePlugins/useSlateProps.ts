@@ -25,11 +25,11 @@ export const useSlateProps = ({
       key: editor?.key,
       editor,
       onChange: (newValue: TNode[]) => {
-        setValue(newValue);
-
         editor && pipeOnChange(editor, plugins)(newValue);
 
         _onChange?.(newValue);
+
+        setValue(newValue);
       },
       value,
     }),
