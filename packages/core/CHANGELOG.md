@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-core
 
+## 1.0.0-next.40
+
+### Patch Changes
+
+- [#773](https://github.com/udecode/slate-plugins/pull/773) [`15048e6f`](https://github.com/udecode/slate-plugins/commit/15048e6facbefc5fe21b0b9bd9a586f269cada89) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: before, store setValue was called at the start of `onChange` pipeline. Now, it's called at the end of the pipeline so we can make use of this value as the "previous value" in plugins `onChange`.
+
 ## 1.0.0-next.39
 
 ### Patch Changes
