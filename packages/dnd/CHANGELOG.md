@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-dnd
 
+## 1.0.0-next.41
+
+### Patch Changes
+
+- [#777](https://github.com/udecode/slate-plugins/pull/777) [`786989d2`](https://github.com/udecode/slate-plugins/commit/786989d2b1263e2e3d40811649310af5de1a61c3) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: this package does not support slate-react > 0.62.1. Adjusted slate-react peerDependency to <= 0.62.1
+
 ## 1.0.0-next.40
 
 ### Patch Changes

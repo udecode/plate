@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.0.0-next.41
+
+### Patch Changes
+
+- Updated dependencies [[`786989d2`](https://github.com/udecode/slate-plugins/commit/786989d2b1263e2e3d40811649310af5de1a61c3)]:
+  - @udecode/slate-plugins-dnd@1.0.0-next.41
+
 ## 1.0.0-next.40
 
 ### Patch Changes
