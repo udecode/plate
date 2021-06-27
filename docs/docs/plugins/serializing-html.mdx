@@ -47,7 +47,7 @@ Use `serializeHTMLFromNodes`:
       mentionPlugin,
     ];
 
-    _plugins.push(createDeserializeHTMLPlugin({ plugins }));
+    _plugins.push(createDeserializeHTMLPlugin({ plugins: _plugins }));
 
     return _plugins;
   }, [mentionPlugin]);
