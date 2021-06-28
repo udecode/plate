@@ -61,7 +61,6 @@ export const withDeserializeAst = <
     },
 
     insert = (fragment) => {
-      console.log(fragment);
       Transforms.insertNodes<TElement>(editor, fragment as any);
     },
   } = options;
@@ -69,7 +68,6 @@ export const withDeserializeAst = <
   editor.insertData = (data: DataTransfer) => {
     const ast = data.getData('application/x-slate-fragment');
 
-    console.log(ast);
     if (ast) {
       const decoded = decodeURIComponent(window.atob(ast));
       let fragment = JSON.parse(decoded);
