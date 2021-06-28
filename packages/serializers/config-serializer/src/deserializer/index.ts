@@ -1,1 +1,1 @@
-export * from './createDeserializeConfigPlugin';
+export * from './createDeserializePlugin';
