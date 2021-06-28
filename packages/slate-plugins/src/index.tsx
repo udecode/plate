@@ -4,6 +4,7 @@
 
 export * from '@udecode/slate-plugins-alignment';
 export * from '@udecode/slate-plugins-alignment-ui';
+export * from '@udecode/slate-plugins-ast-serializer';
 export * from '@udecode/slate-plugins-autoformat';
 export * from '@udecode/slate-plugins-basic-elements';
 export * from '@udecode/slate-plugins-basic-marks';
@@ -13,6 +14,7 @@ export * from '@udecode/slate-plugins-break';
 export * from '@udecode/slate-plugins-code-block';
 export * from '@udecode/slate-plugins-code-block-ui';
 export * from '@udecode/slate-plugins-common';
+export * from '@udecode/slate-plugins-config-serializer';
 export * from '@udecode/slate-plugins-core';
 export * from '@udecode/slate-plugins-dnd';
 export * from '@udecode/slate-plugins-find-replace';
