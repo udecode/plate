@@ -20,7 +20,6 @@
       "@udecode/slate-plugins-code-block",
       "@udecode/slate-plugins-code-block-ui",
       "@udecode/slate-plugins-common",
-      "@udecode/slate-plugins-config-serializer",
       "@udecode/slate-plugins-core",
       "@udecode/slate-plugins-dnd",
       "@udecode/slate-plugins-find-replace",

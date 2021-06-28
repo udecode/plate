@@ -46,7 +46,6 @@
     "@udecode/slate-plugins-code-block": "1.0.0-next.40",
     "@udecode/slate-plugins-code-block-ui": "1.0.0-next.40",
     "@udecode/slate-plugins-common": "1.0.0-next.40",
-    "@udecode/slate-plugins-config-serializer": "1.0.0-next.40",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
     "@udecode/slate-plugins-dnd": "1.0.0-next.41",
     "@udecode/slate-plugins-find-replace": "1.0.0-next.40",

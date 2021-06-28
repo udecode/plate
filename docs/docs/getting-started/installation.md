@@ -33,7 +33,6 @@ npm install @udecode/slate-plugins-break
 npm install @udecode/slate-plugins-code-block
 npm install @udecode/slate-plugins-code-block-ui
 npm install @udecode/slate-plugins-common
-npm install @udecode/slate-plugins-config-serializer
 npm install @udecode/slate-plugins-core
 npm install @udecode/slate-plugins-dnd
 npm install @udecode/slate-plugins-find-replace

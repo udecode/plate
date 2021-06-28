@@ -312,10 +312,6 @@ module.exports = {
             __dirname,
             '../packages/serializers/ast-serializer/src'
           ),
-          '@udecode/slate-plugins-config-serializer': path.resolve(
-            __dirname,
-            '../packages/serializers/config-serializer/src'
-          ),
           '@udecode/slate-plugins-slate-plugins': path.resolve(
             __dirname,
             '../packages/slate-plugins/src'
