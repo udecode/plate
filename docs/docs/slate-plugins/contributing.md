@@ -148,7 +148,7 @@ is few of those ways:
 
 Before you submit a new PR, make sure you run `yarn test`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `slate-plugins` channel](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
+[join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
 
 ### Reviewing PRs
 
