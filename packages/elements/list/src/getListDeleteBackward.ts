@@ -59,9 +59,10 @@ export const getListDeleteBackward = (
       {
         types: [getSlatePluginType(editor, ELEMENT_LI)],
         defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
+        hotkey: 'backspace',
         predicate: () => isSelectionAtBlockStart(editor),
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(new KeyboardEvent('keydown') as any);
+  })(editor)(new KeyboardEvent('keydown', {keyCode: 8}) as any);
 };
