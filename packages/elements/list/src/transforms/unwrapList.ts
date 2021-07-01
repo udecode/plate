@@ -8,10 +8,19 @@ import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
 export const unwrapList = (editor: SPEditor, { at }: { at?: Path } = {}) => {
+  setNodes(
+    editor,
+    {
+      type: getSlatePluginType(editor, ELEMENT_DEFAULT),
+    },
+    { at }
+  );
+
   unwrapNodes(editor, {
     at,
     match: { type: getSlatePluginType(editor, ELEMENT_LI) },
   });
+
   unwrapNodes(editor, {
     at,
     match: {
@@ -21,9 +30,5 @@ export const unwrapList = (editor: SPEditor, { at }: { at?: Path } = {}) => {
       ],
     },
     split: true,
-  });
-  setNodes(editor, {
-    at,
-    type: getSlatePluginType(editor, ELEMENT_DEFAULT),
   });
 };
