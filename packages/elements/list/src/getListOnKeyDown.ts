@@ -53,8 +53,6 @@ export const getListOnKeyDown = (
       if (!listItem) return;
       const listEntry = getParent(editor, listItem[1]);
 
-      console.log({ highestLic, listItem, listEntry });
-
       if (!e.shiftKey) {
         moveListItemDown(editor, {
           list: listEntry as any,
