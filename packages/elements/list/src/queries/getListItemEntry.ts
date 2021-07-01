@@ -34,6 +34,7 @@ export const getListItemEntry = (
       getAbove<TElement>(editor, { at, match: { type: liType } }) ||
       getParent<TElement>(editor, paragraphPath);
 
+    console.log(listItem);
     if (!listItem) return;
     const [listItemNode, listItemPath] = listItem;
 

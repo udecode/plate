@@ -36,7 +36,12 @@ export const moveListItemUp = (
       match: { type: getSlatePluginType(editor, ELEMENT_LI) },
     });
     if (!liParent) {
-      const toListPath = Path.next(listPath);
+      let toListPath;
+      try {
+        toListPath = Path.next(listPath);
+      } catch (err) {
+        return;
+      }
 
       const condA = hasListChild(editor, liNode);
       const condB = !isLastChild(list, liPath);
@@ -79,7 +84,7 @@ export const moveListItemUp = (
       }
 
       // Finally, unwrap the list
-      unwrapList(editor);
+      unwrapList(editor, { at: liPath.concat(0) });
 
       return true;
     }
