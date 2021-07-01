@@ -12,6 +12,6 @@ export const createListPlugin = (options?: WithListOptions): SlatePlugin => ({
   pluginKeys: KEYS_LIST,
   renderElement: getRenderElement(KEYS_LIST),
   deserialize: getListDeserialize(),
-  onKeyDown: getListOnKeyDown(),
+  onKeyDown: getListOnKeyDown(KEYS_LIST),
   withOverrides: withList(options),
 });

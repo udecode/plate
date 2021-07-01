@@ -15,10 +15,18 @@ export const moveListItemDown = (
   const [listNode] = list;
   const [, listItemPath] = listItem;
 
+  let previousListItemPath: Path;
+
+  try {
+    previousListItemPath = Path.previous(listItemPath);
+  } catch (e) {
+    return;
+  }
+
   // Previous sibling is the new parent
   const previousSiblingItem = Editor.node(
     editor,
-    Path.previous(listItemPath)
+    previousListItemPath
   ) as NodeEntry<Ancestor>;
 
   if (previousSiblingItem) {
