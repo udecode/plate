@@ -23,6 +23,8 @@ import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
 import { FormatQuote } from '@styled-icons/material/FormatQuote';
 import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
+import { AddLink } from '@styled-icons/material/AddLink';
+import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
 import { Keyboard } from '@styled-icons/material/Keyboard';
 import { Looks3 } from '@styled-icons/material/Looks3';
 import { Looks4 } from '@styled-icons/material/Looks4';
@@ -71,6 +73,7 @@ import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-code-block';
 import { ToolbarCodeBlock } from '@udecode/slate-plugins-code-block-ui';
 import { useEventEditorId } from '@udecode/slate-plugins-core';
 import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
+import { ToolbarLink } from './tbl';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -261,6 +264,10 @@ export const BallonToolbarMarks = () => {
         type={getSlatePluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
+      />
+      <ToolbarLink
+        icon={<AddLink/>}
+        tooltip={{ content: 'Link (⌘L)', ...tooltip }}
       />
     </BalloonToolbar>
   );
