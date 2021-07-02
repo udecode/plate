@@ -42,12 +42,13 @@ package manager. See
 1. `cd ~` (optional)
 2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
 3. `cd slate-plugins`
-4. `yarn`
+4. `yarn install`
+5. `yarn build`
 
 ### Docs
 
 5. `cd docs`
-6. `yarn`
+6. `yarn install`
 7. `yarn start`
 
 ### Editing

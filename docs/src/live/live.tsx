@@ -36,140 +36,123 @@ import { Search } from '@styled-icons/material/Search';
 import {
   addColumn,
   addRow,
+  BalloonToolbar,
+  CodeBlockElement,
+  createAlignPlugin,
   createAutoformatPlugin,
+  createBasicElementPlugins,
+  createBasicMarkPlugins,
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodeBlockPlugin,
+  createCodePlugin,
   createDeserializeHTMLPlugin,
   createDeserializeMDPlugin,
   createEditorPlugins,
   createExitBreakPlugin,
+  createHeadingPlugin,
   createHighlightPlugin,
   createHistoryPlugin,
+  createImagePlugin,
+  createItalicPlugin,
   createKbdPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
   createNodeIdPlugin,
   createNormalizeTypesPlugin,
+  createParagraphPlugin,
   createReactPlugin,
   createResetNodePlugin,
+  createSelectOnBackspacePlugin,
   createSlatePluginsComponents,
   createSlatePluginsOptions,
   createSoftBreakPlugin,
+  createStrikethroughPlugin,
   createSubscriptPlugin,
   createSuperscriptPlugin,
   createTablePlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
+  createUnderlinePlugin,
   deleteColumn,
   deleteRow,
   deleteTable,
   ELEMENT_ALIGN_CENTER,
   ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_RIGHT,
-  insertTable,
-  SlatePlugins,
-  ToolbarAlign,
-  ToolbarElement,
-  ToolbarList,
-  ToolbarTable,
-  useFindReplacePlugin,
-  useMentionPlugin,
-  useSlatePlugins,
-  useSlatePluginsActions,
-  useStoreEditorEnabled,
-  withProps,
-} from '@udecode/slate-plugins';
-import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
-} from '@udecode/slate-plugins-basic-marks';
-import {
-  createBlockquotePlugin,
   ELEMENT_BLOCKQUOTE,
-} from '@udecode/slate-plugins-block-quote';
-import {
-  createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-  insertEmptyCodeBlock,
-} from '@udecode/slate-plugins-code-block';
-import {
-  CodeBlockElement,
-  ToolbarCodeBlock,
-} from '@udecode/slate-plugins-code-block-ui';
-import {
   ELEMENT_DEFAULT,
-  getParent,
-  isBlockAboveEmpty,
-  isSelectionAtBlockStart,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  isElement,
-  useEventEditorId,
-  useStoreEditorRef,
-} from '@udecode/slate-plugins-core';
-import {
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '@udecode/slate-plugins-heading';
-import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
-import { createImagePlugin, ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
-import { MARK_KBD } from '@udecode/slate-plugins-kbd';
-import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
-import {
+  ELEMENT_IMAGE,
   ELEMENT_LI,
+  ELEMENT_LIC,
+  ELEMENT_LINK,
+  ELEMENT_MEDIA_EMBED,
+  ELEMENT_MENTION,
   ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
-  toggleList,
-} from '@udecode/slate-plugins-list';
-import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
-import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
-import { MentionElement } from '@udecode/slate-plugins-mention-ui';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
-import {
+  ELEMENT_PARAGRAPH,
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
+  ELEMENT_TODO_LI,
   ELEMENT_TR,
-} from '@udecode/slate-plugins-table';
-import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
+  ELEMENT_UL,
+  getParent,
+  getSlatePluginType,
+  HeadingToolbar,
+  insertEmptyCodeBlock,
+  insertTable,
+  isBlockAboveEmpty,
+  isElement,
+  isSelectionAtBlockStart,
+  isType,
+  KEYS_HEADING,
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_HIGHLIGHT,
+  MARK_ITALIC,
+  MARK_KBD,
+  MARK_STRIKETHROUGH,
+  MARK_SUBSCRIPT,
+  MARK_SUPERSCRIPT,
+  MARK_UNDERLINE,
+  MentionElement,
+  MentionSelect,
+  serializeHTMLFromNodes,
+  SlatePlugins,
+  toggleList,
+  ToolbarAlign,
+  ToolbarCodeBlock,
+  ToolbarElement,
+  ToolbarImage,
+  ToolbarLink,
+  ToolbarList,
+  ToolbarMark,
+  ToolbarSearchHighlight,
+  ToolbarTable,
+  unwrapList,
+  useEventEditorId,
+  useFindReplacePlugin,
+  useMentionPlugin,
+  useSlatePlugins,
+  useSlatePluginsActions,
+  useStoreEditorEnabled,
+  useStoreEditorRef,
+  withProps,
+} from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { isType } from '../../../packages/common/src/queries/isType';
-import { createAlignPlugin } from '../../../packages/elements/alignment/src/createAlignPlugin';
-import { createBasicElementPlugins } from '../../../packages/elements/basic-elements/src/createBasicElementPlugins';
 import { ExcalidrawElement } from '../../../packages/elements/excalidraw/src/components/ExcalidrawElement/ExcalidrawElement';
 import { createExcalidrawPlugin } from '../../../packages/elements/excalidraw/src/createExcalidrawPlugin';
 import { ELEMENT_EXCALIDRAW } from '../../../packages/elements/excalidraw/src/defaults';
-import { createHeadingPlugin } from '../../../packages/elements/heading/src/createHeadingPlugin';
-import { KEYS_HEADING } from '../../../packages/elements/heading/src/defaults';
-import { ToolbarImage } from '../../../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
-import { ToolbarLink } from '../../../packages/elements/link-ui/src/ToolbarLink/ToolbarLink';
-import { ELEMENT_LIC } from '../../../packages/elements/list/src/defaults';
-import { unwrapList } from '../../../packages/elements/list/src/transforms/unwrapList';
-import { MentionSelect } from '../../../packages/elements/mention-ui/src/MentionSelect/MentionSelect';
-import { createParagraphPlugin } from '../../../packages/elements/paragraph/src/createParagraphPlugin';
-import { ToolbarSearchHighlight } from '../../../packages/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
-import { createBoldPlugin } from '../../../packages/marks/basic-marks/src/bold/createBoldPlugin';
-import { createCodePlugin } from '../../../packages/marks/basic-marks/src/code/createCodePlugin';
-import { createBasicMarkPlugins } from '../../../packages/marks/basic-marks/src/createBasicMarkPlugins';
-import { createItalicPlugin } from '../../../packages/marks/basic-marks/src/italic/createItalicPlugin';
-import { createStrikethroughPlugin } from '../../../packages/marks/basic-marks/src/strikethrough/createStrikethroughPlugin';
-import { createUnderlinePlugin } from '../../../packages/marks/basic-marks/src/underline/createUnderlinePlugin';
-import { createSelectOnBackspacePlugin } from '../../../packages/select/src/createSelectOnBackspacePlugin';
-import { serializeHTMLFromNodes } from '../../../packages/serializers/html-serializer/src/serializer/serializeHTMLFromNodes';
-import { BalloonToolbar } from '../../../packages/ui/toolbar/src/BalloonToolbar/BalloonToolbar';
-import { ToolbarMark } from '../../../packages/ui/toolbar/src/ToolbarMark/ToolbarMark';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
