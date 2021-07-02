@@ -1,3 +1,7 @@
+import {
+  createExcalidrawPlugin, ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+} from '@udecode/slate-plugins-excalidraw';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -150,9 +154,6 @@ import {
 } from '@udecode/slate-plugins';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { ExcalidrawElement } from '../../../packages/elements/excalidraw/src/components/ExcalidrawElement/ExcalidrawElement';
-import { createExcalidrawPlugin } from '../../../packages/elements/excalidraw/src/createExcalidrawPlugin';
-import { ELEMENT_EXCALIDRAW } from '../../../packages/elements/excalidraw/src/defaults';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,

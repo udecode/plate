@@ -2038,10 +2038,6 @@
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-alignment-ui@link:../packages/elements/alignment-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-alignment@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-alignment/-/slate-plugins-alignment-1.0.0-next.40.tgz#8133ccfe47a00587d3575e6050758ad038957ce2"
@@ -2050,10 +2046,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-alignment@link:../packages/elements/alignment":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-autoformat@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-autoformat/-/slate-plugins-autoformat-1.0.0-next.40.tgz#d273f23673982b8cdc340399af416b27c708efc1"
@@ -2061,10 +2053,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-autoformat@link:../packages/autoformat":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-basic-elements@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2078,10 +2066,6 @@
     "@udecode/slate-plugins-heading" "1.0.0-next.40"
     "@udecode/slate-plugins-paragraph" "1.0.0-next.40"
 
-"@udecode/slate-plugins-basic-elements@link:../packages/elements/basic-elements":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-basic-marks@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-basic-marks/-/slate-plugins-basic-marks-1.0.0-next.40.tgz#bf83359abc1c55d14873e6c12d666d62f71dd853"
@@ -2089,10 +2073,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-basic-marks@link:../packages/marks/basic-marks":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-block-quote-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2104,10 +2084,6 @@
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     "@udecode/slate-plugins-ui-fluent" "1.0.0-next.40"
 
-"@udecode/slate-plugins-block-quote-ui@link:../packages/elements/block-quote-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-block-quote@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-block-quote/-/slate-plugins-block-quote-1.0.0-next.40.tgz#f9b53f8c55f43348c740a1ac055657abaf73aa68"
@@ -2116,10 +2092,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-block-quote@link:../packages/elements/block-quote":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-break@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-break/-/slate-plugins-break-1.0.0-next.40.tgz#35b0476b9038c8619adbcc8405244dccd64e3fa9"
@@ -2127,10 +2099,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-break@link:../packages/break":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-code-block-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2142,10 +2110,6 @@
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-code-block-ui@link:../packages/elements/code-block-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-code-block@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-code-block/-/slate-plugins-code-block-1.0.0-next.40.tgz#97f45b74924d4a975fe7d6080c7c32a2641443e5"
@@ -2155,10 +2119,6 @@
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     prismjs "^1.23.0"
 
-"@udecode/slate-plugins-code-block@link:../packages/elements/code-block":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-common@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-common/-/slate-plugins-common-1.0.0-next.40.tgz#19526682f4821e5af483e45fcb963a9968c5558b"
@@ -2167,10 +2127,6 @@
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     is-hotkey "^0.1.6"
 
-"@udecode/slate-plugins-common@link:../packages/common":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-core@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-core/-/slate-plugins-core-1.0.0-next.40.tgz#cfb7ef939b31b87542fd2db29b0fcb6517f25963"
@@ -2178,10 +2134,6 @@
   dependencies:
     lodash "^4.17.21"
     zustand "^3.4.2"
-
-"@udecode/slate-plugins-core@link:../packages/core":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-dnd@1.0.0-next.41":
   version "1.0.0-next.41"
@@ -2198,13 +2150,13 @@
     react-dnd "^14.0.2"
     react-dnd-html5-backend "^14.0.0"
 
-"@udecode/slate-plugins-dnd@link:../packages/dnd":
-  version "0.0.0"
-  uid ""
-
-"@udecode/slate-plugins-excalidraw@link:../packages/elements/excalidraw":
-  version "0.0.0"
-  uid ""
+"@udecode/slate-plugins-excalidraw@file:../packages/elements/excalidraw":
+  version "1.0.0-next.42"
+  dependencies:
+    "@excalidraw/excalidraw-next" "0.8.0-69b6fbb"
+    "@udecode/slate-plugins-common" "1.0.0-next.40"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
+    styled-components "^5.3.0"
 
 "@udecode/slate-plugins-find-replace-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2216,10 +2168,6 @@
     "@udecode/slate-plugins-find-replace" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-find-replace-ui@link:../packages/find-replace-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-find-replace@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-find-replace/-/slate-plugins-find-replace-1.0.0-next.40.tgz#d616ec7c843609b5b5a154210727fe7ea62a495b"
@@ -2227,10 +2175,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-find-replace@link:../packages/find-replace":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-heading@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2240,10 +2184,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-heading@link:../packages/elements/heading":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-highlight@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-highlight/-/slate-plugins-highlight-1.0.0-next.40.tgz#2205299b354065e721722e5ea792ff0587ee504b"
@@ -2252,10 +2192,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-highlight@link:../packages/marks/highlight":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-html-serializer@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-html-serializer/-/slate-plugins-html-serializer-1.0.0-next.40.tgz#f62f22c2b8ad5f10965691506ca24bfa253c2ba5"
@@ -2263,10 +2199,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-html-serializer@link:../packages/serializers/html-serializer":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-image-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2278,10 +2210,6 @@
     "@udecode/slate-plugins-image" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-image-ui@link:../packages/elements/image-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-image@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-image/-/slate-plugins-image-1.0.0-next.40.tgz#e89615ff7a926440c936b43c04841c641aa47b7b"
@@ -2290,10 +2218,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-image@link:../packages/elements/image":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-kbd@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-kbd/-/slate-plugins-kbd-1.0.0-next.40.tgz#8f8515963c36dc000f8f06906f87d78f0cde32b6"
@@ -2301,10 +2225,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-kbd@link:../packages/marks/kbd":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-link-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2316,10 +2236,6 @@
     "@udecode/slate-plugins-link" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-link-ui@link:../packages/elements/link-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-link@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-link/-/slate-plugins-link-1.0.0-next.40.tgz#9c3868dffb5c5a996f120a98534b0dcd086534b3"
@@ -2328,10 +2244,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     "@udecode/slate-plugins-normalizers" "1.0.0-next.40"
-
-"@udecode/slate-plugins-link@link:../packages/elements/link":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-list-ui@1.0.0-next.42":
   version "1.0.0-next.42"
@@ -2343,10 +2255,6 @@
     "@udecode/slate-plugins-list" "1.0.0-next.42"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-list-ui@link:../packages/elements/list-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-list@1.0.0-next.42":
   version "1.0.0-next.42"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-list/-/slate-plugins-list-1.0.0-next.42.tgz#a1c80d28830aa486ab904acfe95b8d18b545a8f2"
@@ -2355,10 +2263,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
     "@udecode/slate-plugins-reset-node" "1.0.0-next.40"
-
-"@udecode/slate-plugins-list@link:../packages/elements/list":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-md-serializer@1.0.0-next.42":
   version "1.0.0-next.42"
@@ -2377,10 +2281,6 @@
     remark-slate "^1.4.0"
     unified "^9.2.0"
 
-"@udecode/slate-plugins-md-serializer@link:../packages/serializers/md-serializer":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-media-embed-ui@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-media-embed-ui/-/slate-plugins-media-embed-ui-1.0.0-next.40.tgz#ec04d8826f23929b619877e893e4cecb8d843034"
@@ -2391,10 +2291,6 @@
     "@udecode/slate-plugins-media-embed" "1.0.0-next.40"
     "@udecode/slate-plugins-ui-fluent" "1.0.0-next.40"
 
-"@udecode/slate-plugins-media-embed-ui@link:../packages/elements/media-embed-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-media-embed@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-media-embed/-/slate-plugins-media-embed-1.0.0-next.40.tgz#3eb118fb912c4bbf5e8a2ee748dcf20ba8bef7e4"
@@ -2402,10 +2298,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-media-embed@link:../packages/elements/media-embed":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-mention-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2417,10 +2309,6 @@
     "@udecode/slate-plugins-mention" "1.0.0-next.40"
     "@udecode/slate-plugins-ui-fluent" "1.0.0-next.40"
 
-"@udecode/slate-plugins-mention-ui@link:../packages/elements/mention-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-mention@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-mention/-/slate-plugins-mention-1.0.0-next.40.tgz#5f01c2a04063734f6441babbcefd85bbfa82c77e"
@@ -2428,10 +2316,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-mention@link:../packages/elements/mention":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-node-id@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2441,10 +2325,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-node-id@link:../packages/node-id":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-normalizers@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-normalizers/-/slate-plugins-normalizers-1.0.0-next.40.tgz#46de9feda556cff8fc6a561eca639ec9bd499870"
@@ -2453,10 +2333,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-normalizers@link:../packages/normalizers":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-paragraph@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-paragraph/-/slate-plugins-paragraph-1.0.0-next.40.tgz#8d0ddfb498ac6838616a39a4db27dcc0ce49e568"
@@ -2464,10 +2340,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-paragraph@link:../packages/elements/paragraph":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-placeholder@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2480,10 +2352,6 @@
     "@uifabric/styling" "^7.18.0"
     "@uifabric/utilities" "^7.33.4"
 
-"@udecode/slate-plugins-placeholder@link:../packages/placeholder":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-reset-node@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-reset-node/-/slate-plugins-reset-node-1.0.0-next.40.tgz#c10bbf87e51629f1d722163572a893ecd9f2fccd"
@@ -2492,10 +2360,6 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-reset-node@link:../packages/reset-node":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-select@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-select/-/slate-plugins-select-1.0.0-next.40.tgz#682d6dec5c60e3e3ab8200b7ec4bcea49e7cfff1"
@@ -2503,10 +2367,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-select@link:../packages/select":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-table-ui@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2518,10 +2378,6 @@
     "@udecode/slate-plugins-table" "1.0.0-next.40"
     "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
 
-"@udecode/slate-plugins-table-ui@link:../packages/elements/table-ui":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-table@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-table/-/slate-plugins-table-1.0.0-next.40.tgz#e094bb447cf8daf92d3bbbb75a2c661a9faadb3a"
@@ -2530,13 +2386,8 @@
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
 
-"@udecode/slate-plugins-table@link:../packages/elements/table":
-  version "0.0.0"
-  uid ""
-
-"@udecode/slate-plugins-test-utils@link:../packages/test-utils":
-  version "0.0.0"
-  uid ""
+"@udecode/slate-plugins-test-utils@file:../packages/test-utils":
+  version "1.0.0-alpha.18"
 
 "@udecode/slate-plugins-toolbar@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2549,10 +2400,6 @@
     "@udecode/slate-plugins-ui-fluent" "1.0.0-next.40"
     react-use "^17.1.1"
 
-"@udecode/slate-plugins-toolbar@link:../packages/ui/toolbar":
-  version "0.0.0"
-  uid ""
-
 "@udecode/slate-plugins-trailing-block@1.0.0-next.40":
   version "1.0.0-next.40"
   resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-trailing-block/-/slate-plugins-trailing-block-1.0.0-next.40.tgz#d3179a3cedcc693618900d45d507f8ecdfaa1374"
@@ -2560,10 +2407,6 @@
   dependencies:
     "@udecode/slate-plugins-common" "1.0.0-next.40"
     "@udecode/slate-plugins-core" "1.0.0-next.40"
-
-"@udecode/slate-plugins-trailing-block@link:../packages/trailing-block":
-  version "0.0.0"
-  uid ""
 
 "@udecode/slate-plugins-ui-fluent@1.0.0-next.40":
   version "1.0.0-next.40"
@@ -2575,13 +2418,50 @@
     "@uifabric/styling" "^7.18.0"
     "@uifabric/utilities" "^7.33.4"
 
-"@udecode/slate-plugins-ui-fluent@link:../packages/ui/fluent":
-  version "0.0.0"
-  uid ""
-
-"@udecode/slate-plugins@link:../packages/slate-plugins":
-  version "0.0.0"
-  uid ""
+"@udecode/slate-plugins@file:../packages/slate-plugins":
+  version "1.0.0-next.42"
+  dependencies:
+    "@udecode/slate-plugins-alignment" "1.0.0-next.40"
+    "@udecode/slate-plugins-alignment-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-autoformat" "1.0.0-next.40"
+    "@udecode/slate-plugins-basic-elements" "1.0.0-next.40"
+    "@udecode/slate-plugins-basic-marks" "1.0.0-next.40"
+    "@udecode/slate-plugins-block-quote" "1.0.0-next.40"
+    "@udecode/slate-plugins-block-quote-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-break" "1.0.0-next.40"
+    "@udecode/slate-plugins-code-block" "1.0.0-next.40"
+    "@udecode/slate-plugins-code-block-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-common" "1.0.0-next.40"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
+    "@udecode/slate-plugins-dnd" "1.0.0-next.41"
+    "@udecode/slate-plugins-find-replace" "1.0.0-next.40"
+    "@udecode/slate-plugins-find-replace-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-heading" "1.0.0-next.40"
+    "@udecode/slate-plugins-highlight" "1.0.0-next.40"
+    "@udecode/slate-plugins-html-serializer" "1.0.0-next.40"
+    "@udecode/slate-plugins-image" "1.0.0-next.40"
+    "@udecode/slate-plugins-image-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-kbd" "1.0.0-next.40"
+    "@udecode/slate-plugins-link" "1.0.0-next.40"
+    "@udecode/slate-plugins-link-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-list" "1.0.0-next.42"
+    "@udecode/slate-plugins-list-ui" "1.0.0-next.42"
+    "@udecode/slate-plugins-md-serializer" "1.0.0-next.42"
+    "@udecode/slate-plugins-media-embed" "1.0.0-next.40"
+    "@udecode/slate-plugins-media-embed-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-mention" "1.0.0-next.40"
+    "@udecode/slate-plugins-mention-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-node-id" "1.0.0-next.40"
+    "@udecode/slate-plugins-normalizers" "1.0.0-next.40"
+    "@udecode/slate-plugins-paragraph" "1.0.0-next.40"
+    "@udecode/slate-plugins-placeholder" "1.0.0-next.40"
+    "@udecode/slate-plugins-reset-node" "1.0.0-next.40"
+    "@udecode/slate-plugins-select" "1.0.0-next.40"
+    "@udecode/slate-plugins-table" "1.0.0-next.40"
+    "@udecode/slate-plugins-table-ui" "1.0.0-next.40"
+    "@udecode/slate-plugins-toolbar" "1.0.0-next.40"
+    "@udecode/slate-plugins-trailing-block" "1.0.0-next.40"
+    "@udecode/slate-plugins-ui-fluent" "1.0.0-next.40"
 
 "@uifabric/merge-styles@^7.19.2":
   version "7.19.2"
