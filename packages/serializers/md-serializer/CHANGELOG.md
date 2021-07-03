@@ -1,5 +1,12 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.43
+
+### Patch Changes
+
+- Updated dependencies [[`e70f8043`](https://github.com/udecode/slate-plugins/commit/e70f8043125d06161fa3ea5d47810749782e0a8a)]:
+  - @udecode/slate-plugins-list@1.0.0-next.43
+
 ## 1.0.0-next.42
 
 ### Patch Changes

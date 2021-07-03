@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.43
+
+### Minor Changes
+
+- [#793](https://github.com/udecode/slate-plugins/pull/793) [`e70f8043`](https://github.com/udecode/slate-plugins/commit/e70f8043125d06161fa3ea5d47810749782e0a8a) Thanks [@dylans](https://github.com/dylans)! - Decouple changing of list-item depth from event handler
+
 ## 1.0.0-next.42
 
 ### Minor Changes
