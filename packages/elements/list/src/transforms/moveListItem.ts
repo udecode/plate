@@ -5,7 +5,7 @@ import { ELEMENT_LIC } from '../defaults';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
 
-export const changeListItemDepth = (editor: SPEditor, increase = true) => {
+export const moveListItem = (editor: SPEditor, increase = true) => {
   // Get the selected lic
   const [...lics] = getNodes(editor, {
     at: editor.selection!,
