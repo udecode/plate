@@ -73,7 +73,7 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   const firstLiChild: NodeEntry<any> | undefined = liChildren[0];
-  const [firstLiChildNode, firstLiChildPath] = firstLiChild;
+  const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {

@@ -181,7 +181,7 @@ module.exports = {
   plugins: [
     'docusaurus-plugin-sass',
     [
-      'docusaurus-plugin-module-alias',
+      path.resolve(__dirname, 'plugins/module-alias'),
       {
         alias: {
           '@udecode/slate-plugins': path.resolve(

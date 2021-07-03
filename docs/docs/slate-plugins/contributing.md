@@ -45,12 +45,13 @@ package manager. See
 1. `cd ~` (optional)
 2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
 3. `cd slate-plugins`
-4. `yarn`
+4. `yarn install`
+5. `yarn build`
 
 ### Docs
 
 5. `cd docs`
-6. `yarn`
+6. `yarn install`
 7. `yarn start`
 
 ### Editing
@@ -70,6 +71,7 @@ yarn lint --fix
 This command will list all the suites and options for running tests.
 
 ```sh
+yarn build
 yarn test
 ```
 
@@ -148,7 +150,7 @@ is few of those ways:
 
 Before you submit a new PR, make sure you run `yarn test`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `slate-plugins` channel](https://app.slack.com/client/T1RFVK5FV/C013QHXSCG1).
+[join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
 
 ### Reviewing PRs
 

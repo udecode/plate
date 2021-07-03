@@ -1,5 +1,23 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.43
+
+### Minor Changes
+
+- [#793](https://github.com/udecode/slate-plugins/pull/793) [`e70f8043`](https://github.com/udecode/slate-plugins/commit/e70f8043125d06161fa3ea5d47810749782e0a8a) Thanks [@dylans](https://github.com/dylans)! - Decouple changing of list-item depth from event handler
+
+## 1.0.0-next.42
+
+### Minor Changes
+
+- [#787](https://github.com/udecode/slate-plugins/pull/787) [`e10f2fa4`](https://github.com/udecode/slate-plugins/commit/e10f2fa4963efdfef9e642a5125942c4819cfe9c) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
+  - (shift+)tab will (un)indent the highest selected list items (multi blocks support)
+  - Hotkeys support
+
+### Patch Changes
+
+- [#787](https://github.com/udecode/slate-plugins/pull/787) [`558a89da`](https://github.com/udecode/slate-plugins/commit/558a89da4217e9be57bc6ab2abcc48482c9f60bd) Thanks [@zbeyens](https://github.com/zbeyens)! - normalizer: set node with ELEMENT_LIC type to ELEMENT_DEFAULT if its parent type is not ELEMENT_LI
+
 ## 1.0.0-next.40
 
 ### Patch Changes
