@@ -5,7 +5,7 @@ import {
 } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
-import { moveListItem } from './transforms/moveListItem';
+import { moveListItems } from './transforms/moveListItems';
 import { toggleList } from './transforms/toggleList';
 import { ELEMENT_OL, ELEMENT_UL } from './defaults';
 
@@ -17,7 +17,7 @@ export const getListOnKeyDown = (
   if (e.key === 'Tab') {
     e.preventDefault();
 
-    moveListItem(editor, !e.shiftKey);
+    moveListItems(editor, !e.shiftKey);
     return;
   }
 
