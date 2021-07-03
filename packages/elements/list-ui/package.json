@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-list-ui",
-  "version": "1.0.0-next.42",
+  "version": "1.0.0-next.43",
   "description": "Slate plugins list-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/list-ui#readme",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@udecode/slate-plugins-common": "1.0.0-next.40",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-list": "1.0.0-next.42",
+    "@udecode/slate-plugins-list": "1.0.0-next.43",
     "@udecode/slate-plugins-toolbar": "1.0.0-next.40"
   },
   "publishConfig": {
