@@ -59,7 +59,8 @@ import {
   ELEMENT_TR,
 } from '@udecode/slate-plugins-table';
 import { TableElement } from '@udecode/slate-plugins-table-ui';
-import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui-fluent';
+import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui';
+import { css } from 'styled-components';
 import { DefaultSlatePluginKey } from './createSlatePluginsOptions';
 
 export const createSlatePluginsComponents = <T extends string = string>(
@@ -103,7 +104,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
         root: {
           margin: '2em 0 4px',
           fontSize: '1.875em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -114,7 +115,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
         root: {
           margin: '1.4em 0 1px',
           fontSize: '1.5em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -126,7 +127,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
           margin: '1em 0 1px',
           color: '#434343',
           fontSize: '1.25em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -138,7 +139,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
           margin: '0.75em 0 0',
           color: '#666666',
           fontSize: '1.1em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -150,7 +151,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
           margin: '0.75em 0 0',
           color: '#666666',
           fontSize: '1.1em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -162,7 +163,7 @@ export const createSlatePluginsComponents = <T extends string = string>(
           margin: '0.75em 0 0',
           color: '#666666',
           fontSize: '1.1em',
-          fontWeight: '500',
+          fontWeight: 500,
           lineHeight: '1.3',
         },
       },
@@ -198,39 +199,44 @@ export const createSlatePluginsComponents = <T extends string = string>(
           padding: '4px 0',
         },
       },
+      prefixClassNames: 'p',
     }),
     [ELEMENT_TABLE]: TableElement,
     [ELEMENT_TD]: withProps(StyledElement, {
       as: 'td',
       styles: {
-        root: {
-          backgroundColor: 'rgb(255, 255, 255)',
-          border: '1px solid rgb(193, 199, 208)',
-          padding: '8px',
-          minWidth: '48px',
-          selectors: {
-            '> *': {
-              margin: 0,
-            },
+        root: [
+          {
+            backgroundColor: 'rgb(255, 255, 255)',
+            border: '1px solid rgb(193, 199, 208)',
+            padding: '8px',
+            minWidth: '48px',
           },
-        },
+          css`
+            > * {
+              margin: 0;
+            }
+          `,
+        ],
       },
     }),
     [ELEMENT_TH]: withProps(StyledElement, {
       as: 'th',
       styles: {
-        root: {
-          backgroundColor: 'rgb(244, 245, 247)',
-          border: '1px solid rgb(193, 199, 208)',
-          padding: '8px',
-          minWidth: '48px',
-          textAlign: 'left',
-          selectors: {
-            '> *': {
-              margin: 0,
-            },
+        root: [
+          {
+            backgroundColor: 'rgb(244, 245, 247)',
+            border: '1px solid rgb(193, 199, 208)',
+            padding: '8px',
+            minWidth: '48px',
+            textAlign: 'left',
           },
-        },
+          css`
+            > * {
+              margin: 0;
+            }
+          `,
+        ],
       },
     }),
     [ELEMENT_TODO_LI]: TodoListElement,

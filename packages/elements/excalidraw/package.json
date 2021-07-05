@@ -36,10 +36,7 @@
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
     "@udecode/slate-plugins-common": "1.0.0-next.40",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "styled-components": "^5.3.0"
-  },
-  "devDependencies": {
-    "twin.macro": "^2.4.2"
+    "@udecode/slate-plugins-ui": "1.0.0-next.43"
   },
   "publishConfig": {
     "access": "public"

@@ -1,19 +1,14 @@
 import { MediaEmbedNodeData } from '@udecode/slate-plugins-media-embed';
-import {
-  ClassName,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { IStyle } from '@uifabric/styling';
+import { StyledElementProps } from '@udecode/slate-plugins-ui';
+import { CSSProp } from 'styled-components';
 
-export interface MediaEmbedElementStyleSet extends RootStyleSet {
-  iframeWrapper?: IStyle;
-  iframe?: IStyle;
-  input?: IStyle;
+export interface MediaEmbedElementStyles {
+  iframeWrapper: CSSProp;
+  iframe: CSSProp;
+  input: CSSProp;
 }
 
 export type MediaEmbedElementProps = StyledElementProps<
   MediaEmbedNodeData,
-  ClassName,
-  MediaEmbedElementStyleSet
+  MediaEmbedElementStyles
 >;

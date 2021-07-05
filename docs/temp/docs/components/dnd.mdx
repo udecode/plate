@@ -5,21 +5,9 @@ title: Drag & Drop
 
 ```ts live
 () => {
-let styledComponents = createSlatePluginsComponents({
+  let styledComponents = createSlatePluginsComponents({
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
-    }),
-    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-      styles: {
-        root: {
-          backgroundColor: '#111827',
-          selectors: {
-            code: {
-              color: 'white',
-            },
-          },
-        },
-      },
     }),
   });
   styledComponents = withStyledPlaceHolders(styledComponents);

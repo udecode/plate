@@ -1,12 +1,13 @@
 import * as React from 'react';
+import { CSSProp } from 'styled-components';
 
 export const MediaEmbedUrlInput = ({
-  className,
   url,
   onChange,
   ...props
 }: {
   className?: string;
+  css?: CSSProp;
   url: string;
   onChange: Function;
 }) => {
@@ -14,7 +15,6 @@ export const MediaEmbedUrlInput = ({
 
   return (
     <input
-      className={className}
       value={value}
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => {

@@ -1,24 +1,22 @@
-import {
-  ImageElementStyleProps,
-  ImageElementStyleSet,
-} from './ImageElement.types';
+import { createStyles } from '@udecode/slate-plugins-ui';
+import { ImageElementStyleProps } from './ImageElement.types';
 
-export const getImageElementStyles = ({
-  className,
-  focused,
-  selected,
-}: ImageElementStyleProps): ImageElementStyleSet => ({
-  root: [
+export const getImageElementStyles = (props: ImageElementStyleProps) =>
+  createStyles(
+    { prefixClassNames: 'ImageElement', ...props },
     {
-      // Insert css properties
-    },
-    className,
-  ],
-  img: {
-    display: 'block',
-    maxWidth: '100%',
-    maxHeight: '20em',
-    padding: '10px 0',
-    boxShadow: focused && selected ? '0 0 0 3px #B4D5FF' : 'none',
-  },
-});
+      root: [
+        {
+          // Insert css properties
+        },
+      ],
+      img: {
+        display: 'block',
+        maxWidth: '100%',
+        maxHeight: '20em',
+        padding: '10px 0',
+        boxShadow:
+          props.focused && props.selected ? '0 0 0 3px #B4D5FF' : 'none',
+      },
+    }
+  );

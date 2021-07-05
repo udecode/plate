@@ -1,8 +1,12 @@
 import { ReactNode } from 'react';
-import { StyledProps } from '@udecode/slate-plugins-ui-fluent';
+import { StyledProps } from '@udecode/slate-plugins-ui';
+import { ToolbarProps } from '../Toolbar/Toolbar.types';
 
-export interface BalloonToolbarProps
-  extends StyledProps<BalloonToolbarStyleProps> {
+export interface BalloonToolbarStyleProps extends BalloonToolbarProps {
+  hidden?: boolean;
+}
+
+export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   children: ReactNode;
 
   /**
@@ -25,12 +29,4 @@ export interface BalloonToolbarProps
    * Show an arrow pointing to up or down depending on the direction.
    */
   arrow?: boolean;
-}
-
-export interface BalloonToolbarStyleProps {
-  hidden?: boolean;
-  hiddenDelay?: BalloonToolbarProps['hiddenDelay'];
-  direction?: BalloonToolbarProps['direction'];
-  theme?: BalloonToolbarProps['theme'];
-  arrow?: BalloonToolbarProps['arrow'];
 }

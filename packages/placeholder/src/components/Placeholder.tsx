@@ -1,29 +1,19 @@
 import React, { useMemo } from 'react';
 import { createNodeHOC, createNodesHOC } from '@udecode/slate-plugins-common';
-import { classNamesFunction, styled } from '@uifabric/utilities';
 import { Node } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';
-import {
-  PlaceholderProps,
-  PlaceholderStyleProps,
-  PlaceholderStyleSet,
-} from './Placeholder.types';
+import { PlaceholderProps } from './Placeholder.types';
 
-const getClassNames = classNamesFunction<
-  PlaceholderStyleProps,
-  PlaceholderStyleSet
->();
+export const Placeholder = (props: PlaceholderProps) => {
+  const {
+    children,
+    element,
+    placeholder,
+    hideOnBlur = true,
+    nodeProps,
+  } = props;
 
-export const PlaceholderBase = ({
-  children,
-  element,
-  className,
-  styles,
-  placeholder,
-  hideOnBlur = true,
-  nodeProps,
-}: PlaceholderProps) => {
   const focused = useFocused();
   const selected = useSelected();
 
@@ -35,28 +25,17 @@ export const PlaceholderBase = ({
     );
   }, [element, hideOnBlur, focused, selected]);
 
-  const classNames = getClassNames(styles, {
-    className,
-    enabled,
-  });
-
   return React.Children.map(children, (child) => {
     return React.cloneElement(child, {
-      className: `${child.props.className}  ${
-        enabled && classNames.placeholder
-      }`,
-      nodeProps: { ...nodeProps, placeholder },
+      className: child.props.className,
+      nodeProps: {
+        ...nodeProps,
+        styles: getPlaceholderStyles({ enabled, ...props }),
+        placeholder,
+      },
     });
   });
 };
-
-export const Placeholder = styled<
-  PlaceholderProps,
-  PlaceholderStyleProps,
-  PlaceholderStyleSet
->(PlaceholderBase, getPlaceholderStyles, undefined, {
-  scope: 'Placeholder',
-});
 
 export const withPlaceholder = createNodeHOC(Placeholder);
 export const withPlaceholders = createNodesHOC(Placeholder);

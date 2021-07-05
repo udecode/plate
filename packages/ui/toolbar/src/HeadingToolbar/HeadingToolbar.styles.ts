@@ -1,40 +1,26 @@
-import {
-  ClassName,
-  RootStyleSet,
-  Styles,
-} from '@udecode/slate-plugins-ui-fluent';
-import { concatStyleSets } from '@uifabric/styling';
+import { createStyles, StyledProps } from '@udecode/slate-plugins-ui';
+import { css } from 'styled-components';
 import { getToolbarStyles } from '../Toolbar/Toolbar.styles';
 
-const classNames = {
-  root: 'slate-HeadingToolbar',
-};
-
-export const getHeadingToolbarStyles = ({
-  className,
-}: ClassName = {}): Styles => {
-  const color = '#06c';
-
-  const styles: RootStyleSet = {
-    root: [
-      classNames.root,
-      {
-        position: 'relative',
-        padding: '1px 18px 17px',
-        margin: '0 -20px',
-        borderBottom: '2px solid #eee',
-        marginBottom: '20px',
-        flexWrap: 'wrap',
-
-        selectors: {
-          '.slate-ToolbarButton-active, .slate-ToolbarButton:hover': {
-            color,
-          },
+export const getHeadingToolbarStyles = (props: StyledProps) =>
+  createStyles({ prefixClassNames: 'HeadingToolbar', ...props }, [
+    {
+      root: [
+        ...getToolbarStyles(props).root.css,
+        {
+          position: 'relative',
+          padding: '1px 18px 17px',
+          margin: '0 -20px',
+          borderBottom: '2px solid #eee',
+          marginBottom: '20px',
+          flexWrap: 'wrap',
         },
-      },
-      className,
-    ],
-  };
-
-  return concatStyleSets(getToolbarStyles(), styles);
-};
+        css`
+          .slate-ToolbarButton-active,
+          .slate-ToolbarButton:hover {
+            color: #06c;
+          }
+        `,
+      ],
+    },
+  ]);

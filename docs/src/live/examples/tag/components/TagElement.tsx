@@ -1,33 +1,15 @@
 import * as React from 'react';
-import { getRootClassNames, useEditorRef } from '@udecode/slate-plugins';
-import { styled } from '@uifabric/utilities';
+import { useEditorRef } from '@udecode/slate-plugins';
 import { Transforms } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { useOnMouseClick } from '../hooks/useOnMouseClick';
 import { getTagElementStyles } from './TagElement.styles';
-import {
-  TagElementProps,
-  TagElementStyleProps,
-  TagElementStyleSet,
-} from './TagElement.types';
+import { TagElementProps } from './TagElement.types';
 
-const getClassNames = getRootClassNames<
-  TagElementStyleProps,
-  TagElementStyleSet
->();
+export const TagElement = (props: TagElementProps) => {
+  const { attributes, children, element } = props;
 
-/**
- * TagElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const TagElementBase = ({
-  attributes,
-  children,
-  element,
-  styles,
-  className,
-}: TagElementProps) => {
   const editor = useEditorRef();
   const selected = useSelected();
   const focused = useFocused();
@@ -53,35 +35,24 @@ export const TagElementBase = ({
     [selected, focused]
   );
 
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-    selected,
-    focused,
-  });
+  const styles = getTagElementStyles(props);
 
   return (
     <div
       {...attributes}
       data-slate-value={element.value}
-      className={classNames.root}
+      css={styles.root.css}
+      className={styles.root.className}
       contentEditable={false}
     >
-      <div className={`${classNames.link}`} {...onClickProps}>
+      <div
+        css={styles.link?.css}
+        className={styles.link?.className}
+        {...onClickProps}
+      >
         #{element.value}
       </div>
       {children}
     </div>
   );
 };
-
-/**
- * TagElement
- */
-export const TagElement = styled<
-  TagElementProps,
-  TagElementStyleProps,
-  TagElementStyleSet
->(TagElementBase, getTagElementStyles, undefined, {
-  scope: 'TagElement',
-});

@@ -62,22 +62,6 @@ Returns a list of the following plugins:
     createExitBreakPlugin(optionsExitBreakPlugin),
   ];
 
-  const styledComponents = {
-    ...components,
-    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-      styles: {
-        root: {
-          backgroundColor: '#111827',
-          selectors: {
-            code: {
-              color: 'white',
-            },
-          },
-        },
-      },
-    }),
-  };
-
   return (
     <>
       <HeadingToolbar>
@@ -86,7 +70,7 @@ Returns a list of the following plugins:
       <SlatePlugins
         id="basic-elements"
         plugins={plugins}
-        components={styledComponents}
+        components={components}
         options={options}
         editableProps={editableProps}
         initialValue={initialValueBasicElements}

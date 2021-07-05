@@ -1,44 +1,20 @@
 import * as React from 'react';
-import {
-  ClassName,
-  getRootClassNames,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import { StyledElementProps } from '@udecode/slate-plugins-ui';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 
-const getClassNames = getRootClassNames();
-/**
- *   CodeBlockElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const CodeBlockElementBase = ({
-  attributes,
-  children,
-  className,
-  styles,
-  nodeProps,
-}: StyledElementProps) => {
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-  });
+export const CodeBlockElement = (props: StyledElementProps) => {
+  const { attributes, children, nodeProps } = props;
+
+  const { root } = getCodeBlockElementStyles(props);
 
   return (
-    <pre {...attributes} className={classNames.root} {...nodeProps}>
+    <pre
+      {...attributes}
+      css={root.css}
+      className={root.className}
+      {...nodeProps}
+    >
       <code>{children}</code>
     </pre>
   );
 };
-
-/**
- * CodeBlockElement
- */
-export const CodeBlockElement = styled<
-  StyledElementProps,
-  ClassName,
-  RootStyleSet
->(CodeBlockElementBase, getCodeBlockElementStyles, undefined, {
-  scope: 'CodeBlockElement',
-});

@@ -9,5 +9,5 @@ import {
 export type StyledLeafProps<
   TText = Text,
   TStyleProps = ClassName,
-  TStyleSet = RootStyleSet
-> = SPRenderLeafProps<TText> & StyledProps<TStyleProps, TStyleSet>;
+  TStyles = RootStyleSet
+> = SPRenderLeafProps<TText> & StyledProps<TStyleProps, TStyles>;

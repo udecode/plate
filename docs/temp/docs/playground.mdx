@@ -15,20 +15,9 @@ The following playground uses most of the provided plugins.
 ```ts live
 () => {
   let styledComponents = createSlatePluginsComponents({
+    ...components,
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
-    }),
-    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-      styles: {
-        root: {
-          backgroundColor: '#111827',
-          selectors: {
-            code: {
-              color: 'white',
-            },
-          },
-        },
-      },
     }),
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement
   });

@@ -25,9 +25,7 @@
   "dependencies": {
     "@udecode/slate-plugins-common": "1.0.0-next.40",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.40",
-    "@uifabric/styling": "^7.18.0",
-    "@uifabric/utilities": "^7.33.4"
+    "@udecode/slate-plugins-ui": "1.0.0-next.43"
   },
   "repository": {
     "type": "git",

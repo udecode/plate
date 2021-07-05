@@ -1,44 +1,38 @@
-import { IStyle } from '@uifabric/styling';
-import { PreviewLeafStyleProps, PreviewLeafStyles } from './PreviewLeaf.types';
+import { createStyles } from '@udecode/slate-plugins';
+import { CSSProp } from 'styled-components';
+import { PreviewLeafStyleProps } from './PreviewLeaf.types';
 
-export const getPreviewLeafStyles = ({
-  className,
-  title,
-  list,
-  italic,
-  hr,
-  code,
-  bold,
-  blockquote,
-}: PreviewLeafStyleProps): PreviewLeafStyles => {
-  const boldStyle: IStyle = {
+export const getPreviewLeafStyles = (props: PreviewLeafStyleProps) => {
+  const { title, list, italic, hr, code, bold, blockquote } = props;
+
+  const boldStyle: CSSProp = {
     fontWeight: 'bold',
   };
 
-  const italicStyle: IStyle = {
+  const italicStyle: CSSProp = {
     fontStyle: 'italic',
   };
 
-  const titleStyle: IStyle = {
+  const titleStyle: CSSProp = {
     display: 'inline-block',
     fontWeight: 'bold',
     fontSize: '20px',
     margin: '20px 0 10px 0',
   };
 
-  const listStyle: IStyle = {
+  const listStyle: CSSProp = {
     paddingLeft: '10px',
     fontSize: '20px',
     lineHeight: '10px',
   };
 
-  const hrStyle: IStyle = {
+  const hrStyle: CSSProp = {
     display: 'block',
     textAlign: 'center',
     borderBottom: '2px solid #ddd',
   };
 
-  const blockquoteStyle: IStyle = {
+  const blockquoteStyle: CSSProp = {
     display: 'inline-block',
     borderLeft: '2px solid #ddd',
     paddingLeft: '10px',
@@ -46,14 +40,14 @@ export const getPreviewLeafStyles = ({
     fontStyle: 'italic',
   };
 
-  const codeStyle: IStyle = {
+  const codeStyle: CSSProp = {
     fontFamily: 'monospace',
     backgroundColor: '#eee',
     padding: '3px',
   };
 
-  let rootStyle: IStyle = {};
-
+  let rootStyle: CSSProp = {};
+  console.log(title);
   if (bold) rootStyle = { ...rootStyle, ...boldStyle };
   if (italic) rootStyle = { ...rootStyle, ...italicStyle };
   if (title) rootStyle = { ...rootStyle, ...titleStyle };
@@ -62,7 +56,10 @@ export const getPreviewLeafStyles = ({
   if (blockquote) rootStyle = { ...rootStyle, ...blockquoteStyle };
   if (code) rootStyle = { ...rootStyle, ...codeStyle };
 
-  return {
-    root: [rootStyle, className],
-  };
+  return createStyles(
+    { prefixClassNames: 'PreviewLeaf', ...props },
+    {
+      root: [rootStyle],
+    }
+  );
 };

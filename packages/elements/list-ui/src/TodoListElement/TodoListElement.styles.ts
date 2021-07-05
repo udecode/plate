@@ -1,49 +1,45 @@
-import { CLASS_TODO_LIST_CHECKED } from '@udecode/slate-plugins-list';
-import {
-  TodoListElementStyleProps,
-  TodoListElementStyleSet,
-} from './TodoListElement.types';
+import { createStyles } from '@udecode/slate-plugins-ui';
+import { css } from 'styled-components';
+import { TodoListElementStyleProps } from './TodoListElement.types';
 
-export const getTodoListElementStyles = ({
-  className,
-  checked,
-}: TodoListElementStyleProps): TodoListElementStyleSet => {
-  let rootClassName = className;
-  if (checked) rootClassName += ` ${CLASS_TODO_LIST_CHECKED}`;
-
-  return {
-    root: [
-      {
-        display: 'flex',
-        flexDirection: 'row',
-        padding: '3px 0',
-      },
-      rootClassName,
-    ],
-    checkboxWrapper: {
-      userSelect: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '24px',
-      height: '24px',
-      marginRight: '6px',
-    },
-    checkbox: {
-      width: '16px',
-      height: '16px',
-      margin: '0',
-    },
-    text: {
-      flex: 1,
-      opacity: checked ? 0.666 : 1,
-      textDecoration: checked ? 'line-through' : 'none',
-
-      selectors: {
-        ':focus': {
-          outline: 'none',
+export const getTodoListElementStyles = (props: TodoListElementStyleProps) => {
+  return createStyles(
+    { prefixClassNames: 'TodoListElement', ...props },
+    {
+      root: [
+        {
+          display: 'flex',
+          flexDirection: 'row',
+          padding: '3px 0',
         },
+      ],
+      ...(props.checked && { rootChecked: {} }),
+      checkboxWrapper: {
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '24px',
+        height: '24px',
+        marginRight: '6px',
       },
-    },
-  };
+      checkbox: {
+        width: '16px',
+        height: '16px',
+        margin: '0',
+      },
+      text: [
+        {
+          flex: 1,
+          opacity: props.checked ? 0.666 : 1,
+          textDecoration: props.checked ? 'line-through' : 'none',
+        },
+        css`
+          :focus {
+            outline: none;
+          }
+        `,
+      ],
+    }
+  );
 };

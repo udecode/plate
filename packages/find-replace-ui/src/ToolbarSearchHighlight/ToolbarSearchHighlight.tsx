@@ -40,9 +40,6 @@ export const ToolbarSearchHighlight = ({
           paddingLeft: '2em',
           border: '2px solid #ddd',
           background: '#fafafa',
-          // selectors: {
-          //   ':focus': { outline: '0', borderColor: 'blue' },
-          // },
         }}
       />
     </div>

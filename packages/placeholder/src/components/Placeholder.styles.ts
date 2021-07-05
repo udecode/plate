@@ -1,21 +1,12 @@
-import {
-  PlaceholderStyleProps,
-  PlaceholderStyleSet,
-} from './Placeholder.types';
+import { createStyles } from '@udecode/slate-plugins-ui';
+import { PlaceholderProps } from './Placeholder.types';
 
-const classNames = {
-  root: 'slate-placeholder',
-};
-
-export const getPlaceholderStyles = ({
-  className,
-}: PlaceholderStyleProps): PlaceholderStyleSet => {
-  return {
-    placeholder: [
-      classNames.root,
-      className,
-      {
-        selectors: {
+export const getPlaceholderStyles = (props: PlaceholderProps) =>
+  createStyles(
+    { prefixClassNames: 'Placeholder', ...props },
+    {
+      root: {
+        ...(props.enabled && {
           '::before': {
             content: 'attr(placeholder)',
             display: 'block',
@@ -23,8 +14,7 @@ export const getPlaceholderStyles = ({
             opacity: 0.3,
             cursor: 'text',
           },
-        },
+        }),
       },
-    ],
-  };
-};
+    }
+  );

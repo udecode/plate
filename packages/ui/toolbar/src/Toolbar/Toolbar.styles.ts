@@ -1,16 +1,11 @@
-import { Styles } from '@udecode/slate-plugins-ui-fluent';
-import { concatStyleSets } from '@uifabric/styling';
-import { memoizeFunction } from '@uifabric/utilities';
+import { createStyles } from '@udecode/slate-plugins-ui';
+import { ToolbarProps } from './Toolbar.types';
 
-const classNames = {
-  root: 'slate-Toolbar',
-};
-
-export const getToolbarStyles = memoizeFunction((styles?: Styles) => {
-  return concatStyleSets(
+export const getToolbarStyles = (props: ToolbarProps) =>
+  createStyles(
+    { prefixClassNames: 'Toolbar', ...props },
     {
       root: [
-        classNames.root,
         {
           display: 'flex',
           alignItems: 'center',
@@ -20,7 +15,5 @@ export const getToolbarStyles = memoizeFunction((styles?: Styles) => {
           color: 'rgb(68, 68, 68)',
         },
       ],
-    },
-    styles
+    }
   );
-});

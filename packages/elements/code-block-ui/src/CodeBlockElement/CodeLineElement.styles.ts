@@ -1,12 +1,9 @@
-import { ClassName, RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import { createStyles, StyledElementProps } from '@udecode/slate-plugins-ui';
 
-export const getCodeLineElementStyles = ({
-  className,
-}: ClassName): RootStyleSet => ({
-  root: [
+export const getCodeLineElementStyles = (props: StyledElementProps) =>
+  createStyles(
+    { prefixClassNames: 'CodeLineElement', ...props },
     {
-      // Insert css properties
-    },
-    className,
-  ],
-});
+      root: [{}],
+    }
+  );

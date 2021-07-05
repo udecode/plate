@@ -1,15 +1,15 @@
-import { ClassName, RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import { createStyles, StyledElementProps } from '@udecode/slate-plugins-ui';
 
-export const getTableElementStyles = ({
-  className,
-}: ClassName): RootStyleSet => ({
-  root: [
+export const getTableElementStyles = (props: StyledElementProps) =>
+  createStyles(
+    { prefixClassNames: 'TableElement', ...props },
     {
-      // Insert css properties
-      margin: '10px 0',
-      borderCollapse: 'collapse',
-      width: '100%',
-    },
-    className,
-  ],
-});
+      root: [
+        {
+          margin: '10px 0',
+          borderCollapse: 'collapse',
+          width: '100%',
+        },
+      ],
+    }
+  );

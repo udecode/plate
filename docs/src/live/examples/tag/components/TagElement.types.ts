@@ -1,23 +1,15 @@
-import {
-  ClassName,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins';
-import { IStyle } from '@uifabric/styling';
+import { StyledElementProps } from '@udecode/slate-plugins';
+import { CSSProp } from 'styled-components';
 import { TagNode } from '../types';
 
-export interface TagElementStyleProps extends ClassName {
+export interface TagElementStyleProps extends TagElementProps {
   selected?: boolean;
   focused?: boolean;
 }
 
-export interface TagElementStyleSet extends RootStyleSet {
-  link?: IStyle;
+export interface TagElementStyles {
+  link: CSSProp;
 }
 
 export interface TagElementProps
-  extends StyledElementProps<
-    TagNode,
-    TagElementStyleProps,
-    TagElementStyleSet
-  > {}
+  extends StyledElementProps<TagNode, TagElementStyles> {}

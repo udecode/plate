@@ -1,20 +1,6 @@
-import {
-  ClassName,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { IStyle } from '@uifabric/styling';
+import { StyledElementProps } from '@udecode/slate-plugins-ui';
 
-export interface PlaceholderStyleProps extends ClassName {
-  enabled: boolean;
-}
-
-export interface PlaceholderStyleSet extends RootStyleSet {
-  placeholder: IStyle;
-}
-
-export interface PlaceholderProps
-  extends StyledElementProps<{}, PlaceholderStyleProps, PlaceholderStyleSet> {
+export interface PlaceholderProps extends StyledElementProps {
   placeholder: string;
   hideOnBlur?: boolean;
 }

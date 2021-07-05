@@ -1,4 +1,4 @@
-import { ExcalidrawNodeData } from '../../../../packages/elements/excalidraw/src/types';
+import { ExcalidrawNodeData } from '@udecode/slate-plugins-excalidraw';
 
 export const initialDataExcalidraw: ExcalidrawNodeData = {
   data: {

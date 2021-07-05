@@ -9,5 +9,5 @@ import {
 export type StyledElementProps<
   TElement = Element,
   TStyleProps = ClassName,
-  TStyleSet = RootStyleSet
-> = SPRenderElementProps<TElement> & StyledProps<TStyleProps, TStyleSet>;
+  TStyles = RootStyleSet
+> = SPRenderElementProps<TElement> & StyledProps<TStyleProps, TStyles>;
