@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "1.0.0-next.43",
+  "version": "1.0.0-next.44",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/slate-plugins#readme",
@@ -59,7 +59,7 @@
     "@udecode/slate-plugins-link-ui": "1.0.0-next.40",
     "@udecode/slate-plugins-list": "1.0.0-next.43",
     "@udecode/slate-plugins-list-ui": "1.0.0-next.43",
-    "@udecode/slate-plugins-md-serializer": "1.0.0-next.43",
+    "@udecode/slate-plugins-md-serializer": "1.0.0-next.44",
     "@udecode/slate-plugins-media-embed": "1.0.0-next.40",
     "@udecode/slate-plugins-media-embed-ui": "1.0.0-next.40",
     "@udecode/slate-plugins-mention": "1.0.0-next.40",
