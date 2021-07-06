@@ -1,5 +1,6 @@
 import { createStyles } from '@udecode/slate-plugins-ui';
 import { css, CSSProp } from 'styled-components';
+import tw from 'twin.macro';
 import { getToolbarStyles } from '../Toolbar/Toolbar.styles';
 import { BalloonToolbarStyleProps } from './BalloonToolbar.types';
 
@@ -105,11 +106,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
             color: ${colorActive};
           }
         `,
-        !props.hidden
-          ? {
-              visibility: 'visible',
-            }
-          : undefined,
+        !props.hidden && tw`visible`,
       ],
     }
   );

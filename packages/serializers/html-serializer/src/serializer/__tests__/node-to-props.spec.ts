@@ -46,7 +46,7 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a href="https://theuselessweb.com/" class="slate-a" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-a">link</a>.'
+    'An external <a href="https://theuselessweb.com/" class="slate-LinkElement" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-LinkElement">link</a>.'
   );
 });
 
@@ -66,6 +66,6 @@ it('serialize image with alt to html', () => {
       })
     ).getElementsByTagName('img')[0].outerHTML
   ).toEqual(
-    '<img src="https://via.placeholder.com/300" alt="Placeholder" width="300">'
+    '<img class="slate-ImageElement-img" src="https://via.placeholder.com/300" alt="Placeholder" width="300">'
   );
 });

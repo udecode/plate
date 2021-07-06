@@ -20,8 +20,6 @@ it('serialize elements using useSlateStatic', () => {
   });
 
   expect(render).toBe(
-    `<div class="${getSlateClass(
-      ELEMENT_TODO_LI
-    )} ${CLASS_TODO_LIST_CHECKED}"><div contenteditable="false" ><input type="checkbox"  checked=""/></div><span  contenteditable="true">Slide to the right.</span></div>`
+    `<div class="slate-TodoListElement slate-TodoListElement-rootChecked"><div contenteditable="false" class="slate-TodoListElement-checkboxWrapper"><input type="checkbox" class="slate-TodoListElement-checkbox" checked=""/></div><span class="slate-TodoListElement-text" contenteditable="true">Slide to the right.</span></div>`
   );
 });

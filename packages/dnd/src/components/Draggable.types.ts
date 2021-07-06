@@ -55,6 +55,15 @@ export interface DraggableStyles {
   dropLine: CSSProp;
 }
 
+export interface DragHandleProps
+  extends React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
+  element: Element;
+  styles?: CSSProp;
+}
+
 export interface DraggableProps
   extends StyledElementProps<{}, DraggableStyles> {
   componentRef?: any;
@@ -62,12 +71,7 @@ export interface DraggableProps
   /**
    * An override to render the drag handle.
    */
-  onRenderDragHandle?: ({
-    element,
-  }: { element: Element } & React.DetailedHTMLProps<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  >) => JSX.Element;
+  onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
 
   level?: number;
   filter?: (editor: TEditor, path: Path) => boolean;

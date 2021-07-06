@@ -45,9 +45,9 @@ export const withStyledDraggables = (components: any) => {
         ELEMENT_MEDIA_EMBED,
         ELEMENT_CODE_BLOCK,
       ],
-      onRenderDragHandle: ({ ...otherProps }) => (
+      onRenderDragHandle: ({ styles, ...props }) => (
         <Tippy {...grabberTooltipProps}>
-          <button type="button" {...otherProps}>
+          <button type="button" {...props} css={styles}>
             <DragIndicator
               style={{
                 width: 18,

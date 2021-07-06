@@ -21,7 +21,7 @@ module.exports = {
   testEnvironment: 'jsdom',
   testRegex: '(test|spec).tsx?$',
   transform: {
-    '^.+\\.(t|j)sx?$': 'ts-jest',
+    '^.+\\.(t|j)sx?$': ['<rootDir>/scripts/fileTransformer.js', 'ts-jest'],
   },
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
 };

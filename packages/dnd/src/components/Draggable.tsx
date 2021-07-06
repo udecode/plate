@@ -2,15 +2,16 @@ import React, { useRef } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
 import { useDndBlock } from '../hooks/useDndBlock';
 import { getDraggableStyles } from './Draggable.styles';
-import { DraggableProps } from './Draggable.types';
+import { DraggableProps, DragHandleProps } from './Draggable.types';
+
+const DefaultDragHandle = ({ styles, ...props }: DragHandleProps) => (
+  <button type="button" {...props} css={styles} />
+);
 
 export const Draggable = (props: DraggableProps) => {
-  const {
-    children,
-    element,
-    componentRef,
-    onRenderDragHandle: DragHandle,
-  } = props;
+  const { children, element, componentRef, onRenderDragHandle } = props;
+
+  const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
 
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -70,13 +71,12 @@ export const Draggable = (props: DraggableProps) => {
             className={styles.blockToolbar?.className}
             ref={multiDragRef}
           >
-            {DragHandle && (
-              <DragHandle
-                element={element}
-                className={styles.dragHandle?.className}
-                onMouseDown={(e: any) => e.stopPropagation()}
-              />
-            )}
+            <DragHandle
+              element={element}
+              styles={styles.dragHandle?.css}
+              className={styles.dragHandle?.className}
+              onMouseDown={(e: any) => e.stopPropagation()}
+            />
           </div>
         </div>
       </div>
