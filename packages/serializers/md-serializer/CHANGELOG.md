@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.44
+
+### Patch Changes
+
+- [#801](https://github.com/udecode/slate-plugins/pull/801) [`7f5f223d`](https://github.com/udecode/slate-plugins/commit/7f5f223d39e0b6a6381d42d1a95d73592960319a) Thanks [@dylans](https://github.com/dylans)! - Make markdown deserializer more consistent in approach with html and ast deserializers
+
 ## 1.0.0-next.43
 
 ### Patch Changes
