@@ -23,6 +23,7 @@ Alternatively you can install only the packages you need:
 ```bash npm2yarn
 npm install @udecode/slate-plugins-alignment
 npm install @udecode/slate-plugins-alignment-ui
+npm install @udecode/slate-plugins-ast-serializer
 npm install @udecode/slate-plugins-autoformat
 npm install @udecode/slate-plugins-basic-elements
 npm install @udecode/slate-plugins-basic-marks

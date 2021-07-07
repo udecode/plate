@@ -40,6 +40,7 @@
     "@udecode/slate-plugins-select": "1.0.0-alpha.25",
     "@udecode/slate-plugins-html-serializer": "1.0.0-alpha.25",
     "@udecode/slate-plugins-md-serializer": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-ast-serializer": "1.0.0-next.41",
     "@udecode/slate-plugins": "1.0.0-alpha.25",
     "@udecode/slate-plugins-test-utils": "1.0.0-alpha.18",
     "@udecode/slate-plugins-trailing-block": "1.0.0-alpha.25",

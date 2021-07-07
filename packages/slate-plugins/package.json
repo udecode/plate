@@ -36,6 +36,7 @@
   "dependencies": {
     "@udecode/slate-plugins-alignment": "1.0.0-next.40",
     "@udecode/slate-plugins-alignment-ui": "1.0.0-next.40",
+    "@udecode/slate-plugins-ast-serializer": "1.0.0-next.40",
     "@udecode/slate-plugins-autoformat": "1.0.0-next.40",
     "@udecode/slate-plugins-basic-elements": "1.0.0-next.40",
     "@udecode/slate-plugins-basic-marks": "1.0.0-next.40",
