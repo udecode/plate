@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-link-ui",
-  "version": "1.0.0-next.40",
+  "version": "1.0.0-next.46",
   "description": "Slate plugins link-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/link-ui#readme",
@@ -33,10 +33,10 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.40",
+    "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-link": "1.0.0-next.40",
-    "@udecode/slate-plugins-toolbar": "1.0.0-next.40"
+    "@udecode/slate-plugins-link": "1.0.0-next.46",
+    "@udecode/slate-plugins-toolbar": "1.0.0-next.46"
   },
   "publishConfig": {
     "access": "public"

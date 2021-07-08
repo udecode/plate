@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [[`6e9068f6`](https://github.com/udecode/slate-plugins/commit/6e9068f6f483b698b6b3aae6819333103504f41b)]:
+  - @udecode/slate-plugins-common@1.0.0-next.46
+  - @udecode/slate-plugins-reset-node@1.0.0-next.46
+
 ## 1.0.0-next.43
 
 ### Minor Changes
