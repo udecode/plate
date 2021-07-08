@@ -25,26 +25,36 @@ const stripSlateDataAttributes = (rawHtml: string): string =>
  */
 const stripClassNames = (
   html: string,
-  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] }
+  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] } = {}
 ) => {
-  const allClasses = html.split(/(class="[^"]*")/g);
+  const { body } = new DOMParser().parseFromString(html, 'text/html') || {};
+  const children: Array<HTMLElement> = [...(body.children as any)];
 
-  let filteredHtml = '';
-  allClasses.forEach((item, index) => {
-    if (index % 2 === 0) {
-      return (filteredHtml += item);
-    }
-    const preserveRegExp = new RegExp(
-      preserveClassNames.map((cn) => `${cn}[^"\\s]*`).join('|'),
-      'g'
+  return children.reduce((_filteredHtml, child) => {
+    const classList: Array<string> = [...(child.classList as any)];
+
+    const removeClasses = classList.reduce<string[]>(
+      (_removeClasses, cssClass) => {
+        return [
+          ..._removeClasses,
+          ...(!preserveClassNames.some((preserveClassName) =>
+            cssClass.startsWith(preserveClassName)
+          )
+            ? [cssClass]
+            : []),
+        ];
+      },
+      []
     );
-    const slateClassNames = item.match(preserveRegExp);
-    if (slateClassNames) {
-      filteredHtml += `class="${slateClassNames.join(' ')}"`;
-    }
-  });
 
-  return filteredHtml;
+    child.classList.remove(...removeClasses);
+
+    if (child.classList.length === 0) {
+      child.removeAttribute('class');
+    }
+
+    return `${_filteredHtml}${child.outerHTML}`;
+  }, '');
 };
 
 const getNode = (

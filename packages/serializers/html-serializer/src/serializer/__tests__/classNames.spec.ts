@@ -126,6 +126,50 @@ it('serialize with slate classNames: multiple tags', () => {
   );
 });
 
+it('serialize with preserveClassNames empty', () => {
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center',
+        }),
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [createAlignPlugin()],
+      nodes: [
+        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+      ],
+      preserveClassNames: [],
+    })
+  ).toBe('<div>I am centered text!</div>');
+});
+
+it('serialize with custom unmatched preserved classname: a+custom', () => {
+  const editor = createEditorPlugins({
+    options: {
+      align_center: {
+        getNodeProps: () => ({
+          className: 'a slate-align_center',
+        }),
+      },
+    },
+  });
+
+  expect(
+    serializeHTMLFromNodes(editor, {
+      plugins: [createAlignPlugin()],
+      nodes: [
+        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+      ],
+      preserveClassNames: ['custom-'],
+    })
+  ).toBe('<div>I am centered text!</div>');
+});
+
 it('serialize with custom preserved classname: a+custom', () => {
   const editor = createEditorPlugins({
     options: {
