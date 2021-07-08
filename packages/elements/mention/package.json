@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-mention",
-  "version": "1.0.0-next.40",
+  "version": "1.0.0-next.46",
   "description": "Slate plugins mention",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/mention#readme",
@@ -32,7 +32,7 @@
     "slate": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.40",
+    "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40"
   },
   "publishConfig": {
