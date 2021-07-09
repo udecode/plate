@@ -4,4 +4,4 @@
 "@udecode/slate-plugins-md-serializer": minor
 ---
 
-allow override of firstNodeType for deserializers
+allow override of fragment root for deserializers

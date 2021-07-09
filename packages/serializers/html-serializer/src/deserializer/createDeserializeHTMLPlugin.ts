@@ -31,7 +31,7 @@ export interface WithDeserializeHTMLOptions<
   insert?: (fragment: TDescendant[]) => void;
 
   /**
-   * Function called to get a custom fragment structure.
+   * Function called to get a custom fragment root.
    * Default: fragment.
    */
   getFragment?: (fragment: TDescendant[]) => TDescendant[];
