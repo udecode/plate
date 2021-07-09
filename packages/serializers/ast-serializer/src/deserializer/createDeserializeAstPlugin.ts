@@ -28,6 +28,12 @@ export interface WithDeserializeAstOptions<
    * Default: Transforms.setNodes.
    */
   insert?: (fragment: TDescendant[]) => void;
+
+  /**
+   * Function called to get a custom fragment root.
+   * Default: fragment.
+   */
+  getFragment?: (fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -43,6 +49,10 @@ export const withDeserializeAst = <
   const { insertData } = editor;
 
   const {
+    getFragment = (fragment) => {
+      return fragment;
+    },
+
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
@@ -69,7 +79,7 @@ export const withDeserializeAst = <
     if (ast) {
       const decoded = decodeURIComponent(window.atob(ast));
       let fragment = JSON.parse(decoded);
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);

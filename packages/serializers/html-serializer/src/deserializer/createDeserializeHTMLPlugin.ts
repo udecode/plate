@@ -29,6 +29,12 @@ export interface WithDeserializeHTMLOptions<
    * Default: Transforms.insertFragment.
    */
   insert?: (fragment: TDescendant[]) => void;
+
+  /**
+   * Function called to get a custom fragment root.
+   * Default: fragment.
+   */
+  getFragment?: (fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -43,6 +49,10 @@ export const withDeserializeHTML = <
   const { insertData } = editor;
 
   const {
+    getFragment = (fragment) => {
+      return fragment;
+    },
+
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
@@ -75,7 +85,7 @@ export const withDeserializeHTML = <
         plugins,
         element: body,
       });
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);

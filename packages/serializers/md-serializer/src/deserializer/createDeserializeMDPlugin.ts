@@ -28,6 +28,12 @@ export interface WithDeserializeMarkdownOptions<
    * Default: Transforms.insertFragment.
    */
   insert?: (fragment: TDescendant[]) => void;
+
+  /**
+   * Function called to get a custom fragment root.
+   * Default: fragment.
+   */
+  getFragment?: (fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -43,6 +49,10 @@ export const withDeserializeMD = <
   const { insertData } = editor;
 
   const {
+    getFragment = (fragment) => {
+      return fragment;
+    },
+
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
@@ -74,8 +84,7 @@ export const withDeserializeMD = <
 
       if (!fragment.length) return;
 
-      // FIXME: Do something to make sure it gets handled as a document fragment (see html deserializer)
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);
