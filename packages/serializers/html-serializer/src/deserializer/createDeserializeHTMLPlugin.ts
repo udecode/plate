@@ -31,10 +31,10 @@ export interface WithDeserializeHTMLOptions<
   insert?: (fragment: TDescendant[]) => void;
 
   /**
-   * Function called to get the first node type.
-   * Default: fragment[0].type.
+   * Function called to get a custom fragment structure.
+   * Default: fragment.
    */
-  getFirstNodeType?: (fragment: TDescendant[]) => string | undefined;
+  getFragment?: (fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -49,14 +49,14 @@ export const withDeserializeHTML = <
   const { insertData } = editor;
 
   const {
-    getFirstNodeType = (fragment) => {
-      return fragment[0].type as string | undefined;
+    getFragment = (fragment) => {
+      return fragment;
     },
 
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
-      const firstNodeType = getFirstNodeType(fragment);
+      const firstNodeType = fragment[0].type as string | undefined;
 
       // replace the selected node type by the first block type
       if (
@@ -85,7 +85,7 @@ export const withDeserializeHTML = <
         plugins,
         element: body,
       });
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);

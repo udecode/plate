@@ -30,10 +30,10 @@ export interface WithDeserializeMarkdownOptions<
   insert?: (fragment: TDescendant[]) => void;
 
   /**
-   * Function called to get the first node type.
-   * Default: fragment[0].type.
+   * Function called to get a custom fragment structure.
+   * Default: fragment.
    */
-  getFirstNodeType?: (fragment: TDescendant[]) => string | undefined;
+  getFragment?: (fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -49,14 +49,14 @@ export const withDeserializeMD = <
   const { insertData } = editor;
 
   const {
-    getFirstNodeType = (fragment) => {
-      return fragment[0].type as string | undefined;
+    getFragment = (fragment) => {
+      return fragment;
     },
 
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
-      const firstNodeType = getFirstNodeType(fragment);
+      const firstNodeType = fragment[0].type as string | undefined;
 
       // replace the selected node type by the first block type
       if (
@@ -84,8 +84,7 @@ export const withDeserializeMD = <
 
       if (!fragment.length) return;
 
-      // FIXME: Do something to make sure it gets handled as a document fragment (see html deserializer)
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);
