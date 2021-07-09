@@ -54,15 +54,13 @@ export const withDeserializeAst = <
         firstNodeType &&
         !inlineTypes.includes(firstNodeType)
       ) {
-        setNodes<TElement>(editor, { type: fragment[0].type });
+        setNodes<TElement>(editor, { type: firstNodeType });
       }
 
       return fragment;
     },
 
-    insert = (fragment) => {
-      Transforms.insertNodes<TElement>(editor, fragment as any);
-    },
+    insert = (fragment) => Transforms.insertFragment(editor, fragment),
   } = options;
 
   editor.insertData = (data: DataTransfer) => {
