@@ -29,6 +29,12 @@ export interface WithDeserializeHTMLOptions<
    * Default: Transforms.insertFragment.
    */
   insert?: (fragment: TDescendant[]) => void;
+
+  /**
+   * Function called to get the first node type.
+   * Default: fragment[0].type.
+   */
+  getFirstNodeType?: (fragment: TDescendant[]) => string | undefined;
 }
 
 /**
@@ -43,10 +49,14 @@ export const withDeserializeHTML = <
   const { insertData } = editor;
 
   const {
+    getFirstNodeType = (fragment) => {
+      return fragment[0].type as string | undefined;
+    },
+
     preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
-      const firstNodeType = fragment[0].type as string | undefined;
+      const firstNodeType = getFirstNodeType(fragment);
 
       // replace the selected node type by the first block type
       if (
