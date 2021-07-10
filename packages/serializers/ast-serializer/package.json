@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-ast-serializer",
-  "version": "1.0.0-next.46",
+  "version": "1.0.0-next.47",
   "description": "Slate plugins ast-serializer",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/ast-serializer#readme",

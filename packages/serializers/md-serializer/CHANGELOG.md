@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.47
+
+### Minor Changes
+
+- [#813](https://github.com/udecode/slate-plugins/pull/813) [`2d671565`](https://github.com/udecode/slate-plugins/commit/2d67156509ca8689aede2d4a9a45f749772c789c) Thanks [@dylans](https://github.com/dylans)! - Fix ast-deserialize insert, minor cleanup to html/md deserializer
+
+- [#814](https://github.com/udecode/slate-plugins/pull/814) [`1bbdae38`](https://github.com/udecode/slate-plugins/commit/1bbdae389e7ec3ec7a54877526055a9464e46fdf) Thanks [@dylans](https://github.com/dylans)! - allow override of fragment root for deserializers
+
 ## 1.0.0-next.46
 
 ### Patch Changes
