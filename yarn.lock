@@ -2969,6 +2969,23 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
+"@udecode/slate-plugins-list@1.0.0-next.40":
+  version "1.0.0-next.40"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-list/-/slate-plugins-list-1.0.0-next.40.tgz#90ce901981bf720bfe88bbb749ea4796a74fe767"
+  integrity sha512-LAFNOG+e5C5387isk4qyOK6/7FcXKJV3LaCtiz2WOxNv3eEpcgM/j8I4rGcJiJN8uSKUF3lCG7+ybnX19CphfQ==
+  dependencies:
+    "@udecode/slate-plugins-common" "1.0.0-next.40"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
+    "@udecode/slate-plugins-reset-node" "1.0.0-next.40"
+
+"@udecode/slate-plugins-reset-node@1.0.0-next.40":
+  version "1.0.0-next.40"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-reset-node/-/slate-plugins-reset-node-1.0.0-next.40.tgz#c10bbf87e51629f1d722163572a893ecd9f2fccd"
+  integrity sha512-lfOBm8OAXQyrifCg1+3XJ5Yp0KmVgRawJibgtz6dknbhk182Tcj9zzDgpCjozeGQDO4f7umc+se4nHoPgg+C9Q==
+  dependencies:
+    "@udecode/slate-plugins-common" "1.0.0-next.40"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
+
 "@uifabric/merge-styles@^7.19.2":
   version "7.19.2"
   resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-7.19.2.tgz#e020adc2f9b238f0feb855274dfeedaf6d5822a7"
