@@ -8,9 +8,14 @@ import {
   TElement,
   TNode,
 } from '@udecode/slate-plugins';
+import { SPEditor } from '@udecode/slate-plugins-core';
 import { parse } from 'papaparse';
 
-export const deserializeCSV = (editor, content, header = false) => {
+export const deserializeCSV = <T extends SPEditor = SPEditor>(
+  editor: T,
+  content: string,
+  header = false
+) => {
   // Verify it's a csv string
   const testCsv = parse(content, { preview: 2 });
 
@@ -32,7 +37,7 @@ export const deserializeCSV = (editor, content, header = false) => {
       // csv file has headers, data structure is an array of objects keyed on the heading title
       ast.children.push({
         type: tr,
-        children: csv.meta.fields.map((field) => ({
+        children: csv.meta.fields.map((field: string) => ({
           type: th,
           children: [{ type: paragraph, children: [{ text: field }] }],
         })),
@@ -40,7 +45,7 @@ export const deserializeCSV = (editor, content, header = false) => {
       for (const row of csv.data as Record<string, string>[]) {
         ast.children.push({
           type: tr,
-          children: csv.meta.fields.map((field) => ({
+          children: csv.meta.fields.map((field: string) => ({
             type: td,
             children: [
               { type: paragraph, children: [{ text: row[field] || '' }] },
