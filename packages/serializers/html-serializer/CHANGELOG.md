@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.48
+
+### Minor Changes
+
+- [#821](https://github.com/udecode/slate-plugins/pull/821) [`091f0940`](https://github.com/udecode/slate-plugins/commit/091f0940bd3c06c3dfaf49a4ab14eb611678637d) Thanks [@dylans](https://github.com/dylans)! - If empty fragment, eject from deserializer
+
 ## 1.0.0-next.47
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.0.0-next.48
+
+### Patch Changes
+
+- Updated dependencies [[`091f0940`](https://github.com/udecode/slate-plugins/commit/091f0940bd3c06c3dfaf49a4ab14eb611678637d), [`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047), [`b82f47a6`](https://github.com/udecode/slate-plugins/commit/b82f47a66ea1521dc426ae87e1ec37f004593cbe)]:
+  - @udecode/slate-plugins-ast-serializer@1.0.0-next.48
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.48
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.48
+  - @udecode/slate-plugins-list@1.0.0-next.48
+  - @udecode/slate-plugins-list-ui@1.0.0-next.48
+
 ## 1.0.0-next.47
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.48
+
+### Patch Changes
+
+- [#817](https://github.com/udecode/slate-plugins/pull/817) [`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047) Thanks [@whytspace](https://github.com/whytspace)! - add deserializer for `ELEMENT_LIC`
+
 ## 1.0.0-next.46
 
 ### Patch Changes

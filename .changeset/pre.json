@@ -46,7 +46,8 @@
     "@udecode/slate-plugins-trailing-block": "1.0.0-alpha.25",
     "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25",
-    "@udecode/slate-plugins-excalidraw": "1.0.0-next.37"
+    "@udecode/slate-plugins-excalidraw": "1.0.0-next.37",
+    "@udecode/slate-plugins-csv-serializer": "1.0.0-next.48"
   },
   "changesets": [
     "blue-eels-mate",
@@ -59,9 +60,11 @@
     "eight-parrots-unite",
     "eighty-days-flow",
     "fair-squids-teach",
+    "fresh-months-serve",
     "fuzzy-donkeys-care-common",
     "fuzzy-donkeys-care",
     "giant-pugs-mix",
+    "gold-planes-dance",
     "good-hornets-crash",
     "light-taxis-hug",
     "little-suits-cross",
@@ -73,9 +76,11 @@
     "polite-cars-tie",
     "polite-goats-watch",
     "rare-elephants-study",
+    "red-masks-appear",
     "render-editable",
     "rude-moles-wink",
     "seven-poets-march",
+    "shiny-snakes-listen",
     "shy-trees-swim",
     "small-bottles-work",
     "soft-hairs-cheat",

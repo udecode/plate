@@ -1,5 +1,16 @@
 # @udecode/slate-plugins-ast-serializer
 
+## 1.0.0-next.48
+
+### Minor Changes
+
+- [#821](https://github.com/udecode/slate-plugins/pull/821) [`091f0940`](https://github.com/udecode/slate-plugins/commit/091f0940bd3c06c3dfaf49a4ab14eb611678637d) Thanks [@dylans](https://github.com/dylans)! - If empty fragment, eject from deserializer
+
+### Patch Changes
+
+- Updated dependencies [[`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047)]:
+  - @udecode/slate-plugins-list@1.0.0-next.48
+
 ## 1.0.0-next.47
 
 ### Minor Changes
