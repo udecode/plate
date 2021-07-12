@@ -8,5 +8,5 @@ import { ResetBlockTypePluginOptions } from './types';
 export const createResetNodePlugin = (
   options: ResetBlockTypePluginOptions
 ): SlatePlugin => ({
-  onKeyDown: () => getResetNodeOnKeyDown(options),
+  onKeyDown: getResetNodeOnKeyDown(options),
 });
