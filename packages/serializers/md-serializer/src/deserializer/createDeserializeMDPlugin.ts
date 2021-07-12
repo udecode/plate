@@ -1,4 +1,8 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
+import {
+  isBlockAboveEmpty,
+  isUrl,
+  setNodes,
+} from '@udecode/slate-plugins-common';
 import {
   getInlineTypes,
   getSlatePluginWithOverrides,
@@ -80,6 +84,12 @@ export const withDeserializeMD = <
     const content = data.getData('text/plain');
 
     if (content) {
+      // if content is simply a URL, pass through to not break LinkPlugin
+      if (isUrl(content)) {
+        insertData(data);
+        return;
+      }
+
       let fragment = deserializeMD(editor, content);
 
       if (!fragment.length) return;
