@@ -80,6 +80,12 @@ export const withDeserializeAst = <
       const decoded = decodeURIComponent(window.atob(ast));
       let fragment = JSON.parse(decoded);
       fragment = getFragment(fragment);
+
+      if (!fragment.length) {
+        insertData(data);
+        return;
+      }
+
       fragment = preInsert(fragment);
 
       insert(fragment);
