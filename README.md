@@ -121,6 +121,7 @@ normalizers, queries, transforms, components and so on.
 | [`@udecode/slate-plugins-html-serializer`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-html-serializer.svg" alt="@udecode/slate-plugins-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-html-serializer) | HTML (de)serializing.     |
 | [`@udecode/slate-plugins-md-serializer`](packages/serializers/md-serializer)     | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-md-serializer.svg" alt="@udecode/slate-plugins-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-md-serializer)       | Markdown (de)serializing. |
 | [`@udecode/slate-plugins-ast-serializer`](packages/serializers/ast-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-ast-serializer.svg" alt="@udecode/slate-plugins-ast-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-ast-serializer) | AST deserializing.     |
+| [`@udecode/slate-plugins-csv-serializer`](packages/serializers/csv-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/slate-plugins-csv-serializer.svg" alt="@udecode/slate-plugins-csv-serializer npm package badge">](https://www.npmjs.com/package/@udecode/slate-plugins-csv-serializer) | CSV deserializing.     |
 
 ### Plugins
 
