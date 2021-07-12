@@ -8,7 +8,7 @@ export const SIMULATE_BACKSPACE = { keycode: 8 };
 export const getResetNodeOnKeyDown = ({
   rules,
 }: ResetBlockTypePluginOptions): KeyboardHandler => (editor) => (event) => {
-  let reset: boolean | undefined;
+  let reset = false;
 
   if (editor.selection && isCollapsed(editor.selection)) {
     rules.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
