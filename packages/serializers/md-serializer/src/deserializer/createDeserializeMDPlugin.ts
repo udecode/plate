@@ -92,13 +92,11 @@ export const withDeserializeMD = <
 
       let fragment = deserializeMD(editor, content);
 
-      fragment = getFragment(fragment);
-
       if (!fragment.length) {
         insertData(data);
         return;
       }
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);

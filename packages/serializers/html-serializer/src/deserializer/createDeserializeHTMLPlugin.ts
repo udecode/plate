@@ -85,13 +85,12 @@ export const withDeserializeHTML = <
         plugins,
         element: body,
       });
-      fragment = getFragment(fragment);
 
       if (!fragment.length) {
         insertData(data);
         return;
       }
-
+      fragment = getFragment(fragment);
       fragment = preInsert(fragment);
 
       insert(fragment);
