@@ -40,7 +40,7 @@ export const getListInsertBreak = (editor: SPEditor) => {
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(SIMULATE_BACKSPACE);
+  })(editor)(SIMULATE_BACKSPACE as any);
   if (didReset) return true;
 
   /**
