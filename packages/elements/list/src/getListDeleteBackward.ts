@@ -6,6 +6,10 @@ import {
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import {
+  getResetNodeOnKeyDown,
+  SIMULATE_BACKSPACE,
+} from '@udecode/slate-plugins-reset-node';
 import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { hasListChild } from './queries/hasListChild';
@@ -14,7 +18,6 @@ import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './defaults';
-import {getResetNodeOnKeyDown, SIMULATE_BACKSPACE} from "@udecode/slate-plugins-reset-node";
 
 export const getListDeleteBackward = (
   editor: SPEditor,
@@ -64,5 +67,5 @@ export const getListDeleteBackward = (
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(new KeyboardEvent("keydown", SIMULATE_BACKSPACE) as any);
+  })(editor)(new KeyboardEvent('keydown', SIMULATE_BACKSPACE) as any);
 };
