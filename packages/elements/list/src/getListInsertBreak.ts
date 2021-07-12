@@ -3,7 +3,10 @@ import {
   isBlockAboveEmpty,
 } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import {getResetNodeOnKeyDown, SIMULATE_BACKSPACE} from '@udecode/slate-plugins-reset-node';
+import {
+  getResetNodeOnKeyDown,
+  SIMULATE_BACKSPACE,
+} from '@udecode/slate-plugins-reset-node';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
