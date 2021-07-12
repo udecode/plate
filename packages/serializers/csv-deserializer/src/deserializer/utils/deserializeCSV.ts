@@ -1,14 +1,16 @@
+import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
 import {
-  ELEMENT_PARAGRAPH,
+  getSlatePluginType,
+  SPEditor,
+  TElement,
+  TNode,
+} from '@udecode/slate-plugins-core';
+import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-  getSlatePluginType,
-  TElement,
-  TNode,
-} from '@udecode/slate-plugins';
-import { SPEditor } from '@udecode/slate-plugins-core';
+} from '@udecode/slate-plugins-table';
 import { parse } from 'papaparse';
 
 export const deserializeCSV = <T extends SPEditor = SPEditor>(
@@ -22,7 +24,7 @@ export const deserializeCSV = <T extends SPEditor = SPEditor>(
   if (testCsv.errors.length === 0) {
     const csv = parse(content, { header });
 
-    const paragraph = getSlatePluginType(editor, ELEMENT_PARAGRAPH);
+    const paragraph = getSlatePluginType(editor, ELEMENT_DEFAULT);
     const table = getSlatePluginType(editor, ELEMENT_TABLE);
     const th = getSlatePluginType(editor, ELEMENT_TH);
     const tr = getSlatePluginType(editor, ELEMENT_TR);
