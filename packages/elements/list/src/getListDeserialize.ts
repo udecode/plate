@@ -3,10 +3,11 @@ import {
   Deserialize,
   getSlatePluginOptions,
 } from '@udecode/slate-plugins-core';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
+import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from './defaults';
 
 export const getListDeserialize = (): Deserialize => (editor) => {
   const li = getSlatePluginOptions(editor, ELEMENT_LI);
+  const lic = getSlatePluginOptions(editor, ELEMENT_LIC);
   const ul = getSlatePluginOptions(editor, ELEMENT_UL);
   const ol = getSlatePluginOptions(editor, ELEMENT_OL);
 
@@ -26,6 +27,11 @@ export const getListDeserialize = (): Deserialize => (editor) => {
         type: li.type,
         rules: [{ nodeNames: 'LI' }],
         ...li.deserialize,
+      }),
+      ...getElementDeserializer({
+        type: lic.type,
+        rules: [{ nodeNames: 'LIC' }],
+        ...lic.deserialize,
       }),
     ],
   };
