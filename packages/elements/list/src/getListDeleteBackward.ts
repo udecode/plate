@@ -67,5 +67,5 @@ export const getListDeleteBackward = (
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },
     ],
-  })(editor)(new KeyboardEvent('keydown', SIMULATE_BACKSPACE));
+  })(editor)(SIMULATE_BACKSPACE);
 };
