@@ -3,6 +3,8 @@ import { KeyboardHandler, TElement } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { ResetBlockTypePluginOptions } from './types';
 
+export const SIMULATE_BACKSPACE = {keycode: 8}
+
 export const getResetNodeOnKeyDown = ({
   rules,
 }: ResetBlockTypePluginOptions): KeyboardHandler => (editor) => (event) => {
