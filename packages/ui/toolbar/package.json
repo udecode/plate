@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-toolbar",
-  "version": "1.0.0-next.40",
+  "version": "1.0.0-next.46",
   "description": "Slate plugins toolbar",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/toolbar#readme",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/slate-plugins-common": "1.0.0-next.40",
+    "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.40",
+    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.46",
     "react-use": "^17.1.1"
   },
   "publishConfig": {

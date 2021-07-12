@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.46
+
+### Minor Changes
+
+- [#807](https://github.com/udecode/slate-plugins/pull/807) [`6e9068f6`](https://github.com/udecode/slate-plugins/commit/6e9068f6f483b698b6b3aae6819333103504f41b) Thanks [@zbeyens](https://github.com/zbeyens)! - `selectEditor`: Select an editor at a target or an edge (start, end).
+
 ## 1.0.0-next.40
 
 ### Patch Changes

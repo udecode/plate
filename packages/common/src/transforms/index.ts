@@ -12,6 +12,7 @@ export * from './mergeNodes';
 export * from './moveChildren';
 export * from './removeMark';
 export * from './selectEndOfBlockAboveSelection';
+export * from './selectEditor';
 export * from './setNodes';
 export * from './toggleMark';
 export * from './toggleNodeType';

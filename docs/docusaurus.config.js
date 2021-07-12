@@ -181,7 +181,7 @@ module.exports = {
   plugins: [
     'docusaurus-plugin-sass',
     [
-      'docusaurus-plugin-module-alias',
+      path.resolve(__dirname, 'plugins/module-alias'),
       {
         alias: {
           '@udecode/slate-plugins': path.resolve(
@@ -307,6 +307,10 @@ module.exports = {
           '@udecode/slate-plugins-md-serializer': path.resolve(
             __dirname,
             '../packages/serializers/md-serializer/src'
+          ),
+          '@udecode/slate-plugins-ast-serializer': path.resolve(
+            __dirname,
+            '../packages/serializers/ast-serializer/src'
           ),
           '@udecode/slate-plugins-slate-plugins': path.resolve(
             __dirname,

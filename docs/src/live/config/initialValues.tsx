@@ -524,7 +524,7 @@ export const initialValueList: any = [
     type: ELEMENT_H2,
     children: [{ text: '✍️ List' }],
   },
-  { type: ELEMENT_LIC, children: [{ text: '' }] },
+  { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] },
   {
     type: ELEMENT_UL,
     children: [
