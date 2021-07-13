@@ -14,7 +14,7 @@ export const getExcalidrawDeserialize = (
   return {
     element: getNodeDeserializer({
       type: options.type,
-      getNode: (el: HTMLElement) => {
+      getNode: () => {
         // let url = el.getAttribute('src');
         // if (url) {
         //  [url] = url.split('?');

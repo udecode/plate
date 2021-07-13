@@ -1,8 +1,8 @@
 import { SPEditor, WithOverride } from '@udecode/slate-plugins-core';
-import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListDeleteBackward } from './getListDeleteBackward';
 import { getListDeleteFragment } from './getListDeleteFragment';
 import { getListInsertBreak } from './getListInsertBreak';
+import { getListNormalizer } from './normalizers';
 import { WithListOptions } from './types';
 
 export const withList = ({
