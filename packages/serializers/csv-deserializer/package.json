@@ -1,0 +1,48 @@
+{
+  "name": "@udecode/slate-plugins-csv-serializer",
+  "version": "1.0.0-next.49",
+  "description": "Slate plugins csv-serializer",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/csv-serializer#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "tsc && yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-hyperscript": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "1.0.0-next.46",
+    "@udecode/slate-plugins-core": "1.0.0-next.40",
+    "@udecode/slate-plugins-table": "1.0.0-next.46",
+    "papaparse": "^5.3.1"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

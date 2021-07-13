@@ -1,5 +1,30 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.50
+
+### Minor Changes
+
+- [#824](https://github.com/udecode/slate-plugins/pull/824) [`92e19158`](https://github.com/udecode/slate-plugins/commit/92e19158fe6edf93c238e5de9727505967071b96) Thanks [@stephenkiers](https://github.com/stephenkiers)! - Allow `li` elements to be deleted, even when they are the first node
+
+### Patch Changes
+
+- Updated dependencies [[`92e19158`](https://github.com/udecode/slate-plugins/commit/92e19158fe6edf93c238e5de9727505967071b96)]:
+  - @udecode/slate-plugins-reset-node@1.0.0-next.50
+
+## 1.0.0-next.48
+
+### Patch Changes
+
+- [#817](https://github.com/udecode/slate-plugins/pull/817) [`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047) Thanks [@whytspace](https://github.com/whytspace)! - add deserializer for `ELEMENT_LIC`
+
+## 1.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [[`6e9068f6`](https://github.com/udecode/slate-plugins/commit/6e9068f6f483b698b6b3aae6819333103504f41b)]:
+  - @udecode/slate-plugins-common@1.0.0-next.46
+  - @udecode/slate-plugins-reset-node@1.0.0-next.46
+
 ## 1.0.0-next.43
 
 ### Minor Changes

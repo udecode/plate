@@ -77,6 +77,8 @@ to `yarn test` with specific parameters. Available modes include
 tests in watch mode, output code coverage, and run selected test suites
 serially in the current process.
 
+You need to `yarn build` before you run tests 
+
 #### Updating Tests
 
 Before any contributions are submitted in a PR, make sure to add or
@@ -144,7 +146,7 @@ sequence is as follows:
 We welcome all contributions. There are many ways you can help us. This
 is few of those ways:
 
-Before you submit a new PR, make sure you run `yarn test`. Do not submit
+Before you submit a new PR, make sure you run `yarn prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
 [join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
 

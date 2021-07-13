@@ -10,6 +10,7 @@
       "@udecode/slate-plugins",
       "@udecode/slate-plugins-alignment",
       "@udecode/slate-plugins-alignment-ui",
+      "@udecode/slate-plugins-ast-serializer",
       "@udecode/slate-plugins-autoformat",
       "@udecode/slate-plugins-basic-elements",
       "@udecode/slate-plugins-basic-marks",

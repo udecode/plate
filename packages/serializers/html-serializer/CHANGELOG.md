@@ -1,5 +1,26 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.48
+
+### Minor Changes
+
+- [#821](https://github.com/udecode/slate-plugins/pull/821) [`091f0940`](https://github.com/udecode/slate-plugins/commit/091f0940bd3c06c3dfaf49a4ab14eb611678637d) Thanks [@dylans](https://github.com/dylans)! - If empty fragment, eject from deserializer
+
+## 1.0.0-next.47
+
+### Minor Changes
+
+- [#813](https://github.com/udecode/slate-plugins/pull/813) [`2d671565`](https://github.com/udecode/slate-plugins/commit/2d67156509ca8689aede2d4a9a45f749772c789c) Thanks [@dylans](https://github.com/dylans)! - Fix ast-deserialize insert, minor cleanup to html/md deserializer
+
+- [#814](https://github.com/udecode/slate-plugins/pull/814) [`1bbdae38`](https://github.com/udecode/slate-plugins/commit/1bbdae389e7ec3ec7a54877526055a9464e46fdf) Thanks [@dylans](https://github.com/dylans)! - allow override of fragment root for deserializers
+
+## 1.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [[`6e9068f6`](https://github.com/udecode/slate-plugins/commit/6e9068f6f483b698b6b3aae6819333103504f41b)]:
+  - @udecode/slate-plugins-common@1.0.0-next.46
+
 ## 1.0.0-next.40
 
 ### Patch Changes

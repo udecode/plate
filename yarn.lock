@@ -2891,6 +2891,13 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
 
+"@types/papaparse@^5":
+  version "5.2.6"
+  resolved "https://registry.yarnpkg.com/@types/papaparse/-/papaparse-5.2.6.tgz#0bba18de4d15eff65883bc7c0794e0134de9e7c7"
+  integrity sha512-xGKSd0UTn58N1h0+zf8mW863Rv8BvXcGibEgKFtBIXZlcDXAmX/T4RdDO2mwmrmOypUDt5vRgo2v32a78JdqUA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
@@ -3065,6 +3072,23 @@
   dependencies:
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
+
+"@udecode/slate-plugins-list@1.0.0-next.48":
+  version "1.0.0-next.48"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-list/-/slate-plugins-list-1.0.0-next.48.tgz#cc964eeb32e218bf8f0de377f14c4f2df8d14579"
+  integrity sha512-0V+/MN3lkUrAIMFt5etE+3x4m3OUQWfY97BoYg7MekMF1Cam6VHHpneT/KgOCtjl4AK9Gbr+aB79vz3ntnbarA==
+  dependencies:
+    "@udecode/slate-plugins-common" "1.0.0-next.46"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
+    "@udecode/slate-plugins-reset-node" "1.0.0-next.46"
+
+"@udecode/slate-plugins-reset-node@1.0.0-next.46":
+  version "1.0.0-next.46"
+  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-reset-node/-/slate-plugins-reset-node-1.0.0-next.46.tgz#6362d54e21d8178d3395b6da3a7ed3e8f836f83a"
+  integrity sha512-g59qL4qsBCtkmfFK4XILa5h3Q3dbSn13+ZDit66zWxEzhgqT65KxAH1GMp5xoMkGEog0CNEg40sSXnJGhM7UCA==
+  dependencies:
+    "@udecode/slate-plugins-common" "1.0.0-next.46"
+    "@udecode/slate-plugins-core" "1.0.0-next.40"
 
 "@uifabric/merge-styles@^7.19.2":
   version "7.19.2"
@@ -9312,6 +9336,11 @@ p-waterfall@^1.0.0:
   integrity sha1-ftlLPOszMngjU69qrhGqn8I1uwA=
   dependencies:
     p-reduce "^1.0.0"
+
+papaparse@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.1.tgz#770b7a9124d821d4b2132132b7bd7dce7194b5b1"
+  integrity sha512-Dbt2yjLJrCwH2sRqKFFJaN5XgIASO9YOFeFP8rIBRG2Ain8mqk5r1M6DkfvqEVozVcz3r3HaUGw253hA1nLIcA==
 
 parallel-transform@^1.1.0:
   version "1.2.0"
