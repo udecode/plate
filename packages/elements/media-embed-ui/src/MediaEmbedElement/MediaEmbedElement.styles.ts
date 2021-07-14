@@ -1,4 +1,4 @@
-import { createStyles } from '@udecode/slate-plugins-ui';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';

@@ -11,8 +11,8 @@ module.exports = {
   ...tsJestTransformer,
   process: (src, filename, jestConfig, ...rest) => {
     const procesedSrc = src
-      .replace(/\$\{tailwind`.*`\}/g, '')
-      .replace(/\$\{tw`.*`\}/g, '');
+      .replace(/tailwind`.*`/g, '{}')
+      .replace(/tw`.*`/g, '{}');
 
     return tsJestTransformer.process(
       procesedSrc,

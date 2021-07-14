@@ -3,7 +3,7 @@ import {
   useEventEditorId,
   useStoreEditorState,
 } from '@udecode/slate-plugins-core';
-import { PortalBody } from '@udecode/slate-plugins-ui';
+import { PortalBody } from '@udecode/slate-plugins-styled-components';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';

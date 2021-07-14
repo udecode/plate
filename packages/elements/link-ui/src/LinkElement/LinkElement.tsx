@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { LinkNodeData } from '@udecode/slate-plugins-link';
-import { StyledElementProps } from '@udecode/slate-plugins-ui';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';
 
 export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {

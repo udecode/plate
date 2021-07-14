@@ -352,9 +352,9 @@ module.exports = {
             __dirname,
             '../packages/select/src'
           ),
-          '@udecode/slate-plugins-ui': path.resolve(
+          '@udecode/slate-plugins-styled-components': path.resolve(
             __dirname,
-            '../packages/ui/ui/src'
+            '../packages/ui/styled-components/src'
           ),
           '@udecode/slate-plugins-trailing-block': path.resolve(
             __dirname,

@@ -37,7 +37,7 @@
     "@udecode/slate-plugins-core": "1.0.0-next.40",
     "@udecode/slate-plugins-image": "1.0.0-next.46",
     "@udecode/slate-plugins-toolbar": "1.0.0-next.46",
-    "@udecode/slate-plugins-ui": "1.0.0-next.43"
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
   },
   "publishConfig": {
     "access": "public"

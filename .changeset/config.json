@@ -47,7 +47,7 @@
       "@udecode/slate-plugins-placeholder",
       "@udecode/slate-plugins-reset-node",
       "@udecode/slate-plugins-select",
-      "@udecode/slate-plugins-ui",
+      "@udecode/slate-plugins-styled-components",
       "@udecode/slate-plugins-ui-fluent",
       "@udecode/slate-plugins-table",
       "@udecode/slate-plugins-table-ui",

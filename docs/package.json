@@ -87,7 +87,7 @@
     "@udecode/slate-plugins-normalizers": "link:../packages/normalizers",
     "@udecode/slate-plugins-reset-node": "link:../packages/reset-node",
     "@udecode/slate-plugins-select": "link:../packages/select",
-    "@udecode/slate-plugins-ui": "link:../packages/ui/ui",
+    "@udecode/slate-plugins-styled-components": "link:../packages/ui/styled-components",
     "@udecode/slate-plugins-trailing-block": "link:../packages/trailing-block",
     "@udecode/slate-plugins-toolbar": "link:../packages/ui/toolbar"
   },

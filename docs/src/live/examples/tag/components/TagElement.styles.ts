@@ -1,6 +1,6 @@
-import { createStyles } from '@udecode/slate-plugins-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
+import { createStyles } from '../../../../../../packages/ui/styled-components';
 import { TagElementStyleProps } from './TagElement.types';
 
 export const getTagElementStyles = (props: TagElementStyleProps) => {

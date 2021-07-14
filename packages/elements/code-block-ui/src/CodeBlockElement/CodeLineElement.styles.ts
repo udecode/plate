@@ -1,4 +1,7 @@
-import { createStyles, StyledElementProps } from '@udecode/slate-plugins-ui';
+import {
+  createStyles,
+  StyledElementProps,
+} from '@udecode/slate-plugins-styled-components';
 
 export const getCodeLineElementStyles = (props: StyledElementProps) =>
   createStyles(

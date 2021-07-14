@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyledElementProps } from '@udecode/slate-plugins-ui';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { getTableElementStyles } from './TableElement.styles';
 
 export const TableElement = (props: StyledElementProps) => {

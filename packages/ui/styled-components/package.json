@@ -1,7 +1,7 @@
 {
-  "name": "@udecode/slate-plugins-ui",
-  "version": "1.0.0-next.43",
-  "description": "Slate plugins styling",
+  "name": "@udecode/slate-plugins-styled-components",
+  "version": "1.0.0-next.50",
+  "description": "Slate plugins styled components",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/components#readme",
   "bugs": {

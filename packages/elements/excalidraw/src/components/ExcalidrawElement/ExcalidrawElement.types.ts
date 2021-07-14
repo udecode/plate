@@ -2,7 +2,7 @@ import {
   ExcalidrawProps,
   LibraryItems,
 } from '@excalidraw/excalidraw-next/types/types';
-import { StyledElementProps } from '@udecode/slate-plugins-ui';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { CSSProp } from 'styled-components';
 import { ExcalidrawNodeData } from '../../types';
 

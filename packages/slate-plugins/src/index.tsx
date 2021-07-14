@@ -38,7 +38,7 @@ export * from '@udecode/slate-plugins-normalizers';
 export * from '@udecode/slate-plugins-paragraph';
 export * from '@udecode/slate-plugins-reset-node';
 export * from '@udecode/slate-plugins-select';
-export * from '@udecode/slate-plugins-ui';
+export * from '@udecode/slate-plugins-styled-components';
 export * from '@udecode/slate-plugins-table';
 export * from '@udecode/slate-plugins-table-ui';
 export * from '@udecode/slate-plugins-toolbar';

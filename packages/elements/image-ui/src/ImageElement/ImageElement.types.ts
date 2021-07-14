@@ -1,5 +1,5 @@
 import { ImageNodeData } from '@udecode/slate-plugins-image';
-import { StyledElementProps } from '@udecode/slate-plugins-ui';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface ImageElementStyleProps extends ImageElementProps {

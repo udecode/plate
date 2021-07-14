@@ -2,7 +2,7 @@ import {
   GetMentionSelectProps,
   MentionNodeData,
 } from '@udecode/slate-plugins-mention';
-import { StyledProps } from '@udecode/slate-plugins-ui';
+import { StyledProps } from '@udecode/slate-plugins-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface MentionSelectStyles {

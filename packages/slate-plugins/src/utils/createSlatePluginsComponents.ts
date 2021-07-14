@@ -53,13 +53,16 @@ import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
 import { MentionElement } from '@udecode/slate-plugins-mention-ui';
 import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
 import {
+  StyledElement,
+  StyledLeaf,
+} from '@udecode/slate-plugins-styled-components';
+import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/slate-plugins-table';
 import { TableElement } from '@udecode/slate-plugins-table-ui';
-import { StyledElement, StyledLeaf } from '@udecode/slate-plugins-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { DefaultSlatePluginKey } from './createSlatePluginsOptions';

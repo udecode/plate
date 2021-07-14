@@ -1,4 +1,7 @@
-import { createStyles, StyledElementProps } from '@udecode/slate-plugins-ui';
+import {
+  createStyles,
+  StyledElementProps,
+} from '@udecode/slate-plugins-styled-components';
 import { css } from 'styled-components';
 
 export const getLinkElementStyles = (props: StyledElementProps) =>
