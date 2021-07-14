@@ -21,6 +21,7 @@
       "@udecode/slate-plugins-code-block-ui",
       "@udecode/slate-plugins-common",
       "@udecode/slate-plugins-core",
+      "@udecode/slate-plugins-csv-serializer",
       "@udecode/slate-plugins-dnd",
       "@udecode/slate-plugins-excalidraw",
       "@udecode/slate-plugins-find-replace",
