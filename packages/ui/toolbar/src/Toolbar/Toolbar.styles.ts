@@ -1,4 +1,5 @@
 import { createStyles } from '@udecode/slate-plugins-ui';
+import tw from 'twin.macro';
 import { ToolbarProps } from './Toolbar.types';
 
 export const getToolbarStyles = (props: ToolbarProps) =>
@@ -6,14 +7,8 @@ export const getToolbarStyles = (props: ToolbarProps) =>
     { prefixClassNames: 'Toolbar', ...props },
     {
       root: [
-        {
-          display: 'flex',
-          alignItems: 'center',
-          boxSizing: 'content-box',
-          userSelect: 'none',
-          minHeight: 40,
-          color: 'rgb(68, 68, 68)',
-        },
+        tw`flex items-center select-none box-content`,
+        tw`color[rgb(68, 68, 68)] minHeight[40px]`,
       ],
     }
   );

@@ -18,54 +18,63 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
   }
 
   let marginTop;
-  let arrowStyle: CSSProp = {};
-  let arrowBorderStyle: CSSProp = {};
+  const arrowStyle: CSSProp = [
+    props.arrow &&
+      css`
+        ::after {
+          left: 50%;
+          content: ' ';
+          position: absolute;
+          margin-top: -1px;
+          transform: translateX(-50%);
+          border-color: ${background} transparent;
+          border-style: solid;
+        }
+      `,
 
-  if (props.arrow) {
-    arrowStyle = {
-      left: '50%',
-      content: '" "',
-      position: 'absolute',
-      marginTop: '-1px',
-      transform: 'translateX(-50%)',
-      borderColor: `${background} transparent`,
-      borderStyle: 'solid',
-    };
+    props.arrow &&
+      props.direction === 'top' &&
+      css`
+        ::after {
+          top: 100%;
+          bottom: auto;
+          border-width: 8px 8px 0;
+        }
+      `,
 
-    if (props.direction === 'top') {
-      arrowStyle = {
-        ...arrowStyle,
-        top: '100%',
-        bottom: 'auto',
-        borderWidth: '8px 8px 0px',
-      };
+    props.arrow &&
+      props.direction !== 'top' &&
+      css`
+        ::after {
+          top: auto;
+          bottom: 100%;
+          border-width: 0 8px 8px;
+        }
+      `,
+  ];
 
-      if (props.theme === 'light') {
-        arrowBorderStyle = {
-          ...arrowStyle,
-          marginTop: 0,
-          borderWidth: '9px 9px 0px',
-          borderColor: `${borderColor} transparent`,
-        };
-      }
-    } else {
-      arrowStyle = {
-        ...arrowStyle,
-        top: 'auto',
-        bottom: '100%',
-        borderWidth: '0px 8px 8px',
-      };
-
-      if (props.theme === 'light') {
-        arrowBorderStyle = {
-          ...arrowStyle,
-          marginTop: 0,
-          borderWidth: '0px 9px 9px',
-          borderColor: `${borderColor} transparent`,
-        };
-      }
-    }
-  }
+  const arrowBorderStyle: CSSProp = [
+    props.arrow &&
+      props.direction === 'top' &&
+      props.theme === 'light' &&
+      css`
+        ::before {
+          margin-top: 0;
+          border-width: 9px 9px 0;
+          border-color: ${borderColor} transparent;
+        }
+      `,
+    props.arrow &&
+      props.direction !== 'top' &&
+      props.theme === 'light' &&
+      css`
+        ::before {
+          margin-top: 0;
+          border-width: 0 9px 9px;
+          border-color: ${borderColor} transparent;
+        }
+      `,
+  ];
 
   if (props.direction === 'top') {
     marginTop = -9;
@@ -78,35 +87,29 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
     {
       root: [
         ...getToolbarStyles(props).root.css,
-        {
-          position: 'absolute',
-          zIndex: 500,
-
-          background,
-          color,
-
-          whiteSpace: 'nowrap',
-          visibility: 'hidden',
-          border: 'solid #000',
-          borderRadius: 4,
-          borderWidth: 1,
-          borderColor,
-          padding: '0 4px',
-          marginTop,
-          transition: props.hiddenDelay
-            ? ''
-            : 'top 75ms ease-out,left 75ms ease-out',
-
-          '::before': arrowBorderStyle,
-          '::after': arrowStyle,
-        },
+        tw`absolute whitespace-nowrap py-0 px-1`,
+        props.hidden && tw`invisible`,
+        !props.hiddenDelay &&
+          tw`transition[top 75ms ease-out,left 75ms ease-out]`,
         css`
+          color: ${color};
+          background: ${background};
+          z-index: 500;
+          border: 1px solid ${borderColor};
+          border-radius: 4px;
+          margin-top: ${marginTop}px;
+
           .slate-ToolbarButton-active,
           .slate-ToolbarButton:hover {
             color: ${colorActive};
           }
+
+          ::before {
+            ${arrowBorderStyle}
+          }
         `,
-        !props.hidden && tw`visible`,
+        ...arrowStyle,
+        ...arrowBorderStyle,
       ],
     }
   );

@@ -8,16 +8,8 @@ export const getToolbarButtonStyles = (props: ToolbarButtonProps) =>
     { prefixClassNames: 'ToolbarButton', ...props },
     {
       root: [
-        {
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '28px',
-          height: '24px',
-          userSelect: 'none',
-          cursor: 'pointer',
-          verticalAlign: 'middle',
-        },
+        tw`flex justify-center items-center select-none cursor-pointer align-middle`,
+        tw`width[28px] height[24px]`,
         css`
           > svg {
             ${tw`block w-5 h-5`}

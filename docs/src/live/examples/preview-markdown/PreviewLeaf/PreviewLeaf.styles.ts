@@ -47,7 +47,7 @@ export const getPreviewLeafStyles = (props: PreviewLeafStyleProps) => {
   };
 
   let rootStyle: CSSProp = {};
-  console.log(title);
+
   if (bold) rootStyle = { ...rootStyle, ...boldStyle };
   if (italic) rootStyle = { ...rootStyle, ...italicStyle };
   if (title) rootStyle = { ...rootStyle, ...titleStyle };

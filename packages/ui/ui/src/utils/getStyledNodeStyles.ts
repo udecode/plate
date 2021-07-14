@@ -6,9 +6,5 @@ export const getStyledNodeStyles = (
   props: Pick<StyledProps, 'styles'> & AnyObject
 ) =>
   createStyles(props, {
-    root: [
-      {
-        // Insert css properties
-      },
-    ],
+    root: [{}],
   });

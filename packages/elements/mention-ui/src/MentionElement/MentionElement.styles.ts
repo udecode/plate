@@ -1,4 +1,6 @@
 import { createStyles } from '@udecode/slate-plugins-ui';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { MentionElementStyleProps } from './MentionElement.types';
 
 export const getMentionElementStyles = (props: MentionElementStyleProps) =>
@@ -6,18 +8,14 @@ export const getMentionElementStyles = (props: MentionElementStyleProps) =>
     { prefixClassNames: 'MentionElement', ...props },
     {
       root: [
-        {
-          // Insert css properties
-          padding: '3px 3px 2px',
-          margin: '0 1px',
-          verticalAlign: 'baseline',
-          display: 'inline-block',
-          borderRadius: '4px',
-          backgroundColor: '#eee',
-          fontSize: '0.9em',
-          boxShadow:
-            props.selected && props.focused ? '0 0 0 2px #B4D5FF' : 'none',
-        },
+        tw`my-0 mx-px align-baseline inline-block`,
+        props.selected && props.focused && tw`boxShadow[0 0 0 2px #B4D5FF]`,
+        css`
+          padding: 3px 3px 2px;
+          border-radius: 4px;
+          background-color: #eee;
+          font-size: 0.9em;
+        `,
       ],
     }
   );

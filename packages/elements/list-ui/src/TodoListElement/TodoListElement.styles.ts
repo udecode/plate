@@ -1,44 +1,18 @@
 import { createStyles } from '@udecode/slate-plugins-ui';
-import { css } from 'styled-components';
+import tw from 'twin.macro';
 import { TodoListElementStyleProps } from './TodoListElement.types';
 
 export const getTodoListElementStyles = (props: TodoListElementStyleProps) => {
   return createStyles(
     { prefixClassNames: 'TodoListElement', ...props },
     {
-      root: [
-        {
-          display: 'flex',
-          flexDirection: 'row',
-          padding: '3px 0',
-        },
-      ],
+      root: tw`flex flex-row py-1`,
       ...(props.checked && { rootChecked: {} }),
-      checkboxWrapper: {
-        userSelect: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '24px',
-        height: '24px',
-        marginRight: '6px',
-      },
-      checkbox: {
-        width: '16px',
-        height: '16px',
-        margin: '0',
-      },
+      checkboxWrapper: tw`flex items-center justify-center select-none mr-1.5`,
+      checkbox: tw`w-4 h-4 m-0`,
       text: [
-        {
-          flex: 1,
-          opacity: props.checked ? 0.666 : 1,
-          textDecoration: props.checked ? 'line-through' : 'none',
-        },
-        css`
-          :focus {
-            outline: none;
-          }
-        `,
+        tw`flex-1 focus:outline-none`,
+        props.checked && tw`line-through opacity[0.666]`,
       ],
     }
   );
