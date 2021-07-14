@@ -3,10 +3,10 @@ import { KeyboardHandler, TElement } from '@udecode/slate-plugins-core';
 import isHotkey from 'is-hotkey';
 import { ResetBlockTypePluginOptions } from './types';
 
-export const SIMULATE_BACKSPACE: KeyboardEventInit = new KeyboardEvent(
-  'keydown',
-  { keyCode: 8 }
-);
+export const SIMULATE_BACKSPACE: any = {
+  key: '',
+  which: 8,
+};
 
 export const getResetNodeOnKeyDown = ({
   rules,
@@ -17,7 +17,7 @@ export const getResetNodeOnKeyDown = ({
     rules.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
       if (hotkey && isHotkey(hotkey, event as any)) {
         if (predicate(editor) && someNode(editor, { match: { type: types } })) {
-          event.preventDefault();
+          event.preventDefault?.();
 
           setNodes<TElement>(editor, { type: defaultType });
 
