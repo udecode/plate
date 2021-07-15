@@ -1,7 +1,6 @@
 import {
   deleteFragment,
   ELEMENT_DEFAULT,
-  isCollapsed,
   isFirstChild,
   isSelectionAtBlockStart,
 } from '@udecode/slate-plugins-common';
@@ -12,7 +11,6 @@ import {
 } from '@udecode/slate-plugins-reset-node';
 import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
-import { hasListChild } from './queries/hasListChild';
 import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
@@ -25,47 +23,43 @@ export const getListDeleteBackward = (
 ) => {
   const res = getListItemEntry(editor, {});
 
+  let moved: boolean | undefined = false;
+
   if (res) {
     const { list, listItem } = res;
-    const [listItemNode] = listItem;
 
     if (isSelectionAtBlockStart(editor)) {
-      let moved: boolean | undefined;
-
       Editor.withoutNormalizing(editor, () => {
         moved = removeFirstListItem(editor, { list, listItem });
-        if (moved) return;
+        if (moved) return true;
 
         moved = removeListItem(editor, { list, listItem });
+        if (moved) return true;
 
-        if (!moved) {
-          deleteFragment(editor, {
-            unit,
-            reverse: true,
-          });
+        if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
+          getResetNodeOnKeyDown({
+            rules: [
+              {
+                types: [getSlatePluginType(editor, ELEMENT_LI)],
+                defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
+                hotkey: 'backspace',
+                predicate: () => isSelectionAtBlockStart(editor),
+                onReset: (_editor) => unwrapList(_editor as SPEditor),
+              },
+            ],
+          })(editor)(SIMULATE_BACKSPACE);
+          moved = true;
+          return;
         }
 
-        moved = !isFirstChild(listItem[1]) || isListNested(editor, list[1]);
-        // moved = moveListItemUp(editor, { list, listItem });
+        deleteFragment(editor, {
+          unit,
+          reverse: true,
+        });
+        moved = true;
       });
-
-      if (moved) return true;
-    }
-
-    if (hasListChild(editor, listItemNode) && isCollapsed(editor.selection)) {
-      return;
     }
   }
 
-  return getResetNodeOnKeyDown({
-    rules: [
-      {
-        types: [getSlatePluginType(editor, ELEMENT_LI)],
-        defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
-        hotkey: 'backspace',
-        predicate: () => isSelectionAtBlockStart(editor),
-        onReset: (_editor) => unwrapList(_editor as SPEditor),
-      },
-    ],
-  })(editor)(SIMULATE_BACKSPACE as any);
+  return moved;
 };

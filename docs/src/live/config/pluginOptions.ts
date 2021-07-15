@@ -3,7 +3,6 @@ import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_PARAGRAPH,
-  ELEMENT_LI,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
   ExitBreakPluginOptions,
@@ -30,7 +29,7 @@ export const optionsMentionPlugin = {
 };
 
 const resetBlockTypesCommonRule = {
-  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI, ELEMENT_LI],
+  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
   defaultType: ELEMENT_PARAGRAPH,
 };
 
