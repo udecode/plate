@@ -1,5 +1,28 @@
 # Change Log
 
+## 1.0.0-next.51
+
+### Patch Changes
+
+- [#823](https://github.com/udecode/slate-plugins/pull/823) [`72aec67b`](https://github.com/udecode/slate-plugins/commit/72aec67b584e55ecc36a1532e8d7f9519a87f3c3) Thanks [@dylans](https://github.com/dylans)! - Missed adding new package for top-level package.json
+
+- Updated dependencies [[`be3023db`](https://github.com/udecode/slate-plugins/commit/be3023db20dd3f57c704244aa432d41036b3cba9), [`0c02cee8`](https://github.com/udecode/slate-plugins/commit/0c02cee8cc7b105ab27a329882991d86253c0517)]:
+  - @udecode/slate-plugins-list@1.0.0-next.51
+  - @udecode/slate-plugins-styled-components@1.0.0-next.51
+  - @udecode/slate-plugins-dnd@1.0.0-next.51
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.51
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.51
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.51
+  - @udecode/slate-plugins-image-ui@1.0.0-next.51
+  - @udecode/slate-plugins-link-ui@1.0.0-next.51
+  - @udecode/slate-plugins-list-ui@1.0.0-next.51
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.51
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.51
+  - @udecode/slate-plugins-table-ui@1.0.0-next.51
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.51
+  - @udecode/slate-plugins-placeholder@1.0.0-next.51
+  - @udecode/slate-plugins-toolbar@1.0.0-next.51
+
 ## 1.0.0-next.50
 
 ### Patch Changes

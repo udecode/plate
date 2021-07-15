@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-next.46",
+  "version": "1.0.0-next.51",
   "description": "Slate plugins placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.51"
   },
   "repository": {
     "type": "git",

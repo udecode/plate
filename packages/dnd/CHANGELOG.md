@@ -1,5 +1,12 @@
 # @udecode/slate-plugins-dnd
 
+## 1.0.0-next.51
+
+### Patch Changes
+
+- Updated dependencies [[`0c02cee8`](https://github.com/udecode/slate-plugins/commit/0c02cee8cc7b105ab27a329882991d86253c0517)]:
+  - @udecode/slate-plugins-styled-components@1.0.0-next.51
+
 ## 1.0.0-next.46
 
 ### Patch Changes
