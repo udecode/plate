@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/core",
-  "version": "0.61.0",
+  "name": "@udecode/slate-plugins-core",
+  "version": "1.0.0-next.40",
   "description": "Slate plugins core",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/core#readme",
