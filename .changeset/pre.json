@@ -47,10 +47,12 @@
     "@udecode/slate-plugins-ui-fluent": "1.0.0-alpha.25",
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25",
     "@udecode/slate-plugins-excalidraw": "1.0.0-next.37",
-    "@udecode/slate-plugins-csv-serializer": "1.0.0-next.48"
+    "@udecode/slate-plugins-csv-serializer": "1.0.0-next.48",
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
   },
   "changesets": [
     "blue-eels-mate",
+    "brave-lies-look",
     "clean-penguins-peel",
     "cold-lemons-taste",
     "core-major-eight-poems-travel",
@@ -61,6 +63,7 @@
     "eighty-days-flow",
     "fair-squids-teach",
     "few-roses-invite",
+    "flat-ducks-care",
     "fresh-months-serve",
     "fuzzy-donkeys-care-common",
     "fuzzy-donkeys-care",
@@ -70,6 +73,7 @@
     "light-taxis-hug",
     "little-suits-cross",
     "many-birds-flow",
+    "modern-kangaroos-invent",
     "moody-trains-rescue",
     "nervous-scissors-sneeze",
     "olive-teachers-visit",
