@@ -1,26 +1,14 @@
-import { Styles } from '@udecode/slate-plugins-ui-fluent';
-import { concatStyleSets } from '@uifabric/styling';
-import { memoizeFunction } from '@uifabric/utilities';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import tw from 'twin.macro';
+import { ToolbarProps } from './Toolbar.types';
 
-const classNames = {
-  root: 'slate-Toolbar',
-};
-
-export const getToolbarStyles = memoizeFunction((styles?: Styles) => {
-  return concatStyleSets(
+export const getToolbarStyles = (props: ToolbarProps) =>
+  createStyles(
+    { prefixClassNames: 'Toolbar', ...props },
     {
       root: [
-        classNames.root,
-        {
-          display: 'flex',
-          alignItems: 'center',
-          boxSizing: 'content-box',
-          userSelect: 'none',
-          minHeight: 40,
-          color: 'rgb(68, 68, 68)',
-        },
+        tw`flex items-center select-none box-content`,
+        tw`color[rgb(68, 68, 68)] minHeight[40px]`,
       ],
-    },
-    styles
+    }
   );
-});

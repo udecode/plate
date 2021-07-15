@@ -12,6 +12,7 @@ declare module 'react' {
   interface HTMLAttributes<T> extends DOMAttributes<T> {
     tw?: string;
     css?: CSSProp;
+    as?: string | Element;
   }
   // The inline svg css prop
   interface SVGProps<T> extends SVGProps<SVGSVGElement> {

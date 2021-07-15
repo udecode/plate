@@ -1,30 +1,20 @@
-import {
-  PlaceholderStyleProps,
-  PlaceholderStyleSet,
-} from './Placeholder.types';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
+import { PlaceholderProps } from './Placeholder.types';
 
-const classNames = {
-  root: 'slate-placeholder',
-};
-
-export const getPlaceholderStyles = ({
-  className,
-}: PlaceholderStyleProps): PlaceholderStyleSet => {
-  return {
-    placeholder: [
-      classNames.root,
-      className,
-      {
-        selectors: {
-          '::before': {
-            content: 'attr(placeholder)',
-            display: 'block',
-            position: 'absolute',
-            opacity: 0.3,
-            cursor: 'text',
-          },
-        },
-      },
-    ],
-  };
-};
+export const getPlaceholderStyles = (props: PlaceholderProps) =>
+  createStyles(
+    { prefixClassNames: 'Placeholder', ...props },
+    {
+      root:
+        props.enabled &&
+        css`
+          ::before {
+            content: attr(placeholder);
+            opacity: 0.3;
+            ${tw`block absolute cursor-text`}
+          }
+        `,
+    }
+  );

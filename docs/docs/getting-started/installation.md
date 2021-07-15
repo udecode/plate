@@ -58,10 +58,10 @@ npm install @udecode/slate-plugins-paragraph
 npm install @udecode/slate-plugins-placeholder
 npm install @udecode/slate-plugins-reset-node
 npm install @udecode/slate-plugins-select
+npm install @udecode/slate-plugins-styled-components
 npm install @udecode/slate-plugins-table
 npm install @udecode/slate-plugins-table-ui
 npm install @udecode/slate-plugins-toolbar
 npm install @udecode/slate-plugins-trailing-block
-npm install @udecode/slate-plugins-ui-fluent
 ```
 

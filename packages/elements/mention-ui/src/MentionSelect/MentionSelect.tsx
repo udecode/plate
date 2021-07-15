@@ -6,34 +6,19 @@ import {
   useStoreEditorRef,
 } from '@udecode/slate-plugins-core';
 import { MentionNodeData } from '@udecode/slate-plugins-mention';
-import {
-  ClassName,
-  getRootClassNames,
-  PortalBody,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import { PortalBody } from '@udecode/slate-plugins-styled-components';
 import { ReactEditor } from 'slate-react';
 import { getMentionSelectStyles } from './MentionSelect.styles';
-import {
-  MentionSelectProps,
-  MentionSelectStyleSet,
-} from './MentionSelect.types';
+import { MentionSelectProps } from './MentionSelect.types';
 
-const getClassNames = getRootClassNames<ClassName, MentionSelectStyleSet>();
-
-export const MentionSelectBase = ({
-  className,
-  styles,
-  at,
-  options,
-  valueIndex,
-  onClickMention,
-  renderLabel = (mentionable: MentionNodeData) => mentionable.value,
-  ...props
-}: MentionSelectProps) => {
-  const classNames = getClassNames(styles, {
-    className,
-  });
+export const MentionSelect = (props: MentionSelectProps) => {
+  const {
+    at,
+    options,
+    valueIndex,
+    onClickMention,
+    renderLabel = (mentionable: MentionNodeData) => mentionable.value,
+  } = props;
 
   const ref: any = useRef();
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -54,16 +39,28 @@ export const MentionSelectBase = ({
     return null;
   }
 
+  const styles = getMentionSelectStyles(props);
+
   return (
     <PortalBody>
-      <div ref={ref} className={classNames.root} {...props}>
+      <div
+        ref={ref}
+        css={styles.root.css}
+        className={styles.root.className}
+        {...props}
+      >
         {options.map((option, i) => (
           <div
             key={`${i}${option.value}`}
+            css={
+              i === valueIndex
+                ? styles.mentionItemSelected?.css
+                : styles.mentionItem?.css
+            }
             className={
               i === valueIndex
-                ? classNames.mentionItemSelected
-                : classNames.mentionItem
+                ? styles.mentionItemSelected?.className
+                : styles.mentionItem?.className
             }
             onMouseDown={getPreventDefaultHandler(
               onClickMention,
@@ -78,11 +75,3 @@ export const MentionSelectBase = ({
     </PortalBody>
   );
 };
-
-export const MentionSelect = styled<
-  MentionSelectProps,
-  ClassName,
-  MentionSelectStyleSet
->(MentionSelectBase, getMentionSelectStyles, undefined, {
-  scope: 'MentionSelect',
-});

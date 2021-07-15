@@ -1,50 +1,38 @@
-import { ClassName } from '@udecode/slate-plugins-ui-fluent';
-import { IStyle } from '@uifabric/styling';
-import { MentionSelectStyleSet } from './MentionSelect.types';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import { css, CSSProp } from 'styled-components';
+import tw from 'twin.macro';
+import { MentionSelectProps } from './MentionSelect.types';
 
-const classNames = {
-  root: 'slate-MentionSelect',
-  mentionItem: 'slate-MentionSelect-mentionItem',
-  mentionItemSelected: 'slate-MentionSelect-mentionItemSelected',
-};
-
-export const getMentionSelectStyles = ({
-  className,
-}: ClassName = {}): MentionSelectStyleSet => {
-  const mentionItem: IStyle = [
-    classNames.mentionItem,
-    {
-      padding: '1px 3px',
-      borderRadius: '3px',
-      background: 'transparent',
-      cursor: 'pointer',
-    },
+export const getMentionSelectStyles = (props: MentionSelectProps) => {
+  const mentionItem: CSSProp = [
+    tw`bg-transparent cursor-pointer`,
+    css`
+      padding: 1px 3px;
+      border-radius: 3px;
+    `,
   ];
 
-  const mentionItemSelected: IStyle = [
-    classNames.mentionItemSelected,
+  const mentionItemSelected: CSSProp = [
     ...mentionItem,
-    {
-      background: '#B4D5FF',
-    },
+    tw`background[#B4D5FF]`,
   ];
 
-  return {
-    root: [
-      classNames.root,
-      {
-        top: '-9999px',
-        left: '-9999px',
-        position: 'absolute',
-        zIndex: 1,
-        padding: '3px',
-        background: 'white',
-        borderRadius: '4px',
-        boxShadow: '0 1px 5px rgba(0,0,0,.2)',
-      },
-      className,
-    ],
-    mentionItem,
-    mentionItemSelected,
-  };
+  return createStyles(
+    { prefixClassNames: 'MentionSelect', ...props },
+    {
+      root: [
+        tw`absolute bg-white`,
+        css`
+          top: -9999px;
+          left: -9999px;
+          padding: 3px;
+          border-radius: 4px;
+          z-index: 1;
+          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        `,
+      ],
+      mentionItem,
+      mentionItemSelected,
+    }
+  );
 };

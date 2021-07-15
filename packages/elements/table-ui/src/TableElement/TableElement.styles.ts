@@ -1,15 +1,13 @@
-import { ClassName, RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import {
+  createStyles,
+  StyledElementProps,
+} from '@udecode/slate-plugins-styled-components';
+import tw from 'twin.macro';
 
-export const getTableElementStyles = ({
-  className,
-}: ClassName): RootStyleSet => ({
-  root: [
+export const getTableElementStyles = (props: StyledElementProps) =>
+  createStyles(
+    { prefixClassNames: 'TableElement', ...props },
     {
-      // Insert css properties
-      margin: '10px 0',
-      borderCollapse: 'collapse',
-      width: '100%',
-    },
-    className,
-  ],
-});
+      root: tw`w-full my-2.5 mx-0 border-collapse`,
+    }
+  );

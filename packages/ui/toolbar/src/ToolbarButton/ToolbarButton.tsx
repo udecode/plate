@@ -1,38 +1,15 @@
 import * as React from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react'; // optional
-import {
-  getRootClassNames,
-  RootStyleSet,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import clsx from 'clsx';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';
-import {
-  ToolbarButtonProps,
-  ToolbarButtonStyleProps,
-} from './ToolbarButton.types';
+import { ToolbarButtonProps } from './ToolbarButton.types';
 
-const getClassNames = getRootClassNames<
-  ToolbarButtonStyleProps,
-  RootStyleSet
->();
+export const ToolbarButton = (props: ToolbarButtonProps) => {
+  const { icon, tooltip, onMouseDown, as = 'span' } = props;
 
-export const ToolbarButtonBase = ({
-  className,
-  styles,
-  icon,
-  tooltip,
-  active,
-  onMouseDown,
-  as: Tag = 'span',
-}: ToolbarButtonProps) => {
   const spanProps = {
     onMouseDown,
   };
-
-  const classNames = getClassNames(styles, {
-    className,
-    active,
-  });
 
   const tooltipProps: TippyProps = {
     content: '',
@@ -44,19 +21,19 @@ export const ToolbarButtonBase = ({
     ...tooltip,
   };
 
+  const { root, active } = getToolbarButtonStyles(props);
+
   const button = (
-    <Tag data-testid="ToolbarButton" className={classNames.root} {...spanProps}>
+    <span
+      data-testid="ToolbarButton"
+      as={as}
+      css={root.css}
+      className={clsx(root.className, active?.className)}
+      {...spanProps}
+    >
       {icon}
-    </Tag>
+    </span>
   );
 
   return tooltip ? <Tippy {...tooltipProps}>{button}</Tippy> : button;
 };
-
-export const ToolbarButton = styled<
-  ToolbarButtonProps,
-  ToolbarButtonStyleProps,
-  RootStyleSet
->(ToolbarButtonBase, getToolbarButtonStyles, undefined, {
-  scope: 'ToolbarButton',
-});

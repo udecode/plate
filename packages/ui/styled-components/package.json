@@ -1,0 +1,47 @@
+{
+  "name": "@udecode/slate-plugins-styled-components",
+  "version": "1.0.0-next.50",
+  "description": "Slate plugins styled components",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/components#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "tsc && yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "1.0.0-next.40",
+    "@udecode/slate-plugins-core": "1.0.0-next.40",
+    "clsx": "^1.1.1",
+    "styled-components": "5.1.1"
+  },
+  "devDependencies": {
+    "twin.macro": "^2.6.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,45 +1,20 @@
 import * as React from 'react';
-import {
-  ClassName,
-  getRootClassNames,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { getTableElementStyles } from './TableElement.styles';
 
-const getClassNames = getRootClassNames();
+export const TableElement = (props: StyledElementProps) => {
+  const { attributes, children, nodeProps } = props;
 
-/**
- * TableElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const TableElementBase = ({
-  attributes,
-  children,
-  className,
-  styles,
-  nodeProps,
-}: StyledElementProps) => {
-  const classNames = getClassNames(styles, {
-    className,
-  });
+  const { root } = getTableElementStyles(props);
 
   return (
-    <table {...attributes} className={classNames.root} {...nodeProps}>
+    <table
+      {...attributes}
+      css={root.css}
+      className={root.className}
+      {...nodeProps}
+    >
       <tbody>{children}</tbody>
     </table>
   );
 };
-
-/**
- * TableElement
- */
-export const TableElement = styled<StyledElementProps, ClassName, RootStyleSet>(
-  TableElementBase,
-  getTableElementStyles,
-  undefined,
-  {
-    scope: 'TableElement',
-  }
-);

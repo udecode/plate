@@ -1,35 +1,24 @@
-import { ClassName } from '@udecode/slate-plugins-ui-fluent';
-import { MediaEmbedElementStyleSet } from './MediaEmbedElement.types';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
+import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 
-export const getMediaEmbedElementStyles = ({
-  className,
-}: ClassName): MediaEmbedElementStyleSet => {
-  return {
-    root: [
-      {
-        // Insert css properties
-        position: 'relative',
-      },
-      className,
-    ],
-    iframeWrapper: {
-      padding: '75% 0 0 0',
-      position: 'relative',
-    },
-    iframe: {
-      position: 'absolute',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-    },
-    input: {
-      fontSize: '0.85em',
-      width: '100%',
-      padding: '0.5em',
-      border: '2px solid #ddd',
-      background: '#fafafa',
-      marginTop: '5px',
-    },
-  };
-};
+export const getMediaEmbedElementStyles = (props: MediaEmbedElementProps) =>
+  createStyles(
+    { prefixClassNames: 'MediaEmbedElement', ...props },
+    {
+      root: tw`relative`,
+      iframeWrapper: [tw`relative`, tw`padding[75% 0 0 0]`],
+      iframe: [tw`absolute top-0 left-0 w-full h-full`],
+      input: [
+        tw`w-full`,
+        css`
+          padding: 0.5em;
+          font-size: 0.85em;
+          border: 2px solid #ddd;
+          background: #fafafa;
+          margin-top: 5px;
+        `,
+      ],
+    }
+  );

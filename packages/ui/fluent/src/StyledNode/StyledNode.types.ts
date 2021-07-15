@@ -18,15 +18,15 @@ export interface RootStyleSet {
 
 export type Styles<
   TStyleProps = ClassName,
-  TStyleSet = RootStyleSet
-> = IStyleFunctionOrObject<TStyleProps, TStyleSet>;
+  TStyles = RootStyleSet
+> = IStyleFunctionOrObject<TStyleProps, TStyles>;
 
-export interface StyledProps<TStyleProps = ClassName, TStyleSet = RootStyleSet>
+export interface StyledProps<TStyleProps = ClassName, TStyles = RootStyleSet>
   extends ClassName {
   /**
    * Call to provide customized styling that will layer on top of the variant rules.
    */
-  styles?: Styles<TStyleProps, TStyleSet>;
+  styles?: Styles<TStyleProps, TStyles>;
 
   as?: any;
 }

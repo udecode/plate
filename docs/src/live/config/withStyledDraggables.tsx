@@ -20,6 +20,8 @@ import {
   grabberTooltipProps,
   withDraggables,
 } from '@udecode/slate-plugins';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const withStyledDraggables = (components: any) => {
   return withDraggables(components, [
@@ -45,9 +47,9 @@ export const withStyledDraggables = (components: any) => {
         ELEMENT_MEDIA_EMBED,
         ELEMENT_CODE_BLOCK,
       ],
-      onRenderDragHandle: ({ ...otherProps }) => (
+      onRenderDragHandle: ({ styles, ...props }) => (
         <Tippy {...grabberTooltipProps}>
-          <button type="button" {...otherProps}>
+          <button type="button" {...props} css={styles}>
             <DragIndicator
               style={{
                 width: 18,
@@ -62,73 +64,59 @@ export const withStyledDraggables = (components: any) => {
     {
       key: ELEMENT_H1,
       styles: {
-        gutterLeft: {
-          padding: '2em 0 4px',
-          fontSize: '1.875em',
-        },
-        blockToolbarWrapper: {
-          height: '1.3em',
-        },
+        gutterLeft: css`
+          padding: 2em 0 4px;
+          font-size: 1.875em;
+        `,
+        blockToolbarWrapper: tw`height[1.3em]`,
       },
     },
     {
       key: ELEMENT_H2,
       styles: {
-        gutterLeft: {
-          padding: '1.4em 0 1px',
-          fontSize: '1.5em',
-        },
-        blockToolbarWrapper: {
-          height: '1.3em',
-        },
+        gutterLeft: css`
+          padding: 1.4em 0 1px;
+          font-size: 1.5em;
+        `,
+        blockToolbarWrapper: tw`height[1.3em]`,
       },
     },
     {
       key: ELEMENT_H3,
       styles: {
-        gutterLeft: {
-          padding: '1em 0 1px',
-          fontSize: '1.25em',
-        },
-        blockToolbarWrapper: {
-          height: '1.3em',
-        },
+        gutterLeft: css`
+          padding: 1em 0 1px;
+          font-size: 1.25em;
+        `,
+        blockToolbarWrapper: tw`height[1.3em]`,
       },
     },
     {
       keys: [ELEMENT_H4, ELEMENT_H5, ELEMENT_H6],
       styles: {
-        gutterLeft: {
-          padding: '0.75em 0 0',
-          fontSize: '1.1em',
-        },
-        blockToolbarWrapper: {
-          height: '1.3em',
-        },
+        gutterLeft: css`
+          padding: 0.75em 0 0;
+          font-size: 1.1em;
+        `,
+        blockToolbarWrapper: tw`height[1.3em]`,
       },
     },
     {
       keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
       styles: {
-        gutterLeft: {
-          padding: '4px 0 0',
-        },
+        gutterLeft: tw`pt-1`,
       },
     },
     {
       key: ELEMENT_BLOCKQUOTE,
       styles: {
-        gutterLeft: {
-          padding: '18px 0 0',
-        },
+        gutterLeft: tw`paddingTop[18px]`,
       },
     },
     {
       key: ELEMENT_CODE_BLOCK,
       styles: {
-        gutterLeft: {
-          padding: '12px 0 0',
-        },
+        gutterLeft: tw`pt-3`,
       },
     },
   ]);

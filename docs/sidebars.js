@@ -107,19 +107,5 @@ module.exports = {
       ],
       collapsed: false,
     },
-    // {
-    //   type: 'category',
-    //   label: 'API Reference',
-    //   items: [
-    //     {
-    //       type: 'category',
-    //       label: 'Core',
-    //       items: [''],
-    //       collapsed: false,
-    //     },
-    //     // 'api/slate-plugins',
-    //   ],
-    //   collapsed: false,
-    // },
   ],
 };

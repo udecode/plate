@@ -76,7 +76,7 @@
     "@udecode/slate-plugins-table-ui": "1.0.0-next.46",
     "@udecode/slate-plugins-toolbar": "1.0.0-next.46",
     "@udecode/slate-plugins-trailing-block": "1.0.0-next.46",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.46"
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
   },
   "publishConfig": {
     "access": "public"

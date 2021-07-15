@@ -1,24 +1,16 @@
-import {
-  ImageElementStyleProps,
-  ImageElementStyleSet,
-} from './ImageElement.types';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import tw from 'twin.macro';
+import { ImageElementStyleProps } from './ImageElement.types';
 
-export const getImageElementStyles = ({
-  className,
-  focused,
-  selected,
-}: ImageElementStyleProps): ImageElementStyleSet => ({
-  root: [
+export const getImageElementStyles = (props: ImageElementStyleProps) =>
+  createStyles(
+    { prefixClassNames: 'ImageElement', ...props },
     {
-      // Insert css properties
-    },
-    className,
-  ],
-  img: {
-    display: 'block',
-    maxWidth: '100%',
-    maxHeight: '20em',
-    padding: '10px 0',
-    boxShadow: focused && selected ? '0 0 0 3px #B4D5FF' : 'none',
-  },
-});
+      root: [{}],
+      img: [
+        tw`block max-w-full py-2.5 px-0`,
+        tw`maxHeight[20em]`,
+        props.focused && props.selected && tw`boxShadow[0 0 0 3px #B4D5FF]`,
+      ],
+    }
+  );

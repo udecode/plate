@@ -1,45 +1,20 @@
 import * as React from 'react';
-import {
-  ClassName,
-  getRootClassNames,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { getBlockquoteElementStyles } from './BlockquoteElement.styles';
 
-const getClassNames = getRootClassNames();
+export const BlockquoteElement = (props: StyledElementProps) => {
+  const { attributes, children, nodeProps } = props;
 
-/**
- * BlockquoteElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const BlockquoteElementBase = ({
-  attributes,
-  children,
-  className,
-  styles,
-  nodeProps,
-}: StyledElementProps) => {
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-  });
+  const { root } = getBlockquoteElementStyles(props);
 
   return (
-    <blockquote {...attributes} className={classNames.root} {...nodeProps}>
+    <blockquote
+      {...attributes}
+      css={root.css}
+      className={root.className}
+      {...nodeProps}
+    >
       {children}
     </blockquote>
   );
 };
-
-/**
- * BlockquoteElement
- */
-export const BlockquoteElement = styled<
-  StyledElementProps,
-  ClassName,
-  RootStyleSet
->(BlockquoteElementBase, getBlockquoteElementStyles, undefined, {
-  scope: 'BlockquoteElement',
-});

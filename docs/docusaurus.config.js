@@ -188,6 +188,10 @@ module.exports = {
             __dirname,
             '../packages/slate-plugins/src'
           ),
+          '@udecode/slate-plugins-dnd': path.resolve(
+            __dirname,
+            '../packages/dnd/src'
+          ),
           '@udecode/slate-plugins-common': path.resolve(
             __dirname,
             '../packages/common/src'
@@ -324,10 +328,6 @@ module.exports = {
             __dirname,
             '../packages/break/src'
           ),
-          '@udecode/slate-plugins-dnd': path.resolve(
-            __dirname,
-            '../packages/dnd/src'
-          ),
           '@udecode/slate-plugins-find-replace': path.resolve(
             __dirname,
             '../packages/find-replace/src'
@@ -352,6 +352,10 @@ module.exports = {
             __dirname,
             '../packages/select/src'
           ),
+          '@udecode/slate-plugins-styled-components': path.resolve(
+            __dirname,
+            '../packages/ui/styled-components/src'
+          ),
           '@udecode/slate-plugins-trailing-block': path.resolve(
             __dirname,
             '../packages/trailing-block/src'
@@ -359,10 +363,6 @@ module.exports = {
           '@udecode/slate-plugins-toolbar': path.resolve(
             __dirname,
             '../packages/ui/toolbar/src'
-          ),
-          '@udecode/slate-plugins-ui-fluent': path.resolve(
-            __dirname,
-            '../packages/ui/fluent/src'
           ),
           '@udecode/slate-plugins-test-utils': path.resolve(
             __dirname,

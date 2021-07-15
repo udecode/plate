@@ -2,20 +2,16 @@ import {
   GetMentionSelectProps,
   MentionNodeData,
 } from '@udecode/slate-plugins-mention';
-import {
-  ClassName,
-  RootStyleSet,
-  StyledProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { IStyle } from '@uifabric/styling';
+import { StyledProps } from '@udecode/slate-plugins-styled-components';
+import { CSSProp } from 'styled-components';
 
-export interface MentionSelectStyleSet extends RootStyleSet {
-  mentionItem?: IStyle;
-  mentionItemSelected?: IStyle;
+export interface MentionSelectStyles {
+  mentionItem: CSSProp;
+  mentionItemSelected: CSSProp;
 }
 
 export interface MentionSelectProps
   extends GetMentionSelectProps,
-    StyledProps<ClassName, MentionSelectStyleSet> {
+    StyledProps<MentionSelectStyles> {
   renderLabel?: (mentionable: MentionNodeData) => string;
 }

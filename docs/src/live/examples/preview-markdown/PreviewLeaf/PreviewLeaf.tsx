@@ -1,45 +1,15 @@
 import * as React from 'react';
-import { getRootClassNames, RootStyleSet } from '@udecode/slate-plugins';
-import { styled } from '@uifabric/utilities';
+import { StyledLeafProps } from '@udecode/slate-plugins';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
-import { PreviewLeafProps, PreviewLeafStyleProps } from './PreviewLeaf.types';
 
-const getClassNames = getRootClassNames<
-  PreviewLeafStyleProps,
-  PreviewLeafStyles
->();
+export const PreviewLeaf = (props: StyledLeafProps) => {
+  const { children, attributes, leaf } = props;
 
-/**
- * PreviewLeaf with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const PreviewLeafBase = ({
-  children,
-  attributes,
-  styles,
-  className,
-  leaf,
-}: PreviewLeafProps) => {
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-    ...leaf,
-  });
+  const { root } = getPreviewLeafStyles(leaf as any);
 
   return (
-    <span {...attributes} className={classNames.root}>
+    <span {...attributes} css={root.css} className={root.className}>
       {children}
     </span>
   );
 };
-
-/**
- * PreviewLeaf
- */
-export const PreviewLeaf = styled<
-  PreviewLeafProps,
-  PreviewLeafStyleProps,
-  RootStyleSet
->(PreviewLeafBase, getPreviewLeafStyles, undefined, {
-  scope: 'PreviewLeaf',
-});

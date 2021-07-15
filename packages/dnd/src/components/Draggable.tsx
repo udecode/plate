@@ -1,28 +1,18 @@
 import React, { useRef } from 'react';
 import useMergedRef from '@react-hook/merged-ref';
-import { mergeStyles } from '@uifabric/styling';
-import { classNamesFunction, styled } from '@uifabric/utilities';
 import { useDndBlock } from '../hooks/useDndBlock';
 import { getDraggableStyles } from './Draggable.styles';
-import {
-  DraggableProps,
-  DraggableStyleProps,
-  DraggableStyleSet,
-} from './Draggable.types';
+import { DraggableProps, DragHandleProps } from './Draggable.types';
 
-const getClassNames = classNamesFunction<
-  DraggableStyleProps,
-  DraggableStyleSet
->();
+const DefaultDragHandle = ({ styles, ...props }: DragHandleProps) => (
+  <button type="button" {...props} css={styles} />
+);
 
-export const DraggableBase = ({
-  children,
-  element,
-  className,
-  styles,
-  componentRef,
-  onRenderDragHandle: DragHandle,
-}: DraggableProps) => {
+export const Draggable = (props: DraggableProps) => {
+  const { children, element, componentRef, onRenderDragHandle } = props;
+
+  const DragHandle = onRenderDragHandle ?? DefaultDragHandle;
+
   const blockRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const dragWrapperRef = useRef(null);
@@ -35,52 +25,61 @@ export const DraggableBase = ({
 
   const multiDragRef = useMergedRef(dragRef, dragWrapperRef);
 
-  const classNames = getClassNames(styles, {
-    className,
+  const styles = getDraggableStyles({
+    ...props,
     direction: dropLine,
     isDragging,
   });
 
   return (
-    <div className={classNames.root} ref={multiRootRef}>
+    <div
+      css={styles.root.css}
+      className={styles.root.className}
+      ref={multiRootRef}
+    >
       <div
         ref={blockRef}
-        className={mergeStyles(classNames.blockAndGutter, classNames.block)}
+        css={[
+          ...(styles.blockAndGutter?.css ?? []),
+          ...(styles.block?.css ?? []),
+        ]}
       >
         {children}
 
         {!!dropLine && (
-          <div className={classNames.dropLine} contentEditable={false} />
+          <div
+            css={styles.dropLine?.css}
+            className={styles.dropLine?.className}
+            contentEditable={false}
+          />
         )}
       </div>
 
       <div
-        className={mergeStyles(
-          classNames.blockAndGutter,
-          classNames.gutterLeft
-        )}
+        css={[
+          ...(styles.blockAndGutter?.css ?? []),
+          ...(styles.gutterLeft?.css ?? []),
+        ]}
         contentEditable={false}
       >
-        <div className={classNames.blockToolbarWrapper}>
-          <div className={classNames.blockToolbar} ref={multiDragRef}>
-            {DragHandle && (
-              <DragHandle
-                element={element}
-                className={classNames.dragHandle}
-                onMouseDown={(e: any) => e.stopPropagation()}
-              />
-            )}
+        <div
+          css={styles.blockToolbarWrapper?.css}
+          className={styles.blockToolbarWrapper?.className}
+        >
+          <div
+            css={styles.blockToolbar?.css}
+            className={styles.blockToolbar?.className}
+            ref={multiDragRef}
+          >
+            <DragHandle
+              element={element}
+              styles={styles.dragHandle?.css}
+              className={styles.dragHandle?.className}
+              onMouseDown={(e: any) => e.stopPropagation()}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export const Draggable = styled<
-  DraggableProps,
-  DraggableStyleProps,
-  DraggableStyleSet
->(DraggableBase, getDraggableStyles, undefined, {
-  scope: 'Draggable',
-});

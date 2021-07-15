@@ -1,36 +1,21 @@
-import { RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
-import { ToolbarButtonStyleProps } from './ToolbarButton.types';
+import { createStyles } from '@udecode/slate-plugins-styled-components';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
+import { ToolbarButtonProps } from './ToolbarButton.types';
 
-const classNames = {
-  root: 'slate-ToolbarButton',
-  active: 'slate-ToolbarButton-active',
-};
-
-export const getToolbarButtonStyles = ({
-  className,
-  active,
-}: ToolbarButtonStyleProps = {}): RootStyleSet => ({
-  root: [
-    classNames.root,
+export const getToolbarButtonStyles = (props: ToolbarButtonProps) =>
+  createStyles(
+    { prefixClassNames: 'ToolbarButton', ...props },
     {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '28px',
-      height: '24px',
-      userSelect: 'none',
-      cursor: 'pointer',
-      verticalAlign: 'middle',
-
-      selectors: {
-        '> svg': {
-          display: 'block',
-          width: '20px',
-          height: '20px',
-        },
-      },
-    },
-    active && classNames.active,
-    className,
-  ],
-});
+      root: [
+        tw`flex justify-center items-center select-none cursor-pointer align-middle`,
+        tw`width[28px] height[24px]`,
+        css`
+          > svg {
+            ${tw`block w-5 h-5`}
+          }
+        `,
+      ],
+      ...(props.active && { active: {} }),
+    }
+  );

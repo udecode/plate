@@ -1,72 +1,40 @@
 import * as React from 'react';
 import { getHandler } from '@udecode/slate-plugins-common';
-import { MentionNodeData } from '@udecode/slate-plugins-mention';
-import {
-  getRootClassNames,
-  RootStyleSet,
-} from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionElementStyles } from './MentionElement.styles';
-import {
-  MentionElementProps,
-  MentionElementStyleProps,
-} from './MentionElement.types';
+import { MentionElementProps } from './MentionElement.types';
 
-const getClassNames = getRootClassNames<
-  MentionElementStyleProps,
-  RootStyleSet
->();
+export const MentionElement = (props: MentionElementProps) => {
+  const {
+    attributes,
+    children,
+    element,
+    prefix,
+    nodeProps,
+    as,
+    onClick,
+    renderLabel,
+  } = props;
 
-/**
- *   MentionElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const MentionElementBase = ({
-  attributes,
-  children,
-  element,
-  prefix,
-  className,
-  styles,
-  nodeProps,
-  as: Tag = 'span',
-  onClick,
-  renderLabel = (mentionable: MentionNodeData) => mentionable.value,
-}: MentionElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
 
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-    selected,
-    focused,
-  });
+  const styles = getMentionElementStyles({ ...props, selected, focused });
 
   return (
-    <Tag
+    <span
       {...attributes}
+      as={as}
       data-slate-value={element.value}
-      className={classNames.root}
+      className={styles.root.className}
+      css={styles.root.css}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
       {...nodeProps}
     >
       {prefix}
-      {renderLabel(element)}
+      {renderLabel ? renderLabel(element) : element.value}
       {children}
-    </Tag>
+    </span>
   );
 };
-
-/**
- * MentionElement
- */
-export const MentionElement = styled<
-  MentionElementProps,
-  MentionElementStyleProps,
-  RootStyleSet
->(MentionElementBase, getMentionElementStyles, undefined, {
-  scope: 'MentionElement',
-});

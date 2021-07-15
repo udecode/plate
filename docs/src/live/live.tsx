@@ -1,7 +1,3 @@
-import {
-  createExcalidrawPlugin, ELEMENT_EXCALIDRAW,
-  ExcalidrawElement,
-} from '@udecode/slate-plugins-excalidraw';
 import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -153,8 +149,14 @@ import {
   useStoreEditorRef,
   withProps,
 } from '@udecode/slate-plugins';
+import {
+  createExcalidrawPlugin,
+  ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+} from '@udecode/slate-plugins-excalidraw';
 import { createEditor } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
+import { css } from 'styled-components';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
@@ -231,7 +233,20 @@ const editableProps = {
   },
 };
 
-const components = createSlatePluginsComponents();
+const components = createSlatePluginsComponents({
+  [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
+    styles: {
+      root: [
+        css`
+          background-color: #111827;
+          code {
+            color: white;
+          }
+        `,
+      ],
+    },
+  }),
+});
 
 const options = createSlatePluginsOptions();
 

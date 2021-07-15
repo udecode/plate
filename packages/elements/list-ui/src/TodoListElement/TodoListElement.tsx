@@ -2,49 +2,36 @@ import * as React from 'react';
 import { setNodes } from '@udecode/slate-plugins-common';
 import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
 import { TodoListItemNodeData } from '@udecode/slate-plugins-list';
-import { getRootClassNames } from '@udecode/slate-plugins-ui-fluent';
-import { styled } from '@uifabric/utilities';
+import clsx from 'clsx';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { getTodoListElementStyles } from './TodoListElement.styles';
-import {
-  TodoListElementProps,
-  TodoListElementStyleProps,
-  TodoListElementStyleSet,
-} from './TodoListElement.types';
+import { TodoListElementProps } from './TodoListElement.types';
 
-const getClassNames = getRootClassNames<
-  TodoListElementStyleProps,
-  TodoListElementStyleSet
->();
+export const TodoListElement = (props: TodoListElementProps) => {
+  const { attributes, children, element, nodeProps } = props;
 
-/**
- * TodoListElement with no default styles.
- * [Use the `styles` API to add your own styles.](https://github.com/OfficeDev/office-ui-fabric-react/wiki/Component-Styling)
- */
-export const TodoListElementBase = ({
-  attributes,
-  children,
-  element,
-  className,
-  styles,
-  nodeProps,
-}: TodoListElementProps) => {
   const editor = useEditorRef();
   const readOnly = useReadOnly();
 
   const { checked } = element;
-  const classNames = getClassNames(styles, {
-    className,
-    // Other style props
-    checked,
-  });
+
+  const styles = getTodoListElementStyles({ ...props, checked });
 
   return (
-    <div {...attributes} className={classNames.root}>
-      <div contentEditable={false} className={classNames.checkboxWrapper}>
+    <div
+      {...attributes}
+      css={styles.root.css}
+      className={clsx(styles.root.className, styles.rootChecked?.className)}
+    >
+      <div
+        contentEditable={false}
+        css={styles.checkboxWrapper?.css}
+        className={styles.checkboxWrapper?.className}
+      >
         <input
           data-testid="TodoListElementCheckbox"
-          className={classNames.checkbox}
+          css={styles.checkbox?.css}
+          className={styles.checkbox?.className}
           type="checkbox"
           checked={!!checked}
           onChange={(e) => {
@@ -62,7 +49,8 @@ export const TodoListElementBase = ({
         />
       </div>
       <span
-        className={classNames.text}
+        css={styles.text?.css}
+        className={styles.text?.className}
         contentEditable={!readOnly}
         suppressContentEditableWarning
       >
@@ -71,14 +59,3 @@ export const TodoListElementBase = ({
     </div>
   );
 };
-
-/**
- * TodoListElement
- */
-export const TodoListElement = styled<
-  TodoListElementProps,
-  TodoListElementStyleProps,
-  TodoListElementStyleSet
->(TodoListElementBase, getTodoListElementStyles, undefined, {
-  scope: 'TodoListElement',
-});

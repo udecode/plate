@@ -1,78 +1,77 @@
 import React from 'react';
 import { TEditor } from '@udecode/slate-plugins-core';
-import {
-  ClassName,
-  RootStyleSet,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
-import { IStyle } from '@uifabric/styling';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { Element, Path } from 'slate';
+import { CSSProp } from 'styled-components';
 
-export interface DraggableStyleProps extends ClassName {
+export interface DraggableStyleProps extends DraggableProps {
   direction: '' | 'top' | 'bottom';
   isDragging: boolean;
 
-  // TODO: tbd
   selected?: boolean;
 }
 
-export interface DraggableStyleSet extends RootStyleSet {
+export interface DraggableStyles {
   /**
    * Block and gutter.
    */
-  blockAndGutter?: IStyle;
+  blockAndGutter: CSSProp;
 
   /**
    * Block.
    */
-  block?: IStyle;
+  block: CSSProp;
 
   /**
    * Gutter at the left side of the editor.
    * It has the height of the block
    */
-  gutterLeft?: IStyle;
+  gutterLeft: CSSProp;
 
   /**
    * Block toolbar wrapper in the gutter left.
    * It has the height of a line of the block.
    */
-  blockToolbarWrapper?: IStyle;
+  blockToolbarWrapper: CSSProp;
 
   /**
    * Block toolbar in the gutter.
    */
-  blockToolbar?: IStyle;
+  blockToolbar: CSSProp;
 
   /**
    * Button to dnd the block, in the block toolbar.
    */
-  dragHandle?: IStyle;
+  dragHandle: CSSProp;
 
   /**
    * Icon of the drag button, in the drag icon.
    */
-  dragIcon?: IStyle;
+  dragIcon: CSSProp;
 
   /**
    * Show a dropline above or below the block when dragging a block.
    */
-  dropLine?: IStyle;
+  dropLine: CSSProp;
+}
+
+export interface DragHandleProps
+  extends React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
+  element: Element;
+  styles?: CSSProp;
 }
 
 export interface DraggableProps
-  extends StyledElementProps<{}, DraggableStyleProps, DraggableStyleSet> {
+  extends StyledElementProps<{}, DraggableStyles> {
   componentRef?: any;
 
   /**
    * An override to render the drag handle.
    */
-  onRenderDragHandle?: ({
-    element,
-  }: { element: Element } & React.DetailedHTMLProps<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  >) => JSX.Element;
+  onRenderDragHandle?: (props: DragHandleProps) => JSX.Element;
 
   level?: number;
   filter?: (editor: TEditor, path: Path) => boolean;

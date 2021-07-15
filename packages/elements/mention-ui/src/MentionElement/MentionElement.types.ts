@@ -1,18 +1,13 @@
 import { MentionNode, MentionNodeData } from '@udecode/slate-plugins-mention';
-import {
-  ClassName,
-  StyledElementProps,
-} from '@udecode/slate-plugins-ui-fluent';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 
-export interface MentionElementStyleProps extends ClassName {
-  // Insert MentionElement style props below
+export interface MentionElementStyleProps extends MentionElementProps {
   selected?: boolean;
   focused?: boolean;
 }
 
 // renderElement props
-export interface MentionElementProps
-  extends StyledElementProps<MentionNode, MentionElementStyleProps> {
+export interface MentionElementProps extends StyledElementProps<MentionNode> {
   /**
    * Prefix rendered before mention
    */

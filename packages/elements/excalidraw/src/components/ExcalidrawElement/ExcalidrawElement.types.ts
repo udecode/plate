@@ -2,16 +2,16 @@ import {
   ExcalidrawProps,
   LibraryItems,
 } from '@excalidraw/excalidraw-next/types/types';
-import { SPRenderElementProps } from '@udecode/slate-plugins-core';
+import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
 import { CSSProp } from 'styled-components';
 import { ExcalidrawNodeData } from '../../types';
 
-export interface ExcalidrawElementProps
-  extends SPRenderElementProps<ExcalidrawNodeData> {
-  styles?: {
-    excalidrawWrapper?: CSSProp;
-  };
+export interface ExcalidrawElementStyles {
+  excalidrawWrapper: CSSProp;
+}
 
+export interface ExcalidrawElementProps
+  extends StyledElementProps<ExcalidrawNodeData, ExcalidrawElementStyles> {
   scrollToContent?: boolean;
 
   libraryItems?: LibraryItems;

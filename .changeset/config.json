@@ -21,7 +21,9 @@
       "@udecode/slate-plugins-code-block-ui",
       "@udecode/slate-plugins-common",
       "@udecode/slate-plugins-core",
+      "@udecode/slate-plugins-csv-serializer",
       "@udecode/slate-plugins-dnd",
+      "@udecode/slate-plugins-excalidraw",
       "@udecode/slate-plugins-find-replace",
       "@udecode/slate-plugins-find-replace-ui",
       "@udecode/slate-plugins-heading",
@@ -45,11 +47,12 @@
       "@udecode/slate-plugins-placeholder",
       "@udecode/slate-plugins-reset-node",
       "@udecode/slate-plugins-select",
+      "@udecode/slate-plugins-styled-components",
+      "@udecode/slate-plugins-ui-fluent",
       "@udecode/slate-plugins-table",
       "@udecode/slate-plugins-table-ui",
       "@udecode/slate-plugins-toolbar",
-      "@udecode/slate-plugins-trailing-block",
-      "@udecode/slate-plugins-ui-fluent"
+      "@udecode/slate-plugins-trailing-block"
     ]
   ],
   "access": "public",

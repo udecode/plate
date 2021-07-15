@@ -36,7 +36,7 @@
     "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
     "@udecode/slate-plugins-media-embed": "1.0.0-next.46",
-    "@udecode/slate-plugins-ui-fluent": "1.0.0-next.46"
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
   },
   "publishConfig": {
     "access": "public"

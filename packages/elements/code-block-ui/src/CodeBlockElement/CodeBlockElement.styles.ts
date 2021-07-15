@@ -1,21 +1,25 @@
-import { ClassName, RootStyleSet } from '@udecode/slate-plugins-ui-fluent';
+import {
+  createStyles,
+  StyledElementProps,
+} from '@udecode/slate-plugins-styled-components';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 
-export const getCodeBlockElementStyles = ({
-  className,
-}: ClassName): RootStyleSet => ({
-  root: [
+export const getCodeBlockElementStyles = (props: StyledElementProps) =>
+  createStyles(
+    { prefixClassNames: 'CodeBlockElement', ...props },
     {
-      // Insert css properties
-      fontSize: '16px',
-      padding: '12px 16px',
-      backgroundColor: 'rgb(247, 246, 243)',
-      borderRadius: '3px',
-      whiteSpace: 'pre-wrap',
-      fontFamily:
-        'SFMono-Regular, Consolas, Monaco, "Liberation Mono", Menlo, Courier, monospace;',
-      tabSize: '2',
-      lineHeight: 'normal',
-    },
-    className,
-  ],
-});
+      root: [
+        tw`whitespace-pre-wrap py-3 px-4`,
+        css`
+          font-size: 16px;
+          font-family: SFMono-Regular, Consolas, Monaco, 'Liberation Mono',
+            Menlo, Courier, monospace;
+          tab-size: 2;
+          line-height: normal;
+          border-radius: 3px;
+          background-color: rgb(247, 246, 243);
+        `,
+      ],
+    }
+  );

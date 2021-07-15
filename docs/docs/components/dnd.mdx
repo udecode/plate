@@ -3,113 +3,115 @@ slug: /components/dnd
 title: Drag & Drop
 ---
 
-```ts live
-() => {
-let styledComponents = createSlatePluginsComponents({
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
-    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-      styles: {
-        root: {
-          backgroundColor: '#111827',
-          selectors: {
-            code: {
-              color: 'white',
-            },
-          },
-        },
-      },
-    }),
-  });
-  styledComponents = withStyledPlaceHolders(styledComponents);
-  styledComponents = withStyledDraggables(styledComponents);
+<iframe
+  src="https://codesandbox.io/embed/slate-plugins-playground-v1-2mh1c?autoresize=1&fontsize=16&theme=dark"
+  style={{
+    width: '100%',
+    height: '80vh',
+    border: 0,
+    borderRadius: '8px',
+    overflow: 'hidden',
+  }}
+  title="Slate Plugins Playground"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
 
-  const defaultOptions = createSlatePluginsOptions();
+<!-- ```ts live-->
+<!-- () => { -->
+<!--   let styledComponents = createSlatePluginsComponents({ -->
+<!--     [ELEMENT_MENTION]: withProps(MentionElement, { -->
+<!--       renderLabel: renderMentionLabel, -->
+<!--     }), -->
+<!--   }); -->
+<!--   styledComponents = withStyledPlaceHolders(styledComponents); -->
+<!--   styledComponents = withStyledDraggables(styledComponents); -->
 
-  const Editor = () => {
-    const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
-    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-      optionsMentionPlugin
-    );
+<!--   const defaultOptions = createSlatePluginsOptions(); -->
 
-    const pluginsMemo = useMemo(() => {
-      const plugins = [
-        createReactPlugin(),
-        createHistoryPlugin(),
-        createParagraphPlugin(),
-        createBlockquotePlugin(),
-        createTodoListPlugin(),
-        createHeadingPlugin(),
-        createImagePlugin(),
-        createLinkPlugin(),
-        createListPlugin(),
-        createTablePlugin(),
-        createMediaEmbedPlugin(),
-        createCodeBlockPlugin(),
-        createAlignPlugin(),
-        createBoldPlugin(),
-        createCodePlugin(),
-        createItalicPlugin(),
-        createHighlightPlugin(),
-        createUnderlinePlugin(),
-        createStrikethroughPlugin(),
-        createSubscriptPlugin(),
-        createSuperscriptPlugin(),
-        createKbdPlugin(),
-        createNodeIdPlugin(),
-        createAutoformatPlugin(optionsAutoformat),
-        createResetNodePlugin(optionsResetBlockTypePlugin),
-        createSoftBreakPlugin(optionsSoftBreakPlugin),
-        createExitBreakPlugin(optionsExitBreakPlugin),
-        createNormalizeTypesPlugin({
-          rules: [{ path: [0], strictType: ELEMENT_H1 }],
-        }),
-        createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
-        createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
-        mentionPlugin,
-        searchHighlightPlugin,
-      ];
+<!--   const Editor = () => { -->
+<!--     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin(); -->
+<!--     const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin( -->
+<!--       optionsMentionPlugin -->
+<!--     ); -->
 
-      plugins.push(createDeserializeHTMLPlugin({ plugins }));
+<!--     const pluginsMemo = useMemo(() => { -->
+<!--       const plugins = [ -->
+<!--         createReactPlugin(), -->
+<!--         createHistoryPlugin(), -->
+<!--         createParagraphPlugin(), -->
+<!--         createBlockquotePlugin(), -->
+<!--         createTodoListPlugin(), -->
+<!--         createHeadingPlugin(), -->
+<!--         createImagePlugin(), -->
+<!--         createLinkPlugin(), -->
+<!--         createListPlugin(), -->
+<!--         createTablePlugin(), -->
+<!--         createMediaEmbedPlugin(), -->
+<!--         createCodeBlockPlugin(), -->
+<!--         createAlignPlugin(), -->
+<!--         createBoldPlugin(), -->
+<!--         createCodePlugin(), -->
+<!--         createItalicPlugin(), -->
+<!--         createHighlightPlugin(), -->
+<!--         createUnderlinePlugin(), -->
+<!--         createStrikethroughPlugin(), -->
+<!--         createSubscriptPlugin(), -->
+<!--         createSuperscriptPlugin(), -->
+<!--         createKbdPlugin(), -->
+<!--         createNodeIdPlugin(), -->
+<!--         createAutoformatPlugin(optionsAutoformat), -->
+<!--         createResetNodePlugin(optionsResetBlockTypePlugin), -->
+<!--         createSoftBreakPlugin(optionsSoftBreakPlugin), -->
+<!--         createExitBreakPlugin(optionsExitBreakPlugin), -->
+<!--         createNormalizeTypesPlugin({ -->
+<!--           rules: [{ path: [0], strictType: ELEMENT_H1 }], -->
+<!--         }), -->
+<!--         createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }), -->
+<!--         createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }), -->
+<!--         mentionPlugin, -->
+<!--         searchHighlightPlugin, -->
+<!--       ]; -->
 
-      return plugins;
-    }, [mentionPlugin, options, searchHighlightPlugin]);
+<!--       plugins.push(createDeserializeHTMLPlugin({ plugins })); -->
 
-    return (
-      <SlatePlugins
-        id="playground"
-        plugins={pluginsMemo}
-        components={styledComponents}
-        options={defaultOptions}
-        editableProps={editableProps}
-        initialValue={initialValuePlayground}
-      >
-        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
-        <HeadingToolbar>
-          <ToolbarButtonsBasicElements />
-          <ToolbarButtonsList />
-          <ToolbarButtonsBasicMarks />
-          <ToolbarButtonsAlign />
-          <ToolbarLink icon={<Link />} />
-          <ToolbarImage icon={<Image />} />
-          <ToolbarButtonsTable />
-        </HeadingToolbar>
+<!--       return plugins; -->
+<!--     }, [mentionPlugin, options, searchHighlightPlugin]); -->
 
-        <BallonToolbarMarks />
+<!--     return ( -->
+<!--       <SlatePlugins -->
+<!--         id="playground" -->
+<!--         plugins={pluginsMemo} -->
+<!--         components={styledComponents} -->
+<!--         options={defaultOptions} -->
+<!--         editableProps={editableProps} -->
+<!--         initialValue={initialValuePlayground} -->
+<!--       > -->
+<!--         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} /> -->
+<!--         <HeadingToolbar> -->
+<!--           <ToolbarButtonsBasicElements /> -->
+<!--           <ToolbarButtonsList /> -->
+<!--           <ToolbarButtonsBasicMarks /> -->
+<!--           <ToolbarButtonsAlign /> -->
+<!--           <ToolbarLink icon={<Link />} /> -->
+<!--           <ToolbarImage icon={<Image />} /> -->
+<!--           <ToolbarButtonsTable /> -->
+<!--         </HeadingToolbar> -->
 
-        <MentionSelect
-          {...getMentionSelectProps()}
-          renderLabel={renderMentionLabel}
-        />
-      </SlatePlugins>
-    );
-  }
+<!--         <BallonToolbarMarks /> -->
 
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Editor />
-    </DndProvider>
-  );
-}
-```
+<!--         <MentionSelect -->
+<!--           {...getMentionSelectProps()} -->
+<!--           renderLabel={renderMentionLabel} -->
+<!--         /> -->
+<!--       </SlatePlugins> -->
+<!--     ); -->
+<!--   } -->
+
+<!--   return ( -->
+<!--     <DndProvider backend={HTML5Backend}> -->
+<!--       <Editor /> -->
+<!--     </DndProvider> -->
+<!--   ); -->
+<!-- } -->
+<!-- ``` -->

@@ -7,17 +7,18 @@ title: Mention
 
 ```ts live
 () => {
-  const components = createSlatePluginsComponents({
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
-  });
-
   const renderMentionLabel = (mentionable) => {
     const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
     if (!entry) return 'unknown option';
     return `${entry.name} - ${entry.email}`;
   };
+
+  const styledComponents = createSlatePluginsComponents({
+    ...components,
+    [ELEMENT_MENTION]: withProps(MentionElement, {
+      renderLabel: renderMentionLabel,
+    }),
+  });
 
   const optionsMentionPlugin = {
     mentionables: MENTIONABLES,
@@ -47,7 +48,7 @@ title: Mention
       <SlatePlugins
         id="mention"
         plugins={plugins}
-        components={components}
+        components={styledComponents}
         options={options}
         editableProps={editableProps}
         initialValue={initialValueMentions}

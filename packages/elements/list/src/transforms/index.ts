@@ -4,10 +4,10 @@
 
 export * from './indentListItems';
 export * from './insertListItem';
-export * from './moveListItems';
 export * from './moveListItemDown';
 export * from './moveListItemSublistItemsToListItemSublist';
 export * from './moveListItemUp';
+export * from './moveListItems';
 export * from './moveListItemsToList';
 export * from './moveListSiblingsAfterCursor';
 export * from './removeFirstListItem';
