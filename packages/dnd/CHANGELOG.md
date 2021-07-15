@@ -1,5 +1,16 @@
 # @udecode/slate-plugins-dnd
 
+## 1.0.0-next.53
+
+### Patch Changes
+
+- [#840](https://github.com/udecode/slate-plugins/pull/840) [`1e9ba6d9`](https://github.com/udecode/slate-plugins/commit/1e9ba6d9bec22e279b84bb1dfa61cfeb8dd19683) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: `onDrop` is now working correctly with slate-react >=0.63. New plugin needs to be used: `createDndPlugin`
+
+- Updated dependencies [[`42360b44`](https://github.com/udecode/slate-plugins/commit/42360b444d6a2959847d5619eda32319e360e3af)]:
+  - @udecode/slate-plugins-core@1.0.0-next.53
+  - @udecode/slate-plugins-common@1.0.0-next.53
+  - @udecode/slate-plugins-styled-components@1.0.0-next.53
+
 ## 1.0.0-next.52
 
 ### Patch Changes

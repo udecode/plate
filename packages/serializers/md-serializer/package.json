@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-md-serializer",
-  "version": "1.0.0-next.48",
+  "version": "1.0.0-next.53",
   "description": "Slate plugins md-serializer",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/md-serializer#readme",
@@ -33,14 +33,14 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-block-quote": "1.0.0-next.46",
-    "@udecode/slate-plugins-code-block": "1.0.0-next.46",
-    "@udecode/slate-plugins-common": "1.0.0-next.46",
-    "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-heading": "1.0.0-next.46",
-    "@udecode/slate-plugins-link": "1.0.0-next.46",
-    "@udecode/slate-plugins-list": "1.0.0-next.48",
-    "@udecode/slate-plugins-paragraph": "1.0.0-next.46",
+    "@udecode/slate-plugins-block-quote": "1.0.0-next.53",
+    "@udecode/slate-plugins-code-block": "1.0.0-next.53",
+    "@udecode/slate-plugins-common": "1.0.0-next.53",
+    "@udecode/slate-plugins-core": "1.0.0-next.53",
+    "@udecode/slate-plugins-heading": "1.0.0-next.53",
+    "@udecode/slate-plugins-link": "1.0.0-next.53",
+    "@udecode/slate-plugins-list": "1.0.0-next.53",
+    "@udecode/slate-plugins-paragraph": "1.0.0-next.53",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"
