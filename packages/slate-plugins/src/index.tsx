@@ -15,6 +15,7 @@ export * from '@udecode/slate-plugins-code-block';
 export * from '@udecode/slate-plugins-code-block-ui';
 export * from '@udecode/slate-plugins-common';
 export * from '@udecode/slate-plugins-core';
+export * from '@udecode/slate-plugins-csv-serializer';
 export * from '@udecode/slate-plugins-dnd';
 export * from '@udecode/slate-plugins-find-replace';
 export * from '@udecode/slate-plugins-find-replace-ui';
