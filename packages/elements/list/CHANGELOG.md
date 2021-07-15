@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.51
+
+### Patch Changes
+
+- [#828](https://github.com/udecode/slate-plugins/pull/828) [`be3023db`](https://github.com/udecode/slate-plugins/commit/be3023db20dd3f57c704244aa432d41036b3cba9) Thanks [@zbeyens](https://github.com/zbeyens)! - fix:
+  - Can't delete a list as first block
+  - Deleting at the start of the first list item is deleting a character from the previous block
+
 ## 1.0.0-next.50
 
 ### Minor Changes

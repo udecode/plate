@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-code-block-ui",
-  "version": "1.0.0-next.46",
+  "version": "1.0.0-next.51",
   "description": "Slate plugins code-block-ui",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/code-block-ui#readme",
@@ -36,8 +36,8 @@
     "@udecode/slate-plugins-code-block": "1.0.0-next.46",
     "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
-    "@udecode/slate-plugins-toolbar": "1.0.0-next.46",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.50"
+    "@udecode/slate-plugins-toolbar": "1.0.0-next.51",
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.51"
   },
   "publishConfig": {
     "access": "public"
