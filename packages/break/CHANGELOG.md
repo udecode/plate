@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-break
 
+## 1.0.0-next.53
+
+### Patch Changes
+
+- Updated dependencies [[`42360b44`](https://github.com/udecode/slate-plugins/commit/42360b444d6a2959847d5619eda32319e360e3af)]:
+  - @udecode/slate-plugins-core@1.0.0-next.53
+  - @udecode/slate-plugins-common@1.0.0-next.53
+
 ## 1.0.0-next.46
 
 ### Patch Changes

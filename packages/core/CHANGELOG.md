@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-core
 
+## 1.0.0-next.53
+
+### Patch Changes
+
+- [#840](https://github.com/udecode/slate-plugins/pull/840) [`42360b44`](https://github.com/udecode/slate-plugins/commit/42360b444d6a2959847d5619eda32319e360e3af) Thanks [@zbeyens](https://github.com/zbeyens)! - fix:
+  - Plugin handlers are now run when a handler is passed to `editableProps`
+  - If one handler returns `true`, slate internal corresponding handler is not called anymore
+
 ## 1.0.0-next.40
 
 ### Patch Changes
