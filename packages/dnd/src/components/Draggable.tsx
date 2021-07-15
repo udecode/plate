@@ -60,6 +60,7 @@ export const Draggable = (props: DraggableProps) => {
           ...(styles.blockAndGutter?.css ?? []),
           ...(styles.gutterLeft?.css ?? []),
         ]}
+        className={styles.gutterLeft?.className}
         contentEditable={false}
       >
         <div
