@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins",
-  "version": "1.0.0-next.51",
+  "version": "1.0.0-next.52",
   "description": "Slate Plugins",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/slate-plugins#readme",
@@ -48,7 +48,7 @@
     "@udecode/slate-plugins-common": "1.0.0-next.46",
     "@udecode/slate-plugins-core": "1.0.0-next.40",
     "@udecode/slate-plugins-csv-serializer": "1.0.0-next.49",
-    "@udecode/slate-plugins-dnd": "1.0.0-next.51",
+    "@udecode/slate-plugins-dnd": "1.0.0-next.52",
     "@udecode/slate-plugins-find-replace": "1.0.0-next.46",
     "@udecode/slate-plugins-find-replace-ui": "1.0.0-next.51",
     "@udecode/slate-plugins-heading": "1.0.0-next.46",

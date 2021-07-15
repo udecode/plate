@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-dnd
 
+## 1.0.0-next.52
+
+### Patch Changes
+
+- [#834](https://github.com/udecode/slate-plugins/pull/834) [`e99dc2db`](https://github.com/udecode/slate-plugins/commit/e99dc2db6c462a72d536843c48f1f0e5ed4fa410) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: drag button is always invisible
+
 ## 1.0.0-next.51
 
 ### Patch Changes

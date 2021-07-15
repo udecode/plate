@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.0.0-next.52
+
+### Patch Changes
+
+- [#837](https://github.com/udecode/slate-plugins/pull/837) [`bc3910e1`](https://github.com/udecode/slate-plugins/commit/bc3910e11f8a31ef8853f2c4bf9c9ec73a2285d0) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: export csv-serializer
+
+- Updated dependencies [[`e99dc2db`](https://github.com/udecode/slate-plugins/commit/e99dc2db6c462a72d536843c48f1f0e5ed4fa410)]:
+  - @udecode/slate-plugins-dnd@1.0.0-next.52
+
 ## 1.0.0-next.51
 
 ### Patch Changes
