@@ -14,11 +14,11 @@ assignees: ''
 
 <!-- A clear and concise description of what the bug is. -->
 
-**Recording/Steps**
+**Steps**
 
 
 
-<!-- A GIF or video showing the issue happening. -->
+<!-- Can be a list of steps, a GIF or video showing the issue happening. -->
 <!-- To reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
