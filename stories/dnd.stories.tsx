@@ -50,6 +50,7 @@ import { createAutoformatPlugin } from '../packages/autoformat/src/createAutofor
 import { createExitBreakPlugin } from '../packages/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../packages/break/src/soft-break/createSoftBreakPlugin';
 import { SlatePlugins } from '../packages/core/src/components/SlatePlugins';
+import { createDndPlugin } from '../packages/dnd/src/createDndPlugin';
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
 import { ToolbarImage } from '../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
 import { ToolbarLink } from '../packages/elements/link-ui/src/ToolbarLink/ToolbarLink';
@@ -136,6 +137,7 @@ export const Example = () => {
         createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
         mentionPlugin,
         searchHighlightPlugin,
+        createDndPlugin(),
       ];
 
       plugins.push(createDeserializeHTMLPlugin({ plugins }));

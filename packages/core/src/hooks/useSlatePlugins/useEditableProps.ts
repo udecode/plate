@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import omit from 'lodash/omit';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { setEventEditorId } from '../../stores/event-editor/actions/setEventEditorId';
 import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
@@ -59,7 +60,7 @@ export const useEditableProps = ({
   return useMemo(
     () => ({
       ...props,
-      ...editableProps,
+      ...omit(editableProps, DOM_HANDLERS),
     }),
     [editableProps, props]
   );

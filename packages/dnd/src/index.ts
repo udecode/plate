@@ -4,5 +4,6 @@
 
 export * from './types';
 export * from './components/index';
+export * from './createDndPlugin';
 export * from './hooks/index';
 export * from './utils/index';

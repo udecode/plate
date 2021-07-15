@@ -8,6 +8,7 @@ import { SPEditor } from '../types/SPEditor';
  * - Get all the plugins handlers by `handlerKey`.
  * - If there is no plugin handler or editable prop handler for this key, return `undefined`.
  * - Return a handler calling all the plugins handlers until one returns `false`.
+ * - If one handler returns `true`, slate will not run its internal handler.
  * - Call the props handler if defined.
  */
 export const pipeHandler = <K extends keyof DOMHandlers>(
@@ -30,8 +31,18 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   if (!pluginsHandlers.length && !propsHandler) return;
 
   return (event: Event) => {
-    pluginsHandlers.some((handler) => handler(event) === false);
+    let res = false;
 
-    propsHandler?.(event as any);
+    pluginsHandlers.some((handler) => {
+      const handlerRes = handler(event);
+
+      if (handlerRes === true) res = true;
+
+      return handlerRes === false;
+    });
+
+    res = propsHandler?.(event as any) || res;
+
+    return res;
   };
 };
