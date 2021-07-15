@@ -11,6 +11,7 @@ export * from '@udecode/slate-plugins-basic-marks';
 export * from '@udecode/slate-plugins-block-quote';
 export * from '@udecode/slate-plugins-block-quote-ui';
 export * from '@udecode/slate-plugins-break';
+export * from '@udecode/slate-plugins-csv-serializer';
 export * from '@udecode/slate-plugins-code-block';
 export * from '@udecode/slate-plugins-code-block-ui';
 export * from '@udecode/slate-plugins-common';
