@@ -62,7 +62,7 @@ normalizers, queries, transforms, components and so on.
 
 - 📦 Tree-shaking / ES modules
 - ✅ TypeScript types
-- ✅ Unit tested with `slate@0.60.11`
+- ✅ Unit tested with `slate@0.63.0` and `slate-react@0.65.2`
 
 <!--- 📓-->
 <!--  [Docs](https://slate-plugins-next.netlify.app/?path=/docs/docs-getting-started--page)-->

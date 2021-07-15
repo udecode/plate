@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { SlateProps } from '@udecode/slate-plugins-core';
 import { createEditor } from 'slate';
-import { Slate, withReact } from 'slate-react';
+import { ReactEditor, Slate, withReact } from 'slate-react';
 
 /**
  * Create a React element wrapped in a Slate provider.
@@ -10,7 +10,7 @@ import { Slate, withReact } from 'slate-react';
  */
 export const createElementWithSlate = (slateProps?: Partial<SlateProps>) => {
   const {
-    editor = withReact(createEditor()),
+    editor = withReact(createEditor() as ReactEditor),
     value = [],
     onChange = () => {},
     children,

@@ -6,6 +6,7 @@ export const useDragBlock = (editor: TEditor, id: string) => {
     () => ({
       type: 'block',
       item() {
+        editor.isDragging = true;
         document.body.classList.add('dragging');
         return { id };
       },
@@ -13,6 +14,7 @@ export const useDragBlock = (editor: TEditor, id: string) => {
         isDragging: monitor.isDragging(),
       }),
       end: () => {
+        editor.isDragging = false;
         document.body.classList.remove('dragging');
       },
     }),
