@@ -17,6 +17,7 @@ import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
 import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
@@ -106,7 +107,10 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  getNodeDeserializer,
   getParent,
+  getRenderLeaf,
+  getSlatePluginOptions,
   getSlatePluginType,
   HeadingToolbar,
   insertEmptyCodeBlock,
@@ -129,8 +133,10 @@ import {
   MentionSelect,
   serializeHTMLFromNodes,
   SlatePlugins,
+  StyledLeaf,
   toggleList,
   ToolbarAlign,
+  ToolbarButton,
   ToolbarCodeBlock,
   ToolbarElement,
   ToolbarImage,
@@ -147,6 +153,8 @@ import {
   useSlatePluginsActions,
   useStoreEditorEnabled,
   useStoreEditorRef,
+  useStoreEditorSelection,
+  useStoreEditorState,
   withProps,
 } from '@udecode/slate-plugins';
 import {
@@ -154,7 +162,7 @@ import {
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/slate-plugins-excalidraw';
-import { createEditor } from 'slate';
+import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
 import { optionsAutoformat } from './config/autoformatRules';
@@ -216,6 +224,7 @@ import { useComboboxStore } from './examples/combobox/useComboboxStore';
 import { createEditableVoidPlugin } from './examples/editable-voids/createEditableVoidPlugin';
 import { EDITABLE_VOID } from './examples/editable-voids/defaults';
 import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
+import {createColorPlugin, MARK_COLOR, withMarkedProps} from './examples/font-color';
 import { IFrame } from './examples/iframe/IFrame';
 import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
 import { TagCombobox } from './examples/tag/components/TagCombobox';
@@ -225,6 +234,7 @@ import { ELEMENT_TAG } from './examples/tag/defaults';
 import { useTagOnChange } from './examples/tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './examples/tag/hooks/useTagOnSelectItem';
 import { HighlightHTML } from './utils/HighlightHTML';
+import {ToolbarColorPicker} from "./examples/font-color/components/ToolbarColorPicker";
 
 const editableProps = {
   placeholder: 'Type…',
@@ -519,6 +529,20 @@ const ReactLiveScope = {
   withStyledPlaceHolders,
   getHugeDocument,
   withReact,
+  MARK_COLOR,
+  withMarkedProps,
+  StyledLeaf,
+  getRenderLeaf,
+  FormatColorText,
+  useStoreEditorState,
+  useStoreEditorSelection,
+  Editor,
+  ToolbarButton,
+  Transforms,
+  getSlatePluginOptions,
+  getNodeDeserializer,
+  createColorPlugin,
+  ToolbarColorPicker,
 };
 
 export default ReactLiveScope;

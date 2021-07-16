@@ -104,6 +104,7 @@ module.exports = {
         'examples/huge-document',
         'examples/iframe',
         'examples/preview-markdown',
+        'examples/font-color',
       ],
       collapsed: false,
     },
