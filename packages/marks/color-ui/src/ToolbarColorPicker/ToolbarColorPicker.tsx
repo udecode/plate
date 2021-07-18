@@ -1,5 +1,3 @@
-import 'tippy.js/animations/scale.css';
-import 'tippy.js/dist/tippy.css';
 import React, {
   ReactNode,
   useCallback,
@@ -7,23 +5,18 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { getMark, MARK_COLOR, setMark } from '@udecode/slate-plugins-color';
 import {
   getSlatePluginType,
-  ToolbarButton,
+  useEventEditorId,
   useStoreEditorRef,
   useStoreEditorSelection,
-} from '@udecode/slate-plugins';
-import {
-  useEventEditorId,
   useStoreEditorState,
 } from '@udecode/slate-plugins-core';
+import { ToolbarButton, ToolbarDropdown } from '@udecode/slate-plugins-toolbar';
 import { BaseSelection, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { MARK_COLOR } from '../defaults';
-import { getMark } from '../utils/getMark';
-import { setMark } from '../utils/setMark';
-import { ColorPicker } from './ColorPicker';
-import { ToolbarDropdown } from './ToolbarDropdown';
+import { ColorPicker } from '../ColorPicker/ColorPicker';
 
 export const ToolbarColorPicker = ({ icon }: { icon: ReactNode }) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));

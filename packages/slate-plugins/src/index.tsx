@@ -13,6 +13,8 @@ export * from '@udecode/slate-plugins-block-quote-ui';
 export * from '@udecode/slate-plugins-break';
 export * from '@udecode/slate-plugins-code-block';
 export * from '@udecode/slate-plugins-code-block-ui';
+export * from '@udecode/slate-plugins-color';
+export * from '@udecode/slate-plugins-color-ui';
 export * from '@udecode/slate-plugins-common';
 export * from '@udecode/slate-plugins-core';
 export * from '@udecode/slate-plugins-csv-serializer';

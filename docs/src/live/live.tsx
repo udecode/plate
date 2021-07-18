@@ -165,6 +165,12 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
+import {
+  createColorPlugin,
+  MARK_COLOR,
+  withMarkedProps,
+} from '../../../packages/marks/color/src/index';
+import { ToolbarColorPicker } from '../../../packages/marks/color-ui/src/ToolbarColorPicker/ToolbarColorPicker';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
@@ -224,7 +230,6 @@ import { useComboboxStore } from './examples/combobox/useComboboxStore';
 import { createEditableVoidPlugin } from './examples/editable-voids/createEditableVoidPlugin';
 import { EDITABLE_VOID } from './examples/editable-voids/defaults';
 import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
-import {createColorPlugin, MARK_COLOR, withMarkedProps} from './examples/font-color';
 import { IFrame } from './examples/iframe/IFrame';
 import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
 import { TagCombobox } from './examples/tag/components/TagCombobox';
@@ -234,7 +239,6 @@ import { ELEMENT_TAG } from './examples/tag/defaults';
 import { useTagOnChange } from './examples/tag/hooks/useTagOnChange';
 import { useTagOnSelectItem } from './examples/tag/hooks/useTagOnSelectItem';
 import { HighlightHTML } from './utils/HighlightHTML';
-import {ToolbarColorPicker} from "./examples/font-color/components/ToolbarColorPicker";
 
 const editableProps = {
   placeholder: 'Type…',

@@ -1,6 +1,9 @@
-import {Deserialize, getSlatePluginOptions,} from '@udecode/slate-plugins-core';
-import {MARK_COLOR} from "./defaults";
-import {getNodeDeserializer} from "@udecode/slate-plugins";
+import { getNodeDeserializer } from '@udecode/slate-plugins-common';
+import {
+  Deserialize,
+  getSlatePluginOptions,
+} from '@udecode/slate-plugins-core';
+import { MARK_COLOR } from './defaults';
 
 export const getColorDeserialize = (): Deserialize => (editor) => {
   const options = getSlatePluginOptions(editor, MARK_COLOR);

@@ -47,6 +47,7 @@ const plugins = [
     include: /node_modules/,
     namedExports: {
       'react-is': ['typeOf', 'isElement', 'isValidElementType'],
+      'esrever/esrever.js': ['reverse'],
     },
   }),
 

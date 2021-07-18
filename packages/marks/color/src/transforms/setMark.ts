@@ -1,7 +1,7 @@
-import { removeMark } from '@udecode/slate-plugins';
+import { removeMark } from '@udecode/slate-plugins-common';
 import { TEditor } from '@udecode/slate-plugins-core';
 import castArray from 'lodash/castArray';
-import { getMark } from './getMark';
+import { getMark } from '../queries/getMark';
 
 /**
  * Add/remove marks in the selection.

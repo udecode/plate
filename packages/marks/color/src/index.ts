@@ -5,4 +5,5 @@
 export * from './createColorPlugin';
 export * from './defaults';
 export * from './getColorDeserialize';
-export * from './utils/withMarkedProps';
+export * from './queries/index';
+export * from './transforms/index';

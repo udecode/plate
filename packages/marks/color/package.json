@@ -1,0 +1,36 @@
+{
+  "name": "@udecode/slate-plugins-color",
+  "version": "1.0.0-next.53",
+  "description": "Slate plugins color",
+  "keywords": [],
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/color#readme",
+  "bugs": {
+    "url": "https://github.com/udecode/slate-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/slate-plugins.git"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "cti": "sh ../../../cti.sh",
+    "prebuild": "rimraf dist",
+    "build": "tsc && yarn rollup",
+    "build:w": "yarn rollup -w",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@udecode/slate-plugins-common": "1.0.0-next.53",
+    "@udecode/slate-plugins-core": "1.0.0-next.53"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

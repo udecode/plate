@@ -1,4 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
+import { css } from 'styled-components';
+import tw from 'twin.macro';
 
 export const ToolbarDropdown = ({
   control,
@@ -30,7 +32,7 @@ export const ToolbarDropdown = ({
         }
 
         setOpen(false);
-        onClose && typeof onClose === 'function' && onClose(ev);
+        onClose?.(ev);
       }
     };
     document.body.addEventListener('mousedown', listener);
@@ -47,15 +49,15 @@ export const ToolbarDropdown = ({
 
       <div
         ref={setPopperElement}
-        style={{
-          position: 'absolute',
-          top: '40px',
-          backgroundColor: 'white',
-          border: '1px solid #ccc',
-          boxShadow: '0 1px 3px 0 #ccc',
-          zIndex: 1,
-          display: open ? 'initial' : 'none',
-        }}
+        css={[
+          tw`absolute bg-white top-10`,
+          !open && tw`hidden`,
+          css`
+            border: 1px solid #ccc;
+            box-shadow: 0 1px 3px 0 #ccc;
+            z-index: 1;
+          `,
+        ]}
       >
         {children}
       </div>

@@ -59,6 +59,8 @@
     "@udecode/slate-plugins-block-quote-ui": "link:../packages/elements/block-quote-ui",
     "@udecode/slate-plugins-code-block": "link:../packages/elements/code-block",
     "@udecode/slate-plugins-code-block-ui": "link:../packages/elements/code-block-ui",
+    "@udecode/slate-plugins-color": "link:../packages/marks/color",
+    "@udecode/slate-plugins-color-ui": "link:../packages/marks/color-ui",
     "@udecode/slate-plugins-heading": "link:../packages/elements/heading",
     "@udecode/slate-plugins-image": "link:../packages/elements/image",
     "@udecode/slate-plugins-image-ui": "link:../packages/elements/image-ui",
