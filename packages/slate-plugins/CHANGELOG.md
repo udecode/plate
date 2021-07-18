@@ -1,5 +1,55 @@
 # Change Log
 
+## 1.0.0-next.54
+
+### Patch Changes
+
+- Updated dependencies [[`477bab57`](https://github.com/udecode/slate-plugins/commit/477bab572d943b21d3390c440f28e76074484a56), [`bf693c13`](https://github.com/udecode/slate-plugins/commit/bf693c1327c3c6af0d641af5fe7a956e564a995e), [`f9e4cb95`](https://github.com/udecode/slate-plugins/commit/f9e4cb9505837dd7ba59df3f2598f7ed112d8896), [`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29)]:
+  - @udecode/slate-plugins-list@1.0.0-next.54
+  - @udecode/slate-plugins-reset-node@1.0.0-next.54
+  - @udecode/slate-plugins-styled-components@1.0.0-next.54
+  - @udecode/slate-plugins-common@1.0.0-next.54
+  - @udecode/slate-plugins-list-ui@1.0.0-next.54
+  - @udecode/slate-plugins-ast-serializer@1.0.0-next.54
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.54
+  - @udecode/slate-plugins-dnd@1.0.0-next.54
+  - @udecode/slate-plugins-alignment-ui@1.0.0-next.54
+  - @udecode/slate-plugins-block-quote-ui@1.0.0-next.54
+  - @udecode/slate-plugins-code-block-ui@1.0.0-next.54
+  - @udecode/slate-plugins-image-ui@1.0.0-next.54
+  - @udecode/slate-plugins-link-ui@1.0.0-next.54
+  - @udecode/slate-plugins-media-embed-ui@1.0.0-next.54
+  - @udecode/slate-plugins-mention-ui@1.0.0-next.54
+  - @udecode/slate-plugins-table-ui@1.0.0-next.54
+  - @udecode/slate-plugins-find-replace-ui@1.0.0-next.54
+  - @udecode/slate-plugins-font-ui@1.0.0-next.54
+  - @udecode/slate-plugins-placeholder@1.0.0-next.54
+  - @udecode/slate-plugins-toolbar@1.0.0-next.54
+  - @udecode/slate-plugins-autoformat@1.0.0-next.54
+  - @udecode/slate-plugins-break@1.0.0-next.54
+  - @udecode/slate-plugins-alignment@1.0.0-next.54
+  - @udecode/slate-plugins-basic-elements@1.0.0-next.54
+  - @udecode/slate-plugins-block-quote@1.0.0-next.54
+  - @udecode/slate-plugins-code-block@1.0.0-next.54
+  - @udecode/slate-plugins-heading@1.0.0-next.54
+  - @udecode/slate-plugins-image@1.0.0-next.54
+  - @udecode/slate-plugins-link@1.0.0-next.54
+  - @udecode/slate-plugins-media-embed@1.0.0-next.54
+  - @udecode/slate-plugins-mention@1.0.0-next.54
+  - @udecode/slate-plugins-paragraph@1.0.0-next.54
+  - @udecode/slate-plugins-table@1.0.0-next.54
+  - @udecode/slate-plugins-find-replace@1.0.0-next.54
+  - @udecode/slate-plugins-basic-marks@1.0.0-next.54
+  - @udecode/slate-plugins-font@1.0.0-next.54
+  - @udecode/slate-plugins-highlight@1.0.0-next.54
+  - @udecode/slate-plugins-kbd@1.0.0-next.54
+  - @udecode/slate-plugins-node-id@1.0.0-next.54
+  - @udecode/slate-plugins-normalizers@1.0.0-next.54
+  - @udecode/slate-plugins-select@1.0.0-next.54
+  - @udecode/slate-plugins-csv-serializer@1.0.0-next.54
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.54
+  - @udecode/slate-plugins-trailing-block@1.0.0-next.54
+
 ## 1.0.0-next.53
 
 ### Patch Changes

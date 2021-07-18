@@ -1,5 +1,17 @@
 # @udecode/slate-plugins-styled-components
 
+## 1.0.0-next.54
+
+### Minor Changes
+
+- [`f9e4cb95`](https://github.com/udecode/slate-plugins/commit/f9e4cb9505837dd7ba59df3f2598f7ed112d8896) Thanks [@zbeyens](https://github.com/zbeyens)! - features:
+  - `withStyledProps`(new): HOC mapping element/leaf props to component styles
+
+### Patch Changes
+
+- Updated dependencies [[`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29)]:
+  - @udecode/slate-plugins-common@1.0.0-next.54
+
 ## 1.0.0-next.53
 
 ### Patch Changes

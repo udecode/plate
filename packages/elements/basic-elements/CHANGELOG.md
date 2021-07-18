@@ -1,5 +1,16 @@
 # @udecode/slate-plugins-basic-elements
 
+## 1.0.0-next.54
+
+### Patch Changes
+
+- Updated dependencies [[`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29)]:
+  - @udecode/slate-plugins-common@1.0.0-next.54
+  - @udecode/slate-plugins-block-quote@1.0.0-next.54
+  - @udecode/slate-plugins-code-block@1.0.0-next.54
+  - @udecode/slate-plugins-heading@1.0.0-next.54
+  - @udecode/slate-plugins-paragraph@1.0.0-next.54
+
 ## 1.0.0-next.53
 
 ### Patch Changes

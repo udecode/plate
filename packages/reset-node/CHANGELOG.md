@@ -1,5 +1,14 @@
 # @udecode/slate-plugins-reset-node
 
+## 1.0.0-next.54
+
+### Patch Changes
+
+- [#850](https://github.com/udecode/slate-plugins/pull/850) [`bf693c13`](https://github.com/udecode/slate-plugins/commit/bf693c1327c3c6af0d641af5fe7a956e564a995e) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: `getResetNodeOnKeyDown` should not return `false`, otherwise the plugins pipeline stops (e.g. the list plugin onKeyDown handler). So it now returns void or true.
+
+- Updated dependencies [[`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29)]:
+  - @udecode/slate-plugins-common@1.0.0-next.54
+
 ## 1.0.0-next.53
 
 ### Patch Changes

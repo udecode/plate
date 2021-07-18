@@ -1,5 +1,17 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.54
+
+### Patch Changes
+
+- [#850](https://github.com/udecode/slate-plugins/pull/850) [`477bab57`](https://github.com/udecode/slate-plugins/commit/477bab572d943b21d3390c440f28e76074484a56) Thanks [@zbeyens](https://github.com/zbeyens)! - fix:
+  - Indenting multiple list items was not working as expected
+  - Normalizer: lists without list items are deleted
+  - Unindent a list item should not delete the list at the first level
+- Updated dependencies [[`bf693c13`](https://github.com/udecode/slate-plugins/commit/bf693c1327c3c6af0d641af5fe7a956e564a995e), [`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29)]:
+  - @udecode/slate-plugins-reset-node@1.0.0-next.54
+  - @udecode/slate-plugins-common@1.0.0-next.54
+
 ## 1.0.0-next.53
 
 ### Patch Changes
