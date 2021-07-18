@@ -47,6 +47,7 @@ import {
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
+  createColorPlugin,
   createDeserializeAstPlugin,
   createDeserializeHTMLPlugin,
   createDeserializeMDPlugin,
@@ -122,6 +123,7 @@ import {
   KEYS_HEADING,
   MARK_BOLD,
   MARK_CODE,
+  MARK_COLOR,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
@@ -138,6 +140,7 @@ import {
   ToolbarAlign,
   ToolbarButton,
   ToolbarCodeBlock,
+  ToolbarColorPicker,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -155,6 +158,7 @@ import {
   useStoreEditorRef,
   useStoreEditorSelection,
   useStoreEditorState,
+  withMarkedProps,
   withProps,
 } from '@udecode/slate-plugins';
 import {
@@ -165,12 +169,6 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
-import {
-  createColorPlugin,
-  MARK_COLOR,
-  withMarkedProps,
-} from '../../../packages/marks/color/src/index';
-import { ToolbarColorPicker } from '../../../packages/marks/color-ui/src/ToolbarColorPicker/ToolbarColorPicker';
 import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
