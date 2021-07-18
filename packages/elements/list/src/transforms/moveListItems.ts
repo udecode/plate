@@ -1,7 +1,8 @@
 import { getNodes, getParent } from '@udecode/slate-plugins-common';
 import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
-import { NodeEntry, Path } from 'slate';
+import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../defaults';
+import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
 
@@ -16,25 +17,34 @@ export const moveListItems = (editor: SPEditor, increase = true) => {
 
   if (!lics.length) return;
 
-  const highestLics: NodeEntry[] = [];
+  const highestLicPaths: Path[] = [];
+  const highestLicPathRefs: PathRef[] = [];
 
   // Filter out the nested lic, we just need to move the highest ones
   lics.forEach((lic) => {
     const licPath = lic[1];
     const liPath = Path.parent(licPath);
 
-    const isAncestor = highestLics.some((highestLic) => {
-      const highestLiPath = Path.parent(highestLic[1]);
+    const isAncestor = highestLicPaths.some((path) => {
+      const highestLiPath = Path.parent(path);
 
       return Path.isAncestor(highestLiPath, liPath);
     });
     if (!isAncestor) {
-      highestLics.push(lic);
+      highestLicPaths.push(licPath);
+      highestLicPathRefs.push(Editor.pathRef(editor, licPath));
     }
   });
 
-  highestLics.reverse().forEach((highestLic) => {
-    const listItem = getParent(editor, highestLic[1]);
+  const licPathRefsToMove = increase
+    ? highestLicPathRefs
+    : highestLicPathRefs.reverse();
+
+  licPathRefsToMove.forEach((licPathRef) => {
+    const licPath = licPathRef.unref();
+    if (!licPath) return;
+
+    const listItem = getParent(editor, licPath);
     if (!listItem) return;
     const listEntry = getParent(editor, listItem[1]);
 
@@ -43,7 +53,7 @@ export const moveListItems = (editor: SPEditor, increase = true) => {
         list: listEntry as any,
         listItem: listItem as any,
       });
-    } else {
+    } else if (listEntry && isListNested(editor, listEntry[1])) {
       moveListItemUp(editor, {
         list: listEntry as any,
         listItem: listItem as any,
