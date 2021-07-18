@@ -6,5 +6,6 @@ export * from './BalloonToolbar/index';
 export * from './HeadingToolbar/index';
 export * from './Toolbar/index';
 export * from './ToolbarButton/index';
+export * from './ToolbarDropdown/index';
 export * from './ToolbarElement/index';
 export * from './ToolbarMark/index';

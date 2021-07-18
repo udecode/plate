@@ -12,11 +12,13 @@ import { BorderClear } from '@styled-icons/material/BorderClear';
 import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
+import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
 import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
@@ -51,6 +53,8 @@ import {
   createDeserializeMDPlugin,
   createEditorPlugins,
   createExitBreakPlugin,
+  createFontBackgroundColorPlugin,
+  createFontColorPlugin,
   createHeadingPlugin,
   createHighlightPlugin,
   createHistoryPlugin,
@@ -106,7 +110,10 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  getNodeDeserializer,
   getParent,
+  getRenderLeaf,
+  getSlatePluginOptions,
   getSlatePluginType,
   HeadingToolbar,
   insertEmptyCodeBlock,
@@ -116,8 +123,10 @@ import {
   isSelectionAtBlockStart,
   isType,
   KEYS_HEADING,
+  MARK_BG_COLOR,
   MARK_BOLD,
   MARK_CODE,
+  MARK_COLOR,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
@@ -129,9 +138,12 @@ import {
   MentionSelect,
   serializeHTMLFromNodes,
   SlatePlugins,
+  StyledLeaf,
   toggleList,
   ToolbarAlign,
+  ToolbarButton,
   ToolbarCodeBlock,
+  ToolbarColorPicker,
   ToolbarElement,
   ToolbarImage,
   ToolbarLink,
@@ -147,14 +159,17 @@ import {
   useSlatePluginsActions,
   useStoreEditorEnabled,
   useStoreEditorRef,
+  useStoreEditorSelection,
+  useStoreEditorState,
   withProps,
+  withStyledProps,
 } from '@udecode/slate-plugins';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/slate-plugins-excalidraw';
-import { createEditor } from 'slate';
+import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
 import { optionsAutoformat } from './config/autoformatRules';
@@ -168,6 +183,7 @@ import {
   initialValueEmbeds,
   initialValueExcalidraw,
   initialValueExitBreak,
+  initialValueFont,
   initialValueForcedLayout,
   initialValueHighlight,
   initialValueIframe,
@@ -519,6 +535,24 @@ const ReactLiveScope = {
   withStyledPlaceHolders,
   getHugeDocument,
   withReact,
+  MARK_COLOR,
+  MARK_BG_COLOR,
+  withStyledProps,
+  StyledLeaf,
+  getRenderLeaf,
+  FormatColorText,
+  FontDownload,
+  useStoreEditorState,
+  useStoreEditorSelection,
+  Editor,
+  ToolbarButton,
+  Transforms,
+  getSlatePluginOptions,
+  getNodeDeserializer,
+  createFontColorPlugin,
+  createFontBackgroundColorPlugin,
+  initialValueFont,
+  ToolbarColorPicker,
 };
 
 export default ReactLiveScope;

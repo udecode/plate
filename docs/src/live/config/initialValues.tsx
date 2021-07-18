@@ -21,8 +21,10 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
+  MARK_BG_COLOR,
   MARK_BOLD,
   MARK_CODE,
+  MARK_COLOR,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
@@ -438,6 +440,164 @@ export const initialValueBasicMarks: any = [
     mark: MARK_STRIKETHROUGH,
   }),
   createElement('This is an inline code.', { mark: MARK_CODE }),
+];
+
+export const initialValueFont = [
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'This text has white color and black background.',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: 'black',
+      },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'This text has a custom color used for text and background.',
+        [MARK_COLOR]: 'grey',
+        [MARK_BG_COLOR]: 'cyan',
+      },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'This text has',
+      },
+      {
+        text: ' ',
+        [MARK_BG_COLOR]: '#dc3735',
+      },
+      {
+        text: 'm',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#df4538',
+      },
+      {
+        text: 'u',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#e2533a',
+      },
+      {
+        text: 'l',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#e6603d',
+      },
+      {
+        text: 't',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#e96f40',
+      },
+      {
+        text: 'i',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#ec7d43',
+      },
+      {
+        text: 'p',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#ef8a45',
+      },
+      {
+        text: 'l',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#f29948',
+      },
+      {
+        text: 'e',
+        [MARK_COLOR]: 'white',
+        [MARK_BG_COLOR]: '#f5a74b',
+      },
+      {
+        text: ' ',
+        [MARK_BG_COLOR]: '#f9b44e',
+      },
+      {
+        text: 'f',
+        [MARK_COLOR]: '#ff0000',
+      },
+      {
+        text: 'o',
+        [MARK_COLOR]: '#ff3333',
+      },
+      {
+        text: 'n',
+        [MARK_COLOR]: '#ff6666',
+      },
+      {
+        text: 't',
+        [MARK_COLOR]: '#ff9999',
+      },
+      {
+        text: ' ',
+      },
+      {
+        text: 'c',
+        [MARK_COLOR]: '#ffcccc',
+      },
+      {
+        text: 'o',
+        [MARK_COLOR]: '#ffcccc',
+      },
+      {
+        text: 'l',
+        [MARK_COLOR]: '#ccffcc',
+      },
+      {
+        text: 'o',
+        [MARK_COLOR]: '#99ff99',
+      },
+      {
+        text: 'r',
+        [MARK_COLOR]: '#66ff66',
+      },
+      {
+        text: 's',
+        [MARK_COLOR]: '#33ff33',
+      },
+      {
+        text: ' and ',
+      },
+      {
+        text: 'font',
+        [MARK_BG_COLOR]: '#a58ce1',
+      },
+      {
+        text: ' ',
+      },
+      {
+        text: 'background',
+        [MARK_BG_COLOR]: '#99cc62',
+      },
+      {
+        text: ' ',
+      },
+      {
+        text: 'colors',
+        [MARK_BG_COLOR]: '#e45260',
+      },
+      {
+        text: '.',
+      },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'This text is bold, italic, underlined and colored.',
+        [MARK_BOLD]: true,
+        [MARK_ITALIC]: true,
+        [MARK_UNDERLINE]: true,
+        [MARK_COLOR]: '#f92672',
+      },
+    ],
+  },
 ];
 
 export const initialValueKbd = [
@@ -882,6 +1042,7 @@ export const initialValueExitBreak: any = [
 export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueForcedLayout,
   ...initialValueBasicMarks,
+  ...initialValueFont,
   ...initialValueHighlight,
   ...initialValueBasicElements,
   ...initialValueList,

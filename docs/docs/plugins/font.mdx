@@ -1,0 +1,59 @@
+---
+slug: /plugins/font
+title: Font color
+---
+
+Use the toolbar dropdowns in the demo below to control font color and font background color.
+
+```ts live
+() => {
+  let styledComponents = createSlatePluginsComponents({
+    ...components,
+    [MARK_COLOR]: withStyledProps(StyledLeaf, {
+      leafProps: {
+        [MARK_COLOR]: ['color']
+      },
+    }),
+    [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
+      leafProps: {
+        [MARK_BG_COLOR]: ['backgroundColor']
+      },
+    }),
+  });
+  
+  const plugins = [
+    ...pluginsBasic,
+    createFontColorPlugin(),
+    createFontBackgroundColorPlugin(),
+  ];
+
+  plugins.push(createDeserializeHTMLPlugin({ plugins }));
+
+  const CopyContent = () => (
+    <div style={{borderBottom: '1px solid #eee', margin: '0 -16px', padding: '0 16px 16px'}}>
+      <span style={{color: '#f92672'}}>Copy Me in the editor</span>
+    </div>
+  );
+
+  const Editor = () => {
+    return (
+      <SlatePlugins
+        id="font"
+        plugins={plugins}
+        components={styledComponents}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueFont}
+      >
+        <HeadingToolbar>
+          <ToolbarColorPicker pluginKey={MARK_COLOR} icon={<FormatColorText />} />
+          <ToolbarColorPicker pluginKey={MARK_BG_COLOR} icon={<FontDownload />} />
+        </HeadingToolbar>
+        <CopyContent />
+      </SlatePlugins>
+    );
+  }
+
+  return <Editor />;
+}
+```

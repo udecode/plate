@@ -5,5 +5,6 @@
 export * from './PortalBody/index';
 export * from './StyledElement/index';
 export * from './StyledLeaf/index';
+export * from './hocs/index';
 export * from './types/index';
 export * from './utils/index';

@@ -228,6 +228,14 @@ module.exports = {
             __dirname,
             '../packages/elements/code-block-ui/src'
           ),
+          '@udecode/slate-plugins-font': path.resolve(
+            __dirname,
+            '../packages/marks/font/src'
+          ),
+          '@udecode/slate-plugins-font-ui': path.resolve(
+            __dirname,
+            '../packages/marks/font-ui/src'
+          ),
           '@udecode/slate-plugins-excalidraw': path.resolve(
             __dirname,
             '../packages/elements/excalidraw/src'

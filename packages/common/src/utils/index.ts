@@ -15,3 +15,4 @@ export * from './getToggleElementOnKeyDown';
 export * from './getToggleMarkOnKeyDown';
 export * from './isUrl';
 export * from './normalizeDescendantsToDocumentFragment';
+export * from './types.utils';

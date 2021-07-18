@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-template",
-  "version": "1.0.0-next.36",
+  "version": "1.0.0-next.",
   "description": "Slate plugins template",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/template#readme",
@@ -26,9 +26,15 @@
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
   },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
+  },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.37",
-    "@udecode/slate-plugins-core": "1.0.0-next.36"
+    "@udecode/slate-plugins-common": "1.0.0-next.",
+    "@udecode/slate-plugins-core": "1.0.0-next."
   },
   "publishConfig": {
     "access": "public"

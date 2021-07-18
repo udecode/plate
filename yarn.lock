@@ -4948,31 +4948,6 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
-"@udecode/slate-plugins-common@1.0.0-next.40":
-  version "1.0.0-next.40"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-common/-/slate-plugins-common-1.0.0-next.40.tgz#19526682f4821e5af483e45fcb963a9968c5558b"
-  integrity sha512-6BpFpcnVxZp73M+xjE3PALPWThZLDcqn+Ik3Y1lG4CqAV26dY2RbDwRggZ3eIsqZ5qSpuEc20ZYx0kjLmGbt5w==
-  dependencies:
-    "@udecode/slate-plugins-core" "1.0.0-next.40"
-    is-hotkey "^0.1.6"
-
-"@udecode/slate-plugins-list@1.0.0-next.48":
-  version "1.0.0-next.48"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-list/-/slate-plugins-list-1.0.0-next.48.tgz#cc964eeb32e218bf8f0de377f14c4f2df8d14579"
-  integrity sha512-0V+/MN3lkUrAIMFt5etE+3x4m3OUQWfY97BoYg7MekMF1Cam6VHHpneT/KgOCtjl4AK9Gbr+aB79vz3ntnbarA==
-  dependencies:
-    "@udecode/slate-plugins-common" "1.0.0-next.46"
-    "@udecode/slate-plugins-core" "1.0.0-next.40"
-    "@udecode/slate-plugins-reset-node" "1.0.0-next.46"
-
-"@udecode/slate-plugins-reset-node@1.0.0-next.46":
-  version "1.0.0-next.46"
-  resolved "https://registry.yarnpkg.com/@udecode/slate-plugins-reset-node/-/slate-plugins-reset-node-1.0.0-next.46.tgz#6362d54e21d8178d3395b6da3a7ed3e8f836f83a"
-  integrity sha512-g59qL4qsBCtkmfFK4XILa5h3Q3dbSn13+ZDit66zWxEzhgqT65KxAH1GMp5xoMkGEog0CNEg40sSXnJGhM7UCA==
-  dependencies:
-    "@udecode/slate-plugins-common" "1.0.0-next.46"
-    "@udecode/slate-plugins-core" "1.0.0-next.40"
-
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.9.0.tgz#bd850604b4042459a5a41cd7d338cbed695ed964"
