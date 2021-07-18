@@ -19,7 +19,17 @@ The following playground uses most of the provided plugins.
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
     }),
-    [ELEMENT_EXCALIDRAW]: ExcalidrawElement
+    [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+    [MARK_COLOR]: withStyledProps(StyledLeaf, {
+      leafProps: {
+        [MARK_COLOR]: ['color']
+      },
+    }),
+    [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
+      leafProps: {
+        [MARK_BG_COLOR]: ['backgroundColor']
+      },
+    }),
   });
   styledComponents = withStyledPlaceHolders(styledComponents);
 
@@ -55,6 +65,8 @@ The following playground uses most of the provided plugins.
         createStrikethroughPlugin(),
         createSubscriptPlugin(),
         createSuperscriptPlugin(),
+        createFontColorPlugin(),
+        createFontBackgroundColorPlugin(),
         createKbdPlugin(),
         createNodeIdPlugin(),
         createAutoformatPlugin(optionsAutoformat),
@@ -89,6 +101,8 @@ The following playground uses most of the provided plugins.
           <ToolbarButtonsBasicElements />
           <ToolbarButtonsList />
           <ToolbarButtonsBasicMarks />
+          <ToolbarColorPicker pluginKey={MARK_COLOR} icon={<FormatColorText />} />
+          <ToolbarColorPicker pluginKey={MARK_BG_COLOR} icon={<FontDownload />} />
           <ToolbarButtonsAlign />
           <ToolbarLink icon={<Link />} />
           <ToolbarImage icon={<Image />} />

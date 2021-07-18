@@ -1,4 +1,4 @@
-# slate-plugins-color-ui
+# slate-plugins-font
 
 See [README](https://github.com/udecode/slate-plugins).
 

@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { getMark, MARK_COLOR, setMark } from '@udecode/slate-plugins-color';
+import { getMark, isMarkActive, setMarks } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   useEventEditorId,
@@ -18,11 +18,17 @@ import { BaseSelection, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 
-export const ToolbarColorPicker = ({ icon }: { icon: ReactNode }) => {
+export const ToolbarColorPicker = ({
+  pluginKey,
+  icon,
+}: {
+  pluginKey?: string;
+  icon: ReactNode;
+}) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
   const selection = useStoreEditorSelection(useEventEditorId('focus'));
-  const type = getSlatePluginType(editor, MARK_COLOR);
+  const type = getSlatePluginType(editor, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 
@@ -45,17 +51,19 @@ export const ToolbarColorPicker = ({ icon }: { icon: ReactNode }) => {
     <ToolbarDropdown
       control={
         <ToolbarButton
-          active={!!editor?.selection && !!type && !!getMark(editor, type)}
+          active={!!editor?.selection && isMarkActive(editor, type)}
           icon={icon}
         />
       }
-      onClose={(ev: MouseEvent) => {
+      onClose={(e: MouseEvent) => {
         if (editorRef && editor && latestSelection.current) {
-          ev.preventDefault();
+          e.preventDefault();
+
           Transforms.select(editorRef, latestSelection.current);
           ReactEditor.focus(editorRef);
+
           if (selectedColor) {
-            setMark(editor, type, selectedColor);
+            setMarks(editor, { [type]: selectedColor });
           }
         }
       }}

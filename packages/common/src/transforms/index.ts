@@ -13,6 +13,7 @@ export * from './moveChildren';
 export * from './removeMark';
 export * from './selectEditor';
 export * from './selectEndOfBlockAboveSelection';
+export * from './setMarks';
 export * from './setNodes';
 export * from './toggleMark';
 export * from './toggleNodeType';

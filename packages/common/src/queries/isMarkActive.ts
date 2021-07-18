@@ -1,7 +1,10 @@
 import { TEditor } from '@udecode/slate-plugins-core';
-import { Editor } from 'slate';
+import { isDefined } from '../utils/types.utils';
+import { getMark } from './getMark';
 
+/**
+ * Is the mark defined in the selection.
+ */
 export const isMarkActive = (editor: TEditor, type: string) => {
-  const marks = Editor.marks(editor);
-  return marks ? marks[type] === true : false;
+  return isDefined(getMark(editor, type));
 };

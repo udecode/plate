@@ -12,6 +12,7 @@ import { BorderClear } from '@styled-icons/material/BorderClear';
 import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
+import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
@@ -47,12 +48,13 @@ import {
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
-  createColorPlugin,
   createDeserializeAstPlugin,
   createDeserializeHTMLPlugin,
   createDeserializeMDPlugin,
   createEditorPlugins,
   createExitBreakPlugin,
+  createFontBackgroundColorPlugin,
+  createFontColorPlugin,
   createHeadingPlugin,
   createHighlightPlugin,
   createHistoryPlugin,
@@ -121,6 +123,7 @@ import {
   isSelectionAtBlockStart,
   isType,
   KEYS_HEADING,
+  MARK_BG_COLOR,
   MARK_BOLD,
   MARK_CODE,
   MARK_COLOR,
@@ -158,8 +161,8 @@ import {
   useStoreEditorRef,
   useStoreEditorSelection,
   useStoreEditorState,
-  withMarkedProps,
   withProps,
+  withStyledProps,
 } from '@udecode/slate-plugins';
 import {
   createExcalidrawPlugin,
@@ -180,6 +183,7 @@ import {
   initialValueEmbeds,
   initialValueExcalidraw,
   initialValueExitBreak,
+  initialValueFont,
   initialValueForcedLayout,
   initialValueHighlight,
   initialValueIframe,
@@ -532,10 +536,12 @@ const ReactLiveScope = {
   getHugeDocument,
   withReact,
   MARK_COLOR,
-  withMarkedProps,
+  MARK_BG_COLOR,
+  withStyledProps,
   StyledLeaf,
   getRenderLeaf,
   FormatColorText,
+  FontDownload,
   useStoreEditorState,
   useStoreEditorSelection,
   Editor,
@@ -543,7 +549,9 @@ const ReactLiveScope = {
   Transforms,
   getSlatePluginOptions,
   getNodeDeserializer,
-  createColorPlugin,
+  createFontColorPlugin,
+  createFontBackgroundColorPlugin,
+  initialValueFont,
   ToolbarColorPicker,
 };
 

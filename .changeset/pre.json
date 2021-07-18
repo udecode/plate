@@ -47,8 +47,8 @@
     "@udecode/slate-plugins-trailing-block": "1.0.0-alpha.25",
     "@udecode/slate-plugins-toolbar": "1.0.0-alpha.25",
     "@udecode/slate-plugins-excalidraw": "1.0.0-next.37",
-    "@udecode/slate-plugins-color": "1.0.0-next.53",
-    "@udecode/slate-plugins-color-ui": "1.0.0-next.53",
+    "@udecode/slate-plugins-font": "1.0.0-next.53",
+    "@udecode/slate-plugins-font-ui": "1.0.0-next.53",
     "@udecode/slate-plugins-csv-serializer": "1.0.0-next.48"
   },
   "changesets": [

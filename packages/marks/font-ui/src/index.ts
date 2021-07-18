@@ -4,4 +4,3 @@
 
 export * from './ColorPicker/index';
 export * from './ToolbarColorPicker/index';
-export * from './hocs/index';

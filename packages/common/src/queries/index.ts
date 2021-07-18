@@ -9,6 +9,7 @@ export * from './getBlockAbove';
 export * from './getChildren';
 export * from './getLastChild';
 export * from './getLastNode';
+export * from './getMark';
 export * from './getNextSiblingNodes';
 export * from './getNode';
 export * from './getNodes';
