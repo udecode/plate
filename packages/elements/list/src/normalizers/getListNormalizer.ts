@@ -8,6 +8,7 @@ import {
   getSlatePluginType,
   isElement,
   SPEditor,
+  TDescendant,
 } from '@udecode/slate-plugins-core';
 import { NodeEntry, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
@@ -31,7 +32,10 @@ export const getListNormalizer = (
     if (!isElement(node)) return;
 
     if (match(node, { type: getListTypes(editor) })) {
-      if (!node.children.length) {
+      if (
+        !node.children.length ||
+        !node.children.find((item) => (item as TDescendant).type === liType)
+      ) {
         return Transforms.removeNodes(editor, { at: path });
       }
     }
