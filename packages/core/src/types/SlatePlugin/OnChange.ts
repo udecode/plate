@@ -1,5 +1,6 @@
 import { SPEditor } from '../SPEditor';
 import { TNode } from '../TNode';
+import { DOMHandlerReturnType } from './DOMHandlers';
 
 /**
  * Function called whenever a change occurs in the editor.
@@ -8,4 +9,4 @@ import { TNode } from '../TNode';
  */
 export type OnChange<T extends SPEditor = SPEditor> = (
   editor: T
-) => (value: TNode[]) => boolean | void;
+) => (value: TNode[]) => DOMHandlerReturnType;

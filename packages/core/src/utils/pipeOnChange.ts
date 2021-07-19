@@ -11,6 +11,19 @@ export const pipeOnChange = (
   );
 
   return (nodes) => {
-    onChanges.some((onChange) => onChange(nodes) === false);
+    return onChanges.some((handler) => {
+      if (!handler) {
+        return false;
+      }
+      // The custom event handler may return a boolean to specify whether the event
+      // shall be treated as being handled or not.
+      const shouldTreatEventAsHandled = handler(nodes);
+
+      if (shouldTreatEventAsHandled != null) {
+        return shouldTreatEventAsHandled;
+      }
+
+      return false;
+    });
   };
 };

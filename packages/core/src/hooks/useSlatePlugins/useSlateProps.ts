@@ -25,9 +25,13 @@ export const useSlateProps = ({
       key: editor?.key,
       editor,
       onChange: (newValue: TNode[]) => {
-        editor && pipeOnChange(editor, plugins)(newValue);
+        if (!editor) return;
 
-        _onChange?.(newValue);
+        const eventIsHandled = pipeOnChange(editor, plugins)(newValue);
+
+        if (!eventIsHandled) {
+          _onChange?.(newValue);
+        }
 
         setValue(newValue);
       },
