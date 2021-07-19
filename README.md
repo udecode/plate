@@ -64,13 +64,6 @@ normalizers, queries, transforms, components and so on.
 - ✅ TypeScript types
 - ✅ Unit tested with `slate@0.63.0` and `slate-react@0.65.2`
 
-<!--- 📓-->
-<!--  [Docs](https://plate-next.netlify.app/?path=/docs/docs-getting-started--page)-->
-<!--  and-->
-<!--- -->
-<!--  📖 [API](https://plate-api.netlify.app/) generated with-->
-<!--  [TypeDoc](https://typedoc.org/).-->
-
 ## Packages
 
 ### Core libraries

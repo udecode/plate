@@ -1,8 +1,8 @@
 import { isBlockAboveEmpty, isUrl, setNodes } from '@udecode/plate-common';
 import {
   getInlineTypes,
-  getSlatePluginWithOverrides,
-  SlatePlugin,
+  getPlatePluginWithOverrides,
+  PlatePlugin,
   SPEditor,
   TDescendant,
   TElement,
@@ -15,7 +15,7 @@ import { deserializeMD } from './utils/deserializeMD';
 export interface WithDeserializeMarkdownOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
   /**
    * Function called before inserting the deserialized markdown.
    * Default: if the block above is empty and the first fragment node type is not inline,
@@ -108,6 +108,6 @@ export const withDeserializeMD = <
 /**
  * @see {@link withDeserializeMd}
  */
-export const createDeserializeMDPlugin = getSlatePluginWithOverrides(
+export const createDeserializeMDPlugin = getPlatePluginWithOverrides(
   withDeserializeMD
 );

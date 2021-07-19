@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin core",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/core#readme",

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-md-serializer",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin md-serializer",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/md-serializer#readme",
@@ -33,14 +33,14 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "1.0.0-next.55",
-    "@udecode/plate-code-block": "1.0.0-next.55",
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-heading": "1.0.0-next.55",
-    "@udecode/plate-link": "1.0.0-next.55",
-    "@udecode/plate-list": "1.0.0-next.55",
-    "@udecode/plate-paragraph": "1.0.0-next.55",
+    "@udecode/plate-block-quote": "1.0.0",
+    "@udecode/plate-code-block": "1.0.0",
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-heading": "1.0.0",
+    "@udecode/plate-link": "1.0.0",
+    "@udecode/plate-list": "1.0.0",
+    "@udecode/plate-paragraph": "1.0.0",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"

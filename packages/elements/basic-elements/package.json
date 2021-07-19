@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin basic-elements",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/basic-elements#readme",
@@ -33,12 +33,12 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "1.0.0-next.55",
-    "@udecode/plate-code-block": "1.0.0-next.55",
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-heading": "1.0.0-next.55",
-    "@udecode/plate-paragraph": "1.0.0-next.55"
+    "@udecode/plate-block-quote": "1.0.0",
+    "@udecode/plate-code-block": "1.0.0",
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-heading": "1.0.0",
+    "@udecode/plate-paragraph": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

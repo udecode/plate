@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin list",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/list#readme",
@@ -33,9 +33,9 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-reset-node": "1.0.0-next.55"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-reset-node": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

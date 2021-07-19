@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-excalidraw",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin excalidraw",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/excalidraw#readme",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-styled-components": "1.0.0-next.55"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

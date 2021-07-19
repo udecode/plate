@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-toolbar",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin toolbar",
   "keywords": [],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/toolbar#readme",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-styled-components": "1.0.0-next.55",
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0",
     "react-use": "^17.1.1"
   },
   "publishConfig": {

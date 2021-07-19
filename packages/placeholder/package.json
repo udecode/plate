@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-placeholder",
-  "version": "1.0.0-next.55",
+  "version": "1.0.0",
   "description": "Plate plugin placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -23,9 +23,9 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/plate-common": "1.0.0-next.55",
-    "@udecode/plate-core": "1.0.0-next.55",
-    "@udecode/plate-styled-components": "1.0.0-next.55"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0"
   },
   "repository": {
     "type": "git",
