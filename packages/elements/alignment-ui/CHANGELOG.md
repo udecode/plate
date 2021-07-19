@@ -1,5 +1,16 @@
 # @udecode/slate-plugins-alignment-ui
 
+## 1.0.0-next.55
+
+### Patch Changes
+
+- Updated dependencies [[`abaf4a11`](https://github.com/udecode/slate-plugins/commit/abaf4a11d3b69157983b6cf77b023a6008478a79)]:
+  - @udecode/slate-plugins-core@1.0.0-next.55
+  - @udecode/slate-plugins-common@1.0.0-next.55
+  - @udecode/slate-plugins-alignment@1.0.0-next.55
+  - @udecode/slate-plugins-styled-components@1.0.0-next.55
+  - @udecode/slate-plugins-toolbar@1.0.0-next.55
+
 ## 1.0.0-next.54
 
 ### Patch Changes
