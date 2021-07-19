@@ -16,7 +16,9 @@ import {
 } from 'react';
 import { SPEditor } from '../SPEditor';
 
-type ReturnType = boolean | void;
+export type DOMHandlerReturnType = boolean | void;
+
+type ReturnType = DOMHandlerReturnType;
 
 export type DOMHandler<
   K extends keyof DOMHandlers,

@@ -1,15 +1,41 @@
+import { SyntheticEvent } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { DOMHandlers } from '../types/SlatePlugin/DOMHandlers';
+import {
+  DOMHandlerReturnType,
+  DOMHandlers,
+} from '../types/SlatePlugin/DOMHandlers';
 import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
 import { SPEditor } from '../types/SPEditor';
+
+/**
+ * Check if an event is overrided by a handler.
+ */
+export const isEventHandled = <
+  EventType extends SyntheticEvent<unknown, unknown>
+>(
+  event: EventType,
+  handler?: (event: EventType) => void | boolean
+) => {
+  if (!handler) {
+    return false;
+  }
+  // The custom event handler may return a boolean to specify whether the event
+  // shall be treated as being handled or not.
+  const shouldTreatEventAsHandled = handler(event);
+
+  if (shouldTreatEventAsHandled != null) {
+    return shouldTreatEventAsHandled;
+  }
+
+  return event.isDefaultPrevented() || event.isPropagationStopped();
+};
 
 /**
  * Generic pipe for handlers.
  * - Get all the plugins handlers by `handlerKey`.
  * - If there is no plugin handler or editable prop handler for this key, return `undefined`.
- * - Return a handler calling all the plugins handlers until one returns `false`.
- * - If one handler returns `true`, slate will not run its internal handler.
- * - Call the props handler if defined.
+ * - Return a handler calling all the plugins handlers then the prop handler.
+ * - Any handler returning true will stop the next handlers to be called, including slate internal handler.
  */
 export const pipeHandler = <K extends keyof DOMHandlers>(
   editor: SPEditor,
@@ -19,30 +45,25 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     plugins,
   }: { editableProps?: EditableProps; handlerKey: K; plugins?: SlatePlugin[] }
 ): ((event: any) => void) | undefined => {
-  let pluginsHandlers: ((event: any) => boolean | void)[] = [];
+  let pluginsHandlers: ((event: any) => DOMHandlerReturnType)[] = [];
   if (plugins) {
     pluginsHandlers = plugins.flatMap(
       (plugin) => plugin[handlerKey]?.(editor) ?? []
     );
   }
 
-  const propsHandler = editableProps?.[handlerKey];
+  const propsHandler = editableProps?.[handlerKey] as (
+    event: any
+  ) => DOMHandlerReturnType | undefined;
 
   if (!pluginsHandlers.length && !propsHandler) return;
 
-  return (event: Event) => {
-    let res = false;
+  return (event: any) => {
+    const eventIsHandled = pluginsHandlers.some((handler) =>
+      isEventHandled(event, handler)
+    );
+    if (eventIsHandled) return true;
 
-    pluginsHandlers.some((handler) => {
-      const handlerRes = handler(event);
-
-      if (handlerRes === true) res = true;
-
-      return handlerRes === false;
-    });
-
-    res = propsHandler?.(event as any) || res;
-
-    return res;
+    return isEventHandled(event, propsHandler);
   };
 };
