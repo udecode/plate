@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-plugins-excalidraw",
-  "version": "1.0.0-next.53",
+  "version": "1.0.0-next.54",
   "description": "Slate plugins excalidraw",
   "keywords": [],
   "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/excalidraw#readme",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
-    "@udecode/slate-plugins-common": "1.0.0-next.53",
+    "@udecode/slate-plugins-common": "1.0.0-next.54",
     "@udecode/slate-plugins-core": "1.0.0-next.53",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.53"
+    "@udecode/slate-plugins-styled-components": "1.0.0-next.54"
   },
   "publishConfig": {
     "access": "public"

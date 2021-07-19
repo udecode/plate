@@ -1,5 +1,15 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.54
+
+### Minor Changes
+
+- [#844](https://github.com/udecode/slate-plugins/pull/844) [`d906095d`](https://github.com/udecode/slate-plugins/commit/d906095d20cf8755a200d254f6c20c510a748f29) Thanks [@ghingis](https://github.com/ghingis)! - features:
+  - `getNodeDeserializer` now supports dynamic style rules by providing an asterisk instead of an exact value
+  - `isMarkActive`: returns true if the mark value is defined (before: returns true if the mark value is true)
+  - `getMark`(new): Get selected mark by type
+  - `setMarks`(new): Set marks to selected text.
+
 ## 1.0.0-next.53
 
 ### Patch Changes
