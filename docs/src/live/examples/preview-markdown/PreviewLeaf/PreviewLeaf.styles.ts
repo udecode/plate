@@ -1,4 +1,4 @@
-import { createStyles } from '@udecode/slate-plugins';
+import { createStyles } from '@udecode/plate';
 import { CSSProp } from 'styled-components';
 import { PreviewLeafStyleProps } from './PreviewLeaf.types';
 

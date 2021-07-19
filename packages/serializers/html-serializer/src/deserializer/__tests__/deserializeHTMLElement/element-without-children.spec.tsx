@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { getElementDeserializer } from '@udecode/plate-common';
+import { PlatePlugin } from '@udecode/plate-core';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const html =
@@ -25,7 +25,7 @@ const input = {
         }),
       }),
     },
-  ] as SlatePlugin[],
+  ] as PlatePlugin[],
   element,
 };
 

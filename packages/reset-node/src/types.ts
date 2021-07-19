@@ -1,7 +1,7 @@
-import { SlatePluginOptions, TEditor } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions, TEditor } from '@udecode/plate-core';
 
 export interface ResetBlockTypePluginRule
-  extends Pick<SlatePluginOptions, 'defaultType' | 'hotkey'> {
+  extends Pick<PlatePluginOptions, 'defaultType' | 'hotkey'> {
   /**
    * Node types where the rule applies.
    */

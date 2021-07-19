@@ -1,6 +1,6 @@
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { TablePluginOptions } from '@udecode/slate-plugins-table';
-import { ToolbarButtonProps } from '@udecode/slate-plugins-toolbar';
+import { SPEditor } from '@udecode/plate-core';
+import { TablePluginOptions } from '@udecode/plate-table';
+import { ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarTableProps
   extends ToolbarButtonProps,

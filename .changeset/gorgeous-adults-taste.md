@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins": patch
+"@udecode/plate": patch
 ---
 
 fix: export csv-serializer

@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": patch
+"@udecode/plate-core": patch
 ---
 
-fix: `getSlatePluginWithOverrides` options types
+fix: `getPlatePluginWithOverrides` options types

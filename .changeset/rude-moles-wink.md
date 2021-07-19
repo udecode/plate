@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-list": minor
+"@udecode/plate-list": minor
 ---
 
 feat:

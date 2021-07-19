@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { QueryNodeOptions } from './QueryNodeOptions';
 

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { ELEMENT_ALIGN_CENTER } from '../../defaults';
 import { upsertAlign } from '../../transforms/upsertAlign';

@@ -9,20 +9,20 @@ import { GetNodeProps } from './GetNodeProps';
  * React component rendering a slate element or leaf.
  * @default DefaultElement | DefaultLeaf
  */
-export type SlatePluginComponent = FunctionComponent<
+export type PlatePluginComponent = FunctionComponent<
   SPRenderElementProps | SPRenderLeafProps
 >;
 
-export interface SlatePluginOptions extends AnyObject {
+export interface PlatePluginOptions extends AnyObject {
   /**
    * Node properties to delete.
    */
   clear?: string | string[];
 
   /**
-   * `SlatePlugins` maps each slate node to this component to render.
+   * `Plate` maps each slate node to this component to render.
    */
-  component?: SlatePluginComponent;
+  component?: PlatePluginComponent;
 
   /**
    * Default type of slate blocks.
@@ -58,10 +58,10 @@ export interface SlatePluginOptions extends AnyObject {
 export type PluginKey = string;
 
 /**
- * Slate plugins options stored by plugin key.
+ * Plate options stored by plugin key.
  * Each plugin can access the options by its plugin key.
  *
  * @default {}
  * @see {@link PluginKey}
  */
-export type SlatePluginsOptions = Record<PluginKey, SlatePluginOptions>;
+export type PlateOptions = Record<PluginKey, PlatePluginOptions>;

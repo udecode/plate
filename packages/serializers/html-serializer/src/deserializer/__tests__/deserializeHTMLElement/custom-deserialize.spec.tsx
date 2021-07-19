@@ -1,14 +1,14 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin } from '@udecode/plate-core';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 jsx;
@@ -51,7 +51,7 @@ const editor = createEditorPlugins({
   },
 });
 
-const plugins: SlatePlugin[] = [
+const plugins: PlatePlugin[] = [
   createImagePlugin(),
   createLinkPlugin(),
   createParagraphPlugin(),

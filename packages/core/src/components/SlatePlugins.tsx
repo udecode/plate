@@ -1,15 +1,15 @@
 import React from 'react';
 import { Editable, Slate } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { useSlatePlugins } from '../hooks/useSlatePlugins/useSlatePlugins';
+import { usePlate } from '../hooks/usePlate/usePlate';
 import { SlateProps } from '../types/SlateProps';
 import { SPEditor } from '../types/SPEditor';
-import { UseSlatePluginsEffectsOptions } from '../types/UseSlatePluginsEffectsOptions';
+import { UsePlateEffectsOptions } from '../types/UsePlateEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
 import { EditorStateEffect } from './EditorStateEffect';
 
-export interface SlatePluginsProps<T extends SPEditor = SPEditor>
-  extends UseSlatePluginsEffectsOptions<T>,
+export interface PlateProps<T extends SPEditor = SPEditor>
+  extends UsePlateEffectsOptions<T>,
     UseSlatePropsOptions {
   /**
    * The children rendered inside `Slate` before the `Editable` component.
@@ -27,12 +27,12 @@ export interface SlatePluginsProps<T extends SPEditor = SPEditor>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const SlatePlugins = <T extends SPEditor = SPEditor>({
+export const Plate = <T extends SPEditor = SPEditor>({
   children,
   renderEditable,
   ...options
-}: SlatePluginsProps<T>) => {
-  const { slateProps, editableProps } = useSlatePlugins(options);
+}: PlateProps<T>) => {
+  const { slateProps, editableProps } = usePlate(options);
 
   if (!slateProps.editor) return null;
 

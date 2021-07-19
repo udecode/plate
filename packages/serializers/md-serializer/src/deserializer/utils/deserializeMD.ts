@@ -1,6 +1,6 @@
-import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/slate-plugins-code-block';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -8,14 +8,10 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '@udecode/slate-plugins-heading';
-import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '@udecode/slate-plugins-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
+} from '@udecode/plate-heading';
+import { ELEMENT_LINK } from '@udecode/plate-link';
+import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import markdown from 'remark-parse';
 import slate from 'remark-slate';
 import unified from 'unified';
@@ -29,20 +25,20 @@ export const deserializeMD = (editor: SPEditor, content: string) => {
     .use(markdown)
     .use(slate, {
       nodeTypes: {
-        paragraph: getSlatePluginType(editor, ELEMENT_PARAGRAPH),
-        block_quote: getSlatePluginType(editor, ELEMENT_BLOCKQUOTE),
-        link: getSlatePluginType(editor, ELEMENT_LINK),
-        code_block: getSlatePluginType(editor, ELEMENT_CODE_BLOCK),
-        ul_list: getSlatePluginType(editor, ELEMENT_UL),
-        ol_list: getSlatePluginType(editor, ELEMENT_OL),
-        listItem: getSlatePluginType(editor, ELEMENT_LI),
+        paragraph: getPlatePluginType(editor, ELEMENT_PARAGRAPH),
+        block_quote: getPlatePluginType(editor, ELEMENT_BLOCKQUOTE),
+        link: getPlatePluginType(editor, ELEMENT_LINK),
+        code_block: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
+        ul_list: getPlatePluginType(editor, ELEMENT_UL),
+        ol_list: getPlatePluginType(editor, ELEMENT_OL),
+        listItem: getPlatePluginType(editor, ELEMENT_LI),
         heading: {
-          1: getSlatePluginType(editor, ELEMENT_H1),
-          2: getSlatePluginType(editor, ELEMENT_H2),
-          3: getSlatePluginType(editor, ELEMENT_H3),
-          4: getSlatePluginType(editor, ELEMENT_H4),
-          5: getSlatePluginType(editor, ELEMENT_H5),
-          6: getSlatePluginType(editor, ELEMENT_H6),
+          1: getPlatePluginType(editor, ELEMENT_H1),
+          2: getPlatePluginType(editor, ELEMENT_H2),
+          3: getPlatePluginType(editor, ELEMENT_H3),
+          4: getPlatePluginType(editor, ELEMENT_H4),
+          5: getPlatePluginType(editor, ELEMENT_H5),
+          6: getPlatePluginType(editor, ELEMENT_H6),
         },
       },
       linkDestinationKey: 'url',

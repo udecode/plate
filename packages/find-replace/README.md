@@ -1,6 +1,6 @@
-# slate-plugins-find-replace
+# plate-find-replace
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

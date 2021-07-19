@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { createNodeHOC, createNodesHOC } from '@udecode/slate-plugins-common';
+import { createNodeHOC, createNodesHOC } from '@udecode/plate-common';
 import { Node } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';

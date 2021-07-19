@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-node-id": patch
+"@udecode/plate-node-id": patch
 ---
 
 fix:

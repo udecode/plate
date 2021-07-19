@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { options } from '../../../../../../docs/src/live/config/pluginOptions';
 import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';

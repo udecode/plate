@@ -1,5 +1,5 @@
 import {
-  createSlatePluginsOptions,
+  createPlateOptions,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_PARAGRAPH,
@@ -12,10 +12,10 @@ import {
   MentionNodeData,
   ResetBlockTypePluginOptions,
   SoftBreakPluginOptions,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { MENTIONABLES } from './mentionables';
 
-export const options = createSlatePluginsOptions();
+export const options = createPlateOptions();
 
 export const optionsMentionPlugin = {
   mentionables: MENTIONABLES,

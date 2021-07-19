@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-mention",
+  "name": "@udecode/plate-mention",
   "version": "1.0.0-next.55",
-  "description": "Slate plugins mention",
+  "description": "Plate plugin mention",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/mention#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/mention#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -32,8 +32,8 @@
     "slate": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.55",
-    "@udecode/slate-plugins-core": "1.0.0-next.55"
+    "@udecode/plate-common": "1.0.0-next.55",
+    "@udecode/plate-core": "1.0.0-next.55"
   },
   "publishConfig": {
     "access": "public"

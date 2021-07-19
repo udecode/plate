@@ -1,6 +1,6 @@
 ---
-"@udecode/slate-plugins-ast-serializer": minor
-"@udecode/slate-plugins": minor
+"@udecode/plate-ast-serializer": minor
+"@udecode/plate": minor
 ---
 
 Add ast decode+fix for paste from slate ast format

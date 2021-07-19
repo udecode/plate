@@ -1,6 +1,6 @@
-# slate-plugins-csv-serializer
+# plate-csv-serializer
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

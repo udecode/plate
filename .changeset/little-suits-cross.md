@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-list": patch
+"@udecode/plate-list": patch
 ---
 
 fix: list range deletion

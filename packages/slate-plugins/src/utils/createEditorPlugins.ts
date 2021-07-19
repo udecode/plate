@@ -2,25 +2,25 @@
 import {
   createHistoryPlugin,
   createReactPlugin,
-  SlatePlugin,
-  SlatePluginComponent,
-  SlatePluginOptions,
+  PlatePlugin,
+  PlatePluginComponent,
+  PlatePluginOptions,
   SPEditor,
   TEditor,
-  withSlatePlugins,
-} from '@udecode/slate-plugins-core';
+  withPlate,
+} from '@udecode/plate-core';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
-import { createSlatePluginsComponents } from './createSlatePluginsComponents';
+import { createPlateComponents } from './createPlateComponents';
 import {
-  createSlatePluginsOptions,
-  DefaultSlatePluginKey,
-} from './createSlatePluginsOptions';
+  createPlateOptions,
+  DefaultPlatePluginKey,
+} from './createPlateOptions';
 
 /**
  * Quick helper to create an editor with plugins.
  * - createEditor
- * - withSlatePlugins
+ * - withPlate
  * - createReactPlugin
  * - createHistoryPlugin
  * - options
@@ -36,15 +36,15 @@ export const createEditorPlugins = <
   components,
 }: {
   editor?: TEditor;
-  plugins?: SlatePlugin<E>[];
+  plugins?: PlatePlugin<E>[];
   options?: Partial<
-    Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
+    Record<DefaultPlatePluginKey | T, Partial<PlatePluginOptions>>
   >;
-  components?: Partial<Record<DefaultSlatePluginKey | T, SlatePluginComponent>>;
+  components?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>;
 } = {}) => {
-  return withSlatePlugins<E>({
+  return withPlate<E>({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
-    options: createSlatePluginsOptions(options),
-    components: createSlatePluginsComponents(components),
+    options: createPlateOptions(options),
+    components: createPlateComponents(components),
   })(editor);
 };

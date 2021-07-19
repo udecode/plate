@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": major
+"@udecode/plate-core": major
 ---
 
 changes:
@@ -10,14 +10,14 @@ changes:
 - removed:
   - `useEditorId` in favor of `useEditorRef().id`
   - `useEditorOptions` in favor of `useEditorRef().options`
-  - `useSlatePluginOptions` in favor of `getSlatePluginOptions(useEditorRef(), pluginKey)`
-  - `useSlatePluginType` in favor of `getSlatePluginType(useEditorRef(), pluginKey)`
+  - `usePlatePluginOptions` in favor of `getPlatePluginOptions(useEditorRef(), pluginKey)`
+  - `usePlatePluginType` in favor of `getPlatePluginType(useEditorRef(), pluginKey)`
   - `pipeOnDOMBeforeInput` in favor of `pipeHandler`
   - `pipeOnKeyDown` in favor of `pipeHandler`
 - types:
   - renamed:
-    - `SlatePluginsState` to `SlatePluginsStates`
-    - `State` to `SlatePluginsState`
+    - `PlateState` to `PlateStates`
+    - `State` to `PlateState`
   - removed:
     - `OnDOMBeforeInput` in favor of `DOMHandler<'onDOMBeforeInput'>`
     - `OnKeyDown` in favor of `KeyboardHandler`

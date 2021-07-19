@@ -1,7 +1,7 @@
 import { HTMLProps } from 'react';
 import { TippyProps } from '@tippyjs/react';
-import { AnyObject } from '@udecode/slate-plugins-core';
-import { StyledProps } from '@udecode/slate-plugins-styled-components';
+import { AnyObject } from '@udecode/plate-core';
+import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface ToolbarButtonProps

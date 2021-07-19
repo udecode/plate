@@ -67,11 +67,11 @@ import {
   createNodeIdPlugin,
   createNormalizeTypesPlugin,
   createParagraphPlugin,
+  createPlateComponents,
+  createPlateOptions,
   createReactPlugin,
   createResetNodePlugin,
   createSelectOnBackspacePlugin,
-  createSlatePluginsComponents,
-  createSlatePluginsOptions,
   createSoftBreakPlugin,
   createStrikethroughPlugin,
   createSubscriptPlugin,
@@ -112,9 +112,9 @@ import {
   ELEMENT_UL,
   getNodeDeserializer,
   getParent,
+  getPlatePluginOptions,
+  getPlatePluginType,
   getRenderLeaf,
-  getSlatePluginOptions,
-  getSlatePluginType,
   HeadingToolbar,
   insertEmptyCodeBlock,
   insertTable,
@@ -136,8 +136,8 @@ import {
   MARK_UNDERLINE,
   MentionElement,
   MentionSelect,
+  Plate,
   serializeHTMLFromNodes,
-  SlatePlugins,
   StyledLeaf,
   toggleList,
   ToolbarAlign,
@@ -155,20 +155,20 @@ import {
   useEventEditorId,
   useFindReplacePlugin,
   useMentionPlugin,
-  useSlatePlugins,
-  useSlatePluginsActions,
+  usePlate,
+  usePlateActions,
   useStoreEditorEnabled,
   useStoreEditorRef,
   useStoreEditorSelection,
   useStoreEditorState,
   withProps,
   withStyledProps,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-} from '@udecode/slate-plugins-excalidraw';
+} from '@udecode/plate-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
@@ -249,7 +249,7 @@ const editableProps = {
   },
 };
 
-const components = createSlatePluginsComponents({
+const components = createPlateComponents({
   [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
     styles: {
       root: [
@@ -264,7 +264,7 @@ const components = createSlatePluginsComponents({
   }),
 });
 
-const options = createSlatePluginsOptions();
+const options = createPlateOptions();
 
 const pluginsCore = [createReactPlugin(), createHistoryPlugin()];
 
@@ -361,14 +361,14 @@ const ReactLiveScope = {
   LooksTwo,
   initialValuePlayground,
   optionsMentionPlugin,
-  useSlatePluginsActions,
+  usePlateActions,
   useStoreEditorEnabled,
   renderMentionLabel,
   useComboboxOnChange,
   CodeBlockElement,
   Slate,
   Editable,
-  createSlatePluginsOptions,
+  createPlateOptions,
   IFrame,
   useCallback,
   initialValueCombobox,
@@ -386,7 +386,7 @@ const ReactLiveScope = {
   EDITABLE_VOID,
   EditableVoidElement,
   initialValueIframe,
-  useSlatePlugins,
+  usePlate,
   useStoreEditorRef,
   HighlightHTML,
   BallonToolbarMarks,
@@ -427,7 +427,7 @@ const ReactLiveScope = {
   createReactPlugin,
   createResetNodePlugin,
   createSelectOnBackspacePlugin,
-  createSlatePluginsComponents,
+  createPlateComponents,
   createSoftBreakPlugin,
   createStrikethroughPlugin,
   createSubscriptPlugin,
@@ -469,7 +469,7 @@ const ReactLiveScope = {
   Image,
   BalloonToolbar,
   ToolbarMark,
-  getSlatePluginType,
+  getPlatePluginType,
   initialValueAutoformat,
   initialValueBasic,
   initialValueBasicElements,
@@ -517,7 +517,7 @@ const ReactLiveScope = {
   pluginsImage,
   Search,
   serializeHTMLFromNodes,
-  SlatePlugins,
+  Plate,
   ToolbarButtonsAlign,
   ToolbarButtonsBasicElements,
   ToolbarButtonsBasicMarks,
@@ -547,7 +547,7 @@ const ReactLiveScope = {
   Editor,
   ToolbarButton,
   Transforms,
-  getSlatePluginOptions,
+  getPlatePluginOptions,
   getNodeDeserializer,
   createFontColorPlugin,
   createFontBackgroundColorPlugin,

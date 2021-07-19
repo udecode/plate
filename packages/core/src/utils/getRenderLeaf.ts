@@ -1,10 +1,10 @@
-import { RenderLeaf } from '../types/SlatePlugin/RenderLeaf';
+import { RenderLeaf } from '../types/PlatePlugin/RenderLeaf';
 import { getEditableRenderLeaf } from './getEditableRenderLeaf';
-import { getSlatePluginOptions } from './getSlatePluginOptions';
+import { getPlatePluginOptions } from './getPlatePluginOptions';
 
 /**
  * Get `renderLeaf` by plugin key.
  * @see {@link getEditableRenderLeaf}
  */
 export const getRenderLeaf = (pluginKey: string): RenderLeaf => (editor) =>
-  getEditableRenderLeaf(getSlatePluginOptions(editor, pluginKey));
+  getEditableRenderLeaf(getPlatePluginOptions(editor, pluginKey));

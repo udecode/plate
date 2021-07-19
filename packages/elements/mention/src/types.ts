@@ -1,9 +1,9 @@
 import {
   AnyObject,
-  SlatePluginKey,
+  PlatePluginKey,
   SPEditor,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Range } from 'slate';
 
 export interface MentionNodeData extends AnyObject {
@@ -13,7 +13,7 @@ export interface MentionNodeData extends AnyObject {
 export type MentionNode = TElement<MentionNodeData>;
 
 // useMention options
-export interface MentionPluginOptions extends SlatePluginKey {
+export interface MentionPluginOptions extends PlatePluginKey {
   mentionables?: MentionNodeData[];
 
   // Character triggering the mention select

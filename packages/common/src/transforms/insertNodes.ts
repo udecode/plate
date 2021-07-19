@@ -1,4 +1,4 @@
-import { TEditor, TNode as TTNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode as TTNode } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { InsertNodesOptions } from '../types/Transforms.types';
 

@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { useSlatePluginsStore } from '../slate-plugins.store';
-import { getSlatePluginsState } from './getSlatePluginsState';
+import { usePlateStore } from '../plate.store';
+import { getPlateState } from './getPlateState';
 
-export const useStoreSlatePlugins = (id?: string | null) =>
-  useSlatePluginsStore(
-    useCallback((state) => getSlatePluginsState(state, id)?.plugins, [id])
+export const useStorePlate = (id?: string | null) =>
+  usePlateStore(
+    useCallback((state) => getPlateState(state, id)?.plugins, [id])
   );

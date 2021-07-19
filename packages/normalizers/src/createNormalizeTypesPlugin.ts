@@ -3,13 +3,13 @@ import {
   getNode,
   insertNodes,
   setNodes,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginWithOverrides,
+  getPlatePluginWithOverrides,
   isElement,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 
 interface Rule {
@@ -96,6 +96,6 @@ export const withNormalizeTypes = ({
 /**
  * @see {@link withNormalizeTypes}
  */
-export const createNormalizeTypesPlugin = getSlatePluginWithOverrides(
+export const createNormalizeTypesPlugin = getPlatePluginWithOverrides(
   withNormalizeTypes
 );

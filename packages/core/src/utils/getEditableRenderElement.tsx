@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
-import { RenderNodeOptions } from '../types/SlatePluginOptions/RenderNodeOptions';
-import { SlatePluginComponent } from '../types/SlatePluginOptions/SlatePluginsOptions';
+import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
+import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
 import { TRenderElementProps } from '../types/TRenderElementProps';
 import { getSlateClass } from './getSlateClass';
 
@@ -19,7 +19,7 @@ export const getEditableRenderElement = (
   for (const option of _options) {
     const {
       type,
-      component: Element = DefaultElement as SlatePluginComponent,
+      component: Element = DefaultElement as PlatePluginComponent,
       getNodeProps,
     } = option;
 

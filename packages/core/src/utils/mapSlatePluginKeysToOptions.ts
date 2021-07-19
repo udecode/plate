@@ -1,15 +1,15 @@
 import { castArray } from 'lodash';
 import { SPEditor } from '../types/SPEditor';
-import { getSlatePluginOptions } from './getSlatePluginOptions';
+import { getPlatePluginOptions } from './getPlatePluginOptions';
 
 /**
  * Map plugins keys to SP options
  */
-export const mapSlatePluginKeysToOptions = (
+export const mapPlatePluginKeysToOptions = (
   editor: SPEditor,
   pluginKey: string | string[]
 ) => {
   const pluginKeys = castArray<string>(pluginKey);
 
-  return pluginKeys.map((key) => getSlatePluginOptions(editor, key));
+  return pluginKeys.map((key) => getPlatePluginOptions(editor, key));
 };

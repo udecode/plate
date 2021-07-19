@@ -1,8 +1,8 @@
 import {
   createImagePlugin,
   createLinkPlugin,
-} from '../../../../../slate-plugins/src/index';
-import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+} from '../../../../../plate/src/index';
+import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

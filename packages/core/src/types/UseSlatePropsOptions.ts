@@ -1,11 +1,11 @@
 import { TNode } from './TNode';
-import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
+import { UsePlateEffectsOptions } from './UsePlateEffectsOptions';
 
 /**
  * `useSlateProps` options
  */
 export interface UseSlatePropsOptions
-  extends Pick<UseSlatePluginsEffectsOptions, 'id'> {
+  extends Pick<UsePlateEffectsOptions, 'id'> {
   /**
    * Controlled callback called when the editor state changes.
    */

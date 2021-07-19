@@ -4,5 +4,5 @@ import { getEditorOptions } from './getEditorOptions';
 /**
  * Get SP options by plugin key.
  */
-export const getSlatePluginOptions = (editor?: SPEditor, pluginKey = '') =>
+export const getPlatePluginOptions = (editor?: SPEditor, pluginKey = '') =>
   getEditorOptions(editor)[pluginKey] ?? {};

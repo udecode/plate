@@ -3,7 +3,7 @@ slug: /multiple-editors
 title: Multiple Editors
 ---
 
-Slate Plugins support multiple editor instances by using the [id](SlatePlugins#id) prop.
+Plate support multiple editor instances by using the [id](Plate#id) prop.
 
 ### Example
 
@@ -17,7 +17,7 @@ Let's render 3 editors with common heading and balloon toolbars.
     plugins,
   }) => (
     <div className="flex-1 border border-gray-200 rounded-md m-2 p-4">
-      <SlatePlugins
+      <Plate
         id={id}
         plugins={plugins}
         components={components}
@@ -62,9 +62,9 @@ Let's render 3 editors with common heading and balloon toolbars.
 
 The toolbar actions require an `editor` with a defined `selection`, so it needs to be focused.
 
-[SlatePlugins](SlatePlugins) stores the [id](SlatePlugins#id) of the last focused editor in [eventEditorStore](store#event-editor-store),
-which can then be used by the toolbar actions (or any component outside [SlatePlugins](SlatePlugins))
-to get the [editor](store#editor) from [slatePluginsStore](store#slate-plugins-store).
+[Plate](Plate) stores the [id](Plate#id) of the last focused editor in [eventEditorStore](store#event-editor-store),
+which can then be used by the toolbar actions (or any component outside [Plate](Plate))
+to get the [editor](store#editor) from [plateStore](store#plate-store).
 
 
 Usage:

@@ -1,12 +1,9 @@
-import { getNodeDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getNodeDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { ELEMENT_IMAGE } from './defaults';
 
 export const getImageDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, ELEMENT_IMAGE);
+  const options = getPlatePluginOptions(editor, ELEMENT_IMAGE);
 
   return {
     element: getNodeDeserializer({

@@ -1,6 +1,6 @@
 ---
-"@udecode/slate-plugins-common": major
-"@udecode/slate-plugins-html-serializer": patch
+"@udecode/plate-common": major
+"@udecode/plate-html-serializer": patch
 ---
 
 changes:

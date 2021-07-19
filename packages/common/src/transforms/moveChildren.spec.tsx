@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor, Path } from 'slate';
 import { findNode } from '../queries/findNode';
 import { moveChildren } from './moveChildren';

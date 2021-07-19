@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin } from '@udecode/plate-core';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = '<p>first</p><p>second</p>';
 // eslint-disable-next-line react-hooks/rules-of-hooks
-const input1: SlatePlugin[] = [createParagraphPlugin()];
+const input1: PlatePlugin[] = [createParagraphPlugin()];
 const input2 = getHtmlDocument(html).body;
 
 const output = (

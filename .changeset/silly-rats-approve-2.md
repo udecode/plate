@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-styled-components": minor
+"@udecode/plate-styled-components": minor
 ---
 
 features:

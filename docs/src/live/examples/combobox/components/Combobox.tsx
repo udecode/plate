@@ -4,7 +4,7 @@ import {
   getPreventDefaultHandler,
   PortalBody,
   useEditorState,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import {
   ComboboxItem,
   ComboboxRoot,

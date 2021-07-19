@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { createBoldPlugin } from './bold/createBoldPlugin';
 import { createCodePlugin } from './code/createCodePlugin';
 import { createItalicPlugin } from './italic/createItalicPlugin';
@@ -17,7 +17,7 @@ import { createUnderlinePlugin } from './underline/createUnderlinePlugin';
  * - Superscript
  * - Underline
  */
-export const createBasicMarkPlugins = (): SlatePlugin[] => [
+export const createBasicMarkPlugins = (): PlatePlugin[] => [
   createBoldPlugin(),
   createCodePlugin(),
   createItalicPlugin(),

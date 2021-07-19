@@ -3,7 +3,7 @@ import {
   ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
-} from '@udecode/slate-plugins-alignment';
+} from '@udecode/plate-alignment';
 import {
   DEFAULTS_BOLD,
   DEFAULTS_CODE,
@@ -19,18 +19,18 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-} from '@udecode/slate-plugins-basic-marks';
+} from '@udecode/plate-basic-marks';
 import {
   DEFAULTS_BLOCKQUOTE,
   ELEMENT_BLOCKQUOTE,
-} from '@udecode/slate-plugins-block-quote';
+} from '@udecode/plate-block-quote';
 import {
   DEFAULTS_CODE_BLOCK,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-} from '@udecode/slate-plugins-code-block';
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
-import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
+} from '@udecode/plate-code-block';
+import { PlatePluginOptions } from '@udecode/plate-core';
+import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
   DEFAULTS_H1,
   DEFAULTS_H2,
@@ -41,27 +41,24 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '@udecode/slate-plugins-heading';
-import {
-  DEFAULTS_HIGHLIGHT,
-  MARK_HIGHLIGHT,
-} from '@udecode/slate-plugins-highlight';
-import { ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
-import { MARK_KBD } from '@udecode/slate-plugins-kbd';
-import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
+} from '@udecode/plate-heading';
+import { DEFAULTS_HIGHLIGHT, MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { ELEMENT_IMAGE } from '@udecode/plate-image';
+import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   DEFAULTS_TODO_LIST,
   ELEMENT_LI,
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-} from '@udecode/slate-plugins-list';
-import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
-import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
+} from '@udecode/plate-list';
+import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed';
+import { ELEMENT_MENTION } from '@udecode/plate-mention';
 import {
   DEFAULTS_PARAGRAPH,
   ELEMENT_PARAGRAPH,
-} from '@udecode/slate-plugins-paragraph';
+} from '@udecode/plate-paragraph';
 import {
   DEFAULTS_TD,
   DEFAULTS_TH,
@@ -69,9 +66,9 @@ import {
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '@udecode/slate-plugins-table';
+} from '@udecode/plate-table';
 
-export type DefaultSlatePluginKey =
+export type DefaultPlatePluginKey =
   | typeof ELEMENT_ALIGN_CENTER
   | typeof ELEMENT_ALIGN_JUSTIFY
   | typeof ELEMENT_ALIGN_LEFT
@@ -110,15 +107,15 @@ export type DefaultSlatePluginKey =
   | typeof MARK_UNDERLINE;
 
 /**
- * Get slate plugins options.
+ * Get plate options.
  * @param overrides merge into the default options
  */
-export const createSlatePluginsOptions = <T extends string = string>(
+export const createPlateOptions = <T extends string = string>(
   overrides?: Partial<
-    Record<DefaultSlatePluginKey | T, Partial<SlatePluginOptions>>
+    Record<DefaultPlatePluginKey | T, Partial<PlatePluginOptions>>
   >
 ) => {
-  const options: Record<DefaultSlatePluginKey, Partial<SlatePluginOptions>> = {
+  const options: Record<DefaultPlatePluginKey, Partial<PlatePluginOptions>> = {
     [ELEMENT_ALIGN_CENTER]: {},
     [ELEMENT_ALIGN_JUSTIFY]: {},
     [ELEMENT_ALIGN_LEFT]: {},
@@ -169,5 +166,5 @@ export const createSlatePluginsOptions = <T extends string = string>(
     }
   });
 
-  return options as Record<DefaultSlatePluginKey | T, SlatePluginOptions>;
+  return options as Record<DefaultPlatePluginKey | T, PlatePluginOptions>;
 };

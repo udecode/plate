@@ -3,15 +3,15 @@ import {
   isCollapsed,
   isPointAtWordEnd,
   isWordAfterTrigger,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
+  getPlatePluginTypes,
   getRenderElement,
-  getSlatePluginTypes,
   KeyboardHandler,
   OnChange,
-  SlatePlugin,
+  PlatePlugin,
   SPEditor,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Range, Transforms } from 'slate';
 import { matchesTriggerAndPattern } from './queries/matchesTriggerAndPattern';
 import { insertMention } from './transforms/insertMention';
@@ -40,7 +40,7 @@ export const useMentionPlugin = ({
   insertSpaceAfterMention,
   pluginKey = ELEMENT_MENTION,
 }: MentionPluginOptions = {}): {
-  plugin: SlatePlugin;
+  plugin: PlatePlugin;
   getMentionSelectProps: () => GetMentionSelectProps;
   searchValue: string;
 } => {
@@ -137,8 +137,8 @@ export const useMentionPlugin = ({
         renderElement: getRenderElement(pluginKey),
         onKeyDown: onKeyDownMention,
         deserialize: getMentionDeserialize(pluginKey),
-        inlineTypes: getSlatePluginTypes(pluginKey),
-        voidTypes: getSlatePluginTypes(pluginKey),
+        inlineTypes: getPlatePluginTypes(pluginKey),
+        voidTypes: getPlatePluginTypes(pluginKey),
       }),
       [onChangeMention, onKeyDownMention, pluginKey]
     ),

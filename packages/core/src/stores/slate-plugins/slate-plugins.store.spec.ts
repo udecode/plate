@@ -1,5 +1,5 @@
-import { slatePluginsStore } from './slate-plugins.store';
+import { plateStore } from './plate.store';
 
 it('should be', () => {
-  expect(slatePluginsStore.getState()).toBeDefined();
+  expect(plateStore.getState()).toBeDefined();
 });

@@ -1,6 +1,6 @@
-# slate-plugins-trailing-block
+# plate-trailing-block
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

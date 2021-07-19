@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-block-quote-ui",
+  "name": "@udecode/plate-block-quote-ui",
   "version": "1.0.0-next.55",
-  "description": "Slate plugins block-quote-ui",
+  "description": "Plate plugin block-quote-ui",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/block-quote-ui#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/block-quote-ui#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,10 +33,10 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-block-quote": "1.0.0-next.55",
-    "@udecode/slate-plugins-common": "1.0.0-next.55",
-    "@udecode/slate-plugins-core": "1.0.0-next.55",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.55"
+    "@udecode/plate-block-quote": "1.0.0-next.55",
+    "@udecode/plate-common": "1.0.0-next.55",
+    "@udecode/plate-core": "1.0.0-next.55",
+    "@udecode/plate-styled-components": "1.0.0-next.55"
   },
   "publishConfig": {
     "access": "public"

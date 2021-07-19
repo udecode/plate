@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
-import { useSlatePluginsStore } from '../slate-plugins.store';
-import { getSlatePluginsState } from './getSlatePluginsState';
+import { usePlateStore } from '../plate.store';
+import { getPlateState } from './getPlateState';
 
 /**
  * Get the editor selection which is updated on editor change.
  */
 export const useStoreEditorSelection = (id?: string | null) =>
-  useSlatePluginsStore(
-    useCallback((state) => getSlatePluginsState(state, id)?.selection, [id])
+  usePlateStore(
+    useCallback((state) => getPlateState(state, id)?.selection, [id])
   );

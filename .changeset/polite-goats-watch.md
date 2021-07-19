@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-mention": patch
+"@udecode/plate-mention": patch
 ---
 
 add `setValueIndex` to `useMentionPlugin().getMentionSelectProps()`

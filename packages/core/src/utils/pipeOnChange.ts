@@ -1,10 +1,10 @@
-import { OnChange } from '../types/SlatePlugin/OnChange';
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { OnChange } from '../types/PlatePlugin/OnChange';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 
 export const pipeOnChange = (
   editor: SPEditor,
-  plugins: SlatePlugin[] = []
+  plugins: PlatePlugin[] = []
 ): ReturnType<OnChange> => {
   const onChanges = plugins.flatMap(
     (plugin) => plugin.onChange?.(editor) ?? []

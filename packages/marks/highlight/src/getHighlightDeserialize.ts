@@ -1,12 +1,9 @@
-import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getLeafDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from './defaults';
 
 export const getHighlightDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, MARK_HIGHLIGHT);
+  const options = getPlatePluginOptions(editor, MARK_HIGHLIGHT);
 
   return {
     leaf: getLeafDeserializer({

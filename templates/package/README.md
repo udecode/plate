@@ -1,6 +1,6 @@
-# slate-plugins-template
+# plate-template
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

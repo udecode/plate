@@ -1,11 +1,11 @@
-import { isCollapsed } from '@udecode/slate-plugins-common';
+import { isCollapsed } from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   isElement,
   SPEditor,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Editor, Node, Point, Transforms } from 'slate';
 import { ELEMENT_TD } from './defaults';
 
@@ -13,8 +13,8 @@ export const withTable = (): WithOverride<SPEditor> => (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&
-      (node.type === getSlatePluginType(editor, ELEMENT_TD) ||
-        node.type === getSlatePluginType(editor, ELEMENT_TD))
+      (node.type === getPlatePluginType(editor, ELEMENT_TD) ||
+        node.type === getPlatePluginType(editor, ELEMENT_TD))
     );
   };
 

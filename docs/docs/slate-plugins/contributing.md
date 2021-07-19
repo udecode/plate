@@ -3,7 +3,7 @@ slug: /contributing
 title: Contributing
 ---
 
-Thanks for your interest in improving `slate-plugins`! We are a
+Thanks for your interest in improving `plate`! We are a
 community-driven project and welcome contributions of all kinds: from
 discussion to documentation to bugfixes to feature improvements.
 
@@ -15,7 +15,7 @@ everyone's precious time.
 No software is bug-free. So, if you got an issue, follow these steps:
 
 - Search the
-  [issue list](https://github.com/udecode/slate-plugins/issues?utf8=%E2%9C%93&q=)
+  [issue list](https://github.com/udecode/plate/issues?utf8=%E2%9C%93&q=)
   for current and old issues.
   - If you find an existing issue, please UPVOTE the issue by adding a
     "thumbs-up reaction". We use this to help prioritize issues!
@@ -31,7 +31,7 @@ No software is bug-free. So, if you got an issue, follow these steps:
 
 The best way to help figure out an issue you are having is to produce a
 minimal reproduction using
-[our CodeSandbox](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
+[our CodeSandbox](https://codesandbox.io/s/plate-playground-v1-2mh1c)
 
 
 ## Development Guide
@@ -43,8 +43,8 @@ package manager. See
 [installation guide](https://yarnpkg.com/en/docs/install).
 
 1. `cd ~` (optional)
-2. `git clone https://github.com/udecode/slate-plugins.git` _bonus_: use your own fork for this step
-3. `cd slate-plugins`
+2. `git clone https://github.com/udecode/plate.git` _bonus_: use your own fork for this step
+3. `cd plate`
 4. `yarn install`
 5. `yarn build`
 
@@ -99,7 +99,7 @@ When using `slate-hyperscript`, include this at the top of the file:
 ```ts
 /** @jsx jsx */
 
-import { jsx } from "@udecode/slate-plugins-test-utils";
+import { jsx } from "@udecode/plate-test-utils";
 
 jsx;
 ```
@@ -150,7 +150,7 @@ is few of those ways:
 
 Before you submit a new PR, make sure you run `yarn test`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
+[join slate's Slack and ask in the `plate` channel](https://slate-js.slack.com/messages/plate).
 
 ### Reviewing PRs
 
@@ -158,7 +158,7 @@ a PR if tests are failing. If you need any help, the best way is to
 include a short description of what you contributed and, if it is a code
 change, instructions for how to manually test out the change. This is
 informally enforced by our
-[PR template](https://github.com/udecode/slate-plugins/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
+[PR template](https://github.com/udecode/plate/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 If your PR is reviewed as only needing trivial changes (e.g. small typos
 etc), and you have commit access then you can merge the PR after making
 those changes.
@@ -179,13 +179,13 @@ great place to start. Here's how you can help:
 
 ### Responding to questions
 
-[Q&A](https://github.com/udecode/slate-plugins/discussions/categories/q-a) is a
+[Q&A](https://github.com/udecode/plate/discussions/categories/q-a) is a
 great place to help. If you can answer a question, it will help the
 asker as well as anyone who has a similar question. Also in the future
 if anyone has that same question they can easily find it by searching.
 If an issue needs reproduction, you may be able to guide the reporter
 toward one, or even reproduce it yourself using
-[this technique](https://github.com/udecode/slate-plugins/blob/main/CONTRIBUTING.md#reproductions).
+[this technique](https://github.com/udecode/plate/blob/main/CONTRIBUTING.md#reproductions).
 
 ### Triaging issues
 
@@ -207,7 +207,7 @@ labels to filter issues down so we can see all of the issues for a
 particular area, and keep the total number of open issues under control.
 
 For example, here is the list of
-[open, untyped issues](https://github.com/udecode/slate-plugins/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
+[open, untyped issues](https://github.com/udecode/plate/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20-label%3A%22bug%22%20-label%3A%22discussion%22%20-label%3A%22feature%22%20-label%3A%22maintenance%22%20-label%3A%22question%20%2F%20support%22%20-label%3A%22documentation%22%20-label%3A%22greenkeeper%22).
 For more info see
 [searching issues](https://help.github.com/articles/searching-issues/)
 in the Github docs.

@@ -1,14 +1,8 @@
 import * as React from 'react';
-import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import {
-  useEventEditorId,
-  useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import { ELEMENT_UL, toggleList } from '@udecode/slate-plugins-list';
-import {
-  ToolbarButtonProps,
-  ToolbarElement,
-} from '@udecode/slate-plugins-toolbar';
+import { getPreventDefaultHandler } from '@udecode/plate-common';
+import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
+import { ELEMENT_UL, toggleList } from '@udecode/plate-list';
+import { ToolbarButtonProps, ToolbarElement } from '@udecode/plate-toolbar';
 
 export const ToolbarList = ({
   type = ELEMENT_UL,

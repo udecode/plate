@@ -1,8 +1,6 @@
 import { useCallback } from 'react';
-import { useSlatePluginsStore } from '../slate-plugins.store';
-import { getSlatePluginsState } from './getSlatePluginsState';
+import { usePlateStore } from '../plate.store';
+import { getPlateState } from './getPlateState';
 
 export const useStoreEditorValue = (id?: string | null) =>
-  useSlatePluginsStore(
-    useCallback((state) => getSlatePluginsState(state, id)?.value, [id])
-  );
+  usePlateStore(useCallback((state) => getPlateState(state, id)?.value, [id]));

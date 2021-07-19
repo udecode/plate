@@ -1,12 +1,12 @@
 ---
-slug: /components/slate-plugins
-title: SlatePlugins
+slug: /components/plate
+title: Plate
 ---
 
 ```ts live
 () => {
-  const id = 'slate-plugins';
-  const { setEnabled, resetEditor } = useSlatePluginsActions(id);
+  const id = 'plate';
+  const { setEnabled, resetEditor } = usePlateActions(id);
   const enabled = useStoreEditorEnabled(id);
 
   return (
@@ -30,7 +30,7 @@ title: SlatePlugins
         Reset editor (history)
       </button>
       <p />
-      <SlatePlugins
+      <Plate
         id={id}
         editableProps={editableProps}
         initialValue={initialValuePlainText}

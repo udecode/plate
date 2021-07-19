@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { getResetNodeOnKeyDown } from './getResetNodeOnKeyDown';
 import { ResetBlockTypePluginOptions } from './types';
 
@@ -7,6 +7,6 @@ import { ResetBlockTypePluginOptions } from './types';
  */
 export const createResetNodePlugin = (
   options: ResetBlockTypePluginOptions
-): SlatePlugin => ({
+): PlatePlugin => ({
   onKeyDown: getResetNodeOnKeyDown(options),
 });

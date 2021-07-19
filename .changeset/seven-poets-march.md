@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-excalidraw": patch
+"@udecode/plate-excalidraw": patch
 ---
 
 fix: disable autoFocus

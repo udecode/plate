@@ -1,4 +1,4 @@
-import { MentionNodeData } from '@udecode/slate-plugins';
+import { MentionNodeData } from '@udecode/plate';
 import { MENTIONABLES } from './mentionables';
 
 export const renderMentionLabel = (mentionable: MentionNodeData) => {

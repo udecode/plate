@@ -1,9 +1,9 @@
-import { SlatePluginOptions } from './SlatePluginsOptions';
+import { PlatePluginOptions } from './PlateOptions';
 
 /**
  * Plugin options to get `onKeyDown` for marks.
  */
 export type OnKeyDownMarkOptions = Pick<
-  SlatePluginOptions,
+  PlatePluginOptions,
   'type' | 'hotkey' | 'clear'
 >;

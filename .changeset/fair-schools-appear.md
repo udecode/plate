@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": major
+"@udecode/plate-core": major
 ---
 
 Before, the handlers had to return `false` to prevent the next handlers to be called.

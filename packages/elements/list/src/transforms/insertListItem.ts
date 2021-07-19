@@ -4,12 +4,8 @@ import {
   insertNodes,
   isBlockTextEmptyAfterSelection,
   wrapNodes,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 
@@ -18,8 +14,8 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
  * TODO: test
  */
 export const insertListItem = (editor: SPEditor) => {
-  const liType = getSlatePluginType(editor, ELEMENT_LI);
-  const licType = getSlatePluginType(editor, ELEMENT_LIC);
+  const liType = getPlatePluginType(editor, ELEMENT_LI);
+  const licType = getPlatePluginType(editor, ELEMENT_LIC);
 
   if (editor.selection) {
     const licEntry = getAbove(editor, { match: { type: licType } });

@@ -1,8 +1,8 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { SPEditor } from '../../../types/SPEditor';
-import { useSlatePluginsStore } from '../slate-plugins.store';
-import { getSlatePluginsState } from './getSlatePluginsState';
+import { usePlateStore } from '../plate.store';
+import { getPlateState } from './getPlateState';
 import { useStoreEditorRef } from './useStoreEditorRef';
 
 /**
@@ -13,9 +13,7 @@ export const useStoreEditorState = <
 >(
   id?: string | null
 ) => {
-  useSlatePluginsStore(
-    (state) => getSlatePluginsState<T>(state as any, id)?.keyChange
-  );
+  usePlateStore((state) => getPlateState<T>(state as any, id)?.keyChange);
 
   return useStoreEditorRef(id);
 };

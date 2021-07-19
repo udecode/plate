@@ -3,7 +3,7 @@ import {
   ELEMENT_ALIGN_JUSTIFY,
   ELEMENT_ALIGN_LEFT,
   ELEMENT_ALIGN_RIGHT,
-} from '@udecode/slate-plugins-alignment';
+} from '@udecode/plate-alignment';
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -12,20 +12,20 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-} from '@udecode/slate-plugins-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/slate-plugins-block-quote';
-import { BlockquoteElement } from '@udecode/slate-plugins-block-quote-ui';
+} from '@udecode/plate-basic-marks';
+import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquoteElement } from '@udecode/plate-block-quote-ui';
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-} from '@udecode/slate-plugins-code-block';
+} from '@udecode/plate-code-block';
 import {
   CodeBlockElement,
   CodeLineElement,
-} from '@udecode/slate-plugins-code-block-ui';
-import { withProps } from '@udecode/slate-plugins-common';
-import { SlatePluginComponent } from '@udecode/slate-plugins-core';
-import { MARK_SEARCH_HIGHLIGHT } from '@udecode/slate-plugins-find-replace';
+} from '@udecode/plate-code-block-ui';
+import { withProps } from '@udecode/plate-common';
+import { PlatePluginComponent } from '@udecode/plate-core';
+import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -33,42 +33,39 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '@udecode/slate-plugins-heading';
-import { MARK_HIGHLIGHT } from '@udecode/slate-plugins-highlight';
-import { ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
-import { ImageElement } from '@udecode/slate-plugins-image-ui';
-import { MARK_KBD } from '@udecode/slate-plugins-kbd';
-import { ELEMENT_LINK } from '@udecode/slate-plugins-link';
-import { LinkElement } from '@udecode/slate-plugins-link-ui';
+} from '@udecode/plate-heading';
+import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { ELEMENT_IMAGE } from '@udecode/plate-image';
+import { ImageElement } from '@udecode/plate-image-ui';
+import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_LINK } from '@udecode/plate-link';
+import { LinkElement } from '@udecode/plate-link-ui';
 import {
   ELEMENT_LI,
   ELEMENT_OL,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
-} from '@udecode/slate-plugins-list';
-import { TodoListElement } from '@udecode/slate-plugins-list-ui';
-import { ELEMENT_MEDIA_EMBED } from '@udecode/slate-plugins-media-embed';
-import { MediaEmbedElement } from '@udecode/slate-plugins-media-embed-ui';
-import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
-import { MentionElement } from '@udecode/slate-plugins-mention-ui';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
-import {
-  StyledElement,
-  StyledLeaf,
-} from '@udecode/slate-plugins-styled-components';
+} from '@udecode/plate-list';
+import { TodoListElement } from '@udecode/plate-list-ui';
+import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed';
+import { MediaEmbedElement } from '@udecode/plate-media-embed-ui';
+import { ELEMENT_MENTION } from '@udecode/plate-mention';
+import { MentionElement } from '@udecode/plate-mention-ui';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '@udecode/slate-plugins-table';
-import { TableElement } from '@udecode/slate-plugins-table-ui';
+} from '@udecode/plate-table';
+import { TableElement } from '@udecode/plate-table-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { DefaultSlatePluginKey } from './createSlatePluginsOptions';
+import { DefaultPlatePluginKey } from './createPlateOptions';
 
-export const createSlatePluginsComponents = <T extends string = string>(
-  overrides?: Partial<Record<DefaultSlatePluginKey | T, SlatePluginComponent>>
+export const createPlateComponents = <T extends string = string>(
+  overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: withProps(StyledElement, {
@@ -294,5 +291,5 @@ export const createSlatePluginsComponents = <T extends string = string>(
     });
   }
 
-  return components as Record<DefaultSlatePluginKey | T, SlatePluginComponent>;
+  return components as Record<DefaultPlatePluginKey | T, PlatePluginComponent>;
 };

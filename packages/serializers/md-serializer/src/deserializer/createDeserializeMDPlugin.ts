@@ -1,8 +1,4 @@
-import {
-  isBlockAboveEmpty,
-  isUrl,
-  setNodes,
-} from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, isUrl, setNodes } from '@udecode/plate-common';
 import {
   getInlineTypes,
   getSlatePluginWithOverrides,
@@ -11,7 +7,7 @@ import {
   TDescendant,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeMD } from './utils/deserializeMD';

@@ -5,13 +5,13 @@ slug: /basic-plugins
 
 :::note
 
-The following undeclared variables and types are imported from `@udecode/slate-plugins`.
+The following undeclared variables and types are imported from `@udecode/plate`.
 
 :::
 
 This guide will use existing plugins. For creating new plugins, [see this section](./creating-plugins).
 
-If you don't provide any plugins to `SlatePlugins` as done in the previous section, `createReactPlugin()` and `createHistoryPlugin()` will be used as default.
+If you don't provide any plugins to `Plate` as done in the previous section, `createReactPlugin()` and `createHistoryPlugin()` will be used as default.
 
 ### Plugins
 
@@ -123,7 +123,7 @@ const initialValueBasicElements = [
 ```
 
 :::note
-The `type` property is needed on elements as `SlatePlugins` will map a React component to each type.
+The `type` property is needed on elements as `Plate` will map a React component to each type.
 :::
 
 ```tsx live
@@ -135,7 +135,7 @@ The `type` property is needed on elements as `SlatePlugins` will map a React com
 
   return (
     <>
-      <SlatePlugins
+      <Plate
         id="1"
         editableProps={editableProps}
         initialValue={initialValueBasic}
@@ -152,7 +152,7 @@ Everything actually works, but we didn't provide any `components` to render.
 The default element component is a `div` and the default leaf component is a `span`.
 
 :::info
-Slate plugins are bundled without any default component or options,
+Plate are bundled without any default component or options,
 meaning that you're in full control over markup and styling
 so you can plug-in your design system or the provided one.
 :::
@@ -162,8 +162,8 @@ so you can plug-in your design system or the provided one.
 Let's pass the `components` and `options` provided by the library.
 
 ```tsx
-const components = createSlatePluginsComponents();
-const options = createSlatePluginsOptions();
+const components = createPlateComponents();
+const options = createPlateOptions();
 ```
 
 ```tsx live
@@ -189,7 +189,7 @@ const options = createSlatePluginsOptions();
   ];
 
   return (
-    <SlatePlugins
+    <Plate
       id="2"
       editableProps={editableProps}
       initialValue={initialValueBasic}
@@ -203,5 +203,5 @@ const options = createSlatePluginsOptions();
 
 Voilà!
 
-`SlatePlugins` hides a lot of complexity but what if we want to have more control on its state?
+`Plate` hides a lot of complexity but what if we want to have more control on its state?
 See the [store section](store).

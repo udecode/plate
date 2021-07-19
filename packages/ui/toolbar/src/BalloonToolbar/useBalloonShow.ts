@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTimeoutFn } from 'react-use';
-import {
-  getSelectionText,
-  isSelectionExpanded,
-} from '@udecode/slate-plugins-common';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { getSelectionText, isSelectionExpanded } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-core';
 
 /**
  * Hide if not selecting.

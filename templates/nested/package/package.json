@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-ntemplate",
+  "name": "@udecode/plate-ntemplate",
   "version": "1.0.0-next.",
-  "description": "Slate plugins ntemplate",
+  "description": "Plate plugin ntemplate",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/ntemplate#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/ntemplate#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,8 +33,8 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.",
-    "@udecode/slate-plugins-core": "1.0.0-next."
+    "@udecode/plate-common": "1.0.0-next.",
+    "@udecode/plate-core": "1.0.0-next."
   },
   "publishConfig": {
     "access": "public"

@@ -4,4 +4,4 @@
 
 export * from './useEditorRef';
 export * from './useEditorState';
-export * from './useSlatePlugins/index';
+export * from './usePlate/index';

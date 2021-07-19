@@ -1,5 +1,5 @@
-import { unwrapNodes, wrapNodes } from '@udecode/slate-plugins-common';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { unwrapNodes, wrapNodes } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-core';
 import { KEYS_ALIGN } from '../defaults';
 
 export const upsertAlign = (

@@ -3,5 +3,5 @@
  */
 
 export * from './createEditorPlugins';
-export * from './createSlatePluginsComponents';
-export * from './createSlatePluginsOptions';
+export * from './createPlateComponents';
+export * from './createPlateOptions';

@@ -1,4 +1,4 @@
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from './getEmptyRowNode';
@@ -8,7 +8,7 @@ export const getEmptyTableNode = (
   { header }: TablePluginOptions
 ) => {
   return {
-    type: getSlatePluginType(editor, ELEMENT_TABLE),
+    type: getPlatePluginType(editor, ELEMENT_TABLE),
     children: [
       getEmptyRowNode(editor, { header, colCount: 2 }),
       getEmptyRowNode(editor, { header, colCount: 2 }),

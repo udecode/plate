@@ -4,11 +4,8 @@ import {
   getText,
   isCollapsed,
   someNode,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginWithOverrides,
-  WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginWithOverrides, WithOverride } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Editor, Range } from 'slate';
 import { autoformatBlock } from './transforms/autoformatBlock';
@@ -112,6 +109,6 @@ export const withAutoformat = ({
 /**
  * @see {@link withAutoformat}
  */
-export const createAutoformatPlugin = getSlatePluginWithOverrides(
+export const createAutoformatPlugin = getPlatePluginWithOverrides(
   withAutoformat
 );

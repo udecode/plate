@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 import { SPRenderElementProps } from '../types/SPRenderElementProps';
 
@@ -10,7 +10,7 @@ import { SPRenderElementProps } from '../types/SPRenderElementProps';
  */
 export const pipeRenderElement = (
   editor: SPEditor,
-  plugins: SlatePlugin[] = []
+  plugins: PlatePlugin[] = []
 ): EditableProps['renderElement'] => {
   const renderElements = plugins.flatMap(
     (plugin) => plugin.renderElement?.(editor) ?? []

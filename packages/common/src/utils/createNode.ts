@@ -1,4 +1,4 @@
-import { TElement } from '@udecode/slate-plugins-core';
+import { TElement } from '@udecode/plate-core';
 
 export const createNode = (type = 'p', text = ''): TElement => ({
   type,

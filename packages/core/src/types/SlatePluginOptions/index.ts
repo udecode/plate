@@ -7,4 +7,4 @@ export * from './GetNodeProps';
 export * from './OnKeyDownElementOptions';
 export * from './OnKeyDownMarkOptions';
 export * from './RenderNodeOptions';
-export * from './SlatePluginsOptions';
+export * from './PlateOptions';

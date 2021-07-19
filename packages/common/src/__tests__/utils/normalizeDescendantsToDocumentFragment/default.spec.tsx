@@ -1,7 +1,7 @@
 /** @jsx jsx */
-import { createEditorPlugins } from '@udecode/slate-plugins/src';
-import { createLinkPlugin } from '@udecode/slate-plugins-link';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { createEditorPlugins } from '@udecode/plate/src';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { jsx } from '@udecode/plate-test-utils';
 import { normalizeDescendantsToDocumentFragment } from '../../../utils';
 
 jsx;

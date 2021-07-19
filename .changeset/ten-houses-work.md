@@ -1,8 +1,8 @@
 ---
-"@udecode/slate-plugins-break": patch
-"@udecode/slate-plugins-common": patch
-"@udecode/slate-plugins-code-block": patch
-"@udecode/slate-plugins-trailing-block": patch
+"@udecode/plate-break": patch
+"@udecode/plate-common": patch
+"@udecode/plate-code-block": patch
+"@udecode/plate-trailing-block": patch
 ---
 
 fix: support paragraph custom type

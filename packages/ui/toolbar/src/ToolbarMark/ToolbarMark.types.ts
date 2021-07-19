@@ -1,6 +1,6 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions } from '@udecode/plate-core';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
 export interface ToolbarMarkProps
   extends ToolbarButtonProps,
-    Pick<SlatePluginOptions, 'type' | 'clear'> {}
+    Pick<PlatePluginOptions, 'type' | 'clear'> {}

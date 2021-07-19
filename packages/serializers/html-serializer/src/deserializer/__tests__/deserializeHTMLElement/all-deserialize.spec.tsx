@@ -2,8 +2,8 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { getSlateClass } from '@udecode/slate-plugins-core';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
+import { getSlateClass } from '@udecode/plate-core';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createSoftBreakPlugin } from '../../../../../../break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
 import { ELEMENT_ALIGN_CENTER } from '../../../../../../elements/alignment/src/defaults';
@@ -32,7 +32,7 @@ import { getSuperscriptDeserialize } from '../../../../../../marks/basic-marks/s
 import { getUnderlineDeserialize } from '../../../../../../marks/basic-marks/src/underline/getUnderlineDeserialize';
 import { getHighlightDeserialize } from '../../../../../../marks/highlight/src/getHighlightDeserialize';
 import { getKbdDeserialize } from '../../../../../../marks/kbd/src/getKbdDeserialize';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const textTags = [

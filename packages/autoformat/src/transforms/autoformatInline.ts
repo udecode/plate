@@ -1,9 +1,5 @@
-import {
-  getPointBefore,
-  getText,
-  removeMark,
-} from '@udecode/slate-plugins-common';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { getPointBefore, getText, removeMark } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-core';
 import { Range, Transforms } from 'slate';
 import { AutoformatRule } from '../types';
 

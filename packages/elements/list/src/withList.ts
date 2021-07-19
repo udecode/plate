@@ -1,4 +1,4 @@
-import { SPEditor, WithOverride } from '@udecode/slate-plugins-core';
+import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { getListDeleteBackward } from './getListDeleteBackward';
 import { getListDeleteFragment } from './getListDeleteFragment';
 import { getListInsertBreak } from './getListInsertBreak';

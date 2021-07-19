@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { findNode } from '@udecode/slate-plugins-common';
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { findNode } from '@udecode/plate-common';
+import { SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { removeListItem } from './removeListItem';
 
 jsx;

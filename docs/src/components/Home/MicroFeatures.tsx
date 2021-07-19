@@ -37,10 +37,10 @@ export const MicroFeatures = () => {
           One Dep, All the Features.
         </h3>
         <p tw="mt-4 text-xl max-w-3xl mx-auto leading-7 text-gray-300 dark:text-gray-300">
-          Slate Plugins is strategically packed with features you're bound to
-          need in almost any editor, tidying up the elements, marks,
-          serializers, normalizers, queries, transforms, components, and many
-          complex behaviors.
+          Plate is strategically packed with features you're bound to need in
+          almost any editor, tidying up the elements, marks, serializers,
+          normalizers, queries, transforms, components, and many complex
+          behaviors.
         </p>
       </div>
       <div>

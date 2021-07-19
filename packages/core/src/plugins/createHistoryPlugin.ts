@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 import { HistoryEditor, withHistory } from 'slate-history';
-import { WithOverride } from '../types/SlatePlugin/WithOverride';
-import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
+import { WithOverride } from '../types/PlatePlugin/WithOverride';
+import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
 
 /**
  * {@link withHistory} that can be called multiple times without losing its history.
@@ -23,6 +23,6 @@ export const withHistoryPersist: WithOverride<Editor, HistoryEditor> = (
 /**
  * @see {@link withHistoryPersist}
  */
-export const createHistoryPlugin = getSlatePluginWithOverrides(
+export const createHistoryPlugin = getPlatePluginWithOverrides(
   () => withHistory
 );

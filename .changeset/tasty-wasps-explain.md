@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-basic-marks": patch
+"@udecode/plate-basic-marks": patch
 ---
 
 fix: deserialization of italic plugin

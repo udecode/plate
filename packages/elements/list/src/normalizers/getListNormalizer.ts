@@ -3,13 +3,13 @@ import {
   getParent,
   match,
   setNodes,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   isElement,
   SPEditor,
   TDescendant,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { NodeEntry, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
@@ -24,9 +24,9 @@ export const getListNormalizer = (
   { validLiChildrenTypes }: ListNormalizerOptions
 ) => {
   const { normalizeNode } = editor;
-  const liType = getSlatePluginType(editor, ELEMENT_LI);
-  const licType = getSlatePluginType(editor, ELEMENT_LIC);
-  const defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT);
+  const liType = getPlatePluginType(editor, ELEMENT_LI);
+  const licType = getPlatePluginType(editor, ELEMENT_LIC);
+  const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
 
   return ([node, path]: NodeEntry) => {
     if (!isElement(node)) return;
@@ -40,7 +40,7 @@ export const getListNormalizer = (
       }
     }
 
-    if (node.type === getSlatePluginType(editor, ELEMENT_LI)) {
+    if (node.type === getPlatePluginType(editor, ELEMENT_LI)) {
       if (
         normalizeListItem(editor, {
           listItem: [node, path],

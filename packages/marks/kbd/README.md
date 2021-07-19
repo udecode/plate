@@ -1,6 +1,6 @@
-# slate-plugins-kbd
+# plate-kbd
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

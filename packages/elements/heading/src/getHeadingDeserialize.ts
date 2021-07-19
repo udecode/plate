@@ -1,8 +1,5 @@
-import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getElementDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import {
   DEFAULT_HEADING_LEVEL,
   ELEMENT_H1,
@@ -17,12 +14,12 @@ import { HeadingPluginOptions } from './types';
 export const getHeadingDeserialize = ({
   levels = DEFAULT_HEADING_LEVEL,
 }: HeadingPluginOptions = {}): Deserialize => (editor) => {
-  const h1 = getSlatePluginOptions(editor, ELEMENT_H1);
-  const h2 = getSlatePluginOptions(editor, ELEMENT_H2);
-  const h3 = getSlatePluginOptions(editor, ELEMENT_H3);
-  const h4 = getSlatePluginOptions(editor, ELEMENT_H4);
-  const h5 = getSlatePluginOptions(editor, ELEMENT_H5);
-  const h6 = getSlatePluginOptions(editor, ELEMENT_H6);
+  const h1 = getPlatePluginOptions(editor, ELEMENT_H1);
+  const h2 = getPlatePluginOptions(editor, ELEMENT_H2);
+  const h3 = getPlatePluginOptions(editor, ELEMENT_H3);
+  const h4 = getPlatePluginOptions(editor, ELEMENT_H4);
+  const h5 = getPlatePluginOptions(editor, ELEMENT_H5);
+  const h6 = getPlatePluginOptions(editor, ELEMENT_H6);
 
   let deserializers = getElementDeserializer({
     type: h1.type,

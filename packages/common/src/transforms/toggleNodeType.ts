@@ -1,9 +1,9 @@
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   SPEditor,
   TEditor,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { someNode } from '../queries/someNode';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { ELEMENT_DEFAULT } from '../types/node.types';
@@ -32,7 +32,7 @@ export const toggleNodeType = (
 ) => {
   const {
     activeType,
-    inactiveType = getSlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),
+    inactiveType = getPlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),
   } = options;
 
   if (!activeType || !editor.selection) return;

@@ -1,9 +1,9 @@
 import {
-  SlatePlugin,
+  PlatePlugin,
   SPEditor,
   TDescendant,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
 
@@ -19,7 +19,7 @@ export const deserializeHTMLToElement = <T extends SPEditor = SPEditor>(
     element,
     children,
   }: {
-    plugins: SlatePlugin<T>[];
+    plugins: PlatePlugin<T>[];
     element: HTMLElement;
     children: DeserializeHTMLChildren[];
   }

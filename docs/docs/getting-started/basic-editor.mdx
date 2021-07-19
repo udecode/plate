@@ -15,11 +15,11 @@ Let's start with the smallest editor implementation.
 
 ```tsx
 import React from 'react';
-import { SlatePlugins } from '@udecode/slate-plugins'
+import { Plate } from '@udecode/plate'
 ```
 
 ```tsx live
-() => <SlatePlugins />
+() => <Plate />
 ```
 
 This looks the same than a `<textarea>`.
@@ -37,13 +37,13 @@ Let's add a placeholder and some padding using `editableProps` props.
     },
   };
 
-  return <SlatePlugins id="1" editableProps={editableProps} />;
+  return <Plate id="1" editableProps={editableProps} />;
 }
 ```
 
 :::note
 
-Once you render multiple `SlatePlugins`, you'll need to pass unique `id` to each.
+Once you render multiple `Plate`, you'll need to pass unique `id` to each.
 This is optional for the first one.
 
 :::
@@ -66,7 +66,7 @@ Let's set the initial value of the editor to one block of text.
   ];
 
   return (
-    <SlatePlugins
+    <Plate
       id="2"
       editableProps={editableProps}
       initialValue={initialValuePlainText}
@@ -85,7 +85,7 @@ Let's use `onChange` props.
   const [debugValue, setDebugValue] = useState(null);
 
   return (
-    <SlatePlugins
+    <Plate
       id="3"
       editableProps={editableProps}
       initialValue={initialValuePlainText}
@@ -95,14 +95,14 @@ Let's use `onChange` props.
       }}
     >
       value: {JSON.stringify(debugValue)}
-    </SlatePlugins>
+    </Plate>
   );
 }
 ```
 
 :::note
 
-`SlatePlugins` children are rendered just before the editable component.
+`Plate` children are rendered just before the editable component.
 
 :::
 

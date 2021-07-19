@@ -1,21 +1,19 @@
 import create from 'zustand';
 import createVanillaStore from 'zustand/vanilla';
-import { SlatePluginsStates } from '../../types/SlatePluginsStore';
+import { PlateStates } from '../../types/PlateStore';
 
 /**
- * Slate plugins vanilla store.
+ * Plate vanilla store.
  * @see zustand vanilla store
  */
-export const slatePluginsStore = createVanillaStore<SlatePluginsStates>(
-  () => ({})
-);
+export const plateStore = createVanillaStore<PlateStates>(() => ({}));
 
-// export const slatePluginsAtom = atomWithStore(slatePluginsStore);
+// export const plateAtom = atomWithStore(plateStore);
 
-// const factory = () => atom<SlatePluginsState>({});
+// const factory = () => atom<PlateState>({});
 
 /**
- * Slate plugins store.
+ * Plate store.
  * @see zustand store
  */
-export const useSlatePluginsStore = create(slatePluginsStore);
+export const usePlateStore = create(plateStore);

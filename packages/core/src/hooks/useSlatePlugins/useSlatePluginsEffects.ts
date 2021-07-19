@@ -2,21 +2,21 @@ import { useEffect } from 'react';
 import { createEditor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
-import { useStoreEditorEnabled } from '../../stores/slate-plugins/selectors/useStoreEditorEnabled';
-import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
-import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
-import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
+import { usePlateActions } from '../../stores/plate/plate.actions';
+import { useStoreEditorEnabled } from '../../stores/plate/selectors/useStoreEditorEnabled';
+import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
+import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
 import { SPEditor } from '../../types/SPEditor';
-import { UseSlatePluginsEffectsOptions } from '../../types/UseSlatePluginsEffectsOptions';
+import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
-import { withSlatePlugins } from '../../utils/withSlatePlugins';
+import { withPlate } from '../../utils/withPlate';
 
 /**
- * Effects to update the slate plugins store from the options.
+ * Effects to update the plate store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
+export const usePlateEffects = <T extends SPEditor = SPEditor>({
   id = 'main',
   value,
   editor,
@@ -25,7 +25,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
   options,
   initialValue,
   plugins,
-}: UseSlatePluginsEffectsOptions<T>) => {
+}: UsePlateEffectsOptions<T>) => {
   const {
     setInitialState,
     setValue,
@@ -34,10 +34,10 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     setPluginKeys,
     setEnabled,
     clearState,
-  } = useSlatePluginsActions<T>(id);
+  } = usePlateActions<T>(id);
   const storeEditor = useStoreEditorRef<T>(id);
   const storeEnabled = useStoreEditorEnabled(id);
-  const storePlugins = useStoreSlatePlugins(id);
+  const storePlugins = useStorePlate(id);
 
   // Clear the state on unmount.
   useEffect(
@@ -73,7 +73,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
     setEnabled(enabled);
   }, [enabled, setEnabled]);
 
-  // Slate plugins
+  // Plate plugins
   useEffect(() => {
     setPlugins(plugins ?? [createReactPlugin(), createHistoryPlugin()]);
   }, [plugins, setPlugins]);
@@ -94,7 +94,7 @@ export const useSlatePluginsEffects = <T extends SPEditor = SPEditor>({
       setEditor(
         pipe(
           editor ?? createEditor(),
-          withSlatePlugins<T>({
+          withPlate<T>({
             id,
             plugins: storePlugins,
             options,

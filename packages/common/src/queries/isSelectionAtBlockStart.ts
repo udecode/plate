@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { getBlockAbove } from './getBlockAbove';
 import { isStart } from './isStart';
 

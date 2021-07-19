@@ -1,5 +1,5 @@
-import { EditorNodesOptions, getNodes } from '@udecode/slate-plugins-common';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { EditorNodesOptions, getNodes } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 
 /**

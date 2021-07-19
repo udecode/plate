@@ -1,11 +1,11 @@
 import {
+  getPlatePluginTypes,
   getRenderElement,
-  getSlatePluginTypes,
-  SlatePlugin,
-} from '@udecode/slate-plugins';
+  PlatePlugin,
+} from '@udecode/plate';
 import { EDITABLE_VOID } from './defaults';
 
-export const createEditableVoidPlugin = (): SlatePlugin => ({
+export const createEditableVoidPlugin = (): PlatePlugin => ({
   renderElement: getRenderElement(EDITABLE_VOID),
-  voidTypes: getSlatePluginTypes(EDITABLE_VOID),
+  voidTypes: getPlatePluginTypes(EDITABLE_VOID),
 });

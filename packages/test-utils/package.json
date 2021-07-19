@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-test-utils",
+  "name": "@udecode/plate-test-utils",
   "version": "1.0.0-alpha.18",
-  "description": "Slate plugins test utils",
+  "description": "Plate plugin test utils",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/test-utils#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/test-utils#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",

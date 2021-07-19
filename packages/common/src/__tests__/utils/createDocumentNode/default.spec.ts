@@ -1,5 +1,5 @@
-import { TDescendant } from '@udecode/slate-plugins-core';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
+import { TDescendant } from '@udecode/plate-core';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { createDocumentNode } from '../../../utils/index';
 
 const output: TDescendant[] = [

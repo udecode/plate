@@ -1,35 +1,28 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import shallow from 'zustand/shallow';
-import {
-  SlatePluginsActions,
-  SlatePluginsState,
-  SlatePluginsStates,
-} from '../../types/SlatePluginsStore';
+import { PlateActions, PlateState, PlateStates } from '../../types/PlateStore';
 import { SPEditor } from '../../types/SPEditor';
 import { pipe } from '../../utils/pipe';
-import { withSlatePlugins } from '../../utils/withSlatePlugins';
+import { withPlate } from '../../utils/withPlate';
 import { getSetStateByKey, getStateById } from '../zustand.utils';
-import { slatePluginsStore, useSlatePluginsStore } from './slate-plugins.store';
+import { plateStore, usePlateStore } from './plate.store';
 
-const { getState: get, setState: set } = slatePluginsStore;
+const { getState: get, setState: set } = plateStore;
 
-export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
+export const usePlateActions = <T extends SPEditor = SPEditor>(
   storeId?: string | null
-): SlatePluginsActions<T> => {
-  const storeKeys = useSlatePluginsStore((s) => Object.keys(s), shallow);
+): PlateActions<T> => {
+  const storeKeys = usePlateStore((s) => Object.keys(s), shallow);
 
   const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
-    const setEditor: SlatePluginsActions<T>['setEditor'] = getSetStateByKey<
-      SlatePluginsState<T>['editor']
+    const setEditor: PlateActions<T>['setEditor'] = getSetStateByKey<
+      PlateState<T>['editor']
     >('editor', stateId);
 
-    const setValue = getSetStateByKey<SlatePluginsState<T>['value']>(
-      'value',
-      stateId
-    );
+    const setValue = getSetStateByKey<PlateState<T>['value']>('value', stateId);
 
     return {
       setEditor,
@@ -50,7 +43,7 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
         id = stateId
       ) =>
         id &&
-        set((state: SlatePluginsStates<T>) => {
+        set((state: PlateStates<T>) => {
           if (state[id]) return;
 
           state[id] = {
@@ -69,7 +62,7 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
         setEditor(
           pipe(
             createEditor(),
-            withSlatePlugins<T>({
+            withPlate<T>({
               id,
               plugins,
               options: editor?.options,
@@ -88,19 +81,19 @@ export const useSlatePluginsActions = <T extends SPEditor = SPEditor>(
             [id]: { ...getStateById(state, id), keyChange: prev + 1 },
           };
         }),
-      setEnabled: getSetStateByKey<SlatePluginsState<T>['enabled']>(
+      setEnabled: getSetStateByKey<PlateState<T>['enabled']>(
         'enabled',
         stateId
       ),
-      setPlugins: getSetStateByKey<SlatePluginsState<T>['plugins']>(
+      setPlugins: getSetStateByKey<PlateState<T>['plugins']>(
         'plugins',
         stateId
       ),
-      setPluginKeys: getSetStateByKey<SlatePluginsState<T>['pluginKeys']>(
+      setPluginKeys: getSetStateByKey<PlateState<T>['pluginKeys']>(
         'pluginKeys',
         stateId
       ),
-      setSelection: getSetStateByKey<SlatePluginsState<T>['selection']>(
+      setSelection: getSetStateByKey<PlateState<T>['selection']>(
         'selection',
         stateId
       ),

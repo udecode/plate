@@ -1,4 +1,4 @@
-import { TAncestor, TEditor } from '@udecode/slate-plugins-core';
+import { TAncestor, TEditor } from '@udecode/plate-core';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getAbove } from './getAbove';
 

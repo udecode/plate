@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import {
   getBlockAbove,
-  getSlatePluginType,
+  getPlatePluginType,
   insertNodes,
   SPEditor,
   TElement,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { IComboboxItem } from '../../combobox/components/Combobox.types';
@@ -23,7 +23,7 @@ export const useTagOnSelectItem = () => {
 
   return useCallback(
     (editor: SPEditor & ReactEditor, item: IComboboxItem) => {
-      const type = getSlatePluginType(editor, ELEMENT_TAG);
+      const type = getPlatePluginType(editor, ELEMENT_TAG);
 
       if (isOpen && targetRange) {
         const pathAbove = getBlockAbove(editor)?.[1];

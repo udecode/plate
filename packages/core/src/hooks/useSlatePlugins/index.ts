@@ -3,6 +3,6 @@
  */
 
 export * from './useEditableProps';
-export * from './useSlatePlugins';
-export * from './useSlatePluginsEffects';
+export * from './usePlate';
+export * from './usePlateEffects';
 export * from './useSlateProps';

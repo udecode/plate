@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useStoreEditorRef } from '../../stores/slate-plugins/selectors/useStoreEditorRef';
-import { useStoreEditorValue } from '../../stores/slate-plugins/selectors/useStoreEditorValue';
-import { useStoreSlatePlugins } from '../../stores/slate-plugins/selectors/useStoreSlatePlugins';
-import { useSlatePluginsActions } from '../../stores/slate-plugins/slate-plugins.actions';
+import { usePlateActions } from '../../stores/plate/plate.actions';
+import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
+import { useStoreEditorValue } from '../../stores/plate/selectors/useStoreEditorValue';
+import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
 import { SlateProps } from '../../types/SlateProps';
 import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
@@ -15,10 +15,10 @@ export const useSlateProps = ({
   id,
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
-  const { setValue } = useSlatePluginsActions(id);
+  const { setValue } = usePlateActions(id);
   const editor = useStoreEditorRef(id);
   const value = useStoreEditorValue(id);
-  const plugins = useStoreSlatePlugins(id);
+  const plugins = useStorePlate(id);
 
   return useMemo(
     () => ({

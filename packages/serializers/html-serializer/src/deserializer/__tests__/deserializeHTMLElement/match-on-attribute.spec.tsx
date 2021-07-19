@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { getElementDeserializer } from '@udecode/plate-common';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const html1 = '<html><body><div data-poll-id="456"/></body></html>';

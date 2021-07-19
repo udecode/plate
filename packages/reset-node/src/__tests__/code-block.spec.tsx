@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { isBlockAboveEmpty } from '@udecode/slate-plugins-common';
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { isBlockAboveEmpty } from '@udecode/plate-common';
+import { SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { options } from '../../../../docs/src/live/config/pluginOptions';
 import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/src/defaults';

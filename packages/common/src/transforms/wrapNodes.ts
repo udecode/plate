@@ -1,8 +1,4 @@
-import {
-  TEditor,
-  TElement as TTElement,
-  TNode,
-} from '@udecode/slate-plugins-core';
+import { TEditor, TElement as TTElement, TNode } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { WrapOptions } from '../types/Transforms.types';
 import { unhangRange, UnhangRangeOptions } from './unhangRange';

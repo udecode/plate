@@ -1,37 +1,37 @@
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
-import { WithOverride } from '../types/SlatePlugin/WithOverride';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { WithOverride } from '../types/PlatePlugin/WithOverride';
 import {
-  SlatePluginComponent,
-  SlatePluginsOptions,
-} from '../types/SlatePluginOptions/SlatePluginsOptions';
+  PlateOptions,
+  PlatePluginComponent,
+} from '../types/PlatePluginOptions/PlateOptions';
 import { SPEditor } from '../types/SPEditor';
 import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
-export interface WithSlatePluginsOptions<T extends SPEditor = SPEditor> {
+export interface WithPlateOptions<T extends SPEditor = SPEditor> {
   id?: string | null;
-  plugins?: SlatePlugin<T>[];
-  options?: SlatePluginsOptions;
-  components?: Record<string, SlatePluginComponent>;
+  plugins?: PlatePlugin<T>[];
+  options?: PlateOptions;
+  components?: Record<string, PlatePluginComponent>;
 }
 
 /**
- * Apply `withInlineVoid` and all slate plugins `withOverrides`.
+ * Apply `withInlineVoid` and all plate plugins `withOverrides`.
  * Overrides:
  * - `id`: id of the editor.
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
- * - `options`: {@link SlatePluginsOptions}
+ * - `options`: {@link PlateOptions}
  */
-export const withSlatePlugins = <T extends SPEditor = SPEditor>({
+export const withPlate = <T extends SPEditor = SPEditor>({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options = {},
   components = {},
-}: WithSlatePluginsOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
+}: WithPlateOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
   let editor = e as typeof e & T;
   editor.id = id as string;
 
@@ -55,7 +55,7 @@ export const withSlatePlugins = <T extends SPEditor = SPEditor>({
     editor.key = Math.random();
   }
 
-  const _plugins: SlatePlugin<T>[] = [
+  const _plugins: PlatePlugin<T>[] = [
     ...plugins,
     {
       withOverrides: withInlineVoid({ plugins }),

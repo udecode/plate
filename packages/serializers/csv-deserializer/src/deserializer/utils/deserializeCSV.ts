@@ -1,16 +1,16 @@
-import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
+import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   SPEditor,
   TElement,
   TNode,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '@udecode/slate-plugins-table';
+} from '@udecode/plate-table';
 import { parse } from 'papaparse';
 
 export const deserializeCSV = <T extends SPEditor = SPEditor>(
@@ -24,11 +24,11 @@ export const deserializeCSV = <T extends SPEditor = SPEditor>(
   if (testCsv.errors.length === 0) {
     const csv = parse(content, { header });
 
-    const paragraph = getSlatePluginType(editor, ELEMENT_DEFAULT);
-    const table = getSlatePluginType(editor, ELEMENT_TABLE);
-    const th = getSlatePluginType(editor, ELEMENT_TH);
-    const tr = getSlatePluginType(editor, ELEMENT_TR);
-    const td = getSlatePluginType(editor, ELEMENT_TD);
+    const paragraph = getPlatePluginType(editor, ELEMENT_DEFAULT);
+    const table = getPlatePluginType(editor, ELEMENT_TABLE);
+    const th = getPlatePluginType(editor, ELEMENT_TH);
+    const tr = getPlatePluginType(editor, ELEMENT_TR);
+    const td = getPlatePluginType(editor, ELEMENT_TD);
 
     const ast: TNode = {
       type: table,

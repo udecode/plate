@@ -1,12 +1,9 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
-import {
-  useEventEditorId,
-  useStoreEditorRef,
-} from '@udecode/slate-plugins-core';
-import { MentionNodeData } from '@udecode/slate-plugins-mention';
-import { PortalBody } from '@udecode/slate-plugins-styled-components';
+import { getPreventDefaultHandler } from '@udecode/plate-common';
+import { useEventEditorId, useStoreEditorRef } from '@udecode/plate-core';
+import { MentionNodeData } from '@udecode/plate-mention';
+import { PortalBody } from '@udecode/plate-styled-components';
 import { ReactEditor } from 'slate-react';
 import { getMentionSelectStyles } from './MentionSelect.styles';
 import { MentionSelectProps } from './MentionSelect.types';

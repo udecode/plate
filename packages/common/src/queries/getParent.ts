@@ -1,4 +1,4 @@
-import { TAncestor, TEditor } from '@udecode/slate-plugins-core';
+import { TAncestor, TEditor } from '@udecode/plate-core';
 import { Editor, Location, NodeEntry } from 'slate';
 import { EditorParentOptions } from '../types/Editor.types';
 

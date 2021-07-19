@@ -1,7 +1,7 @@
-import { RenderElement } from '../types/SlatePlugin/RenderElement';
+import { RenderElement } from '../types/PlatePlugin/RenderElement';
 import { SPEditor } from '../types/SPEditor';
 import { getEditableRenderElement } from './getEditableRenderElement';
-import { mapSlatePluginKeysToOptions } from './mapSlatePluginKeysToOptions';
+import { mapPlatePluginKeysToOptions } from './mapPlatePluginKeysToOptions';
 
 /**
  * Get `renderElement` by plugin key.
@@ -10,4 +10,4 @@ import { mapSlatePluginKeysToOptions } from './mapSlatePluginKeysToOptions';
 export const getRenderElement = (
   pluginKeys: string | string[]
 ): RenderElement => (editor: SPEditor) =>
-  getEditableRenderElement(mapSlatePluginKeysToOptions(editor, pluginKeys));
+  getEditableRenderElement(mapPlatePluginKeysToOptions(editor, pluginKeys));

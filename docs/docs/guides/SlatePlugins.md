@@ -1,9 +1,9 @@
 ---
-slug: /SlatePlugins
-title: SlatePlugins
+slug: /Plate
+title: Plate
 ---
 
-`SlatePlugins` is the core component updating the store, computing the
+`Plate` is the core component updating the store, computing the
 `Slate` props, the `Editable` props and rendering them.
 
 ## Store updates
@@ -11,7 +11,7 @@ title: SlatePlugins
 - On mount, calls [setInitialState](store#setinitialstate)
 - If defined, set `initialValue`/`value`, `enabled`, `plugins` into the
   store.
-- If `enabled` is `true`, set `editor` with `withSlatePlugins` into the
+- If `enabled` is `true`, set `editor` with `withPlate` into the
   store.
 - If `enabled` is `false`, set `editor` to `undefined`.
 - `editor` is set only once (if not defined) as required by slate.
@@ -19,7 +19,7 @@ title: SlatePlugins
 
 ## Slate Props
 
-`SlatePlugins` computes the `Slate` props:
+`Plate` computes the `Slate` props:
 
 ### `key`
 
@@ -38,7 +38,7 @@ to `Slate` to unmount and mount again the component.
 
 ## Editable Props
 
-In addition to `editableProps`, `SlatePlugins` computes the `Editable`
+In addition to `editableProps`, `Plate` computes the `Editable`
 props if `editor` is defined.
 
 ### `decorate`
@@ -59,12 +59,12 @@ props if `editor` is defined.
 
 ## Props
 
-`SlatePlugins` props:
+`Plate` props:
 
 ### `id`
 
 - A unique id used to store the editor state by id.
-- Required if rendering multiple `SlatePlugins`. Optional otherwise.
+- Required if rendering multiple `Plate`. Optional otherwise.
 - Default is `'main'`.
 
 ### `children`

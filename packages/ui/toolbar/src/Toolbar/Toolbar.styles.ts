@@ -1,4 +1,4 @@
-import { createStyles } from '@udecode/slate-plugins-styled-components';
+import { createStyles } from '@udecode/plate-styled-components';
 import tw from 'twin.macro';
 import { ToolbarProps } from './Toolbar.types';
 

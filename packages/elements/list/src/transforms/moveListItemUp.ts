@@ -3,12 +3,8 @@ import {
   getNode,
   insertNodes,
   isLastChild,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -33,7 +29,7 @@ export const moveListItemUp = (
 
     const liParent = getAbove<TElement>(editor, {
       at: listPath,
-      match: { type: getSlatePluginType(editor, ELEMENT_LI) },
+      match: { type: getPlatePluginType(editor, ELEMENT_LI) },
     });
     if (!liParent) {
       let toListPath;

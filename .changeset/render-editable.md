@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": minor
+"@udecode/plate-core": minor
 ---
 
-feat: new `SlatePlugins` option - `renderEditable`: Custom `Editable` node
+feat: new `Plate` option - `renderEditable`: Custom `Editable` node

@@ -1,4 +1,4 @@
-import { GetElementDeserializerOptions } from '@udecode/slate-plugins-core';
+import { GetElementDeserializerOptions } from '@udecode/plate-core';
 import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**

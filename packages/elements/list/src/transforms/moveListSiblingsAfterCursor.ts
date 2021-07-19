@@ -1,5 +1,5 @@
-import { match, moveChildren } from '@udecode/slate-plugins-common';
-import { SPEditor } from '@udecode/slate-plugins-core';
+import { match, moveChildren } from '@udecode/plate-common';
+import { SPEditor } from '@udecode/plate-core';
 import { Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

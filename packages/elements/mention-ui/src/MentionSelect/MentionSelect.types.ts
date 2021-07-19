@@ -1,8 +1,5 @@
-import {
-  GetMentionSelectProps,
-  MentionNodeData,
-} from '@udecode/slate-plugins-mention';
-import { StyledProps } from '@udecode/slate-plugins-styled-components';
+import { GetMentionSelectProps, MentionNodeData } from '@udecode/plate-mention';
+import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface MentionSelectStyles {

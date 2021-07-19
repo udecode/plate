@@ -19,7 +19,7 @@ import {
   ELEMENT_UL,
   grabberTooltipProps,
   withDraggables,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 

@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { getHtmlDocument, jsx } from '@udecode/slate-plugins-test-utils';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { PlatePlugin } from '@udecode/plate-core';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = 'test';
-const input1: SlatePlugin[] = [];
+const input1: PlatePlugin[] = [];
 const input2 = getHtmlDocument(html).body;
 
 const output = (

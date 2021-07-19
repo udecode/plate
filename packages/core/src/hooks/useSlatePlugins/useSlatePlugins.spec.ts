@@ -1,10 +1,10 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { useSlatePlugins } from './useSlatePlugins';
+import { usePlate } from './usePlate';
 
-describe('useSlatePlugins', () => {
+describe('usePlate', () => {
   describe('when default options', () => {
     it('should be', () => {
-      const { result } = renderHook(() => useSlatePlugins({}));
+      const { result } = renderHook(() => usePlate({}));
 
       expect(result.current.slateProps.value).toEqual([
         {

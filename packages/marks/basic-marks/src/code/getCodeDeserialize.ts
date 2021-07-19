@@ -1,12 +1,9 @@
-import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getLeafDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { MARK_CODE } from './defaults';
 
 export const getCodeDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, MARK_CODE);
+  const options = getPlatePluginOptions(editor, MARK_CODE);
 
   return {
     leaf: getLeafDeserializer({

@@ -1,15 +1,12 @@
-import { getElementDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getElementDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from './defaults';
 
 export const getTableDeserialize = (): Deserialize => (editor) => {
-  const table = getSlatePluginOptions(editor, ELEMENT_TABLE);
-  const td = getSlatePluginOptions(editor, ELEMENT_TD);
-  const th = getSlatePluginOptions(editor, ELEMENT_TH);
-  const tr = getSlatePluginOptions(editor, ELEMENT_TR);
+  const table = getPlatePluginOptions(editor, ELEMENT_TABLE);
+  const td = getPlatePluginOptions(editor, ELEMENT_TD);
+  const th = getPlatePluginOptions(editor, ELEMENT_TH);
+  const tr = getPlatePluginOptions(editor, ELEMENT_TR);
 
   return {
     element: [

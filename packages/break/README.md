@@ -1,6 +1,6 @@
-# slate-plugins-break
+# plate-break
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

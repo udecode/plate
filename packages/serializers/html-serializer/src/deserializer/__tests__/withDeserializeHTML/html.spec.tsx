@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
-import { createParagraphPlugin } from '@udecode/slate-plugins-paragraph';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
@@ -42,7 +42,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+      const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
         createHeadingPlugin(),
       ];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
@@ -76,7 +76,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+      const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
         createHeadingPlugin(),
       ];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
@@ -111,7 +111,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+    const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
       createParagraphPlugin(),
     ];
 

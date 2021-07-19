@@ -1,5 +1,5 @@
-import { getAbove } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getAbove } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from './getListTypes';
@@ -33,7 +33,7 @@ export const getHighestEmptyList = (
     if (listNode.children.length < 2) {
       const liParent = getAbove(editor, {
         at: listPath,
-        match: { type: getSlatePluginType(editor, ELEMENT_LI) },
+        match: { type: getPlatePluginType(editor, ELEMENT_LI) },
       });
 
       if (liParent) {

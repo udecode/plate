@@ -13,11 +13,11 @@ title: List
     return (
       <>
         <ToolbarList
-          type={getSlatePluginType(editor, ELEMENT_UL)}
+          type={getPlatePluginType(editor, ELEMENT_UL)}
           icon={<FormatListBulleted />}
         />
         <ToolbarList
-          type={getSlatePluginType(editor, ELEMENT_OL)}
+          type={getPlatePluginType(editor, ELEMENT_OL)}
           icon={<FormatListNumbered />}
         />
       </>
@@ -38,7 +38,7 @@ title: List
       <HeadingToolbar>
         <ToolbarButtonsList />
       </HeadingToolbar>
-      <SlatePlugins
+      <Plate
         id="list"
         plugins={plugins}
         components={components}

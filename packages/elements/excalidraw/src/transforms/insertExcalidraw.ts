@@ -1,9 +1,5 @@
-import { getParent, insertNodes } from '@udecode/slate-plugins-common';
-import {
-  SlatePluginKey,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+import { getParent, insertNodes } from '@udecode/plate-common';
+import { PlatePluginKey, SPEditor, TElement } from '@udecode/plate-core';
 import { ELEMENT_EXCALIDRAW } from '../defaults';
 import { ExcalidrawNodeData } from '../types';
 
@@ -11,7 +7,7 @@ export const insertExcalidraw = (
   editor: SPEditor,
   {
     pluginKey = ELEMENT_EXCALIDRAW,
-  }: Partial<ExcalidrawNodeData> & SlatePluginKey
+  }: Partial<ExcalidrawNodeData> & PlatePluginKey
 ): void => {
   if (!editor.selection) return;
 

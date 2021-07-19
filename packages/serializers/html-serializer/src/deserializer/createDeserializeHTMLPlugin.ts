@@ -1,13 +1,13 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
 import {
   getInlineTypes,
-  getSlatePluginWithOverrides,
-  SlatePlugin,
+  getPlatePluginWithOverrides,
+  PlatePlugin,
   SPEditor,
   TDescendant,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
@@ -15,7 +15,7 @@ import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocu
 export interface WithDeserializeHTMLOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
 
   /**
    * Function called before inserting the deserialized html.
@@ -106,6 +106,6 @@ export const withDeserializeHTML = <
 /**
  * @see {@link withDeserializeHTML}
  */
-export const createDeserializeHTMLPlugin = getSlatePluginWithOverrides(
+export const createDeserializeHTMLPlugin = getPlatePluginWithOverrides(
   withDeserializeHTML
 );

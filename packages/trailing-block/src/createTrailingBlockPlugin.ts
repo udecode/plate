@@ -4,14 +4,14 @@ import {
   insertNodes,
   queryNode,
   QueryNodeOptions,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginType,
-  getSlatePluginWithOverrides,
+  getPlatePluginType,
+  getPlatePluginWithOverrides,
   SPEditor,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 
 export interface WithTrailingBlock extends QueryNodeOptions {
@@ -36,7 +36,7 @@ export const withTrailingBlock = ({
   const { normalizeNode } = editor;
 
   const type =
-    _type ?? getSlatePluginType((editor as any) as SPEditor, ELEMENT_DEFAULT);
+    _type ?? getPlatePluginType((editor as any) as SPEditor, ELEMENT_DEFAULT);
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
@@ -71,6 +71,6 @@ export const withTrailingBlock = ({
 /**
  * @see {@link withTrailingNode}
  */
-export const createTrailingBlockPlugin = getSlatePluginWithOverrides(
+export const createTrailingBlockPlugin = getPlatePluginWithOverrides(
   withTrailingBlock
 );

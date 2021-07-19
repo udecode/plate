@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
 import { getNode } from '../queries/getNode';
 

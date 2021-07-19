@@ -1,10 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { SlatePlugins } from './SlatePlugins';
+import { Plate } from './Plate';
 
-describe('SlatePlugins', () => {
+describe('Plate', () => {
   it('should render', () => {
-    render(<SlatePlugins />);
+    render(<Plate />);
 
     expect(1).toBe(1);
   });

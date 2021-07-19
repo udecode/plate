@@ -3,12 +3,8 @@ import {
   insertNodes,
   isBlockAboveEmpty,
   isExpanded,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -20,7 +16,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = (
   editor: SPEditor,
   {
-    defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT),
+    defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
     level = 0,
   }: CodeBlockInsertOptions

@@ -1,12 +1,12 @@
-import { getToggleElementOnKeyDown } from '@udecode/slate-plugins-common';
-import { getRenderElement, SlatePlugin } from '@udecode/slate-plugins-core';
+import { getToggleElementOnKeyDown } from '@udecode/plate-common';
+import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_PARAGRAPH } from './defaults';
 import { getParagraphDeserialize } from './getParagraphDeserialize';
 
 /**
  * Enables support for paragraphs.
  */
-export const createParagraphPlugin = (): SlatePlugin => ({
+export const createParagraphPlugin = (): PlatePlugin => ({
   pluginKeys: ELEMENT_PARAGRAPH,
   renderElement: getRenderElement(ELEMENT_PARAGRAPH),
   deserialize: getParagraphDeserialize(),

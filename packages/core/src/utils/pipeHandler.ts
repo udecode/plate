@@ -3,8 +3,8 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import {
   DOMHandlerReturnType,
   DOMHandlers,
-} from '../types/SlatePlugin/DOMHandlers';
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+} from '../types/PlatePlugin/DOMHandlers';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 
 /**
@@ -43,7 +43,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     editableProps,
     handlerKey,
     plugins,
-  }: { editableProps?: EditableProps; handlerKey: K; plugins?: SlatePlugin[] }
+  }: { editableProps?: EditableProps; handlerKey: K; plugins?: PlatePlugin[] }
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => DOMHandlerReturnType)[] = [];
   if (plugins) {

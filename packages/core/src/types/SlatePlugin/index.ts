@@ -9,5 +9,5 @@ export * from './OnChange';
 export * from './RenderElement';
 export * from './RenderLeaf';
 export * from './Serialize';
-export * from './SlatePlugin';
+export * from './PlatePlugin';
 export * from './WithOverride';

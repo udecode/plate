@@ -1,16 +1,16 @@
 import {
-  SlatePluginComponent,
-  SlatePluginsOptions,
-} from './SlatePluginOptions/SlatePluginsOptions';
-import { EditorId, SlatePluginsState } from './SlatePluginsStore';
+  PlateOptions,
+  PlatePluginComponent,
+} from './PlatePluginOptions/PlateOptions';
+import { EditorId, PlateState } from './PlateStore';
 import { SPEditor } from './SPEditor';
 
 /**
- * `useSlatePluginsEffects` options
+ * `usePlateEffects` options
  */
-export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
+export interface UsePlateEffectsOptions<T extends SPEditor = SPEditor>
   extends Partial<
-    Pick<SlatePluginsState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
+    Pick<PlateState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
   > {
   id?: EditorId;
 
@@ -18,14 +18,14 @@ export interface UseSlatePluginsEffectsOptions<T extends SPEditor = SPEditor>
    * Initial value of the editor.
    * @default [{ children: [{ text: '' }]}]
    */
-  initialValue?: SlatePluginsState['value'];
+  initialValue?: PlateState['value'];
 
-  options?: SlatePluginsOptions;
+  options?: PlateOptions;
 
   /**
    * Components stored by plugin key.
    * These will be merged into `options`.
    * @see {@link EditorId}
    */
-  components?: Record<string, SlatePluginComponent>;
+  components?: Record<string, PlatePluginComponent>;
 }

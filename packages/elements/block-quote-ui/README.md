@@ -1,6 +1,6 @@
-# slate-plugins-block-quote-ui
+# plate-block-quote-ui
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

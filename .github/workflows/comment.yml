@@ -72,4 +72,4 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            A new release has been made for this pull request. You can install it with `yarn add @udecode/slate-plugins@${{ steps.version.outputs.version }}`.
+            A new release has been made for this pull request. You can install it with `yarn add @udecode/plate@${{ steps.version.outputs.version }}`.

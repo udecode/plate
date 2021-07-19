@@ -1,14 +1,14 @@
 import { SPEditor } from '../../types/SPEditor';
-import { UseSlatePluginsOptions } from '../../types/UseSlatePluginsOptions';
+import { UsePlateOptions } from '../../types/UsePlateOptions';
 import { useEditableProps } from './useEditableProps';
-import { useSlatePluginsEffects } from './useSlatePluginsEffects';
+import { usePlateEffects } from './usePlateEffects';
 import { useSlateProps } from './useSlateProps';
 
 /**
- * Run `useSlatePluginsEffects` and props getter for `Slate` and `Editable` components.
- * Use `useSlatePluginsStore` to select store state.
+ * Run `usePlateEffects` and props getter for `Slate` and `Editable` components.
+ * Use `usePlateStore` to select store state.
  */
-export const useSlatePlugins = <T extends SPEditor = SPEditor>({
+export const usePlate = <T extends SPEditor = SPEditor>({
   id,
   components,
   editor,
@@ -18,8 +18,8 @@ export const useSlatePlugins = <T extends SPEditor = SPEditor>({
   plugins,
   onChange,
   editableProps,
-}: UseSlatePluginsOptions<T>) => {
-  useSlatePluginsEffects({
+}: UsePlateOptions<T>) => {
+  usePlateEffects({
     id,
     components,
     plugins,

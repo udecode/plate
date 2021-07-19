@@ -1,5 +1,5 @@
-import { getBlockAbove, queryNode } from '@udecode/slate-plugins-common';
-import { KeyboardHandler } from '@udecode/slate-plugins-core';
+import { getBlockAbove, queryNode } from '@udecode/plate-common';
+import { KeyboardHandler } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { SoftBreakOnKeyDownOptions } from './types';
 

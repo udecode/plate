@@ -22,33 +22,33 @@ Returns a list of the following plugins:
     return (
       <>
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_BOLD)}
+          type={getPlatePluginType(editor, MARK_BOLD)}
           icon={<FormatBold />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_ITALIC)}
+          type={getPlatePluginType(editor, MARK_ITALIC)}
           icon={<FormatItalic />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_UNDERLINE)}
+          type={getPlatePluginType(editor, MARK_UNDERLINE)}
           icon={<FormatUnderlined />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_STRIKETHROUGH)}
+          type={getPlatePluginType(editor, MARK_STRIKETHROUGH)}
           icon={<FormatStrikethrough />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_CODE)}
+          type={getPlatePluginType(editor, MARK_CODE)}
           icon={<CodeAlt />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_SUPERSCRIPT)}
-          clear={getSlatePluginType(editor, MARK_SUBSCRIPT)}
+          type={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
+          clear={getPlatePluginType(editor, MARK_SUBSCRIPT)}
           icon={<Superscript />}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_SUBSCRIPT)}
-          clear={getSlatePluginType(editor, MARK_SUPERSCRIPT)}
+          type={getPlatePluginType(editor, MARK_SUBSCRIPT)}
+          clear={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
           icon={<Subscript />}
         />
       </>
@@ -66,7 +66,7 @@ Returns a list of the following plugins:
       <HeadingToolbar>
         <ToolbarButtonsBasicMarks />
       </HeadingToolbar>
-      <SlatePlugins
+      <Plate
         id="basic-marks"
         plugins={plugins}
         components={components}

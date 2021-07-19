@@ -12,8 +12,8 @@ title: Huge Document
     spellCheck: false,
   };
 
-  const WithSlatePlugins = () => (
-    <SlatePlugins
+  const WithPlate = () => (
+    <Plate
       id="huge-document"
       plugins={pluginsBasic}
       components={components}
@@ -32,7 +32,7 @@ title: Huge Document
     }
   };
 
-  const WithoutSlatePlugins = () => {
+  const WithoutPlate = () => {
     const [value, setValue] = useState(initialValueHugeDocument);
     const renderElement = useCallback((p) => <Element {...p} />, []);
     const editor = useMemo(() => withReact(createEditor()), []);
@@ -50,8 +50,8 @@ title: Huge Document
 
   return (
     <div className="flex">
-      <WithSlatePlugins />
-      <WithoutSlatePlugins />
+      <WithPlate />
+      <WithoutPlate />
     </div>
   );
 }

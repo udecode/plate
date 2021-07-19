@@ -4,10 +4,10 @@ import { render } from '@testing-library/react';
 import {
   createHistoryPlugin,
   createReactPlugin,
-  SlatePlugin,
-  SlatePlugins,
+  Plate,
+  PlatePlugin,
   SPEditor,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
 import { optionsAutoformat } from '../../../../docs/src/live/config/autoformatRules';
 import { initialValuePlayground } from '../../../../docs/src/live/config/initialValues';
@@ -58,19 +58,19 @@ import { createSelectOnBackspacePlugin } from '../../../select/src/createSelectO
 import { createDeserializeHTMLPlugin } from '../../../serializers/html-serializer/src/deserializer/createDeserializeHTMLPlugin';
 import { createTrailingBlockPlugin } from '../../../trailing-block/src/createTrailingBlockPlugin';
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
-import { createSlatePluginsComponents } from '../utils/createSlatePluginsComponents';
-import { createSlatePluginsOptions } from '../utils/createSlatePluginsOptions';
+import { createPlateComponents } from '../utils/createPlateComponents';
+import { createPlateOptions } from '../utils/createPlateOptions';
 
-const components = createSlatePluginsComponents();
-const options = createSlatePluginsOptions();
+const components = createPlateComponents();
+const options = createPlateOptions();
 
-const SlatePluginsContainer = () => {
+const PlateContainer = () => {
   const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
   const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
     optionsMentionPlugin
   );
 
-  const plugins: SlatePlugin<SPEditor & ReactEditor>[] = [
+  const plugins: PlatePlugin<SPEditor & ReactEditor>[] = [
     createReactPlugin(),
     createHistoryPlugin(),
     createBlockquotePlugin(),
@@ -102,7 +102,7 @@ const SlatePluginsContainer = () => {
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
   return (
-    <SlatePlugins
+    <Plate
       plugins={plugins}
       components={components}
       options={options}
@@ -126,12 +126,12 @@ const SlatePluginsContainer = () => {
         {...getMentionSelectProps()}
         renderLabel={renderMentionLabel}
       />
-    </SlatePlugins>
+    </Plate>
   );
 };
 
 it('should render', () => {
-  render(<SlatePluginsContainer />);
+  render(<PlateContainer />);
 
   expect(1).toBe(1);
 });

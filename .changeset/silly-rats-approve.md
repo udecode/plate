@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-common": minor
+"@udecode/plate-common": minor
 ---
 
 features:

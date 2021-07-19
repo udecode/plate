@@ -1,8 +1,8 @@
-# slate-plugins core
+# plate core
 
 This library contains the core utilities using `slate`.
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

@@ -1,8 +1,8 @@
 import {
-  getSlatePluginWithOverrides,
+  getPlatePluginWithOverrides,
   isElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Node, NodeEntry, Transforms } from 'slate';
 
@@ -36,6 +36,6 @@ export const withRemoveEmptyNodes = (options: {
 /**
  * @see {@link withRemoveEmptyNodes}
  */
-export const createRemoveEmptyNodesPlugin = getSlatePluginWithOverrides(
+export const createRemoveEmptyNodesPlugin = getPlatePluginWithOverrides(
   withRemoveEmptyNodes
 );

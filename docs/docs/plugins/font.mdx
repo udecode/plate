@@ -7,7 +7,7 @@ Use the toolbar dropdowns in the demo below to control font color and font backg
 
 ```ts live
 () => {
-  let styledComponents = createSlatePluginsComponents({
+  let styledComponents = createPlateComponents({
     ...components,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
@@ -37,7 +37,7 @@ Use the toolbar dropdowns in the demo below to control font color and font backg
 
   const Editor = () => {
     return (
-      <SlatePlugins
+      <Plate
         id="font"
         plugins={plugins}
         components={styledComponents}
@@ -50,7 +50,7 @@ Use the toolbar dropdowns in the demo below to control font color and font backg
           <ToolbarColorPicker pluginKey={MARK_BG_COLOR} icon={<FontDownload />} />
         </HeadingToolbar>
         <CopyContent />
-      </SlatePlugins>
+      </Plate>
     );
   }
 

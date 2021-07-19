@@ -8,7 +8,7 @@ import { RenderLeaf } from './RenderLeaf';
 import { Serialize } from './Serialize';
 import { WithOverride } from './WithOverride';
 
-export interface SlatePluginKey {
+export interface PlatePluginKey {
   /**
    * Custom plugin key to be used when creating multiple same plugins with different options.
    * @default options.type
@@ -17,9 +17,9 @@ export interface SlatePluginKey {
 }
 
 /**
- * Slate plugin interface built on top of Slate and Editable.
+ * Plate plugin interface built on top of Slate and Editable.
  */
-export interface SlatePlugin<T extends SPEditor = SPEditor>
+export interface PlatePlugin<T extends SPEditor = SPEditor>
   extends Partial<DOMHandlers<T>> {
   /**
    * @see {@link Decorate}

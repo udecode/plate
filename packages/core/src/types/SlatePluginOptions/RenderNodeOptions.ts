@@ -1,9 +1,9 @@
-import { SlatePluginOptions } from './SlatePluginsOptions';
+import { PlatePluginOptions } from './PlateOptions';
 
 /**
  * Plugin options to get `renderElement` for elements and `renderLeaf` for marks.
  */
 export type RenderNodeOptions = Pick<
-  SlatePluginOptions,
+  PlatePluginOptions,
   'type' | 'component' | 'getNodeProps'
 >;

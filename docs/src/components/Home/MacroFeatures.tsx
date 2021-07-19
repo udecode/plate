@@ -8,10 +8,9 @@ const macroFeatures = [
     title: 'Declarative & Familiar',
     description: (
       <>
-        Slate Plugins takes care of the repetitive and annoying stuff so you
-        don't have to. This means you spend less time wiring up your editor
-        features and more time focusing on your business logic with minimal
-        slate knowledge.
+        Plate takes care of the repetitive and annoying stuff so you don't have
+        to. This means you spend less time wiring up your editor features and
+        more time focusing on your business logic with minimal slate knowledge.
       </>
     ),
   },

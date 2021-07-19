@@ -3,11 +3,8 @@ import {
   getPreventDefaultHandler,
   someNode,
   toggleNodeType,
-} from '@udecode/slate-plugins-common';
-import {
-  useEventEditorId,
-  useStoreEditorState,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { ToolbarElementProps } from './ToolbarElement.types';
 

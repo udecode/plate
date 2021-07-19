@@ -2,8 +2,8 @@ import {
   isCollapsed,
   isRangeAcrossBlocks,
   someNode,
-} from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { ELEMENT_LI } from '../defaults';
 
 /**
@@ -20,6 +20,6 @@ export const isAcrossListItems = (editor: SPEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getSlatePluginType(editor, ELEMENT_LI) },
+    match: { type: getPlatePluginType(editor, ELEMENT_LI) },
   });
 };

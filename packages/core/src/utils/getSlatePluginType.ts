@@ -1,10 +1,10 @@
 import { SPEditor } from '../types/SPEditor';
-import { getSlatePluginOptions } from './getSlatePluginOptions';
+import { getPlatePluginOptions } from './getPlatePluginOptions';
 
 /**
  * Get SP type option by plugin key.
  */
-export const getSlatePluginType = (
+export const getPlatePluginType = (
   editor?: SPEditor,
   pluginKey?: string
-): string => getSlatePluginOptions(editor, pluginKey).type ?? pluginKey;
+): string => getPlatePluginOptions(editor, pluginKey).type ?? pluginKey;

@@ -1,8 +1,8 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export type KEY_PARAGRAPH = 'p';
 export const ELEMENT_PARAGRAPH = 'p';
 
-export const DEFAULTS_PARAGRAPH: Partial<SlatePluginOptions> = {
+export const DEFAULTS_PARAGRAPH: Partial<PlatePluginOptions> = {
   hotkey: ['mod+opt+0', 'mod+shift+0'],
 };

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
-import { createEditorPlugins } from '../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
 import { createListPlugin } from './createListPlugin';

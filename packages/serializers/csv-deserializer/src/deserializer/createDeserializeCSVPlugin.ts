@@ -1,13 +1,13 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
 import {
   getInlineTypes,
-  getSlatePluginWithOverrides,
-  SlatePlugin,
+  getPlatePluginWithOverrides,
+  PlatePlugin,
   SPEditor,
   TDescendant,
   TElement,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeCSV } from './utils';
@@ -15,7 +15,7 @@ import { deserializeCSV } from './utils';
 export interface WithDeserializeCSVOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
   /**
    * Function called before inserting the deserialized csv.
    * Default: if the block above is empty and the first fragment node type is not inline,
@@ -101,6 +101,6 @@ export const withDeserializeCSV = <
 /**
  * @see {@link withDeserializeCSV}
  */
-export const createDeserializeCSVPlugin = getSlatePluginWithOverrides(
+export const createDeserializeCSVPlugin = getPlatePluginWithOverrides(
   withDeserializeCSV
 );

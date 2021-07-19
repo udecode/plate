@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-toolbar",
+  "name": "@udecode/plate-toolbar",
   "version": "1.0.0-next.55",
-  "description": "Slate plugins toolbar",
+  "description": "Plate plugin toolbar",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/toolbar#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/toolbar#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -34,9 +34,9 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/slate-plugins-common": "1.0.0-next.55",
-    "@udecode/slate-plugins-core": "1.0.0-next.55",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.55",
+    "@udecode/plate-common": "1.0.0-next.55",
+    "@udecode/plate-core": "1.0.0-next.55",
+    "@udecode/plate-styled-components": "1.0.0-next.55",
     "react-use": "^17.1.1"
   },
   "publishConfig": {

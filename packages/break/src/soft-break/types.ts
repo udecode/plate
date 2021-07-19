@@ -1,4 +1,4 @@
-import { QueryNodeOptions } from '@udecode/slate-plugins-common';
+import { QueryNodeOptions } from '@udecode/plate-common';
 
 export interface SoftBreakRule {
   hotkey: string;

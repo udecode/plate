@@ -1,10 +1,10 @@
 import { ReactEditor, withReact } from 'slate-react';
 import { TEditor } from '../types/TEditor';
-import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
+import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
 
 /**
  * @see {@link withReact}
  */
-export const createReactPlugin = getSlatePluginWithOverrides(
+export const createReactPlugin = getPlatePluginWithOverrides(
   () => withReact as <T extends TEditor>(editor: T) => T & ReactEditor
 );

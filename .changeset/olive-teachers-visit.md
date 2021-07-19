@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-plugins-core": patch
+"@udecode/plate-core": patch
 ---
 
 add back onDOMBeforeInput

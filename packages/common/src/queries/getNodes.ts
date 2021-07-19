@@ -1,4 +1,4 @@
-import { TEditor, TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { unhangRange, UnhangRangeOptions } from '../transforms/unhangRange';
 import { EditorNodesOptions } from '../types/Editor.types';

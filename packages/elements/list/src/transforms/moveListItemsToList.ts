@@ -3,8 +3,8 @@ import {
   getLastChildPath,
   moveChildren,
   MoveChildrenOptions,
-} from '@udecode/slate-plugins-common';
-import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { SPEditor, TElement } from '@udecode/plate-core';
 import { NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

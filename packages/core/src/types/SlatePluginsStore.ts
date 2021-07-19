@@ -1,20 +1,20 @@
 import { Editor } from 'slate';
-import { SlatePlugin } from './SlatePlugin/SlatePlugin';
+import { PlatePlugin } from './PlatePlugin/PlatePlugin';
 import { SPEditor } from './SPEditor';
 import { TDescendant } from './TDescendant';
 
 /**
  * A unique id used to store the editor state by id.
- * Required if rendering multiple `SlatePlugins`.
+ * Required if rendering multiple `Plate`.
  * Optional otherwise.
  * @default 'main'
  */
 export type EditorId = string | null | undefined;
 
-export type SlatePluginsState<T extends SPEditor = SPEditor> = {
+export type PlateState<T extends SPEditor = SPEditor> = {
   /**
    * Slate editor reference.
-   * @default pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))
+   * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
    */
   editor?: T;
 
@@ -24,17 +24,17 @@ export type SlatePluginsState<T extends SPEditor = SPEditor> = {
   keyChange?: number;
 
   /**
-   * If true, slate plugins will create the editor with `withSlatePlugins`.
-   * If false, slate plugins will remove the editor from the store.
+   * If true, plate will create the editor with `withPlate`.
+   * If false, plate will remove the editor from the store.
    * @default true
    */
   enabled?: boolean;
 
   /**
-   * Slate plugins.
+   * Plate plugins.
    * @default [createReactPlugin(), createHistoryPlugin()]
    */
-  plugins: SlatePlugin<T>[];
+  plugins: PlatePlugin<T>[];
 
   /**
    * Element keys used by the plugins
@@ -53,35 +53,32 @@ export type SlatePluginsState<T extends SPEditor = SPEditor> = {
 /**
  * @see {@link EditorId}
  */
-export type SlatePluginsStates<T extends SPEditor = SPEditor> = Record<
+export type PlateStates<T extends SPEditor = SPEditor> = Record<
   string,
-  SlatePluginsState<T>
+  PlateState<T>
 >;
 
-export type SlatePluginsActions<T extends SPEditor = SPEditor> = {
+export type PlateActions<T extends SPEditor = SPEditor> = {
   /**
-   * Remove state by id. Called by `SlatePlugins` on unmount.
+   * Remove state by id. Called by `Plate` on unmount.
    */
   clearState: (id?: string) => void;
 
   /**
-   * Set initial state by id. Called by `SlatePlugins` on mount.
+   * Set initial state by id. Called by `Plate` on mount.
    */
-  setInitialState: (value?: Partial<SlatePluginsState<T>>, id?: string) => void;
+  setInitialState: (value?: Partial<PlateState<T>>, id?: string) => void;
 
   /**
-   * Set a new editor with slate plugins.
+   * Set a new editor with plate.
    */
   resetEditor: (id?: string) => void;
 
-  setEditor: (value: SlatePluginsState<T>['editor'], id?: string) => void;
-  setSelection: (value: SlatePluginsState<T>['selection'], id?: string) => void;
+  setEditor: (value: PlateState<T>['editor'], id?: string) => void;
+  setSelection: (value: PlateState<T>['selection'], id?: string) => void;
   incrementKeyChange: (id?: string) => void;
-  setEnabled: (value: SlatePluginsState<T>['enabled'], id?: string) => void;
-  setPlugins: (value: SlatePluginsState<T>['plugins'], id?: string) => void;
-  setPluginKeys: (
-    value: SlatePluginsState<T>['pluginKeys'],
-    id?: string
-  ) => void;
-  setValue: (value: SlatePluginsState<T>['value'], id?: string) => void;
+  setEnabled: (value: PlateState<T>['enabled'], id?: string) => void;
+  setPlugins: (value: PlateState<T>['plugins'], id?: string) => void;
+  setPluginKeys: (value: PlateState<T>['pluginKeys'], id?: string) => void;
+  setValue: (value: PlateState<T>['value'], id?: string) => void;
 };

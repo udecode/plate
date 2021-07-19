@@ -32,7 +32,7 @@
     "test:covwa": "yarn test:cov --watchAll",
     "test:w": "yarn test --watch",
     "test:wa": "yarn test --watchAll",
-    "typedoc": "npx typedoc --tsconfig packages/slate-plugins/tsconfig.json",
+    "typedoc": "npx typedoc --tsconfig packages/plate/tsconfig.json",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --no-git-tag-version",
     "versionup:pre": "lerna version prerelease",

@@ -1,4 +1,4 @@
-import { AnyObject } from '@udecode/slate-plugins-core';
+import { AnyObject } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
 
 export interface RenderFunction<P = AnyObject> {

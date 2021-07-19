@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { isMarkActive } from '../queries/isMarkActive';
 import { removeMark } from './removeMark';

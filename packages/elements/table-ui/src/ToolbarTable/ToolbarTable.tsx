@@ -1,15 +1,12 @@
 import * as React from 'react';
+import { getPreventDefaultHandler, someNode } from '@udecode/plate-common';
 import {
-  getPreventDefaultHandler,
-  someNode,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
+  getPlatePluginType,
   useEventEditorId,
   useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import { ELEMENT_TABLE } from '@udecode/slate-plugins-table';
-import { ToolbarButton } from '@udecode/slate-plugins-toolbar';
+} from '@udecode/plate-core';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ToolbarButton } from '@udecode/plate-toolbar';
 import { ToolbarTableProps } from './ToolbarTable.types';
 
 export const ToolbarTable = ({
@@ -18,7 +15,7 @@ export const ToolbarTable = ({
   ...props
 }: ToolbarTableProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
-  const type = getSlatePluginType(editor, ELEMENT_TABLE);
+  const type = getPlatePluginType(editor, ELEMENT_TABLE);
 
   return (
     <ToolbarButton
