@@ -130,6 +130,15 @@
         "example",
         "bug"
       ]
+    },
+    {
+      "login": "ghingis",
+      "name": "Csaba Benkő",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3637899?v=4",
+      "profile": "https://github.com/ghingis",
+      "contributions": [
+        "plugin"
+      ]
     }
   ],
   "contributorsPerLine": 7,
