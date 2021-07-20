@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-list
 
+## 1.0.0-next.57
+
+### Patch Changes
+
+- [#858](https://github.com/udecode/slate-plugins/pull/858) [`5abacbc2`](https://github.com/udecode/slate-plugins/commit/5abacbc23af67f9388536f73076d026b89b24c5c) Thanks [@dylans](https://github.com/dylans)! - wrap toggleNode inside a withoutNormalizing call to prevent errors when inserting new lists
+
 ## 1.0.0-next.56
 
 ### Patch Changes
