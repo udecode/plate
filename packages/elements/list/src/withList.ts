@@ -28,7 +28,8 @@ export const withList = ({
     deleteFragment();
   };
 
-  editor.normalizeNode = getListNormalizer(editor, { validLiChildrenTypes });
+  editor.normalizeNode = (entry) =>
+    getListNormalizer(editor, { validLiChildrenTypes });
 
   return editor;
 };
