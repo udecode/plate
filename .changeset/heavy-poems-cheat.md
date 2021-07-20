@@ -2,4 +2,4 @@
 "@udecode/slate-plugins-list": patch
 ---
 
-fix call signature for list normalizeNode
+wrap toggleNode inside a withoutNormalizing call to prevent errors when inserting new lists
