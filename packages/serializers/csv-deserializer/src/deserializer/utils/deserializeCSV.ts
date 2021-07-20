@@ -2,6 +2,7 @@ import { ELEMENT_DEFAULT } from '@udecode/slate-plugins-common';
 import {
   getSlatePluginType,
   SPEditor,
+  TDescendant,
   TElement,
   TNode,
 } from '@udecode/slate-plugins-core';
@@ -17,7 +18,7 @@ export const deserializeCSV = <T extends SPEditor = SPEditor>(
   editor: T,
   content: string,
   header = false
-) => {
+): TDescendant[] | undefined => {
   // Verify it's a csv string
   const testCsv = parse(content, { preview: 2 });
 
