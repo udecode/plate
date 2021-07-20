@@ -1,5 +1,12 @@
 # @udecode/slate-plugins-core
 
+## 1.0.0-next.56
+
+### Patch Changes
+
+- [#855](https://github.com/udecode/slate-plugins/pull/855) [`75b39f18`](https://github.com/udecode/slate-plugins/commit/75b39f18901d38f80847573cd3431ece1d1d4b3d) Thanks [@zbeyens](https://github.com/zbeyens)! - Sometimes we want to preventDefault without stopping the handler pipeline, so we remove this check.
+  In summary, to stop the pipeline, a handler has to return `true` or run `event.stopPropagation()`
+
 ## 1.0.0-next.55
 
 ### Major Changes
