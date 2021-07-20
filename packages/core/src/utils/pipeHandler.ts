@@ -27,7 +27,7 @@ export const isEventHandled = <
     return shouldTreatEventAsHandled;
   }
 
-  return event.isDefaultPrevented() || event.isPropagationStopped();
+  return event.isPropagationStopped();
 };
 
 /**
