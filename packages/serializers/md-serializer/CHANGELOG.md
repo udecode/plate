@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.60
+
+### Minor Changes
+
+- [#864](https://github.com/udecode/slate-plugins/pull/864) [`37a52994`](https://github.com/udecode/slate-plugins/commit/37a529945a882adb0222b47a28466dd31286a354) Thanks [@dylans](https://github.com/dylans)! - Refactor insert for deserializers
+
 ## 1.0.0-next.59
 
 ### Patch Changes
