@@ -222,14 +222,6 @@ module.exports = {
             __dirname,
             '../packages/elements/code-block-ui/src'
           ),
-          '@udecode/plate-font': path.resolve(
-            __dirname,
-            '../packages/marks/font/src'
-          ),
-          '@udecode/plate-font-ui': path.resolve(
-            __dirname,
-            '../packages/marks/font-ui/src'
-          ),
           '@udecode/plate-excalidraw': path.resolve(
             __dirname,
             '../packages/elements/excalidraw/src'
@@ -297,6 +289,14 @@ module.exports = {
           '@udecode/plate-basic-marks': path.resolve(
             __dirname,
             '../packages/marks/basic-marks/src'
+          ),
+          '@udecode/plate-font': path.resolve(
+            __dirname,
+            '../packages/marks/font/src'
+          ),
+          '@udecode/plate-font-ui': path.resolve(
+            __dirname,
+            '../packages/marks/font-ui/src'
           ),
           '@udecode/plate-highlight': path.resolve(
             __dirname,
