@@ -22,7 +22,7 @@ export interface WithDeserializeAstOptions<
    * set the selected node type to the first fragment node type.
    * Then call Transforms.setNodes.
    */
-  insert?: (editor: T, fragment: TDescendant[]) => TDescendant[];
+  insert?: (editor: T, fragment: TDescendant[]) => void;
 
   /**
    * Function called to get a custom fragment root.
@@ -64,7 +64,6 @@ export const withDeserializeAst = <
       }
 
       Transforms.insertFragment(_editor, fragment);
-      return fragment;
     },
   } = options;
 
@@ -81,7 +80,7 @@ export const withDeserializeAst = <
       }
       Editor.withoutNormalizing(editor, () => {
         fragment = getFragment(editor, fragment);
-        fragment = insert(editor, fragment as TElement[]);
+        insert(editor, fragment as TElement[]);
       });
       return;
     }

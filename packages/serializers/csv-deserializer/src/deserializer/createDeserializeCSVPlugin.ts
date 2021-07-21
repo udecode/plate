@@ -22,7 +22,7 @@ export interface WithDeserializeCSVOptions<
    * set the selected node type to the first fragment node type.
    * Then call Transforms.insertFragment.
    */
-  insert?: (editor: T, fragment: TDescendant[]) => TDescendant[];
+  insert?: (editor: T, fragment: TDescendant[]) => void;
 
   /**
    * Function called to get a custom fragment root.
@@ -64,8 +64,6 @@ export const withDeserializeCSV = <
       }
 
       Transforms.insertFragment(_editor, fragment);
-
-      return fragment;
     },
   } = options;
 
@@ -81,7 +79,7 @@ export const withDeserializeCSV = <
       }
       Editor.withoutNormalizing(editor, () => {
         fragment = getFragment(editor, fragment as TElement[]);
-        fragment = insert(editor, fragment);
+        insert(editor, fragment);
       });
       return;
     }

@@ -26,7 +26,7 @@ export interface WithDeserializeMarkdownOptions<
    * set the selected node type to the first fragment node type.
    * Then call Transforms.insertFragment.
    */
-  insert?: (editor: T, fragment: TDescendant[]) => TDescendant[];
+  insert?: (editor: T, fragment: TDescendant[]) => void;
 
   /**
    * Function called to get a custom fragment root.
@@ -67,8 +67,6 @@ export const withDeserializeMD = <
         setNodes<TElement>(_editor, { type: firstNodeType });
       }
       Transforms.insertFragment(_editor, fragment);
-
-      return fragment;
     },
   } = options;
 
@@ -90,7 +88,7 @@ export const withDeserializeMD = <
       }
       Editor.withoutNormalizing(editor, () => {
         fragment = getFragment(editor, fragment);
-        fragment = insert(editor, fragment);
+        insert(editor, fragment);
       });
       return;
     }
