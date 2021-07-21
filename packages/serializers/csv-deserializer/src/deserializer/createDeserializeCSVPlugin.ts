@@ -17,23 +17,18 @@ export interface WithDeserializeCSVOptions<
 > {
   plugins?: SlatePlugin<T>[];
   /**
-   * Function called before inserting the deserialized csv.
+   * Function called to cleanup and insert the deserialized csv.
    * Default: if the block above is empty and the first fragment node type is not inline,
    * set the selected node type to the first fragment node type.
+   * Then call Transforms.insertFragment.
    */
-  preInsert?: (fragment: TDescendant[]) => TDescendant[];
-
-  /**
-   * Function called to insert the deserialized csv.
-   * Default: Transforms.insertFragment.
-   */
-  insert?: (fragment: TDescendant[]) => void;
+  insert?: (editor: T, fragment: TDescendant[]) => void;
 
   /**
    * Function called to get a custom fragment root.
    * Default: fragment.
    */
-  getFragment?: (fragment: TDescendant[]) => TDescendant[];
+  getFragment?: (editor: T, fragment: TDescendant[]) => TDescendant[];
 }
 
 /**
@@ -49,29 +44,27 @@ export const withDeserializeCSV = <
   const { insertData } = editor;
 
   const {
-    getFragment = (fragment) => {
+    getFragment = (_editor, fragment) => {
       return fragment;
     },
 
-    preInsert = (fragment) => {
-      const inlineTypes = getInlineTypes(editor, plugins);
+    insert = (_editor, fragment) => {
+      const inlineTypes = getInlineTypes(_editor, plugins);
 
       const firstNodeType = fragment[0].type as string | undefined;
 
       // replace the selected node type by the first block type
       if (
-        isBlockAboveEmpty(editor) &&
+        isBlockAboveEmpty(_editor) &&
         firstNodeType &&
         !inlineTypes.includes(firstNodeType) &&
         fragment[0].type
       ) {
-        setNodes<TElement>(editor, { type: firstNodeType });
+        setNodes<TElement>(_editor, { type: firstNodeType });
       }
 
-      return fragment;
+      Transforms.insertFragment(_editor, fragment);
     },
-
-    insert = (fragment) => Transforms.insertFragment(editor, fragment),
   } = options;
 
   editor.insertData = (data) => {
@@ -85,10 +78,8 @@ export const withDeserializeCSV = <
         return;
       }
       Editor.withoutNormalizing(editor, () => {
-        fragment = getFragment(fragment as TElement[]);
-        fragment = preInsert(fragment);
-
-        insert(fragment);
+        fragment = getFragment(editor, fragment as TElement[]);
+        insert(editor, fragment);
       });
       return;
     }
