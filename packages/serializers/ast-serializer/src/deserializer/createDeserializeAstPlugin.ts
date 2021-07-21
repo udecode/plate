@@ -8,7 +8,7 @@ import {
   TElement,
   WithOverride,
 } from '@udecode/slate-plugins-core';
-import { Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 
 export interface WithDeserializeAstOptions<
@@ -84,11 +84,12 @@ export const withDeserializeAst = <
         insertData(data);
         return;
       }
+      Editor.withoutNormalizing(editor, () => {
+        fragment = getFragment(fragment);
+        fragment = preInsert(fragment);
 
-      fragment = getFragment(fragment);
-      fragment = preInsert(fragment);
-
-      insert(fragment);
+        insert(fragment);
+      });
       return;
     }
     insertData(data);
