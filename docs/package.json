@@ -81,6 +81,7 @@
     "@udecode/slate-plugins-kbd": "file:../packages/marks/kbd",
     "@udecode/slate-plugins-html-serializer": "file:../packages/serializers/html-serializer",
     "@udecode/slate-plugins-md-serializer": "file:../packages/serializers/md-serializer",
+    "@udecode/slate-plugins-serializer": "file:../packages/serializers/serializer",
     "@udecode/slate-plugins-autoformat": "file:../packages/autoformat",
     "@udecode/slate-plugins-break": "file:../packages/break",
     "@udecode/slate-plugins-find-replace": "file:../packages/find-replace",

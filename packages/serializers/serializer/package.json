@@ -1,9 +1,9 @@
 {
-  "name": "@udecode/slate-plugins-html-serializer",
+  "name": "@udecode/slate-plugins-serializer",
   "version": "1.0.0-next.59",
-  "description": "Slate plugins html-serializer",
+  "description": "Slate plugins serializer",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/html-serializer#readme",
+  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/serializer#readme",
   "bugs": {
     "url": "https://github.com/udecode/slate-plugins/issues"
   },
@@ -30,13 +30,11 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/slate-plugins-common": "1.0.0-next.59",
-    "@udecode/slate-plugins-core": "1.0.0-next.56",
-    "@udecode/slate-plugins-serializer": "1.0.0-next.59"
+    "@udecode/slate-plugins-core": "1.0.0-next.56"
   },
   "publishConfig": {
     "access": "public"
