@@ -1,4 +1,4 @@
-import { createStyles } from '@udecode/slate-plugins';
+import { createStyles } from '@udecode/plate';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { TagElementStyleProps } from './TagElement.types';
