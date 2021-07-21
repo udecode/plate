@@ -1,5 +1,19 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.58
+
+### Patch Changes
+
+- [#860](https://github.com/udecode/slate-plugins/pull/860) [`db6371c3`](https://github.com/udecode/slate-plugins/commit/db6371c36e389cb03901a119194dd93652134554) Thanks [@dylans](https://github.com/dylans)! - wrap paste deserialization in withoutNormalization block to prevent paste errors
+
+## 1.0.0-next.56
+
+### Patch Changes
+
+- Updated dependencies [[`75b39f18`](https://github.com/udecode/slate-plugins/commit/75b39f18901d38f80847573cd3431ece1d1d4b3d)]:
+  - @udecode/slate-plugins-core@1.0.0-next.56
+  - @udecode/slate-plugins-common@1.0.0-next.56
+
 ## 1.0.0-next.55
 
 ### Patch Changes

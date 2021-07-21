@@ -8,7 +8,7 @@ import {
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeCSV } from './utils';
 
@@ -53,7 +53,7 @@ export const withDeserializeCSV = <
       return fragment;
     },
 
-    preInsert = (fragment: TElement[]) => {
+    preInsert = (fragment) => {
       const inlineTypes = getInlineTypes(editor, plugins);
 
       const firstNodeType = fragment[0].type as string | undefined;
@@ -84,14 +84,14 @@ export const withDeserializeCSV = <
         insertData(data);
         return;
       }
+      Editor.withoutNormalizing(editor, () => {
+        fragment = getFragment(fragment as TElement[]);
+        fragment = preInsert(fragment);
 
-      fragment = getFragment(fragment);
-      fragment = preInsert(fragment);
-
-      insert(fragment);
+        insert(fragment);
+      });
       return;
     }
-
     insertData(data);
   };
 

@@ -8,7 +8,7 @@ import {
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeMD } from './utils/deserializeMD';
 
@@ -92,10 +92,12 @@ export const withDeserializeMD = <
         insertData(data);
         return;
       }
-      fragment = getFragment(fragment);
-      fragment = preInsert(fragment);
+      Editor.withoutNormalizing(editor, () => {
+        fragment = getFragment(fragment);
+        fragment = preInsert(fragment);
 
-      insert(fragment);
+        insert(fragment);
+      });
       return;
     }
 
