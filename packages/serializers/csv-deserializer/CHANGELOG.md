@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-csv-serializer
 
+## 1.0.0-next.59
+
+### Patch Changes
+
+- Updated dependencies [[`3a3eb1b8`](https://github.com/udecode/slate-plugins/commit/3a3eb1b8565789b7ba49e8170479df8245ed5b22)]:
+  - @udecode/slate-plugins-common@1.0.0-next.59
+  - @udecode/slate-plugins-table@1.0.0-next.59
+
 ## 1.0.0-next.58
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @udecode/slate-plugins-list-ui
 
+## 1.0.0-next.59
+
+### Patch Changes
+
+- Updated dependencies [[`3a3eb1b8`](https://github.com/udecode/slate-plugins/commit/3a3eb1b8565789b7ba49e8170479df8245ed5b22)]:
+  - @udecode/slate-plugins-common@1.0.0-next.59
+  - @udecode/slate-plugins-list@1.0.0-next.59
+  - @udecode/slate-plugins-styled-components@1.0.0-next.59
+  - @udecode/slate-plugins-toolbar@1.0.0-next.59
+
 ## 1.0.0-next.57
 
 ### Patch Changes
