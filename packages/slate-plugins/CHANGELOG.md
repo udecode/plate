@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.0.0-next.58
+
+### Patch Changes
+
+- Updated dependencies [[`db6371c3`](https://github.com/udecode/slate-plugins/commit/db6371c36e389cb03901a119194dd93652134554)]:
+  - @udecode/slate-plugins-ast-serializer@1.0.0-next.58
+  - @udecode/slate-plugins-csv-serializer@1.0.0-next.58
+  - @udecode/slate-plugins-html-serializer@1.0.0-next.58
+  - @udecode/slate-plugins-md-serializer@1.0.0-next.58
+
 ## 1.0.0-next.57
 
 ### Patch Changes

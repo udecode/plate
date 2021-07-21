@@ -1,5 +1,11 @@
 # @udecode/slate-plugins-md-serializer
 
+## 1.0.0-next.58
+
+### Patch Changes
+
+- [#860](https://github.com/udecode/slate-plugins/pull/860) [`db6371c3`](https://github.com/udecode/slate-plugins/commit/db6371c36e389cb03901a119194dd93652134554) Thanks [@dylans](https://github.com/dylans)! - wrap paste deserialization in withoutNormalization block to prevent paste errors
+
 ## 1.0.0-next.57
 
 ### Patch Changes
