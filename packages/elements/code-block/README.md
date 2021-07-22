@@ -1,6 +1,6 @@
 # Plate code block plugin
 
-This package implements code block plugin for Plate.
+This package implements the code block plugin for Plate.
 
 ## Documentation
 

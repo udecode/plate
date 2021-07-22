@@ -1,6 +1,6 @@
 # Plate font UI
 
-This package implements font UI for Plate.
+This package implements the font UI for Plate.
 
 ## Documentation
 

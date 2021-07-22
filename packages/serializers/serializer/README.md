@@ -1,6 +1,6 @@
 # Plate serializer
 
-This package implements utilities for Plate serializers.
+This package implements the utilities for Plate serializers.
 
 ## API
 

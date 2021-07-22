@@ -1,6 +1,6 @@
 # Plate code block UI
 
-This package implements code block UI for Plate.
+This package implements the code block UI for Plate.
 
 ## Documentation
 

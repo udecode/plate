@@ -1,6 +1,6 @@
 # Plate media embed UI
 
-This package implements media embed UI for Plate.
+This package implements the media embed UI for Plate.
 
 ## Documentation
 

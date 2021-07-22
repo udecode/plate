@@ -1,6 +1,6 @@
 # Plate find and replace plugin
 
-This package implements find and replace plugin for Plate.
+This package implements the find and replace plugin for Plate.
 
 ## Documentation
 

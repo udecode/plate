@@ -1,6 +1,6 @@
 # Plate reset node plugin
 
-This package implements reset node plugin for Plate.
+This package implements the reset node plugin for Plate.
 
 ## Documentation
 

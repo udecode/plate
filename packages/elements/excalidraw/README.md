@@ -1,6 +1,6 @@
 # Plate excalidraw plugin
 
-This package implements excalidraw plugin for Plate.
+This package implements the excalidraw plugin for Plate.
 
 ## Documentation
 

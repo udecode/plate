@@ -1,6 +1,6 @@
 # Plate normalizer plugins
 
-This package implements normalizer plugins for Plate.
+This package implements the normalizer plugins for Plate.
 
 ## Documentation
 

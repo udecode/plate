@@ -1,6 +1,6 @@
 # Plate mention UI
 
-This package implements mention UI for Plate.
+This package implements the mention UI for Plate.
 
 ## Documentation
 

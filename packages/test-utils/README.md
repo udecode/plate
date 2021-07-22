@@ -1,6 +1,6 @@
 # Plate test utilities
 
-This package implements test utilities for Plate.
+This package implements the test utilities for Plate.
 
 ## API
 

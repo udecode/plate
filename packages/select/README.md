@@ -1,6 +1,6 @@
 # Plate select plugins
 
-This package implements select on backspace plugin for Plate. It allows
+This package implements the select on backspace plugin for Plate. It allows
 setting a list of element types to select on backspace.
 
 ## Documentation

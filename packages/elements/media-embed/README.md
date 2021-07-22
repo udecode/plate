@@ -1,6 +1,6 @@
 # Plate media embed plugin
 
-This package implements media embed plugin for Plate. It allows inserting
+This package implements the media embed plugin for Plate. It allows inserting
 embeddable media such as YouTube or Vimeo videos and tweets into your
 editor.
 

@@ -1,6 +1,6 @@
 # Plate list plugin
 
-This package implements list plugin for Plate.
+This package implements the list plugin for Plate.
 
 ## Documentation
 

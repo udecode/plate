@@ -1,6 +1,6 @@
 # Plate placeholder UI
 
-This package implements placeholder UI for Plate.
+This package implements the placeholder UI for Plate.
 
 ## Documentation
 

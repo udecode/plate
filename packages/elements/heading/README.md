@@ -1,6 +1,6 @@
 # Plate headings plugin
 
-This package implements headings plugin for Plate.
+This package implements the headings plugin for Plate.
 
 ## Documentation
 

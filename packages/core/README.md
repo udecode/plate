@@ -1,7 +1,7 @@
 # Plate core architecture
 
-This package implements Plate core architecture: a plugin system which
-glue everything together.
+This package implements the Plate core architecture: a plugin system which
+glues everything together.
 
 ## Documentation
 
