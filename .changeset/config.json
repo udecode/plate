@@ -46,6 +46,7 @@
       "@udecode/plate-placeholder",
       "@udecode/plate-reset-node",
       "@udecode/plate-select",
+      "@udecode/plate-serializer",
       "@udecode/plate-styled-components",
       "@udecode/plate-table",
       "@udecode/plate-table-ui",

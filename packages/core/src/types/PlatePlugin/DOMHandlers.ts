@@ -16,9 +16,12 @@ import {
 } from 'react';
 import { SPEditor } from '../SPEditor';
 
-export type DOMHandlerReturnType = boolean | void;
+/**
+ * If true, the next handlers will be skipped.
+ */
+export type HandlerReturnType = boolean | void;
 
-type ReturnType = DOMHandlerReturnType;
+type ReturnType = HandlerReturnType;
 
 export type DOMHandler<
   K extends keyof DOMHandlers,

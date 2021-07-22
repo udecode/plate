@@ -1,5 +1,18 @@
 # @udecode/slate-plugins-common
 
+## 1.0.0-next.61
+
+### Patch Changes
+
+- Updated dependencies [[`7c26cf32`](https://github.com/udecode/slate-plugins/commit/7c26cf32e8b501d531c6d823ab55bf361e228bc3)]:
+  - @udecode/slate-plugins-core@1.0.0-next.61
+
+## 1.0.0-next.59
+
+### Patch Changes
+
+- [#866](https://github.com/udecode/slate-plugins/pull/866) [`3a3eb1b8`](https://github.com/udecode/slate-plugins/commit/3a3eb1b8565789b7ba49e8170479df8245ed5b22) Thanks [@zbeyens](https://github.com/zbeyens)! - HTML deserializer with `'*'` style rule was inserting empty fields (e.g. color) on each paste. Fixed by not allowing empty styles to be deserialized.
+
 ## 1.0.0-next.56
 
 ### Patch Changes

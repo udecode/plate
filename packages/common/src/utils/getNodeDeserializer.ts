@@ -24,6 +24,7 @@ export const getNodeDeserializer = ({
         type,
         withoutChildren,
         deserialize: (el) => {
+          // Ignore if el nodeName is not included in rule nodeNames (except *).
           if (
             nodeNames.length &&
             !nodeNames.includes(el.nodeName) &&
@@ -31,13 +32,18 @@ export const getNodeDeserializer = ({
           )
             return;
 
+          // Ignore if the rule className is not in el class list.
           if (className && !el.classList.contains(className)) return;
 
           if (style) {
             for (const [key, value] of Object.entries(style)) {
               const values = castArray<string>(value);
 
+              // Ignore if el style value is not included in rule style values (except *)
               if (!values.includes(el.style[key]) && value !== '*') return;
+
+              // Ignore if el style value is falsy (for value *)
+              if (value === '*' && !el.style[key]) return;
             }
           }
 

@@ -1,8 +1,8 @@
 import { SyntheticEvent } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import {
-  DOMHandlerReturnType,
   DOMHandlers,
+  HandlerReturnType,
 } from '../types/PlatePlugin/DOMHandlers';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
@@ -45,7 +45,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     plugins,
   }: { editableProps?: EditableProps; handlerKey: K; plugins?: PlatePlugin[] }
 ): ((event: any) => void) | undefined => {
-  let pluginsHandlers: ((event: any) => DOMHandlerReturnType)[] = [];
+  let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
   if (plugins) {
     pluginsHandlers = plugins.flatMap(
       (plugin) => plugin[handlerKey]?.(editor) ?? []
@@ -54,7 +54,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
 
   const propsHandler = editableProps?.[handlerKey] as (
     event: any
-  ) => DOMHandlerReturnType | undefined;
+  ) => HandlerReturnType | undefined;
 
   if (!pluginsHandlers.length && !propsHandler) return;
 
