@@ -16,6 +16,10 @@ Plate
 </div>
 </p>
 
+> 🎉 🎉 🎉 Version 1 of `@udecode/plate` is now available! 🎉 🎉 🎉  
+>  
+> The **Slate Plugins** project has evolved to **Plate**.
+
 ## Visit [plate.udecode.io](https://plate.udecode.io/) for docs, guides, API and more!
 
 ## Introduction
@@ -75,6 +79,14 @@ To find out more see the following Plate documentation sections:
 
 The documentation is far from being complete and will be constantly
 evolving (as will the packages).
+
+## Looking for `slate-plugins`?
+
+This repo has been renamed to `plate`. The name change should not
+disrupt any current usage, repo clones, pull requests or issue
+reporting. Links should redirect to the new location. The library
+formerly known as `@udecode/slate-plugins` is now available as
+`@udecode/plate`.
 
 ## Contributing and project organization
 

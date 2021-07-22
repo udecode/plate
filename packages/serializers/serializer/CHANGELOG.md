@@ -1,6 +1,10 @@
-# @udecode/slate-plugins-serializer
+# @udecode/plate-serializer
 
 ## 1.0.0-next.61
+
+>  The **Slate Plugins** project has evolved to **Plate**. This is the
+>  last version of `@udecode/slate-plugins[-x]`, please install
+>  `@udecode/plate[-x]`.
 ### Minor Changes
 
 
