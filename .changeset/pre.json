@@ -38,6 +38,7 @@
     "@udecode/slate-plugins-placeholder": "1.0.0-alpha.25",
     "@udecode/slate-plugins-reset-node": "1.0.0-alpha.25",
     "@udecode/slate-plugins-select": "1.0.0-alpha.25",
+    "@udecode/slate-plugins-serializer": "1.0.0-next.59",
     "@udecode/slate-plugins-html-serializer": "1.0.0-alpha.25",
     "@udecode/slate-plugins-md-serializer": "1.0.0-alpha.25",
     "@udecode/slate-plugins-ast-serializer": "1.0.0-next.41",
