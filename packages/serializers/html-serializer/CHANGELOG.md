@@ -1,5 +1,18 @@
 # @udecode/slate-plugins-html-serializer
 
+## 1.0.0-next.61
+
+### Major Changes
+
+- [#869](https://github.com/udecode/slate-plugins/pull/869) [`fd91359d`](https://github.com/udecode/slate-plugins/commit/fd91359dc3722292cee06e0f80ed414934b27572) Thanks [@zbeyens](https://github.com/zbeyens)! - Removed `getFragment` and `insert` option in favor of the new plugin options.
+
+### Patch Changes
+
+- Updated dependencies [[`546ee49b`](https://github.com/udecode/slate-plugins/commit/546ee49b1e22464a8a0c0fad7f254da85bcfde3d), [`7c26cf32`](https://github.com/udecode/slate-plugins/commit/7c26cf32e8b501d531c6d823ab55bf361e228bc3)]:
+  - @udecode/slate-plugins-serializer@1.0.0-next.61
+  - @udecode/slate-plugins-core@1.0.0-next.61
+  - @udecode/slate-plugins-common@1.0.0-next.61
+
 ## 1.0.0-next.60
 
 ### Minor Changes
