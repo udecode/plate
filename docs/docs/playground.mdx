@@ -83,6 +83,8 @@ The following playground uses most of the provided plugins.
       ];
 
       plugins.push(...[
+        createDeserializeMDPlugin({ plugins }),
+        createDeserializeCSVPlugin({ plugins }),
         createDeserializeHTMLPlugin({ plugins }),
         createDeserializeAstPlugin({ plugins }),
       ]);
