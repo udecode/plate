@@ -41,6 +41,7 @@ export * from '@udecode/plate-normalizers';
 export * from '@udecode/plate-paragraph';
 export * from '@udecode/plate-reset-node';
 export * from '@udecode/plate-select';
+export * from '@udecode/plate-serializer';
 export * from '@udecode/plate-styled-components';
 export * from '@udecode/plate-table';
 export * from '@udecode/plate-table-ui';

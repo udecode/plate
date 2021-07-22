@@ -74,11 +74,12 @@
     "@udecode/plate-placeholder": "1.0.0",
     "@udecode/plate-reset-node": "1.0.0",
     "@udecode/plate-select": "1.0.0",
+    "@udecode/plate-serializer": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0",
     "@udecode/plate-table": "1.0.0",
     "@udecode/plate-table-ui": "1.0.0",
     "@udecode/plate-toolbar": "1.0.0",
-    "@udecode/plate-trailing-block": "1.0.0",
-    "@udecode/plate-styled-components": "1.0.0"
+    "@udecode/plate-trailing-block": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -6,10 +6,10 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
+import { insertDeserializedFragment } from '@udecode/plate-serializer';
 import { Editor, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { deserializeMD } from './utils/deserializeMD';
-import { insertDeserializedFragment } from '@udecode/slate-plugins-serializer';
 
 export interface WithDeserializeMarkdownOptions<
   T extends SPEditor = SPEditor & ReactEditor

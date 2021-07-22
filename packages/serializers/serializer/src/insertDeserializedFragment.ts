@@ -1,11 +1,11 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/slate-plugins-common';
+import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
 import {
   getInlineTypes,
-  SlatePlugin,
+  PlatePlugin,
   SPEditor,
   TDescendant,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { ReactEditor } from 'slate-react';
 
@@ -18,7 +18,7 @@ export const insertDeserializedFragment = <
     plugins,
   }: {
     fragment: TDescendant[];
-    plugins: SlatePlugin<T>[];
+    plugins: PlatePlugin<T>[];
   }
 ) => {
   Editor.withoutNormalizing(editor, () => {
