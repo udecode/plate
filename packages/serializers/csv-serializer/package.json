@@ -1,15 +1,22 @@
 {
   "name": "@udecode/plate-csv-serializer",
   "version": "1.0.0",
-  "description": "Plate plugin csv-serializer",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/csv-serializer#readme",
+  "description": "CSV serializer plugin for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin",
+    "serializer",
+    "csv"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/serializers/csv-serializer"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,19 +26,12 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
-    "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/plate-common": "1.0.0",
@@ -42,6 +42,13 @@
   },
   "devDependencies": {
     "@types/papaparse": "^5"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-hyperscript": ">=0.60.0",
+    "slate-react": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,4 +1,4 @@
-# Contributing to plate
+# Contributing
 
 Thanks for your interest in improving `plate`! We are a
 community-driven project and welcome contributions of all kinds: from
@@ -16,20 +16,13 @@ No software is bug-free. So, if you got an issue, follow these steps:
   for current and old issues.
   - If you find an existing issue, please UPVOTE the issue by adding a
     "thumbs-up reaction". We use this to help prioritize issues!
-- If none of that is helping, create an issue with the following
-  information:
-  - Clear title (shorter is better).
-  - Describe the issue in clear language.
-  - Share error logs, screenshots, etc.
-  - To speed up the issue fixing process, send us the steps to reproduce
-    or a sample repo with the issue you faced:
+- If none of that is helping, please create an issue.
 
 ### Reproductions
 
 The best way to help figure out an issue you are having is to produce a
 minimal reproduction using
 [our CodeSandbox](https://codesandbox.io/s/plate-playground-v1-2mh1c)
-
 
 ## Development Guide
 
@@ -138,7 +131,7 @@ sequence is as follows:
   issue starting with `/release:next`.
 - Merge the PR, triggering the bot to create a PR release.
 - Review the final changesets.
-- Merge the PR release, triggering the bot to release the changed
+- Merge the PR release, triggering the bot to release the updated
   packages on npm.
 
 ## Pull Requests (PRs)
@@ -146,9 +139,12 @@ sequence is as follows:
 We welcome all contributions. There are many ways you can help us. This
 is few of those ways:
 
-Before you submit a new PR, make sure you run `yarn prerelease`. Do not submit
+Before you submit a new PR, please run `yarn prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `plate` channel](https://slate-js.slack.com/messages/plate).
+[join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
+
+You miss time/knowledge but still want to contribute? Just open a PR or
+a gist on Slack and we'll try to help.
 
 ### Reviewing PRs
 

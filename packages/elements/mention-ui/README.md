@@ -1,6 +1,14 @@
-# plate-mention-ui
+# Plate mention UI
 
-See [README](https://github.com/udecode/plate).
+This package implements mention UI for Plate.
+
+## Documentation
+
+Check out [Mention](https://plate.udecode.io/docs/plugins/mention).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

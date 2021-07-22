@@ -1,6 +1,14 @@
-# plate-image-ui
+# Plate image UI
 
-See [README](https://github.com/udecode/plate).
+This package implements image UI for Plate.
+
+## Documentation
+
+Check out [Image](https://plate.udecode.io/docs/plugins/image).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

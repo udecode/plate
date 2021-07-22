@@ -1,6 +1,15 @@
-# plate-normalizers
+# Plate normalizer plugins
 
-See [README](https://github.com/udecode/plate).
+This package implements normalizer plugins for Plate.
+
+## Documentation
+
+Check out
+[Forced Layout](https://plate.udecode.io/docs/plugins/forced-layout).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

@@ -1,6 +1,14 @@
-# plate-list
+# Plate list plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements list plugin for Plate.
+
+## Documentation
+
+Check out [List](https://plate.udecode.io/docs/plugins/list).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

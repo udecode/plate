@@ -1,6 +1,14 @@
-# plate-font-ui
+# Plate font UI
 
-See [README](https://github.com/udecode/plate).
+This package implements font UI for Plate.
+
+## Documentation
+
+Check out [Font](https://plate.udecode.io/docs/plugins/font).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

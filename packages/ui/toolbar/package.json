@@ -1,15 +1,20 @@
 {
   "name": "@udecode/plate-toolbar",
   "version": "1.0.0",
-  "description": "Plate plugin toolbar",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/toolbar#readme",
+  "description": "Toolbar UI for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/ui/toolbar"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,18 +24,12 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
@@ -38,6 +37,12 @@
     "@udecode/plate-core": "1.0.0",
     "@udecode/plate-styled-components": "1.0.0",
     "react-use": "^17.1.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,6 +1,14 @@
-# plate-ast-serializer
+# Plate slate AST serializer plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements slate AST serializer for Plate.
+
+## Documentation
+
+Check out [Playground](https://plate.udecode.io/docs/playground).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

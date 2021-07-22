@@ -1,15 +1,20 @@
 {
   "name": "@udecode/plate-styled-components",
   "version": "1.0.0",
-  "description": "Plate plugin styled components",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/components#readme",
+  "description": "Standard UI for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/ui/styled-components"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,18 +24,12 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/plate-common": "1.0.0",
@@ -40,6 +39,12 @@
   },
   "devDependencies": {
     "twin.macro": "^2.6.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"

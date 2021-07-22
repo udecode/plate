@@ -1,7 +1,13 @@
-# @udecode/slate-plugins-mention
+# @udecode/plate-mention
 
 ## 1.0.0-next.61
 
+>  The **Slate Plugins** project has evolved to **Plate**. This is the
+>  last version of `@udecode/slate-plugins[-x]`, please install
+>  `@udecode/plate[-x]`.
+>  The **Slate Plugins** project has evolved to **Plate**. This is the
+>  last version of `@udecode/slate-plugins[-x]`, please install
+>  `@udecode/plate[-x]`.
 ### Patch Changes
 
 - Updated dependencies [[`7c26cf32`](https://github.com/udecode/slate-plugins/commit/7c26cf32e8b501d531c6d823ab55bf361e228bc3)]:

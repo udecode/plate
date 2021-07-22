@@ -1,6 +1,15 @@
-# plate-reset-node
+# Plate reset node plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements reset node plugin for Plate.
+
+## Documentation
+
+Check out
+[Reset Node](https://plate.udecode.io/docs/plugins/reset-node).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

@@ -128,7 +128,7 @@ module.exports = {
             },
             {
               label: 'Slack',
-              href: 'https://slate-js.slack.com/messages/plate',
+              href: 'https://slate-js.slack.com/messages/slate-plugins',
             },
           ],
         },
@@ -318,10 +318,7 @@ module.exports = {
             __dirname,
             '../packages/serializers/ast-serializer/src'
           ),
-          '@udecode/plate-plate': path.resolve(
-            __dirname,
-            '../packages/plate/src'
-          ),
+          '@udecode/plate': path.resolve(__dirname, '../packages/plate/src'),
           '@udecode/plate-autoformat': path.resolve(
             __dirname,
             '../packages/autoformat/src'

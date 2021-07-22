@@ -1,6 +1,14 @@
-# plate-highlight
+# Plate highlight plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements text highlight plugin for Plate.
+
+## Documentation
+
+Check out [Highlight](https://plate.udecode.io/docs/plugins/highlight).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

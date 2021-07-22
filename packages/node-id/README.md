@@ -1,6 +1,15 @@
-# plate-node-id
+# Plate node id plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements node id plugin for Plate. It allows adding a
+unique id to all nodes, which is useful for features like drag & drop.
+
+## Documentation
+
+Check out [Playground](https://plate.udecode.io/docs/playground).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

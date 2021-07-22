@@ -1,6 +1,15 @@
-# plate-block-quote
+# Plate block quote plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements block quote plugin for Plate.
+
+## Documentation
+
+Check out
+[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

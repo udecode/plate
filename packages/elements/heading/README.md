@@ -1,6 +1,15 @@
-# plate-heading
+# Plate headings plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements headings plugin for Plate.
+
+## Documentation
+
+Check out
+[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 
