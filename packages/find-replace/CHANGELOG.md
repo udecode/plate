@@ -1,5 +1,13 @@
 # @udecode/slate-plugins-find-replace
 
+## 1.0.0-next.61
+
+### Patch Changes
+
+- Updated dependencies [[`7c26cf32`](https://github.com/udecode/slate-plugins/commit/7c26cf32e8b501d531c6d823ab55bf361e228bc3)]:
+  - @udecode/slate-plugins-core@1.0.0-next.61
+  - @udecode/slate-plugins-common@1.0.0-next.61
+
 ## 1.0.0-next.59
 
 ### Patch Changes
