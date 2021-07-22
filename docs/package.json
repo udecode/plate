@@ -90,6 +90,7 @@
     "@udecode/plate-placeholder": "file:../packages/placeholder",
     "@udecode/plate-reset-node": "file:../packages/reset-node",
     "@udecode/plate-select": "file:../packages/select",
+    "@udecode/plate-serializer": "file:../packages/serializers/serializer",
     "@udecode/plate-styled-components": "file:../packages/ui/styled-components",
     "@udecode/plate-table": "file:../packages/elements/table",
     "@udecode/plate-table-ui": "file:../packages/elements/table-ui",
