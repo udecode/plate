@@ -50,6 +50,7 @@
       "@udecode/plate-styled-components",
       "@udecode/plate-table",
       "@udecode/plate-table-ui",
+      "@udecode/plate-test-utils",
       "@udecode/plate-toolbar",
       "@udecode/plate-trailing-block"
     ]
