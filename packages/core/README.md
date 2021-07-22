@@ -1,9 +1,18 @@
-# plate core
+# Plate core architecture
 
-This library contains the core utilities using `slate`.
+This package implements Plate core architecture: a plugin system which
+glue everything together.
 
-See [README](https://github.com/udecode/plate).
+## Documentation
+
+Check out:
+- [Basic Editor](https://plate.udecode.io/docs/basic-editor)
+- [Plate](https://plate.udecode.io/docs/Plate) and the following guides.
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 
-[MIT](LICENSE)
+[MIT](../../LICENSE)

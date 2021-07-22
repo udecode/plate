@@ -1,6 +1,14 @@
-# plate-html-serializer
+# Plate HTML serializer plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements HTML serializer for Plate.
+
+## Documentation
+
+Check out [Serializing HTML](https://plate.udecode.io/docs/serializing-html).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

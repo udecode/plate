@@ -1,6 +1,14 @@
-# plate-find-replace-ui
+# Plate find and replace UI
 
-See [README](https://github.com/udecode/plate).
+This package implements find and replace UI for Plate.
+
+## Documentation
+
+Check out [Find & Replace](https://plate.udecode.io/docs/plugins/find-replace).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

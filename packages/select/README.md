@@ -1,6 +1,15 @@
-# plate-select
+# Plate select plugins
 
-See [README](https://github.com/udecode/plate).
+This package implements select on backspace plugin for Plate. It allows
+setting a list of element types to select on backspace.
+
+## Documentation
+
+Check out [Playground](https://plate.udecode.io/docs/playground).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

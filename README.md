@@ -1,5 +1,5 @@
 <h1 align="center">
-plate
+Plate
 </h1>
 
 <p>
@@ -10,7 +10,7 @@ plate
   <a target="_blank" href="https://codecov.io/gh/udecode/plate/branch/next/graph/badge.svg"><img src="https://codecov.io/gh/udecode/plate/branch/next/graph/badge.svg" /></a>
   <a target="_blank" href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg" alt="Tested with Jest"></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
-  <a target="_blank" href="https://slate-js.slack.com/messages/plate"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
+  <a target="_blank" href="https://slate-js.slack.com/messages/slate-plugins"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
 </div>
 <div align="center">
 </div>
@@ -30,10 +30,10 @@ skills to make something similar to [Quill](https://quilljs.com/) or
 [ProseMirror](https://prosemirror.net/). This repository allows you to
 build your editor right away with **minimal** slate knowledge.
 
-`@udecode/plate` is built on top of slate to handle plugins and
-state management for an optimal development experience. This repository
-comes with a lot of plugins as elements, marks, serializers,
-normalizers, queries, transforms, components and so on.
+`@udecode/plate` is built on top of slate to handle plugins and state
+management for an optimal development experience. This repository comes
+with a lot of plugins as elements, marks, serializers, normalizers,
+queries, transforms, components and so on.
 
 - 🏎 Simple Start
 
@@ -64,76 +64,109 @@ normalizers, queries, transforms, components and so on.
 - ✅ TypeScript types
 - ✅ Unit tested with `slate@0.63.0` and `slate-react@0.65.2`
 
+## Documentation
+
+To find out more see the following Plate documentation sections:
+
+- [API documentation](https://plate-api.udecode.io/globals.html)
+- [Quick start](https://plate.udecode.io/docs/installation)
+- [Guides](https://plate.udecode.io/docs/Plate)
+- [Playground](https://plate.udecode.io/docs/playground)
+
+The documentation is far from being complete and will be constantly
+evolving (as will the packages).
+
+## Contributing and project organization
+
+### Ideas and discussions
+
+[Discussions](https://github.com/udecode/plate/discussions) is the best
+place for bringing opinions and contributions. Letting us know if we're
+going in the right or wrong direction is great feedback and will be much
+appreciated!
+
+### Development
+
+Plate is a modular, multi-package, monorepo project. It consists of a
+core package that creates the plugin system, based on which the plugin
+packages are implemented.
+
+See the [contributing guide](CONTRIBUTING.md) to learn how to contribute
+your code to the project.
+
 ## Packages
 
 ### Core libraries
 
-| Name                                               | Version                                                                                                                                                                                         | Description                               |
-|:---------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|
+| Name                                       | Version                                                                                                                                                                 | Description                               |
+|:-------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|
 | [`@udecode/plate-common`](packages/common) | [<img src="https://img.shields.io/npm/v/@udecode/plate-common.svg" alt="@udecode/plate-common npm package badge">](https://www.npmjs.com/package/@udecode/plate-common) | Common queries, transforms and utilities. |
-| [`@udecode/plate-core`](packages/core)     | [<img src="https://img.shields.io/npm/v/@udecode/plate-core.svg" alt="@udecode/plate-core npm package badge">](https://www.npmjs.com/package/@udecode/plate-core)       | Core plate architecture.          |
+| [`@udecode/plate-core`](packages/core)     | [<img src="https://img.shields.io/npm/v/@udecode/plate-core.svg" alt="@udecode/plate-core npm package badge">](https://www.npmjs.com/package/@udecode/plate-core)       | Core plate architecture.                  |
 
 ### Element Plugins
 
-| Name                                                                         | Version                                                                                                                                                                                                                 | Description                                       |
-|:-----------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|
-| [`@udecode/plate-basic-elements`](packages/elements/basic-elements)  | [<img src="https://img.shields.io/npm/v/@udecode/plate-basic-elements.svg" alt="@udecode/plate-basic-elements npm package badge">](https://www.npmjs.com/package/@udecode/plate-basic-elements) | Basic elements.                                   |
-| [`@udecode/plate-alignment`](packages/elements/alignment)            | [<img src="https://img.shields.io/npm/v/@udecode/plate-alignment.svg" alt="@udecode/plate-alignment npm package badge">](https://www.npmjs.com/package/@udecode/plate-alignment)                | Text alignment.                                   |
-| [`@udecode/plate-alignment-ui`](packages/elements/alignment-ui)      | [<img src="https://img.shields.io/npm/v/@udecode/plate-alignment-ui.svg" alt="@udecode/plate-alignment-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-alignment-ui)       | Default UI for alignment.                         |
-| [`@udecode/plate-block-quote`](packages/elements/block-quote/)       | [<img src="https://img.shields.io/npm/v/@udecode/plate-block-quote.svg" alt="@udecode/plate-block-quote npm package badge">](https://www.npmjs.com/package/@udecode/plate-block-quote)          | Block quotes.                                     |
-| [`@udecode/plate-block-quote-ui`](packages/elements/block-quote-ui/) | [<img src="https://img.shields.io/npm/v/@udecode/plate-block-quote-ui.svg" alt="@udecode/plate-block-quote-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-block-quote-ui) | Default UI for block quotes.                      |
-| [`@udecode/plate-code-block`](packages/elements/code-block)          | [<img src="https://img.shields.io/npm/v/@udecode/plate-code-block.svg" alt="@udecode/plate-code-block npm package badge">](https://www.npmjs.com/package/@udecode/plate-code-block)             | Code blocks.                                      |
-| [`@udecode/plate-code-block-ui`](packages/elements/code-block-ui)    | [<img src="https://img.shields.io/npm/v/@udecode/plate-code-block-ui.svg" alt="@udecode/plate-code-block-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-code-block-ui)    | Default UI for code blocks.                       |
-| [`@udecode/plate-heading`](packages/elements/heading/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-heading.svg" alt="@udecode/plate-heading npm package badge">](https://www.npmjs.com/package/@udecode/plate-heading)                      | Headings (from 1 to 6).                           |
-| [`@udecode/plate-image`](packages/elements/image/)                   | [<img src="https://img.shields.io/npm/v/@udecode/plate-image.svg" alt="@udecode/plate-image npm package badge">](https://www.npmjs.com/package/@udecode/plate-image)                            | Images and pasting images from clipboard.         |
-| [`@udecode/plate-image-ui`](packages/elements/image-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/plate-image-ui.svg" alt="@udecode/plate-image-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-image-ui)                   | Default UI for images.                            |
-| [`@udecode/plate-link`](packages/elements/link/)                     | [<img src="https://img.shields.io/npm/v/@udecode/plate-link.svg" alt="@udecode/plate-link npm package badge">](https://www.npmjs.com/package/@udecode/plate-link)                               | Hyperlinks.                                       |
-| [`@udecode/plate-link-ui`](packages/elements/link-ui/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-link-ui.svg" alt="@udecode/plate-link-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-link-ui)                      | Default UI for hyperlinks.                        |
-| [`@udecode/plate-list`](packages/elements/list)                      | [<img src="https://img.shields.io/npm/v/@udecode/plate-list.svg" alt="@udecode/plate-list npm package badge">](https://www.npmjs.com/package/@udecode/plate-list)                               | Bulleted, numbered and to-do lists.               |
-| [`@udecode/plate-list-ui`](packages/elements/list-ui)                | [<img src="https://img.shields.io/npm/v/@udecode/plate-list-ui.svg" alt="@udecode/plate-list-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-list-ui)                      | Default UI for lists.                             |
-| [`@udecode/plate-media-embed`](packages/elements/media-embed)        | [<img src="https://img.shields.io/npm/v/@udecode/plate-media-embed.svg" alt="@udecode/plate-media-embed npm package badge">](https://www.npmjs.com/package/@udecode/plate-media-embed)          | Embeddable media such as YouTube or Vimeo videos. |
-| [`@udecode/plate-media-embed-ui`](packages/elements/media-embed-ui)  | [<img src="https://img.shields.io/npm/v/@udecode/plate-media-embed-ui.svg" alt="@udecode/plate-media-embed-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-media-embed-ui) | Default UI for embeddable media.                  |
-| [`@udecode/plate-mention`](packages/elements/mention/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-mention.svg" alt="@udecode/plate-mention npm package badge">](https://www.npmjs.com/package/@udecode/plate-mention)                      | Autocompleting @mentions and #tags.               |
-| [`@udecode/plate-mention-ui`](packages/elements/mention-ui/)         | [<img src="https://img.shields.io/npm/v/@udecode/plate-mention-ui.svg" alt="@udecode/plate-mention-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-mention-ui)             | Default UI for mentions.                          |
-| [`@udecode/plate-paragraph`](packages/elements/paragraph/)           | [<img src="https://img.shields.io/npm/v/@udecode/plate-paragraph.svg" alt="@udecode/plate-paragraph npm package badge">](https://www.npmjs.com/package/@udecode/plate-paragraph)                | Paragraphs.                                       |
-| [`@udecode/plate-table`](packages/elements/table/)                   | [<img src="https://img.shields.io/npm/v/@udecode/plate-table.svg" alt="@udecode/plate-table npm package badge">](https://www.npmjs.com/package/@udecode/plate-table)                            | Tables.                                           |
-| [`@udecode/plate-table-ui`](packages/elements/table-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/plate-table-ui.svg" alt="@udecode/plate-table-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-table-ui)                   | Default UI for tables.                            |
+| Name                                                                 | Version                                                                                                                                                                                         | Description                                               |
+|:---------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
+| [`@udecode/plate-basic-elements`](packages/elements/basic-elements)  | [<img src="https://img.shields.io/npm/v/@udecode/plate-basic-elements.svg" alt="@udecode/plate-basic-elements npm package badge">](https://www.npmjs.com/package/@udecode/plate-basic-elements) | Basic elements plugins.                                   |
+| [`@udecode/plate-alignment`](packages/elements/alignment)            | [<img src="https://img.shields.io/npm/v/@udecode/plate-alignment.svg" alt="@udecode/plate-alignment npm package badge">](https://www.npmjs.com/package/@udecode/plate-alignment)                | Text alignment plugin.                                    |
+| [`@udecode/plate-alignment-ui`](packages/elements/alignment-ui)      | [<img src="https://img.shields.io/npm/v/@udecode/plate-alignment-ui.svg" alt="@udecode/plate-alignment-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-alignment-ui)       | Text alignment UI.                                        |
+| [`@udecode/plate-block-quote`](packages/elements/block-quote/)       | [<img src="https://img.shields.io/npm/v/@udecode/plate-block-quote.svg" alt="@udecode/plate-block-quote npm package badge">](https://www.npmjs.com/package/@udecode/plate-block-quote)          | Block quote plugin.                                       |
+| [`@udecode/plate-block-quote-ui`](packages/elements/block-quote-ui/) | [<img src="https://img.shields.io/npm/v/@udecode/plate-block-quote-ui.svg" alt="@udecode/plate-block-quote-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-block-quote-ui) | Block quote UI.                                           |
+| [`@udecode/plate-code-block`](packages/elements/code-block)          | [<img src="https://img.shields.io/npm/v/@udecode/plate-code-block.svg" alt="@udecode/plate-code-block npm package badge">](https://www.npmjs.com/package/@udecode/plate-code-block)             | Code block plugin.                                        |
+| [`@udecode/plate-code-block-ui`](packages/elements/code-block-ui)    | [<img src="https://img.shields.io/npm/v/@udecode/plate-code-block-ui.svg" alt="@udecode/plate-code-block-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-code-block-ui)    | Code block UI.                                            |
+| [`@udecode/plate-excalidraw`](packages/elements/excalidraw/)         | [<img src="https://img.shields.io/npm/v/@udecode/plate-excalidraw.svg" alt="@udecode/plate-excalidraw npm package badge">](https://www.npmjs.com/package/@udecode/plate-excalidraw)             | Excalidraw plugin.                                        |
+| [`@udecode/plate-heading`](packages/elements/heading/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-heading.svg" alt="@udecode/plate-heading npm package badge">](https://www.npmjs.com/package/@udecode/plate-heading)                      | Headings (1-6) plugin.                                    |
+| [`@udecode/plate-image`](packages/elements/image/)                   | [<img src="https://img.shields.io/npm/v/@udecode/plate-image.svg" alt="@udecode/plate-image npm package badge">](https://www.npmjs.com/package/@udecode/plate-image)                            | Image plugin. Supports pasting images from clipboard.     |
+| [`@udecode/plate-image-ui`](packages/elements/image-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/plate-image-ui.svg" alt="@udecode/plate-image-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-image-ui)                   | Image UI.                                                 |
+| [`@udecode/plate-link`](packages/elements/link/)                     | [<img src="https://img.shields.io/npm/v/@udecode/plate-link.svg" alt="@udecode/plate-link npm package badge">](https://www.npmjs.com/package/@udecode/plate-link)                               | Link plugin.                                              |
+| [`@udecode/plate-link-ui`](packages/elements/link-ui/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-link-ui.svg" alt="@udecode/plate-link-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-link-ui)                      | Link UI.                                                  |
+| [`@udecode/plate-list`](packages/elements/list)                      | [<img src="https://img.shields.io/npm/v/@udecode/plate-list.svg" alt="@udecode/plate-list npm package badge">](https://www.npmjs.com/package/@udecode/plate-list)                               | Bulleted, numbered and to-do list plugins.                |
+| [`@udecode/plate-list-ui`](packages/elements/list-ui)                | [<img src="https://img.shields.io/npm/v/@udecode/plate-list-ui.svg" alt="@udecode/plate-list-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-list-ui)                      | List UI.                                                  |
+| [`@udecode/plate-media-embed`](packages/elements/media-embed)        | [<img src="https://img.shields.io/npm/v/@udecode/plate-media-embed.svg" alt="@udecode/plate-media-embed npm package badge">](https://www.npmjs.com/package/@udecode/plate-media-embed)          | Media embed plugin.                                       |
+| [`@udecode/plate-media-embed-ui`](packages/elements/media-embed-ui)  | [<img src="https://img.shields.io/npm/v/@udecode/plate-media-embed-ui.svg" alt="@udecode/plate-media-embed-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-media-embed-ui) | Media embed UI.                                           |
+| [`@udecode/plate-mention`](packages/elements/mention/)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-mention.svg" alt="@udecode/plate-mention npm package badge">](https://www.npmjs.com/package/@udecode/plate-mention)                      | Mention plugin (autocomplete `@mentions`, `#tags`, etc.). |
+| [`@udecode/plate-mention-ui`](packages/elements/mention-ui/)         | [<img src="https://img.shields.io/npm/v/@udecode/plate-mention-ui.svg" alt="@udecode/plate-mention-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-mention-ui)             | Mention UI.                                               |
+| [`@udecode/plate-paragraph`](packages/elements/paragraph/)           | [<img src="https://img.shields.io/npm/v/@udecode/plate-paragraph.svg" alt="@udecode/plate-paragraph npm package badge">](https://www.npmjs.com/package/@udecode/plate-paragraph)                | Paragraph plugin.                                         |
+| [`@udecode/plate-table`](packages/elements/table/)                   | [<img src="https://img.shields.io/npm/v/@udecode/plate-table.svg" alt="@udecode/plate-table npm package badge">](https://www.npmjs.com/package/@udecode/plate-table)                            | Table plugin.                                             |
+| [`@udecode/plate-table-ui`](packages/elements/table-ui/)             | [<img src="https://img.shields.io/npm/v/@udecode/plate-table-ui.svg" alt="@udecode/plate-table-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-table-ui)                   | Table UI.                                                 |
 
 ### Mark Plugins
 
-| Name                                                               | Version                                                                                                                                                                                                        | Description                                                                                     |
-|:-------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| [`@udecode/plate-basic-marks`](packages/marks/basic-marks) | [<img src="https://img.shields.io/npm/v/@udecode/plate-basic-marks.svg" alt="@udecode/plate-basic-marks npm package badge">](https://www.npmjs.com/package/@udecode/plate-basic-marks) | Basic text formatting: bold, code, italic, strikethrough, subscript, superscript and underline. |
-| [`@udecode/plate-highlight`](packages/marks/highlight/)    | [<img src="https://img.shields.io/npm/v/@udecode/plate-highlight.svg" alt="@udecode/plate-highlight npm package badge">](https://www.npmjs.com/package/@udecode/plate-highlight)       | Highlights.                                                                                     |
-| [`@udecode/plate-kbd`](packages/marks/kbd/)                | [<img src="https://img.shields.io/npm/v/@udecode/plate-kbd.svg" alt="@udecode/plate-kbd npm package badge">](https://www.npmjs.com/package/@udecode/plate-kbd)                         | Keyboard input formatting.                                                                      |
+| Name                                                       | Version                                                                                                                                                                                | Description                                                                                   |
+|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| [`@udecode/plate-basic-marks`](packages/marks/basic-marks) | [<img src="https://img.shields.io/npm/v/@udecode/plate-basic-marks.svg" alt="@udecode/plate-basic-marks npm package badge">](https://www.npmjs.com/package/@udecode/plate-basic-marks) | Basic marks plugins: bold, code, italic, strikethrough, subscript, superscript and underline. |
+| [`@udecode/plate-font`](packages/marks/font)               | [<img src="https://img.shields.io/npm/v/@udecode/plate-font.svg" alt="@udecode/plate-font npm package badge">](https://www.npmjs.com/package/@udecode/plate-font)                      | Font color and background color plugins.                                                      |
+| [`@udecode/plate-highlight`](packages/marks/highlight/)    | [<img src="https://img.shields.io/npm/v/@udecode/plate-highlight.svg" alt="@udecode/plate-highlight npm package badge">](https://www.npmjs.com/package/@udecode/plate-highlight)       | Highlight plugin.                                                                             |
+| [`@udecode/plate-kbd`](packages/marks/kbd/)                | [<img src="https://img.shields.io/npm/v/@udecode/plate-kbd.svg" alt="@udecode/plate-kbd npm package badge">](https://www.npmjs.com/package/@udecode/plate-kbd)                         | Keyboard input plugin.                                                                        |
 
 ### Serializer Plugins
 
-| Name                                                                             | Version                                                                                                                                                                                                                    | Description               |
-|:---------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------|
-| [`@udecode/plate-html-serializer`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/plate-html-serializer.svg" alt="@udecode/plate-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-html-serializer) | HTML (de)serializing.     |
-| [`@udecode/plate-md-serializer`](packages/serializers/md-serializer)     | [<img src="https://img.shields.io/npm/v/@udecode/plate-md-serializer.svg" alt="@udecode/plate-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-md-serializer)       | Markdown (de)serializing. |
-| [`@udecode/plate-ast-serializer`](packages/serializers/ast-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/plate-ast-serializer.svg" alt="@udecode/plate-ast-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-ast-serializer) | AST deserializing.     |
-| [`@udecode/plate-csv-serializer`](packages/serializers/csv-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/plate-csv-serializer.svg" alt="@udecode/plate-csv-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-csv-serializer) | CSV deserializing.     |
+| Name                                                                     | Version                                                                                                                                                                                            | Description                 |
+|:-------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------|
+| [`@udecode/plate-html-serializer`](packages/serializers/serializer)      | [<img src="https://img.shields.io/npm/v/@udecode/plate-serializer.svg" alt="@udecode/plate-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-serializer)                | Serializing utilities.      |
+| [`@udecode/plate-html-serializer`](packages/serializers/html-serializer) | [<img src="https://img.shields.io/npm/v/@udecode/plate-html-serializer.svg" alt="@udecode/plate-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-html-serializer) | HTML serializer plugin.     |
+| [`@udecode/plate-md-serializer`](packages/serializers/md-serializer)     | [<img src="https://img.shields.io/npm/v/@udecode/plate-md-serializer.svg" alt="@udecode/plate-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-md-serializer)       | Markdown serializer plugin. |
+| [`@udecode/plate-ast-serializer`](packages/serializers/ast-serializer)   | [<img src="https://img.shields.io/npm/v/@udecode/plate-ast-serializer.svg" alt="@udecode/plate-ast-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-ast-serializer)    | AST serializer plugin.      |
+| [`@udecode/plate-csv-serializer`](packages/serializers/csv-serializer)   | [<img src="https://img.shields.io/npm/v/@udecode/plate-csv-serializer.svg" alt="@udecode/plate-csv-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-csv-serializer)    | CSV serializer plugin.      |
 
 ### Plugins
 
-| Name                                                                 | Version                                                                                                                                                                                                                    | Description                                                                 |
-|:---------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|
-| [`@udecode/plate-plate`](packages/plate)     | [<img src="https://img.shields.io/npm/v/@udecode/plate.svg" alt="@udecode/plate npm package badge">](https://www.npmjs.com/package/@udecode/plate)                                                 | Provides all packages.                                                      |
-| [`@udecode/plate-autoformat`](packages/autoformat)           | [<img src="https://img.shields.io/npm/v/@udecode/plate-autoformat.svg" alt="@udecode/plate-autoformat npm package badge">](https://www.npmjs.com/package/@udecode/plate-autoformat)                | Autoformatting actions.                                                     |
-| [`@udecode/plate-break`](packages/break)                     | [<img src="https://img.shields.io/npm/v/@udecode/plate-break.svg" alt="@udecode/plate-break npm package badge">](https://www.npmjs.com/package/@udecode/plate-break)                               | Soft-break and exit-break.                                                  |
-| [`@udecode/plate-dnd`](packages/dnd)                         | [<img src="https://img.shields.io/npm/v/@udecode/plate-dnd.svg" alt="@udecode/plate-dnd npm package badge">](https://www.npmjs.com/package/@udecode/plate-dnd)                                     | Drag and drop with [react-dnd](https://github.com/react-dnd/react-dnd).     |
-| [`@udecode/plate-find-replace`](packages/find-replace)       | [<img src="https://img.shields.io/npm/v/@udecode/plate-find-replace.svg" alt="@udecode/plate-find-replace npm package badge">](https://www.npmjs.com/package/@udecode/plate-find-replace)          | Highlighting searching text.                                                |
-| [`@udecode/plate-find-replace-ui`](packages/find-replace-ui) | [<img src="https://img.shields.io/npm/v/@udecode/plate-find-replace-ui.svg" alt="@udecode/plate-find-replace-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-find-replace-ui) | Default UI for find-replace.                                                |
-| [`@udecode/plate-node-id`](packages/node-id)                 | [<img src="https://img.shields.io/npm/v/@udecode/plate-node-id.svg" alt="@udecode/plate-node-id npm package badge">](https://www.npmjs.com/package/@udecode/plate-node-id)                         | Insert nodes with an id key.                                                |
-| [`@udecode/plate-normalizers`](packages/normalizers)         | [<img src="https://img.shields.io/npm/v/@udecode/plate-normalizers.svg" alt="@udecode/plate-normalizers npm package badge">](https://www.npmjs.com/package/@udecode/plate-normalizers)             | Editor normalizers.                                                         |
-| [`@udecode/plate-reset-node`](packages/reset-node)           | [<img src="https://img.shields.io/npm/v/@udecode/plate-reset-node.svg" alt="@udecode/plate-reset-node npm package badge">](https://www.npmjs.com/package/@udecode/plate-reset-node)                | Reset node type.                                                            |
-| [`@udecode/plate-select`](packages/select)                   | [<img src="https://img.shields.io/npm/v/@udecode/plate-select.svg" alt="@udecode/plate-select npm package badge">](https://www.npmjs.com/package/@udecode/plate-select)                            | Selection utilities.                                                        |
-| [`@udecode/plate-styled-components`](packages/ui/styled-components)             | [<img src="https://img.shields.io/npm/v/@udecode/plate-ui-fluent.svg" alt="@udecode/plate-ui-fluent npm package badge">](https://www.npmjs.com/package/@udecode/plate-ui-fluent)                   | Common UI utilities with [fluentui](https://github.com/microsoft/fluentui). |
-| [`@udecode/plate-trailing-block`](packages/trailing-block)   | [<img src="https://img.shields.io/npm/v/@udecode/plate-trailing-block.svg" alt="@udecode/plate-trailing-block npm package badge">](https://www.npmjs.com/package/@udecode/plate-trailing-block)    | Ensures a trailing block.                                                   |
-| [`@udecode/plate-toolbar`](packages/ui/toolbar)              | [<img src="https://img.shields.io/npm/v/@udecode/plate-toolbar.svg" alt="@udecode/plate-toolbar npm package badge">](https://www.npmjs.com/package/@udecode/plate-toolbar)                         | Toolbar components: balloon, heading, buttons.                              |
-| [`@udecode/plate-test-utils`](packages/test-utils/)          | [<img src="https://img.shields.io/npm/v/@udecode/plate-test-utils.svg" alt="@udecode/plate-test-utils npm package badge">](https://www.npmjs.com/package/@udecode/plate-test-utils)                | Test utilities.                                                             |
+| Name                                                                | Version                                                                                                                                                                                            | Description                                                                                                    |
+|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------|
+| [`@udecode/plate`](packages/plate)                                  | [<img src="https://img.shields.io/npm/v/@udecode/plate.svg" alt="@udecode/plate npm package badge">](https://www.npmjs.com/package/@udecode/plate)                                                 | All-in-one package.                                                                                            |
+| [`@udecode/plate-autoformat`](packages/autoformat)                  | [<img src="https://img.shields.io/npm/v/@udecode/plate-autoformat.svg" alt="@udecode/plate-autoformat npm package badge">](https://www.npmjs.com/package/@udecode/plate-autoformat)                | Autoformatting plugin. Replaces predefined characters with a corresponding format (e.g. **foo** becomes bold). |
+| [`@udecode/plate-break`](packages/break)                            | [<img src="https://img.shields.io/npm/v/@udecode/plate-break.svg" alt="@udecode/plate-break npm package badge">](https://www.npmjs.com/package/@udecode/plate-break)                               | Insert break plugins.                                                                                          |
+| [`@udecode/plate-dnd`](packages/dnd)                                | [<img src="https://img.shields.io/npm/v/@udecode/plate-dnd.svg" alt="@udecode/plate-dnd npm package badge">](https://www.npmjs.com/package/@udecode/plate-dnd)                                     | Drag and drop with [react-dnd](https://github.com/react-dnd/react-dnd).                                        |
+| [`@udecode/plate-find-replace`](packages/find-replace)              | [<img src="https://img.shields.io/npm/v/@udecode/plate-find-replace.svg" alt="@udecode/plate-find-replace npm package badge">](https://www.npmjs.com/package/@udecode/plate-find-replace)          | Find and replace plugin.                                                                                       |
+| [`@udecode/plate-find-replace-ui`](packages/find-replace-ui)        | [<img src="https://img.shields.io/npm/v/@udecode/plate-find-replace-ui.svg" alt="@udecode/plate-find-replace-ui npm package badge">](https://www.npmjs.com/package/@udecode/plate-find-replace-ui) | Find and replace UI.                                                                                           |
+| [`@udecode/plate-node-id`](packages/node-id)                        | [<img src="https://img.shields.io/npm/v/@udecode/plate-node-id.svg" alt="@udecode/plate-node-id npm package badge">](https://www.npmjs.com/package/@udecode/plate-node-id)                         | Node ID plugin.                                                                                                |
+| [`@udecode/plate-normalizers`](packages/normalizers)                | [<img src="https://img.shields.io/npm/v/@udecode/plate-normalizers.svg" alt="@udecode/plate-normalizers npm package badge">](https://www.npmjs.com/package/@udecode/plate-normalizers)             | Normalizer plugins.                                                                                            |
+| [`@udecode/plate-reset-node`](packages/reset-node)                  | [<img src="https://img.shields.io/npm/v/@udecode/plate-reset-node.svg" alt="@udecode/plate-reset-node npm package badge">](https://www.npmjs.com/package/@udecode/plate-reset-node)                | Reset node plugin.                                                                                             |
+| [`@udecode/plate-select`](packages/select)                          | [<img src="https://img.shields.io/npm/v/@udecode/plate-select.svg" alt="@udecode/plate-select npm package badge">](https://www.npmjs.com/package/@udecode/plate-select)                            | Node selecting plugins.                                                                                        |
+| [`@udecode/plate-styled-components`](packages/ui/styled-components) | [<img src="https://img.shields.io/npm/v/@udecode/plate-ui-fluent.svg" alt="@udecode/plate-ui-fluent npm package badge">](https://www.npmjs.com/package/@udecode/plate-ui-fluent)                   | Styled components (Plate UI library).                                                                          |
+| [`@udecode/plate-trailing-block`](packages/trailing-block)          | [<img src="https://img.shields.io/npm/v/@udecode/plate-trailing-block.svg" alt="@udecode/plate-trailing-block npm package badge">](https://www.npmjs.com/package/@udecode/plate-trailing-block)    | Trailing-block plugin.                                                                                         |
+| [`@udecode/plate-toolbar`](packages/ui/toolbar)                     | [<img src="https://img.shields.io/npm/v/@udecode/plate-toolbar.svg" alt="@udecode/plate-toolbar npm package badge">](https://www.npmjs.com/package/@udecode/plate-toolbar)                         | Toolbar UI (balloon, heading, buttons, etc.).                                                                  |
+| [`@udecode/plate-test-utils`](packages/test-utils/)                 | [<img src="https://img.shields.io/npm/v/@udecode/plate-test-utils.svg" alt="@udecode/plate-test-utils npm package badge">](https://www.npmjs.com/package/@udecode/plate-test-utils)                | Test utilities.                                                                                                |
 
 ### Author's Note
 
@@ -145,21 +178,23 @@ normalizers, queries, transforms, components and so on.
 >  I can only encourage you to join this collaboration. Our goal is to
 >  build a fully-featured editor.
 
-#### [Become a Sponsor!](https://github.com/sponsors/zbeyens)
+#### [Become a Sponsor!](https://github.com/sponsors/zbeyens)
 
 ### Contributors
 
 🌟 Stars and 📥 Pull requests are welcome! Don't hesitate to **share
 your plugins** here. Read our [contributing guide](CONTRIBUTING.md) to
 get started, or find us on
-[Slack](https://slate-js.slack.com/messages/plate), we will
-take the time to guide you.
+[Slack](https://slate-js.slack.com/messages/slate-plugins), we will take
+the time to guide you.
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+Thanks goes to these wonderful people
+([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+
 <table>
   <tr>
     <td align="center"><a href="https://github.com/zbeyens"><img src="https://avatars3.githubusercontent.com/u/19695832?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ziad Beyens</b></sub></a><br /><a href="#maintenance-zbeyens" title="Maintenance">🚧</a></td>
@@ -185,8 +220,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
-Contributions of any kind welcome!
+This project follows the
+[all-contributors](https://github.com/all-contributors/all-contributors)
+specification. Contributions of any kind welcome!
 
 ## License
 

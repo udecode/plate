@@ -1,7 +1,7 @@
 {
   "name": "@udecode/plate-styled-components",
   "version": "1.0.0",
-  "description": "Styled components for Plate",
+  "description": "Standard UI for Plate",
   "keywords": [
     "slate",
     "plate",

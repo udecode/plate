@@ -1,6 +1,14 @@
-# plate-list-ui
+# Plate list UI
 
-See [README](https://github.com/udecode/plate).
+This package implements list UI for Plate.
+
+## Documentation
+
+Check out [List](https://plate.udecode.io/docs/plugins/list).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

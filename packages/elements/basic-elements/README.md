@@ -1,6 +1,19 @@
-# plate-basic-elements
+# Plate basic elements plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements the basic elements in a single plugin:
+- block quote
+- code block
+- heading
+- paragraph
+
+## Documentation
+
+Check out
+[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

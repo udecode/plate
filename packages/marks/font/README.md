@@ -1,6 +1,16 @@
-# plate-font
+# Plate font plugins
 
-See [README](https://github.com/udecode/plate).
+This package implements the following font plugins:
+- font color
+- font background color
+
+## Documentation
+
+Check out [Font](https://plate.udecode.io/docs/plugins/font).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

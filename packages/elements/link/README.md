@@ -1,6 +1,14 @@
-# plate-link
+# Plate link plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements link plugin for Plate.
+
+## Documentation
+
+Check out [Link](https://plate.udecode.io/docs/plugins/link).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

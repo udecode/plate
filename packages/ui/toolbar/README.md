@@ -1,6 +1,15 @@
-# plate-toolbar
+# Plate toolbar UI
 
-See [README](https://github.com/udecode/plate).
+This package implements toolbar UI for Plate.
+
+## Documentation
+
+Check out [Playground](https://plate.udecode.io/docs/playground) and
+[Balloon Toolbar](https://plate.udecode.io/docs/components/balloon-toolbar).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

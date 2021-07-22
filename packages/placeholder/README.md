@@ -1,6 +1,15 @@
-# plate-placeholder
+# Plate placeholder UI
 
-See [README](https://github.com/udecode/plate).
+This package implements placeholder UI for Plate.
+
+## Documentation
+
+Check out
+[Placeholder](https://plate.udecode.io/docs/components/placeholder).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

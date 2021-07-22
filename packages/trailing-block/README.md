@@ -1,6 +1,15 @@
-# plate-trailing-block
+# Plate trailing-block plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements trailing-block plugin for Plate.
+
+## Documentation
+
+Check out
+[Playground](https://plate.udecode.io/docs/playground).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

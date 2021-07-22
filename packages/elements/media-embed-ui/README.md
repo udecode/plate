@@ -1,6 +1,14 @@
-# plate-media-embed-ui
+# Plate media embed UI
 
-See [README](https://github.com/udecode/plate).
+This package implements media embed UI for Plate.
+
+## Documentation
+
+Check out [Media Embed](https://plate.udecode.io/docs/plugins/media-embed).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

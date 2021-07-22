@@ -1,6 +1,14 @@
-# plate-table-ui
+# Plate table UI
 
-See [README](https://github.com/udecode/plate).
+This package implements table UI for Plate.
+
+## Documentation
+
+Check out [Table](https://plate.udecode.io/docs/plugins/table).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 

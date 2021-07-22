@@ -1,6 +1,16 @@
-# plate-paragraph
+# Plate paragraph plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements paragraph plugin for Plate. This can be the
+default block of your editor.
+
+## Documentation
+
+Check out
+[Basic Elements](https://plate.udecode.io/docs/plugins/basic-elements).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 
