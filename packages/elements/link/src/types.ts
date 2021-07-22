@@ -1,4 +1,4 @@
-import { RangeBeforeOptions } from '@udecode/slate-plugins-common';
+import { RangeBeforeOptions } from '@udecode/plate-common';
 
 export interface LinkNodeData {
   url: string;

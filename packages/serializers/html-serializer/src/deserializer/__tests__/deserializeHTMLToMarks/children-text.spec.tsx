@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,

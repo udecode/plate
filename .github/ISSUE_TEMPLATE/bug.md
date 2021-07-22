@@ -1,7 +1,7 @@
 ---
 
 name: "🚨 Bug"
-about: A bug that occurs in slate-plugins logic
+about: A bug that occurs in plate logic
 title: ''
 labels: bug
 assignees: ''
@@ -27,11 +27,11 @@ assignees: ''
 
 **Sandbox**
 
-https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c
+https://codesandbox.io/s/plate-playground-v1-2mh1c
 
 <!-- A link to a sandbox where the error can be reproduced. (You can start
 from the
-[base sandbox here](https://codesandbox.io/s/slate-plugins-playground-v1-2mh1c)
+[base sandbox here](https://codesandbox.io/s/plate-playground-v1-2mh1c)
 or refer to the examples too.) -->
 
 

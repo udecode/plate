@@ -1,8 +1,8 @@
 import {
-  getSlatePluginTypes,
+  getPlatePluginTypes,
   KeyboardHandler,
-  mapSlatePluginKeysToOptions,
-} from '@udecode/slate-plugins-core';
+  mapPlatePluginKeysToOptions,
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { moveListItems } from './transforms/moveListItems';
@@ -12,7 +12,7 @@ import { ELEMENT_OL, ELEMENT_UL } from './defaults';
 export const getListOnKeyDown = (
   pluginKeys?: string | string[]
 ): KeyboardHandler => (editor) => (e) => {
-  const listTypes = getSlatePluginTypes([ELEMENT_UL, ELEMENT_OL])(editor);
+  const listTypes = getPlatePluginTypes([ELEMENT_UL, ELEMENT_OL])(editor);
 
   if (e.key === 'Tab') {
     e.preventDefault();
@@ -22,7 +22,7 @@ export const getListOnKeyDown = (
   }
 
   const options = pluginKeys
-    ? mapSlatePluginKeysToOptions(editor, pluginKeys)
+    ? mapPlatePluginKeysToOptions(editor, pluginKeys)
     : [];
 
   options.forEach(({ type, hotkey }) => {

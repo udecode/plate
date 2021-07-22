@@ -1,9 +1,9 @@
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   KeyboardHandler,
-  mapSlatePluginKeysToOptions,
+  mapPlatePluginKeysToOptions,
   SPEditor,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { toggleNodeType } from '../transforms/toggleNodeType';
@@ -12,9 +12,9 @@ import { ELEMENT_DEFAULT } from '../types/node.types';
 export const getToggleElementOnKeyDown = <T extends SPEditor = SPEditor>(
   pluginKeys: string | string[]
 ): KeyboardHandler<T> => (editor) => (e) => {
-  const defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
 
-  const options = mapSlatePluginKeysToOptions(editor, pluginKeys);
+  const options = mapPlatePluginKeysToOptions(editor, pluginKeys);
 
   options.forEach(({ type, hotkey }) => {
     if (!hotkey) return;

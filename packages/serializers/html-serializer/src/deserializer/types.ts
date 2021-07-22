@@ -1,4 +1,4 @@
-import { TDescendant, TElement } from '@udecode/slate-plugins-core';
+import { TDescendant, TElement } from '@udecode/plate-core';
 
 export type DeserializeHTMLChildren = ChildNode | TDescendant | string | null;
 

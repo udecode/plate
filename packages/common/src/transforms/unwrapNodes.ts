@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { getQueryOptions } from '../queries/match';
 import { WrapOptions } from '../types/Transforms.types';

@@ -1,4 +1,4 @@
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 
 /**
@@ -6,7 +6,7 @@ import { SPEditor } from '../types/SPEditor';
  */
 export const getVoidTypes = (
   editor: SPEditor,
-  plugins: SlatePlugin[]
+  plugins: PlatePlugin[]
 ): string[] => {
   return plugins.flatMap((p) => p.voidTypes?.(editor) ?? []);
 };

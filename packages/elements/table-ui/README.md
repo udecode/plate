@@ -1,6 +1,6 @@
-# slate-plugins-table-ui
+# plate-table-ui
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

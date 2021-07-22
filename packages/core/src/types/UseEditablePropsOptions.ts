@@ -1,10 +1,10 @@
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { UseSlatePluginsEffectsOptions } from './UseSlatePluginsEffectsOptions';
+import { UsePlateEffectsOptions } from './UsePlateEffectsOptions';
 
 /**
  * Options related to Editable component
  */
 export interface UseEditablePropsOptions
-  extends Pick<UseSlatePluginsEffectsOptions, 'id'> {
+  extends Pick<UsePlateEffectsOptions, 'id'> {
   editableProps?: EditableProps;
 }

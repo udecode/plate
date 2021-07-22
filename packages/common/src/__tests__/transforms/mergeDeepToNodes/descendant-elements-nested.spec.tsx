@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { isDescendant } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { isDescendant } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { ELEMENT_LI } from '../../../../../elements/list/src/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { mergeDeepToNodes } from '../../../transforms/mergeDeepToNodes';

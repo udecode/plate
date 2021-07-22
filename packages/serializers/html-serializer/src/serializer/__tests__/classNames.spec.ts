@@ -1,6 +1,6 @@
 import { createAlignPlugin } from '../../../../../elements/alignment/src/createAlignPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize with slate className', () => {

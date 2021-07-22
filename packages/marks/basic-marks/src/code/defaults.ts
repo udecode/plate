@@ -1,7 +1,7 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export const MARK_CODE = 'code';
 
-export const DEFAULTS_CODE: Partial<SlatePluginOptions> = {
+export const DEFAULTS_CODE: Partial<PlatePluginOptions> = {
   hotkey: 'mod+e',
 };

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import * as core from '@udecode/slate-plugins-core';
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { ELEMENT_PARAGRAPH } from '@udecode/slate-plugins-paragraph';
+import * as core from '@udecode/plate-core';
+import { SPEditor } from '@udecode/plate-core';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { createEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { mentionables } from '../../../mention/src/__tests__/useMention/onKeyDown/mentionables.fixture';

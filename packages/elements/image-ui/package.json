@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-image-ui",
-  "version": "1.0.0-next.61",
-  "description": "Slate plugins image-ui",
+  "name": "@udecode/plate-image-ui",
+  "version": "1.0.0",
+  "description": "Plate plugin image-ui",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/image-ui#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/image-ui#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,11 +33,11 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.61",
-    "@udecode/slate-plugins-core": "1.0.0-next.61",
-    "@udecode/slate-plugins-image": "1.0.0-next.61",
-    "@udecode/slate-plugins-toolbar": "1.0.0-next.61",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.61"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-image": "1.0.0",
+    "@udecode/plate-toolbar": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

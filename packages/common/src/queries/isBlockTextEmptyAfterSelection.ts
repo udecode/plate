@@ -1,4 +1,4 @@
-import { isText, TEditor } from '@udecode/slate-plugins-core';
+import { isText, TEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';

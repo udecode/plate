@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { setNodes } from '@udecode/slate-plugins-common';
-import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
-import { MediaEmbedNodeData } from '@udecode/slate-plugins-media-embed';
+import { setNodes } from '@udecode/plate-common';
+import { TElement, useEditorRef } from '@udecode/plate-core';
+import { MediaEmbedNodeData } from '@udecode/plate-media-embed';
 import { ReactEditor } from 'slate-react';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';

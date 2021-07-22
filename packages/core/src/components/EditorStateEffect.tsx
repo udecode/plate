@@ -1,21 +1,19 @@
 import { memo, useEffect } from 'react';
 import { useEditorState } from '../hooks/useEditorState';
-import { useSlatePluginsActions } from '../stores/slate-plugins/slate-plugins.actions';
-import { SlatePluginsProps } from './SlatePlugins';
+import { usePlateActions } from '../stores/plate/plate.actions';
+import { PlateProps } from './Plate';
 
-export const EditorStateEffect = memo(
-  ({ id }: Pick<SlatePluginsProps, 'id'>) => {
-    const { setSelection, incrementKeyChange } = useSlatePluginsActions(id);
-    const editorState = useEditorState();
+export const EditorStateEffect = memo(({ id }: Pick<PlateProps, 'id'>) => {
+  const { setSelection, incrementKeyChange } = usePlateActions(id);
+  const editorState = useEditorState();
 
-    useEffect(() => {
-      incrementKeyChange();
-    });
+  useEffect(() => {
+    incrementKeyChange();
+  });
 
-    useEffect(() => {
-      setSelection(editorState.selection ? { ...editorState.selection } : null);
-    }, [editorState.selection, setSelection]);
+  useEffect(() => {
+    setSelection(editorState.selection ? { ...editorState.selection } : null);
+  }, [editorState.selection, setSelection]);
 
-    return null;
-  }
-);
+  return null;
+});

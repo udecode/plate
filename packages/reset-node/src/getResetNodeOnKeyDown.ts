@@ -1,5 +1,5 @@
-import { isCollapsed, setNodes, someNode } from '@udecode/slate-plugins-common';
-import { KeyboardHandler, TElement } from '@udecode/slate-plugins-core';
+import { isCollapsed, setNodes, someNode } from '@udecode/plate-common';
+import { KeyboardHandler, TElement } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { ResetBlockTypePluginOptions } from './types';
 

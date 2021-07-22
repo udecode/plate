@@ -1,6 +1,6 @@
-# slate-plugins-alignment-ui
+# plate-alignment-ui
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

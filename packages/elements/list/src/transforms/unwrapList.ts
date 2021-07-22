@@ -1,9 +1,5 @@
-import {
-  ELEMENT_DEFAULT,
-  setNodes,
-  unwrapNodes,
-} from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { ELEMENT_DEFAULT, setNodes, unwrapNodes } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
@@ -11,22 +7,22 @@ export const unwrapList = (editor: SPEditor, { at }: { at?: Path } = {}) => {
   setNodes(
     editor,
     {
-      type: getSlatePluginType(editor, ELEMENT_DEFAULT),
+      type: getPlatePluginType(editor, ELEMENT_DEFAULT),
     },
     { at }
   );
 
   unwrapNodes(editor, {
     at,
-    match: { type: getSlatePluginType(editor, ELEMENT_LI) },
+    match: { type: getPlatePluginType(editor, ELEMENT_LI) },
   });
 
   unwrapNodes(editor, {
     at,
     match: {
       type: [
-        getSlatePluginType(editor, ELEMENT_UL),
-        getSlatePluginType(editor, ELEMENT_OL),
+        getPlatePluginType(editor, ELEMENT_UL),
+        getPlatePluginType(editor, ELEMENT_OL),
       ],
     },
     split: true,

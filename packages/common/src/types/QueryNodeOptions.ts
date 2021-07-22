@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TNode } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
 
 /**

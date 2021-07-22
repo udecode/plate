@@ -1,5 +1,5 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 
-export const createDndPlugin = (): SlatePlugin => ({
+export const createDndPlugin = (): PlatePlugin => ({
   onDrop: (editor) => () => editor.isDragging,
 });

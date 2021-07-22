@@ -1,4 +1,4 @@
-import { TDescendant } from '@udecode/slate-plugins-core';
+import { TDescendant } from '@udecode/plate-core';
 
 export const createDocumentNode = (
   type = 'p',

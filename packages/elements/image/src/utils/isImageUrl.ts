@@ -1,4 +1,4 @@
-import { isUrl } from '@udecode/slate-plugins-common';
+import { isUrl } from '@udecode/plate-common';
 
 const imageExtensions = [
   'ase',

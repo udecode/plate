@@ -1,12 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { createElementWithSlate } from '@udecode/slate-plugins-common';
+import { createElementWithSlate } from '@udecode/plate-common';
 import {
-  SlatePlugin,
+  PlatePlugin,
   SlateProps,
   SPEditor,
   SPRenderElementProps,
   TDescendant,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Text } from 'slate';
 import { RenderLeafProps } from 'slate-react';
 
@@ -55,7 +55,7 @@ const getNode = (
     slateProps,
     preserveClassNames,
   }: {
-    plugins: SlatePlugin[];
+    plugins: PlatePlugin[];
     elementProps: SPRenderElementProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
@@ -109,7 +109,7 @@ const getLeaf = (
     slateProps,
     preserveClassNames,
   }: {
-    plugins: SlatePlugin[];
+    plugins: PlatePlugin[];
     leafProps: RenderLeafProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
@@ -171,7 +171,7 @@ export const serializeHTMLFromNodes = (
      * Plugins with renderElement or renderLeaf.
      */
 
-    plugins: SlatePlugin[];
+    plugins: PlatePlugin[];
     /**
      * Slate nodes to convert to HTML.
      */

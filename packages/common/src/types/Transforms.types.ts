@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TNode } from '@udecode/plate-core';
 import { Location, Path, Point, Range } from 'slate';
 import { MatchOptions } from './Editor.types';
 

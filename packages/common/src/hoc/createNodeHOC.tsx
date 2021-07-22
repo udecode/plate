@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { SPRenderElementProps } from '@udecode/slate-plugins-core';
+import { SPRenderElementProps } from '@udecode/plate-core';
 
 export const createNodeHOC = <T,>(HOC: FunctionComponent<T>) => (
   Component: any,

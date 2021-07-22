@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
-import { getRenderLeaf, SlatePlugin } from '@udecode/slate-plugins-core';
+import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
 import { MARK_SEARCH_HIGHLIGHT } from './defaults';
 import { getSearchHighlightDecorate } from './getSearchHighlightDecorate';
 
@@ -8,7 +8,7 @@ import { getSearchHighlightDecorate } from './getSearchHighlightDecorate';
  * TODO: replace
  */
 export const useFindReplacePlugin = (): {
-  plugin: SlatePlugin;
+  plugin: PlatePlugin;
   setSearch: Dispatch<SetStateAction<string>>;
 } => {
   const [search, setSearch] = useState('');

@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { getSoftBreakOnKeyDown } from './getSoftBreakOnKeyDown';
 import { SoftBreakPluginOptions } from './types';
 
@@ -8,6 +8,6 @@ import { SoftBreakPluginOptions } from './types';
  */
 export const createSoftBreakPlugin = (
   options: SoftBreakPluginOptions = {}
-): SlatePlugin => ({
+): PlatePlugin => ({
   onKeyDown: getSoftBreakOnKeyDown(options),
 });

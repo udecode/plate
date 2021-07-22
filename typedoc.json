@@ -8,8 +8,8 @@
     "**/*.development.*"
   ],
   "includeVersion": true,
-  "name": "@udecode/slate-plugins",
-  "entryPoints": ["packages/slate-plugins/src/index.tsx"],
+  "name": "@udecode/plate",
+  "entryPoints": ["packages/plate/src/index.tsx"],
   "out": "./typedoc",
   "readme": "./README.md"
 }

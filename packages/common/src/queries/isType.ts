@@ -1,4 +1,4 @@
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 /**
  * Does the node match the type provided.
@@ -11,7 +11,7 @@ export const isType = (
 ) => {
   const keys = castArray(pluginKey);
   keys.forEach((key) => {
-    if (node?.type === getSlatePluginType(editor, key)) return true;
+    if (node?.type === getPlatePluginType(editor, key)) return true;
   });
   return false;
 };

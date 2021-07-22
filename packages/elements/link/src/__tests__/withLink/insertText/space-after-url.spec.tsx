@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { withInlineVoid } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { ELEMENT_LINK } from '../../../defaults';
 import { withLink } from '../../../withLink';

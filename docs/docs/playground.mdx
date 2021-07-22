@@ -6,7 +6,7 @@ title: Playground
 :::note
 
 Most of the following variables are exported from the library or defined in the corresponding example.
-For quick lookup, jump to the [source code](https://github.com/udecode/slate-plugins/blob/main/docs/src/live/live.tsx).
+For quick lookup, jump to the [source code](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx).
 
 :::
 
@@ -14,7 +14,7 @@ The following playground uses most of the provided plugins.
 
 ```ts live
 () => {
-  let styledComponents = createSlatePluginsComponents({
+  let styledComponents = createPlateComponents({
     ...components,
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
@@ -33,7 +33,7 @@ The following playground uses most of the provided plugins.
   });
   styledComponents = withStyledPlaceHolders(styledComponents);
 
-  const defaultOptions = createSlatePluginsOptions();
+  const defaultOptions = createPlateOptions();
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
@@ -93,7 +93,7 @@ The following playground uses most of the provided plugins.
     }, [mentionPlugin, options, searchHighlightPlugin]);
 
     return (
-      <SlatePlugins
+      <Plate
         id="playground"
         plugins={pluginsMemo}
         components={styledComponents}
@@ -120,7 +120,7 @@ The following playground uses most of the provided plugins.
           {...getMentionSelectProps()}
           renderLabel={renderMentionLabel}
         />
-      </SlatePlugins>
+      </Plate>
     );
   }
 

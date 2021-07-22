@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { withReact } from 'slate-react';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
-import { createSlatePluginsOptions } from '../../../../../../slate-plugins/src/utils/createSlatePluginsOptions';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateOptions } from '../../../../../../plate/src/utils/createPlateOptions';
 import {
   createDeserializeHTMLPlugin,
   withDeserializeHTML,

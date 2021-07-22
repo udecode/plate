@@ -1,5 +1,5 @@
-import { match, wrapNodes } from '@udecode/slate-plugins-common';
-import { SPEditor, TElement } from '@udecode/slate-plugins-core';
+import { match, wrapNodes } from '@udecode/plate-common';
+import { SPEditor, TElement } from '@udecode/plate-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

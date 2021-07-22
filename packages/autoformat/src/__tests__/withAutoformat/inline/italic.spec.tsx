@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { optionsAutoformat } from '../../../../../../docs/src/live/config/autoformatRules';
 import { withAutoformat } from '../../../createAutoformatPlugin';

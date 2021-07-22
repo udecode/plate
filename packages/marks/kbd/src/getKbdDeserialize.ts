@@ -1,12 +1,9 @@
-import { getLeafDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getLeafDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { MARK_KBD } from './defaults';
 
 export const getKbdDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, MARK_KBD);
+  const options = getPlatePluginOptions(editor, MARK_KBD);
 
   return {
     leaf: getLeafDeserializer({

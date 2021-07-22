@@ -2,18 +2,15 @@ import React, { useState } from 'react';
 import {
   createBasicElementPlugins,
   createHistoryPlugin,
+  createPlateComponents,
   createReactPlugin,
-  createSlatePluginsComponents,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
-} from '@udecode/slate-plugins-break';
-import {
-  SlatePlugins,
-  SPRenderElementProps,
-} from '@udecode/slate-plugins-core';
-import { createResetNodePlugin } from '@udecode/slate-plugins-reset-node';
+} from '@udecode/plate-break';
+import { Plate, SPRenderElementProps } from '@udecode/plate-core';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { initialValueBasicElements } from '../../config/initialValues';
 import {
   editableProps,
@@ -32,7 +29,7 @@ const plugins = [
   createExitBreakPlugin(optionsExitBreakPlugin),
 ];
 
-const components = createSlatePluginsComponents();
+const components = createPlateComponents();
 
 export const EditableVoidElement = ({
   attributes,
@@ -71,7 +68,7 @@ export const EditableVoidElement = ({
         Right
         <h4>Tell us about yourself:</h4>
         <div style={{ padding: '20px', border: '2px solid #ddd' }}>
-          <SlatePlugins
+          <Plate
             id="editable-void-basic-elements"
             plugins={plugins}
             components={components}

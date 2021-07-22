@@ -2,15 +2,15 @@ import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
-import { SlatePlugins } from '@udecode/slate-plugins-core';
+import { Plate } from '@udecode/plate-core';
 import { createParagraphPlugin } from '../../../elements/paragraph/src/createParagraphPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
-import { createSlatePluginsComponents } from '../../../slate-plugins/src/utils/createSlatePluginsComponents';
-import { createSlatePluginsOptions } from '../../../slate-plugins/src/utils/createSlatePluginsOptions';
+import { createPlateComponents } from '../../../plate/src/utils/createPlateComponents';
+import { createPlateOptions } from '../../../plate/src/utils/createPlateOptions';
 import { withDraggable } from './withDraggable';
 
-const options = createSlatePluginsOptions();
-const components = createSlatePluginsComponents();
+const options = createPlateOptions();
+const components = createPlateComponents();
 const initialValue = [
   {
     children: [
@@ -23,13 +23,13 @@ const initialValue = [
 ];
 
 it('should render draggable component', () => {
-  const _components = createSlatePluginsComponents({
+  const _components = createPlateComponents({
     p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
   const { container } = render(
     <DndProvider backend={TestBackend}>
-      <SlatePlugins
+      <Plate
         plugins={[createParagraphPlugin()]}
         options={options}
         components={_components}
@@ -42,7 +42,7 @@ it('should render draggable component', () => {
 
 // eslint-disable-next-line jest/no-commented-out-tests
 // it('should filter based on level', () => {
-//   const _components = createSlatePluginsComponents({
+//   const _components = createPlateComponents({
 //     p: getDraggableElement({
 //       component: components[ELEMENT_PARAGRAPH],
 //       level: 0,
@@ -51,7 +51,7 @@ it('should render draggable component', () => {
 //
 //   const { container } = render(
 //     <DndProvider backend={TestBackend}>
-//       <SlatePlugins
+//       <Plate
 //         plugins={[createParagraphPlugin()]}
 //         options={options}
 //         components={_components}
@@ -63,13 +63,13 @@ it('should render draggable component', () => {
 // });
 
 it('should not be draggable if readOnly', () => {
-  const _components = createSlatePluginsComponents({
+  const _components = createPlateComponents({
     p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
   const { container } = render(
     <DndProvider backend={TestBackend}>
-      <SlatePlugins
+      <Plate
         plugins={[createParagraphPlugin()]}
         options={options}
         components={_components}
@@ -82,7 +82,7 @@ it('should not be draggable if readOnly', () => {
 });
 
 it('should be draggable in readOnly if allowReadOnly', () => {
-  const _components = createSlatePluginsComponents({
+  const _components = createPlateComponents({
     p: withDraggable(components[ELEMENT_PARAGRAPH], {
       allowReadOnly: true,
     }),
@@ -90,7 +90,7 @@ it('should be draggable in readOnly if allowReadOnly', () => {
 
   const { container } = render(
     <DndProvider backend={TestBackend}>
-      <SlatePlugins
+      <Plate
         plugins={[createParagraphPlugin()]}
         options={options}
         components={_components}

@@ -1,15 +1,15 @@
 {
-  "name": "@udecode/slate-plugins-list",
-  "version": "1.0.0-next.61",
-  "description": "Slate plugins list",
+  "name": "@udecode/plate-list",
+  "version": "1.0.0",
+  "description": "Plate plugin list",
   "keywords": [],
-  "homepage": "https://github.com/udecode/slate-plugins/tree/main/packages/list#readme",
+  "homepage": "https://github.com/udecode/plate/tree/main/packages/list#readme",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/slate-plugins.git"
+    "url": "https://github.com/udecode/plate.git"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,9 +33,9 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.61",
-    "@udecode/slate-plugins-core": "1.0.0-next.61",
-    "@udecode/slate-plugins-reset-node": "1.0.0-next.61"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-reset-node": "1.0.0"
   },
   "publishConfig": {
     "access": "public"

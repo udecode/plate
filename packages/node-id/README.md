@@ -1,6 +1,6 @@
-# slate-plugins-node-id
+# plate-node-id
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

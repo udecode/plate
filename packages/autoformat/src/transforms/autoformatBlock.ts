@@ -1,5 +1,5 @@
-import { setNodes } from '@udecode/slate-plugins-common';
-import { TEditor, TElement } from '@udecode/slate-plugins-core';
+import { setNodes } from '@udecode/plate-common';
+import { TEditor, TElement } from '@udecode/plate-core';
 import { Editor, Location, Transforms } from 'slate';
 import { AutoformatRule } from '../types';
 

@@ -1,12 +1,9 @@
-import {
-  ELEMENT_DEFAULT,
-  isBlockAboveEmpty,
-} from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { ELEMENT_DEFAULT, isBlockAboveEmpty } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import {
   getResetNodeOnKeyDown,
   SIMULATE_BACKSPACE,
-} from '@udecode/slate-plugins-reset-node';
+} from '@udecode/plate-reset-node';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
@@ -37,8 +34,8 @@ export const getListInsertBreak = (editor: SPEditor) => {
   const didReset = getResetNodeOnKeyDown({
     rules: [
       {
-        types: [getSlatePluginType(editor, ELEMENT_LI)],
-        defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
+        types: [getPlatePluginType(editor, ELEMENT_LI)],
+        defaultType: getPlatePluginType(editor, ELEMENT_DEFAULT),
         predicate: () => !moved && isBlockAboveEmpty(editor),
         onReset: (_editor) => unwrapList(_editor as SPEditor),
       },

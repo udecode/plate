@@ -1,6 +1,6 @@
-# slate-plugins-code-block-ui
+# plate-code-block-ui
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

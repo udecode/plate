@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 

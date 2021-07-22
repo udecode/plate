@@ -4,4 +4,4 @@
 
 export * from './EditablePlugins';
 export * from './EditorStateEffect';
-export * from './SlatePlugins';
+export * from './Plate';

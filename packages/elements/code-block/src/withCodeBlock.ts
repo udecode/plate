@@ -1,4 +1,4 @@
-import { SPEditor, WithOverride } from '@udecode/slate-plugins-core';
+import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getIndentDepth } from './queries/getIndentDepth';

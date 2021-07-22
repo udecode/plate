@@ -29,17 +29,17 @@ title: Balloon Toolbar
         arrow={arrow}
       >
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_BOLD)}
+          type={getPlatePluginType(editor, MARK_BOLD)}
           icon={<FormatBold />}
           tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_ITALIC)}
+          type={getPlatePluginType(editor, MARK_ITALIC)}
           icon={<FormatItalic />}
           tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
         />
         <ToolbarMark
-          type={getSlatePluginType(editor, MARK_UNDERLINE)}
+          type={getPlatePluginType(editor, MARK_UNDERLINE)}
           icon={<FormatUnderlined />}
           tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
         />
@@ -52,7 +52,7 @@ title: Balloon Toolbar
   return (
     <>
       <BallonToolbarMarks />
-      <SlatePlugins
+      <Plate
         id="balloon-toolbar"
         plugins={pluginsBasic}
         components={components}

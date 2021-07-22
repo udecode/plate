@@ -1,4 +1,4 @@
-import { TElement } from '@udecode/slate-plugins-core';
+import { TElement } from '@udecode/plate-core';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { createNode } from '../../../utils/index';
 

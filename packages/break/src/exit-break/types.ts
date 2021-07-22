@@ -1,7 +1,7 @@
-import { QueryNodeOptions } from '@udecode/slate-plugins-common';
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { QueryNodeOptions } from '@udecode/plate-common';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
-export interface ExitBreakRule extends Pick<SlatePluginOptions, 'defaultType'> {
+export interface ExitBreakRule extends Pick<PlatePluginOptions, 'defaultType'> {
   /**
    * Hotkey to trigger exit break.
    */

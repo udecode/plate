@@ -1,12 +1,9 @@
-import { getNodeDeserializer } from '@udecode/slate-plugins-common';
-import {
-  Deserialize,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins-core';
+import { getNodeDeserializer } from '@udecode/plate-common';
+import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { ELEMENT_LINK } from './defaults';
 
 export const getLinkDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, ELEMENT_LINK);
+  const options = getPlatePluginOptions(editor, ELEMENT_LINK);
 
   return {
     element: getNodeDeserializer({

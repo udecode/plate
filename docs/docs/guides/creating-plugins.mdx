@@ -3,14 +3,14 @@ slug: /creating-plugins
 title: Creating Plugins
 ---
 
-Slate plugins are objects passed to the [plugins](SlatePlugins#plugins) prop of `SlatePlugins`.
+Plate are objects passed to the [plugins](Plate#plugins) prop of `Plate`.
 
 ## Plugin Factory
 
 A plugin factory is a function where...
 
 - the naming convention is `create...Plugin`
-- the return type is a [SlatePlugin](https://slate-plugins-api.udecode.io/interfaces/slateplugin.html) object.
+- the return type is a [PlatePlugin](https://plate-api.udecode.io/interfaces/plateplugin.html) object.
 - the first parameter should be an (optional) object for options.
 
 Let's create a few plugins to cover the plugin properties.
@@ -20,7 +20,7 @@ Let's create a few plugins to cover the plugin properties.
 A plugin to add an element: a paragraph as a block controlled by slate:
 
 ```ts
-export const createParagraphPlugin = (): SlatePlugin => ({
+export const createParagraphPlugin = (): PlatePlugin => ({
   deserialize: getParagraphDeserialize(),
   onKeyDown: getToggleElementOnKeyDown(ELEMENT_PARAGRAPH),
   pluginKeys: ELEMENT_PARAGRAPH,
@@ -31,7 +31,7 @@ export const createParagraphPlugin = (): SlatePlugin => ({
 - [deserialize](#deserialize)
   - to enable HTML deserialization, set a deserializer.
 - [renderElement](#renderelement)
-  - to enable element rendering, use [getRenderElement](https://slate-plugins-api.udecode.io/globals.html#getrenderelement)
+  - to enable element rendering, use [getRenderElement](https://plate-api.udecode.io/globals.html#getrenderelement)
 - [onKeyDown](#onkeydown)
   - to enable block toggling with a hotkey, use `getToggleElementOnKeyDown`
 - [pluginKeys](#pluginkeys)
@@ -42,11 +42,11 @@ export const createParagraphPlugin = (): SlatePlugin => ({
 A plugin to add an inline and void element: a tag uncontrolled by slate:
 
 ```ts
-export const createTagPlugin = (): SlatePlugin => ({
+export const createTagPlugin = (): PlatePlugin => ({
   deserialize: getTagDeserialize(),
   renderElement: getRenderElement(ELEMENT_TAG),
-  inlineTypes: getSlatePluginTypes(ELEMENT_TAG),
-  voidTypes: getSlatePluginTypes(ELEMENT_TAG),
+  inlineTypes: getPlatePluginTypes(ELEMENT_TAG),
+  voidTypes: getPlatePluginTypes(ELEMENT_TAG),
 });
 ```
 
@@ -60,7 +60,7 @@ export const createTagPlugin = (): SlatePlugin => ({
 Finally, a plugin to add a leaf: a highlight mark.
 
 ```ts
-export const createHighlightPlugin = (): SlatePlugin => ({
+export const createHighlightPlugin = (): PlatePlugin => ({
   pluginKeys: MARK_HIGHLIGHT,
   renderLeaf: getRenderLeaf(MARK_HIGHLIGHT),
   deserialize: getHighlightDeserialize(),
@@ -69,7 +69,7 @@ export const createHighlightPlugin = (): SlatePlugin => ({
 ```
 
 - [renderLeaf](#renderleaf)
-  - to enable leaf rendering, use [getRenderLeaf](https://slate-plugins-api.udecode.io/globals.html#getrenderleaf)
+  - to enable leaf rendering, use [getRenderLeaf](https://plate-api.udecode.io/globals.html#getrenderleaf)
 - [onKeyDown](#onkeydown)
   - to enable mark toggling with a hotkey, use `getToggleMarkOnKeyDown`
 
@@ -83,7 +83,7 @@ export const createReactPlugin = {
 };
 ```
 
-## `SlatePlugin`
+## `PlatePlugin`
 
 ### `decorate`
 
@@ -139,8 +139,8 @@ export const createReactPlugin = {
 
 - Function called whenever the corresponding event occurs in the editor.
 - There is 3 places where a handler (e.g. `onClick`) can be defined (called in this order):
-  - in `SlatePlugin` (plugin) 
-  - in `SlatePlugins` (props)
+  - in `PlatePlugin` (plugin) 
+  - in `Plate` (props)
   - in `Slate` (internal handler)
 - Event handlers can return a boolean flag to specify whether the event can be treated as being handled.
 - If the event is handled, the next handlers will not be called.
@@ -170,7 +170,7 @@ const onDragStart = (event) => {
 };
 ```
 
-`SlatePlugins` extends the following handlers:
+`Plate` extends the following handlers:
 
 ```tsx
 type ReturnType = boolean | void;

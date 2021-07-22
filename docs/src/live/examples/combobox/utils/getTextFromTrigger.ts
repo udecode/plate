@@ -1,5 +1,5 @@
-import { escapeRegExp, getText } from '@udecode/slate-plugins';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { escapeRegExp, getText } from '@udecode/plate';
+import { TEditor } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
 /**

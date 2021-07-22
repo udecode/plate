@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { SlatePlugins } from '../../../../../../core/src/components/SlatePlugins';
+import { Plate } from '../../../../../../core/src/components/Plate';
 import { BalloonToolbar } from '../../../BalloonToolbar/BalloonToolbar';
 
 const Editor = () => (
-  <SlatePlugins>
+  <Plate>
     <BalloonToolbar>test</BalloonToolbar>
-  </SlatePlugins>
+  </Plate>
 );
 
 it('should not be visible', () => {

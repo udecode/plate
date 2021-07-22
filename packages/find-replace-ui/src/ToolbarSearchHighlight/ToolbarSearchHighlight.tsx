@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
+import { HeadingToolbar } from '@udecode/plate-toolbar';
 
 export interface ToolbarSearchHighlightProps {
   icon: any;

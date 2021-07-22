@@ -2,8 +2,8 @@ module.exports = {
   docs: [
     {
       type: 'category',
-      label: 'Slate Plugins',
-      items: ['slate-plugins/introduction', 'slate-plugins/contributing'],
+      label: 'Plate',
+      items: ['plate/introduction', 'plate/contributing'],
       collapsed: false,
     },
     {
@@ -20,7 +20,7 @@ module.exports = {
       type: 'category',
       label: 'Guides',
       items: [
-        'guides/SlatePlugins',
+        'guides/Plate',
         'guides/store',
         'guides/styling',
         'guides/configuration',
@@ -95,7 +95,7 @@ module.exports = {
         'components/balloon-toolbar',
         'components/dnd',
         'components/placeholder',
-        'components/slate-plugins',
+        'components/plate',
       ],
       collapsed: false,
     },

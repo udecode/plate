@@ -1,5 +1,5 @@
-import { MentionNode, MentionNodeData } from '@udecode/slate-plugins-mention';
-import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
+import { MentionNode, MentionNodeData } from '@udecode/plate-mention';
+import { StyledElementProps } from '@udecode/plate-styled-components';
 
 export interface MentionElementStyleProps extends MentionElementProps {
   selected?: boolean;

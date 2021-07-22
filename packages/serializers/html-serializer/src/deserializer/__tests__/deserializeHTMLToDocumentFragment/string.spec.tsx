@@ -1,15 +1,15 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { SlatePlugin } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 jsx;
 
-const input1: SlatePlugin[] = [createParagraphPlugin()];
+const input1: PlatePlugin[] = [createParagraphPlugin()];
 
 const output = (
   <fragment>

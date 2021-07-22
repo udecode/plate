@@ -3,12 +3,12 @@ import {
   ELEMENT_DEFAULT,
   isFirstChild,
   isSelectionAtBlockStart,
-} from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import {
   getResetNodeOnKeyDown,
   SIMULATE_BACKSPACE,
-} from '@udecode/slate-plugins-reset-node';
+} from '@udecode/plate-reset-node';
 import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
@@ -40,8 +40,8 @@ export const getListDeleteBackward = (
           getResetNodeOnKeyDown({
             rules: [
               {
-                types: [getSlatePluginType(editor, ELEMENT_LI)],
-                defaultType: getSlatePluginType(editor, ELEMENT_DEFAULT),
+                types: [getPlatePluginType(editor, ELEMENT_LI)],
+                defaultType: getPlatePluginType(editor, ELEMENT_DEFAULT),
                 hotkey: 'backspace',
                 predicate: () => isSelectionAtBlockStart(editor),
                 onReset: (_editor) => unwrapList(_editor as SPEditor),

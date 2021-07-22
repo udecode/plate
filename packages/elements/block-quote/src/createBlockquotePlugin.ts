@@ -1,5 +1,5 @@
-import { getToggleElementOnKeyDown } from '@udecode/slate-plugins-common';
-import { getRenderElement, SlatePlugin } from '@udecode/slate-plugins-core';
+import { getToggleElementOnKeyDown } from '@udecode/plate-common';
+import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_BLOCKQUOTE } from './defaults';
 import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
 
@@ -7,7 +7,7 @@ import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
  * Enables support for block quotes, useful for
  * quotations and passages.
  */
-export const createBlockquotePlugin = (): SlatePlugin => ({
+export const createBlockquotePlugin = (): PlatePlugin => ({
   pluginKeys: ELEMENT_BLOCKQUOTE,
   renderElement: getRenderElement(ELEMENT_BLOCKQUOTE),
   deserialize: getBlockquoteDeserialize(),

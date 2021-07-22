@@ -5,12 +5,8 @@ import {
   setNodes,
   someNode,
   wrapNodes,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
 
 /**
@@ -24,8 +20,8 @@ export const insertCodeBlock = (
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === getSlatePluginType(editor, ELEMENT_CODE_BLOCK) ||
-    node.type === getSlatePluginType(editor, ELEMENT_CODE_LINE);
+    node.type === getPlatePluginType(editor, ELEMENT_CODE_BLOCK) ||
+    node.type === getPlatePluginType(editor, ELEMENT_CODE_LINE);
 
   if (
     someNode(editor, {
@@ -42,7 +38,7 @@ export const insertCodeBlock = (
   setNodes<TElement>(
     editor,
     {
-      type: getSlatePluginType(editor, ELEMENT_CODE_LINE),
+      type: getPlatePluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: '' }],
     },
     insertNodesOptions
@@ -51,7 +47,7 @@ export const insertCodeBlock = (
   wrapNodes(
     editor,
     {
-      type: getSlatePluginType(editor, ELEMENT_CODE_BLOCK),
+      type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
       children: [],
     },
     insertNodesOptions

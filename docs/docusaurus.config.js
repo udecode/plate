@@ -1,23 +1,23 @@
 const path = require('path');
 
 const githubOrgUrl = 'https://github.com/udecode';
-const projectName = 'slate-plugins';
+const projectName = 'plate';
 const githubUrl = `${githubOrgUrl}/${projectName}`;
-const domain = 'https://slate-plugins.udecode.io';
+const domain = 'https://plate.udecode.io';
 const domainExamples = '/docs/examples/introduction';
-const domainAPI = 'https://slate-plugins-api.udecode.io/globals.html';
+const domainAPI = 'https://plate-api.udecode.io/globals.html';
 const npmOrgUrl = 'https://www.npmjs.com/package/@udecode';
 
 const customFields = {
-  title: 'Slate Plugins',
+  title: 'Plate',
   tagline: 'Rapidly build your rich-text editor with Slate',
   copyright: `© ${new Date().getFullYear()} Ziad Beyens. All rights reserved.`,
   domain,
   githubOrgUrl,
   githubUrl,
   githubDocsUrl: `${githubOrgUrl}/docs`,
-  npmCoreUrl: `${npmOrgUrl}/slate-plugins`,
-  announcementBarContent: `If you like slate-plugins, give it a star on <a target="_blank" rel="noopener noreferrer" href="${githubUrl}">GitHub</a> 🎉 !️`,
+  npmCoreUrl: `${npmOrgUrl}/plate`,
+  announcementBarContent: `If you like plate, give it a star on <a target="_blank" rel="noopener noreferrer" href="${githubUrl}">GitHub</a> 🎉 !️`,
 };
 
 module.exports = {
@@ -35,7 +35,7 @@ module.exports = {
   themeConfig: {
     algolia: {
       apiKey: 'bca3ec311a129061145bf733a2bda13d',
-      indexName: 'slate-plugins',
+      indexName: 'plate',
     },
     // announcementBar: {
     //   id: 'github-star',
@@ -55,9 +55,9 @@ module.exports = {
       darkTheme: require('prism-react-renderer/themes/dracula'),
     },
     navbar: {
-      title: 'Slate Plugins',
+      title: 'Plate',
       logo: {
-        alt: 'Slate Plugins Logo',
+        alt: 'Plate Logo',
         src: 'img/logo.svg',
       },
       hideOnScroll: true,
@@ -128,7 +128,7 @@ module.exports = {
             },
             {
               label: 'Slack',
-              href: 'https://slate-js.slack.com/messages/slate-plugins',
+              href: 'https://slate-js.slack.com/messages/plate',
             },
           ],
         },
@@ -184,195 +184,189 @@ module.exports = {
       path.resolve(__dirname, 'plugins/module-alias'),
       {
         alias: {
-          '@udecode/slate-plugins': path.resolve(
-            __dirname,
-            '../packages/slate-plugins/src'
-          ),
-          '@udecode/slate-plugins-dnd': path.resolve(
-            __dirname,
-            '../packages/dnd/src'
-          ),
-          '@udecode/slate-plugins-common': path.resolve(
+          '@udecode/plate': path.resolve(__dirname, '../packages/plate/src'),
+          '@udecode/plate-dnd': path.resolve(__dirname, '../packages/dnd/src'),
+          '@udecode/plate-common': path.resolve(
             __dirname,
             '../packages/common/src'
           ),
-          '@udecode/slate-plugins-core': path.resolve(
+          '@udecode/plate-core': path.resolve(
             __dirname,
             '../packages/core/src'
           ),
-          '@udecode/slate-plugins-basic-elements': path.resolve(
+          '@udecode/plate-basic-elements': path.resolve(
             __dirname,
             '../packages/elements/basic-elements/src'
           ),
-          '@udecode/slate-plugins-alignment': path.resolve(
+          '@udecode/plate-alignment': path.resolve(
             __dirname,
             '../packages/elements/alignment/src'
           ),
-          '@udecode/slate-plugins-alignment-ui': path.resolve(
+          '@udecode/plate-alignment-ui': path.resolve(
             __dirname,
             '../packages/elements/alignment-ui/src'
           ),
-          '@udecode/slate-plugins-block-quote': path.resolve(
+          '@udecode/plate-block-quote': path.resolve(
             __dirname,
             '../packages/elements/block-quote/src'
           ),
-          '@udecode/slate-plugins-block-quote-ui': path.resolve(
+          '@udecode/plate-block-quote-ui': path.resolve(
             __dirname,
             '../packages/elements/block-quote-ui/src'
           ),
-          '@udecode/slate-plugins-code-block': path.resolve(
+          '@udecode/plate-code-block': path.resolve(
             __dirname,
             '../packages/elements/code-block/src'
           ),
-          '@udecode/slate-plugins-code-block-ui': path.resolve(
+          '@udecode/plate-code-block-ui': path.resolve(
             __dirname,
             '../packages/elements/code-block-ui/src'
           ),
-          '@udecode/slate-plugins-font': path.resolve(
-            __dirname,
-            '../packages/marks/font/src'
-          ),
-          '@udecode/slate-plugins-font-ui': path.resolve(
-            __dirname,
-            '../packages/marks/font-ui/src'
-          ),
-          '@udecode/slate-plugins-excalidraw': path.resolve(
+          '@udecode/plate-excalidraw': path.resolve(
             __dirname,
             '../packages/elements/excalidraw/src'
           ),
-          '@udecode/slate-plugins-heading': path.resolve(
+          '@udecode/plate-heading': path.resolve(
             __dirname,
             '../packages/elements/heading/src'
           ),
-          '@udecode/slate-plugins-image': path.resolve(
+          '@udecode/plate-image': path.resolve(
             __dirname,
             '../packages/elements/image/src'
           ),
-          '@udecode/slate-plugins-image-ui': path.resolve(
+          '@udecode/plate-image-ui': path.resolve(
             __dirname,
             '../packages/elements/image-ui/src'
           ),
-          '@udecode/slate-plugins-link': path.resolve(
+          '@udecode/plate-link': path.resolve(
             __dirname,
             '../packages/elements/link/src'
           ),
-          '@udecode/slate-plugins-link-ui': path.resolve(
+          '@udecode/plate-link-ui': path.resolve(
             __dirname,
             '../packages/elements/link-ui/src'
           ),
-          '@udecode/slate-plugins-list': path.resolve(
+          '@udecode/plate-list': path.resolve(
             __dirname,
             '../packages/elements/list/src'
           ),
-          '@udecode/slate-plugins-list-ui': path.resolve(
+          '@udecode/plate-list-ui': path.resolve(
             __dirname,
             '../packages/elements/list-ui/src'
           ),
-          '@udecode/slate-plugins-media-embed': path.resolve(
+          '@udecode/plate-media-embed': path.resolve(
             __dirname,
             '../packages/elements/media-embed/src'
           ),
-          '@udecode/slate-plugins-media-embed-ui': path.resolve(
+          '@udecode/plate-media-embed-ui': path.resolve(
             __dirname,
             '../packages/elements/media-embed-ui/src'
           ),
-          '@udecode/slate-plugins-mention': path.resolve(
+          '@udecode/plate-mention': path.resolve(
             __dirname,
             '../packages/elements/mention/src'
           ),
-          '@udecode/slate-plugins-mention-ui': path.resolve(
+          '@udecode/plate-mention-ui': path.resolve(
             __dirname,
             '../packages/elements/mention-ui/src'
           ),
-          '@udecode/slate-plugins-paragraph': path.resolve(
+          '@udecode/plate-paragraph': path.resolve(
             __dirname,
             '../packages/elements/paragraph/src'
           ),
-          '@udecode/slate-plugins-placeholder': path.resolve(
+          '@udecode/plate-placeholder': path.resolve(
             __dirname,
             '../packages/placeholder/src'
           ),
-          '@udecode/slate-plugins-table': path.resolve(
+          '@udecode/plate-table': path.resolve(
             __dirname,
             '../packages/elements/table/src'
           ),
-          '@udecode/slate-plugins-table-ui': path.resolve(
+          '@udecode/plate-table-ui': path.resolve(
             __dirname,
             '../packages/elements/table-ui/src'
           ),
-          '@udecode/slate-plugins-basic-marks': path.resolve(
+          '@udecode/plate-basic-marks': path.resolve(
             __dirname,
             '../packages/marks/basic-marks/src'
           ),
-          '@udecode/slate-plugins-highlight': path.resolve(
+          '@udecode/plate-font': path.resolve(
+            __dirname,
+            '../packages/marks/font/src'
+          ),
+          '@udecode/plate-font-ui': path.resolve(
+            __dirname,
+            '../packages/marks/font-ui/src'
+          ),
+          '@udecode/plate-highlight': path.resolve(
             __dirname,
             '../packages/marks/highlight/src'
           ),
-          '@udecode/slate-plugins-kbd': path.resolve(
+          '@udecode/plate-kbd': path.resolve(
             __dirname,
             '../packages/marks/kbd/src'
           ),
-          '@udecode/slate-plugins-html-serializer': path.resolve(
+          '@udecode/plate-html-serializer': path.resolve(
             __dirname,
             '../packages/serializers/html-serializer/src'
           ),
-          '@udecode/slate-plugins-md-serializer': path.resolve(
+          '@udecode/plate-md-serializer': path.resolve(
             __dirname,
             '../packages/serializers/md-serializer/src'
           ),
-          '@udecode/slate-plugins-ast-serializer': path.resolve(
+          '@udecode/plate-ast-serializer': path.resolve(
             __dirname,
             '../packages/serializers/ast-serializer/src'
           ),
-          '@udecode/slate-plugins-slate-plugins': path.resolve(
+          '@udecode/plate-plate': path.resolve(
             __dirname,
-            '../packages/slate-plugins/src'
+            '../packages/plate/src'
           ),
-          '@udecode/slate-plugins-autoformat': path.resolve(
+          '@udecode/plate-autoformat': path.resolve(
             __dirname,
             '../packages/autoformat/src'
           ),
-          '@udecode/slate-plugins-break': path.resolve(
+          '@udecode/plate-break': path.resolve(
             __dirname,
             '../packages/break/src'
           ),
-          '@udecode/slate-plugins-find-replace': path.resolve(
+          '@udecode/plate-find-replace': path.resolve(
             __dirname,
             '../packages/find-replace/src'
           ),
-          '@udecode/slate-plugins-find-replace-ui': path.resolve(
+          '@udecode/plate-find-replace-ui': path.resolve(
             __dirname,
             '../packages/find-replace-ui/src'
           ),
-          '@udecode/slate-plugins-node-id': path.resolve(
+          '@udecode/plate-node-id': path.resolve(
             __dirname,
             '../packages/node-id/src'
           ),
-          '@udecode/slate-plugins-normalizers': path.resolve(
+          '@udecode/plate-normalizers': path.resolve(
             __dirname,
             '../packages/normalizers/src'
           ),
-          '@udecode/slate-plugins-reset-node': path.resolve(
+          '@udecode/plate-reset-node': path.resolve(
             __dirname,
             '../packages/reset-node/src'
           ),
-          '@udecode/slate-plugins-select': path.resolve(
+          '@udecode/plate-select': path.resolve(
             __dirname,
             '../packages/select/src'
           ),
-          '@udecode/slate-plugins-styled-components': path.resolve(
+          '@udecode/plate-styled-components': path.resolve(
             __dirname,
             '../packages/ui/styled-components/src'
           ),
-          '@udecode/slate-plugins-trailing-block': path.resolve(
+          '@udecode/plate-trailing-block': path.resolve(
             __dirname,
             '../packages/trailing-block/src'
           ),
-          '@udecode/slate-plugins-toolbar': path.resolve(
+          '@udecode/plate-toolbar': path.resolve(
             __dirname,
             '../packages/ui/toolbar/src'
           ),
-          '@udecode/slate-plugins-test-utils': path.resolve(
+          '@udecode/plate-test-utils': path.resolve(
             __dirname,
             '../packages/test-utils/src'
           ),

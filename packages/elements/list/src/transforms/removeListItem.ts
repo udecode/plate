@@ -3,12 +3,8 @@ import {
   getPreviousPath,
   insertNodes,
   isExpanded,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -56,10 +52,10 @@ export const removeListItem = (
     insertNodes<TElement>(
       editor,
       {
-        type: getSlatePluginType(editor, ELEMENT_LI),
+        type: getPlatePluginType(editor, ELEMENT_LI),
         children: [
           {
-            type: getSlatePluginType(editor, ELEMENT_LIC),
+            type: getPlatePluginType(editor, ELEMENT_LIC),
             children: [{ text: '' }],
           },
         ],

@@ -1,10 +1,10 @@
-import { mergeDeepToNodes } from '@udecode/slate-plugins-common';
+import { mergeDeepToNodes } from '@udecode/plate-common';
 import {
   isElement,
-  SlatePlugin,
+  PlatePlugin,
   SPEditor,
   TDescendant,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
@@ -12,7 +12,7 @@ import { DeserializeHTMLChildren } from '../types';
 jsx;
 
 export interface DeserializeMarksProps<T extends SPEditor = SPEditor> {
-  plugins: SlatePlugin<T>[];
+  plugins: PlatePlugin<T>[];
   element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }

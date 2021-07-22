@@ -6,26 +6,20 @@ import { Meta } from '@storybook/react/types-6-0';
 import { Image } from '@styled-icons/material/Image';
 import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
-import { createBlockquotePlugin } from '@udecode/slate-plugins-block-quote';
-import { createCodeBlockPlugin } from '@udecode/slate-plugins-code-block';
-import { withProps } from '@udecode/slate-plugins-common';
-import {
-  createHistoryPlugin,
-  createReactPlugin,
-} from '@udecode/slate-plugins-core';
-import {
-  createHeadingPlugin,
-  ELEMENT_H1,
-} from '@udecode/slate-plugins-heading';
-import { createImagePlugin, ELEMENT_IMAGE } from '@udecode/slate-plugins-image';
-import { createLinkPlugin } from '@udecode/slate-plugins-link';
-import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
-import { MentionElement } from '@udecode/slate-plugins-mention-ui';
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { withProps } from '@udecode/plate-common';
+import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
+import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
+import { createImagePlugin, ELEMENT_IMAGE } from '@udecode/plate-image';
+import { createLinkPlugin } from '@udecode/plate-link';
+import { ELEMENT_MENTION } from '@udecode/plate-mention';
+import { MentionElement } from '@udecode/plate-mention-ui';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-} from '@udecode/slate-plugins-paragraph';
-import { HeadingToolbar } from '@udecode/slate-plugins-toolbar';
+} from '@udecode/plate-paragraph';
+import { HeadingToolbar } from '@udecode/plate-toolbar';
 import { optionsAutoformat } from '../docs/src/live/config/autoformatRules';
 import { initialValuePlayground } from '../docs/src/live/config/initialValues';
 import {
@@ -49,7 +43,7 @@ import { withStyledPlaceHolders } from '../docs/src/live/config/withStyledPlaceH
 import { createAutoformatPlugin } from '../packages/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../packages/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../packages/break/src/soft-break/createSoftBreakPlugin';
-import { SlatePlugins } from '../packages/core/src/components/SlatePlugins';
+import { Plate } from '../packages/core/src/components/Plate';
 import { createDndPlugin } from '../packages/dnd/src/createDndPlugin';
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
 import { ToolbarImage } from '../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
@@ -73,11 +67,11 @@ import { createHighlightPlugin } from '../packages/marks/highlight/src/createHig
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
 import { createNodeIdPlugin } from '../packages/node-id/src/createNodeIdPlugin';
 import { createNormalizeTypesPlugin } from '../packages/normalizers/src/createNormalizeTypesPlugin';
+import { createPlateComponents } from '../packages/plate/src/utils/createPlateComponents';
+import { createPlateOptions } from '../packages/plate/src/utils/createPlateOptions';
 import { createResetNodePlugin } from '../packages/reset-node/src/createResetNodePlugin';
 import { createSelectOnBackspacePlugin } from '../packages/select/src/createSelectOnBackspacePlugin';
 import { createDeserializeHTMLPlugin } from '../packages/serializers/html-serializer/src/deserializer/createDeserializeHTMLPlugin';
-import { createSlatePluginsComponents } from '../packages/slate-plugins/src/utils/createSlatePluginsComponents';
-import { createSlatePluginsOptions } from '../packages/slate-plugins/src/utils/createSlatePluginsOptions';
 import { createTrailingBlockPlugin } from '../packages/trailing-block/src/createTrailingBlockPlugin';
 
 export default {
@@ -85,7 +79,7 @@ export default {
 } as Meta;
 
 export const Example = () => {
-  let styledComponents = createSlatePluginsComponents({
+  let styledComponents = createPlateComponents({
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
     }),
@@ -93,7 +87,7 @@ export const Example = () => {
   styledComponents = withStyledPlaceHolders(styledComponents);
   styledComponents = withStyledDraggables(styledComponents);
 
-  const defaultOptions = createSlatePluginsOptions();
+  const defaultOptions = createPlateOptions();
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
@@ -146,7 +140,7 @@ export const Example = () => {
     }, [mentionPlugin, searchHighlightPlugin]);
 
     return (
-      <SlatePlugins
+      <Plate
         id="playground"
         plugins={pluginsMemo}
         components={styledComponents}
@@ -171,7 +165,7 @@ export const Example = () => {
           {...getMentionSelectProps()}
           renderLabel={renderMentionLabel}
         />
-      </SlatePlugins>
+      </Plate>
     );
   };
 

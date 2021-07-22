@@ -4,20 +4,14 @@ import {
   isCollapsed,
   someNode,
   unwrapNodes,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   useEventEditorId,
   useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import {
-  ELEMENT_LINK,
-  upsertLinkAtSelection,
-} from '@udecode/slate-plugins-link';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@udecode/slate-plugins-toolbar';
+} from '@udecode/plate-core';
+import { ELEMENT_LINK, upsertLinkAtSelection } from '@udecode/plate-link';
+import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarLinkProps extends ToolbarButtonProps {
   /**
@@ -29,7 +23,7 @@ export interface ToolbarLinkProps extends ToolbarButtonProps {
 export const ToolbarLink = ({ getLinkUrl, ...props }: ToolbarLinkProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
-  const type = getSlatePluginType(editor, ELEMENT_LINK);
+  const type = getPlatePluginType(editor, ELEMENT_LINK);
   const isLink = !!editor?.selection && someNode(editor, { match: { type } });
 
   return (
@@ -60,7 +54,7 @@ export const ToolbarLink = ({ getLinkUrl, ...props }: ToolbarLinkProps) => {
             editor.selection &&
             unwrapNodes(editor, {
               at: editor.selection,
-              match: { type: getSlatePluginType(editor, ELEMENT_LINK) },
+              match: { type: getPlatePluginType(editor, ELEMENT_LINK) },
             });
 
           return;

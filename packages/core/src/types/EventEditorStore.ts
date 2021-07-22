@@ -1,4 +1,4 @@
-import { EditorId } from './SlatePluginsStore';
+import { EditorId } from './PlateStore';
 
 export type EditorEvent = 'blur' | 'focus';
 

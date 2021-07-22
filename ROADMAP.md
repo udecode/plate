@@ -19,7 +19,7 @@ Here is our roadmap to have a complete rich-text editor.
   - [x] `typeX` – Type of the element node where `X` represents the
         element.
   - [x] `component` – React component to render the element.
-- [x] [Alignment](https://github.com/udecode/slate-plugins/issues/104)
+- [x] [Alignment](https://github.com/udecode/plate/issues/104)
       – Enables support for text alignment, useful to align your content
       to left, right and center it.
 - [x] BasicElements – Enables support for basic elements.
@@ -60,7 +60,7 @@ Here is our roadmap to have a complete rich-text editor.
 - [x] Link – Enables support for hyperlinks.
   - [x] Insert/update links from text.
   - [x] Insert/update links from clipboard.
-  - [ ] [Balloon](https://github.com/udecode/slate-plugins/issues/103)
+  - [ ] [Balloon](https://github.com/udecode/plate/issues/103)
         to edit and delete.
   - [ ] Hotkey
 - [x] List – Enables support for bulleted, numbered and to-do lists.
@@ -95,7 +95,7 @@ Here is our roadmap to have a complete rich-text editor.
 - [x] Table – Enables support for tables.
   - [ ] TableCellProperties – Allows for styling individual table cells.
   - [ ] TableProperties – Allows for styling entire tables.
-  - [ ] [TableToolbar](https://github.com/udecode/slate-plugins/issues/69) – Provides a configurable toolbar showing up when
+  - [ ] [TableToolbar](https://github.com/udecode/plate/issues/69) – Provides a configurable toolbar showing up when
         the table element is selected.
   - [x] Insert table
   - [x] Add/delete rows and columns
@@ -136,10 +136,10 @@ Here is our roadmap to have a complete rich-text editor.
 
 ### Serializers
 
-- [x] [SerializeHtml](https://github.com/udecode/slate-plugins/issues/61)
+- [x] [SerializeHtml](https://github.com/udecode/plate/issues/61)
       – Enables support for serializing content from Slate format to
       HTML format.
-- [ ] [SerializeMarkdown](https://github.com/udecode/slate-plugins/issues/149)
+- [ ] [SerializeMarkdown](https://github.com/udecode/plate/issues/149)
       – Enables support for serializing content from Slate format to
       Markdown format.
 - [ ] SerializeOffice – Enables support for serializing content from
@@ -235,7 +235,7 @@ Here is our roadmap to have a complete rich-text editor.
 
 ### Storage
 
-- [ ] [Autosave](https://github.com/udecode/slate-plugins/issues/88)
+- [ ] [Autosave](https://github.com/udecode/plate/issues/88)
       – Enables support for saving the editor value in a storage when
       needed, for example, when the user changed the content.
 

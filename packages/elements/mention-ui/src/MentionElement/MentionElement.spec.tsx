@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import { ELEMENT_MENTION } from '@udecode/slate-plugins-mention';
+import { ELEMENT_MENTION } from '@udecode/plate-mention';
 import * as SlateReact from 'slate-react';
 import { MentionElement } from './MentionElement';
 

@@ -1,7 +1,7 @@
 {
-  "name": "@udecode/slate-plugins-placeholder",
-  "version": "1.0.0-next.61",
-  "description": "Slate plugins placeholder",
+  "name": "@udecode/plate-placeholder",
+  "version": "1.0.0",
+  "description": "Plate plugin placeholder",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -23,13 +23,13 @@
     "slate-react": ">=0.60.0"
   },
   "dependencies": {
-    "@udecode/slate-plugins-common": "1.0.0-next.61",
-    "@udecode/slate-plugins-core": "1.0.0-next.61",
-    "@udecode/slate-plugins-styled-components": "1.0.0-next.61"
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-styled-components": "1.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/udecode/slate-plugins.git"
+    "url": "git+https://github.com/udecode/plate.git"
   },
   "keywords": [
     "slate",
@@ -40,9 +40,9 @@
   "author": "Karthikeyan U",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/udecode/slate-plugins/issues"
+    "url": "https://github.com/udecode/plate/issues"
   },
-  "homepage": "https://github.com/udecode/slate-plugins#readme",
+  "homepage": "https://github.com/udecode/plate#readme",
   "publishConfig": {
     "access": "public"
   }

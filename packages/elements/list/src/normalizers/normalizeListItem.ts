@@ -3,13 +3,13 @@ import {
   insertEmptyElement,
   match,
   setNodes,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   SPEditor,
   TDescendant,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { ListNormalizerOptions } from '../types';
@@ -58,9 +58,9 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = [
-    getSlatePluginType(editor, ELEMENT_UL),
-    getSlatePluginType(editor, ELEMENT_OL),
-    getSlatePluginType(editor, ELEMENT_LIC),
+    getPlatePluginType(editor, ELEMENT_UL),
+    getPlatePluginType(editor, ELEMENT_OL),
+    getPlatePluginType(editor, ELEMENT_LIC),
     ...validLiChildrenTypes,
   ];
 
@@ -77,7 +77,7 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
-    insertEmptyElement(editor, getSlatePluginType(editor, ELEMENT_LIC), {
+    insertEmptyElement(editor, getPlatePluginType(editor, ELEMENT_LIC), {
       at: liPath.concat([0]),
     });
     return true;
@@ -87,11 +87,11 @@ export const normalizeListItem = (
   if (
     Editor.isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode as any, {
-      type: getSlatePluginType(editor, ELEMENT_LIC),
+      type: getPlatePluginType(editor, ELEMENT_LIC),
     })
   ) {
     setNodes<TElement>(editor, {
-      type: getSlatePluginType(editor, ELEMENT_LIC),
+      type: getPlatePluginType(editor, ELEMENT_LIC),
     });
     changed = true;
   }

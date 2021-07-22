@@ -1,6 +1,6 @@
-# slate-plugins-ast-serializer
+# plate-ast-serializer
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

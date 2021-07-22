@@ -1,5 +1,5 @@
-import { getNodes, getParent } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getNodes, getParent } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../defaults';
 import { isListNested } from '../queries/isListNested';
@@ -11,7 +11,7 @@ export const moveListItems = (editor: SPEditor, increase = true) => {
   const [...lics] = getNodes(editor, {
     at: editor.selection!,
     match: {
-      type: getSlatePluginType(editor, ELEMENT_LIC),
+      type: getPlatePluginType(editor, ELEMENT_LIC),
     },
   });
 

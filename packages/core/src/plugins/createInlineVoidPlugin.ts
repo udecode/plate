@@ -1,12 +1,12 @@
 import castArray from 'lodash/castArray';
-import { SlatePlugin } from '../types/SlatePlugin/SlatePlugin';
-import { WithOverride } from '../types/SlatePlugin/WithOverride';
+import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { WithOverride } from '../types/PlatePlugin/WithOverride';
 import { SPEditor } from '../types/SPEditor';
 import { TElement } from '../types/TElement';
-import { getSlatePluginWithOverrides } from '../utils/getSlatePluginWithOverrides';
+import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
 
 export interface WithInlineVoidOptions<T extends SPEditor = SPEditor> {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
   inlineTypes?: string[];
   voidTypes?: string[];
 }
@@ -53,6 +53,6 @@ export const withInlineVoid = <T extends SPEditor = SPEditor>({
 /**
  * @see {@link withInlineVoid}
  */
-export const createInlineVoidPlugin = getSlatePluginWithOverrides(
+export const createInlineVoidPlugin = getPlatePluginWithOverrides(
   withInlineVoid
 );

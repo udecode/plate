@@ -1,4 +1,4 @@
-import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
+import { StyledElementProps } from '@udecode/plate-styled-components';
 
 export interface PlaceholderProps extends StyledElementProps {
   placeholder: string;

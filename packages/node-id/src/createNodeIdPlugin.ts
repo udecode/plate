@@ -3,12 +3,12 @@ import {
   queryNode,
   QueryNodeOptions,
   someNode,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginWithOverrides,
+  getPlatePluginWithOverrides,
   TNode,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeEntry } from 'slate';
 import { HistoryEditor } from 'slate-history';
@@ -137,4 +137,4 @@ export const withNodeId = ({
 /**
  * @see {@link withNodeId}
  */
-export const createNodeIdPlugin = getSlatePluginWithOverrides(withNodeId);
+export const createNodeIdPlugin = getPlatePluginWithOverrides(withNodeId);

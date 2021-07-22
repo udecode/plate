@@ -1,9 +1,9 @@
-import { insertNodes } from '@udecode/slate-plugins-common';
+import { insertNodes } from '@udecode/plate-common';
 import {
-  getSlatePluginType,
-  SlatePluginKey,
+  getPlatePluginType,
+  PlatePluginKey,
   SPEditor,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ELEMENT_MENTION } from '../defaults';
 import { MentionNode, MentionNodeData } from '../types';
@@ -17,10 +17,10 @@ export const insertMention = (
   }: {
     data: MentionNodeData;
     insertSpaceAfterMention?: boolean;
-  } & SlatePluginKey
+  } & PlatePluginKey
 ) => {
   const mentionNode: MentionNode = {
-    type: getSlatePluginType(editor, pluginKey),
+    type: getPlatePluginType(editor, pluginKey),
     children: [{ text: '' }],
     ...data,
   };

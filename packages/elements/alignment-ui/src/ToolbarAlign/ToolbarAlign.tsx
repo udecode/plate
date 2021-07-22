@@ -1,17 +1,8 @@
 import * as React from 'react';
-import { KEYS_ALIGN, upsertAlign } from '@udecode/slate-plugins-alignment';
-import {
-  getPreventDefaultHandler,
-  someNode,
-} from '@udecode/slate-plugins-common';
-import {
-  useEventEditorId,
-  useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import {
-  ToolbarButton,
-  ToolbarButtonProps,
-} from '@udecode/slate-plugins-toolbar';
+import { KEYS_ALIGN, upsertAlign } from '@udecode/plate-alignment';
+import { getPreventDefaultHandler, someNode } from '@udecode/plate-common';
+import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
+import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarAlignProps extends ToolbarButtonProps {
   type?: string;

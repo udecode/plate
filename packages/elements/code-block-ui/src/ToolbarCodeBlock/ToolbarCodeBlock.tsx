@@ -3,17 +3,14 @@ import {
   CodeBlockInsertOptions,
   ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
-} from '@udecode/slate-plugins-code-block';
-import { getPreventDefaultHandler } from '@udecode/slate-plugins-common';
+} from '@udecode/plate-code-block';
+import { getPreventDefaultHandler } from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   useEventEditorId,
   useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import {
-  ToolbarButtonProps,
-  ToolbarElement,
-} from '@udecode/slate-plugins-toolbar';
+} from '@udecode/plate-core';
+import { ToolbarButtonProps, ToolbarElement } from '@udecode/plate-toolbar';
 
 export const ToolbarCodeBlock = ({
   options,
@@ -25,7 +22,7 @@ export const ToolbarCodeBlock = ({
 
   return (
     <ToolbarElement
-      type={getSlatePluginType(editor, ELEMENT_CODE_BLOCK)}
+      type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
       onMouseDown={
         editor &&
         getPreventDefaultHandler(insertEmptyCodeBlock, editor, {

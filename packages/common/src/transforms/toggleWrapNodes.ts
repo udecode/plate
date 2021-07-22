@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { someNode } from '../queries/someNode';
 import { unwrapNodes } from './unwrapNodes';
 import { wrapNodes } from './wrapNodes';

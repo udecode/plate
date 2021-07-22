@@ -1,4 +1,4 @@
-import { AnyObject } from '@udecode/slate-plugins-core';
+import { AnyObject } from '@udecode/plate-core';
 import { StyledProps } from '../types/StyledProps';
 import { createStyles } from './createStyles';
 

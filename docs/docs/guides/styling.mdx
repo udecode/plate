@@ -7,23 +7,23 @@ There is multiple ways to style your editor.
 
 ## Components
 
-`SlatePlugins` accepts the `components` prop so you can pass all the components of your editor in one place.
+`Plate` accepts the `components` prop so you can pass all the components of your editor in one place.
 This way, the design is decoupled from the other props.
 
 It's an object whose property keys are [plugin keys](configuration##plugin-keys) and whose property values are React components.
 
 ### Factory
 
-Slate Plugins provides a kit of components for all the plugins.
+Plate provides a kit of components for all the plugins.
 
 You can either:
 
-- import and use `createSlatePluginsComponents` to create all the components.
+- import and use `createPlateComponents` to create all the components.
 The first parameter can be used to override default components by plugin key.
 
 ```ts
 // this will override the paragraph markup
-const components = createSlatePluginsComponents({
+const components = createPlateComponents({
   [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
     as: 'div',
   }),
@@ -33,8 +33,8 @@ const components = createSlatePluginsComponents({
 - or create your own factory:
 
 ```ts
-export const createSlatePluginsComponents = (
-  overrides?: Partial<Record<DefaultSlatePluginKey, SlatePluginComponent>>
+export const createPlateComponents = (
+  overrides?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: AlignCenterElement,
@@ -82,7 +82,7 @@ export const createSlatePluginsComponents = (
     });
   }
 
-  return components as Record<DefaultSlatePluginKey, SlatePluginComponent>;
+  return components as Record<DefaultPlatePluginKey, PlatePluginComponent>;
 };
 ```
 
@@ -90,9 +90,9 @@ export const createSlatePluginsComponents = (
 
 We provide components with overridable styles and markup:
 
-- [StyledElement](https://slate-plugins-api.udecode.io/globals.html#styledelement)
+- [StyledElement](https://plate-api.udecode.io/globals.html#styledelement)
   - This component can be used to style `Element` nodes (e.g. `p`, `h1`, `ul`, `li`,...).
-- [StyledLeaf](https://slate-plugins-api.udecode.io/globals.html#styledleaf)
+- [StyledLeaf](https://plate-api.udecode.io/globals.html#styledleaf)
   - This component can be used to style `Leaf` nodes (e.g. `bold`, `italic`, `code`,...).
 
 `withProps` HOC can be used to override and add props to a component.
@@ -125,7 +125,7 @@ This prop is subject to change for another CSS-in-JS solution in v1.
 We provide many styled components which accept a `styles` props.
 
 Unlike a `style` prop that only applies styles to the root component,
-the `styles` prop (provided by most Slate Plugins components)
+the `styles` prop (provided by most Plate components)
 allows you to control the styling of every part of a component:
 the root, the children, and even sub-components.
 You can use this for one-off component customizations,
@@ -164,7 +164,7 @@ You can create your own component.
 
 ## CSS
 
-Slate plugins add a `class` attribute to all elements and leaves.
+Plate add a `class` attribute to all elements and leaves.
 
 It is equals to the [plugin key](configuration##plugin-keys) prefixed by `slate-`, for example:
 

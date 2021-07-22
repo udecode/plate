@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
@@ -35,7 +35,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [
+  const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
     createParagraphPlugin(),
     createLinkPlugin(),
   ];

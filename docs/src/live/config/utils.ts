@@ -4,7 +4,7 @@ import {
   ELEMENT_PARAGRAPH,
   ELEMENT_UL,
   TElement,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { Text } from 'slate';
 
 export const createElement = (

@@ -1,4 +1,4 @@
-import { StyledProps } from '@udecode/slate-plugins';
+import { StyledProps } from '@udecode/plate';
 
 export interface PreviewLeafStyleProps extends StyledProps {
   bold?: boolean;

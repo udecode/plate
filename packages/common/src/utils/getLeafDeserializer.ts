@@ -1,4 +1,4 @@
-import { GetLeafDeserializerOptions } from '@udecode/slate-plugins-core';
+import { GetLeafDeserializerOptions } from '@udecode/plate-core';
 import { getNodeDeserializer } from './getNodeDeserializer';
 
 /**

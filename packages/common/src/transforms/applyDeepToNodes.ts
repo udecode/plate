@@ -1,4 +1,4 @@
-import { isAncestor, TDescendant, TNode } from '@udecode/slate-plugins-core';
+import { isAncestor, TDescendant, TNode } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
 import { queryNode } from '../queries';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';

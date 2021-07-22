@@ -1,4 +1,4 @@
-import { SPRenderElementProps } from '@udecode/slate-plugins-core';
+import { SPRenderElementProps } from '@udecode/plate-core';
 import { Element } from 'slate';
 import { StyledProps } from '../types/StyledProps';
 

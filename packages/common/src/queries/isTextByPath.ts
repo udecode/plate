@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { Node, Path, Text } from 'slate';
 
 export const isTextByPath = (editor: TEditor, path: Path) => {

@@ -1,6 +1,6 @@
-# slate-plugins-media-embed
+# plate-media-embed
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

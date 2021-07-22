@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { act, renderHook } from '@testing-library/react-hooks';
-import { SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
-import { createEditorPlugins } from '../../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../../plate/src/utils/createEditorPlugins';
 import { useMentionPlugin } from '../../../../useMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 

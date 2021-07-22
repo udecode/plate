@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { jsx } from '@udecode/plate-test-utils';
 import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
 import { toggleMark } from '../../../transforms/toggleMark';
 

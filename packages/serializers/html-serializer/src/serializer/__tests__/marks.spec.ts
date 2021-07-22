@@ -1,7 +1,7 @@
 import { createBasicMarkPlugins } from '../../../../../marks/basic-marks/src/createBasicMarkPlugins';
 import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
-import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

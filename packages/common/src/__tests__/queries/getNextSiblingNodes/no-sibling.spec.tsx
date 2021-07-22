@@ -1,11 +1,7 @@
 /** @jsx jsx */
 
-import {
-  SPEditor,
-  TDescendant,
-  withInlineVoid,
-} from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { SPEditor, TDescendant, withInlineVoid } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { getBlockAbove } from '../../../queries/getBlockAbove';

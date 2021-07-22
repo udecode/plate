@@ -1,7 +1,7 @@
 import {
   createStyles,
   StyledElementProps,
-} from '@udecode/slate-plugins-styled-components';
+} from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 

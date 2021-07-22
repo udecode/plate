@@ -13,7 +13,7 @@ title: Mention
     return `${entry.name} - ${entry.email}`;
   };
 
-  const styledComponents = createSlatePluginsComponents({
+  const styledComponents = createPlateComponents({
     ...components,
     [ELEMENT_MENTION]: withProps(MentionElement, {
       renderLabel: renderMentionLabel,
@@ -45,7 +45,7 @@ title: Mention
     );
 
     return (
-      <SlatePlugins
+      <Plate
         id="mention"
         plugins={plugins}
         components={styledComponents}
@@ -57,7 +57,7 @@ title: Mention
           {...getMentionSelectProps()}
           renderLabel={renderMentionLabel}
         />
-      </SlatePlugins>
+      </Plate>
     );
   };
 

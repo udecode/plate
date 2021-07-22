@@ -2,7 +2,7 @@
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
-import { TEditor, TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Path, Range, Span } from 'slate';
 import { FindNodeOptions } from './findNode';
 import { match } from './match';

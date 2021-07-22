@@ -1,4 +1,4 @@
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { getExitBreakOnKeyDown } from './getExitBreakOnKeyDown';
 import { ExitBreakPluginOptions } from './types';
 
@@ -8,6 +8,6 @@ import { ExitBreakPluginOptions } from './types';
  */
 export const createExitBreakPlugin = (
   options: ExitBreakPluginOptions = {}
-): SlatePlugin => ({
+): PlatePlugin => ({
   onKeyDown: getExitBreakOnKeyDown(options),
 });

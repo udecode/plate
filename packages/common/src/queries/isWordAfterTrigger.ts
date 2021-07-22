@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/slate-plugins-core';
+import { TEditor } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 import { escapeRegExp } from '../utils/escapeRegexp';
 import { getText } from './getText';

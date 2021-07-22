@@ -3,52 +3,52 @@ title: Store
 slug: /store
 ---
 
-`SlatePlugins` is using a [zustand](https://github.com/pmndrs/zustand) store with a state by **id** to support multiple editor instances.
+`Plate` is using a [zustand](https://github.com/pmndrs/zustand) store with a state by **id** to support multiple editor instances.
 
 If rendering only one editor, the store id is optional, the default being `'main'`.
 
 ## Store
 
-### Slate Plugins Store
+### Plate Store
 
-This store is an object whose property keys are [editor ids](SlatePlugins#id) and whose property values are [SlatePluginsState](#state).
+This store is an object whose property keys are [editor ids](Plate#id) and whose property values are [PlateState](#state).
 
-The hook store [useSlatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsstore) can be used to subscribe to changes in React.
+The hook store [usePlateStore](https://plate-api.udecode.io/globals.html#useplatestore) can be used to subscribe to changes in React.
 
-The vanilla store [slatePluginsStore](https://slate-plugins-api.udecode.io/globals.html#slatepluginsstore) can be used outside React.
+The vanilla store [plateStore](https://plate-api.udecode.io/globals.html#platestore) can be used outside React.
 
 ### Event Editor Store
 
-This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [SlatePluginsState](#state).
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [PlateState](#state).
 This is useful to store [multiple editors](multiple-editors) and select one based on DOM events.
 
 You can extend this store with any event using [setEventEditorId](store#seteventeditorid).
 
-[SlatePlugins](SlatePlugins) will store these events out of the box:
+[Plate](Plate) will store these events out of the box:
 
 - `focus` using `onFocus`
 - `blur` using `onBlur`
 
-The hook store [useEventEditorStore](https://slate-plugins-api.udecode.io/globals.html#useeventeditorstore) can be used to subscribe to changes in React.
+The hook store [useEventEditorStore](https://plate-api.udecode.io/globals.html#useeventeditorstore) can be used to subscribe to changes in React.
 
-The vanilla store [eventEditorStore](https://slate-plugins-api.udecode.io/globals.html#eventeditorstore) can be used outside React.
+The vanilla store [eventEditorStore](https://plate-api.udecode.io/globals.html#eventeditorstore) can be used outside React.
 
 ## State
 
 ### `editor`
 
 - Slate editor.
-- Default is `pipe(createEditor(), withSlatePlugins({ id, plugins, options, components }))`
+- Default is `pipe(createEditor(), withPlate({ id, plugins, options, components }))`
 
 ### `enabled`
 
-- If `true`, slate plugins will create the editor with `withSlatePlugins`.
-- If `false`, slate plugins will remove the editor from the store.
+- If `true`, plate will create the editor with `withPlate`.
+- If `false`, plate will remove the editor from the store.
 - Default is `true`.
 
 ### `plugins`
 
-- Slate plugins.
+- Plate plugins.
 - Default is `[createReactPlugin(), createHistoryPlugin()]`.
 
 ### `pluginKeys`
@@ -60,19 +60,19 @@ The vanilla store [eventEditorStore](https://slate-plugins-api.udecode.io/global
 - Editor value.
 - Default is `[{ children: [{ text: '' }]}]`.
 
-## Slate Plugins Actions
+## Plate Actions
 
-All the actions are returned by [useSlatePluginsActions](https://slate-plugins-api.udecode.io/globals.html#useslatepluginsactions).
+All the actions are returned by [usePlateActions](https://plate-api.udecode.io/globals.html#useplateactions).
 
 If using multiple stores, you should set the first parameter to the store id you want to update.
 
 ### `clearState`
 
-- Remove state by id. Called by `SlatePlugins` on unmount.
+- Remove state by id. Called by `Plate` on unmount.
 
 ### `resetEditor`
 
-- Set a new editor with slate plugins.
+- Set a new editor with plate.
 
 ### `setEditor`
 
@@ -84,7 +84,7 @@ If using multiple stores, you should set the first parameter to the store id you
 
 ### `setInitialState`
 
-- Set initial state by id. Called by SlatePlugins on mount.
+- Set initial state by id. Called by Plate on mount.
 
 ### `setPlugins`
 
@@ -104,7 +104,7 @@ If using multiple stores, you should set the first parameter to the store id you
 
 ### `setEventEditorId`
 
-- Set an [editor id](SlatePlugins#id) by `event` key.
+- Set an [editor id](Plate#id) by `event` key.
 
 ## Selectors
 
@@ -136,11 +136,11 @@ If using multiple stores, you should set the first parameter to the store id you
 
 - Get [value](#value).
 
-### `useStoreSlatePlugins`
+### `useStorePlate`
 
 - Get [plugins](#plugins).
 
-### `useStoreSlatePluginKeys`
+### `useStorePlatePluginKeys`
 
 - Get [pluginKeys](#pluginkeys).
 

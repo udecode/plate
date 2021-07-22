@@ -1,17 +1,14 @@
-import {
-  SlatePluginsState,
-  SlatePluginsStates,
-} from '../types/SlatePluginsStore';
-import { slatePluginsStore } from './slate-plugins/slate-plugins.store';
+import { PlateState, PlateStates } from '../types/PlateStore';
+import { plateStore } from './plate/plate.store';
 
-const set = slatePluginsStore.setState;
+const set = plateStore.setState;
 
-export const getStateById = (state: SlatePluginsStates, id: string) => {
+export const getStateById = (state: PlateStates, id: string) => {
   return state[id] ?? {};
 };
 
 export const mergeState = (
-  stateToMerge: Partial<SlatePluginsState>,
+  stateToMerge: Partial<PlateState>,
   stateId?: string
 ) =>
   stateId &&

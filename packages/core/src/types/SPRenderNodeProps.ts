@@ -1,4 +1,4 @@
-import { NodeProps } from './SlatePluginOptions/GetNodeProps';
+import { NodeProps } from './PlatePluginOptions/GetNodeProps';
 import { AnyObject } from './utility/AnyObject';
 
 export interface SPRenderNodeProps extends AnyObject {

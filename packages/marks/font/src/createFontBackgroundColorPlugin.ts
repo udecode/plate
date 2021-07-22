@@ -1,8 +1,8 @@
-import { getRenderLeaf, SlatePlugin } from '@udecode/slate-plugins-core';
+import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
 import { MARK_BG_COLOR } from './defaults';
 import { getFontBackgroundColorDeserialize } from './getColorDeserialize';
 
-export const createFontBackgroundColorPlugin = (): SlatePlugin => ({
+export const createFontBackgroundColorPlugin = (): PlatePlugin => ({
   pluginKeys: MARK_BG_COLOR,
   renderLeaf: getRenderLeaf(MARK_BG_COLOR),
   deserialize: getFontBackgroundColorDeserialize(),

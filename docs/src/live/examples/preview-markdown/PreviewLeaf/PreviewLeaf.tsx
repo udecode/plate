@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyledLeafProps } from '@udecode/slate-plugins';
+import { StyledLeafProps } from '@udecode/plate';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
 
 export const PreviewLeaf = (props: StyledLeafProps) => {

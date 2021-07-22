@@ -2,12 +2,12 @@ import {
   isCollapsed,
   queryNode,
   QueryNodeOptions,
-} from '@udecode/slate-plugins-common';
+} from '@udecode/plate-common';
 import {
-  getSlatePluginWithOverrides,
+  getPlatePluginWithOverrides,
   TNode,
   WithOverride,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import Slate, { Editor, Transforms } from 'slate';
 
 export interface WithSelectOnBackspaceOptions extends QueryNodeOptions {}
@@ -52,6 +52,6 @@ export const withSelectOnBackspace = (
 /**
  * @see {@link withSelectOnBackspace}
  */
-export const createSelectOnBackspacePlugin = getSlatePluginWithOverrides(
+export const createSelectOnBackspacePlugin = getPlatePluginWithOverrides(
   withSelectOnBackspace
 );

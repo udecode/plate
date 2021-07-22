@@ -1,4 +1,4 @@
-import { TEditor, TNode } from '@udecode/slate-plugins-core';
+import { TEditor, TNode } from '@udecode/plate-core';
 import { findNode, FindNodeOptions } from './findNode';
 
 /**

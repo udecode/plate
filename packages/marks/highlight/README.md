@@ -1,6 +1,6 @@
-# slate-plugins-highlight
+# plate-highlight
 
-See [README](https://github.com/udecode/slate-plugins).
+See [README](https://github.com/udecode/plate).
 
 ## License
 

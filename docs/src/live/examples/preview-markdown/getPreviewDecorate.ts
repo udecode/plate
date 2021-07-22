@@ -2,7 +2,7 @@
 import Prism from 'prismjs';
 import 'prismjs/components/prism-markdown';
 import { NodeEntry, Text } from 'slate';
-import { Decorate } from '@udecode/slate-plugins'; // noinspection CommaExpressionJS
+import { Decorate } from '@udecode/plate'; // noinspection CommaExpressionJS
 
 /**
  * Decorate texts with markdown preview.

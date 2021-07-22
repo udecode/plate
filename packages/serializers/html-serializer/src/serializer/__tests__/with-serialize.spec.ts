@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { SlatePlugin } from '@udecode/slate-plugins-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { RenderLeafProps } from 'slate-react';
 import {
   createBoldPlugin,
   createImagePlugin,
   MARK_BOLD,
   TRenderElementProps,
-} from '../../../../../slate-plugins/src/index';
-import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+} from '../../../../../plate/src/index';
+import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -81,12 +81,12 @@ describe('multiple custom leaf serializers', () => {
   });
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
-    const pluginsWithoutSerializers: SlatePlugin[] = [
+    const pluginsWithoutSerializers: PlatePlugin[] = [
       { renderLeaf: () => Bold }, // always bold
       { renderLeaf: () => Italic }, // always italic
     ];
 
-    const pluginsWithSerializers: SlatePlugin[] = [
+    const pluginsWithSerializers: PlatePlugin[] = [
       {
         renderLeaf: () => Bold,
         serialize: { leaf: Bold },

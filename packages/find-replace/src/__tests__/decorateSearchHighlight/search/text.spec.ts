@@ -1,6 +1,6 @@
-import { getSearchHighlightDecorate } from '@udecode/slate-plugins-find-replace';
+import { getSearchHighlightDecorate } from '@udecode/plate-find-replace';
 import { Range } from 'slate';
-import { createEditorPlugins } from '../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 
 const input = { search: 'test' };
 

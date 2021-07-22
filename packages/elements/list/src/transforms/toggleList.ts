@@ -4,12 +4,8 @@ import {
   setNodes,
   someNode,
   wrapNodes,
-} from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { unwrapList } from './unwrapList';
@@ -23,7 +19,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
     unwrapList(editor);
 
     setNodes<TElement>(editor, {
-      type: getSlatePluginType(editor, ELEMENT_DEFAULT),
+      type: getPlatePluginType(editor, ELEMENT_DEFAULT),
     });
 
     if (!isActive) {
@@ -32,13 +28,13 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
 
       const nodes = [
         ...getNodes(editor, {
-          match: { type: getSlatePluginType(editor, ELEMENT_DEFAULT) },
+          match: { type: getPlatePluginType(editor, ELEMENT_DEFAULT) },
         }),
       ];
-      setNodes(editor, { type: getSlatePluginType(editor, ELEMENT_LIC) });
+      setNodes(editor, { type: getPlatePluginType(editor, ELEMENT_LIC) });
 
       const listItem = {
-        type: getSlatePluginType(editor, ELEMENT_LI),
+        type: getPlatePluginType(editor, ELEMENT_LI),
         children: [],
       };
 

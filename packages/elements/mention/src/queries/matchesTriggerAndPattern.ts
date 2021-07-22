@@ -1,5 +1,5 @@
-import { escapeRegExp, getText } from '@udecode/slate-plugins-common';
-import { TEditor } from '@udecode/slate-plugins-core';
+import { escapeRegExp, getText } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
 export const matchesTriggerAndPattern = (

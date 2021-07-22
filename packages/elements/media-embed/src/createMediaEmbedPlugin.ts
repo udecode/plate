@@ -1,8 +1,8 @@
 import {
+  getPlatePluginTypes,
   getRenderElement,
-  getSlatePluginTypes,
-  SlatePlugin,
-} from '@udecode/slate-plugins-core';
+  PlatePlugin,
+} from '@udecode/plate-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
 
@@ -14,9 +14,9 @@ export const createMediaEmbedPlugin = ({
   pluginKey = ELEMENT_MEDIA_EMBED,
 }: {
   pluginKey?: string;
-} = {}): SlatePlugin => ({
+} = {}): PlatePlugin => ({
   pluginKeys: pluginKey,
   renderElement: getRenderElement(pluginKey),
   deserialize: getMediaEmbedDeserialize(pluginKey),
-  voidTypes: getSlatePluginTypes(pluginKey),
+  voidTypes: getPlatePluginTypes(pluginKey),
 });

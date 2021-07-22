@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/slate-plugins-core';
+import { TNode } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Node, NodeEntry } from 'slate';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';

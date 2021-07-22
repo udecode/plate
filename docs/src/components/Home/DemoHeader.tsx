@@ -8,7 +8,7 @@ export const DemoHeader = () => (
         Less Code. Fewer Edge Cases.
       </h3>
       <p tw="text-gray-600 dark:text-gray-300 my-4 text-xl leading-7">
-        Slate Plugins comes with battle-tested solutions for formatting, events
+        Plate comes with battle-tested solutions for formatting, events
         handlers, rendering, serializing, normalizing, you literally write a
         tiny fraction of the code you normally would. This means you spend less
         time writing code and more time building your next big thing.

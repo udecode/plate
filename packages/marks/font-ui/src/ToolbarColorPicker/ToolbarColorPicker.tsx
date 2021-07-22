@@ -5,15 +5,15 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { getMark, isMarkActive, setMarks } from '@udecode/slate-plugins-common';
+import { getMark, isMarkActive, setMarks } from '@udecode/plate-common';
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   useEventEditorId,
   useStoreEditorRef,
   useStoreEditorSelection,
   useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import { ToolbarButton, ToolbarDropdown } from '@udecode/slate-plugins-toolbar';
+} from '@udecode/plate-core';
+import { ToolbarButton, ToolbarDropdown } from '@udecode/plate-toolbar';
 import { BaseSelection, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
@@ -28,7 +28,7 @@ export const ToolbarColorPicker = ({
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
   const selection = useStoreEditorSelection(useEventEditorId('focus'));
-  const type = getSlatePluginType(editor, pluginKey);
+  const type = getPlatePluginType(editor, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 

@@ -22,15 +22,15 @@ An align element aligns its children:
       <>
         <ToolbarAlign icon={<FormatAlignLeft />} />
         <ToolbarAlign
-          type={getSlatePluginType(editor, ELEMENT_ALIGN_CENTER)}
+          type={getPlatePluginType(editor, ELEMENT_ALIGN_CENTER)}
           icon={<FormatAlignCenter />}
         />
         <ToolbarAlign
-          type={getSlatePluginType(editor, ELEMENT_ALIGN_RIGHT)}
+          type={getPlatePluginType(editor, ELEMENT_ALIGN_RIGHT)}
           icon={<FormatAlignRight />}
         />
         <ToolbarAlign
-          type={getSlatePluginType(editor, ELEMENT_ALIGN_JUSTIFY)}
+          type={getPlatePluginType(editor, ELEMENT_ALIGN_JUSTIFY)}
           icon={<FormatAlignJustify />}
         />
       </>
@@ -47,7 +47,7 @@ An align element aligns its children:
       <HeadingToolbar>
         <ToolbarButtonsAlign />
       </HeadingToolbar>
-      <SlatePlugins
+      <Plate
         id="alignment"
         plugins={plugins}
         components={components}

@@ -1,4 +1,4 @@
-import { HeadingPluginOptions } from '@udecode/slate-plugins-heading';
+import { HeadingPluginOptions } from '@udecode/plate-heading';
 
 export interface BasicElementPluginsOptions {
   heading?: HeadingPluginOptions;

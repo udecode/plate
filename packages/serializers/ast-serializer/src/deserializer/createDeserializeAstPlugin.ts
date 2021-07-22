@@ -1,16 +1,16 @@
 import {
-  getSlatePluginWithOverrides,
-  SlatePlugin,
+  getPlatePluginWithOverrides,
+  PlatePlugin,
   SPEditor,
   WithOverride,
-} from '@udecode/slate-plugins-core';
-import { insertDeserializedFragment } from '@udecode/slate-plugins-serializer';
+} from '@udecode/plate-core';
+import { insertDeserializedFragment } from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 
 export interface WithDeserializeAstOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
 }
 
 /**
@@ -45,6 +45,6 @@ export const withDeserializeAst = <
 /**
  * @see {@link withDeserializeAst}
  */
-export const createDeserializeAstPlugin = getSlatePluginWithOverrides(
+export const createDeserializeAstPlugin = getPlatePluginWithOverrides(
   withDeserializeAst
 );

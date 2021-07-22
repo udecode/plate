@@ -1,5 +1,5 @@
-import { InsertNodesOptions } from '@udecode/slate-plugins-common';
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { InsertNodesOptions } from '@udecode/plate-common';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export interface WithCodeBlockOptions {
   /**
@@ -9,7 +9,7 @@ export interface WithCodeBlockOptions {
 }
 
 export interface CodeBlockInsertOptions
-  extends Pick<SlatePluginOptions, 'defaultType'> {
+  extends Pick<PlatePluginOptions, 'defaultType'> {
   level?: number;
   insertNodesOptions?: Omit<InsertNodesOptions, 'match'>;
 }

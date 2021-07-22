@@ -1,4 +1,4 @@
-import { AnyObject, TElement } from '@udecode/slate-plugins-core';
+import { AnyObject, TElement } from '@udecode/plate-core';
 
 // Data of Element node
 export interface TagNodeData extends AnyObject {

@@ -1,9 +1,5 @@
-import { insertNodes } from '@udecode/slate-plugins-common';
-import {
-  getSlatePluginType,
-  SPEditor,
-  TElement,
-} from '@udecode/slate-plugins-core';
+import { insertNodes } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
 /**
@@ -14,7 +10,7 @@ export const insertCodeLine = (editor: SPEditor, indentDepth = 0) => {
     const indent = ' '.repeat(indentDepth);
 
     insertNodes<TElement>(editor, {
-      type: getSlatePluginType(editor, ELEMENT_CODE_LINE),
+      type: getPlatePluginType(editor, ELEMENT_CODE_LINE),
       children: [{ text: indent }],
     });
   }

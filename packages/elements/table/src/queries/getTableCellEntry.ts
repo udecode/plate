@@ -1,5 +1,5 @@
-import { getAbove, getParent, someNode } from '@udecode/slate-plugins-common';
-import { getSlatePluginType, SPEditor } from '@udecode/slate-plugins-core';
+import { getAbove, getParent, someNode } from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_TD, ELEMENT_TR } from '../defaults';
 
@@ -15,7 +15,7 @@ export const getTableCellEntry = (
     at &&
     someNode(editor, {
       at,
-      match: { type: getSlatePluginType(editor, ELEMENT_TD) },
+      match: { type: getPlatePluginType(editor, ELEMENT_TD) },
     })
   ) {
     const selectionParent = getParent(editor, at);
@@ -25,19 +25,19 @@ export const getTableCellEntry = (
     const tableCell =
       getAbove(editor, {
         at,
-        match: { type: getSlatePluginType(editor, ELEMENT_TD) },
+        match: { type: getPlatePluginType(editor, ELEMENT_TD) },
       }) || getParent(editor, paragraphPath);
 
     if (!tableCell) return;
     const [tableCellNode, tableCellPath] = tableCell;
 
-    if (tableCellNode.type !== getSlatePluginType(editor, ELEMENT_TD)) return;
+    if (tableCellNode.type !== getPlatePluginType(editor, ELEMENT_TD)) return;
 
     const tableRow = getParent(editor, tableCellPath);
     if (!tableRow) return;
     const [tableRowNode, tableRowPath] = tableRow;
 
-    if (tableRowNode.type !== getSlatePluginType(editor, ELEMENT_TR)) return;
+    if (tableRowNode.type !== getPlatePluginType(editor, ELEMENT_TR)) return;
 
     const tableElement = getParent(editor, tableRowPath);
     if (!tableElement) return;

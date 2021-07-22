@@ -1,4 +1,4 @@
-import { SPEditor } from '@udecode/slate-plugins-core';
+import { SPEditor } from '@udecode/plate-core';
 import { moveListItems } from './moveListItems';
 
 export const indentListItems = (editor: SPEditor) => {

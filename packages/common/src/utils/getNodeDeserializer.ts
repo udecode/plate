@@ -1,7 +1,7 @@
 import {
   DeserializeNode,
   GetNodeDeserializerOptions,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 
 /**

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { setNodes } from '@udecode/slate-plugins-common';
-import { TElement, useEditorRef } from '@udecode/slate-plugins-core';
-import { TodoListItemNodeData } from '@udecode/slate-plugins-list';
+import { setNodes } from '@udecode/plate-common';
+import { TElement, useEditorRef } from '@udecode/plate-core';
+import { TodoListItemNodeData } from '@udecode/plate-list';
 import clsx from 'clsx';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { getTodoListElementStyles } from './TodoListElement.styles';

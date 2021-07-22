@@ -139,7 +139,7 @@ into an H1.
         preFormat,
         format: (editor) => {
           insertEmptyCodeBlock(editor , {
-            defaultType: getSlatePluginType(editor , ELEMENT_DEFAULT),
+            defaultType: getPlatePluginType(editor , ELEMENT_DEFAULT),
             insertNodesOptions: { select: true },
           });
         },
@@ -157,7 +157,7 @@ into an H1.
   ];
 
   return (
-    <SlatePlugins
+    <Plate
       id="autoformat"
       plugins={plugins}
       components={components}

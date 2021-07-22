@@ -4,4 +4,4 @@
 
 export * from './zustand.utils';
 export * from './event-editor/index';
-export * from './slate-plugins/index';
+export * from './plate/index';

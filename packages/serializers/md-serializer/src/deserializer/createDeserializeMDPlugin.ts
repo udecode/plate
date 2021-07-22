@@ -1,18 +1,18 @@
-import { isUrl } from '@udecode/slate-plugins-common';
+import { isUrl } from '@udecode/plate-common';
 import {
-  getSlatePluginWithOverrides,
-  SlatePlugin,
+  getPlatePluginWithOverrides,
+  PlatePlugin,
   SPEditor,
   WithOverride,
-} from '@udecode/slate-plugins-core';
-import { insertDeserializedFragment } from '@udecode/slate-plugins-serializer';
+} from '@udecode/plate-core';
+import { insertDeserializedFragment } from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 import { deserializeMD } from './utils/deserializeMD';
 
 export interface WithDeserializeMarkdownOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
-  plugins?: SlatePlugin<T>[];
+  plugins?: PlatePlugin<T>[];
 }
 
 /**
@@ -51,6 +51,6 @@ export const withDeserializeMD = <
 /**
  * @see {@link withDeserializeMd}
  */
-export const createDeserializeMDPlugin = getSlatePluginWithOverrides(
+export const createDeserializeMDPlugin = getPlatePluginWithOverrides(
   withDeserializeMD
 );

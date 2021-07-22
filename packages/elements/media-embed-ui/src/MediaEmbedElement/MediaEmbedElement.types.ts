@@ -1,5 +1,5 @@
-import { MediaEmbedNodeData } from '@udecode/slate-plugins-media-embed';
-import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
+import { MediaEmbedNodeData } from '@udecode/plate-media-embed';
+import { StyledElementProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 
 export interface MediaEmbedElementStyles {

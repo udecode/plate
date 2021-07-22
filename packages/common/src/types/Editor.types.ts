@@ -1,4 +1,4 @@
-import { TAncestor, TNode } from '@udecode/slate-plugins-core';
+import { TAncestor, TNode } from '@udecode/plate-core';
 import { Path, Point, Range, Span } from 'slate';
 import { Predicate } from '../queries/match';
 

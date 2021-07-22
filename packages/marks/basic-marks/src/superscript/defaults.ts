@@ -1,8 +1,8 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export const MARK_SUPERSCRIPT = 'superscript';
 
-export const DEFAULTS_SUPERSCRIPT: Partial<SlatePluginOptions> = {
+export const DEFAULTS_SUPERSCRIPT: Partial<PlatePluginOptions> = {
   hotkey: 'mod+,',
   clear: MARK_SUPERSCRIPT,
 };

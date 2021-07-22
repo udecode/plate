@@ -1,10 +1,10 @@
 /** @jsx jsx */
-import { SlatePlugin, SPEditor } from '@udecode/slate-plugins-core';
-import { jsx } from '@udecode/slate-plugins-test-utils';
+import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../../slate-plugins/src/utils/createEditorPlugins';
+import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
 
 jsx;
@@ -34,7 +34,7 @@ const output = (
 
 describe('when inserting empty html', () => {
   it('should do nothing', () => {
-    const plugins: SlatePlugin<ReactEditor & SPEditor>[] = [createBoldPlugin()];
+    const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [createBoldPlugin()];
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
     const editor = createEditorPlugins({
       editor: input,

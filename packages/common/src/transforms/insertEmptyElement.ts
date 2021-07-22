@@ -1,4 +1,4 @@
-import { TEditor, TElement } from '@udecode/slate-plugins-core';
+import { TEditor, TElement } from '@udecode/plate-core';
 import { getQueryOptions } from '../queries/match';
 import { InsertNodesOptions } from '../types/Transforms.types';
 import { insertNodes } from './insertNodes';

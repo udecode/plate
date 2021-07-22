@@ -1,7 +1,7 @@
-import { SlatePluginOptions } from '@udecode/slate-plugins-core';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
-export const DEFAULTS_BLOCKQUOTE: Partial<SlatePluginOptions> = {
+export const DEFAULTS_BLOCKQUOTE: Partial<PlatePluginOptions> = {
   hotkey: 'mod+shift+.',
 };

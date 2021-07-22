@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyledElementProps } from '@udecode/slate-plugins-styled-components';
+import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 
 export const CodeBlockElement = (props: StyledElementProps) => {

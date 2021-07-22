@@ -1,9 +1,6 @@
 import * as React from 'react';
-import {
-  useEventEditorId,
-  useStoreEditorState,
-} from '@udecode/slate-plugins-core';
-import { PortalBody } from '@udecode/slate-plugins-styled-components';
+import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
+import { PortalBody } from '@udecode/plate-styled-components';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';

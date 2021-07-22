@@ -1,15 +1,15 @@
 import {
-  getSlatePluginOptions,
+  getPlatePluginOptions,
   KeyboardHandler,
   SPEditor,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { toggleMark } from '../transforms/toggleMark';
 
 export const getToggleMarkOnKeyDown = <T extends SPEditor = SPEditor>(
   pluginKey: string
 ): KeyboardHandler<T> => (editor) => (e) => {
-  const { hotkey, type, clear } = getSlatePluginOptions(editor, pluginKey);
+  const { hotkey, type, clear } = getPlatePluginOptions(editor, pluginKey);
 
   if (!hotkey) return;
 

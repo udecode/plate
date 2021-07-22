@@ -1,9 +1,9 @@
 import {
-  getSlatePluginType,
+  getPlatePluginType,
   isElement,
   SPEditor,
   TElement,
-} from '@udecode/slate-plugins-core';
+} from '@udecode/plate-core';
 import { Descendant, Editor, Element, Text } from 'slate';
 import { ELEMENT_DEFAULT } from '../types';
 
@@ -109,7 +109,7 @@ export const normalizeDescendantsToDocumentFragment = <
   { descendants }: { descendants: Descendant[] }
 ) => {
   const isInline = isInlineNode(editor);
-  const defaultType = getSlatePluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock);

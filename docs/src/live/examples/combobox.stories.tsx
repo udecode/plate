@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import {
   createHistoryPlugin,
+  createPlateComponents,
+  createPlateOptions,
   createReactPlugin,
-  createSlatePluginsComponents,
-  createSlatePluginsOptions,
   OnChange,
-  SlatePlugin,
-  SlatePlugins,
+  Plate,
+  PlatePlugin,
   useStoreEditorRef,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { initialValueCombobox } from '../config/initialValues';
 import { MENTIONABLES } from '../config/mentionables';
 import { editableProps } from '../config/pluginOptions';
@@ -29,10 +29,10 @@ export default {
   title: id,
 };
 
-const components = createSlatePluginsComponents({
+const components = createPlateComponents({
   [ELEMENT_TAG]: TagElement,
 });
-const options = createSlatePluginsOptions();
+const options = createPlateOptions();
 
 // Handle multiple combobox
 const useComboboxOnChange = (): OnChange => {
@@ -74,7 +74,7 @@ export const Example = () => {
     onSelectItem: tagOnSelect,
   });
 
-  const plugins: SlatePlugin[] = useMemo(
+  const plugins: PlatePlugin[] = useMemo(
     () => [
       createReactPlugin(),
       createHistoryPlugin(),
@@ -88,7 +88,7 @@ export const Example = () => {
   );
 
   return (
-    <SlatePlugins
+    <Plate
       id={id}
       plugins={plugins}
       components={components}
@@ -97,6 +97,6 @@ export const Example = () => {
       initialValue={initialValueCombobox}
     >
       <ComboboxContainer />
-    </SlatePlugins>
+    </Plate>
   );
 };

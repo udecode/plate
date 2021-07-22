@@ -1,13 +1,13 @@
 import {
   Deserialize,
   getNodeDeserializer,
+  getPlatePluginOptions,
   getSlateClass,
-  getSlatePluginOptions,
-} from '@udecode/slate-plugins';
+} from '@udecode/plate';
 import { ELEMENT_TAG } from './defaults';
 
 export const getTagDeserialize = (): Deserialize => (editor) => {
-  const options = getSlatePluginOptions(editor, ELEMENT_TAG);
+  const options = getPlatePluginOptions(editor, ELEMENT_TAG);
 
   return {
     element: getNodeDeserializer({

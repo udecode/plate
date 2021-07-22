@@ -1,9 +1,5 @@
-import { normalizeDescendantsToDocumentFragment } from '@udecode/slate-plugins-common';
-import {
-  SlatePlugin,
-  SPEditor,
-  TDescendant,
-} from '@udecode/slate-plugins-core';
+import { normalizeDescendantsToDocumentFragment } from '@udecode/plate-common';
+import { PlatePlugin, SPEditor, TDescendant } from '@udecode/plate-core';
 import { htmlStringToDOMNode } from '../../serializer/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
@@ -18,7 +14,7 @@ export const deserializeHTMLToDocumentFragment = <
     plugins,
     element,
   }: {
-    plugins: SlatePlugin<T>[];
+    plugins: PlatePlugin<T>[];
     element: HTMLElement | string;
   }
 ): TDescendant[] => {

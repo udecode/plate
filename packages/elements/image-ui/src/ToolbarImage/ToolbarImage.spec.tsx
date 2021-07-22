@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import * as core from '@udecode/slate-plugins-core';
-import { ELEMENT_H1 } from '@udecode/slate-plugins-heading';
-import { createImagePlugin } from '@udecode/slate-plugins-image';
-import { SlatePlugins } from '../../../../core/src/components/SlatePlugins';
-import { createSlatePluginsOptions } from '../../../../slate-plugins/src/utils/createSlatePluginsOptions';
+import * as core from '@udecode/plate-core';
+import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { createImagePlugin } from '@udecode/plate-image';
+import { Plate } from '../../../../core/src/components/Plate';
+import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
 import { ToolbarImage } from './ToolbarImage';
 import { input1, input2, output2 } from './ToolbarImage.fixtures';
 
@@ -23,13 +23,13 @@ describe('ToolbarImage', () => {
     //     .mockReturnValue('https://i.imgur.com/removed.png');
     //
     //   const { getByTestId } = render(
-    //     <SlatePlugins
+    //     <Plate
     //       initialValue={editor.children}
     //       plugins={[createParagraphPlugin(), createImagePlugin()]}
-    //       options={createSlatePluginsOptions()}
+    //       options={createPlateOptions()}
     //     >
     //       <ToolbarImage type={ELEMENT_IMAGE} icon={null} />
-    //     </SlatePlugins>
+    //     </Plate>
     //   );
     //
     //   const element = getByTestId('ToolbarButton');
@@ -47,13 +47,13 @@ describe('ToolbarImage', () => {
       const getImageUrlMock = jest.fn();
 
       const { getByTestId } = render(
-        <SlatePlugins editor={input1}>
+        <Plate editor={input1}>
           <ToolbarImage
             type={ELEMENT_H1}
             getImageUrl={getImageUrlMock}
             icon={null}
           />
-        </SlatePlugins>
+        </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
@@ -69,13 +69,13 @@ describe('ToolbarImage', () => {
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(
-        <SlatePlugins
+        <Plate
           initialValue={input2.children}
           plugins={[createImagePlugin()]}
-          options={createSlatePluginsOptions()}
+          options={createPlateOptions()}
         >
           <ToolbarImage type={ELEMENT_H1} icon={null} />
-        </SlatePlugins>
+        </Plate>
       );
 
       const element = getByTestId('ToolbarButton');
