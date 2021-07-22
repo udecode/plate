@@ -4,8 +4,8 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/slate-plugins-core';
+import { insertDeserializedFragment } from '@udecode/slate-plugins-serializer';
 import { ReactEditor } from 'slate-react';
-import { insertDeserializedFragment } from '../../../serializer/dist/index';
 
 export interface WithDeserializeAstOptions<
   T extends SPEditor = SPEditor & ReactEditor

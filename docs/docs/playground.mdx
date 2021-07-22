@@ -82,7 +82,10 @@ The following playground uses most of the provided plugins.
         searchHighlightPlugin,
       ];
 
-      plugins.push(createDeserializeHTMLPlugin({ plugins }));
+      plugins.push(...[
+        createDeserializeHTMLPlugin({ plugins }),
+        createDeserializeAstPlugin({ plugins }),
+      ]);
 
       return plugins;
     }, [mentionPlugin, options, searchHighlightPlugin]);
