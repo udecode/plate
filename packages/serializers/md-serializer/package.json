@@ -1,15 +1,23 @@
 {
   "name": "@udecode/plate-md-serializer",
   "version": "1.0.0",
-  "description": "Plate plugin md-serializer",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/md-serializer#readme",
+  "description": "Markdown serializer plugin for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin",
+    "serializer",
+    "markdown",
+    "md"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/serializers/md-serializer"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,18 +27,12 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/plate-block-quote": "1.0.0",
@@ -45,6 +47,12 @@
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-react": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,15 +1,26 @@
 {
   "name": "@udecode/plate-core",
   "version": "1.0.0",
-  "description": "Plate plugin core",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/core#readme",
+  "description": "The core architecture of Plate – a plugin system for slate",
+  "keywords": [
+    "wysiwyg",
+    "rich text",
+    "editor",
+    "html",
+    "contentEditable",
+    "framework",
+    "slate",
+    "plate",
+    "plugin"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/core"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,12 +30,16 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../cti.sh",
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "zustand": "^3.4.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -32,10 +47,6 @@
     "slate": ">=0.60.0",
     "slate-history": ">=0.60.0",
     "slate-react": ">=0.60.0"
-  },
-  "dependencies": {
-    "lodash": "^4.17.21",
-    "zustand": "^3.4.2"
   },
   "publishConfig": {
     "access": "public"

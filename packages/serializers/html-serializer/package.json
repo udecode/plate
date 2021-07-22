@@ -1,15 +1,22 @@
 {
   "name": "@udecode/plate-html-serializer",
   "version": "1.0.0",
-  "description": "Plate plugin html-serializer",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/html-serializer#readme",
+  "description": "HTML serializer plugin for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin",
+    "serializer",
+    "html"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/serializers/html-serializer"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,12 +26,17 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
     "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
+  },
+  "dependencies": {
+    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-core": "1.0.0",
+    "@udecode/plate-serializer": "1.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -33,11 +45,6 @@
     "slate-hyperscript": ">=0.60.0",
     "slate-react": ">=0.60.0"
   },
-  "dependencies": {
-    "@udecode/plate-common": "1.0.0",
-    "@udecode/plate-core": "1.0.0",
-    "@udecode/plate-serializer": "1.0.0"
-      },
   "publishConfig": {
     "access": "public"
   }

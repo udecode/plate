@@ -1,15 +1,26 @@
 {
   "name": "@udecode/plate",
   "version": "1.0.0",
-  "description": "Rich text editor plugin system for Slate & React",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/plate#readme",
+  "description": "Plate – a plugin system for slate",
+  "keywords": [
+    "wysiwyg",
+    "rich text",
+    "editor",
+    "html",
+    "contentEditable",
+    "framework",
+    "slate",
+    "plate",
+    "plugin"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/plate"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,19 +30,11 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../cti.sh below",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../cti.sh below",
     "rollup": "rollup -c=../../rollup.config.js"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-history": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0",
-    "slate-react": ">=0.60.0"
   },
   "dependencies": {
     "@udecode/plate-alignment": "1.0.0",
@@ -45,14 +48,14 @@
     "@udecode/plate-break": "1.0.0",
     "@udecode/plate-code-block": "1.0.0",
     "@udecode/plate-code-block-ui": "1.0.0",
-    "@udecode/plate-font": "1.0.0",
-    "@udecode/plate-font-ui": "1.0.0",
     "@udecode/plate-common": "1.0.0",
     "@udecode/plate-core": "1.0.0",
     "@udecode/plate-csv-serializer": "1.0.0",
     "@udecode/plate-dnd": "1.0.0",
     "@udecode/plate-find-replace": "1.0.0",
     "@udecode/plate-find-replace-ui": "1.0.0",
+    "@udecode/plate-font": "1.0.0",
+    "@udecode/plate-font-ui": "1.0.0",
     "@udecode/plate-heading": "1.0.0",
     "@udecode/plate-highlight": "1.0.0",
     "@udecode/plate-html-serializer": "1.0.0",
@@ -80,6 +83,14 @@
     "@udecode/plate-table-ui": "1.0.0",
     "@udecode/plate-toolbar": "1.0.0",
     "@udecode/plate-trailing-block": "1.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.60.0",
+    "slate-history": ">=0.60.0",
+    "slate-hyperscript": ">=0.60.0",
+    "slate-react": ">=0.60.0"
   },
   "publishConfig": {
     "access": "public"

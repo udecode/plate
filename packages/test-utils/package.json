@@ -1,15 +1,21 @@
 {
   "name": "@udecode/plate-test-utils",
   "version": "1.0.0-alpha.18",
-  "description": "Plate plugin test utils",
-  "keywords": [],
-  "homepage": "https://github.com/udecode/plate/tree/main/packages/test-utils#readme",
+  "description": "Testing utilities for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin",
+    "test"
+  ],
+  "homepage": "https://plate.udecode.io",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/udecode/plate.git"
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/test-utils"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -19,10 +25,10 @@
     "dist"
   ],
   "scripts": {
-    "cti": "sh ../../cti.sh",
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
+    "cti": "sh ../../cti.sh",
     "rollup": "rollup -c=../../rollup.config.js",
     "test": "jest"
   },

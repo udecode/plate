@@ -6,7 +6,9 @@
     "packages/**"
   ],
   "scripts": {
+    "prebuild": "yarn clean",
     "build": "lerna exec -- yarn build",
+    "build-storybook": "build-storybook",
     "build:main": "lerna exec --since main -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
     "clean": "rimraf dist",
@@ -14,18 +16,17 @@
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",
     "docs": "cd docs && yarn start",
+    "internal:release:next": "yarn prerelease && yarn changeset publish --tag next",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
-    "postversionup": "yarn commit-version && git push",
-    "prebuild": "yarn clean",
     "prerelease": "yarn build && yarn test && yarn lint",
-    "release:publish:latext": "lerna publish --force-publish",
-    "release:publish:next": "lerna publish --dist-tag next --force-publish",
-    "release:publish:experimental": "lerna publish --dist-tag experimental",
+    "release:experimental": "yarn prerelease && lerna publish --dist-tag experimental",
     "release:latest": "yarn prerelease && lerna publish --force-publish",
     "release:next": "yarn prerelease && lerna publish --dist-tag next --force-publish",
-    "release:experimental": "yarn prerelease && lerna publish --dist-tag experimental",
-    "internal:release:next": "yarn prerelease && yarn changeset publish --tag next",
+    "release:publish:experimental": "lerna publish --dist-tag experimental",
+    "release:publish:latext": "lerna publish --force-publish",
+    "release:publish:next": "lerna publish --dist-tag next --force-publish",
+    "storybook": "start-storybook -p 6006",
     "test": "jest",
     "test:cov": "yarn test --coverage",
     "test:covw": "yarn test:cov --watch",
@@ -35,11 +36,18 @@
     "typedoc": "npx typedoc --tsconfig packages/plate/tsconfig.json",
     "unlink-all": "lerna exec --parallel --bail=false yarn unlink",
     "versionup": "lerna version --no-git-tag-version",
-    "versionup:pre": "lerna version prerelease",
+    "postversionup": "yarn commit-version && git push",
     "versionup:graduate": "lerna version --conventional-graduate --force-publish",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "versionup:pre": "lerna version prerelease"
   },
+  "resolutions": {
+    "eslint-plugin-prettier": "3.3.1",
+    "prettier": "2.2.1",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "terser": "4.8.0"
+  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.13.0",
     "@babel/core": "^7.13.1",
@@ -132,18 +140,10 @@
     "typedoc": "^0.21.0-beta.2",
     "typescript": "^4.3.2"
   },
-  "resolutions": {
-    "eslint-plugin-prettier": "3.3.1",
-    "prettier": "2.2.1",
-    "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "terser": "4.8.0"
-  },
   "babelMacros": {
     "twin": {
       "config": "./docs/tailwind.config.js",
       "preset": "styled-components"
     }
-  },
-  "dependencies": {}
+  }
 }
