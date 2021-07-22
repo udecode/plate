@@ -1,12 +1,9 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
 import {
-  getInlineTypes,
   getPlatePluginWithOverrides,
   PlatePlugin,
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
 import { insertDeserializedFragment } from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 
