@@ -1,7 +1,7 @@
 ---
-@udecode/plate: major
-@udecode/plate-core: major
-@udecode/plate-test-utils: major
+"@udecode/plate": major
+"@udecode/plate-core": major
+"@udecode/plate-test-utils": major
 ---
 
 The **Slate Plugins** project has evolved to **Plate**. To migrate, find
