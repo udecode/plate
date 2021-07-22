@@ -1,6 +1,6 @@
 # Plate styled components
 
-This package implements standard UI for Plate. It uses
+This package implements the standard UI for Plate. It uses
 `styled-components` and `twin.macro` for an optimized developer
 experience.
 

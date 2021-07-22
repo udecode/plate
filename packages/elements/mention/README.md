@@ -1,6 +1,6 @@
 # Plate mention plugin
 
-This package implements mention plugin for Plate. It allows
+This package implements the mention plugin for Plate. It allows
 autocompletion from user input.
 
 ## Documentation

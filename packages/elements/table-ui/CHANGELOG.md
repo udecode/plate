@@ -1,9 +1,20 @@
 # @udecode/plate-table-ui
 
+## 1.0.0
+
+### Major Changes
+
+🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+
+To migrate, install `@udecode/plate[-x]` then find and replace all
+occurrences of:
+- `slate-plugins` to `plate`
+- `SlatePlugins` to `Plate`
+- `SlatePlugin` to `PlatePlugin`
+
 ## 1.0.0-next.61
 
->  The **Slate Plugins** project has evolved to **Plate**. This is the
->  last version of `@udecode/slate-plugins[-x]`, please install
+>  This is the last version of `@udecode/slate-plugins[-x]`, please install
 >  `@udecode/plate[-x]`.
 
 ### Patch Changes

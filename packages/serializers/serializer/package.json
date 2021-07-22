@@ -33,8 +33,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "1.0.0",
-    "@udecode/plate-core": "1.0.0"
+    "@udecode/plate-common": "^1.0.0",
+    "@udecode/plate-core": "^1.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

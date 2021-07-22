@@ -1,6 +1,6 @@
 # Plate table plugin
 
-This package implements table plugin for Plate.
+This package implements the table plugin for Plate.
 
 ## Documentation
 

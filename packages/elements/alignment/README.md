@@ -1,6 +1,6 @@
 # Plate text alignment plugin
 
-This package implements text alignment plugin for Plate.
+This package implements the text alignment plugin for Plate.
 
 ## Documentation
 

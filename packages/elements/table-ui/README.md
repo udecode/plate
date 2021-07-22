@@ -1,6 +1,6 @@
 # Plate table UI
 
-This package implements table UI for Plate.
+This package implements the table UI for Plate.
 
 ## Documentation
 

@@ -1,6 +1,6 @@
 # Plate toolbar UI
 
-This package implements toolbar UI for Plate.
+This package implements the toolbar UI for Plate.
 
 ## Documentation
 

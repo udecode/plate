@@ -1,6 +1,6 @@
 # Plate link UI
 
-This package implements link UI for Plate.
+This package implements the link UI for Plate.
 
 ## Documentation
 

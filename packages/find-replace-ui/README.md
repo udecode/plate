@@ -1,6 +1,6 @@
 # Plate find and replace UI
 
-This package implements find and replace UI for Plate.
+This package implements the find and replace UI for Plate.
 
 ## Documentation
 

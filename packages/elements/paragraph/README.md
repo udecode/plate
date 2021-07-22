@@ -1,6 +1,6 @@
 # Plate paragraph plugin
 
-This package implements paragraph plugin for Plate. This can be the
+This package implements the paragraph plugin for Plate. This can be the
 default block of your editor.
 
 ## Documentation

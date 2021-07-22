@@ -1,6 +1,6 @@
 # Plate highlight plugin
 
-This package implements text highlight plugin for Plate.
+This package implements the text highlight plugin for Plate.
 
 ## Documentation
 

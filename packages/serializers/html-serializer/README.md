@@ -1,6 +1,6 @@
 # Plate HTML serializer plugin
 
-This package implements HTML serializer for Plate.
+This package implements the HTML serializer for Plate.
 
 ## Documentation
 

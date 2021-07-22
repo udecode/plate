@@ -1,6 +1,6 @@
 # Plate CSV serializer plugin
 
-This package implements CSV serializer for Plate.
+This package implements the CSV serializer for Plate.
 
 ## Documentation
 

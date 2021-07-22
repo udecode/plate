@@ -1,6 +1,6 @@
 # Plate text alignment UI
 
-This package implements text alignment UI for Plate.
+This package implements the text alignment UI for Plate.
 
 ## Documentation
 

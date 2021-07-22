@@ -1,6 +1,6 @@
 # Plate trailing-block plugin
 
-This package implements trailing-block plugin for Plate.
+This package implements the trailing-block plugin for Plate.
 
 ## Documentation
 

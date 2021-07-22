@@ -1,6 +1,6 @@
 # Plate list UI
 
-This package implements list UI for Plate.
+This package implements the list UI for Plate.
 
 ## Documentation
 

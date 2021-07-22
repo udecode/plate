@@ -1,6 +1,6 @@
 # Plate slate AST serializer plugin
 
-This package implements slate AST serializer for Plate.
+This package implements the slate AST serializer for Plate.
 
 ## Documentation
 

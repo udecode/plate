@@ -32,12 +32,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "1.0.0",
-    "@udecode/plate-code-block": "1.0.0",
-    "@udecode/plate-common": "1.0.0",
-    "@udecode/plate-core": "1.0.0",
-    "@udecode/plate-heading": "1.0.0",
-    "@udecode/plate-paragraph": "1.0.0"
+    "@udecode/plate-block-quote": "^1.0.0",
+    "@udecode/plate-code-block": "^1.0.0",
+    "@udecode/plate-common": "^1.0.0",
+    "@udecode/plate-core": "^1.0.0",
+    "@udecode/plate-heading": "^1.0.0",
+    "@udecode/plate-paragraph": "^1.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

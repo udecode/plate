@@ -1,6 +1,6 @@
 # Plate keyboard input plugin
 
-This package implements keyboard input plugin for Plate.
+This package implements the keyboard input plugin for Plate.
 
 ## Documentation
 

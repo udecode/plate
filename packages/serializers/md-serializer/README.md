@@ -1,6 +1,6 @@
 # Plate MD serializer plugin
 
-This package implements Markdown serializer for Plate.
+This package implements the Markdown serializer for Plate.
 
 ## Documentation
 

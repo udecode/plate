@@ -1,6 +1,6 @@
 # Plate link plugin
 
-This package implements link plugin for Plate.
+This package implements the link plugin for Plate.
 
 ## Documentation
 

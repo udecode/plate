@@ -1,6 +1,6 @@
 # Plate block quote plugin
 
-This package implements block quote plugin for Plate.
+This package implements the block quote plugin for Plate.
 
 ## Documentation
 

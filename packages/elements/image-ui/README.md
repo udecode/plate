@@ -1,6 +1,6 @@
 # Plate image UI
 
-This package implements image UI for Plate.
+This package implements the image UI for Plate.
 
 ## Documentation
 

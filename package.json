@@ -24,7 +24,7 @@
     "release:latest": "yarn prerelease && lerna publish --force-publish",
     "release:next": "yarn prerelease && lerna publish --dist-tag next --force-publish",
     "release:publish:experimental": "lerna publish --dist-tag experimental",
-    "release:publish:latext": "lerna publish --force-publish",
+    "release:publish:latest": "lerna publish --force-publish",
     "release:publish:next": "lerna publish --dist-tag next --force-publish",
     "storybook": "start-storybook -p 6006",
     "test": "jest",

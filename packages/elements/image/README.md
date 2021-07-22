@@ -1,6 +1,6 @@
 # Plate image plugin
 
-This package implements image plugin for Plate.
+This package implements the image plugin for Plate.
 
 ## Documentation
 

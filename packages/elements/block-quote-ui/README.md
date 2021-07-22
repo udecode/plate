@@ -1,6 +1,6 @@
 # Plate block quote UI
 
-This package implements block quote UI for Plate.
+This package implements the block quote UI for Plate.
 
 ## Documentation
 
