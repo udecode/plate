@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 1.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`6e8c22e3`](https://github.com/udecode/plate/commit/6e8c22e389568e44d97cf2ce582bc0e5352197b2)]:
+  - @udecode/plate-media-embed-ui@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
@@ -8,14 +15,15 @@
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Minor Changes
 
