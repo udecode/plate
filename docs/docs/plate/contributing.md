@@ -16,5 +16,5 @@ Plate is a modular, multi-package, monorepo project. It consists of a
 core package that creates the plugin system, based on which the plugin
 packages are implemented.
 
-See the [contributing guide](https://github.com/udecode/plate/CONTRIBUTING.md) to learn how to contribute
+See the [contributing guide](https://github.com/udecode/plate/blob/main/CONTRIBUTING.md) to learn how to contribute
 your code to the project.
