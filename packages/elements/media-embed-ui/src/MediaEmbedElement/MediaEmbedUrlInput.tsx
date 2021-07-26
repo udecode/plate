@@ -15,7 +15,12 @@ export const MediaEmbedUrlInput = ({
 
   const validateUrl = (newUrl: string) => {
     // if not starting with http, assume pasting of full iframe embed code
-    if (newUrl.substring(0, 4) !== 'http') {
+    // Restrict Safari due to lack of regex look behind https://github.com/udecode/plate/issues/880
+    if (
+      newUrl.substring(0, 4) !== 'http' &&
+      typeof navigator !== 'undefined' &&
+      /Version\/[\d.]+.*Safari/.test(navigator.userAgent)
+    ) {
       const regex = /(?<=src=").*?(?=[*"])/g;
       const src = newUrl.match(regex)?.[0];
       if (src) {
