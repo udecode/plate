@@ -1,5 +1,11 @@
 # @udecode/plate-media-embed-ui
 
+## 1.1.1
+
+### Patch Changes
+
+- [#881](https://github.com/udecode/plate/pull/881) [`135e1821`](https://github.com/udecode/plate/commit/135e18213285a9566d57b4eb5666ea0f406d03b7) Thanks [@dylans](https://github.com/dylans)! - Safari does not support regex look behind
+
 ## 1.1.0
 
 ### Minor Changes
