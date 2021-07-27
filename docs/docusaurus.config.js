@@ -34,7 +34,7 @@ module.exports = {
   customFields: { ...customFields },
   themeConfig: {
     algolia: {
-      apiKey: 'bca3ec311a129061145bf733a2bda13d',
+      apiKey: '9c3a7f330e20d38672788d4cce383265',
       indexName: 'plate',
     },
     // announcementBar: {
