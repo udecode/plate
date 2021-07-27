@@ -1,5 +1,11 @@
 # @udecode/plate-media-embed-ui
 
+## 1.1.2
+
+### Patch Changes
+
+- [#888](https://github.com/udecode/plate/pull/888) [`b5bf8329`](https://github.com/udecode/plate/commit/b5bf8329dc745b911345f2d704660c495d1a1e0c) Thanks [@zbeyens](https://github.com/zbeyens)! - Fix regex bug on Safari
+
 ## 1.1.1
 
 ### Patch Changes

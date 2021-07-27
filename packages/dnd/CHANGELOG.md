@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 1.1.2
+
+### Patch Changes
+
+- [#888](https://github.com/udecode/plate/pull/888) [`08bff1b5`](https://github.com/udecode/plate/commit/08bff1b58fb879f67bf605fd08ad507ccc13f8f3) Thanks [@zbeyens](https://github.com/zbeyens)! - Fix peer deps
+
 ## 1.0.0
 
 ### Major Changes
@@ -8,14 +14,15 @@
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Patch Changes
 
