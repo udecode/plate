@@ -1,5 +1,13 @@
 # @udecode/plate
 
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`b5bf8329`](https://github.com/udecode/plate/commit/b5bf8329dc745b911345f2d704660c495d1a1e0c), [`08bff1b5`](https://github.com/udecode/plate/commit/08bff1b58fb879f67bf605fd08ad507ccc13f8f3)]:
+  - @udecode/plate-media-embed-ui@1.1.2
+  - @udecode/plate-dnd@1.1.2
+
 ## 1.1.1
 
 ### Patch Changes
