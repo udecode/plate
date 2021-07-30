@@ -402,7 +402,7 @@ export const initialValuePasteMd: any = [
 export const initialValuePasteAst: any = [
   {
     type: ELEMENT_H2,
-    children: [{ text: '✍️ List' }],
+    children: [{ text: '✍️ Slate AST' }],
   },
   { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] },
   {
@@ -1159,6 +1159,9 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueSoftBreak,
   ...initialValueExitBreak,
   ...initialValuePasteHtml,
+  ...initialValuePasteMd,
+  ...initialValuePasteCSV,
+  ...initialValuePasteAst,
 ]);
 
 export const initialValueVoids: any = [
