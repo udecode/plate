@@ -1,0 +1,43 @@
+---
+slug: /serializing-csv
+title: CSV
+---
+
+## Deserializer
+
+```ts live
+() => {
+  const { plugin: mentionPlugin } = useMentionPlugin();
+
+  const plugins = useMemo(() => {
+    const _plugins = [
+      ...pluginsBasic,
+      createImagePlugin(),
+      createLinkPlugin(),
+      createListPlugin(),
+      createTablePlugin(),
+      createTodoListPlugin(),
+      createMediaEmbedPlugin(),
+      createExcalidrawPlugin(),
+      createHighlightPlugin(),
+      createSoftBreakPlugin(optionsSoftBreakPlugin),
+      mentionPlugin,
+    ];
+
+    _plugins.push(createDeserializeCSVPlugin({ plugins: _plugins }));
+
+    return _plugins;
+  }, [mentionPlugin]);
+
+  return (
+    <Plate
+      id="deserialize-csv"
+      plugins={plugins}
+      components={components}
+      options={options}
+      editableProps={editableProps}
+      initialValue={initialValuePlainText}
+    />
+  );
+}
+```

@@ -82,7 +82,12 @@ module.exports = {
         {
           type: 'category',
           label: 'Serializing',
-          items: ['plugins/serializing-html', 'plugins/serializing-md'],
+          items: [
+            'plugins/serializing-html',
+            'plugins/serializing-md',
+            'plugins/serializing-ast',
+            'plugins/serializing-csv',
+          ],
           collapsed: false,
         },
       ],
