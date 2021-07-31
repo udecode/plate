@@ -4,7 +4,6 @@ import { SPEditor, TDescendant } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createListPlugin } from './createListPlugin';
-import { getListDeserialize } from './getListDeserialize';
 
 jsx;
 
@@ -14,12 +13,6 @@ const editorTest = (input: any, fragment: any, expected: any) => {
     plugins: [createListPlugin()],
   });
 
-  const deserializer = getListDeserialize()(editor);
-
-  // const filteredFragment = deserializer.getFragment?.(fragment) ?? [];
-
-  // deserializer.preInsert?.(fragment);
-  // console.log(editor.selection);
   editor.insertFragment(fragment);
 
   expect(editor.children).toEqual(expected.children);
