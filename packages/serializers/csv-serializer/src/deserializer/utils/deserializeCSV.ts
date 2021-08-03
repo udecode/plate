@@ -14,6 +14,15 @@ import {
 } from '@udecode/plate-table';
 import { parse } from 'papaparse';
 
+const isValidCsv = (data: Record<string, string>[][]) => {
+  return !(
+    !data ||
+    data.length < 2 ||
+    data[0].length < 2 ||
+    data[1].length < 2
+  );
+};
+
 export const deserializeCSV = <T extends SPEditor = SPEditor>(
   editor: T,
   content: string,
@@ -24,6 +33,8 @@ export const deserializeCSV = <T extends SPEditor = SPEditor>(
 
   if (testCsv.errors.length === 0) {
     const csv = parse(content, { header });
+
+    if (!isValidCsv(csv.data as Record<string, string>[][])) return;
 
     const paragraph = getPlatePluginType(editor, ELEMENT_DEFAULT);
     const table = getPlatePluginType(editor, ELEMENT_TABLE);
