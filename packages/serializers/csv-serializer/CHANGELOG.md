@@ -1,5 +1,11 @@
 # @udecode/plate-csv-serializer
 
+## 1.1.3
+
+### Patch Changes
+
+- [#900](https://github.com/udecode/plate/pull/900) [`c5c73683`](https://github.com/udecode/plate/commit/c5c73683eb3b9c9a091fe1fa05113c9176f9b12a) Thanks [@dylans](https://github.com/dylans)! - Make sure there's at least a 2x2 table before treating text as csv
+
 ## 1.0.0
 
 ### Major Changes
@@ -8,14 +14,15 @@
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Major Changes
 
