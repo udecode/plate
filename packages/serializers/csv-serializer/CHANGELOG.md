@@ -1,5 +1,11 @@
 # @udecode/plate-csv-serializer
 
+## 1.1.4
+
+### Patch Changes
+
+- [#907](https://github.com/udecode/plate/pull/907) [`decc90d9`](https://github.com/udecode/plate/commit/decc90d984170d94ac8dbd0dc487a107d68d296d) Thanks [@dylans](https://github.com/dylans)! - add optional errorTolerance for csv deserializer detection
+
 ## 1.1.3
 
 ### Patch Changes
