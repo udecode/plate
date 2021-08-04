@@ -14,19 +14,26 @@ import {
 } from '@udecode/plate-table';
 import { parse } from 'papaparse';
 
-const isValidCsv = (data: Record<string, string>[][]) => {
+const isValidCsv = (
+  data: Record<string, string>[][],
+  errors: Record<string, string>[][],
+  errorTolerance: number
+) => {
+  if (errorTolerance < 0) errorTolerance = 0;
   return !(
     !data ||
     data.length < 2 ||
     data[0].length < 2 ||
-    data[1].length < 2
+    data[1].length < 2 ||
+    (errors.length && errors.length > errorTolerance * data.length)
   );
 };
 
 export const deserializeCSV = <T extends SPEditor = SPEditor>(
   editor: T,
   content: string,
-  header = false
+  header = false,
+  errorTolerance: number
 ): TDescendant[] | undefined => {
   // Verify it's a csv string
   const testCsv = parse(content, { preview: 2 });
@@ -34,7 +41,14 @@ export const deserializeCSV = <T extends SPEditor = SPEditor>(
   if (testCsv.errors.length === 0) {
     const csv = parse(content, { header });
 
-    if (!isValidCsv(csv.data as Record<string, string>[][])) return;
+    if (
+      !isValidCsv(
+        csv.data as Record<string, string>[][],
+        (csv.errors as unknown) as Record<string, string>[][],
+        errorTolerance
+      )
+    )
+      return;
 
     const paragraph = getPlatePluginType(editor, ELEMENT_DEFAULT);
     const table = getPlatePluginType(editor, ELEMENT_TABLE);
