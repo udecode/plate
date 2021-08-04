@@ -12,6 +12,10 @@ export interface WithDeserializeCSVOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
   plugins?: PlatePlugin<T>[];
+  // Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed,
+  // Default is 0.25
+  // Percentage based on number of errors compared to number of rows
+  errorTolerance?: number;
 }
 
 /**
@@ -20,16 +24,17 @@ export interface WithDeserializeCSVOptions<
  */
 export const withDeserializeCSV = <
   T extends ReactEditor & SPEditor = ReactEditor & SPEditor
->({ plugins = [] }: WithDeserializeCSVOptions<T> = {}): WithOverride<T> => (
-  editor
-) => {
+>({
+  plugins = [],
+  errorTolerance = 0.25,
+}: WithDeserializeCSVOptions<T> = {}): WithOverride<T> => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
     if (content) {
-      const fragment = deserializeCSV(editor, content, true);
+      const fragment = deserializeCSV(editor, content, true, errorTolerance);
 
       if (fragment?.length) {
         return insertDeserializedFragment(editor, { fragment, plugins });
