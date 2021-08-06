@@ -1,7 +1,7 @@
 import { getAbove, someNode } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TR } from '../defaults';
+import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../defaults';
 
 export const deleteColumn = (editor: SPEditor) => {
   if (
@@ -13,7 +13,7 @@ export const deleteColumn = (editor: SPEditor) => {
       match: {
         type: [
           getPlatePluginType(editor, ELEMENT_TD),
-          getPlatePluginType(editor, ELEMENT_TD),
+          getPlatePluginType(editor, ELEMENT_TH),
         ],
       },
     });
