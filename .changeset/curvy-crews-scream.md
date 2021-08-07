@@ -2,4 +2,4 @@
 '@udecode/plate-table': patch
 ---
 
-add changeset
+`deleteColumn` was not referring to TH and TD, but TD twice
