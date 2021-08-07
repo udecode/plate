@@ -1,5 +1,13 @@
 # @udecode/plate-list-ui
 
+## 1.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`10064d24`](https://github.com/udecode/plate/commit/10064d24dde293768452abb7c853dc75cbde2c78)]:
+  - @udecode/plate-styled-components@1.1.7
+  - @udecode/plate-toolbar@1.1.7
+
 ## 1.1.6
 
 ### Patch Changes
