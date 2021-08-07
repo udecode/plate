@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-styled-components",
-  "version": "1.0.0",
+  "version": "1.1.6",
   "description": "Standard UI for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "1.0.0",
+    "@udecode/plate-common": "1.1.6",
     "@udecode/plate-core": "1.0.0",
     "clsx": "^1.1.1",
     "styled-components": "5.1.1"
