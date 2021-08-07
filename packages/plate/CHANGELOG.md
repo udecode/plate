@@ -1,5 +1,56 @@
 # @udecode/plate
 
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies [[`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b)]:
+  - @udecode/plate-autoformat@1.1.6
+  - @udecode/plate-break@1.1.6
+  - @udecode/plate-common@1.1.6
+  - @udecode/plate-alignment-ui@1.1.6
+  - @udecode/plate-alignment@1.1.6
+  - @udecode/plate-basic-elements@1.1.6
+  - @udecode/plate-block-quote-ui@1.1.6
+  - @udecode/plate-block-quote@1.1.6
+  - @udecode/plate-code-block-ui@1.1.6
+  - @udecode/plate-code-block@1.1.6
+  - @udecode/plate-heading@1.1.6
+  - @udecode/plate-image-ui@1.1.6
+  - @udecode/plate-image@1.1.6
+  - @udecode/plate-link-ui@1.1.6
+  - @udecode/plate-link@1.1.6
+  - @udecode/plate-list-ui@1.1.6
+  - @udecode/plate-list@1.1.6
+  - @udecode/plate-media-embed-ui@1.1.6
+  - @udecode/plate-media-embed@1.1.6
+  - @udecode/plate-mention-ui@1.1.6
+  - @udecode/plate-mention@1.1.6
+  - @udecode/plate-paragraph@1.1.6
+  - @udecode/plate-table-ui@1.1.6
+  - @udecode/plate-table@1.1.6
+  - @udecode/plate-find-replace-ui@1.1.6
+  - @udecode/plate-find-replace@1.1.6
+  - @udecode/plate-basic-marks@1.1.6
+  - @udecode/plate-font-ui@1.1.6
+  - @udecode/plate-font@1.1.6
+  - @udecode/plate-highlight@1.1.6
+  - @udecode/plate-dnd@1.1.6
+  - @udecode/plate-kbd@1.1.6
+  - @udecode/plate-node-id@1.1.6
+  - @udecode/plate-normalizers@1.1.6
+  - @udecode/plate-placeholder@1.1.6
+  - @udecode/plate-reset-node@1.1.6
+  - @udecode/plate-select@1.1.6
+  - @udecode/plate-ast-serializer@1.1.6
+  - @udecode/plate-csv-serializer@1.1.6
+  - @udecode/plate-html-serializer@1.1.6
+  - @udecode/plate-md-serializer@1.1.6
+  - @udecode/plate-serializer@1.1.6
+  - @udecode/plate-trailing-block@1.1.6
+  - @udecode/plate-styled-components@1.1.6
+  - @udecode/plate-toolbar@1.1.6
+
 ## 1.1.5
 
 ### Patch Changes

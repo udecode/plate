@@ -1,5 +1,17 @@
 # @udecode/plate-alignment-ui
 
+## 1.1.6
+
+### Patch Changes
+
+- [#918](https://github.com/udecode/plate/pull/918) [`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b) Thanks [@zbeyens](https://github.com/zbeyens)! - add `slate-history` as a peerDep
+
+- Updated dependencies [[`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b)]:
+  - @udecode/plate-common@1.1.6
+  - @udecode/plate-alignment@1.1.6
+  - @udecode/plate-styled-components@1.1.6
+  - @udecode/plate-toolbar@1.1.6
+
 ## 1.0.0
 
 ### Major Changes
@@ -8,14 +20,15 @@
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Patch Changes
 
