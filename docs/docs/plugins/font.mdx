@@ -28,6 +28,7 @@ Use the toolbar dropdowns in the demo below to control font color and font backg
   ];
 
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
+  plugins.push(createDeserializeAstPlugin({ plugins }));
 
   const CopyContent = () => (
     <div style={{borderBottom: '1px solid #eee', margin: '0 -16px', padding: '0 16px 16px'}}>
