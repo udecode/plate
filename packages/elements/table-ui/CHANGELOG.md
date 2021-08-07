@@ -1,5 +1,12 @@
 # @udecode/plate-table-ui
 
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies [[`f955b72c`](https://github.com/udecode/plate/commit/f955b72c0ab97e2e2ca54f17f9f8022f7d0f121b)]:
+  - @udecode/plate-table@1.1.5
+
 ## 1.0.0
 
 ### Major Changes
@@ -8,14 +15,15 @@
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Patch Changes
 
