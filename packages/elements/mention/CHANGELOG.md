@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 1.1.7
+
+### Patch Changes
+
+- [#920](https://github.com/udecode/plate/pull/920) [`10064d24`](https://github.com/udecode/plate/commit/10064d24dde293768452abb7c853dc75cbde2c78) Thanks [@zbeyens](https://github.com/zbeyens)! - add `slate-history` as a peerDep
+
 ## 1.1.6
 
 ### Patch Changes
