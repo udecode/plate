@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 module.exports = {
   purge: ['./src/**/*.html', './src/**/*.js', './src/**/*.tsx'],
   darkMode: 'class', // or 'media' or 'class'
@@ -13,6 +15,19 @@ module.exports = {
         darkPink: '#ff79c6',
         darkBodyBackground: '#272b36',
       },
+    },
+    fontFamily: {
+      sans: ['Inter', ...defaultTheme.fontFamily.sans],
+      serif: ['Inter', ...defaultTheme.fontFamily.serif],
+    },
+    screens: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1400px',
+    },
+    container: {
+      padding: '1rem',
     },
   },
   variants: {

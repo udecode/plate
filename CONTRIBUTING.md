@@ -141,7 +141,7 @@ is few of those ways:
 
 Before you submit a new PR, please run `yarn prerelease`. Do not submit
 a PR if tests are failing. If you need any help, the best way is to
-[join slate's Slack and ask in the `slate-plugins` channel](https://slate-js.slack.com/messages/slate-plugins).
+[join slate's Slack and ask in the `plate` channel](https://slate-js.slack.com/messages/plate).
 
 You miss time/knowledge but still want to contribute? Just open a PR or
 a gist on Slack and we'll try to help.

@@ -91,63 +91,63 @@ module.exports = {
         },
       ],
     },
-    footer: {
-      // style: 'dark',
-      links: [
-        {
-          title: 'RESOURCES',
-          items: [
-            {
-              label: 'Docs',
-              to: 'docs/',
-            },
-            {
-              label: 'Examples',
-              to: domainExamples,
-            },
-            {
-              label: 'API Reference',
-              to: domainAPI,
-            },
-            {
-              label: 'Releases',
-              href: `${githubUrl}/releases`,
-            },
-          ],
-        },
-        {
-          title: 'COMMUNITY',
-          items: [
-            {
-              label: 'Forum & Support',
-              href: `${githubUrl}/discussions`,
-            },
-            {
-              label: 'Stargazers',
-              href: `${githubUrl}/stargazers`,
-            },
-            {
-              label: 'Slack',
-              href: 'https://slate-js.slack.com/messages/slate-plugins',
-            },
-          ],
-        },
-        {
-          title: 'MORE',
-          items: [
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/zbeyens',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/zbeyens',
-            },
-          ],
-        },
-      ],
-      copyright: customFields.copyright,
-    },
+    // footer: {
+    //   // style: 'dark',
+    //   links: [
+    //     {
+    //       title: 'RESOURCES',
+    //       items: [
+    //         {
+    //           label: 'Docs',
+    //           to: 'docs/',
+    //         },
+    //         {
+    //           label: 'Examples',
+    //           to: domainExamples,
+    //         },
+    //         {
+    //           label: 'API Reference',
+    //           to: domainAPI,
+    //         },
+    //         {
+    //           label: 'Releases',
+    //           href: `${githubUrl}/releases`,
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: 'COMMUNITY',
+    //       items: [
+    //         {
+    //           label: 'Forum & Support',
+    //           href: `${githubUrl}/discussions`,
+    //         },
+    //         {
+    //           label: 'Stargazers',
+    //           href: `${githubUrl}/stargazers`,
+    //         },
+    //         {
+    //           label: 'Slack',
+    //           href: 'https://slate-js.slack.com/messages/plate',
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: 'MORE',
+    //       items: [
+    //         {
+    //           label: 'Twitter',
+    //           href: 'https://twitter.com/zbeyens',
+    //         },
+    //         {
+    //           label: 'GitHub',
+    //           href: 'https://github.com/zbeyens',
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   copyright: customFields.copyright,
+    // },
   },
   presets: [
     [

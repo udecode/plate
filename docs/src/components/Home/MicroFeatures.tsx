@@ -31,7 +31,7 @@ const Check = ({ children }) => (
 
 export const MicroFeatures = () => {
   return (
-    <div tw="py-24 px-4 sm:px-6 lg:px-8 mx-auto container">
+    <div tw="py-24 px-4 sm:px-6 lg:px-8 mx-auto container maxWidth[1400px]">
       <div tw="sm:text-center pb-16">
         <h3 tw="text-3xl mx-auto leading-tight font-extrabold tracking-tight text-white sm:text-4xl lg:leading-none mt-2">
           One Dep, All the Features.
