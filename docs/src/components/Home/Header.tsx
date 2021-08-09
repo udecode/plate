@@ -27,7 +27,7 @@ export const Header = () => {
         <div tw="grid grid-cols-12 lg:gap-8 ">
           <div tw="col-span-12 lg:col-span-6">
             <div tw="text-center lg:text-left md:max-w-2xl md:mx-auto sm:mt-12">
-              <h1 tw="text-4xl tracking-tight leading-10 font-extrabold text-gray-900 dark:text-white sm:leading-none sm:text-6xl lg:text-5xl xl:text-6xl">
+              <h1 tw="text-4xl tracking-tight leading-10 font-extrabold text-gray-900 dark:text-white sm:leading-none sm:text-6xl lg:text-3xl xl:text-6xl">
                 Rich text editor <br />
                 plugin system for
                 <br /> Slate & React

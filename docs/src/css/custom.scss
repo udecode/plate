@@ -1,5 +1,5 @@
-@import "theme", "admonitions", "footer", "global", "navbar", "shadows",
-  "spacing", "transitions", "typography";
+@import 'theme', 'admonitions', 'footer', 'global', 'navbar', 'shadows',
+  'spacing', 'transitions', 'typography', 'carbonads';
 
 /**
  * Any CSS included here will be global. The classic template
@@ -18,7 +18,7 @@
   //padding-right: 150px;
 }
 
-html[data-theme="dark"] .DocSearch {
+html[data-theme='dark'] .DocSearch {
   //--docsearch-text-color: var(--ifm-font-color-base);
   //--docsearch-muted-color: var(--ifm-color-secondary-darkest);
   //--docsearch-container-background: rgba(47, 55, 69, 0.7);
