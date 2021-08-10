@@ -173,7 +173,7 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
-import { optionsAutoformat } from './config/autoformatRules';
+import { optionsAutoformat } from './config/optionsAutoformat';
 import {
   getHugeDocument,
   initialValueAutoformat,
