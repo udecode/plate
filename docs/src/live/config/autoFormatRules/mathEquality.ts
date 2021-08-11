@@ -1,5 +1,5 @@
 import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
-import { formatText } from './utils';
+import { formatText } from './_utils';
 
 export const mathEquality: AutoformatRule[] = [
   {

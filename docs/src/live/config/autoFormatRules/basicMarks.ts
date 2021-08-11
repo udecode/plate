@@ -89,17 +89,4 @@ export const basicMarks: AutoformatRule[] = [
     mode: 'inline',
     insertTrigger: true,
   },
-  {
-    type: ELEMENT_CODE_BLOCK,
-    markup: '``',
-    trigger: '`',
-    triggerAtBlockStart: false,
-    preFormat,
-    format: (editor) => {
-      insertEmptyCodeBlock(editor as SPEditor, {
-        defaultType: getPlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),
-        insertNodesOptions: { select: true },
-      });
-    },
-  },
 ];

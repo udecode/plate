@@ -1,6 +1,6 @@
 import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
-import { DIGITS, DIGITS_WITH_SPACE } from './constants';
-import { formatText } from './utils';
+import { DIGITS, DIGITS_WITH_SPACE } from './_constants';
+import { formatText } from './_utils';
 
 export const mathOperations: AutoformatRule[] = [
   {
@@ -50,7 +50,10 @@ const multiplicationWithSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   triggerAtBlockStart: false,
   format: (editor) => formatText(editor, `${digit} ×`),
 }));
-export const mathMultiplication: AutoformatRule[] = [...multiplicationWithSpace, ...multiplicationWithoutSpace];
+export const mathMultiplication: AutoformatRule[] = [
+  ...multiplicationWithSpace,
+  ...multiplicationWithoutSpace,
+];
 
 const divisionWithoutSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   type: ELEMENT_PARAGRAPH,
@@ -70,4 +73,7 @@ const divisionWithSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   triggerAtBlockStart: false,
   format: (editor) => formatText(editor, `${digit} ÷`),
 }));
-export const mathDivision: AutoformatRule[] = [...divisionWithSpace, ...divisionWithoutSpace];
+export const mathDivision: AutoformatRule[] = [
+  ...divisionWithSpace,
+  ...divisionWithoutSpace,
+];

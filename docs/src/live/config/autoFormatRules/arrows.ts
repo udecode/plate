@@ -1,7 +1,7 @@
 import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
-import { formatText } from './utils';
+import { formatText } from './_utils';
 
-export const arrows: AutoFormatRule[] = [
+export const arrows: AutoformatRule[] = [
   {
     type: ELEMENT_PARAGRAPH,
     mode: 'block',
@@ -29,7 +29,7 @@ export const arrows: AutoFormatRule[] = [
     triggerAtBlockStart: false,
     format: (editor) => formatText(editor, '⇒'),
   },
-   {
+  {
     type: ELEMENT_PARAGRAPH,
     mode: 'block',
     markup: '<',
@@ -37,5 +37,5 @@ export const arrows: AutoFormatRule[] = [
     insertTrigger: false,
     triggerAtBlockStart: false,
     format: (editor) => formatText(editor, '⇐'),
-   },
+  },
 ];

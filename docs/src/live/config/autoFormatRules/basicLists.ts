@@ -1,7 +1,11 @@
 import {
-  AutoformatRule, ELEMENT_LI, ELEMENT_OL, ELEMENT_TODO_LI, ELEMENT_UL,
+  AutoformatRule,
+  ELEMENT_LI,
+  ELEMENT_OL,
+  ELEMENT_TODO_LI,
+  ELEMENT_UL,
 } from '@udecode/plate';
-import { formatList, preFormat } from './utils';
+import { formatList, preFormat } from './_utils';
 
 export const basicLists: AutoformatRule[] = [
   {

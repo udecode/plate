@@ -12,7 +12,27 @@ import {
   MentionNodeData,
   ResetBlockTypePluginOptions,
   SoftBreakPluginOptions,
+  WithAutoformatOptions,
 } from '@udecode/plate';
+import {
+  arrows,
+  basicElements,
+  basicLists,
+  basicMarks,
+  legal,
+  legalHtml,
+  mathComparison,
+  mathDivision,
+  mathEquality,
+  mathFraction,
+  mathMultiplication,
+  mathOperations,
+  mathSubscriptNumbers,
+  mathSubscriptSymbols,
+  mathSuperscriptNumbers,
+  mathSuperscriptSymbols,
+  punctuation,
+} from './autoFormatRules';
 import { MENTIONABLES } from './mentionables';
 
 export const options = createPlateOptions();
@@ -77,6 +97,28 @@ export const optionsExitBreakPlugin: ExitBreakPluginOptions = {
         allow: KEYS_HEADING,
       },
     },
+  ],
+};
+
+export const optionsAutoformat: WithAutoformatOptions = {
+  rules: [
+    ...basicElements,
+    ...basicLists,
+    ...basicMarks,
+    ...punctuation,
+    ...legal,
+    ...legalHtml,
+    ...arrows,
+    ...mathComparison,
+    ...mathEquality,
+    ...mathOperations,
+    ...mathMultiplication,
+    ...mathDivision,
+    ...mathFraction,
+    ...mathSuperscriptSymbols,
+    ...mathSubscriptSymbols,
+    ...mathSuperscriptNumbers,
+    ...mathSubscriptNumbers,
   ],
 };
 
