@@ -399,6 +399,97 @@ export const initialValuePasteMd: any = [
   },
 ];
 
+export const initialValuePasteAst: any = [
+  {
+    type: ELEMENT_H2,
+    children: [{ text: '✍️ Slate AST' }],
+  },
+  { type: ELEMENT_PARAGRAPH, children: [{ text: '' }] },
+  {
+    type: ELEMENT_UL,
+    children: [
+      {
+        type: ELEMENT_LI,
+        children: [
+          {
+            type: ELEMENT_LIC,
+            children: [{ text: 'Bulleted list' }],
+          },
+          {
+            type: ELEMENT_UL,
+            children: [
+              {
+                type: ELEMENT_LI,
+                children: [
+                  {
+                    type: ELEMENT_LIC,
+                    children: [{ text: 'support' }],
+                  },
+                  {
+                    type: ELEMENT_UL,
+                    children: [
+                      {
+                        type: ELEMENT_LI,
+                        children: [
+                          {
+                            type: ELEMENT_LIC,
+                            children: [{ text: 'a' }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: ELEMENT_LI,
+                children: [
+                  {
+                    type: ELEMENT_LIC,
+                    children: [{ text: 'nesting' }],
+                  },
+                  {
+                    type: ELEMENT_UL,
+                    children: [
+                      {
+                        type: ELEMENT_LI,
+                        children: [
+                          {
+                            type: ELEMENT_LIC,
+                            children: [{ text: 'b' }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: ELEMENT_LI,
+        children: [
+          {
+            type: ELEMENT_LIC,
+            children: [{ text: 'c' }],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text:
+          'This example shows how you can handle copy/paste by handling slate ast trees.',
+      },
+    ],
+  },
+];
+
 export const initialValuePlainText: any = [
   {
     type: ELEMENT_PARAGRAPH,
@@ -406,6 +497,18 @@ export const initialValuePlainText: any = [
       {
         text:
           'This is editable plain text with react and history plugins, just like a <textarea>!',
+      },
+    ],
+  },
+];
+
+export const initialValuePasteCSV: any = [
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text:
+          'This example shows how pasting from csv can get parsed into a table. Grab a CSV source and paste it below.',
       },
     ],
   },
@@ -1056,6 +1159,9 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueSoftBreak,
   ...initialValueExitBreak,
   ...initialValuePasteHtml,
+  ...initialValuePasteMd,
+  ...initialValuePasteCSV,
+  ...initialValuePasteAst,
 ]);
 
 export const initialValueVoids: any = [
