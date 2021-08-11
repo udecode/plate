@@ -28,7 +28,6 @@ export const useComboboxControls = () => {
     //   )
     // },
     // onSelectedItemChange: (changes) => {
-    //   console.info(changes);
     // },
   });
   getMenuProps({}, { suppressRefError: true });
