@@ -55,25 +55,14 @@ export const mathMultiplication: AutoformatRule[] = [
   ...multiplicationWithoutSpace,
 ];
 
-const divisionWithoutSpace: AutoformatRule[] = DIGITS.map((digit) => ({
-  type: ELEMENT_PARAGRAPH,
-  mode: 'block',
-  markup: `${digit}/`,
-  trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
-  insertTrigger: true,
-  triggerAtBlockStart: false,
-  format: (editor) => formatText(editor, `${digit}÷`),
-}));
-const divisionWithSpace: AutoformatRule[] = DIGITS.map((digit) => ({
-  type: ELEMENT_PARAGRAPH,
-  mode: 'block',
-  markup: `${digit} /`,
-  trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
-  insertTrigger: true,
-  triggerAtBlockStart: false,
-  format: (editor) => formatText(editor, `${digit} ÷`),
-}));
 export const mathDivision: AutoformatRule[] = [
-  ...divisionWithSpace,
-  ...divisionWithoutSpace,
+  {
+    type: ELEMENT_PARAGRAPH,
+    mode: 'block',
+    markup: '/',
+    trigger: '/',
+    insertTrigger: false,
+    triggerAtBlockStart: false,
+    format: (editor) => formatText(editor, '÷'),
+  },
 ];

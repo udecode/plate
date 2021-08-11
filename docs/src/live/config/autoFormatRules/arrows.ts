@@ -32,7 +32,7 @@ export const arrows: AutoformatRule[] = [
   {
     type: ELEMENT_PARAGRAPH,
     mode: 'block',
-    markup: '<',
+    markup: ['<', '≤'],
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,

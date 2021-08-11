@@ -14,7 +14,7 @@ export const mathEquality: AutoformatRule[] = [
   {
     type: ELEMENT_PARAGRAPH,
     mode: 'block',
-    markup: '==',
+    markup: '=',
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,
@@ -23,7 +23,7 @@ export const mathEquality: AutoformatRule[] = [
   {
     type: ELEMENT_PARAGRAPH,
     mode: 'block',
-    markup: '!==',
+    markup: ['!=', '≠'],
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,
@@ -37,15 +37,6 @@ export const mathEquality: AutoformatRule[] = [
     insertTrigger: false,
     triggerAtBlockStart: false,
     format: (editor) => formatText(editor, '≈'),
-  },
-  {
-    type: ELEMENT_PARAGRAPH,
-    mode: 'block',
-    markup: '!~',
-    trigger: '=',
-    insertTrigger: false,
-    triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≉'),
   },
   {
     type: ELEMENT_PARAGRAPH,

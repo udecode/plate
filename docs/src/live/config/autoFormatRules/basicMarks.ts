@@ -84,6 +84,12 @@ export const basicMarks: AutoformatRule[] = [
     insertTrigger: true,
   },
   {
+    type: MARK_HIGHLIGHT,
+    between: ['≡', '≡'],
+    mode: 'inline',
+    insertTrigger: true,
+  },
+  {
     type: MARK_CODE,
     between: ['`', '`'],
     mode: 'inline',
