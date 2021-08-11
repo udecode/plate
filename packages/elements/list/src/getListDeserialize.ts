@@ -1,4 +1,4 @@
-import { getElementDeserializer } from '@udecode/plate-common';
+import { findNode, getElementDeserializer } from '@udecode/plate-common';
 import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from './defaults';
 
@@ -31,5 +31,12 @@ export const getListDeserialize = (): Deserialize => (editor) => {
         ...lic.deserialize,
       }),
     ],
+    preInsert: () => {
+      const liEntry = findNode(editor, { match: { type: li.type } });
+
+      if (liEntry) {
+        return true;
+      }
+    },
   };
 };
