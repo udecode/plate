@@ -36,7 +36,7 @@ const multiplicationWithoutSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   type: ELEMENT_DEFAULT,
   mode: 'block',
   markup: [`${digit}*`, `${digit}x`],
-  trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
+  trigger: [...DIGITS, ...DIGITS_WITH_SPACE],
   insertTrigger: true,
   triggerAtBlockStart: false,
   format: (editor) => formatText(editor, `${digit}×`),
@@ -45,14 +45,14 @@ const multiplicationWithSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   type: ELEMENT_DEFAULT,
   mode: 'block',
   markup: [`${digit} *`, `${digit} x`],
-  trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
+  trigger: [...DIGITS, ...DIGITS_WITH_SPACE],
   insertTrigger: true,
   triggerAtBlockStart: false,
   format: (editor) => formatText(editor, `${digit} ×`),
 }));
 export const mathMultiplication: AutoformatRule[] = [
-  ...multiplicationWithSpace,
   ...multiplicationWithoutSpace,
+  ...multiplicationWithSpace,
 ];
 
 export const mathDivision: AutoformatRule[] = [
