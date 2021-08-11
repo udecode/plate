@@ -1,10 +1,10 @@
-import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
 import { DIGITS, DIGITS_WITH_SPACE } from './_constants';
 import { formatText } from './_utils';
 
 export const mathOperations: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '+',
     trigger: '-',
@@ -13,7 +13,7 @@ export const mathOperations: AutoformatRule[] = [
     format: (editor) => formatText(editor, '±'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '%',
     trigger: '%',
@@ -22,7 +22,7 @@ export const mathOperations: AutoformatRule[] = [
     format: (editor) => formatText(editor, '‰'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: ['%%', '‰'],
     trigger: '%',
@@ -33,7 +33,7 @@ export const mathOperations: AutoformatRule[] = [
 ];
 
 const multiplicationWithoutSpace: AutoformatRule[] = DIGITS.map((digit) => ({
-  type: ELEMENT_PARAGRAPH,
+  type: ELEMENT_DEFAULT,
   mode: 'block',
   markup: [`${digit}*`, `${digit}x`],
   trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
@@ -42,7 +42,7 @@ const multiplicationWithoutSpace: AutoformatRule[] = DIGITS.map((digit) => ({
   format: (editor) => formatText(editor, `${digit}×`),
 }));
 const multiplicationWithSpace: AutoformatRule[] = DIGITS.map((digit) => ({
-  type: ELEMENT_PARAGRAPH,
+  type: ELEMENT_DEFAULT,
   mode: 'block',
   markup: [`${digit} *`, `${digit} x`],
   trigger: [...DIGITS_WITH_SPACE, ...DIGITS],
@@ -57,7 +57,7 @@ export const mathMultiplication: AutoformatRule[] = [
 
 export const mathDivision: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '/',
     trigger: '/',

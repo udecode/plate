@@ -1,9 +1,9 @@
-import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
 import { formatText } from './_utils';
 
 export const mathSubscriptNumbers: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '0',
@@ -12,7 +12,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₀'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '1',
@@ -21,7 +21,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₁'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '2',
@@ -30,7 +30,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₂'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '3',
@@ -39,7 +39,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₃'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '4',
@@ -48,7 +48,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₄'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '5',
@@ -57,7 +57,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₅'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '6',
@@ -66,7 +66,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₆'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '7',
@@ -75,7 +75,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₇'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '8',
@@ -84,7 +84,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₈'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '9',
@@ -96,7 +96,7 @@ export const mathSubscriptNumbers: AutoformatRule[] = [
 
 export const mathSubscriptSymbols: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '+',
@@ -105,7 +105,7 @@ export const mathSubscriptSymbols: AutoformatRule[] = [
     format: (editor) => formatText(editor, '₊'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '~',
     trigger: '-',

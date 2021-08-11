@@ -1,9 +1,9 @@
-import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
 import { formatText } from './_utils';
 
 export const punctuation: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '-',
     trigger: '-',
@@ -12,7 +12,7 @@ export const punctuation: AutoformatRule[] = [
     format: (editor) => formatText(editor, '\u2014'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '..',
     trigger: '.',
@@ -21,7 +21,7 @@ export const punctuation: AutoformatRule[] = [
     format: (editor) => formatText(editor, '…'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '>',
     trigger: '>',
@@ -30,7 +30,7 @@ export const punctuation: AutoformatRule[] = [
     format: (editor) => formatText(editor, '»'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '<',
     trigger: '<',

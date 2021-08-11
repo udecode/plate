@@ -1,9 +1,9 @@
-import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
 import { formatText } from './_utils';
 
 export const mathSuperscriptNumbers: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '0',
@@ -12,7 +12,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁰'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '1',
@@ -21,7 +21,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '¹'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '2',
@@ -30,7 +30,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '²'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '3',
@@ -39,7 +39,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '³'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '4',
@@ -48,7 +48,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁴'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '5',
@@ -57,7 +57,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁵'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '6',
@@ -66,7 +66,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁶'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '7',
@@ -75,7 +75,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁷'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '8',
@@ -84,7 +84,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁸'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '9',
@@ -96,7 +96,7 @@ export const mathSuperscriptNumbers: AutoformatRule[] = [
 
 export const mathSuperscriptSymbols: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: 'o',
@@ -105,7 +105,7 @@ export const mathSuperscriptSymbols: AutoformatRule[] = [
     format: (editor) => formatText(editor, '°'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '+',
@@ -114,7 +114,7 @@ export const mathSuperscriptSymbols: AutoformatRule[] = [
     format: (editor) => formatText(editor, '⁺'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '^',
     trigger: '-',

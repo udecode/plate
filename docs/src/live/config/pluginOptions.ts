@@ -108,7 +108,6 @@ export const optionsAutoformat: WithAutoformatOptions = {
     ...punctuation,
     ...legal,
     ...legalHtml,
-    ...arrows,
     ...mathComparison,
     ...mathEquality,
     ...mathOperations,
@@ -119,6 +118,7 @@ export const optionsAutoformat: WithAutoformatOptions = {
     ...mathSubscriptSymbols,
     ...mathSuperscriptNumbers,
     ...mathSubscriptNumbers,
+    ...arrows,
   ],
 };
 

@@ -1,9 +1,9 @@
-import { AutoformatRule, ELEMENT_PARAGRAPH } from '@udecode/plate';
+import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
 import { formatText } from './_utils';
 
 export const legal: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: ['(tm', '(TM'],
     trigger: ')',
@@ -12,7 +12,7 @@ export const legal: AutoformatRule[] = [
     format: (editor) => formatText(editor, '™'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: ['(r', '(R'],
     trigger: ')',
@@ -22,7 +22,7 @@ export const legal: AutoformatRule[] = [
   },
 
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: ['(c', '(C'],
     trigger: ')',
@@ -34,7 +34,7 @@ export const legal: AutoformatRule[] = [
 
 export const legalHtml: AutoformatRule[] = [
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '&trade;',
     trigger: ' ',
@@ -43,7 +43,7 @@ export const legalHtml: AutoformatRule[] = [
     format: (editor) => formatText(editor, '™'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '&reg;',
     trigger: ' ',
@@ -52,7 +52,7 @@ export const legalHtml: AutoformatRule[] = [
     format: (editor) => formatText(editor, '®'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '&copy;',
     trigger: ' ',
@@ -61,7 +61,7 @@ export const legalHtml: AutoformatRule[] = [
     format: (editor) => formatText(editor, '©'),
   },
   {
-    type: ELEMENT_PARAGRAPH,
+    type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '&sect;',
     trigger: ' ',
