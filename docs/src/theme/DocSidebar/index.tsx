@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import 'twin.macro';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import isInternalUrl from '@docusaurus/isInternalUrl';
 import Link from '@docusaurus/Link';
@@ -361,7 +362,9 @@ function DocSidebar({
         </ul>
       </div>
       {hideableSidebar && <HideableSidebarButton onClick={onCollapse} />}
-      {!isHidden && <CarbonAds />}
+      <div tw="hidden lg:block">
+        <CarbonAds />
+      </div>
     </div>
   );
 }
