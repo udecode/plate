@@ -1,3 +1,8 @@
+#carbonads_1,
+#carbonads_2 {
+  display: none;
+}
+
 #carbonads * {
   margin: initial;
   padding: initial;
@@ -62,11 +67,18 @@
 
 html[data-theme='dark'] {
   #carbonads {
-    background-color: rgb(24, 33, 47);
-    border: 1px solid rgb(229, 231, 235);
     border-radius: 1px;
+    background-color: hsl(0, 0%, 10%);
+    box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.5);
+  }
+  #carbonads a {
+    color: #ddd;
+  }
+  #carbonads a:hover {
+    color: #ddd;
   }
   #carbonads .carbon-poweredby {
-    background: rgb(24, 33, 47);
+    background: #1e2021;
+    color: #aaa;
   }
 }
