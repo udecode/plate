@@ -24,7 +24,7 @@ export const withAutoformat = ({
   editor.insertText = (text) => {
     if (!isCollapsed(editor.selection)) return insertText(text);
 
-    for (const { query, ...rule } of rules) {
+    for (const rule of rules) {
       const {
         trigger = ' ',
         mode = 'block',
@@ -37,6 +37,7 @@ export const withAutoformat = ({
         between,
         ignoreTrim,
         insertTrigger,
+        query,
       } = rule;
 
       if (query && !query(editor, rule)) continue;
@@ -46,56 +47,58 @@ export const withAutoformat = ({
       // Check trigger
       if (!triggers.includes(text)) continue;
 
-      const valid = () => insertTrigger && insertText(text);
+      const insertTriggerText = () => insertTrigger && insertText(text);
 
-      if (mode === 'block') {
-        const markups: string[] = castArray(markup);
-        let markupRange: Range | undefined;
+      if (type) {
+        if (mode === 'block') {
+          const markups: string[] = castArray(markup);
+          let markupRange: Range | undefined;
 
-        if (triggerAtBlockStart) {
-          markupRange = getRangeFromBlockStart(editor) as Range;
+          if (triggerAtBlockStart) {
+            markupRange = getRangeFromBlockStart(editor) as Range;
 
-          // Don't autoformat if there is void nodes.
-          const hasVoidNode = someNode(editor, {
-            at: markupRange,
-            match: (n) => Editor.isVoid(editor, n),
+            // Don't autoformat if there is void nodes.
+            const hasVoidNode = someNode(editor, {
+              at: markupRange,
+              match: (n) => Editor.isVoid(editor, n),
+            });
+            if (hasVoidNode) continue;
+
+            const textFromBlockStart = getText(editor, markupRange);
+
+            if (!markups.includes(textFromBlockStart)) continue;
+          } else {
+            markupRange = getRangeBefore(editor, editor.selection as Range, {
+              matchString: markup,
+            });
+            if (!markupRange) continue;
+          }
+
+          if (!allowSameTypeAbove) {
+            // Don't autoformat if already in a block of the same type.
+            const isBelowSameBlockType = someNode(editor, { match: { type } });
+            if (isBelowSameBlockType) continue;
+          }
+
+          // Start of the block
+          autoformatBlock(editor, type, markupRange, {
+            preFormat,
+            format,
           });
-          if (hasVoidNode) continue;
-
-          const textFromBlockStart = getText(editor, markupRange);
-
-          if (!markups.includes(textFromBlockStart)) continue;
-        } else {
-          markupRange = getRangeBefore(editor, editor.selection as Range, {
-            matchString: markup,
-          });
-          if (!markupRange) continue;
+          return insertTriggerText();
         }
 
-        if (!allowSameTypeAbove) {
-          // Don't autoformat if already in a block of the same type.
-          const isBelowSameBlockType = someNode(editor, { match: { type } });
-          if (isBelowSameBlockType) continue;
-        }
-
-        // Start of the block
-        autoformatBlock(editor, type, markupRange, {
-          preFormat,
-          format,
-        });
-        return valid();
-      }
-
-      if (mode === 'inline') {
-        if (
-          autoformatInline(editor, {
-            type,
-            between,
-            ignoreTrim,
-            markup: Array.isArray(markup) ? markup[0] : markup,
-          })
-        ) {
-          return valid();
+        if (mode === 'inline') {
+          if (
+            autoformatInline(editor, {
+              type,
+              between,
+              ignoreTrim,
+              markup: Array.isArray(markup) ? markup[0] : markup,
+            })
+          ) {
+            return insertTriggerText();
+          }
         }
       }
     }

@@ -12,6 +12,8 @@ export const autoformatInline = (
     ignoreTrim,
   }: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
 ) => {
+  if (!type) return false;
+
   const selection = editor.selection as Range;
 
   const startMarkup = between ? between[0] : markup;

@@ -6,6 +6,7 @@ import {
   isElement,
   isType,
   SPEditor,
+  TEditor,
   toggleList,
   unwrapList,
 } from '@udecode/plate';
@@ -13,31 +14,31 @@ import {
 export const preFormat: AutoformatRule['preFormat'] = (editor) =>
   unwrapList(editor as SPEditor);
 
-export const format = (editor, customFormatting) => {
+export const format = (editor: TEditor, customFormatting: any) => {
   if (editor.selection) {
     const parentEntry = getParent(editor, editor.selection);
     if (!parentEntry) return;
     const [node] = parentEntry;
     if (
       isElement(node) &&
-      !isType((editor as any) as SPEditor, node, ELEMENT_CODE_BLOCK) &&
-      !isType((editor as any) as SPEditor, node, ELEMENT_CODE_LINE)
+      !isType(editor as SPEditor, node, ELEMENT_CODE_BLOCK) &&
+      !isType(editor as SPEditor, node, ELEMENT_CODE_LINE)
     ) {
       customFormatting();
     }
   }
 };
 
-export const formatList = (editor, elementType) => {
+export const formatList = (editor: TEditor, elementType: string) => {
   console.log('formatList');
-  format((editor as any) as SPEditor, () =>
-    toggleList((editor as any) as SPEditor, {
+  format(editor, () =>
+    toggleList(editor as SPEditor, {
       type: elementType,
     })
   );
 };
 
-export const formatText = (editor, text) => {
+export const formatText = (editor: TEditor, text: string) => {
   console.log('formatText');
-  format((editor as any) as SPEditor, () => editor.insertText(text));
+  format(editor, () => editor.insertText(text));
 };

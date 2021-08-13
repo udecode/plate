@@ -4,7 +4,7 @@ export interface AutoformatRule {
   /**
    * Block type to autoformat.
    */
-  type: string;
+  type?: string;
 
   /**
    * Triggering character to autoformat. Default is space.
