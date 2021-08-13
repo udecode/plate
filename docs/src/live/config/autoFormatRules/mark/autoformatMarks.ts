@@ -10,7 +10,7 @@ import {
   MARK_UNDERLINE,
 } from '@udecode/plate';
 
-export const basicMarks: AutoformatRule[] = [
+export const autoformatMarks: AutoformatRule[] = [
   {
     type: MARK_BOLD,
     between: ['**', '**'],

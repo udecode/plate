@@ -66,3 +66,55 @@ describe('when 1.space', () => {
     expect(input.children).toEqual(output.children);
   });
 });
+
+describe('when [].space', () => {
+  it('should format to todo list', () => {
+    const input = (
+      <editor>
+        <hp>
+          []
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <htodoli>hello</htodoli>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+
+    editor.insertText(' ');
+
+    expect(input.children).toEqual(output.children);
+  });
+});
+
+describe('when [x].space', () => {
+  it('should format to todo list', () => {
+    const input = (
+      <editor>
+        <hp>
+          [x]
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <htodoli checked>hello</htodoli>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+
+    editor.insertText(' ');
+
+    expect(input.children).toEqual(output.children);
+  });
+});

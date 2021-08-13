@@ -2020,8 +2020,8 @@
     "@udecode/plate-common" "1.1.6"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-ast-serializer@1.1.6", "@udecode/plate-ast-serializer@file:../packages/serializers/ast-serializer":
-  version "1.1.6"
+"@udecode/plate-ast-serializer@1.1.8", "@udecode/plate-ast-serializer@file:../packages/serializers/ast-serializer":
+  version "1.1.8"
   dependencies:
     "@udecode/plate-block-quote" "1.1.6"
     "@udecode/plate-code-block" "1.1.6"
@@ -2029,7 +2029,7 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-heading" "1.1.6"
     "@udecode/plate-link" "1.1.6"
-    "@udecode/plate-list" "1.1.6"
+    "@udecode/plate-list" "1.1.8"
     "@udecode/plate-paragraph" "1.1.6"
     "@udecode/plate-serializer" "1.1.6"
     remark-parse "^9.0.0"
@@ -2220,24 +2220,24 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-normalizers" "1.1.6"
 
-"@udecode/plate-list-ui@1.1.7", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
-  version "1.1.7"
+"@udecode/plate-list-ui@1.1.8", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
+  version "1.1.8"
   dependencies:
     "@udecode/plate-common" "1.1.6"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-list" "1.1.6"
+    "@udecode/plate-list" "1.1.8"
     "@udecode/plate-styled-components" "1.1.7"
     "@udecode/plate-toolbar" "1.1.7"
 
-"@udecode/plate-list@1.1.6", "@udecode/plate-list@file:../packages/elements/list":
-  version "1.1.6"
+"@udecode/plate-list@1.1.8", "@udecode/plate-list@file:../packages/elements/list":
+  version "1.1.8"
   dependencies:
     "@udecode/plate-common" "1.1.6"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-reset-node" "1.1.6"
 
-"@udecode/plate-md-serializer@1.1.6", "@udecode/plate-md-serializer@file:../packages/serializers/md-serializer":
-  version "1.1.6"
+"@udecode/plate-md-serializer@1.1.8", "@udecode/plate-md-serializer@file:../packages/serializers/md-serializer":
+  version "1.1.8"
   dependencies:
     "@udecode/plate-block-quote" "1.1.6"
     "@udecode/plate-code-block" "1.1.6"
@@ -2245,7 +2245,7 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-heading" "1.1.6"
     "@udecode/plate-link" "1.1.6"
-    "@udecode/plate-list" "1.1.6"
+    "@udecode/plate-list" "1.1.8"
     "@udecode/plate-paragraph" "1.1.6"
     "@udecode/plate-serializer" "1.1.6"
     remark-parse "^9.0.0"
@@ -2365,11 +2365,11 @@
     "@udecode/plate-core" "1.0.0"
 
 "@udecode/plate@file:../packages/plate":
-  version "1.1.7"
+  version "1.1.8"
   dependencies:
     "@udecode/plate-alignment" "1.1.6"
     "@udecode/plate-alignment-ui" "1.1.7"
-    "@udecode/plate-ast-serializer" "1.1.6"
+    "@udecode/plate-ast-serializer" "1.1.8"
     "@udecode/plate-autoformat" "1.1.6"
     "@udecode/plate-basic-elements" "1.1.6"
     "@udecode/plate-basic-marks" "1.1.6"
@@ -2394,9 +2394,9 @@
     "@udecode/plate-kbd" "1.1.6"
     "@udecode/plate-link" "1.1.6"
     "@udecode/plate-link-ui" "1.1.7"
-    "@udecode/plate-list" "1.1.6"
-    "@udecode/plate-list-ui" "1.1.7"
-    "@udecode/plate-md-serializer" "1.1.6"
+    "@udecode/plate-list" "1.1.8"
+    "@udecode/plate-list-ui" "1.1.8"
+    "@udecode/plate-md-serializer" "1.1.8"
     "@udecode/plate-media-embed" "1.1.6"
     "@udecode/plate-media-embed-ui" "1.1.7"
     "@udecode/plate-mention" "1.1.7"

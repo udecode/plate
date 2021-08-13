@@ -13,9 +13,9 @@ import {
   SPEditor,
 } from '@udecode/plate';
 import { getPlatePluginType } from '@udecode/plate-core';
-import { preFormat } from './_utils';
+import { preFormat } from '../autoformatUtils';
 
-export const basicElements: AutoformatRule[] = [
+export const autoformatBlocks: AutoformatRule[] = [
   {
     type: ELEMENT_H1,
     markup: '#',

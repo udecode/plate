@@ -29,6 +29,7 @@ export interface AutoformatRule {
 
   /**
    * Custom formatting function.
+   * @default setNodes(editor, { type }, { match: (n) => Editor.isBlock(editor, n) })
    */
   format?: (editor: TEditor) => void;
 

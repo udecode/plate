@@ -1,50 +1,59 @@
 import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
-import { formatText } from './_utils';
+import { formatText } from '../../autoformatUtils';
 
-export const mathEquality: AutoformatRule[] = [
+export const autoformatMathComparison: AutoformatRule[] = [
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
     markup: '!',
-    trigger: '=',
+    trigger: '>',
     insertTrigger: false,
     triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≠'),
+    format: (editor) => formatText(editor, '≯'),
   },
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
-    markup: '=',
-    trigger: '=',
+    markup: '!',
+    trigger: '<',
     insertTrigger: false,
     triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≡'),
+    format: (editor) => formatText(editor, '≮'),
   },
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
-    markup: ['!=', '≠'],
+    markup: '>',
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≢'),
+    format: (editor) => formatText(editor, '≥'),
   },
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
-    markup: '~',
+    markup: '<',
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≈'),
+    format: (editor) => formatText(editor, '≤'),
   },
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
-    markup: '!~',
+    markup: '!>',
     trigger: '=',
     insertTrigger: false,
     triggerAtBlockStart: false,
-    format: (editor) => formatText(editor, '≉'),
+    format: (editor) => formatText(editor, '≱'),
+  },
+  {
+    type: ELEMENT_DEFAULT,
+    mode: 'block',
+    markup: '!<',
+    trigger: '=',
+    insertTrigger: false,
+    triggerAtBlockStart: false,
+    format: (editor) => formatText(editor, '≰'),
   },
 ];

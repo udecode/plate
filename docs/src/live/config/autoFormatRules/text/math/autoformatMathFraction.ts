@@ -1,7 +1,7 @@
 import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
-import { formatText } from './_utils';
+import { formatText } from '../../autoformatUtils';
 
-export const mathFraction: AutoformatRule[] = [
+export const autoformatMathFraction: AutoformatRule[] = [
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',

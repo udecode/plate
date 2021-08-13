@@ -1,7 +1,7 @@
 import { AutoformatRule, ELEMENT_DEFAULT } from '@udecode/plate';
-import { formatText } from './_utils';
+import { formatText } from '../autoformatUtils';
 
-export const legal: AutoformatRule[] = [
+export const autoformatLegal: AutoformatRule[] = [
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',
@@ -32,7 +32,7 @@ export const legal: AutoformatRule[] = [
   },
 ];
 
-export const legalHtml: AutoformatRule[] = [
+export const autoformatLegalHtml: AutoformatRule[] = [
   {
     type: ELEMENT_DEFAULT,
     mode: 'block',

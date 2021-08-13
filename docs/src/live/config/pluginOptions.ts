@@ -14,25 +14,31 @@ import {
   SoftBreakPluginOptions,
   WithAutoformatOptions,
 } from '@udecode/plate';
+import { autoformatBlocks } from './autoFormatRules/block/autoformatBlocks';
+import { autoformatLists } from './autoFormatRules/block/autoformatLists';
+import { autoformatMarks } from './autoFormatRules/mark/autoformatMarks';
+import { autoformatArrow } from './autoFormatRules/text/autoformatArrow';
 import {
-  arrows,
-  basicElements,
-  basicLists,
-  basicMarks,
-  legal,
-  legalHtml,
-  mathComparison,
-  mathDivision,
-  mathEquality,
-  mathFraction,
-  mathMultiplication,
-  mathOperations,
-  mathSubscriptNumbers,
-  mathSubscriptSymbols,
-  mathSuperscriptNumbers,
-  mathSuperscriptSymbols,
-  punctuation,
-} from './autoFormatRules';
+  autoformatLegal,
+  autoformatLegalHtml,
+} from './autoFormatRules/text/autoformatLegal';
+import { autoformatPunctuation } from './autoFormatRules/text/autoformatPunctuation';
+import { autoformatMathComparison } from './autoFormatRules/text/math/autoformatMathComparison';
+import { autoformatMathEquality } from './autoFormatRules/text/math/autoformatMathEquality';
+import { autoformatMathFraction } from './autoFormatRules/text/math/autoformatMathFraction';
+import {
+  autoformatMathDivision,
+  autoformatMathMultiplication,
+  autoformatMathOperation,
+} from './autoFormatRules/text/math/autoformatMathOperation';
+import {
+  autoformatMathSubscriptNumbers,
+  autoformatMathSubscriptSymbols,
+} from './autoFormatRules/text/math/autoformatMathSubscript';
+import {
+  autoformatMathSuperscriptNumbers,
+  autoformatMathSuperscriptSymbols,
+} from './autoFormatRules/text/math/autoformatMathSuperscript';
 import { MENTIONABLES } from './mentionables';
 
 export const options = createPlateOptions();
@@ -102,23 +108,23 @@ export const optionsExitBreakPlugin: ExitBreakPluginOptions = {
 
 export const optionsAutoformat: WithAutoformatOptions = {
   rules: [
-    ...basicElements,
-    ...basicLists,
-    ...basicMarks,
-    ...punctuation,
-    ...legal,
-    ...legalHtml,
-    ...mathComparison,
-    ...mathEquality,
-    ...mathOperations,
-    ...mathMultiplication,
-    ...mathDivision,
-    ...mathFraction,
-    ...mathSuperscriptSymbols,
-    ...mathSubscriptSymbols,
-    ...mathSuperscriptNumbers,
-    ...mathSubscriptNumbers,
-    ...arrows,
+    ...autoformatBlocks,
+    ...autoformatLists,
+    ...autoformatMarks,
+    ...autoformatPunctuation,
+    ...autoformatLegal,
+    ...autoformatLegalHtml,
+    ...autoformatMathComparison,
+    ...autoformatMathEquality,
+    ...autoformatMathOperation,
+    ...autoformatMathMultiplication,
+    ...autoformatMathDivision,
+    ...autoformatMathFraction,
+    ...autoformatMathSuperscriptSymbols,
+    ...autoformatMathSubscriptSymbols,
+    ...autoformatMathSuperscriptNumbers,
+    ...autoformatMathSubscriptNumbers,
+    ...autoformatArrow,
   ],
 };
 
