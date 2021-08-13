@@ -1,5 +1,14 @@
 # @udecode/plate-list
 
+## 1.1.8
+
+### Patch Changes
+
+- [#927](https://github.com/udecode/plate/pull/927) [`a3825e35`](https://github.com/udecode/plate/commit/a3825e3556e9980b8cce39d454aa4d3c8ea78586) Thanks [@zbeyens](https://github.com/zbeyens)! - partial fix pasting into lists, if the selection is in `li`:
+  - `preInsert`: override the default (do not run `setNodes`)
+  - filter out `ul` and `ol` from the fragment to paste only `li`
+  - override `insertFragment` by `insertNodes`. Note that it implies that the first fragment node children will not be merged into the selected `li`.
+
 ## 1.1.6
 
 ### Patch Changes

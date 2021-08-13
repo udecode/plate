@@ -1,8 +1,9 @@
 import { SPEditor, WithOverride } from '@udecode/plate-core';
+import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListDeleteBackward } from './getListDeleteBackward';
 import { getListDeleteFragment } from './getListDeleteFragment';
 import { getListInsertBreak } from './getListInsertBreak';
-import { getListNormalizer } from './normalizers';
+import { getListInsertFragment } from './getListInsertFragment';
 import { WithListOptions } from './types';
 
 export const withList = ({
@@ -27,6 +28,8 @@ export const withList = ({
 
     deleteFragment();
   };
+
+  editor.insertFragment = getListInsertFragment(editor);
 
   editor.normalizeNode = getListNormalizer(editor, { validLiChildrenTypes });
 

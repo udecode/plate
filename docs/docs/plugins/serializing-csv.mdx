@@ -1,6 +1,6 @@
 ---
-slug: /serializing-ast
-title: AST
+slug: /serializing-csv
+title: CSV
 ---
 
 ## Deserializer
@@ -24,19 +24,19 @@ title: AST
       mentionPlugin,
     ];
 
-    _plugins.push(createDeserializeAstPlugin({ plugins: _plugins }));
+    _plugins.push(createDeserializeCSVPlugin({ plugins: _plugins }));
 
     return _plugins;
   }, [mentionPlugin]);
 
   return (
     <Plate
-      id="deserialize-ast"
+      id="deserialize-csv"
       plugins={plugins}
       components={components}
       options={options}
       editableProps={editableProps}
-      initialValue={initialValuePasteAst}
+      initialValue={initialValuePasteCSV}
     />
   );
 }
