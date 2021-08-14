@@ -10,27 +10,26 @@ jsx;
 const input = (
   <editor>
     <hp>
-      hello``
+      ***hello***
       <cursor />
-      world
     </hp>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <hp>helloworld</hp>
-    <hcodeblock>
-      <hcodeline>new</hcodeline>
-    </hcodeblock>
+    <hp>
+      <htext bold italic>
+        hello
+      </htext>{' '}
+    </hp>
   </editor>
 ) as any;
 
 it('should autoformat', () => {
   const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
-  editor.insertText('`');
-  editor.insertText('new');
+  editor.insertText(' ');
 
   expect(input.children).toEqual(output.children);
 });

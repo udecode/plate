@@ -2,9 +2,10 @@ import { TEditor } from '@udecode/plate-core';
 
 export interface AutoformatRule {
   /**
-   * Block type to autoformat.
+   * If `mode: 'block'` and `format` is not defined: set block type.
+   * If `mode: 'inline'`: add these types as marks.
    */
-  type?: string;
+  type?: string | string[];
 
   /**
    * Triggering character to autoformat. Default is space.
@@ -34,10 +35,11 @@ export interface AutoformatRule {
   format?: (editor: TEditor) => void;
 
   /**
-   * - block (default) – set/insert block. Should be used with `markup`.
-   * - inline – insert mark between markups. Should be used with `between`.
+   * - text (default) - insert text.
+   * - block – set/insert block. Should be used with `markup`.
+   * - mark – insert mark between markups. Should be used with `between`.
    */
-  mode?: 'block' | 'inline';
+  mode?: 'text' | 'block' | 'inline';
 
   /**
    * When using `inline` mode – if false, do not format when the string can be trimmed.

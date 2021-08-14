@@ -5,7 +5,7 @@ import { AutoformatRule } from '../types';
 
 export const autoformatBlock = (
   editor: TEditor,
-  type: string,
+  type: string | string[],
   at: Location,
   { preFormat, format }: Pick<AutoformatRule, 'preFormat' | 'format'>
 ) => {

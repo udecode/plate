@@ -1,5 +1,6 @@
 import { getPointBefore, getText, removeMark } from '@udecode/plate-common';
 import { TEditor } from '@udecode/plate-core';
+import castArray from 'lodash/castArray';
 import { Range, Transforms } from 'slate';
 import { AutoformatRule } from '../types';
 
@@ -13,6 +14,8 @@ export const autoformatInline = (
   }: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
 ) => {
   if (!type) return false;
+
+  const marks: string[] = castArray(type);
 
   const selection = editor.selection as Range;
 
@@ -62,9 +65,13 @@ export const autoformatInline = (
 
   // add mark to the text between the markups
   Transforms.select(editor, markupRange);
-  editor.addMark(type, true);
+  marks.forEach((mark) => {
+    editor.addMark(mark, true);
+  });
   Transforms.collapse(editor, { edge: 'end' });
-  removeMark(editor, { key: type, shouldChange: false });
+  marks.forEach((mark) => {
+    removeMark(editor, { key: mark, shouldChange: false });
+  });
 
   // delete start markup
   const startMarkupPointBefore = getPointBefore(editor, selection, {
