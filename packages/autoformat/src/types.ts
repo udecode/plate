@@ -101,7 +101,7 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   /**
    * The matched text is replaced by that string.
    */
-  handler: string
+  handler: string;
 }
 
 export type AutoformatRule =
