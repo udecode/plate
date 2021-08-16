@@ -4,7 +4,7 @@ export const autoformatDivision: AutoformatRule[] = [
   {
     mode: 'text',
     match: '//',
-    handler: '÷',
+    format: '÷',
   },
 ];
 
@@ -12,12 +12,12 @@ export const autoformatOperation: AutoformatRule[] = [
   {
     mode: 'text',
     match: '+-',
-    handler: '±',
+    format: '±',
   },
   {
     mode: 'text',
     match: ['%%', '%%%'],
-    handler: '‰',
+    format: '‰',
   },
   ...autoformatDivision,
 ];

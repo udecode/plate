@@ -4,26 +4,26 @@ export const autoformatEquality: AutoformatRule[] = [
   {
     mode: 'text',
     match: '!=',
-    handler: '≠',
+    format: '≠',
   },
   {
     mode: 'text',
     match: '==',
-    handler: '≡',
+    format: '≡',
   },
   {
     mode: 'text',
     match: ['!==', '≠='],
-    handler: '≢',
+    format: '≢',
   },
   {
     mode: 'text',
     match: '~=',
-    handler: '≈',
+    format: '≈',
   },
   {
     mode: 'text',
     match: '!~=',
-    handler: '≉',
+    format: '≉',
   },
 ];

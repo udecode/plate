@@ -1,8 +1,8 @@
-import { getPointBefore } from '@udecode/plate-common';
 import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Range, Transforms } from 'slate';
+import { Point, Range, Transforms } from 'slate';
 import { AutoformatTextRule } from '../types';
+import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
 export interface AutoformatTextOptions extends AutoformatTextRule {
@@ -11,45 +11,66 @@ export interface AutoformatTextOptions extends AutoformatTextRule {
 
 export const autoformatText = (
   editor: TEditor,
-  { text, match: _match, trigger, handler }: AutoformatTextOptions
+  { text, match: _match, trigger, format }: AutoformatTextOptions
 ) => {
   const selection = editor.selection as Range;
-
   const matches = castArray(_match);
 
   // dup
   for (const match of matches) {
-    const { end, triggers } = getMatchRange({
-      match: {
-        start: '',
-        end: match,
-      },
+    const { start, end, triggers } = getMatchRange({
+      match: Array.isArray(format)
+        ? match
+        : {
+            start: '',
+            end: match,
+          },
       trigger,
     });
 
     if (!triggers.includes(text)) continue;
 
-    let endMatchPointBefore = selection.anchor;
+    const matched = getMatchPoints(editor, { start, end });
+    if (!matched) continue;
+
+    const {
+      afterStartMatchPoint,
+      beforeEndMatchPoint,
+      beforeStartMatchPoint,
+    } = matched;
+
     if (end) {
-      endMatchPointBefore = getPointBefore(editor, selection, {
-        matchString: end,
-      });
-
-      if (!endMatchPointBefore) continue;
-
       Transforms.delete(editor, {
         at: {
-          anchor: endMatchPointBefore,
+          anchor: beforeEndMatchPoint,
           focus: selection.anchor,
         },
       });
-
-      if (handler) {
-        editor.insertText(handler);
-      }
-
-      return true;
     }
+
+    if (typeof format === 'function') {
+      format(editor, matched);
+    } else {
+      const formatEnd = Array.isArray(format) ? format[1] : format;
+      editor.insertText(formatEnd);
+
+      if (beforeStartMatchPoint) {
+        const formatStart = Array.isArray(format) ? format[0] : format;
+
+        Transforms.delete(editor, {
+          at: {
+            anchor: beforeStartMatchPoint as Point,
+            focus: afterStartMatchPoint as Point,
+          },
+        });
+
+        Transforms.insertText(editor, formatStart, {
+          at: beforeStartMatchPoint,
+        });
+      }
+    }
+
+    return true;
   }
 
   return false;

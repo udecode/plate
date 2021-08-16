@@ -4,52 +4,52 @@ export const autoformatSuperscriptNumbers: AutoformatRule[] = [
   {
     mode: 'text',
     match: '^0',
-    handler: '⁰',
+    format: '⁰',
   },
   {
     mode: 'text',
     match: '^1',
-    handler: '¹',
+    format: '¹',
   },
   {
     mode: 'text',
     match: '^2',
-    handler: '²',
+    format: '²',
   },
   {
     mode: 'text',
     match: '^3',
-    handler: '³',
+    format: '³',
   },
   {
     mode: 'text',
     match: '^4',
-    handler: '⁴',
+    format: '⁴',
   },
   {
     mode: 'text',
     match: '^5',
-    handler: '⁵',
+    format: '⁵',
   },
   {
     mode: 'text',
     match: '^6',
-    handler: '⁶',
+    format: '⁶',
   },
   {
     mode: 'text',
     match: '^7',
-    handler: '⁷',
+    format: '⁷',
   },
   {
     mode: 'text',
     match: '^8',
-    handler: '⁸',
+    format: '⁸',
   },
   {
     mode: 'text',
     match: '^9',
-    handler: '⁹',
+    format: '⁹',
   },
 ];
 
@@ -57,16 +57,16 @@ export const autoformatSuperscriptSymbols: AutoformatRule[] = [
   {
     mode: 'text',
     match: '^o',
-    handler: '°',
+    format: '°',
   },
   {
     mode: 'text',
     match: '^+',
-    handler: '⁺',
+    format: '⁺',
   },
   {
     mode: 'text',
     match: '^-',
-    handler: '⁻',
+    format: '⁻',
   },
 ];

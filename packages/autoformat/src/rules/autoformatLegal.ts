@@ -4,18 +4,18 @@ export const autoformatLegal: AutoformatRule[] = [
   {
     mode: 'text',
     match: ['(tm)', '(TM)'],
-    handler: '™',
+    format: '™',
   },
   {
     mode: 'text',
     match: ['(r)', '(R)'],
-    handler: '®',
+    format: '®',
   },
 
   {
     mode: 'text',
     match: ['(c)', '(C)'],
-    handler: '©',
+    format: '©',
   },
 ];
 
@@ -23,21 +23,21 @@ export const autoformatLegalHtml: AutoformatRule[] = [
   {
     mode: 'text',
     match: '&trade;',
-    handler: '™',
+    format: '™',
   },
   {
     mode: 'text',
     match: '&reg;',
-    handler: '®',
+    format: '®',
   },
   {
     mode: 'text',
     match: '&copy;',
-    handler: '©',
+    format: '©',
   },
   {
     mode: 'text',
     match: '&sect;',
-    handler: '§',
+    format: '§',
   },
 ];

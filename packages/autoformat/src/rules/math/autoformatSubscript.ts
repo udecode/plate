@@ -4,52 +4,52 @@ export const autoformatSubscriptNumbers: AutoformatRule[] = [
   {
     mode: 'text',
     match: '~0',
-    handler: '₀',
+    format: '₀',
   },
   {
     mode: 'text',
     match: '~1',
-    handler: '₁',
+    format: '₁',
   },
   {
     mode: 'text',
     match: '~2',
-    handler: '₂',
+    format: '₂',
   },
   {
     mode: 'text',
     match: '~3',
-    handler: '₃',
+    format: '₃',
   },
   {
     mode: 'text',
     match: '~4',
-    handler: '₄',
+    format: '₄',
   },
   {
     mode: 'text',
     match: '~5',
-    handler: '₅',
+    format: '₅',
   },
   {
     mode: 'text',
     match: '~6',
-    handler: '₆',
+    format: '₆',
   },
   {
     mode: 'text',
     match: '~7',
-    handler: '₇',
+    format: '₇',
   },
   {
     mode: 'text',
     match: '~8',
-    handler: '₈',
+    format: '₈',
   },
   {
     mode: 'text',
     match: '~9',
-    handler: '₉',
+    format: '₉',
   },
 ];
 
@@ -57,11 +57,11 @@ export const autoformatSubscriptSymbols: AutoformatRule[] = [
   {
     mode: 'text',
     match: '~+',
-    handler: '₊',
+    format: '₊',
   },
   {
     mode: 'text',
     match: '~-',
-    handler: '₋',
+    format: '₋',
   },
 ];

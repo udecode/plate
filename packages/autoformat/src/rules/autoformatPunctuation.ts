@@ -4,21 +4,21 @@ export const autoformatPunctuation: AutoformatRule[] = [
   {
     mode: 'text',
     match: '--',
-    handler: '\u2014',
+    format: '\u2014',
   },
   {
     mode: 'text',
     match: '...',
-    handler: '…',
+    format: '…',
   },
   {
     mode: 'text',
     match: '>>',
-    handler: '»',
+    format: '»',
   },
   {
     mode: 'text',
     match: '<<',
-    handler: '«',
+    format: '«',
   },
 ];

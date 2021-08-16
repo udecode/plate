@@ -40,12 +40,14 @@ npm install @udecode/plate-autoformat
 }
 ```
 
-### Text Rules
+### Rules
 
 This package provides the following rules:
 
 | Name                           | Description                                                  |
 |:-------------------------------|:-------------------------------------------------------------|
+| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.                                        |
+|                                | Converts `'text'` to `‘text’`.                                        |
 | `autoformatPunctuation`        | Converts `--` to `—`.                                        |
 |                                | Converts `...` to `…`.                                       |
 |                                | Converts `>>` to `»`.                                        |
@@ -101,10 +103,10 @@ This package provides the following rules:
 |                                | `autoformatSuperscriptNumbers` rules                         |
 |                                | `autoformatSuperscriptSymbols` rules                           |
 
-
 ### Source code
 
 [packages/autoformat](https://github.com/udecode/plate/tree/main/packages/autoformat/src)
 
+### API
 
-
+[AutoformatRule](https://plate-api.udecode.io/interfaces/autoformatrule.html)

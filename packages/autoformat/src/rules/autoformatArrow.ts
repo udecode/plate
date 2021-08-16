@@ -4,21 +4,21 @@ export const autoformatArrow: AutoformatRule[] = [
   {
     mode: 'text',
     match: '->',
-    handler: '→',
+    format: '→',
   },
   {
     mode: 'text',
     match: '<-',
-    handler: '←',
+    format: '←',
   },
   {
     mode: 'text',
     match: '=>',
-    handler: '⇒',
+    format: '⇒',
   },
   {
     mode: 'text',
     match: ['<=', '≤='],
-    handler: '⇐',
+    format: '⇐',
   },
 ];

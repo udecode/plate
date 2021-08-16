@@ -1,13 +1,9 @@
-import {
-  getPointBefore,
-  getRangeBefore,
-  getText,
-  removeMark,
-} from '@udecode/plate-common';
+import { getPointBefore, getText, removeMark } from '@udecode/plate-common';
 import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Range, Transforms } from 'slate';
-import { AutoformatMarkRule } from '../types';
+import { Point, Range, Transforms } from 'slate';
+import { AutoformatMarkRule, MatchRange } from '../types';
+import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
 export interface AutoformatMarkOptions extends AutoformatMarkRule {
@@ -20,58 +16,30 @@ export const autoformatMark = (
 ) => {
   if (!type) return false;
 
+  const selection = editor.selection as Range;
   const matches = castArray(_match);
 
   for (const match of matches) {
-    const { end, start, triggers } = getMatchRange({
+    const { start, end, triggers } = getMatchRange({
       match,
       trigger,
     });
 
     if (!triggers.includes(text)) continue;
 
-    const selection = editor.selection as Range;
+    const matched = getMatchPoints(editor, { start, end });
+    if (!matched) continue;
 
-    let endMatchPointBefore = selection.anchor;
-    if (end) {
-      endMatchPointBefore = getPointBefore(editor, selection, {
-        matchString: end,
-      });
+    const {
+      afterStartMatchPoint,
+      beforeEndMatchPoint,
+      beforeStartMatchPoint,
+    } = matched;
 
-      if (!endMatchPointBefore) continue;
-    }
-
-    const startMatchPointAfter = getPointBefore(editor, endMatchPointBefore, {
-      matchString: start,
-      skipInvalid: true,
-      afterMatch: true,
-    });
-
-    if (!startMatchPointAfter) continue;
-
-    const startMatchPointBefore = getPointBefore(editor, endMatchPointBefore, {
-      matchString: start,
-      skipInvalid: true,
-    });
-
-    // Continue if there is no character before start match
-    const rangeBeforeStartMatch = getRangeBefore(editor, startMatchPointBefore);
-    if (rangeBeforeStartMatch) {
-      const textBeforeStartMatch = getText(editor, rangeBeforeStartMatch);
-      if (textBeforeStartMatch) {
-        const noWhiteSpaceRegex = new RegExp(`\\S+`);
-        if (textBeforeStartMatch.match(noWhiteSpaceRegex)) {
-          continue;
-        }
-      }
-    }
-
-    // found
-
-    const matchRange: Range = {
-      anchor: startMatchPointAfter,
-      focus: endMatchPointBefore,
-    };
+    const matchRange = {
+      anchor: afterStartMatchPoint,
+      focus: beforeEndMatchPoint,
+    } as Range;
 
     if (!ignoreTrim) {
       const matchText = getText(editor, matchRange);
@@ -82,7 +50,7 @@ export const autoformatMark = (
     if (end) {
       Transforms.delete(editor, {
         at: {
-          anchor: endMatchPointBefore,
+          anchor: beforeEndMatchPoint,
           focus: selection.anchor,
         },
       });
@@ -91,7 +59,7 @@ export const autoformatMark = (
     const marks = castArray(type);
 
     // add mark to the text between the matches
-    Transforms.select(editor, matchRange);
+    Transforms.select(editor, matchRange as Range);
     marks.forEach((mark) => {
       editor.addMark(mark, true);
     });
@@ -102,8 +70,8 @@ export const autoformatMark = (
 
     Transforms.delete(editor, {
       at: {
-        anchor: startMatchPointBefore,
-        focus: startMatchPointAfter,
+        anchor: beforeStartMatchPoint as Point,
+        focus: afterStartMatchPoint as Point,
       },
     });
 

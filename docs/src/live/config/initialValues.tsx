@@ -193,7 +193,7 @@ export const initialValueAutoformat: any = (
       The editor gives you full control over the logic you can add. For example,
       it's fairly common to want to add markdown-like shortcuts to editors.
     </hp>
-    <hp>While typing:</hp>
+    <hp>While typing, try these (mark rules):</hp>
     <hul>
       <hli>
         <hlic>
@@ -225,8 +225,17 @@ export const initialValueAutoformat: any = (
           on:*bold
         </hlic>
       </hli>
+      <hli>
+        <hlic>
+          We even support smart quotes, try typing{' '}
+          <htext code>"hello" 'world'</htext>.
+        </hlic>
+      </hli>
     </hul>
-    <hp>At the beginning of any new block or existing block, try these:</hp>
+    <hp>
+      At the beginning of any new block or existing block, try these (block
+      rules):
+    </hp>
     <hul>
       <hli>
         <hlic>

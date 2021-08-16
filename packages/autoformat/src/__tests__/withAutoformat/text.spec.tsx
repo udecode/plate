@@ -126,3 +126,36 @@ describe('when //', () => {
     expect(input.children).toEqual(output.children);
   });
 });
+
+describe('when using quotes', () => {
+  it('should autoformat to smart quotes', () => {
+    const input = (
+      <editor>
+        <hp>
+          "hello
+          <cursor /> .
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>“hello” .</hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat({
+      rules: [
+        {
+          mode: 'text',
+          match: '"',
+          format: ['“', '”'],
+        },
+      ],
+    })(withReact(input));
+
+    editor.insertText('"');
+
+    expect(input.children).toEqual(output.children);
+  });
+});

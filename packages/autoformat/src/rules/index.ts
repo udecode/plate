@@ -5,4 +5,5 @@
 export * from './autoformatArrow';
 export * from './autoformatLegal';
 export * from './autoformatPunctuation';
+export * from './autoformatSmartQuotes';
 export * from './math/index';

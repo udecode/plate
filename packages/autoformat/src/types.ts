@@ -1,4 +1,5 @@
 import { TEditor } from '@udecode/plate-core';
+import { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
 export interface MatchRange {
   start: string;
@@ -8,7 +9,8 @@ export interface MatchRange {
 export interface AutoformatCommonRule {
   /**
    * The rule applies when the trigger and the text just before the cursor matches.
-   * For `mode: 'block' | 'text'`: lookup for the end match(es) before the cursor.
+   * For `mode: 'block'`: lookup for the end match(es) before the cursor.
+   * For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
    * For `mode: 'mark'`: lookup for the start and end matches.
    * Note: `'_*'`, ['_*'] and `{ start: '_*', end: '*_' }` are equivalent.
    */
@@ -16,13 +18,13 @@ export interface AutoformatCommonRule {
 
   /**
    * Triggering character to autoformat.
-   * For `mode: 'text' | 'mark'`: default is the last character of `match` or `match.end`
-   * For `mode: 'block'`: default is ' ' (space)
+   * @default the last character of `match` or `match.end`
    */
   trigger?: string | string[];
 
   /**
    * If true, insert the triggering character after autoformatting.
+   * @default: false
    */
   insertTrigger?: boolean;
 
@@ -47,25 +49,25 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
   match: string | string[];
 
   /**
-   * For `mode: 'block'` and undefined `format`: set block type.
+   * For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
    * For `mode: 'mark'`: Mark(s) to add.
    */
   type?: string;
 
   /**
    * If true, the trigger should be at block start to allow autoformatting.
-   * @default true.
+   * @default true
    */
   triggerAtBlockStart?: boolean;
 
   /**
    * If true, allow to autoformat even if there is a block of the same type above the selected block.
-   * @default false.
+   * @default false
    */
   allowSameTypeAbove?: boolean;
 
   /**
-   * Function called before formatting.
+   * Function called just before `format`.
    * Generally used to reset the selected block.
    */
   preFormat?: (editor: TEditor) => void;
@@ -97,9 +99,14 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   match: string | string[];
 
   /**
-   * The matched text is replaced by that string.
+   * string: the matched text is replaced by that string.
+   * string[]: the matched texts are replaced by these strings.
+   * function: called when there is a match.
    */
-  handler: string;
+  format:
+    | string
+    | string[]
+    | ((editor: TEditor, options: GetMatchPointsReturnType) => void);
 }
 
 export type AutoformatRule =
