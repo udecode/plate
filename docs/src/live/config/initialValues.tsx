@@ -198,30 +198,31 @@ export const initialValueAutoformat: any = (
       <hli>
         <hlic>
           Type <htext code>**</htext> or <htext code>__</htext> on either side
-          of your text followed by <htext code>space</htext> to **bold**.
+          of your text to add **bold* mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
           Type <htext code>*</htext> or <htext code>_</htext> on either side of
-          your text followed by <htext code>space</htext> to *italicize*.
+          your text to add *italic mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>`</htext> on either side of your text followed by{' '}
-          <htext code>space</htext> to create `inline code`.
+          Type <htext code>`</htext> on either side of your text to add `inline
+          code mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>~~</htext> on either side of your text followed by{' '}
-          <htext code>space</htext> to ~~strikethrough~~.
+          Type <htext code>~~</htext> on either side of your text to add
+          ~~strikethrough~ mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>```</htext> to create a code block below.
+          Note that nothing happens when there is a character before, try
+          on:*bold
         </hlic>
       </hli>
     </hul>

@@ -30,7 +30,6 @@ export const format = (editor: TEditor, customFormatting: any) => {
 };
 
 export const formatList = (editor: TEditor, elementType: string) => {
-  console.log('formatList');
   format(editor, () =>
     toggleList(editor as SPEditor, {
       type: elementType,
