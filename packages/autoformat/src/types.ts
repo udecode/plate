@@ -1,9 +1,22 @@
 import { TEditor } from '@udecode/plate-core';
 
+export interface MatchRange {
+  start: string;
+  end: string;
+}
+
 export interface AutoformatCommonRule {
   /**
+   * The rule applies when the trigger and the text just before the cursor matches.
+   * For `mode: 'block' | 'text'`: lookup for the end match(es) before the cursor.
+   * For `mode: 'mark'`: lookup for the start and end matches.
+   * Note: `'_*'`, ['_*'] and `{ start: '_*', end: '*_' }` are equivalent.
+   */
+  match: string | string[] | MatchRange | MatchRange[];
+
+  /**
    * Triggering character to autoformat.
-   * For `mode: 'text' | 'mark'`: default is the last character of `markup` or `markup[1]`
+   * For `mode: 'text' | 'mark'`: default is the last character of `match` or `match.end`
    * For `mode: 'block'`: default is ' ' (space)
    */
   trigger?: string | string[];
@@ -26,25 +39,18 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
   /**
    * - text: insert text.
    * - block: set block type or custom format.
-   * - mark: insert mark(s) between markups.
+   * - mark: insert mark(s) between matches.
    * @default 'text'
    */
   mode: 'block';
+
+  match: string | string[];
 
   /**
    * For `mode: 'block'` and undefined `format`: set block type.
    * For `mode: 'mark'`: Mark(s) to add.
    */
   type?: string;
-
-  /**
-   * One or more markup that should exist before the triggering character to autoformat.
-   * For `mode: 'block' | 'text'`: lookup for the markup before the cursor.
-   * For `mode: 'mark'`: lookup for enclosing markups.
-   * Shortcut: defining a single string (start markup) will default the end markup to the reverse of the start markup:
-   * e.g. `markup: '_*'` is equivalent to `['_*', '*_']`
-   */
-  markup: string;
 
   /**
    * If true, the trigger should be at block start to allow autoformatting.
@@ -80,11 +86,6 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
   type: string | string[];
 
   /**
-   * Lookup for markups before the cursor.
-   */
-  markup: string | string[];
-
-  /**
    * If false, do not format when the string can be trimmed.
    */
   ignoreTrim?: boolean;
@@ -93,10 +94,7 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
 export interface AutoformatTextRule extends AutoformatCommonRule {
   mode: 'text';
 
-  /**
-   * Lookup for markup before the cursor.
-   */
-  markup: string;
+  match: string | string[];
 
   /**
    * The matched text is replaced by that string.

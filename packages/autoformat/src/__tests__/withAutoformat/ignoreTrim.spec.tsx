@@ -32,7 +32,7 @@ describe('when ignoreTrim is true', () => {
         {
           mode: 'mark',
           type: MARK_ITALIC,
-          markup: '*',
+          match: '*',
           ignoreTrim: true,
         },
       ],
@@ -45,7 +45,7 @@ describe('when ignoreTrim is true', () => {
 });
 
 describe('when ignoreTrim is false', () => {
-  describe('when the markup text is not trimmed', () => {
+  describe('when the match text is not trimmed', () => {
     it('should run default', () => {
       const input = (
         <editor>

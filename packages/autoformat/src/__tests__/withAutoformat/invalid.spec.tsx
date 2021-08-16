@@ -7,7 +7,7 @@ import { withAutoformat } from '../../createAutoformatPlugin';
 
 jsx;
 
-describe('when the start markup is not present and the end markup is present', () => {
+describe('when the start match is not present and the end match is present', () => {
   it('should run default', () => {
     const input = (
       <editor>
@@ -32,7 +32,7 @@ describe('when the start markup is not present and the end markup is present', (
   });
 });
 
-describe('when there is a character before markup', () => {
+describe('when there is a character before match', () => {
   it('should run default', () => {
     const input = (
       <editor>
@@ -58,7 +58,7 @@ describe('when there is a character before markup', () => {
   });
 });
 
-describe('when there is a character before markup', () => {
+describe('when there is a character before match', () => {
   it('should run default', () => {
     const input = (
       <editor>

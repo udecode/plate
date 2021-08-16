@@ -7,8 +7,8 @@ import { withAutoformat } from '../../createAutoformatPlugin';
 
 jsx;
 
-describe('when #space', () => {
-  it('should set block type to h1', () => {
+describe('when --space', () => {
+  it('should insert —', () => {
     const input = (
       <editor>
         <hp>
@@ -32,6 +32,96 @@ describe('when #space', () => {
     const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
     editor.insertText('-');
+
+    expect(input.children).toEqual(output.children);
+  });
+});
+
+describe('when (tm)', () => {
+  it('should insert &trade;', () => {
+    const input = (
+      <editor>
+        <hp>
+          (tm
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          ™
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+
+    editor.insertText(')');
+
+    expect(input.children).toEqual(output.children);
+  });
+});
+
+describe('when &sect', () => {
+  it('should insert §', () => {
+    const input = (
+      <editor>
+        <hp>
+          &sect
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          §
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+
+    editor.insertText(';');
+
+    expect(input.children).toEqual(output.children);
+  });
+});
+
+describe('when //', () => {
+  it('should insert ÷', () => {
+    const input = (
+      <editor>
+        <hp>
+          /
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          ÷
+          <cursor />
+          hello
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+
+    editor.insertText('/');
 
     expect(input.children).toEqual(output.children);
   });

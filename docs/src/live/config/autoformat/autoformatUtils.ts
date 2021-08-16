@@ -1,5 +1,5 @@
 import {
-  AutoformatRule,
+  AutoformatBlockRule,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   getParent,
@@ -11,7 +11,7 @@ import {
   unwrapList,
 } from '@udecode/plate';
 
-export const preFormat: AutoformatRule['preFormat'] = (editor) =>
+export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor as SPEditor);
 
 export const format = (editor: TEditor, customFormatting: any) => {
@@ -39,6 +39,5 @@ export const formatList = (editor: TEditor, elementType: string) => {
 };
 
 export const formatText = (editor: TEditor, text: string) => {
-  console.log('formatText');
   format(editor, () => editor.insertText(text));
 };

@@ -9,7 +9,7 @@ import { withAutoformat } from '../../createAutoformatPlugin';
 
 jsx;
 
-describe('when markup is an array', () => {
+describe('when match is an array', () => {
   it('should autoformat', () => {
     const input = (
       <editor>
@@ -35,7 +35,7 @@ describe('when markup is an array', () => {
         {
           mode: 'mark',
           type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-          markup: ['_***', '***_'],
+          match: ['_***', '***_'],
           ignoreTrim: true,
         },
       ],
@@ -47,7 +47,7 @@ describe('when markup is an array', () => {
   });
 });
 
-describe('when markup is a string', () => {
+describe('when match is a string', () => {
   it('should autoformat', () => {
     const input = (
       <editor>
@@ -73,7 +73,7 @@ describe('when markup is a string', () => {
         {
           mode: 'mark',
           type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-          markup: '_***',
+          match: '_***',
           ignoreTrim: true,
         },
       ],

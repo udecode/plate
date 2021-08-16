@@ -9,67 +9,66 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  getPlatePluginType,
   insertEmptyCodeBlock,
   SPEditor,
 } from '@udecode/plate';
-import { getPlatePluginType } from '@udecode/plate-core';
-import { preFormat } from '../autoformatUtils';
+import { preFormat } from './autoformatUtils';
 
 export const autoformatBlocks: AutoformatRule[] = [
   {
     mode: 'block',
     type: ELEMENT_H1,
-    markup: '#',
+    match: '# ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H2,
-    markup: '##',
+    match: '## ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H3,
-    markup: '###',
+    match: '### ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H4,
-    markup: '####',
+    match: '#### ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H5,
-    markup: '#####',
+    match: '##### ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H6,
-    markup: '######',
+    match: '###### ',
     preFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_BLOCKQUOTE,
-    markup: '>',
+    match: '> ',
     preFormat,
   },
   // nested blockquote
   // {
   //  mode: 'block',
   //  type: ELEMENT_BLOCKQUOTE,
-  //  markup: '> >',
+  //  match: '> >',
   //  preFormat,
   // },
   {
     mode: 'block',
     type: ELEMENT_CODE_BLOCK,
-    markup: '``',
-    trigger: '`',
+    match: '```',
     triggerAtBlockStart: false,
     preFormat,
     format: (editor) => {

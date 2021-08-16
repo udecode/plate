@@ -35,7 +35,7 @@ describe('when trigger is defined', () => {
         {
           mode: 'mark',
           type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-          markup: ['_***', '***'],
+          match: { start: '_***', end: '***' },
           trigger: '_',
           ignoreTrim: true,
         },

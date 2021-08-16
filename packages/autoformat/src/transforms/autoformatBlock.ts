@@ -10,6 +10,7 @@ import { TEditor, TElement } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Editor, Range, Transforms } from 'slate';
 import { AutoformatBlockRule } from '../types';
+import { getMatchRange } from '../utils/getMatchRange';
 
 export interface AutoformatBlockOptions extends AutoformatBlockRule {
   text: string;
@@ -20,7 +21,7 @@ export const autoformatBlock = (
   {
     text,
     trigger,
-    markup,
+    match: _match,
     type = ELEMENT_DEFAULT,
     allowSameTypeAbove = false,
     preFormat,
@@ -28,53 +29,62 @@ export const autoformatBlock = (
     triggerAtBlockStart = true,
   }: AutoformatBlockOptions
 ) => {
-  const triggers: string[] = trigger ? castArray(trigger) : [' '];
-  if (!triggers.includes(text)) return false;
+  const matches = castArray(_match as string | string[]);
 
-  const markups: string[] = castArray(markup);
-  let markupRange: Range | undefined;
-
-  if (triggerAtBlockStart) {
-    markupRange = getRangeFromBlockStart(editor) as Range;
-
-    // Don't autoformat if there is void nodes.
-    const hasVoidNode = someNode(editor, {
-      at: markupRange,
-      match: (n) => Editor.isVoid(editor, n),
+  for (const match of matches) {
+    const { end, triggers } = getMatchRange({
+      match: { start: '', end: match },
+      trigger,
     });
-    if (hasVoidNode) return false;
 
-    const textFromBlockStart = getText(editor, markupRange);
+    if (!triggers.includes(text)) continue;
 
-    if (!markups.includes(textFromBlockStart)) return false;
-  } else {
-    markupRange = getRangeBefore(editor, editor.selection as Range, {
-      matchString: markup,
-    });
-    if (!markupRange) return false;
+    let matchRange: Range | undefined;
+
+    if (triggerAtBlockStart) {
+      matchRange = getRangeFromBlockStart(editor) as Range;
+
+      // Don't autoformat if there is void nodes.
+      const hasVoidNode = someNode(editor, {
+        at: matchRange,
+        match: (n) => Editor.isVoid(editor, n),
+      });
+      if (hasVoidNode) continue;
+
+      const textFromBlockStart = getText(editor, matchRange);
+
+      if (end !== textFromBlockStart) continue;
+    } else {
+      matchRange = getRangeBefore(editor, editor.selection as Range, {
+        matchString: end,
+      });
+      if (!matchRange) continue;
+    }
+
+    if (!allowSameTypeAbove) {
+      // Don't autoformat if already in a block of the same type.
+      const isBelowSameBlockType = someNode(editor, { match: { type } });
+      if (isBelowSameBlockType) continue;
+    }
+
+    Transforms.delete(editor, { at: matchRange });
+
+    preFormat?.(editor);
+
+    if (!format) {
+      setNodes<TElement>(
+        editor,
+        { type },
+        {
+          match: (n) => Editor.isBlock(editor, n),
+        }
+      );
+    } else {
+      format(editor);
+    }
+
+    return true;
   }
 
-  if (!allowSameTypeAbove) {
-    // Don't autoformat if already in a block of the same type.
-    const isBelowSameBlockType = someNode(editor, { match: { type } });
-    if (isBelowSameBlockType) return false;
-  }
-
-  Transforms.delete(editor, { at: markupRange });
-
-  preFormat?.(editor);
-
-  if (!format) {
-    setNodes<TElement>(
-      editor,
-      { type },
-      {
-        match: (n) => Editor.isBlock(editor, n),
-      }
-    );
-  } else {
-    format(editor);
-  }
-
-  return true;
+  return false;
 };

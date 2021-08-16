@@ -40,7 +40,7 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
 // livescript
 // lua
 // makefile
-// markup
+// match
 // matlab
 // nix
 // objectivec

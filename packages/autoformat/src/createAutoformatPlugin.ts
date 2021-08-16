@@ -12,7 +12,7 @@ import {
 
 /**
  * Enables support for autoformatting actions.
- * Once a markup rule is validated, it does not check the following rules.
+ * Once a match rule is validated, it does not check the following rules.
  */
 export const withAutoformat = ({
   rules,
@@ -23,7 +23,7 @@ export const withAutoformat = ({
     if (!isCollapsed(editor.selection)) return insertText(text);
 
     for (const rule of rules) {
-      const { mode = 'text', markup, insertTrigger, query } = rule;
+      const { mode = 'text', match, insertTrigger, query } = rule;
 
       if (query && !query(editor, rule)) continue;
 
@@ -48,9 +48,7 @@ export const withAutoformat = ({
             text,
           })
         ) {
-          // console.log('yuupp', type);
           return insertTriggerText();
-          // return
         }
       }
 

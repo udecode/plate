@@ -4,9 +4,15 @@ title: Autoformat
 ---
 
 Allows you to apply formatting based on character sequences, such as automatically converting `# `
-into an H1.
+into an H1. This package also provides predefined rules.
 
-### `createAutoformatPlugin`
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-autoformat
+```
+
+### Usage
 
 ```ts live
 () => {
@@ -33,3 +39,72 @@ into an H1.
   );
 }
 ```
+
+### Text Rules
+
+This package provides the following rules:
+
+| Name                           | Description                                                  |
+|:-------------------------------|:-------------------------------------------------------------|
+| `autoformatPunctuation`        | Converts `--` to `—`.                                        |
+|                                | Converts `...` to `…`.                                       |
+|                                | Converts `>>` to `»`.                                        |
+|                                | Converts `<<` to `«`.                                        |
+| `autoformatArrow`              | Converts `->` to `→`.                                        |
+|                                | Converts `<-` to `←`.                                        |
+|                                | Converts `=>` to `⇒`.                                        |
+|                                | Converts `<=` and `≤=` to `⇐`.                               |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.                           |
+|                                | Converts `(r)` and `(R)` to `®`.                             |
+|                                | Converts `(c)` and `(C)` to `©`.                             |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.                                   |
+|                                | Converts `&reg;` to `®`.                                     |
+|                                | Converts `&copy;` to `©`.                                    |
+|                                | Converts `&sect;` to `§`.                                    |
+| `autoformatComparison`         | Converts `!>` to `!>`.                                       |
+|                                | Converts `!<` to `≮`.                                        |
+|                                | Converts `>=` to `≥`.                                        |
+|                                | Converts `<=` to `≤`.                                        |
+|                                | Converts `!>=` to `≱`.                                       |
+|                                | Converts `!<=` to `≰`.                                       |
+| `autoformatEquality`           | Converts `!=` to `≠`.                                        |
+|                                | Converts `==` to `≡`.                                        |
+|                                | Converts `!==` and `≠=` to `≢`.                              |
+|                                | Converts `~=` to `≈`.                                        |
+|                                | Converts `!~=` to `≉`.                                       |
+| `autoformatFraction`           | Converts `1/2` to `½`.                                       |
+|                                | Converts `1/3` to `⅓`.                                       |
+|                                | ...                                      |
+|                                | Converts `7/8` to `⅞`.                                       |
+| `autoformatDivision`           | Converts `//` to `÷`.                                        |
+| `autoformatOperation`          | Converts `+-` to `±`.                                        |
+|                                | Converts `%%` and `%%%` to `‰`.                              |
+|                                | `autoformatDivision` rules.                                  |
+| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                                        |
+|                                | Converts `~1` to `₁`.                                        |
+|                                | ...                                                          |
+|                                | Converts `~9` to `₉`.                                        |
+| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                                        |
+|                                | Converts `~-` to `₋`.                                        |
+| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                                        |
+|                                | Converts `^1` to `¹`.                                        |
+|                                | ...                                                          |
+|                                | Converts `^9` to `⁹`.                                        |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                                        |
+|                                | Converts `^-` to `⁺`.                                        |
+| `autoformatMath`               | `autoformatComparison` rules                                 |
+|                                | `autoformatEquality` rules                                   |
+|                                | `autoformatOperation` rules                                  |
+|                                | `autoformatFraction` rules                                   |
+|                                | `autoformatSubscriptSymbols` rules                         |
+|                                | `autoformatSubscriptSymbols` rules                           |
+|                                | `autoformatSuperscriptNumbers` rules                         |
+|                                | `autoformatSuperscriptSymbols` rules                           |
+
+
+### Source code
+
+[packages/autoformat](https://github.com/udecode/plate/tree/main/packages/autoformat/src)
+
+
+

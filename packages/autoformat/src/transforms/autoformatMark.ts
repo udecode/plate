@@ -8,6 +8,7 @@ import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Range, Transforms } from 'slate';
 import { AutoformatMarkRule } from '../types';
+import { getMatchRange } from '../utils/getMatchRange';
 
 export interface AutoformatMarkOptions extends AutoformatMarkRule {
   text: string;
@@ -15,99 +16,99 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
 
 export const autoformatMark = (
   editor: TEditor,
-  { type, text, trigger, markup, ignoreTrim }: AutoformatMarkOptions
+  { type, text, trigger, match: _match, ignoreTrim }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
 
-  const startMarkup = Array.isArray(markup) ? markup[0] : (markup as string);
-  const endMarkup = Array.isArray(markup)
-    ? markup[1]
-    : startMarkup.split('').reverse().join('');
+  const matches = castArray(_match);
 
-  const triggers: string[] = trigger
-    ? castArray(trigger)
-    : [endMarkup.slice(-1)];
-
-  if (!triggers.includes(text)) return false;
-
-  const selection = editor.selection as Range;
-
-  const endMarkupWithoutTrigger = trigger ? endMarkup : endMarkup.slice(0, -1);
-
-  let endMarkupPointBefore = selection.anchor;
-  if (endMarkupWithoutTrigger) {
-    endMarkupPointBefore = getPointBefore(editor, selection, {
-      matchString: endMarkupWithoutTrigger,
+  for (const match of matches) {
+    const { end, start, triggers } = getMatchRange({
+      match,
+      trigger,
     });
 
-    if (!endMarkupPointBefore) return false;
-  }
+    if (!triggers.includes(text)) continue;
 
-  const startMarkupPointAfter = getPointBefore(editor, endMarkupPointBefore, {
-    matchString: startMarkup,
-    skipInvalid: true,
-    afterMatch: true,
-  });
+    const selection = editor.selection as Range;
 
-  if (!startMarkupPointAfter) return false;
+    let endMatchPointBefore = selection.anchor;
+    if (end) {
+      endMatchPointBefore = getPointBefore(editor, selection, {
+        matchString: end,
+      });
 
-  const startMarkupPointBefore = getPointBefore(editor, endMarkupPointBefore, {
-    matchString: startMarkup,
-    skipInvalid: true,
-  });
+      if (!endMatchPointBefore) continue;
+    }
 
-  // Continue if there is no character before start markup
-  const rangeBeforeStartMarkup = getRangeBefore(editor, startMarkupPointBefore);
-  if (rangeBeforeStartMarkup) {
-    const textBeforeStartMarkup = getText(editor, rangeBeforeStartMarkup);
-    if (textBeforeStartMarkup) {
-      const noWhiteSpaceRegex = new RegExp(`\\S+`);
-      if (textBeforeStartMarkup.match(noWhiteSpaceRegex)) {
-        return false;
+    const startMatchPointAfter = getPointBefore(editor, endMatchPointBefore, {
+      matchString: start,
+      skipInvalid: true,
+      afterMatch: true,
+    });
+
+    if (!startMatchPointAfter) continue;
+
+    const startMatchPointBefore = getPointBefore(editor, endMatchPointBefore, {
+      matchString: start,
+      skipInvalid: true,
+    });
+
+    // Continue if there is no character before start match
+    const rangeBeforeStartMatch = getRangeBefore(editor, startMatchPointBefore);
+    if (rangeBeforeStartMatch) {
+      const textBeforeStartMatch = getText(editor, rangeBeforeStartMatch);
+      if (textBeforeStartMatch) {
+        const noWhiteSpaceRegex = new RegExp(`\\S+`);
+        if (textBeforeStartMatch.match(noWhiteSpaceRegex)) {
+          continue;
+        }
       }
     }
-  }
 
-  // found
+    // found
 
-  const markupRange: Range = {
-    anchor: startMarkupPointAfter,
-    focus: endMarkupPointBefore,
-  };
+    const matchRange: Range = {
+      anchor: startMatchPointAfter,
+      focus: endMatchPointBefore,
+    };
 
-  if (!ignoreTrim) {
-    const markupText = getText(editor, markupRange);
-    if (markupText.trim() !== markupText) return false;
-  }
+    if (!ignoreTrim) {
+      const matchText = getText(editor, matchRange);
+      if (matchText.trim() !== matchText) continue;
+    }
 
-  // delete end markup
-  if (endMarkupWithoutTrigger) {
+    // delete end match
+    if (end) {
+      Transforms.delete(editor, {
+        at: {
+          anchor: endMatchPointBefore,
+          focus: selection.anchor,
+        },
+      });
+    }
+
+    const marks = castArray(type);
+
+    // add mark to the text between the matches
+    Transforms.select(editor, matchRange);
+    marks.forEach((mark) => {
+      editor.addMark(mark, true);
+    });
+    Transforms.collapse(editor, { edge: 'end' });
+    marks.forEach((mark) => {
+      removeMark(editor, { key: mark, shouldChange: false });
+    });
+
     Transforms.delete(editor, {
       at: {
-        anchor: endMarkupPointBefore,
-        focus: selection.anchor,
+        anchor: startMatchPointBefore,
+        focus: startMatchPointAfter,
       },
     });
+
+    return true;
   }
 
-  const marks = castArray(type);
-
-  // add mark to the text between the markups
-  Transforms.select(editor, markupRange);
-  marks.forEach((mark) => {
-    editor.addMark(mark, true);
-  });
-  Transforms.collapse(editor, { edge: 'end' });
-  marks.forEach((mark) => {
-    removeMark(editor, { key: mark, shouldChange: false });
-  });
-
-  Transforms.delete(editor, {
-    at: {
-      anchor: startMarkupPointBefore,
-      focus: startMarkupPointAfter,
-    },
-  });
-
-  return true;
+  return false;
 };
