@@ -3,12 +3,7 @@ import { getPlatePluginWithOverrides, WithOverride } from '@udecode/plate-core';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
 import { autoformatText } from './transforms/autoformatText';
-import {
-  AutoformatBlockRule,
-  AutoformatMarkRule,
-  AutoformatTextRule,
-  WithAutoformatOptions,
-} from './types';
+import { WithAutoformatOptions } from './types';
 
 /**
  * Enables support for autoformatting actions.
@@ -23,44 +18,23 @@ export const withAutoformat = ({
     if (!isCollapsed(editor.selection)) return insertText(text);
 
     for (const rule of rules) {
-      const { mode = 'text', match, insertTrigger, query } = rule;
+      const { mode = 'text', insertTrigger, query } = rule;
 
       if (query && !query(editor, rule)) continue;
 
-      const insertTriggerText = () => insertTrigger && insertText(text);
+      const autoformatter: Record<typeof mode, Function> = {
+        block: autoformatBlock,
+        mark: autoformatMark,
+        text: autoformatText,
+      };
 
-      if (mode === 'block') {
-        // Start of the block
-        if (
-          autoformatBlock(editor, {
-            ...(rule as AutoformatBlockRule),
-            text,
-          })
-        ) {
-          return insertTriggerText();
-        }
-      }
-
-      if (mode === 'mark') {
-        if (
-          autoformatMark(editor, {
-            ...(rule as AutoformatMarkRule),
-            text,
-          })
-        ) {
-          return insertTriggerText();
-        }
-      }
-
-      if (mode === 'text') {
-        if (
-          autoformatText(editor, {
-            ...(rule as AutoformatTextRule),
-            text,
-          })
-        ) {
-          return insertTriggerText();
-        }
+      if (
+        autoformatter[mode]?.(editor, {
+          ...(rule as any),
+          text,
+        })
+      ) {
+        return insertTrigger && insertText(text);
       }
     }
 

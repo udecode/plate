@@ -1,4 +1,4 @@
-import { AutoformatRule } from '@udecode/plate';
+import { AutoformatRule } from '../types';
 
 export const autoformatArrow: AutoformatRule[] = [
   {
