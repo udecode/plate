@@ -1,6 +1,6 @@
 import { isFirstChild } from '@udecode/plate-common';
 import { SPEditor, TElement } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { Editor, NodeEntry } from 'slate';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
@@ -19,12 +19,12 @@ export const removeFirstListItem = (
 ) => {
   const [, listPath] = list;
   const [, listItemPath] = listItem;
+  Editor.withoutNormalizing(editor, () => {
+    if (!isListNested(editor, listPath) && !isFirstChild(listItemPath)) {
+      moveListItemUp(editor, { list, listItem });
 
-  if (!isListNested(editor, listPath) && !isFirstChild(listItemPath)) {
-    moveListItemUp(editor, { list, listItem });
-
-    return true;
-  }
-
+      return true;
+    }
+  });
   return false;
 };

@@ -46,14 +46,16 @@ export const insertListItem = (editor: SPEditor) => {
      * If start, insert a list item before
      */
     if (isStart) {
-      insertNodes<TElement>(
-        editor,
-        {
-          type: liType,
-          children: [{ type: licType, children: [{ text: '' }] }],
-        },
-        { at: listItemPath }
-      );
+      Editor.withoutNormalizing(editor, () => {
+        insertNodes<TElement>(
+          editor,
+          {
+            type: liType,
+            children: [{ type: licType, children: [{ text: '' }] }],
+          },
+          { at: listItemPath }
+        );
+      });
       return true;
     }
 

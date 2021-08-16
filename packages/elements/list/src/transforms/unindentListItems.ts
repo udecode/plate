@@ -1,6 +1,9 @@
 import { SPEditor } from '@udecode/plate-core';
+import { Editor } from 'slate';
 import { moveListItems } from './moveListItems';
 
 export const unindentListItems = (editor: SPEditor) => {
-  moveListItems(editor, false);
+  Editor.withoutNormalizing(editor, () => {
+    moveListItems(editor, false);
+  });
 };
