@@ -1,32 +1,45 @@
-import { getPointBefore, getText, removeMark } from '@udecode/plate-common';
+import {
+  getPointBefore,
+  getRangeBefore,
+  getText,
+  removeMark,
+} from '@udecode/plate-common';
 import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Range, Transforms } from 'slate';
-import { AutoformatRule } from '../types';
+import { AutoformatMarkRule } from '../types';
 
-export const autoformatInline = (
+export interface AutoformatMarkOptions extends AutoformatMarkRule {
+  text: string;
+}
+
+export const autoformatMark = (
   editor: TEditor,
-  {
-    type,
-    between,
-    markup,
-    ignoreTrim,
-  }: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
+  { type, text, trigger, markup, ignoreTrim }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
 
-  const marks: string[] = castArray(type);
+  const startMarkup = Array.isArray(markup) ? markup[0] : (markup as string);
+  const endMarkup = Array.isArray(markup)
+    ? markup[1]
+    : startMarkup.split('').reverse().join('');
+
+  const triggers: string[] = trigger
+    ? castArray(trigger)
+    : [endMarkup.slice(-1)];
+
+  if (!triggers.includes(text)) return false;
 
   const selection = editor.selection as Range;
 
-  const startMarkup = between ? between[0] : markup;
-  const endMarkup = between ? between[1] : '';
+  const endMarkupWithoutTrigger = trigger ? endMarkup : endMarkup.slice(0, -1);
 
   let endMarkupPointBefore = selection.anchor;
-  if (endMarkup) {
+  if (endMarkupWithoutTrigger) {
     endMarkupPointBefore = getPointBefore(editor, selection, {
-      matchString: endMarkup,
+      matchString: endMarkupWithoutTrigger,
     });
+
     if (!endMarkupPointBefore) return false;
   }
 
@@ -37,6 +50,23 @@ export const autoformatInline = (
   });
 
   if (!startMarkupPointAfter) return false;
+
+  const startMarkupPointBefore = getPointBefore(editor, endMarkupPointBefore, {
+    matchString: startMarkup,
+    skipInvalid: true,
+  });
+
+  // Continue if there is no character before start markup
+  const rangeBeforeStartMarkup = getRangeBefore(editor, startMarkupPointBefore);
+  if (rangeBeforeStartMarkup) {
+    const textBeforeStartMarkup = getText(editor, rangeBeforeStartMarkup);
+    if (textBeforeStartMarkup) {
+      const noWhiteSpaceRegex = new RegExp(`\\S+`);
+      if (textBeforeStartMarkup.match(noWhiteSpaceRegex)) {
+        return false;
+      }
+    }
+  }
 
   // found
 
@@ -51,10 +81,7 @@ export const autoformatInline = (
   }
 
   // delete end markup
-  if (endMarkup) {
-    endMarkupPointBefore = getPointBefore(editor, selection, {
-      matchString: endMarkup,
-    });
+  if (endMarkupWithoutTrigger) {
     Transforms.delete(editor, {
       at: {
         anchor: endMarkupPointBefore,
@@ -62,6 +89,8 @@ export const autoformatInline = (
       },
     });
   }
+
+  const marks = castArray(type);
 
   // add mark to the text between the markups
   Transforms.select(editor, markupRange);
@@ -73,11 +102,6 @@ export const autoformatInline = (
     removeMark(editor, { key: mark, shouldChange: false });
   });
 
-  // delete start markup
-  const startMarkupPointBefore = getPointBefore(editor, selection, {
-    matchString: startMarkup,
-    skipInvalid: true,
-  });
   Transforms.delete(editor, {
     at: {
       anchor: startMarkupPointBefore,

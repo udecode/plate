@@ -10,7 +10,7 @@ jsx;
 const input = (
   <editor>
     <hp>
-      *hello*
+      *hello
       <cursor />
     </hp>
   </editor>
@@ -19,7 +19,7 @@ const input = (
 const output = (
   <editor>
     <hp>
-      <htext italic>hello</htext>{' '}
+      <htext italic>hello</htext>
     </hp>
   </editor>
 ) as any;
@@ -27,7 +27,7 @@ const output = (
 it('should autoformat', () => {
   const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
-  editor.insertText(' ');
+  editor.insertText('*');
 
   expect(input.children).toEqual(output.children);
 });

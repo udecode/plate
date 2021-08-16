@@ -3,4 +3,5 @@
  */
 
 export * from './autoformatBlock';
-export * from './autoformatInline';
+export * from './autoformatMark';
+export * from './autoformatText';

@@ -17,47 +17,56 @@ import { preFormat } from '../autoformatUtils';
 
 export const autoformatBlocks: AutoformatRule[] = [
   {
+    mode: 'block',
     type: ELEMENT_H1,
     markup: '#',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_H2,
     markup: '##',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_H3,
     markup: '###',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_H4,
     markup: '####',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_H5,
     markup: '#####',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_H6,
     markup: '######',
     preFormat,
   },
   {
+    mode: 'block',
     type: ELEMENT_BLOCKQUOTE,
     markup: '>',
     preFormat,
   },
   // nested blockquote
   // {
+  //  mode: 'block',
   //  type: ELEMENT_BLOCKQUOTE,
   //  markup: '> >',
   //  preFormat,
   // },
   {
+    mode: 'block',
     type: ELEMENT_CODE_BLOCK,
     markup: '``',
     trigger: '`',

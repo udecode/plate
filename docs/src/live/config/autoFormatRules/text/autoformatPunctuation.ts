@@ -3,35 +3,20 @@ import { formatText } from '../autoformatUtils';
 
 export const autoformatPunctuation: AutoformatRule[] = [
   {
-    type: ELEMENT_DEFAULT,
-    mode: 'block',
-    markup: '-',
-    trigger: '-',
-    triggerAtBlockStart: false,
+    mode: 'text',
+    markup: '--',
     format: (editor) => formatText(editor, '\u2014'),
   },
   {
-    type: ELEMENT_DEFAULT,
-    mode: 'block',
-    markup: '..',
-    trigger: '.',
-    triggerAtBlockStart: false,
+    markup: '...',
     format: (editor) => formatText(editor, '…'),
   },
   {
-    type: ELEMENT_DEFAULT,
-    mode: 'block',
-    markup: '>',
-    trigger: '>',
-    triggerAtBlockStart: false,
+    markup: '>>',
     format: (editor) => formatText(editor, '»'),
   },
   {
-    type: ELEMENT_DEFAULT,
-    mode: 'block',
-    markup: '<',
-    trigger: '<',
-    triggerAtBlockStart: false,
+    markup: '<<',
     format: (editor) => formatText(editor, '«'),
   },
 ];

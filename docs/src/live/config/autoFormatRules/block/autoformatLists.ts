@@ -13,22 +13,26 @@ import { formatList, preFormat } from '../autoformatUtils';
 
 export const autoformatLists: AutoformatRule[] = [
   {
+    mode: 'block',
     type: ELEMENT_LI,
     markup: ['*', '-'],
     preFormat,
     format: (editor) => formatList(editor, ELEMENT_UL),
   },
   {
+    mode: 'block',
     type: ELEMENT_LI,
     markup: ['1.', '1)'],
     preFormat,
     format: (editor) => formatList(editor, ELEMENT_OL),
   },
   {
+    mode: 'block',
     type: ELEMENT_TODO_LI,
     markup: '[]',
   },
   {
+    mode: 'block',
     type: ELEMENT_TODO_LI,
     markup: '[x]',
     format: (editor) =>

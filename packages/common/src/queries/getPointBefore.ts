@@ -55,68 +55,80 @@ export const getPointBefore = (
     return Editor.before(editor, at, options);
   }
 
-  let beforeAt = at;
-  let previousBeforePoint = Editor.point(editor, at, { edge: 'end' });
-
-  const stackLength = (options.matchString?.length || 0) + 1;
-  const stack = Array(stackLength);
-
   const unitOffset = !options.unit || options.unit === 'offset';
 
-  let count = 0;
-  while (true) {
-    const beforePoint = Editor.before(editor, beforeAt, options);
+  const matchStrings: string[] = options.matchString
+    ? castArray(options.matchString)
+    : [''];
 
-    // not found
-    if (!beforePoint) return;
+  let point: any;
 
-    // different path
-    if (
-      !options.multiPaths &&
-      !Path.equals(beforePoint.path, previousBeforePoint.path)
-    ) {
-      return;
-    }
+  matchStrings.some((matchString) => {
+    let beforeAt = at;
+    let previousBeforePoint = Editor.point(editor, at, { edge: 'end' });
 
-    const beforeString = Editor.string(editor, {
-      anchor: beforePoint,
-      focus: previousBeforePoint,
-    });
+    const stackLength = matchString.length + 1;
+    const stack = Array(stackLength);
 
-    const matchString: string[] = castArray(options.matchString);
+    let count = 0;
 
-    let beforeStringToMatch = beforeString;
+    while (true) {
+      const beforePoint = Editor.before(editor, beforeAt, options);
 
-    if (unitOffset && stackLength) {
-      stack.unshift({
-        point: beforePoint,
-        text: beforeString,
-      });
-      stack.pop();
+      // not found
+      if (!beforePoint) return;
 
-      beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
-    }
-
-    if (
-      matchString.includes(beforeStringToMatch) ||
-      options.match?.({ beforeString: beforeStringToMatch, beforePoint, at })
-    ) {
-      if (options.afterMatch) {
-        if (stackLength && unitOffset) {
-          return stack[stack.length - 1]?.point;
-        }
-        return previousBeforePoint;
+      // different path
+      if (
+        !options.multiPaths &&
+        !Path.equals(beforePoint.path, previousBeforePoint.path)
+      ) {
+        return;
       }
-      return beforePoint;
+
+      const beforeString = Editor.string(editor, {
+        anchor: beforePoint,
+        focus: previousBeforePoint,
+      });
+
+      let beforeStringToMatch = beforeString;
+
+      if (unitOffset && stackLength) {
+        stack.unshift({
+          point: beforePoint,
+          text: beforeString,
+        });
+        stack.pop();
+
+        beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
+      }
+
+      if (
+        matchString === beforeStringToMatch ||
+        options.match?.({ beforeString: beforeStringToMatch, beforePoint, at })
+      ) {
+        if (options.afterMatch) {
+          if (stackLength && unitOffset) {
+            point = stack[stack.length - 1]?.point;
+            return !!point;
+          }
+          point = previousBeforePoint;
+          return true;
+        }
+        point = beforePoint;
+        return true;
+      }
+
+      previousBeforePoint = beforePoint;
+      beforeAt = beforePoint;
+
+      count += 1;
+
+      if (!options.skipInvalid) {
+        if (!matchString || count > matchString.length) return;
+      }
     }
+  });
 
-    previousBeforePoint = beforePoint;
-    beforeAt = beforePoint;
-
-    count += 1;
-
-    if (!options.skipInvalid) {
-      if (!matchString || count > matchString.length) return;
-    }
-  }
+  return point;
 };

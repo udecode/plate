@@ -1,26 +1,62 @@
 import { TEditor } from '@udecode/plate-core';
 
-export interface AutoformatRule {
+export interface AutoformatCommonRule {
   /**
-   * If `mode: 'block'` and `format` is not defined: set block type.
-   * If `mode: 'inline'`: add these types as marks.
-   */
-  type?: string | string[];
-
-  /**
-   * Triggering character to autoformat. Default is space.
+   * Triggering character to autoformat.
+   * For `mode: 'text' | 'mark'`: default is the last character of `markup` or `markup[1]`
+   * For `mode: 'block'`: default is ' ' (space)
    */
   trigger?: string | string[];
 
   /**
-   * One or more markup that should be before the triggering character to autoformat.
+   * If true, insert the triggering character after autoformatting.
    */
-  markup?: string | string[];
+  insertTrigger?: boolean;
 
   /**
-   * Lookup for a range between two strings before a location.
+   * Query to allow autoformat.
    */
-  between?: string[];
+  query?: (
+    editor: TEditor,
+    rule: Omit<AutoformatCommonRule, 'query'>
+  ) => boolean;
+}
+
+export interface AutoformatBlockRule extends AutoformatCommonRule {
+  /**
+   * - text: insert text.
+   * - block: set block type or custom format.
+   * - mark: insert mark(s) between markups.
+   * @default 'text'
+   */
+  mode: 'block';
+
+  /**
+   * For `mode: 'block'` and undefined `format`: set block type.
+   * For `mode: 'mark'`: Mark(s) to add.
+   */
+  type?: string;
+
+  /**
+   * One or more markup that should exist before the triggering character to autoformat.
+   * For `mode: 'block' | 'text'`: lookup for the markup before the cursor.
+   * For `mode: 'mark'`: lookup for enclosing markups.
+   * Shortcut: defining a single string (start markup) will default the end markup to the reverse of the start markup:
+   * e.g. `markup: '_*'` is equivalent to `['_*', '*_']`
+   */
+  markup: string;
+
+  /**
+   * If true, the trigger should be at block start to allow autoformatting.
+   * @default true.
+   */
+  triggerAtBlockStart?: boolean;
+
+  /**
+   * If true, allow to autoformat even if there is a block of the same type above the selected block.
+   * @default false.
+   */
+  allowSameTypeAbove?: boolean;
 
   /**
    * Function called before formatting.
@@ -33,42 +69,45 @@ export interface AutoformatRule {
    * @default setNodes(editor, { type }, { match: (n) => Editor.isBlock(editor, n) })
    */
   format?: (editor: TEditor) => void;
+}
+
+export interface AutoformatMarkRule extends AutoformatCommonRule {
+  mode: 'mark';
 
   /**
-   * - text (default) - insert text.
-   * - block – set/insert block. Should be used with `markup`.
-   * - mark – insert mark between markups. Should be used with `between`.
+   * Mark(s) to add.
    */
-  mode?: 'text' | 'block' | 'inline';
+  type: string | string[];
 
   /**
-   * When using `inline` mode – if false, do not format when the string can be trimmed.
+   * Lookup for markups before the cursor.
+   */
+  markup: string | string[];
+
+  /**
+   * If false, do not format when the string can be trimmed.
    */
   ignoreTrim?: boolean;
-
-  /**
-   * If true, insert the triggering character after autoformatting.
-   */
-  insertTrigger?: boolean;
-
-  /**
-   * If true, allow to autoformat even if there is a block of the same type above the selected block.
-   * Should be used with 'block' mode. Default is false.
-   */
-  allowSameTypeAbove?: boolean;
-
-  /**
-   * If true, the trigger should be at block start to allow autoformatting.
-   * Should be used with 'block' mode.
-   * Default is true.
-   */
-  triggerAtBlockStart?: boolean;
-
-  /**
-   * Query to allow autoformat.
-   */
-  query?: (editor: TEditor, rule: Omit<AutoformatRule, 'query'>) => boolean;
 }
+
+export interface AutoformatTextRule extends AutoformatCommonRule {
+  mode: 'text';
+
+  /**
+   * Lookup for markup before the cursor.
+   */
+  markup: string;
+
+  /**
+   * The matched text is replaced by that string.
+   */
+  handler: string
+}
+
+export type AutoformatRule =
+  | AutoformatBlockRule
+  | AutoformatMarkRule
+  | AutoformatTextRule;
 
 export interface WithAutoformatOptions {
   /**
