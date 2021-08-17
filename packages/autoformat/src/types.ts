@@ -12,7 +12,7 @@ export interface AutoformatCommonRule {
    * For `mode: 'block'`: lookup for the end match(es) before the cursor.
    * For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es).
    * For `mode: 'mark'`: lookup for the start and end matches.
-   * Note: `'_*'`, ['_*'] and `{ start: '_*', end: '*_' }` are equivalent.
+   * Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
    */
   match: string | string[] | MatchRange | MatchRange[];
 
