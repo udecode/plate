@@ -16,8 +16,13 @@ export const autoformatOperation: AutoformatRule[] = [
   },
   {
     mode: 'text',
-    match: ['%%', '%%%'],
+    match: '%%',
     format: '‰',
+  },
+  {
+    mode: 'text',
+    match: ['%%%', '‰%'],
+    format: '‱',
   },
   ...autoformatDivision,
 ];
