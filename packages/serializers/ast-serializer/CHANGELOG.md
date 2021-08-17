@@ -1,5 +1,19 @@
 # @udecode/plate-ast-serializer
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`ec4d5b7b`](https://github.com/udecode/plate/commit/ec4d5b7bd01b6fd21ba14a28f782c143d32c7532)]:
+  - @udecode/plate-common@2.0.0
+  - @udecode/plate-block-quote@2.0.0
+  - @udecode/plate-code-block@2.0.0
+  - @udecode/plate-heading@2.0.0
+  - @udecode/plate-link@2.0.0
+  - @udecode/plate-list@2.0.0
+  - @udecode/plate-paragraph@2.0.0
+  - @udecode/plate-serializer@2.0.0
+
 ## 1.1.8
 
 ### Patch Changes
