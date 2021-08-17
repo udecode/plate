@@ -9,28 +9,26 @@ jsx;
 
 const input = (
   <editor>
-    <hul>
-      <hli>
-        <hp>
-          #
-          <cursor />
-          hello
-        </hp>
-      </hli>
-    </hul>
+    <hp>
+      **hello
+      <cursor />
+    </hp>
   </editor>
 ) as any;
 
 const output = (
   <editor>
-    <hh1>hello</hh1>
+    <hp>
+      <htext bold>hello</htext>
+    </hp>
   </editor>
 ) as any;
 
 it('should autoformat', () => {
   const editor = withAutoformat(optionsAutoformat)(withReact(input));
 
-  editor.insertText(' ');
+  editor.insertText('*');
+  editor.insertText('*');
 
   expect(input.children).toEqual(output.children);
 });

@@ -193,39 +193,49 @@ export const initialValueAutoformat: any = (
       The editor gives you full control over the logic you can add. For example,
       it's fairly common to want to add markdown-like shortcuts to editors.
     </hp>
-    <hp>While typing:</hp>
+    <hp>While typing, try these (mark rules):</hp>
     <hul>
       <hli>
         <hlic>
           Type <htext code>**</htext> or <htext code>__</htext> on either side
-          of your text followed by <htext code>space</htext> to **bold**.
+          of your text to add **bold* mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
           Type <htext code>*</htext> or <htext code>_</htext> on either side of
-          your text followed by <htext code>space</htext> to *italicize*.
+          your text to add *italic mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>`</htext> on either side of your text followed by{' '}
-          <htext code>space</htext> to create `inline code`.
+          Type <htext code>`</htext> on either side of your text to add `inline
+          code mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>~~</htext> on either side of your text followed by{' '}
-          <htext code>space</htext> to ~~strikethrough~~.
+          Type <htext code>~~</htext> on either side of your text to add
+          ~~strikethrough~ mark.
         </hlic>
       </hli>
       <hli>
         <hlic>
-          Type <htext code>```</htext> to create a code block below.
+          Note that nothing happens when there is a character before, try
+          on:*bold
+        </hlic>
+      </hli>
+      <hli>
+        <hlic>
+          We even support smart quotes, try typing{' '}
+          <htext code>"hello" 'world'</htext>.
         </hlic>
       </hli>
     </hul>
-    <hp>At the beginning of any new block or existing block, try these:</hp>
+    <hp>
+      At the beginning of any new block or existing block, try these (block
+      rules):
+    </hp>
     <hul>
       <hli>
         <hlic>

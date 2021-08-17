@@ -9,10 +9,10 @@ import {
   SPEditor,
 } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
-import { optionsAutoformat } from '../../../../docs/src/live/config/autoformatRules';
 import { initialValuePlayground } from '../../../../docs/src/live/config/initialValues';
 import {
   editableProps,
+  optionsAutoformat,
   optionsExitBreakPlugin,
   optionsMentionPlugin,
   optionsResetBlockTypePlugin,

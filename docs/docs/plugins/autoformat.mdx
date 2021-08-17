@@ -4,148 +4,19 @@ title: Autoformat
 ---
 
 Allows you to apply formatting based on character sequences, such as automatically converting `# `
-into an H1.
+into an H1. This package also provides predefined rules.
 
-### `createAutoformatPlugin`
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-autoformat
+```
+
+### Usage
 
 ```ts live
 () => {
   const preFormat = (editor) => unwrapList(editor);
-
-  const optionsAutoformat = {
-    rules: [
-      {
-        type: ELEMENT_H1,
-        markup: '#',
-        preFormat,
-      },
-      {
-        type: ELEMENT_H2,
-        markup: '##',
-        preFormat,
-      },
-      {
-        type: ELEMENT_H3,
-        markup: '###',
-        preFormat,
-      },
-      {
-        type: ELEMENT_H4,
-        markup: '####',
-        preFormat,
-      },
-      {
-        type: ELEMENT_H5,
-        markup: '#####',
-        preFormat,
-      },
-      {
-        type: ELEMENT_H6,
-        markup: '######',
-        preFormat,
-      },
-      {
-        type: ELEMENT_LI,
-        markup: ['*', '-'],
-        preFormat,
-        format: (editor) => {
-          if (editor.selection) {
-            const parentEntry = getParent(editor, editor.selection);
-            if (!parentEntry) return;
-            const [node] = parentEntry;
-            if (
-              isElement(node) &&
-              !isType(editor, node, ELEMENT_CODE_BLOCK) &&
-              !isType(editor, node, ELEMENT_CODE_LINE)
-            ) {
-              toggleList(editor, {
-                type: ELEMENT_UL,
-              });
-            }
-          }
-        },
-      },
-      {
-        type: ELEMENT_LI,
-        markup: ['1.', '1)'],
-        preFormat,
-        format: (editor) => {
-          if (editor.selection) {
-            const parentEntry = getParent(editor, editor.selection);
-            if (!parentEntry) return;
-            const [node] = parentEntry;
-            if (
-              isElement(node) &&
-              !isType(editor, node, ELEMENT_CODE_BLOCK) &&
-              !isType(editor, node, ELEMENT_CODE_LINE)
-            ) {
-              toggleList(editor, {
-                type: ELEMENT_OL,
-              });
-            }
-          }
-        },
-      },
-      {
-        type: ELEMENT_TODO_LI,
-        markup: ['[]'],
-      },
-      {
-        type: ELEMENT_BLOCKQUOTE,
-        markup: ['>'],
-        preFormat,
-      },
-      {
-        type: MARK_BOLD,
-        between: ['**', '**'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: MARK_BOLD,
-        between: ['__', '__'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: MARK_ITALIC,
-        between: ['*', '*'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: MARK_ITALIC,
-        between: ['_', '_'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: MARK_CODE,
-        between: ['`', '`'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: MARK_STRIKETHROUGH,
-        between: ['~~', '~~'],
-        mode: 'inline',
-        insertTrigger: true,
-      },
-      {
-        type: ELEMENT_CODE_BLOCK,
-        markup: '``',
-        trigger: '`',
-        triggerAtBlockStart: false,
-        preFormat,
-        format: (editor) => {
-          insertEmptyCodeBlock(editor , {
-            defaultType: getPlatePluginType(editor , ELEMENT_DEFAULT),
-            insertNodesOptions: { select: true },
-          });
-        },
-      },
-    ],
-  };
 
   const plugins = [
     ...pluginsBasic,
@@ -168,3 +39,75 @@ into an H1.
   );
 }
 ```
+
+### Rules
+
+This package provides the following rules:
+
+| Name                           | Description                                                  |
+|:-------------------------------|:-------------------------------------------------------------|
+| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.                                        |
+|                                | Converts `'text'` to `‘text’`.                                        |
+| `autoformatPunctuation`        | Converts `--` to `—`.                                        |
+|                                | Converts `...` to `…`.                                       |
+|                                | Converts `>>` to `»`.                                        |
+|                                | Converts `<<` to `«`.                                        |
+| `autoformatArrow`              | Converts `->` to `→`.                                        |
+|                                | Converts `<-` to `←`.                                        |
+|                                | Converts `=>` to `⇒`.                                        |
+|                                | Converts `<=` and `≤=` to `⇐`.                               |
+| `autoformatLegal`              | Converts `(tm)` and `(TM)` to `™`.                           |
+|                                | Converts `(r)` and `(R)` to `®`.                             |
+|                                | Converts `(c)` and `(C)` to `©`.                             |
+| `autoformatLegalHtml`          | Converts `&trade;` to `™`.                                   |
+|                                | Converts `&reg;` to `®`.                                     |
+|                                | Converts `&copy;` to `©`.                                    |
+|                                | Converts `&sect;` to `§`.                                    |
+| `autoformatComparison`         | Converts `!>` to `!>`.                                       |
+|                                | Converts `!<` to `≮`.                                        |
+|                                | Converts `>=` to `≥`.                                        |
+|                                | Converts `<=` to `≤`.                                        |
+|                                | Converts `!>=` to `≱`.                                       |
+|                                | Converts `!<=` to `≰`.                                       |
+| `autoformatEquality`           | Converts `!=` to `≠`.                                        |
+|                                | Converts `==` to `≡`.                                        |
+|                                | Converts `!==` and `≠=` to `≢`.                              |
+|                                | Converts `~=` to `≈`.                                        |
+|                                | Converts `!~=` to `≉`.                                       |
+| `autoformatFraction`           | Converts `1/2` to `½`.                                       |
+|                                | Converts `1/3` to `⅓`.                                       |
+|                                | ...                                      |
+|                                | Converts `7/8` to `⅞`.                                       |
+| `autoformatDivision`           | Converts `//` to `÷`.                                        |
+| `autoformatOperation`          | Converts `+-` to `±`.                                        |
+|                                | Converts `%%` to `‰`.                              |
+|                                | Converts `%%%` and `‰%` to `‱.
+|                                | `autoformatDivision` rules.                                  |
+| `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                                        |
+|                                | Converts `~1` to `₁`.                                        |
+|                                | ...                                                          |
+|                                | Converts `~9` to `₉`.                                        |
+| `autoformatSubscriptSymbols`   | Converts `~+` to `₊`.                                        |
+|                                | Converts `~-` to `₋`.                                        |
+| `autoformatSuperscriptNumbers` | Converts `^0` to `⁰`.                                        |
+|                                | Converts `^1` to `¹`.                                        |
+|                                | ...                                                          |
+|                                | Converts `^9` to `⁹`.                                        |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                                        |
+|                                | Converts `^-` to `⁺`.                                        |
+| `autoformatMath`               | `autoformatComparison` rules                                 |
+|                                | `autoformatEquality` rules                                   |
+|                                | `autoformatOperation` rules                                  |
+|                                | `autoformatFraction` rules                                   |
+|                                | `autoformatSubscriptSymbols` rules                         |
+|                                | `autoformatSubscriptSymbols` rules                           |
+|                                | `autoformatSuperscriptNumbers` rules                         |
+|                                | `autoformatSuperscriptSymbols` rules                           |
+
+### Source code
+
+[packages/autoformat](https://github.com/udecode/plate/tree/main/packages/autoformat/src)
+
+### API
+
+[AutoformatRule](https://plate-api.udecode.io/interfaces/autoformatrule.html)

@@ -20,7 +20,7 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
-import { optionsAutoformat } from '../docs/src/live/config/autoformatRules';
+import { optionsAutoformat } from '../docs/src/live/config/autoformat';
 import { initialValuePlayground } from '../docs/src/live/config/initialValues';
 import {
   editableProps,

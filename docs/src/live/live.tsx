@@ -173,7 +173,6 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
-import { optionsAutoformat } from './config/autoformatRules';
 import {
   getHugeDocument,
   initialValueAutoformat,
@@ -209,6 +208,7 @@ import {
 } from './config/initialValues';
 import { MENTIONABLES } from './config/mentionables';
 import {
+  optionsAutoformat,
   optionsExitBreakPlugin,
   optionsMentionPlugin,
   optionsResetBlockTypePlugin,

@@ -12,7 +12,9 @@ import {
   MentionNodeData,
   ResetBlockTypePluginOptions,
   SoftBreakPluginOptions,
+  WithAutoformatOptions,
 } from '@udecode/plate';
+import { autoformatRules } from './autoformat/autoformatRules';
 import { MENTIONABLES } from './mentionables';
 
 export const options = createPlateOptions();
@@ -78,6 +80,10 @@ export const optionsExitBreakPlugin: ExitBreakPluginOptions = {
       },
     },
   ],
+};
+
+export const optionsAutoformat: WithAutoformatOptions = {
+  rules: autoformatRules,
 };
 
 export const editableProps = {

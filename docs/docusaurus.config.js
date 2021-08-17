@@ -318,7 +318,6 @@ module.exports = {
             __dirname,
             '../packages/serializers/ast-serializer/src'
           ),
-          '@udecode/plate': path.resolve(__dirname, '../packages/plate/src'),
           '@udecode/plate-autoformat': path.resolve(
             __dirname,
             '../packages/autoformat/src'
