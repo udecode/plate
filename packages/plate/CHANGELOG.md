@@ -1,5 +1,56 @@
 # @udecode/plate
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`e6ea7ac2`](https://github.com/udecode/plate/commit/e6ea7ac222c09568b8c012af85346dfa4bc50b07), [`ec4d5b7b`](https://github.com/udecode/plate/commit/ec4d5b7bd01b6fd21ba14a28f782c143d32c7532), [`2eb3bb7a`](https://github.com/udecode/plate/commit/2eb3bb7a740f48ae9b98668eb957a4c16bed3652)]:
+  - @udecode/plate-autoformat@2.0.0
+  - @udecode/plate-common@2.0.0
+  - @udecode/plate-break@2.0.0
+  - @udecode/plate-dnd@2.0.0
+  - @udecode/plate-alignment@2.0.0
+  - @udecode/plate-alignment-ui@2.0.0
+  - @udecode/plate-basic-elements@2.0.0
+  - @udecode/plate-block-quote@2.0.0
+  - @udecode/plate-block-quote-ui@2.0.0
+  - @udecode/plate-code-block@2.0.0
+  - @udecode/plate-code-block-ui@2.0.0
+  - @udecode/plate-heading@2.0.0
+  - @udecode/plate-image@2.0.0
+  - @udecode/plate-image-ui@2.0.0
+  - @udecode/plate-link@2.0.0
+  - @udecode/plate-link-ui@2.0.0
+  - @udecode/plate-list@2.0.0
+  - @udecode/plate-list-ui@2.0.0
+  - @udecode/plate-media-embed@2.0.0
+  - @udecode/plate-media-embed-ui@2.0.0
+  - @udecode/plate-mention@2.0.0
+  - @udecode/plate-mention-ui@2.0.0
+  - @udecode/plate-paragraph@2.0.0
+  - @udecode/plate-table@2.0.0
+  - @udecode/plate-table-ui@2.0.0
+  - @udecode/plate-find-replace@2.0.0
+  - @udecode/plate-find-replace-ui@2.0.0
+  - @udecode/plate-basic-marks@2.0.0
+  - @udecode/plate-font@2.0.0
+  - @udecode/plate-font-ui@2.0.0
+  - @udecode/plate-highlight@2.0.0
+  - @udecode/plate-kbd@2.0.0
+  - @udecode/plate-node-id@2.0.0
+  - @udecode/plate-normalizers@2.0.0
+  - @udecode/plate-placeholder@2.0.0
+  - @udecode/plate-reset-node@2.0.0
+  - @udecode/plate-select@2.0.0
+  - @udecode/plate-ast-serializer@2.0.0
+  - @udecode/plate-csv-serializer@2.0.0
+  - @udecode/plate-html-serializer@2.0.0
+  - @udecode/plate-md-serializer@2.0.0
+  - @udecode/plate-serializer@2.0.0
+  - @udecode/plate-trailing-block@2.0.0
+  - @udecode/plate-styled-components@2.0.0
+  - @udecode/plate-toolbar@2.0.0
+
 ## 1.1.8
 
 ### Patch Changes

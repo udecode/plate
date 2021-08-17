@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "1.1.6",
+  "version": "2.0.0",
   "description": "Basic elements plugin for Plate",
   "keywords": [
     "slate",
@@ -32,12 +32,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "1.1.6",
-    "@udecode/plate-code-block": "1.1.6",
-    "@udecode/plate-common": "1.1.6",
+    "@udecode/plate-block-quote": "2.0.0",
+    "@udecode/plate-code-block": "2.0.0",
+    "@udecode/plate-common": "2.0.0",
     "@udecode/plate-core": "1.0.0",
-    "@udecode/plate-heading": "1.1.6",
-    "@udecode/plate-paragraph": "1.1.6"
+    "@udecode/plate-heading": "2.0.0",
+    "@udecode/plate-paragraph": "2.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

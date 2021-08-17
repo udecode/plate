@@ -1,5 +1,12 @@
 # @udecode/plate-common
 
+## 2.0.0
+
+### Patch Changes
+
+- [#939](https://github.com/udecode/plate/pull/939) [`ec4d5b7b`](https://github.com/udecode/plate/commit/ec4d5b7bd01b6fd21ba14a28f782c143d32c7532) Thanks [@zbeyens](https://github.com/zbeyens)! - fix:
+  - `getPointBefore`: it's now doing a strict equality between the lookup text and `matchString` instead of `includes`
+
 ## 1.1.6
 
 ### Patch Changes

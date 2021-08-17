@@ -1,5 +1,48 @@
 # @udecode/plate-autoformat
 
+## 2.0.0
+
+### Major Changes
+
+- [#939](https://github.com/udecode/plate/pull/939) [`e6ea7ac2`](https://github.com/udecode/plate/commit/e6ea7ac222c09568b8c012af85346dfa4bc50b07) Thanks [@zbeyens](https://github.com/zbeyens)! - breaking changes:
+  - `autoformatBlock`:
+    - signatude changed from `(editor: TEditor, type: string, at: Location, options: Pick<AutoformatRule, 'preFormat' | 'format'>)` to `(editor: TEditor, options: AutoformatBlockOptions)`
+    - moved the checks from `withAutoformat`
+  - `autoformatInline`:
+    - renamed to `autoformatMark`
+    - signatured changed from `(editor: TEditor, options: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>)` to `AutoformatMarkOptions`
+  - `AutoformatRule` is now `AutoformatBlockRule | AutoformatMarkRule | AutoformatTextRule;`
+    - `mode: 'inline'` renamed to `mode: 'mark'`
+    - `markup` and `between` have been replaced by `match: string | string[] | MatchRange | MatchRange[]`: The rule applies when the trigger and the text just before the cursor matches. For `mode: 'block'`: lookup for the end match(es) before the cursor. For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es). For `mode: 'mark'`: lookup for the start and end matches. Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
+    - `trigger` now defaults to the last character of `match` or `match.end` (previously `' '`)
+  - the plugin now checks that there is no character before the start match to apply autoformatting. For example, nothing will happen by typing `a*text*`.
+
+### Minor Changes
+
+- [#939](https://github.com/udecode/plate/pull/939) [`2eb3bb7a`](https://github.com/udecode/plate/commit/2eb3bb7a740f48ae9b98668eb957a4c16bed3652) Thanks [@zbeyens](https://github.com/zbeyens)! - features:
+  - new rules:
+    - `autoformatArrow`, `autoformatLegal`, `autoformatLegalHtml`, `autoformatPunctuation`, `autoformatComparison`, `autoformatEquality`, `autoformatFraction`, `autoformatMath`, `autoformatDivision`, `autoformatOperation`, `autoformatSubscriptNumbers`, `autoformatSubscriptSymbols`, `autoformatSuperscriptNumbers`, `autoformatSuperscriptSymbols`
+  - types:
+    - `AutoformatMarkOptions`: options for `autoformatMark`
+    - `AutoformatTextOptions`: options for `autoformatText`
+    - `AutoformatBlockOptions`: options for `autoformatBlock`
+    - `AutoformatCommonRule`: rule fields for all modes
+    - `MatchRange`
+    - `GetMatchPointsReturnType`
+  - `mode: 'block'`, `autoformatBlock`:
+  - `mode: 'mark'`: `type` now accepts `string[]` to add multiple marks
+  - new `mode: 'text'` that can be used to replace `match` by any text using the `format` option
+    - `match: string | string[]`
+    - `format: string | string[] | ((editor: TEditor, options: GetMatchPointsReturnType) => void)` – `string`: the matched text is replaced by that string – `string[]`: the matched texts are replaced by these strings (e.g. smart quotes) – `function`: called when there is a match.
+  - `getMatchPoints`: used by `autoformatMark` and `autoformatText` to get the matching points
+  - `getMatchRange`: maps `match` and `trigger` option to start to match, end to match and triggers.
+  - `isPreviousCharacterEmpty`
+
+### Patch Changes
+
+- Updated dependencies [[`ec4d5b7b`](https://github.com/udecode/plate/commit/ec4d5b7bd01b6fd21ba14a28f782c143d32c7532)]:
+  - @udecode/plate-common@2.0.0
+
 ## 1.1.6
 
 ### Patch Changes
