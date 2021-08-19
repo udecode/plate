@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -50,7 +50,7 @@
     "@udecode/plate-code-block-ui": "2.0.0",
     "@udecode/plate-common": "2.0.0",
     "@udecode/plate-core": "1.0.0",
-    "@udecode/plate-csv-serializer": "2.0.0",
+    "@udecode/plate-csv-serializer": "2.0.1",
     "@udecode/plate-dnd": "2.0.0",
     "@udecode/plate-find-replace": "2.0.0",
     "@udecode/plate-find-replace-ui": "2.0.0",
@@ -79,8 +79,8 @@
     "@udecode/plate-select": "2.0.0",
     "@udecode/plate-serializer": "2.0.0",
     "@udecode/plate-styled-components": "2.0.0",
-    "@udecode/plate-table": "2.0.0",
-    "@udecode/plate-table-ui": "2.0.0",
+    "@udecode/plate-table": "2.0.1",
+    "@udecode/plate-table-ui": "2.0.1",
     "@udecode/plate-toolbar": "2.0.0",
     "@udecode/plate-trailing-block": "2.0.0"
   },

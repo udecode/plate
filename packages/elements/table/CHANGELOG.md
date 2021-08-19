@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 2.0.1
+
+### Patch Changes
+
+- [#948](https://github.com/udecode/plate/pull/948) [`099a86fa`](https://github.com/udecode/plate/commit/099a86faede3b3acf7da6842a78e4fab76815073) Thanks [@dylans](https://github.com/dylans)! - some table cell calls were missing th check
+
 ## 2.0.0
 
 ### Patch Changes

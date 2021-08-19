@@ -1,5 +1,12 @@
 # @udecode/plate-table-ui
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`099a86fa`](https://github.com/udecode/plate/commit/099a86faede3b3acf7da6842a78e4fab76815073)]:
+  - @udecode/plate-table@2.0.1
+
 ## 2.0.0
 
 ### Patch Changes
