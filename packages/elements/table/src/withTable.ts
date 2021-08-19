@@ -7,14 +7,14 @@ import {
   WithOverride,
 } from '@udecode/plate-core';
 import { Editor, Node, Point, Transforms } from 'slate';
-import { ELEMENT_TD } from './defaults';
+import { ELEMENT_TD, ELEMENT_TH } from './defaults';
 
 export const withTable = (): WithOverride<SPEditor> => (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&
       (node.type === getPlatePluginType(editor, ELEMENT_TD) ||
-        node.type === getPlatePluginType(editor, ELEMENT_TD))
+        node.type === getPlatePluginType(editor, ELEMENT_TH))
     );
   };
 

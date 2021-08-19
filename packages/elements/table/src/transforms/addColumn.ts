@@ -1,7 +1,7 @@
 import { getAbove, insertNodes, someNode } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_TABLE, ELEMENT_TD } from '../defaults';
+import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
@@ -15,7 +15,7 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
       match: {
         type: [
           getPlatePluginType(editor, ELEMENT_TD),
-          getPlatePluginType(editor, ELEMENT_TD),
+          getPlatePluginType(editor, ELEMENT_TH),
         ],
       },
     });
