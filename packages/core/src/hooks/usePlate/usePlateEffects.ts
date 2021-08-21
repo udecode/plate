@@ -49,12 +49,12 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
 
   useEffect(() => {
     setInitialState({
-      enabled: true,
+      enabled,
       plugins: [],
       pluginKeys: [],
       value: [],
     });
-  }, [id, setInitialState]);
+  }, [enabled, id, setInitialState]);
 
   // Slate.value
   useEffect(() => {
