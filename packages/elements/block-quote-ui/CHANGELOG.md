@@ -1,5 +1,18 @@
 # @udecode/plate-block-quote-ui
 
+## 3.0.0
+
+### Major Changes
+
+- [#955](https://github.com/udecode/plate/pull/955) [`348f7efb`](https://github.com/udecode/plate/commit/348f7efb9276735d8282652db1516b46c364b6ed) Thanks [@zbeyens](https://github.com/zbeyens)! - WHAT: moved `styled-components` from dependencies to peer dependencies.
+  WHY: there was multiple instances of `styled-components` across all the packages.
+  HOW: make sure to have `styled-components` in your dependencies.
+
+### Patch Changes
+
+- Updated dependencies [[`348f7efb`](https://github.com/udecode/plate/commit/348f7efb9276735d8282652db1516b46c364b6ed)]:
+  - @udecode/plate-styled-components@3.0.0
+
 ## 2.0.0
 
 ### Patch Changes
