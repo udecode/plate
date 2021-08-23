@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-find-replace-ui",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Find and replace UI for Plate",
   "keywords": [
     "slate",
@@ -35,8 +35,8 @@
     "@udecode/plate-common": "2.0.0",
     "@udecode/plate-core": "1.0.0",
     "@udecode/plate-find-replace": "2.0.0",
-    "@udecode/plate-styled-components": "2.0.0",
-    "@udecode/plate-toolbar": "2.0.0"
+    "@udecode/plate-styled-components": "3.0.0",
+    "@udecode/plate-toolbar": "3.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
