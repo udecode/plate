@@ -12,10 +12,10 @@ You can install all the packages bundled together:
 npm install @udecode/plate
 ```
 
-You will also need these peer dependencies (slate >= 0.60):
+You will also need these peer dependencies:
 
 ```bash npm2yarn
-npm install slate slate-react slate-history slate-hyperscript react react-dom
+npm install slate slate-react slate-history slate-hyperscript react react-dom styled-components
 ```
 
 Alternatively you can install only the packages you need:
