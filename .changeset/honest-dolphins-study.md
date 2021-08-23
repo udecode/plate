@@ -18,6 +18,6 @@
 '@udecode/plate-toolbar': major
 ---
 
-WHAT: moved styled-components from dependencies to peer dependencies.  
-WHY: there was multiple instances of styled-components across all the packages.  
+WHAT: moved `styled-components` from dependencies to peer dependencies.  
+WHY: there was multiple instances of `styled-components` across all the packages.  
 HOW: make sure to have `styled-components` in your dependencies.
