@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 3.0.1
+
+### Patch Changes
+
+- [#961](https://github.com/udecode/plate/pull/961) [`885a7799`](https://github.com/udecode/plate/commit/885a77995619c99293403b4a7ee0019eecf3dfd0) Thanks [@zbeyens](https://github.com/zbeyens)! - upgrade `styled-components` to 5.3.1
+
 ## 3.0.0
 
 ### Major Changes

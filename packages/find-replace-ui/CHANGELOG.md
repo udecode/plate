@@ -1,5 +1,13 @@
 # @udecode/plate-find-replace-ui
 
+## 3.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`885a7799`](https://github.com/udecode/plate/commit/885a77995619c99293403b4a7ee0019eecf3dfd0)]:
+  - @udecode/plate-styled-components@3.0.1
+  - @udecode/plate-toolbar@3.0.1
+
 ## 3.0.0
 
 ### Major Changes
