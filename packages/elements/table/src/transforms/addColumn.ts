@@ -14,8 +14,8 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
     const currentCellItem = getAbove(editor, {
       match: {
         type: [
-          getPlatePluginType(editor, ELEMENT_TD),
           getPlatePluginType(editor, ELEMENT_TH),
+          getPlatePluginType(editor, ELEMENT_TD),
         ],
       },
     });
