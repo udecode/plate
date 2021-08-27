@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 3.0.2
+
+### Patch Changes
+
+- [#965](https://github.com/udecode/plate/pull/965) [`83aaf31c`](https://github.com/udecode/plate/commit/83aaf31c02b24f388d1f178dcd4b80354ddab773) Thanks [@dylans](https://github.com/dylans)! - insertTable was only inserting header cells
+
 ## 2.0.1
 
 ### Patch Changes
