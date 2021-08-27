@@ -9,8 +9,8 @@ export const getEmptyCellNode = (
 ) => {
   return {
     type: header
-      ? getPlatePluginType(editor, ELEMENT_TD)
-      : getPlatePluginType(editor, ELEMENT_TH),
+      ? getPlatePluginType(editor, ELEMENT_TH)
+      : getPlatePluginType(editor, ELEMENT_TD),
     children: [
       {
         type: getPlatePluginType(editor, ELEMENT_DEFAULT),
