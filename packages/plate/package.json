@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -45,7 +45,7 @@
     "@udecode/plate-basic-marks": "2.0.0",
     "@udecode/plate-block-quote": "2.0.0",
     "@udecode/plate-block-quote-ui": "3.0.1",
-    "@udecode/plate-break": "2.0.0",
+    "@udecode/plate-break": "3.0.3",
     "@udecode/plate-code-block": "2.0.0",
     "@udecode/plate-code-block-ui": "3.0.1",
     "@udecode/plate-common": "2.0.0",
