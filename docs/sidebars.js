@@ -75,6 +75,7 @@ module.exports = {
             'plugins/exit-break',
             'plugins/reset-node',
             'plugins/soft-break',
+            'plugins/single-line',
             'plugins/forced-layout',
           ],
           collapsed: false,
