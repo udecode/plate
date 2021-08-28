@@ -1,5 +1,11 @@
 # @udecode/plate-break
 
+## 3.0.3
+
+### Patch Changes
+
+- [#969](https://github.com/udecode/plate/pull/969) [`0e5050ba`](https://github.com/udecode/plate/commit/0e5050ba0ca7862a535712a49c2eeb29c5337b5d) Thanks [@vimtor](https://github.com/vimtor)! - New plugin: single line editor where extra lines get removed instead of trying to merge them.
+
 ## 2.0.0
 
 ### Patch Changes

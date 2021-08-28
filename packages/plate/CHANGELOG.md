@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 3.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`0e5050ba`](https://github.com/udecode/plate/commit/0e5050ba0ca7862a535712a49c2eeb29c5337b5d)]:
+  - @udecode/plate-break@3.0.3
+
 ## 3.0.2
 
 ### Patch Changes
