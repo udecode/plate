@@ -1118,6 +1118,17 @@ export const initialValueSoftBreak: any = [
   },
 ];
 
+export const initialValueSingleLine: any = [
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      {
+        text: 'You cannot type or paste text with multiple lines',
+      },
+    ],
+  },
+];
+
 export const initialValueExitBreak: any = [
   {
     type: ELEMENT_H1,
