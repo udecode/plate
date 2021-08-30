@@ -28,9 +28,9 @@ export const withDeserializeMD = <
 
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
-
-    if (content) {
-      // if content is simply a URL, pass through to not break LinkPlugin
+    const { files } = data;
+    if (content && !files?.length) {
+      // if content is simply a URL pass through to not break LinkPlugin
       if (isUrl(content)) {
         return insertData(data);
       }
