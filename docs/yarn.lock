@@ -2005,14 +2005,14 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.5.tgz#fdd299f23205c3455af88ce618dd65c14cb73e22"
   integrity sha512-wnra4Vw9dopnuybR6HBywJ/URYpYrKLoepBTEtgfJup8Ahoi2zJECPP2cwiXp7btTvOT2CULv87aQRA4eZSP6g==
 
-"@udecode/plate-alignment-ui@2.0.0", "@udecode/plate-alignment-ui@file:../packages/elements/alignment-ui":
-  version "2.0.0"
+"@udecode/plate-alignment-ui@3.0.1", "@udecode/plate-alignment-ui@file:../packages/elements/alignment-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-alignment" "2.0.0"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-alignment@2.0.0", "@udecode/plate-alignment@file:../packages/elements/alignment":
   version "2.0.0"
@@ -2058,13 +2058,13 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-block-quote-ui@2.0.0", "@udecode/plate-block-quote-ui@file:../packages/elements/block-quote-ui":
-  version "2.0.0"
+"@udecode/plate-block-quote-ui@3.0.1", "@udecode/plate-block-quote-ui@file:../packages/elements/block-quote-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-block-quote" "2.0.0"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
 
 "@udecode/plate-block-quote@2.0.0", "@udecode/plate-block-quote@file:../packages/elements/block-quote":
   version "2.0.0"
@@ -2078,14 +2078,14 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-code-block-ui@2.0.0", "@udecode/plate-code-block-ui@file:../packages/elements/code-block-ui":
-  version "2.0.0"
+"@udecode/plate-code-block-ui@3.0.1", "@udecode/plate-code-block-ui@file:../packages/elements/code-block-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-code-block" "2.0.0"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-code-block@2.0.0", "@udecode/plate-code-block@file:../packages/elements/code-block":
   version "2.0.0"
@@ -2106,42 +2106,42 @@
     lodash "^4.17.21"
     zustand "^3.4.2"
 
-"@udecode/plate-csv-serializer@2.0.1", "@udecode/plate-csv-serializer@file:../packages/serializers/csv-serializer":
-  version "2.0.1"
+"@udecode/plate-csv-serializer@3.0.2", "@udecode/plate-csv-serializer@file:../packages/serializers/csv-serializer":
+  version "3.0.2"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-serializer" "2.0.0"
-    "@udecode/plate-table" "2.0.1"
+    "@udecode/plate-table" "3.0.2"
     papaparse "^5.3.1"
 
-"@udecode/plate-dnd@2.0.0", "@udecode/plate-dnd@file:../packages/dnd":
-  version "2.0.0"
+"@udecode/plate-dnd@3.0.1", "@udecode/plate-dnd@file:../packages/dnd":
+  version "3.0.1"
   dependencies:
     "@react-hook/merged-ref" "^1.3.0"
     "@tippyjs/react" "^4.2.0"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
     react-dnd "^14.0.2"
     react-dnd-html5-backend "^14.0.0"
 
 "@udecode/plate-excalidraw@file:../packages/elements/excalidraw":
-  version "2.0.0"
+  version "3.0.1"
   dependencies:
     "@excalidraw/excalidraw-next" "0.8.0-69b6fbb"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
 
-"@udecode/plate-find-replace-ui@2.0.0", "@udecode/plate-find-replace-ui@file:../packages/find-replace-ui":
-  version "2.0.0"
+"@udecode/plate-find-replace-ui@3.0.1", "@udecode/plate-find-replace-ui@file:../packages/find-replace-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-find-replace" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-find-replace@2.0.0", "@udecode/plate-find-replace@file:../packages/find-replace":
   version "2.0.0"
@@ -2149,14 +2149,14 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-font-ui@2.0.0", "@udecode/plate-font-ui@file:../packages/marks/font-ui":
-  version "2.0.0"
+"@udecode/plate-font-ui@3.0.1", "@udecode/plate-font-ui@file:../packages/marks/font-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-font" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-font@2.0.0", "@udecode/plate-font@file:../packages/marks/font":
   version "2.0.0"
@@ -2183,14 +2183,14 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-serializer" "2.0.0"
 
-"@udecode/plate-image-ui@2.0.0", "@udecode/plate-image-ui@file:../packages/elements/image-ui":
-  version "2.0.0"
+"@udecode/plate-image-ui@3.0.1", "@udecode/plate-image-ui@file:../packages/elements/image-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-image" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-image@2.0.0", "@udecode/plate-image@file:../packages/elements/image":
   version "2.0.0"
@@ -2204,14 +2204,14 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-link-ui@2.0.0", "@udecode/plate-link-ui@file:../packages/elements/link-ui":
-  version "2.0.0"
+"@udecode/plate-link-ui@3.0.1", "@udecode/plate-link-ui@file:../packages/elements/link-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-link" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-link@2.0.0", "@udecode/plate-link@file:../packages/elements/link":
   version "2.0.0"
@@ -2220,14 +2220,14 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-normalizers" "2.0.0"
 
-"@udecode/plate-list-ui@2.0.0", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
-  version "2.0.0"
+"@udecode/plate-list-ui@3.0.1", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-list" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-toolbar" "3.0.1"
 
 "@udecode/plate-list@2.0.0", "@udecode/plate-list@file:../packages/elements/list":
   version "2.0.0"
@@ -2252,13 +2252,13 @@
     remark-slate "^1.4.0"
     unified "^9.2.0"
 
-"@udecode/plate-media-embed-ui@2.0.0", "@udecode/plate-media-embed-ui@file:../packages/elements/media-embed-ui":
-  version "2.0.0"
+"@udecode/plate-media-embed-ui@3.0.1", "@udecode/plate-media-embed-ui@file:../packages/elements/media-embed-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-media-embed" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
 
 "@udecode/plate-media-embed@2.0.0", "@udecode/plate-media-embed@file:../packages/elements/media-embed":
   version "2.0.0"
@@ -2266,13 +2266,13 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-mention-ui@2.0.0", "@udecode/plate-mention-ui@file:../packages/elements/mention-ui":
-  version "2.0.0"
+"@udecode/plate-mention-ui@3.0.1", "@udecode/plate-mention-ui@file:../packages/elements/mention-ui":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-mention" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
 
 "@udecode/plate-mention@2.0.0", "@udecode/plate-mention@file:../packages/elements/mention":
   version "2.0.0"
@@ -2298,12 +2298,12 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-placeholder@2.0.0", "@udecode/plate-placeholder@file:../packages/placeholder":
-  version "2.0.0"
+"@udecode/plate-placeholder@3.0.1", "@udecode/plate-placeholder@file:../packages/placeholder":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
 
 "@udecode/plate-reset-node@2.0.0", "@udecode/plate-reset-node@file:../packages/reset-node":
   version "2.0.0"
@@ -2323,24 +2323,24 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-styled-components@2.0.0", "@udecode/plate-styled-components@file:../packages/ui/styled-components":
-  version "2.0.0"
+"@udecode/plate-styled-components@3.0.1", "@udecode/plate-styled-components@file:../packages/ui/styled-components":
+  version "3.0.1"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     clsx "^1.1.1"
 
-"@udecode/plate-table-ui@2.0.1", "@udecode/plate-table-ui@file:../packages/elements/table-ui":
-  version "2.0.1"
+"@udecode/plate-table-ui@3.0.2", "@udecode/plate-table-ui@file:../packages/elements/table-ui":
+  version "3.0.2"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-table" "2.0.1"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-table" "3.0.2"
+    "@udecode/plate-toolbar" "3.0.1"
 
-"@udecode/plate-table@2.0.1", "@udecode/plate-table@file:../packages/elements/table":
-  version "2.0.1"
+"@udecode/plate-table@3.0.2", "@udecode/plate-table@file:../packages/elements/table":
+  version "3.0.2"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
@@ -2348,13 +2348,13 @@
 "@udecode/plate-test-utils@file:../packages/test-utils":
   version "1.0.0"
 
-"@udecode/plate-toolbar@2.0.0", "@udecode/plate-toolbar@file:../packages/ui/toolbar":
-  version "2.0.0"
+"@udecode/plate-toolbar@3.0.1", "@udecode/plate-toolbar@file:../packages/ui/toolbar":
+  version "3.0.1"
   dependencies:
     "@tippyjs/react" "^4.2.0"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
     react-use "^17.1.1"
 
 "@udecode/plate-trailing-block@2.0.0", "@udecode/plate-trailing-block@file:../packages/trailing-block":
@@ -2364,53 +2364,53 @@
     "@udecode/plate-core" "1.0.0"
 
 "@udecode/plate@file:../packages/plate":
-  version "2.0.1"
+  version "3.0.2"
   dependencies:
     "@udecode/plate-alignment" "2.0.0"
-    "@udecode/plate-alignment-ui" "2.0.0"
+    "@udecode/plate-alignment-ui" "3.0.1"
     "@udecode/plate-ast-serializer" "2.0.0"
     "@udecode/plate-autoformat" "2.0.0"
     "@udecode/plate-basic-elements" "2.0.0"
     "@udecode/plate-basic-marks" "2.0.0"
     "@udecode/plate-block-quote" "2.0.0"
-    "@udecode/plate-block-quote-ui" "2.0.0"
+    "@udecode/plate-block-quote-ui" "3.0.1"
     "@udecode/plate-break" "2.0.0"
     "@udecode/plate-code-block" "2.0.0"
-    "@udecode/plate-code-block-ui" "2.0.0"
+    "@udecode/plate-code-block-ui" "3.0.1"
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-csv-serializer" "2.0.1"
-    "@udecode/plate-dnd" "2.0.0"
+    "@udecode/plate-csv-serializer" "3.0.2"
+    "@udecode/plate-dnd" "3.0.1"
     "@udecode/plate-find-replace" "2.0.0"
-    "@udecode/plate-find-replace-ui" "2.0.0"
+    "@udecode/plate-find-replace-ui" "3.0.1"
     "@udecode/plate-font" "2.0.0"
-    "@udecode/plate-font-ui" "2.0.0"
+    "@udecode/plate-font-ui" "3.0.1"
     "@udecode/plate-heading" "2.0.0"
     "@udecode/plate-highlight" "2.0.0"
     "@udecode/plate-html-serializer" "2.0.0"
     "@udecode/plate-image" "2.0.0"
-    "@udecode/plate-image-ui" "2.0.0"
+    "@udecode/plate-image-ui" "3.0.1"
     "@udecode/plate-kbd" "2.0.0"
     "@udecode/plate-link" "2.0.0"
-    "@udecode/plate-link-ui" "2.0.0"
+    "@udecode/plate-link-ui" "3.0.1"
     "@udecode/plate-list" "2.0.0"
-    "@udecode/plate-list-ui" "2.0.0"
+    "@udecode/plate-list-ui" "3.0.1"
     "@udecode/plate-md-serializer" "2.0.0"
     "@udecode/plate-media-embed" "2.0.0"
-    "@udecode/plate-media-embed-ui" "2.0.0"
+    "@udecode/plate-media-embed-ui" "3.0.1"
     "@udecode/plate-mention" "2.0.0"
-    "@udecode/plate-mention-ui" "2.0.0"
+    "@udecode/plate-mention-ui" "3.0.1"
     "@udecode/plate-node-id" "2.0.0"
     "@udecode/plate-normalizers" "2.0.0"
     "@udecode/plate-paragraph" "2.0.0"
-    "@udecode/plate-placeholder" "2.0.0"
+    "@udecode/plate-placeholder" "3.0.1"
     "@udecode/plate-reset-node" "2.0.0"
     "@udecode/plate-select" "2.0.0"
     "@udecode/plate-serializer" "2.0.0"
-    "@udecode/plate-styled-components" "2.0.0"
-    "@udecode/plate-table" "2.0.1"
-    "@udecode/plate-table-ui" "2.0.1"
-    "@udecode/plate-toolbar" "2.0.0"
+    "@udecode/plate-styled-components" "3.0.1"
+    "@udecode/plate-table" "3.0.2"
+    "@udecode/plate-table-ui" "3.0.2"
+    "@udecode/plate-toolbar" "3.0.1"
     "@udecode/plate-trailing-block" "2.0.0"
 
 "@webassemblyjs/ast@1.11.0":
