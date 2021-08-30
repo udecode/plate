@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 3.0.5
+
+### Patch Changes
+
+- [#974](https://github.com/udecode/plate/pull/974) [`7cffccb2`](https://github.com/udecode/plate/commit/7cffccb29aa1a1ab00e29b12c48c486b67d3c873) Thanks [@dylans](https://github.com/dylans)! - markdown deserializer was favoring URL over files when pasting content
+
 ## 3.0.4
 
 ### Patch Changes

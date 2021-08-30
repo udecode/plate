@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 3.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`7cffccb2`](https://github.com/udecode/plate/commit/7cffccb29aa1a1ab00e29b12c48c486b67d3c873)]:
+  - @udecode/plate-md-serializer@3.0.5
+
 ## 3.0.4
 
 ### Patch Changes
