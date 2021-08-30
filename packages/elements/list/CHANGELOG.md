@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 3.0.4
+
+### Patch Changes
+
+- [#971](https://github.com/udecode/plate/pull/971) [`46398095`](https://github.com/udecode/plate/commit/4639809567e4c96d58912c2a16e74948474d4547) Thanks [@vimtor](https://github.com/vimtor)! - List plugin was preventing all tab key strokes without checking if a list item was being selected. Fix: Don't prevent tab if list is not selected.
+
 ## 2.0.0
 
 ### Patch Changes

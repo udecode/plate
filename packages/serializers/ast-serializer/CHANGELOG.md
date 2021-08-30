@@ -1,5 +1,12 @@
 # @udecode/plate-ast-serializer
 
+## 3.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`46398095`](https://github.com/udecode/plate/commit/4639809567e4c96d58912c2a16e74948474d4547)]:
+  - @udecode/plate-list@3.0.4
+
 ## 2.0.0
 
 ### Patch Changes
