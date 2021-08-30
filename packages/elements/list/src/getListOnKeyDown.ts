@@ -1,3 +1,4 @@
+import { getAbove } from '@udecode/plate-common';
 import {
   getPlatePluginTypes,
   KeyboardHandler,
@@ -5,20 +6,25 @@ import {
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
-import { moveListItems } from './transforms/moveListItems';
-import { toggleList } from './transforms/toggleList';
 import { ELEMENT_OL, ELEMENT_UL } from './defaults';
+import { moveListItems, toggleList } from './transforms';
 
 export const getListOnKeyDown = (
   pluginKeys?: string | string[]
 ): KeyboardHandler => (editor) => (e) => {
   const listTypes = getPlatePluginTypes([ELEMENT_UL, ELEMENT_OL])(editor);
 
-  if (e.key === 'Tab') {
-    e.preventDefault();
+  if (e.key === 'Tab' && editor.selection) {
+    const listSelected = getAbove(editor, {
+      at: editor.selection,
+      match: { type: listTypes },
+    });
 
-    moveListItems(editor, !e.shiftKey);
-    return;
+    if (listSelected) {
+      e.preventDefault();
+      moveListItems(editor, !e.shiftKey);
+      return;
+    }
   }
 
   const options = pluginKeys
