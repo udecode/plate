@@ -1,16 +1,30 @@
 import * as React from 'react';
-import { useFocused, useSelected } from 'slate-react';
+import { setNodes } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-core';
+import { Resizable } from 're-resizable';
+import { ReactEditor, useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
+
+const { useCallback } = React;
 
 export const ImageElement = (props: ImageElementProps) => {
   const { attributes, children, element, nodeProps } = props;
 
-  const { url } = element;
+  const { url, width } = element;
   const focused = useFocused();
   const selected = useSelected();
+  const editor = useEditorRef();
 
   const styles = getImageElementStyles({ ...props, focused, selected });
+
+  const onChangeImgWidth = useCallback(
+    (_width: number) => {
+      const path = ReactEditor.findPath(editor, element);
+      setNodes(editor, { width: _width }, { at: path });
+    },
+    [editor, element]
+  );
 
   return (
     <div
@@ -19,14 +33,22 @@ export const ImageElement = (props: ImageElementProps) => {
       className={styles.root.className}
     >
       <div contentEditable={false}>
-        <img
-          data-testid="ImageElementImage"
-          css={styles.img?.css}
-          className={styles.img?.className}
-          src={url}
-          alt=""
-          {...nodeProps}
-        />
+        <Resizable
+          maxWidth="100%"
+          defaultSize={{ width, height: '100%' }}
+          resizeRatio={1.5}
+          lockAspectRatio
+          onResizeStop={(e, e1, e2, e3) => onChangeImgWidth(e2.offsetWidth)}
+        >
+          <img
+            data-testid="ImageElementImage"
+            css={styles.img?.css}
+            className={styles.img?.className}
+            src={url}
+            alt=""
+            {...nodeProps}
+          />
+        </Resizable>
       </div>
       {children}
     </div>

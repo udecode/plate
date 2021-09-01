@@ -12,5 +12,6 @@ export const getImageElementStyles = (props: ImageElementStyleProps) =>
         tw`maxHeight[20em]`,
         props.focused && props.selected && tw`boxShadow[0 0 0 3px #B4D5FF]`,
       ],
+      resizeWrapper: [tw`mx-auto`],
     }
   );
