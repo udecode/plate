@@ -561,10 +561,11 @@ export const initialValueFont = [
     type: ELEMENT_PARAGRAPH,
     children: [
       {
-        text: 'This text has white color and black background.',
+        text:
+          'This text has white color, black background and a custom font size.',
         [MARK_COLOR]: 'white',
         [MARK_BG_COLOR]: 'black',
-        [MARK_FONT_SIZE]: '3rem',
+        [MARK_FONT_SIZE]: '30px',
       },
     ],
   },
@@ -575,7 +576,6 @@ export const initialValueFont = [
         text: 'This text has a custom color used for text and background.',
         [MARK_COLOR]: 'grey',
         [MARK_BG_COLOR]: 'green',
-        [MARK_FONT_SIZE]: '3rem',
       },
     ],
   },
