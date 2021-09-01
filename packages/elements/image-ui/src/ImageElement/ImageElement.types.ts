@@ -1,5 +1,6 @@
 import { ImageNodeData } from '@udecode/plate-image';
 import { StyledElementProps } from '@udecode/plate-styled-components';
+import { ResizableProps } from 're-resizable';
 import { CSSProp } from 'styled-components';
 
 export interface ImageElementStyleProps extends ImageElementProps {
@@ -8,10 +9,16 @@ export interface ImageElementStyleProps extends ImageElementProps {
 }
 
 export interface ImageElementStyles {
+  figure: CSSProp;
   img: CSSProp;
   resizeWrapper: CSSProp;
   captionInput: CSSProp;
+  handle: CSSProp;
 }
 
 export interface ImageElementProps
-  extends StyledElementProps<ImageNodeData, ImageElementStyles> {}
+  extends StyledElementProps<ImageNodeData, ImageElementStyles> {
+  disableCaption?: boolean;
+  captionPlaceholder?: string;
+  resizableProps?: ResizableProps;
+}

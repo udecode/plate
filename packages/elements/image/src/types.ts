@@ -1,7 +1,7 @@
 export interface ImageNodeData {
   url: string;
   width?: number;
-  caption?: { text: string };
+  caption?: string;
 }
 
 export interface WithImageUploadOptions {
