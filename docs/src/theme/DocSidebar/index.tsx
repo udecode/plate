@@ -23,8 +23,6 @@ import clsx from 'clsx';
 import { CarbonAds } from '../../components/Home/CarbonAds';
 import styles from './styles.module.css';
 
-console.log(process.env.NODE_ENV);
-
 const MOBILE_TOGGLE_SIZE = 24;
 
 function usePrevious(value) {
