@@ -11,7 +11,7 @@ const { useCallback } = React;
 export const ImageElement = (props: ImageElementProps) => {
   const { attributes, children, element, nodeProps } = props;
 
-  const { url, width } = element;
+  const { url, width, caption = { text: '' } } = element;
   const focused = useFocused();
   const selected = useSelected();
   const editor = useEditorRef();
@@ -25,6 +25,17 @@ export const ImageElement = (props: ImageElementProps) => {
     },
     [editor, element]
   );
+
+  const handleChangeCaption: React.ChangeEventHandler<HTMLInputElement> = (
+    e
+  ) => {
+    const path = ReactEditor.findPath(editor, element);
+    setNodes(
+      editor,
+      { caption: { ...caption, text: e.target.value } },
+      { at: path }
+    );
+  };
 
   return (
     <div
@@ -49,6 +60,12 @@ export const ImageElement = (props: ImageElementProps) => {
             {...nodeProps}
           />
         </Resizable>
+        <input
+          value={caption.text}
+          onChange={handleChangeCaption}
+          css={styles.captionInput?.css}
+          placeholder="Write a caption"
+        />
       </div>
       {children}
     </div>

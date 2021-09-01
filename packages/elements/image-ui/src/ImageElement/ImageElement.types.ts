@@ -10,6 +10,7 @@ export interface ImageElementStyleProps extends ImageElementProps {
 export interface ImageElementStyles {
   img: CSSProp;
   resizeWrapper: CSSProp;
+  captionInput: CSSProp;
 }
 
 export interface ImageElementProps

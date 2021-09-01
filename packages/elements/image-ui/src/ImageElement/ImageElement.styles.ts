@@ -1,4 +1,5 @@
 import { createStyles } from '@udecode/plate-styled-components';
+import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { ImageElementStyleProps } from './ImageElement.types';
 
@@ -13,5 +14,13 @@ export const getImageElementStyles = (props: ImageElementStyleProps) =>
         props.focused && props.selected && tw`boxShadow[0 0 0 3px #B4D5FF]`,
       ],
       resizeWrapper: [tw`mx-auto`],
+      captionInput: [
+        tw`w-full text-center border-none`,
+        css`
+          :focus-visible {
+            outline: none;
+          }
+        `,
+      ],
     }
   );
