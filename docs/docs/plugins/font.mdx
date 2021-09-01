@@ -20,28 +20,40 @@ npm install @udecode/plate-font-ui
     ...components,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
-        [MARK_COLOR]: ['color']
+        [MARK_COLOR]: ['color'],
       },
     }),
     [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
-        [MARK_BG_COLOR]: ['backgroundColor']
+        [MARK_BG_COLOR]: ['backgroundColor'],
+      },
+    }),
+    [MARK_FONT_SIZE]: withStyledProps(StyledLeaf, {
+      leafProps: {
+        [MARK_FONT_SIZE]: ['fontSize'],
       },
     }),
   });
-  
+
   const plugins = [
     ...pluginsBasic,
     createFontColorPlugin(),
     createFontBackgroundColorPlugin(),
+    createFontSizePlugin(),
   ];
 
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
   plugins.push(createDeserializeAstPlugin({ plugins }));
 
   const CopyContent = () => (
-    <div style={{borderBottom: '1px solid #eee', margin: '0 -16px', padding: '0 16px 16px'}}>
-      <span style={{color: '#f92672'}}>Copy Me in the editor</span>
+    <div
+      style={{
+        borderBottom: '1px solid #eee',
+        margin: '0 -16px',
+        padding: '0 16px 16px',
+      }}
+    >
+      <span style={{ color: '#f92672' }}>Copy Me in the editor</span>
     </div>
   );
 
@@ -56,8 +68,14 @@ npm install @udecode/plate-font-ui
         initialValue={initialValueFont}
       >
         <HeadingToolbar>
-          <ToolbarColorPicker pluginKey={MARK_COLOR} icon={<FormatColorText />} />
-          <ToolbarColorPicker pluginKey={MARK_BG_COLOR} icon={<FontDownload />} />
+          <ToolbarColorPicker
+            pluginKey={MARK_COLOR}
+            icon={<FormatColorText />}
+          />
+          <ToolbarColorPicker
+            pluginKey={MARK_BG_COLOR}
+            icon={<FontDownload />}
+          />
         </HeadingToolbar>
         <CopyContent />
       </Plate>
