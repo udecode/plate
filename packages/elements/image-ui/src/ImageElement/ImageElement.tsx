@@ -56,7 +56,7 @@ export const ImageElement = (props: ImageElementProps) => {
             css={styles.img?.css}
             className={styles.img?.className}
             src={url}
-            alt=""
+            alt={caption.text}
             {...nodeProps}
           />
         </Resizable>
