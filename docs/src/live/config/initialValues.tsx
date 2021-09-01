@@ -140,7 +140,7 @@ export const initialValueImages: any = (
       In addition to nodes that contain editable text, you can also create other
       types of nodes, like images or videos.
     </hp>
-    <himg url="https://source.unsplash.com/kFrdX5IeQzI">
+    <himg url="https://source.unsplash.com/kFrdX5IeQzI" width="75%">
       <htext />
     </himg>
     <hp>
@@ -149,7 +149,8 @@ export const initialValueImages: any = (
       on a little secret, copy an image URL to your keyboard and paste it
       anywhere in the editor! Additionally, you can customize the toolbar button
       to load an url asynchronously, for example showing a file picker and
-      uploading a file to Amazon S3.
+      uploading a file to Amazon S3. You can also add a caption and resize the
+      image.
     </hp>
   </fragment>
 );
