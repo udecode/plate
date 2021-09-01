@@ -15,10 +15,12 @@ export const getImageElementStyles = (props: ImageElementStyleProps) =>
       ],
       resizeWrapper: [tw`mx-auto`],
       captionInput: [
-        tw`w-full text-center border-none`,
+        tw`w-full text-center border-none focus:outline-none`,
         css`
-          :focus-visible {
-            outline: none;
+          :focus {
+            ::placeholder {
+              opacity: 0;
+            }
           }
         `,
       ],
