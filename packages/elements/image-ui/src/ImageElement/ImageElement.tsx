@@ -46,10 +46,10 @@ export const ImageElement = (props: ImageElementProps) => {
       <div contentEditable={false}>
         <Resizable
           maxWidth="100%"
-          defaultSize={{ width, height: '100%' }}
+          defaultSize={{ width: width ?? '100%', height: '100%' }}
           resizeRatio={1.5}
           lockAspectRatio
-          onResizeStop={(e, e1, e2, e3) => onChangeImgWidth(e2.offsetWidth)}
+          onResizeStop={(e, e1, e2) => onChangeImgWidth(e2.offsetWidth)}
         >
           <img
             data-testid="ImageElementImage"
