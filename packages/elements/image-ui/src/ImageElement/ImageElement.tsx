@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createSingleLinePlugin } from '@udecode/plate-break';
 import { setNodes } from '@udecode/plate-common';
 import {
@@ -8,7 +8,7 @@ import {
   useEditorRef,
 } from '@udecode/plate-core';
 import { Resizable } from 're-resizable';
-import { Transforms } from 'slate';
+import { Node, Transforms } from 'slate';
 import { ReactEditor, useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
@@ -37,11 +37,11 @@ export const ImageElement = (props: ImageElementProps) => {
     url,
     width: nodeWidth = '100%',
     caption = [{ children: [{ text: '' }] }],
+    id,
   } = element;
   const focused = useFocused();
   const selected = useSelected();
   const editor = useEditorRef();
-
   const [width, setWidth] = useState(nodeWidth);
 
   useEffect(() => {
@@ -71,6 +71,10 @@ export const ImageElement = (props: ImageElementProps) => {
     },
     [editor, element]
   );
+
+  const captionString = useMemo(() => {
+    return Node.string(caption?.[0]) || '';
+  }, [caption]);
 
   return (
     <div
@@ -112,7 +116,7 @@ export const ImageElement = (props: ImageElementProps) => {
               css={styles.img?.css}
               className={styles.img?.className}
               src={url}
-              alt={caption}
+              alt={captionString}
               {...nodeProps}
             />
           </Resizable>
@@ -120,7 +124,7 @@ export const ImageElement = (props: ImageElementProps) => {
             <figcaption style={{ width }}>
               <div css={styles.captionInput?.css}>
                 <Plate
-                  id="caption-editor"
+                  id={`${id}-image-caption`}
                   plugins={plugins}
                   initialValue={caption}
                   value={caption}
