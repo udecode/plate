@@ -37,6 +37,7 @@
     "@udecode/plate-image": "2.0.0",
     "@udecode/plate-styled-components": "3.0.1",
     "@udecode/plate-toolbar": "3.0.1",
+    "react-textarea-autosize": "^8.3.3",
     "re-resizable": "^6.9.0"
   },
   "peerDependencies": {

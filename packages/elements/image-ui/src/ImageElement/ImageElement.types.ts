@@ -9,17 +9,23 @@ export interface ImageElementStyleProps extends ImageElementProps {
 }
 
 export interface ImageElementStyles {
+  resizable: CSSProp;
   figure: CSSProp;
   img: CSSProp;
-  resizeWrapper: CSSProp;
-  captionInput: CSSProp;
+  figcaption: CSSProp;
+  caption: CSSProp;
   handle: CSSProp;
-  figureCaption: CSSProp;
+  handleLeft: CSSProp;
+  handleRight: CSSProp;
 }
 
 export interface ImageElementProps
   extends StyledElementProps<ImageNodeData, ImageElementStyles> {
-  disableCaption?: boolean;
-  captionPlaceholder?: string;
   resizableProps?: ResizableProps;
+  align?: 'left' | 'center' | 'right';
+  caption?: {
+    disabled?: boolean;
+    align?: 'left' | 'center' | 'right';
+    placeholder?: string;
+  };
 }

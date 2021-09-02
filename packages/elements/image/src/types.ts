@@ -1,7 +1,9 @@
+import { TDescendant } from '@udecode/plate-core';
+
 export interface ImageNodeData {
   url: string;
   width?: number;
-  caption?: string;
+  caption?: TDescendant[];
 }
 
 export interface WithImageUploadOptions {

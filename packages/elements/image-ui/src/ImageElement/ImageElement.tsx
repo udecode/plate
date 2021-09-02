@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { createSingleLinePlugin } from '@udecode/plate-break';
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 import { setNodes } from '@udecode/plate-common';
-import {
-  createHistoryPlugin,
-  createReactPlugin,
-  Plate,
-  useEditorRef,
-} from '@udecode/plate-core';
+import { useEditorRef } from '@udecode/plate-core';
 import { Resizable } from 're-resizable';
 import { Node, Transforms } from 'slate';
 import { ReactEditor, useFocused, useSelected } from 'slate-react';
@@ -14,11 +15,11 @@ import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
 
-const plugins = [
-  createHistoryPlugin(),
-  createReactPlugin(),
-  createSingleLinePlugin(),
-];
+// const plugins = [
+//   createHistoryPlugin(),
+//   createReactPlugin(),
+//   createSingleLinePlugin(),
+// ];
 
 export const ImageElement = (props: ImageElementProps) => {
   const {
@@ -26,29 +27,32 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     element,
     nodeProps,
-    disableCaption,
-    captionPlaceholder = 'Write a caption...',
+    caption = {},
     resizableProps = {
       minWidth: 92,
     },
+    align = 'center',
   } = props;
+
+  const { placeholder = 'Write a caption...' } = caption;
 
   const {
     url,
     width: nodeWidth = '100%',
-    caption = [{ children: [{ text: '' }] }],
-    id,
+    caption: nodeCaption = [{ children: [{ text: '' }] }],
   } = element;
   const focused = useFocused();
   const selected = useSelected();
   const editor = useEditorRef();
   const [width, setWidth] = useState(nodeWidth);
 
+  // const [captionId] = useState(nanoid());
+
   useEffect(() => {
     setWidth(nodeWidth);
   }, [nodeWidth]);
 
-  const styles = getImageElementStyles({ ...props, focused, selected });
+  const styles = getImageElementStyles({ ...props, align, focused, selected });
 
   const setNodeWidth = useCallback(
     (w: number) => {
@@ -64,17 +68,17 @@ export const ImageElement = (props: ImageElementProps) => {
     [editor, element, nodeWidth]
   );
 
-  const onChangeCaption = useCallback(
-    (e: any[]) => {
+  const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
+    (e) => {
       const path = ReactEditor.findPath(editor as ReactEditor, element);
-      setNodes(editor, { caption: e }, { at: path });
+      setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
     },
     [editor, element]
   );
 
   const captionString = useMemo(() => {
-    return Node.string(caption?.[0]) || '';
-  }, [caption]);
+    return Node.string(nodeCaption[0]) || '';
+  }, [nodeCaption]);
 
   return (
     <div
@@ -88,28 +92,39 @@ export const ImageElement = (props: ImageElementProps) => {
           className={`group ${styles.figure?.className}`}
         >
           <Resizable
+            // @ts-ignore
+            css={styles.resizable?.css}
+            className={styles.resizable?.className}
             size={{ width, height: '100%' }}
             maxWidth="100%"
             lockAspectRatio
-            enable={{ right: true }}
+            resizeRatio={align === 'center' ? 2 : 1}
+            enable={{
+              left: ['center', 'left'].includes(align),
+              right: ['center', 'right'].includes(align),
+            }}
             handleComponent={{
+              left: (
+                <ImageHandle
+                  css={[styles.handleLeft?.css]}
+                  className={styles.handleLeft?.className}
+                />
+              ),
               right: (
                 <ImageHandle
-                  css={styles.handle?.css}
-                  className={styles.handle?.className}
+                  css={styles.handleRight?.css}
+                  className={styles.handleRight?.className}
                 />
               ),
             }}
             handleStyles={{
-              right: {
-                right: 0,
-              },
+              left: { left: 0 },
+              right: { right: 0 },
             }}
             onResize={(e, direction, ref) => {
               setWidth(ref.offsetWidth);
             }}
             onResizeStop={(e, direction, ref) => setNodeWidth(ref.offsetWidth)}
-            style={{ margin: 'auto' }}
             {...resizableProps}
           >
             <img
@@ -121,32 +136,34 @@ export const ImageElement = (props: ImageElementProps) => {
               {...nodeProps}
             />
           </Resizable>
-          {!disableCaption && (caption.length || selected) && (
+
+          {!caption.disabled && (captionString.length || selected) && (
             <figcaption
               style={{ width }}
-              css={styles.figureCaption?.css}
-              className={styles.figureCaption?.className}
+              css={styles.figcaption?.css}
+              className={styles.figcaption?.className}
             >
-              <div css={styles.captionInput?.css}>
-                <Plate
-                  id={`${id}-image-caption`}
-                  plugins={plugins}
-                  initialValue={caption}
-                  value={caption}
-                  editableProps={{
-                    placeholder: captionPlaceholder,
-                    className: styles.captionInput?.className,
-                  }}
-                  onChange={onChangeCaption}
-                />
-              </div>
-              {/* <input
-                css={styles.captionInput?.css}
-                className={styles.captionInput?.className}
-                value={caption}
-                placeholder={captionPlaceholder}
+              <TextareaAutosize
+                css={styles.caption?.css}
+                className={styles.caption?.className}
+                value={nodeCaption[0].text}
+                placeholder={placeholder}
                 onChange={onChangeCaption}
-              /> */}
+              />
+
+              {/* <div css={styles.caption?.css}> */}
+              {/*  <Plate */}
+              {/*    id={captionId} */}
+              {/*    plugins={plugins} */}
+              {/*    initialValue={nodeCaption} */}
+              {/*    value={nodeCaption} */}
+              {/*    editableProps={{ */}
+              {/*      placeholder, */}
+              {/*      className: styles.caption?.className, */}
+              {/*    }} */}
+              {/*    onChange={onChangeCaption} */}
+              {/*  /> */}
+              {/* </div> */}
             </figcaption>
           )}
         </figure>
