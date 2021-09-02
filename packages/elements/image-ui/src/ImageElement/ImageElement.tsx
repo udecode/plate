@@ -1,12 +1,24 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createSingleLinePlugin } from '@udecode/plate-break';
 import { setNodes } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-core';
+import {
+  createHistoryPlugin,
+  createReactPlugin,
+  Plate,
+  useEditorRef,
+} from '@udecode/plate-core';
 import { Resizable } from 're-resizable';
 import { Transforms } from 'slate';
 import { ReactEditor, useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
+
+const plugins = [
+  createHistoryPlugin(),
+  createReactPlugin(),
+  createSingleLinePlugin(),
+];
 
 export const ImageElement = (props: ImageElementProps) => {
   const {
@@ -21,7 +33,11 @@ export const ImageElement = (props: ImageElementProps) => {
     },
   } = props;
 
-  const { url, width: nodeWidth = '100%', caption = '' } = element;
+  const {
+    url,
+    width: nodeWidth = '100%',
+    caption = [{ children: [{ text: '' }] }],
+  } = element;
   const focused = useFocused();
   const selected = useSelected();
   const editor = useEditorRef();
@@ -48,10 +64,10 @@ export const ImageElement = (props: ImageElementProps) => {
     [editor, element, nodeWidth]
   );
 
-  const onChangeCaption: React.ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const path = ReactEditor.findPath(editor, element);
-      setNodes(editor, { caption: e.target.value }, { at: path });
+  const onChangeCaption = useCallback(
+    (e: any[]) => {
+      const path = ReactEditor.findPath(editor as ReactEditor, element);
+      setNodes(editor, { caption: e }, { at: path });
     },
     [editor, element]
   );
@@ -100,16 +116,28 @@ export const ImageElement = (props: ImageElementProps) => {
               {...nodeProps}
             />
           </Resizable>
-
           {!disableCaption && (caption.length || selected) && (
             <figcaption style={{ width }}>
-              <input
+              <div css={styles.captionInput?.css}>
+                <Plate
+                  id="caption-editor"
+                  plugins={plugins}
+                  initialValue={caption}
+                  value={caption}
+                  editableProps={{
+                    placeholder: captionPlaceholder,
+                    className: styles.captionInput?.className,
+                  }}
+                  onChange={onChangeCaption}
+                />
+              </div>
+              {/* <input
                 css={styles.captionInput?.css}
                 className={styles.captionInput?.className}
                 value={caption}
                 placeholder={captionPlaceholder}
                 onChange={onChangeCaption}
-              />
+              /> */}
             </figcaption>
           )}
         </figure>
