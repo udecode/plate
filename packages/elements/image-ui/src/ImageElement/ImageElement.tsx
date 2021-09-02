@@ -109,6 +109,7 @@ export const ImageElement = (props: ImageElementProps) => {
               setWidth(ref.offsetWidth);
             }}
             onResizeStop={(e, direction, ref) => setNodeWidth(ref.offsetWidth)}
+            style={{ margin: 'auto' }}
             {...resizableProps}
           >
             <img
@@ -121,7 +122,11 @@ export const ImageElement = (props: ImageElementProps) => {
             />
           </Resizable>
           {!disableCaption && (caption.length || selected) && (
-            <figcaption style={{ width }}>
+            <figcaption
+              style={{ width }}
+              css={styles.figureCaption?.css}
+              className={styles.figureCaption?.className}
+            >
               <div css={styles.captionInput?.css}>
                 <Plate
                   id={`${id}-image-caption`}

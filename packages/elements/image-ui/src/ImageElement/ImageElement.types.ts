@@ -14,6 +14,7 @@ export interface ImageElementStyles {
   resizeWrapper: CSSProp;
   captionInput: CSSProp;
   handle: CSSProp;
+  figureCaption: CSSProp;
 }
 
 export interface ImageElementProps

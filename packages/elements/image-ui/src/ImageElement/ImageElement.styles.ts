@@ -10,15 +10,16 @@ export const getImageElementStyles = (props: ImageElementStyleProps) =>
       root: [tw`py-2.5`],
       figure: [tw`m-0 relative`],
       img: [
-        tw`block max-w-full px-0 cursor-pointer`,
-        tw`maxHeight[20em] borderRadius[3px]`,
+        tw`block max-w-full px-0 cursor-pointer w-full`,
+        tw`borderRadius[3px]`,
         props.focused &&
           props.selected &&
           tw`boxShadow[0 0 0 1px rgb(59,130,249)]`,
+        { objectFit: 'cover' },
       ],
       resizeWrapper: [tw`mx-auto`],
       captionInput: [
-        tw`w-full text-center border-none focus:outline-none mt-2`,
+        tw`w-full border-none focus:outline-none mt-2`,
         css`
           :focus {
             ::placeholder {
@@ -27,6 +28,7 @@ export const getImageElementStyles = (props: ImageElementStyleProps) =>
           }
         `,
       ],
+      figureCaption: [tw`mx-auto`],
       handle: [
         css`
           ${tw`flex flex-col justify-center items-end absolute select-none`}
