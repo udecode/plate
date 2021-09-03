@@ -1,5 +1,16 @@
 # @udecode/plate-toolbar
 
+## 3.1.0
+
+### Minor Changes
+
+- [#980](https://github.com/udecode/plate/pull/980) [`a1600e5f`](https://github.com/udecode/plate/commit/a1600e5f8cf1a1b4aa6a88048063431ecafbf766) Thanks [@cungminh2710](https://github.com/cungminh2710)! - `BalloonToolbar` – New prop: `portalElement` used to customize the `Portal` container
+
+### Patch Changes
+
+- Updated dependencies [[`03f2acdd`](https://github.com/udecode/plate/commit/03f2acdd1b34d1e4e574bcf296ae5b4796930c9a)]:
+  - @udecode/plate-styled-components@3.1.0
+
 ## 3.0.1
 
 ### Patch Changes
