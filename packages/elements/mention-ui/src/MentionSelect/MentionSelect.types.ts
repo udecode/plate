@@ -11,4 +11,5 @@ export interface MentionSelectProps
   extends GetMentionSelectProps,
     StyledProps<MentionSelectStyles> {
   renderLabel?: (mentionable: MentionNodeData) => string;
+  portalElement?: Element;
 }

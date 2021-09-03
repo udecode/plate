@@ -14,6 +14,7 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
     direction = 'top',
     theme = 'dark',
     arrow = false,
+    portalElement,
   } = props;
 
   const ref = React.useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
   });
 
   return (
-    <PortalBody>
+    <PortalBody element={portalElement}>
       <ToolbarBase
         ref={ref}
         css={styles.root.css}

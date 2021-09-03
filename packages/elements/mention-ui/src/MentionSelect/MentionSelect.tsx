@@ -14,6 +14,7 @@ export const MentionSelect = (props: MentionSelectProps) => {
     options,
     valueIndex,
     onClickMention,
+    portalElement,
     renderLabel = (mentionable: MentionNodeData) => mentionable.value,
   } = props;
 
@@ -39,7 +40,7 @@ export const MentionSelect = (props: MentionSelectProps) => {
   const styles = getMentionSelectStyles(props);
 
   return (
-    <PortalBody>
+    <PortalBody element={portalElement}>
       <div
         ref={ref}
         css={styles.root.css}
