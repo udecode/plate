@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-image-ui",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Image UI for Plate",
   "keywords": [
     "slate",
@@ -35,8 +35,8 @@
     "@udecode/plate-common": "2.0.0",
     "@udecode/plate-core": "1.0.0",
     "@udecode/plate-image": "2.0.0",
-    "@udecode/plate-styled-components": "3.0.1",
-    "@udecode/plate-toolbar": "3.0.1"
+    "@udecode/plate-styled-components": "3.1.0",
+    "@udecode/plate-toolbar": "3.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

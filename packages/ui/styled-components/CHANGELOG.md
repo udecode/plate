@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 3.1.0
+
+### Minor Changes
+
+- [#980](https://github.com/udecode/plate/pull/980) [`03f2acdd`](https://github.com/udecode/plate/commit/03f2acdd1b34d1e4e574bcf296ae5b4796930c9a) Thanks [@cungminh2710](https://github.com/cungminh2710)! - `PortalBody` – New prop `element`: Allow to be mounted on a custom container. Using `document.body` can conflict with other portals with the same container.
+
 ## 3.0.1
 
 ### Patch Changes

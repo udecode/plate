@@ -1,5 +1,12 @@
 # @udecode/plate-media-embed-ui
 
+## 3.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`03f2acdd`](https://github.com/udecode/plate/commit/03f2acdd1b34d1e4e574bcf296ae5b4796930c9a)]:
+  - @udecode/plate-styled-components@3.1.0
+
 ## 3.0.1
 
 ### Patch Changes
