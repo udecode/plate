@@ -20,18 +20,20 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 
 describe('when pasting ul > 2 li fragment', () => {
   describe('when selection in li', () => {
-    it('should filter out ul', () => {
+    it('should insert lis next to the lowest li', () => {
       const input = ((
         <editor>
           <hul>
             <hli>
               <hlic>one</hlic>
-            </hli>
-            <hli>
-              <hlic>
-                two
-                <cursor />
-              </hlic>
+              <hul>
+                <hli>
+                  <hlic>
+                    two
+                    <cursor />
+                  </hlic>
+                </hli>
+              </hul>
             </hli>
             <hli>
               <hlic>four</hlic>
@@ -55,12 +57,80 @@ describe('when pasting ul > 2 li fragment', () => {
           <hul>
             <hli>
               <hlic>one</hlic>
+              <hul>
+                <hli>
+                  <hlic>two</hlic>
+                </hli>
+                <hli>
+                  <hlic>three</hlic>
+                </hli>
+              </hul>
             </hli>
             <hli>
-              <hlic>two</hlic>
+              <hlic>four</hlic>
             </hli>
+          </hul>
+        </editor>
+      ) as any) as SPEditor;
+
+      editorTest(input, fragment, expected);
+    });
+
+    it('should insert nested lis next to the lowest li, without the leading empty lis', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>one</hlic>
+              <hul>
+                <hli>
+                  <hlic>
+                    two
+                    <cursor />
+                  </hlic>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hlic>four</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as SPEditor;
+
+      const fragment = ((
+        <fragment>
+          <hul>
             <hli>
               <hlic>three</hlic>
+              <hul>
+                <hli>
+                  <hlic>five</hlic>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </fragment>
+      ) as any) as TDescendant[];
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>one</hlic>
+              <hul>
+                <hli>
+                  <hlic>two</hlic>
+                </hli>
+                <hli>
+                  <hlic>three</hlic>
+                  <hul>
+                    <hli>
+                      <hlic>five</hlic>
+                    </hli>
+                  </hul>
+                </hli>
+              </hul>
             </hli>
             <hli>
               <hlic>four</hlic>
