@@ -21,7 +21,7 @@ export const insertMention = (
 ) => {
   const mentionNode: MentionNode = {
     type: getPlatePluginType(editor, pluginKey),
-    children: [{ text: '' }],
+    children: [{ text: ' ' }],
     ...data,
   };
 
