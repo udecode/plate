@@ -1,5 +1,11 @@
 # @udecode/plate-placeholder
 
+## 3.1.1
+
+### Patch Changes
+
+- [#983](https://github.com/udecode/plate/pull/983) [`a985354e`](https://github.com/udecode/plate/commit/a985354ea3cb672cfe010cac59cacfd1b011483b) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - fix: the placeholder should not be present when the block has only void elements
+
 ## 3.1.0
 
 ### Patch Changes

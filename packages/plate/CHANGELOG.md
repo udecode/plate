@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 3.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`a985354e`](https://github.com/udecode/plate/commit/a985354ea3cb672cfe010cac59cacfd1b011483b)]:
+  - @udecode/plate-placeholder@3.1.1
+
 ## 3.1.0
 
 ### Patch Changes
