@@ -11,7 +11,7 @@ export const getEmptyTableNode = (
     type: getPlatePluginType(editor, ELEMENT_TABLE),
     children: [
       getEmptyRowNode(editor, { header, colCount: 2 }),
-      getEmptyRowNode(editor, { header, colCount: 2 }),
+      getEmptyRowNode(editor, { header: false, colCount: 2 }),
     ],
   };
 };
