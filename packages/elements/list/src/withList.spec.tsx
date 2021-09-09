@@ -31,6 +31,17 @@ const testDeleteBackward = (input: any, expected: any) => {
   expect(editor.children).toEqual(expected.children);
 };
 
+const testDeleteForward = (input: any, expected: any) => {
+  const editor = createEditorPlugins({
+    editor: input,
+    plugins: [createParagraphPlugin(), createListPlugin()],
+  });
+
+  editor.deleteForward('character');
+
+  expect(editor.children).toEqual(expected.children);
+};
+
 describe('withList', () => {
   describe('normalizeList', () => {
     describe('when there is no lic in li', () => {
@@ -301,6 +312,184 @@ describe('withList', () => {
 
         testDeleteBackward(input, expected);
       });
+    });
+  });
+
+  describe('when deleteForward at block end', () => {
+    it('should merge the next element when last child', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1<cursor />
+              </hlic>
+            </hli>
+          </hul>
+          <hul>
+            <hli>
+              <hlic>level 2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1
+                <cursor />
+                level 2
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteForward(input, expected);
+    });
+
+    it('should merge next sibling li', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1<cursor />
+              </hlic>
+            </hli>
+            <hli>
+              <hlic>level 2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1
+                <cursor />
+                level 2
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteForward(input, expected);
+    });
+
+    it('should merge next li and shift one level up', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>level 1</hlic>
+              <hul>
+                <hli>
+                  <hlic>
+                    level 2<cursor />
+                  </hlic>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hlic>level 3</hlic>
+              <hul>
+                <hli>
+                  <hlic>level 4</hlic>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>level 1</hlic>
+              <hul>
+                <hli>
+                  <hlic>level 2level 3</hlic>
+                </hli>
+                <hli>
+                  <hlic>level 4</hlic>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteForward(input, expected);
+    });
+
+    it('should shift all nested lists one level up', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1<cursor />
+              </hlic>
+              <hul>
+                <hli>
+                  <hlic>level 2</hlic>
+                  <hul>
+                    <hli>
+                      <hlic>level 3</hlic>
+                      <hul>
+                        <hli>
+                          <hlic>level 4</hlic>
+                        </hli>
+                      </hul>
+                    </hli>
+                    <hli>
+                      <hlic>level 5</hlic>
+                    </hli>
+                  </hul>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                level 1
+                <cursor />
+                level 2
+              </hlic>
+              <hul>
+                <hli>
+                  <hlic>level 3</hlic>
+                  <hul>
+                    <hli>
+                      <hlic>level 4</hlic>
+                    </hli>
+                  </hul>
+                </hli>
+                <hli>
+                  <hlic>level 5</hlic>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteForward(input, expected);
     });
   });
 });
