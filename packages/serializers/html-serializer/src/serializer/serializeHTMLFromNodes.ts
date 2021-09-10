@@ -194,8 +194,8 @@ export const serializeHTMLFromNodes = (
     slateProps?: Partial<SlateProps>;
 
     /**
-     * Enable/Disable stripping of whitespace from serialised HTML
-     * Note: Disabling is useful to retain whitespace (e.g codeblocks)
+     * Whether stripping whitespaces from serialized HTML
+     * @default true
      */
     stripWhitespace?: boolean;
   }
