@@ -17,7 +17,7 @@ export const deserializeHTMLToDocumentFragment = <
   }: {
     plugins: PlatePlugin<T>[];
     element: HTMLElement | string;
-    stripWhitespace: boolean;
+    stripWhitespace?: boolean;
   }
 ): TDescendant[] => {
   if (typeof element === 'string') {
