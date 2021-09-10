@@ -166,12 +166,13 @@ export const serializeHTMLFromNodes = (
     slateProps,
     stripDataAttributes = true,
     preserveClassNames,
+    stripWhitespace = true,
   }: {
     /**
      * Plugins with renderElement or renderLeaf.
      */
-
     plugins: PlatePlugin[];
+
     /**
      * Slate nodes to convert to HTML.
      */
@@ -191,6 +192,12 @@ export const serializeHTMLFromNodes = (
      * Slate props to provide if the rendering depends on slate hooks
      */
     slateProps?: Partial<SlateProps>;
+
+    /**
+     * Enable/Disable stripping of whitespace from serialised HTML
+     * Note: Disabling is useful to retain whitespace (e.g codeblocks)
+     */
+    stripWhitespace?: boolean;
   }
 ): string => {
   let result = nodes
@@ -220,6 +227,7 @@ export const serializeHTMLFromNodes = (
               plugins,
               nodes: node.children,
               preserveClassNames,
+              stripWhitespace,
             })
           ) as any,
           attributes: { 'data-slate-node': 'element', ref: null },
@@ -230,7 +238,11 @@ export const serializeHTMLFromNodes = (
     })
     .join('');
 
-  result = trimWhitespace(decodeURIComponent(result));
+  result = decodeURIComponent(result);
+
+  if (stripWhitespace) {
+    result = trimWhitespace(result);
+  }
 
   if (stripDataAttributes) {
     result = stripSlateDataAttributes(result);

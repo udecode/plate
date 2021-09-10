@@ -65,12 +65,30 @@ it('serialize blockquote to html', () => {
         nodes: [
           {
             type: 'blockquote',
-            children: [{ text: 'Blockquoted text here...' }],
+            children: [{ text: 'Blockquoted text\n here...' }],
           },
         ],
       })
     ).getElementsByTagName('blockquote')[0].textContent
   ).toEqual('Blockquoted text here...');
+});
+
+it('serialize blockquote to html, without trimming whitespace', () => {
+  const html = serializeHTMLFromNodes(editor, {
+    plugins: [createBlockquotePlugin()],
+    nodes: [
+      {
+        type: 'blockquote',
+        children: [{ text: 'Blockquoted text\nhere...' }],
+      },
+    ],
+    stripWhitespace: false,
+  });
+
+  const node = htmlStringToDOMNode(html, false);
+  expect(node.getElementsByTagName('blockquote')[0].textContent).toEqual(
+    'Blockquoted text\nhere...'
+  );
 });
 
 it('serialize headings to html', () => {
