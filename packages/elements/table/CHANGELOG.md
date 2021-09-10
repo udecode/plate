@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 3.1.2
+
+### Patch Changes
+
+- [#997](https://github.com/udecode/plate/pull/997) [`1244bcb7`](https://github.com/udecode/plate/commit/1244bcb748411e6291d635647c2053b115704eb9) Thanks [@z0al](https://github.com/z0al)! - fix(table): jump to next header cell on TAB
+
+- [#994](https://github.com/udecode/plate/pull/994) [`5651aed7`](https://github.com/udecode/plate/commit/5651aed704d69af85e2dd7d6f850e8dcabcd45f4) Thanks [@z0al](https://github.com/z0al)! - fix(table): only mark first row as table header
+
 ## 3.0.2
 
 ### Patch Changes

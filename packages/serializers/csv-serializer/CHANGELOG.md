@@ -1,5 +1,12 @@
 # @udecode/plate-csv-serializer
 
+## 3.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`1244bcb7`](https://github.com/udecode/plate/commit/1244bcb748411e6291d635647c2053b115704eb9), [`5651aed7`](https://github.com/udecode/plate/commit/5651aed704d69af85e2dd7d6f850e8dcabcd45f4)]:
+  - @udecode/plate-table@3.1.2
+
 ## 3.0.2
 
 ### Patch Changes

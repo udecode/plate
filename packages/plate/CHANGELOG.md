@@ -1,5 +1,18 @@
 # @udecode/plate
 
+## 3.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`2906a0a4`](https://github.com/udecode/plate/commit/2906a0a45fa00b38a1e71ed8e3c57203f429db4d), [`1244bcb7`](https://github.com/udecode/plate/commit/1244bcb748411e6291d635647c2053b115704eb9), [`5651aed7`](https://github.com/udecode/plate/commit/5651aed704d69af85e2dd7d6f850e8dcabcd45f4)]:
+  - @udecode/plate-list@3.1.2
+  - @udecode/plate-table@3.1.2
+  - @udecode/plate-list-ui@3.1.2
+  - @udecode/plate-ast-serializer@3.1.2
+  - @udecode/plate-md-serializer@3.1.2
+  - @udecode/plate-table-ui@3.1.2
+  - @udecode/plate-csv-serializer@3.1.2
+
 ## 3.1.1
 
 ### Patch Changes
