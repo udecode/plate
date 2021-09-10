@@ -1,10 +1,10 @@
-import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
+// import { isBlockAboveEmpty, setNodes } from '@udecode/plate-common';
 import {
-  getInlineTypes,
+  // getInlineTypes,
   PlatePlugin,
   SPEditor,
   TDescendant,
-  TElement,
+  // TElement,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { ReactEditor } from 'slate-react';
@@ -36,7 +36,7 @@ export const insertDeserializedFragment = <
     });
 
     if (!preInserted) {
-      const inlineTypes = getInlineTypes(editor, plugins);
+      /*      const inlineTypes = getInlineTypes(editor, plugins);
 
       const firstNodeType = fragment[0].type as string | undefined;
 
@@ -49,6 +49,7 @@ export const insertDeserializedFragment = <
       ) {
         setNodes<TElement>(editor, { type: firstNodeType });
       }
+*/
     }
 
     editor.insertFragment(fragment);
