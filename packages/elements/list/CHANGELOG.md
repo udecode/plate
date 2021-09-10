@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 3.1.2
+
+### Patch Changes
+
+- [#990](https://github.com/udecode/plate/pull/990) [`2906a0a4`](https://github.com/udecode/plate/commit/2906a0a45fa00b38a1e71ed8e3c57203f429db4d) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Fix nested list paste
+
 ## 3.0.4
 
 ### Patch Changes
