@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-heading",
-  "version": "2.0.0",
+  "version": "3.1.3",
   "description": "Headings plugin for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "2.0.0",
+    "@udecode/plate-common": "3.1.3",
     "@udecode/plate-core": "1.0.0"
   },
   "peerDependencies": {

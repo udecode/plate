@@ -1,5 +1,16 @@
 # @udecode/plate-basic-elements
 
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-block-quote@3.1.3
+  - @udecode/plate-code-block@3.1.3
+  - @udecode/plate-heading@3.1.3
+  - @udecode/plate-paragraph@3.1.3
+
 ## 2.0.0
 
 ### Patch Changes

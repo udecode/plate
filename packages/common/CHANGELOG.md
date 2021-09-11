@@ -1,5 +1,11 @@
 # @udecode/plate-common
 
+## 3.1.3
+
+### Patch Changes
+
+- [#1002](https://github.com/udecode/plate/pull/1002) [`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - `isSelectionAtBlockEnd` should always return a boolean
+
 ## 2.0.0
 
 ### Patch Changes

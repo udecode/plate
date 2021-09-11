@@ -1,5 +1,19 @@
 # @udecode/plate-md-serializer
 
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e), [`d73b22d0`](https://github.com/udecode/plate/commit/d73b22d03a0fc270265cbd1bdecfcc4adc70b9d8)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-list@3.1.3
+  - @udecode/plate-block-quote@3.1.3
+  - @udecode/plate-code-block@3.1.3
+  - @udecode/plate-heading@3.1.3
+  - @udecode/plate-link@3.1.3
+  - @udecode/plate-paragraph@3.1.3
+  - @udecode/plate-serializer@3.1.3
+
 ## 3.1.2
 
 ### Patch Changes
