@@ -458,6 +458,9 @@ describe('withList', () => {
                 </hli>
               </hul>
             </hli>
+            <hli>
+              <hlic>level 1</hlic>
+            </hli>
           </hul>
         </editor>
       ) as any) as Editor;
@@ -484,6 +487,9 @@ describe('withList', () => {
                   <hlic>level 5</hlic>
                 </hli>
               </hul>
+            </hli>
+            <hli>
+              <hlic>level 1</hlic>
             </hli>
           </hul>
         </editor>
