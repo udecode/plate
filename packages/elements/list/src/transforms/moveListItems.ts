@@ -1,4 +1,5 @@
 import { getNodes, getParent } from '@udecode/plate-common';
+import { EditorNodesOptions } from '@udecode/plate-common/src';
 import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../defaults';
@@ -6,10 +7,21 @@ import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
 
-export const moveListItems = (editor: SPEditor, increase = true) => {
+export type MoveListItemsOptions = {
+  increase?: boolean;
+  at?: EditorNodesOptions['at'];
+};
+
+export const moveListItems = (
+  editor: SPEditor,
+  {
+    increase = true,
+    at = editor.selection ?? undefined,
+  }: MoveListItemsOptions = {}
+) => {
   // Get the selected lic
   const [...lics] = getNodes(editor, {
-    at: editor.selection!,
+    at,
     match: {
       type: getPlatePluginType(editor, ELEMENT_LIC),
     },

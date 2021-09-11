@@ -14,6 +14,7 @@ import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublist
 export interface RemoveListItemOptions {
   list: NodeEntry<TElement>;
   listItem: NodeEntry<TElement>;
+  reverse?: boolean;
 }
 
 /**
@@ -21,7 +22,7 @@ export interface RemoveListItemOptions {
  */
 export const removeListItem = (
   editor: SPEditor,
-  { list, listItem }: RemoveListItemOptions
+  { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;
 
@@ -74,7 +75,7 @@ export const removeListItem = (
 
     // 3
     deleteFragment(editor, {
-      reverse: true,
+      reverse,
     });
 
     tempLiPath = tempLiPathRef.unref()!;

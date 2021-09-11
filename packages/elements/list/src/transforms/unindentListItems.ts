@@ -1,6 +1,9 @@
 import { SPEditor } from '@udecode/plate-core';
-import { moveListItems } from './moveListItems';
+import { moveListItems, MoveListItemsOptions } from './moveListItems';
 
-export const unindentListItems = (editor: SPEditor) => {
-  moveListItems(editor, false);
-};
+export type UnindentListItemsOptions = Omit<MoveListItemsOptions, 'increase'>;
+
+export const unindentListItems = (
+  editor: SPEditor,
+  options: UnindentListItemsOptions = {}
+): void => moveListItems(editor, { ...options, increase: false });

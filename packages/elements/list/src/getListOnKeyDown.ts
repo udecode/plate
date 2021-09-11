@@ -22,7 +22,7 @@ export const getListOnKeyDown = (
 
     if (listSelected) {
       e.preventDefault();
-      moveListItems(editor, !e.shiftKey);
+      moveListItems(editor, { increase: !e.shiftKey });
       return;
     }
   }
