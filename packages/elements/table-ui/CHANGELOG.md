@@ -1,5 +1,15 @@
 # @udecode/plate-table-ui
 
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-table@3.1.3
+  - @udecode/plate-styled-components@3.1.3
+  - @udecode/plate-toolbar@3.1.3
+
 ## 3.1.2
 
 ### Patch Changes

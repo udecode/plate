@@ -1,5 +1,15 @@
 # @udecode/plate-html-serializer
 
+## 3.1.3
+
+### Patch Changes
+
+- [#998](https://github.com/udecode/plate/pull/998) [`c53532ba`](https://github.com/udecode/plate/commit/c53532baebd83fe79c53b300e97ecf6e713f7754) Thanks [@bensquire](https://github.com/bensquire)! - Adds the ability to not strip whitespace when converting to and from plate/html syntax
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-serializer@3.1.3
+
 ## 2.0.0
 
 ### Patch Changes
