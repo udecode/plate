@@ -8,20 +8,20 @@ import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
   if (
     someNode(editor, {
-      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) }
+      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) },
     })
   ) {
     const currentCellItem = getAbove(editor, {
       match: {
         type: [
           getPlatePluginType(editor, ELEMENT_TH),
-          getPlatePluginType(editor, ELEMENT_TD)
-        ]
-      }
+          getPlatePluginType(editor, ELEMENT_TD),
+        ],
+      },
     });
 
     const currentTableItem = getAbove(editor, {
-      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) }
+      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) },
     });
 
     if (currentCellItem && currentTableItem) {
@@ -32,12 +32,17 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
 
       currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
-        const isHeaderRow = header === undefined ? row.children[0].type === ELEMENT_TH : header;
+        const isHeaderRow =
+          header === undefined ? row.children[0].type === ELEMENT_TH : header;
 
-        insertNodes<TElement>(editor, getEmptyCellNode(editor, { header: isHeaderRow }), {
-          at: newCellPath,
-          select: rowIdx === currentRowIdx
-        });
+        insertNodes<TElement>(
+          editor,
+          getEmptyCellNode(editor, { header: isHeaderRow }),
+          {
+            at: newCellPath,
+            select: rowIdx === currentRowIdx,
+          }
+        );
       });
     }
   }
