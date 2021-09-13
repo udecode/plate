@@ -22,7 +22,7 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
 
     const currentTableItem = getAbove(editor, {
       match: { type: getPlatePluginType(editor, ELEMENT_TABLE) }
-    })
+    });
 
     if (currentCellItem && currentTableItem) {
       const nextCellPath = Path.next(currentCellItem[1]);
