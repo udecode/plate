@@ -32,7 +32,7 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
 
       currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
-        const isHeaderRow = header || row.children[0].type === ELEMENT_TH;
+        const isHeaderRow = header === undefined ? row.children[0].type === ELEMENT_TH : header;
 
         insertNodes<TElement>(editor, getEmptyCellNode(editor, { header: isHeaderRow }), {
           at: newCellPath,
