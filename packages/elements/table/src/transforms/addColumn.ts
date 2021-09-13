@@ -37,8 +37,8 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
         insertNodes<TElement>(editor, getEmptyCellNode(editor, { header: isHeaderRow }), {
           at: newCellPath,
           select: rowIdx === currentRowIdx
-        })
-      })
+        });
+      });
     }
   }
-}
+};
