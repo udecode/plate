@@ -39,9 +39,9 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": "dev",
-    "slate-history": "dev",
-    "slate-react": "dev"
+    "slate": ">=0.66.0",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.66.0"
   },
   "publishConfig": {
     "access": "public"
