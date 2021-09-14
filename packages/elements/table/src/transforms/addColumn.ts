@@ -30,13 +30,19 @@ export const addColumn = (editor: SPEditor, { header }: TablePluginOptions) => {
       const replacePathPos = newCellPath.length - 2;
       const currentRowIdx = nextCellPath[replacePathPos];
 
-      currentTableItem[0].children.forEach((row, rowIdx) => {
+      currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
+        const isHeaderRow =
+          header === undefined ? row.children[0].type === ELEMENT_TH : header;
 
-        insertNodes<TElement>(editor, getEmptyCellNode(editor, { header }), {
-          at: newCellPath,
-          select: rowIdx === currentRowIdx,
-        });
+        insertNodes<TElement>(
+          editor,
+          getEmptyCellNode(editor, { header: isHeaderRow }),
+          {
+            at: newCellPath,
+            select: rowIdx === currentRowIdx,
+          }
+        );
       });
     }
   }
