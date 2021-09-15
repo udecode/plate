@@ -1,3 +1,12 @@
+import {
+  MARK_BOLD,
+  MARK_CODE,
+  MARK_ITALIC,
+  MARK_STRIKETHROUGH,
+  // MARK_SUBSCRIPT,
+  // MARK_SUPERSCRIPT,
+  // MARK_UNDERLINE,
+} from '@udecode/plate-basic-marks';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
@@ -28,6 +37,14 @@ export const deserializeMD = (editor: SPEditor, content: string) => {
         paragraph: getPlatePluginType(editor, ELEMENT_PARAGRAPH),
         block_quote: getPlatePluginType(editor, ELEMENT_BLOCKQUOTE),
         link: getPlatePluginType(editor, ELEMENT_LINK),
+        inline_code_mark: getPlatePluginType(editor, MARK_CODE),
+        emphasis_mark: getPlatePluginType(editor, MARK_ITALIC),
+        strong_mark: getPlatePluginType(editor, MARK_BOLD),
+        delete_mark: getPlatePluginType(editor, MARK_STRIKETHROUGH),
+        // FIXME: underline, subscript superscript not yet supported by remark-slate
+        // underline: getPlatePluginType(editor, MARK_UNDERLINE),
+        // subscript: getPlatePluginType(editor, MARK_SUBSCRIPT),
+        // superscript: getPlatePluginType(editor, MARK_SUPERSCRIPT),
         code_block: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
         ul_list: getPlatePluginType(editor, ELEMENT_UL),
         ol_list: getPlatePluginType(editor, ELEMENT_OL),
