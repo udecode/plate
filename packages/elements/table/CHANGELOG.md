@@ -1,5 +1,19 @@
 # @udecode/plate-table
 
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- [#1006](https://github.com/udecode/plate/pull/1006) [`56b2551b`](https://github.com/udecode/plate/commit/56b2551b2fa5fab180b3c99551144667f99f7afc) Thanks [@tjramage](https://github.com/tjramage)! - Adds more natural default header option when inserting table columns
+
+- Updated dependencies [[`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4)]:
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+
 ## 3.1.3
 
 ### Patch Changes
