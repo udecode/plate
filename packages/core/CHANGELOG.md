@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
 ## 1.0.0
 
 ### Major Changes
@@ -7,14 +13,15 @@
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
 To migrate, find and replace all occurrences of:
+
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 
 ## 1.0.0-next.61
 
->  This is the last version of `@udecode/slate-plugins[-x]`, please install
->  `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install
+> `@udecode/plate[-x]`.
 
 ### Minor Changes
 
