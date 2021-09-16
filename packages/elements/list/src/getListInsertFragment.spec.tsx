@@ -181,4 +181,59 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
   });
+
+  describe('when pasted lis not contain lic', () => {
+    it('should normalize li children', () => {
+      const input = ((
+        <editor>
+          <hp>
+            P
+            <cursor />
+          </hp>
+        </editor>
+      ) as any) as SPEditor;
+
+      const fragment = ((
+        <fragment>
+          <hul>
+            <hli>
+              <hp>one</hp>
+            </hli>
+            <hli>
+              <hp>two</hp>
+            </hli>
+            <hul>
+              <hli>
+                <hp>three</hp>
+              </hli>
+            </hul>
+          </hul>
+        </fragment>
+      ) as any) as TDescendant[];
+
+      const expected = ((
+        <editor>
+          <hp>
+            P
+            <cursor />
+          </hp>
+          <hul>
+            <hli>
+              <hlic>one</hlic>
+            </hli>
+            <hli>
+              <hlic>two</hlic>
+            </hli>
+            <hul>
+              <hli>
+                <hlic>three</hlic>
+              </hli>
+            </hul>
+          </hul>
+        </editor>
+      ) as any) as SPEditor;
+
+      editorTest(input, fragment, expected);
+    });
+  });
 });
