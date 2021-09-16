@@ -42,9 +42,8 @@ export const getTableCellEntry = (
     const [tableCellNode, tableCellPath] = tableCell;
 
     if (
-      tableCellNode.type !==
-      (getPlatePluginType(editor, ELEMENT_TD) ||
-        getPlatePluginType(editor, ELEMENT_TH))
+      tableCellNode.type !== getPlatePluginType(editor, ELEMENT_TD) &&
+      tableCellNode.type !== getPlatePluginType(editor, ELEMENT_TH)
     )
       return;
 

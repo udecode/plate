@@ -1,5 +1,30 @@
 # @udecode/plate-html-serializer
 
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`5eb42cdd`](https://github.com/udecode/plate/commit/5eb42cdd47db4fd41936420b86b0bf7df9a8aa09) Thanks [@dylans](https://github.com/dylans)! - update to slate 0.66.x
+
+- Updated dependencies [[`3a590663`](https://github.com/udecode/plate/commit/3a5906637b008e85a6d907a7492a78fe9961bf34), [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4), [`5eb42cdd`](https://github.com/udecode/plate/commit/5eb42cdd47db4fd41936420b86b0bf7df9a8aa09)]:
+  - @udecode/plate-serializer@3.2.0
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+
+## 3.1.3
+
+### Patch Changes
+
+- [#998](https://github.com/udecode/plate/pull/998) [`c53532ba`](https://github.com/udecode/plate/commit/c53532baebd83fe79c53b300e97ecf6e713f7754) Thanks [@bensquire](https://github.com/bensquire)! - Adds the ability to not strip whitespace when converting to and from plate/html syntax
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-serializer@3.1.3
+
 ## 2.0.0
 
 ### Patch Changes

@@ -1,5 +1,40 @@
 # @udecode/plate-list
 
+## 3.2.1
+
+### Patch Changes
+
+- [#1015](https://github.com/udecode/plate/pull/1015) [`baddeb11`](https://github.com/udecode/plate/commit/baddeb117c1a13451f7f4da271ea441fafe3c02d) Thanks [@ericyip](https://github.com/ericyip)! - Fix first LIC normalize on paste
+
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- Updated dependencies [[`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4)]:
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+  - @udecode/plate-reset-node@3.2.0
+
+## 3.1.3
+
+### Patch Changes
+
+- [`d73b22d0`](https://github.com/udecode/plate/commit/d73b22d03a0fc270265cbd1bdecfcc4adc70b9d8) Thanks [@zbeyens](https://github.com/zbeyens)! - Fix list delete forward
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-reset-node@3.1.3
+
+## 3.1.2
+
+### Patch Changes
+
+- [#990](https://github.com/udecode/plate/pull/990) [`2906a0a4`](https://github.com/udecode/plate/commit/2906a0a45fa00b38a1e71ed8e3c57203f429db4d) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Fix nested list paste
+
 ## 3.0.4
 
 ### Patch Changes

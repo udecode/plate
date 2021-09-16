@@ -29,4 +29,6 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
    * Show an arrow pointing to up or down depending on the direction.
    */
   arrow?: boolean;
+
+  portalElement?: Element;
 }

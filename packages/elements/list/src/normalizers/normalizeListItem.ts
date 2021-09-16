@@ -90,9 +90,15 @@ export const normalizeListItem = (
       type: getPlatePluginType(editor, ELEMENT_LIC),
     })
   ) {
-    setNodes<TElement>(editor, {
-      type: getPlatePluginType(editor, ELEMENT_LIC),
-    });
+    setNodes<TElement>(
+      editor,
+      {
+        type: getPlatePluginType(editor, ELEMENT_LIC),
+      },
+      {
+        at: firstLiChildPath,
+      }
+    );
     changed = true;
   }
 

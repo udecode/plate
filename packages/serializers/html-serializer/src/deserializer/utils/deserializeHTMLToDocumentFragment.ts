@@ -13,13 +13,15 @@ export const deserializeHTMLToDocumentFragment = <
   {
     plugins,
     element,
+    stripWhitespace = true,
   }: {
     plugins: PlatePlugin<T>[];
     element: HTMLElement | string;
+    stripWhitespace?: boolean;
   }
 ): TDescendant[] => {
   if (typeof element === 'string') {
-    element = htmlStringToDOMNode(element);
+    element = htmlStringToDOMNode(element, stripWhitespace);
   }
 
   const fragment = deserializeHTMLElement(editor, {

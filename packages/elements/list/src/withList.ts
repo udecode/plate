@@ -1,15 +1,16 @@
 import { SPEditor, WithOverride } from '@udecode/plate-core';
-import { getListNormalizer } from './normalizers/getListNormalizer';
 import { getListDeleteBackward } from './getListDeleteBackward';
+import { getListDeleteForward } from './getListDeleteForward';
 import { getListDeleteFragment } from './getListDeleteFragment';
 import { getListInsertBreak } from './getListInsertBreak';
 import { getListInsertFragment } from './getListInsertFragment';
+import { getListNormalizer } from './normalizers';
 import { WithListOptions } from './types';
 
 export const withList = ({
   validLiChildrenTypes,
 }: WithListOptions = {}): WithOverride<SPEditor> => (editor) => {
-  const { insertBreak, deleteBackward, deleteFragment } = editor;
+  const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.insertBreak = () => {
     if (getListInsertBreak(editor)) return;
@@ -21,6 +22,12 @@ export const withList = ({
     if (getListDeleteBackward(editor, unit)) return;
 
     deleteBackward(unit);
+  };
+
+  editor.deleteForward = (unit) => {
+    if (getListDeleteForward(editor)) return;
+
+    deleteForward(unit);
   };
 
   editor.deleteFragment = () => {

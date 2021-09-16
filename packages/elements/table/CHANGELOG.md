@@ -1,5 +1,34 @@
 # @udecode/plate-table
 
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- [#1006](https://github.com/udecode/plate/pull/1006) [`56b2551b`](https://github.com/udecode/plate/commit/56b2551b2fa5fab180b3c99551144667f99f7afc) Thanks [@tjramage](https://github.com/tjramage)! - Adds more natural default header option when inserting table columns
+
+- Updated dependencies [[`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4)]:
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+
+## 3.1.2
+
+### Patch Changes
+
+- [#997](https://github.com/udecode/plate/pull/997) [`1244bcb7`](https://github.com/udecode/plate/commit/1244bcb748411e6291d635647c2053b115704eb9) Thanks [@z0al](https://github.com/z0al)! - fix(table): jump to next header cell on TAB
+
+- [#994](https://github.com/udecode/plate/pull/994) [`5651aed7`](https://github.com/udecode/plate/commit/5651aed704d69af85e2dd7d6f850e8dcabcd45f4) Thanks [@z0al](https://github.com/z0al)! - fix(table): only mark first row as table header
+
 ## 3.0.2
 
 ### Patch Changes

@@ -1,5 +1,35 @@
 # @udecode/plate-block-quote-ui
 
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- Updated dependencies [[`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4)]:
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+  - @udecode/plate-block-quote@3.2.0
+  - @udecode/plate-styled-components@3.2.0
+
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-block-quote@3.1.3
+  - @udecode/plate-styled-components@3.1.3
+
+## 3.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`03f2acdd`](https://github.com/udecode/plate/commit/03f2acdd1b34d1e4e574bcf296ae5b4796930c9a)]:
+  - @udecode/plate-styled-components@3.1.0
+
 ## 3.0.1
 
 ### Patch Changes

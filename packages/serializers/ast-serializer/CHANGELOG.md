@@ -1,5 +1,52 @@
 # @udecode/plate-ast-serializer
 
+## 3.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`baddeb11`](https://github.com/udecode/plate/commit/baddeb117c1a13451f7f4da271ea441fafe3c02d)]:
+  - @udecode/plate-list@3.2.1
+
+## 3.2.0
+
+### Minor Changes
+
+- [#995](https://github.com/udecode/plate/pull/995) [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4) Thanks [@dylans](https://github.com/dylans)! - update slate dependencies and peerDependencies to 0.66.\*
+
+### Patch Changes
+
+- Updated dependencies [[`3a590663`](https://github.com/udecode/plate/commit/3a5906637b008e85a6d907a7492a78fe9961bf34), [`58387c6d`](https://github.com/udecode/plate/commit/58387c6d34e86be7880999b40a9105b6178f4ce4), [`5eb42cdd`](https://github.com/udecode/plate/commit/5eb42cdd47db4fd41936420b86b0bf7df9a8aa09)]:
+  - @udecode/plate-serializer@3.2.0
+  - @udecode/plate-common@3.2.0
+  - @udecode/plate-core@3.2.0
+  - @udecode/plate-block-quote@3.2.0
+  - @udecode/plate-code-block@3.2.0
+  - @udecode/plate-heading@3.2.0
+  - @udecode/plate-link@3.2.0
+  - @udecode/plate-list@3.2.0
+  - @udecode/plate-paragraph@3.2.0
+
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`f6c58134`](https://github.com/udecode/plate/commit/f6c581347cc5877b7afa0774ef1ad78ad227564e), [`d73b22d0`](https://github.com/udecode/plate/commit/d73b22d03a0fc270265cbd1bdecfcc4adc70b9d8)]:
+  - @udecode/plate-common@3.1.3
+  - @udecode/plate-list@3.1.3
+  - @udecode/plate-block-quote@3.1.3
+  - @udecode/plate-code-block@3.1.3
+  - @udecode/plate-heading@3.1.3
+  - @udecode/plate-link@3.1.3
+  - @udecode/plate-paragraph@3.1.3
+  - @udecode/plate-serializer@3.1.3
+
+## 3.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`2906a0a4`](https://github.com/udecode/plate/commit/2906a0a45fa00b38a1e71ed8e3c57203f429db4d)]:
+  - @udecode/plate-list@3.1.2
+
 ## 3.0.4
 
 ### Patch Changes

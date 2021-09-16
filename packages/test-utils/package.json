@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-test-utils",
-  "version": "1.0.0",
+  "version": "3.2.0",
   "description": "Testing utilities for Plate",
   "keywords": [
     "slate",
@@ -33,8 +33,8 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "slate": ">=0.60.0",
-    "slate-hyperscript": ">=0.60.0"
+    "slate": ">=0.66.1",
+    "slate-hyperscript": ">=0.66.0"
   },
   "publishConfig": {
     "access": "public"

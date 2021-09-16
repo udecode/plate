@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ast-serializer",
-  "version": "3.0.4",
+  "version": "3.2.1",
   "description": "Slate AST serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -33,15 +33,15 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "2.0.0",
-    "@udecode/plate-code-block": "2.0.0",
-    "@udecode/plate-common": "2.0.0",
-    "@udecode/plate-core": "1.0.0",
-    "@udecode/plate-heading": "2.0.0",
-    "@udecode/plate-link": "2.0.0",
-    "@udecode/plate-list": "3.0.4",
-    "@udecode/plate-paragraph": "2.0.0",
-    "@udecode/plate-serializer": "2.0.0",
+    "@udecode/plate-block-quote": "3.2.0",
+    "@udecode/plate-code-block": "3.2.0",
+    "@udecode/plate-common": "3.2.0",
+    "@udecode/plate-core": "3.2.0",
+    "@udecode/plate-heading": "3.2.0",
+    "@udecode/plate-link": "3.2.0",
+    "@udecode/plate-list": "3.2.1",
+    "@udecode/plate-paragraph": "3.2.0",
+    "@udecode/plate-serializer": "3.2.0",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"
@@ -49,9 +49,9 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.60.0",
-    "slate-history": ">=0.60.0",
-    "slate-react": ">=0.60.0"
+    "slate": ">=0.66.1",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.66.1"
   },
   "publishConfig": {
     "access": "public"
