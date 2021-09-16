@@ -1,5 +1,38 @@
 # @udecode/plate-image-ui
 
+## 3.3.0
+
+### Minor Changes
+
+- [#977](https://github.com/udecode/plate/pull/977) [`aaf99b7c`](https://github.com/udecode/plate/commit/aaf99b7c57465caa08427b46d64be64e9ce9f371) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - changes:
+  - new deps:
+    - `react-textarea-autosize` for image caption
+    - `re-resizable` for resizing image width
+  - `ImageElement`
+    - modified styles
+    - wrapped the `img` html tag into a `figure`
+    - render `Resizable` from `re-resizable`:
+      - on resize stop, set the node width in `node.width`
+      - hide left handle when image is aligned at left
+      - hide right handle when image is aligned at right
+    - caption:
+      - `img.alt` is now the caption text
+      - added an editable caption inside a `figcaption` html tag using `react-textarea-autosize`
+      - the value is stored in `node.caption`
+    - new props:
+      - `resizableProps?: ResizableProps`
+      - `align?: 'left' | 'center' | 'right'`
+      - `draggable?: boolean`
+      - `caption.disabled?: boolean`
+      - `caption.align?: 'left' | 'center' | 'right'`
+      - `caption.placeholder?: string`
+  - `ImageElementStyles` new customizable styles: `resizable`, `figure`, `figcaption`, `caption`, `handle`, `handleLeft`, `handleRight`
+
+### Patch Changes
+
+- Updated dependencies [[`2c341eff`](https://github.com/udecode/plate/commit/2c341eff209637d26de990ebe27460123ba52936)]:
+  - @udecode/plate-image@3.3.0
+
 ## 3.2.0
 
 ### Minor Changes

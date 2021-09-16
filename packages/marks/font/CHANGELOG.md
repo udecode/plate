@@ -1,5 +1,11 @@
 # @udecode/plate-font
 
+## 3.3.0
+
+### Minor Changes
+
+- [#977](https://github.com/udecode/plate/pull/977) [`8b7c85b3`](https://github.com/udecode/plate/commit/8b7c85b3ec63d94cf9f1ce66afa2092d0f76812a) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - new plugin for font size: `createFontSizePlugin` using `MARK_FONT_SIZE` plugin key
+
 ## 3.2.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @udecode/plate
 
+## 3.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`2c341eff`](https://github.com/udecode/plate/commit/2c341eff209637d26de990ebe27460123ba52936), [`e183065f`](https://github.com/udecode/plate/commit/e183065fb6b05ff09a5841454c04be2645da79fb), [`8b7c85b3`](https://github.com/udecode/plate/commit/8b7c85b3ec63d94cf9f1ce66afa2092d0f76812a), [`aaf99b7c`](https://github.com/udecode/plate/commit/aaf99b7c57465caa08427b46d64be64e9ce9f371)]:
+  - @udecode/plate-image@3.3.0
+  - @udecode/plate-html-serializer@3.3.0
+  - @udecode/plate-font@3.3.0
+  - @udecode/plate-image-ui@3.3.0
+  - @udecode/plate-font-ui@3.3.0
+
 ## 3.2.1
 
 ### Patch Changes
