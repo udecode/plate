@@ -20,6 +20,7 @@ changes:
   - new props:
     - `resizableProps?: ResizableProps`
     - `align?: 'left' | 'center' | 'right'`
+    - `draggable?: boolean`
     - `caption.disabled?: boolean`
     - `caption.align?: 'left' | 'center' | 'right'`
     - `caption.placeholder?: string`
