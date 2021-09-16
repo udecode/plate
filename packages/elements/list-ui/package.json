@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list-ui",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "List UI for Plate",
   "keywords": [
     "slate",
@@ -34,7 +34,7 @@
   "dependencies": {
     "@udecode/plate-common": "3.2.0",
     "@udecode/plate-core": "3.2.0",
-    "@udecode/plate-list": "3.2.0",
+    "@udecode/plate-list": "3.2.1",
     "@udecode/plate-styled-components": "3.2.0",
     "@udecode/plate-toolbar": "3.2.0"
   },
