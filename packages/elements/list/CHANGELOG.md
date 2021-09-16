@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 3.2.1
+
+### Patch Changes
+
+- [#1015](https://github.com/udecode/plate/pull/1015) [`baddeb11`](https://github.com/udecode/plate/commit/baddeb117c1a13451f7f4da271ea441fafe3c02d) Thanks [@ericyip](https://github.com/ericyip)! - Fix first LIC normalize on paste
+
 ## 3.2.0
 
 ### Minor Changes

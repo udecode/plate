@@ -1,5 +1,12 @@
 # @udecode/plate-list-ui
 
+## 3.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`baddeb11`](https://github.com/udecode/plate/commit/baddeb117c1a13451f7f4da271ea441fafe3c02d)]:
+  - @udecode/plate-list@3.2.1
+
 ## 3.2.0
 
 ### Minor Changes
