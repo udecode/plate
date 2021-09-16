@@ -238,7 +238,9 @@ export const serializeHTMLFromNodes = (
     })
     .join('');
 
-  result = decodeURIComponent(result);
+  if (isEncoded(result)) {
+    result = decodeURIComponent(result);
+  }
 
   if (stripWhitespace) {
     result = trimWhitespace(result);
