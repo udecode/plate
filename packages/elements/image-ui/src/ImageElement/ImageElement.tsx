@@ -32,6 +32,7 @@ export const ImageElement = (props: ImageElementProps) => {
       minWidth: 92,
     },
     align = 'center',
+    draggable,
   } = props;
 
   const { placeholder = 'Write a caption...' } = caption;
@@ -133,6 +134,7 @@ export const ImageElement = (props: ImageElementProps) => {
               className={styles.img?.className}
               src={url}
               alt={captionString}
+              draggable={draggable}
               {...nodeProps}
             />
           </Resizable>

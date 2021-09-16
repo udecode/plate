@@ -22,10 +22,28 @@ export interface ImageElementStyles {
 export interface ImageElementProps
   extends StyledElementProps<ImageNodeData, ImageElementStyles> {
   resizableProps?: ResizableProps;
+
+  /**
+   * Image alignment.
+   */
   align?: 'left' | 'center' | 'right';
+
   caption?: {
     disabled?: boolean;
+
+    /**
+     * Caption alignment.
+     */
     align?: 'left' | 'center' | 'right';
+
+    /**
+     * Caption placeholder.
+     */
     placeholder?: string;
   };
+
+  /**
+   * Whether the image is draggable.
+   */
+  draggable?: boolean;
 }
