@@ -41,3 +41,22 @@ export const getFontBackgroundColorDeserialize = (): Deserialize => (
     }),
   };
 };
+
+export const getFontSizeDeserialize = (): Deserialize => (editor) => {
+  const options = getPlatePluginOptions(editor, MARK_BG_COLOR);
+
+  return {
+    leaf: getNodeDeserializer({
+      type: options.type,
+      getNode: (element) => ({ [options.type]: element.style.fontSize }),
+      rules: [
+        {
+          style: {
+            fontSize: '*',
+          },
+        },
+      ],
+      ...options.deserialize,
+    }),
+  };
+};

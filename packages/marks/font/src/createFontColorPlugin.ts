@@ -1,6 +1,6 @@
 import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
 import { MARK_COLOR } from './defaults';
-import { getFontColorDeserialize } from './getColorDeserialize';
+import { getFontColorDeserialize } from './getFontDeserialize';
 
 export const createFontColorPlugin = (): PlatePlugin => ({
   pluginKeys: MARK_COLOR,

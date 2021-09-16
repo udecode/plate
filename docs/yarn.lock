@@ -2020,8 +2020,8 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-ast-serializer@2.0.0", "@udecode/plate-ast-serializer@file:../packages/serializers/ast-serializer":
-  version "2.0.0"
+"@udecode/plate-ast-serializer@3.0.4", "@udecode/plate-ast-serializer@file:../packages/serializers/ast-serializer":
+  version "3.0.4"
   dependencies:
     "@udecode/plate-block-quote" "2.0.0"
     "@udecode/plate-code-block" "2.0.0"
@@ -2029,7 +2029,7 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-heading" "2.0.0"
     "@udecode/plate-link" "2.0.0"
-    "@udecode/plate-list" "2.0.0"
+    "@udecode/plate-list" "3.0.4"
     "@udecode/plate-paragraph" "2.0.0"
     "@udecode/plate-serializer" "2.0.0"
     remark-parse "^9.0.0"
@@ -2072,8 +2072,8 @@
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
 
-"@udecode/plate-break@2.0.0", "@udecode/plate-break@file:../packages/break":
-  version "2.0.0"
+"@udecode/plate-break@3.0.3", "@udecode/plate-break@file:../packages/break":
+  version "3.0.3"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
@@ -2191,6 +2191,7 @@
     "@udecode/plate-image" "2.0.0"
     "@udecode/plate-styled-components" "3.0.1"
     "@udecode/plate-toolbar" "3.0.1"
+    re-resizable "^6.9.0"
 
 "@udecode/plate-image@2.0.0", "@udecode/plate-image@file:../packages/elements/image":
   version "2.0.0"
@@ -2220,24 +2221,24 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-normalizers" "2.0.0"
 
-"@udecode/plate-list-ui@3.0.1", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
-  version "3.0.1"
+"@udecode/plate-list-ui@3.0.4", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
+  version "3.0.4"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
-    "@udecode/plate-list" "2.0.0"
+    "@udecode/plate-list" "3.0.4"
     "@udecode/plate-styled-components" "3.0.1"
     "@udecode/plate-toolbar" "3.0.1"
 
-"@udecode/plate-list@2.0.0", "@udecode/plate-list@file:../packages/elements/list":
-  version "2.0.0"
+"@udecode/plate-list@3.0.4", "@udecode/plate-list@file:../packages/elements/list":
+  version "3.0.4"
   dependencies:
     "@udecode/plate-common" "2.0.0"
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-reset-node" "2.0.0"
 
-"@udecode/plate-md-serializer@2.0.0", "@udecode/plate-md-serializer@file:../packages/serializers/md-serializer":
-  version "2.0.0"
+"@udecode/plate-md-serializer@3.0.5", "@udecode/plate-md-serializer@file:../packages/serializers/md-serializer":
+  version "3.0.5"
   dependencies:
     "@udecode/plate-block-quote" "2.0.0"
     "@udecode/plate-code-block" "2.0.0"
@@ -2245,7 +2246,7 @@
     "@udecode/plate-core" "1.0.0"
     "@udecode/plate-heading" "2.0.0"
     "@udecode/plate-link" "2.0.0"
-    "@udecode/plate-list" "2.0.0"
+    "@udecode/plate-list" "3.0.4"
     "@udecode/plate-paragraph" "2.0.0"
     "@udecode/plate-serializer" "2.0.0"
     remark-parse "^9.0.0"
@@ -2364,17 +2365,17 @@
     "@udecode/plate-core" "1.0.0"
 
 "@udecode/plate@file:../packages/plate":
-  version "3.0.2"
+  version "3.0.5"
   dependencies:
     "@udecode/plate-alignment" "2.0.0"
     "@udecode/plate-alignment-ui" "3.0.1"
-    "@udecode/plate-ast-serializer" "2.0.0"
+    "@udecode/plate-ast-serializer" "3.0.4"
     "@udecode/plate-autoformat" "2.0.0"
     "@udecode/plate-basic-elements" "2.0.0"
     "@udecode/plate-basic-marks" "2.0.0"
     "@udecode/plate-block-quote" "2.0.0"
     "@udecode/plate-block-quote-ui" "3.0.1"
-    "@udecode/plate-break" "2.0.0"
+    "@udecode/plate-break" "3.0.3"
     "@udecode/plate-code-block" "2.0.0"
     "@udecode/plate-code-block-ui" "3.0.1"
     "@udecode/plate-common" "2.0.0"
@@ -2393,9 +2394,9 @@
     "@udecode/plate-kbd" "2.0.0"
     "@udecode/plate-link" "2.0.0"
     "@udecode/plate-link-ui" "3.0.1"
-    "@udecode/plate-list" "2.0.0"
-    "@udecode/plate-list-ui" "3.0.1"
-    "@udecode/plate-md-serializer" "2.0.0"
+    "@udecode/plate-list" "3.0.4"
+    "@udecode/plate-list-ui" "3.0.4"
+    "@udecode/plate-md-serializer" "3.0.5"
     "@udecode/plate-media-embed" "2.0.0"
     "@udecode/plate-media-embed-ui" "3.0.1"
     "@udecode/plate-mention" "2.0.0"
@@ -4827,6 +4828,11 @@ fast-json-stable-stringify@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz#874bf69c6f404c2b5d99c481341399fd55892633"
   integrity sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==
+
+fast-memoize@^2.5.1:
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/fast-memoize/-/fast-memoize-2.5.2.tgz#79e3bb6a4ec867ea40ba0e7146816f6cdce9b57e"
+  integrity sha512-Ue0LwpDYErFbmNnZSF0UH6eImUwDmogUO1jyE+JbN2gsQz/jICm1Ve7t9QT0rNSsfJt+Hs4/S3GnsDVjL4HVrw==
 
 fast-shallow-equal@^1.0.0:
   version "1.0.0"
@@ -8340,6 +8346,13 @@ rc@^1.2.8:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
+
+re-resizable@^6.9.0:
+  version "6.9.0"
+  resolved "https://registry.yarnpkg.com/re-resizable/-/re-resizable-6.9.0.tgz#9c3059b389ced6ade602234cc5bb1e12d231cd47"
+  integrity sha512-3cUDG81ylyqI0Pdgle/RHwwRYq0ORZzsUaySOCO8IbEtNyaRtrIHYm/jMQ5pjcNiKCxR3vsSymIQZHwJq4gg2Q==
+  dependencies:
+    fast-memoize "^2.5.1"
 
 react-base16-styling@^0.6.0:
   version "0.6.0"

@@ -25,6 +25,7 @@ import {
   MARK_BOLD,
   MARK_CODE,
   MARK_COLOR,
+  MARK_FONT_SIZE,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
@@ -139,7 +140,7 @@ export const initialValueImages: any = (
       In addition to nodes that contain editable text, you can also create other
       types of nodes, like images or videos.
     </hp>
-    <himg url="https://source.unsplash.com/kFrdX5IeQzI">
+    <himg url="https://source.unsplash.com/kFrdX5IeQzI" width="75%">
       <htext />
     </himg>
     <hp>
@@ -148,7 +149,8 @@ export const initialValueImages: any = (
       on a little secret, copy an image URL to your keyboard and paste it
       anywhere in the editor! Additionally, you can customize the toolbar button
       to load an url asynchronously, for example showing a file picker and
-      uploading a file to Amazon S3.
+      uploading a file to Amazon S3. You can also add a caption and resize the
+      image.
     </hp>
   </fragment>
 );
@@ -560,9 +562,11 @@ export const initialValueFont = [
     type: ELEMENT_PARAGRAPH,
     children: [
       {
-        text: 'This text has white color and black background.',
+        text:
+          'This text has white color, black background and a custom font size.',
         [MARK_COLOR]: 'white',
         [MARK_BG_COLOR]: 'black',
+        [MARK_FONT_SIZE]: '30px',
       },
     ],
   },
@@ -572,7 +576,7 @@ export const initialValueFont = [
       {
         text: 'This text has a custom color used for text and background.',
         [MARK_COLOR]: 'grey',
-        [MARK_BG_COLOR]: 'cyan',
+        [MARK_BG_COLOR]: 'green',
       },
     ],
   },

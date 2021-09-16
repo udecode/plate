@@ -43,9 +43,11 @@ export const Footer = () => (
           </ul>
         </div>
 
-        <div tw="mt-12 md:mt-0">
-          <CarbonAds />
-        </div>
+        {process.env.NODE_ENV !== 'development' && (
+          <div tw="mt-12 md:mt-0">
+            <CarbonAds />
+          </div>
+        )}
 
         <div tw="mt-12 md:mt-0">
           <h4 tw="text-sm leading-5 font-semibold tracking-wider text-gray-400 dark:text-white uppercase">
