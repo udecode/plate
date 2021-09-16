@@ -1,5 +1,11 @@
 # @udecode/plate-html-serializer
 
+## 3.3.0
+
+### Patch Changes
+
+- [#977](https://github.com/udecode/plate/pull/977) [`e183065f`](https://github.com/udecode/plate/commit/e183065fb6b05ff09a5841454c04be2645da79fb) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - fix: `decodeURIComponent` should be called only if the input is encoded
+
 ## 3.2.0
 
 ### Minor Changes

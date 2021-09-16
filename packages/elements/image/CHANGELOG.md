@@ -1,5 +1,13 @@
 # @udecode/plate-image
 
+## 3.3.0
+
+### Minor Changes
+
+- [#977](https://github.com/udecode/plate/pull/977) [`2c341eff`](https://github.com/udecode/plate/commit/2c341eff209637d26de990ebe27460123ba52936) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - `ImageNodeData` new fields:
+  - `width?: number`
+  - `caption?: TDescendant[]` (it's not yet a slate value but it may be in future releases)
+
 ## 3.2.0
 
 ### Minor Changes
