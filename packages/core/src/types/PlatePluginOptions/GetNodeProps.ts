@@ -2,8 +2,7 @@ import { TElement } from '../TElement';
 import { TText } from '../TText';
 
 /**
- * Map slate node props to `nodeProps`.
- * `nodeProps` is a prop passed to the `component`.
+ * Map slate node properties to component props.
  */
 export type GetNodeProps = (options: {
   attributes: any;

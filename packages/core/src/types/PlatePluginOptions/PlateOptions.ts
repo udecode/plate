@@ -3,7 +3,7 @@ import { SPRenderElementProps } from '../SPRenderElementProps';
 import { SPRenderLeafProps } from '../SPRenderLeafProps';
 import { AnyObject } from '../utility/AnyObject';
 import { DeserializeOptions } from './DeserializeOptions';
-import { GetNodeProps } from './GetNodeProps';
+import { GetNodeProps, NodeProps } from './GetNodeProps';
 
 /**
  * React component rendering a slate element or leaf.
@@ -36,9 +36,16 @@ export interface PlatePluginOptions extends AnyObject {
   deserialize?: Partial<DeserializeOptions>;
 
   /**
+   * `Plate` will pass its return value as a component prop `nodeProps`.
    * @see {@link GetNodeProps}
    */
   getNodeProps?: GetNodeProps;
+
+  /**
+   * If it's a function, its return value will override the component props.
+   * If it's an object, it will override the component props.
+   */
+  overrideProps?: GetNodeProps | NodeProps;
 
   /**
    * Hotkeys to listen to trigger a plugin action.
