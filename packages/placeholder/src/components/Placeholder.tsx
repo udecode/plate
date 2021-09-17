@@ -1,6 +1,10 @@
-import React, { useMemo } from 'react';
-import { createNodeHOC, createNodesHOC } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-core';
+import React from 'react';
+import {
+  createNodeHOC,
+  createNodesHOC,
+  isCollapsed,
+} from '@udecode/plate-common';
+import { useEditorState } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';
@@ -17,15 +21,14 @@ export const Placeholder = (props: PlaceholderProps) => {
 
   const focused = useFocused();
   const selected = useSelected();
-  const editor = useEditorRef();
+  const editor = useEditorState();
 
-  const enabled = useMemo(() => {
-    const isEmptyBlock = Editor.isEmpty(editor, element);
-    return (
-      (!hideOnBlur && isEmptyBlock) ||
-      (hideOnBlur && focused && selected && isEmptyBlock)
-    );
-  }, [editor, element, hideOnBlur, focused, selected]);
+  const isEmptyBlock = Editor.isEmpty(editor, element);
+
+  const enabled =
+    isEmptyBlock &&
+    (!hideOnBlur ||
+      (isCollapsed(editor.selection) && hideOnBlur && focused && selected));
 
   return React.Children.map(children, (child) => {
     return React.cloneElement(child, {
