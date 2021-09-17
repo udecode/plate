@@ -10,13 +10,13 @@ export type FindNodeOptions<T extends TNode = TNode> = EditorNodesOptions<T>;
  */
 export const findNode = <T extends TNode = TNode>(
   editor: TEditor,
-  options: FindNodeOptions<T>
+  options: FindNodeOptions<T> = {}
 ): NodeEntry<T> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const nodeEntries = Editor.nodes<T>(editor, {
-      ...options,
       at: editor.selection || [],
+      ...options,
       match: (node) => match<Node>(node, options.match),
     });
 
