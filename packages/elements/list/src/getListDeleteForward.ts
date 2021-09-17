@@ -3,7 +3,6 @@ import {
   getChildren,
   getNode,
   getText,
-  hasTexts,
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
