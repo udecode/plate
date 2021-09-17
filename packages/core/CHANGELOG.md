@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 3.4.0
+
+### Minor Changes
+
+- [#1022](https://github.com/udecode/plate/pull/1022) [`35caf35d`](https://github.com/udecode/plate/commit/35caf35d48fff851518648ff66e64a4268dcc97c) Thanks [@zbeyens](https://github.com/zbeyens)! - `overrideProps`: new plate option used by `getRenderElement` and `getRenderLeaf`
+  - If it's a function, its return value will override the component props.
+  - If it's an object, it will override the component props.
+
 ## 3.2.0
 
 ### Minor Changes

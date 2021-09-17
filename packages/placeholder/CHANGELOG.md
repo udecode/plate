@@ -1,5 +1,16 @@
 # @udecode/plate-placeholder
 
+## 3.4.0
+
+### Patch Changes
+
+- [#1026](https://github.com/udecode/plate/pull/1026) [`533d904f`](https://github.com/udecode/plate/commit/533d904f9afc547e232d7cb7843a82923778d41d) Thanks [@zbeyens](https://github.com/zbeyens)! - fix: hide placeholder when the selection is expanded
+
+- Updated dependencies [[`f1da7267`](https://github.com/udecode/plate/commit/f1da7267d46d94e207f4477f73e42b63736a9085), [`35caf35d`](https://github.com/udecode/plate/commit/35caf35d48fff851518648ff66e64a4268dcc97c)]:
+  - @udecode/plate-common@3.4.0
+  - @udecode/plate-core@3.4.0
+  - @udecode/plate-styled-components@3.4.0
+
 ## 3.2.0
 
 ### Minor Changes
