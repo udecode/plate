@@ -1,17 +1,26 @@
 import {
+  getBlockAbove,
   getChildren,
   getNode,
+  getText,
+  hasTexts,
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginOptions,
+  getPlatePluginType,
   SPEditor,
   TDescendant,
+  TElement,
 } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry, Path } from 'slate';
+import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from './defaults';
-import { getListItemEntry, hasListChild } from './queries';
-import { removeFirstListItem, removeListItem } from './transforms';
+import { getListItemEntry, getListRoot, hasListChild } from './queries';
+import {
+  moveListItemsToList,
+  moveListItemUp,
+  removeFirstListItem,
+  removeListItem,
+} from './transforms';
 
 const pathToEntry = <T extends Node>(
   editor: SPEditor,
@@ -22,15 +31,52 @@ export const getListDeleteForward = (editor: SPEditor) => {
   const res = getListItemEntry(editor, {});
 
   let moved: boolean | undefined = false;
-  if (!isSelectionAtBlockEnd(editor) || !res) {
+  if (!isSelectionAtBlockEnd(editor)) {
     return moved;
+  }
+
+  if (!res) {
+    const afterPoint = Editor.after(editor, editor.selection!.focus.path);
+
+    if (afterPoint) {
+      // there is a block after it
+      const nextSiblingListRes = getListItemEntry(editor, {
+        at: afterPoint.path,
+      });
+
+      if (nextSiblingListRes) {
+        // the next block is a list
+        const { listItem } = nextSiblingListRes;
+        const parentBlockEntity = getBlockAbove(editor, {
+          at: editor.selection!.anchor,
+        });
+
+        if (!getText(editor, parentBlockEntity![1])) {
+          // the selected block is empty
+          Transforms.removeNodes(editor, { at: editor.selection!.focus });
+
+          return true;
+        }
+
+        if (hasListChild(editor, listItem[0])) {
+          // the next block has children, so we have to move the first item up
+          const sublistRes = getListItemEntry(editor, {
+            at: [...listItem[1], 1, 0, 0],
+          });
+
+          moveListItemUp(editor, sublistRes!);
+        }
+      }
+    }
+    return false;
   }
 
   Editor.withoutNormalizing(editor, () => {
     const { listItem } = res;
 
+    // if it has no children
     if (!hasListChild(editor, listItem[0])) {
-      const li = getPlatePluginOptions(editor, ELEMENT_LI);
+      const liType = getPlatePluginType(editor, ELEMENT_LI);
       const liWithSiblings = Array.from(
         Editor.nodes(editor, {
           at: listItem[1],
@@ -40,10 +86,10 @@ export const getListDeleteForward = (editor: SPEditor) => {
               return false;
             }
 
-            const isNodeLi = node.type === li.type;
+            const isNodeLi = node.type === liType;
             const isSiblingOfNodeLi =
               (getNode(editor, Path.next(path)) as TDescendant)?.type ===
-              li.type;
+              liType;
 
             return isNodeLi && isSiblingOfNodeLi;
           },
@@ -52,6 +98,34 @@ export const getListDeleteForward = (editor: SPEditor) => {
       )[0];
 
       if (!liWithSiblings) {
+        // there are no more list item in the list
+        const afterPoint = Editor.after(editor, listItem[1]);
+
+        if (afterPoint) {
+          // there is a block after it
+          const nextSiblingListRes = getListItemEntry(editor, {
+            at: afterPoint.path,
+          });
+
+          if (nextSiblingListRes) {
+            // it is a list so we merge the lists
+            const listRoot = getListRoot(
+              editor,
+              listItem[1]
+            ) as NodeEntry<TElement>;
+
+            moveListItemsToList(editor, {
+              fromList: nextSiblingListRes.list,
+              toList: listRoot,
+              deleteFromList: true,
+            });
+
+            moved = true;
+
+            return;
+          }
+        }
+
         return;
       }
 
@@ -70,11 +144,11 @@ export const getListDeleteForward = (editor: SPEditor) => {
         listItem: siblingListItem,
         reverse: false,
       });
-      if (moved) return;
 
       return;
     }
 
+    // if it has children
     const nestedList = pathToEntry<TDescendant>(
       editor,
       Path.next([...listItem[1], 0])
