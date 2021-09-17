@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: "💬 Support: Discussions"
+    url: https://github.com/udecode/plate/discussions
+    about: Share ideas, ask and answer questions in our Discussions.
   - name: "💬 Support: Slack"
     url: https://slate-js.slack.com/messages/plate
-    about: Please ask and answer questions in our Slack channel.
+    about: Feels more chatty? Ask quick questions in our Slack.
