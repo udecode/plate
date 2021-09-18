@@ -1,5 +1,11 @@
 # @udecode/plate-font
 
+## 3.4.1
+
+### Patch Changes
+
+- [#1031](https://github.com/udecode/plate/pull/1031) [`fd7d7f8a`](https://github.com/udecode/plate/commit/fd7d7f8a86344091c8b3aa5c6ea58e8f7cbd7baa) Thanks [@csalomons](https://github.com/csalomons)! - fix: font size deserializer options
+
 ## 3.4.0
 
 ### Patch Changes

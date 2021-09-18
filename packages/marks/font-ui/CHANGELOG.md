@@ -1,5 +1,12 @@
 # @udecode/plate-font-ui
 
+## 3.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`fd7d7f8a`](https://github.com/udecode/plate/commit/fd7d7f8a86344091c8b3aa5c6ea58e8f7cbd7baa)]:
+  - @udecode/plate-font@3.4.1
+
 ## 3.4.0
 
 ### Patch Changes
