@@ -1,6 +1,6 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
 import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
-import { MARK_BG_COLOR, MARK_COLOR } from './defaults';
+import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from './defaults';
 
 export const getFontColorDeserialize = (): Deserialize => (editor) => {
   const options = getPlatePluginOptions(editor, MARK_COLOR);
@@ -43,7 +43,7 @@ export const getFontBackgroundColorDeserialize = (): Deserialize => (
 };
 
 export const getFontSizeDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_BG_COLOR);
+  const options = getPlatePluginOptions(editor, MARK_FONT_SIZE);
 
   return {
     leaf: getNodeDeserializer({
