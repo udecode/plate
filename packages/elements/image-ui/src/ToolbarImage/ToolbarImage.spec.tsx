@@ -52,6 +52,8 @@ describe('ToolbarImage', () => {
             type={ELEMENT_H1}
             getImageUrl={getImageUrlMock}
             icon={null}
+            url={null}
+            onClick={null}
           />
         </Plate>
       );
@@ -74,7 +76,12 @@ describe('ToolbarImage', () => {
           plugins={[createImagePlugin()]}
           options={createPlateOptions()}
         >
-          <ToolbarImage type={ELEMENT_H1} icon={null} />
+          <ToolbarImage
+            type={ELEMENT_H1}
+            icon={null}
+            url={null}
+            onClick={null}
+          />
         </Plate>
       );
 

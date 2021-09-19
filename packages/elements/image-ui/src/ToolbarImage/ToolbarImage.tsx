@@ -10,7 +10,12 @@ export interface ToolbarImageProps extends ToolbarButtonProps {
   getImageUrl?: () => Promise<string>;
 }
 
-export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
+export const ToolbarImage = ({
+  getImageUrl,
+  onClick,
+  count,
+  ...props
+}: ToolbarImageProps) => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
 
   return (
@@ -24,7 +29,12 @@ export const ToolbarImage = ({ getImageUrl, ...props }: ToolbarImageProps) => {
         if (getImageUrl) {
           url = await getImageUrl();
         } else {
-          url = window.prompt('Enter the URL of the image:');
+          // TODO: replace this with image upload thing
+          console.log('i am here');
+          console.log('onClick', onClick);
+          console.log('count', count);
+          console.log('props', props);
+          return <div onClick={onClick()}>Click me {count}</div>;
         }
         if (!url) return;
 
