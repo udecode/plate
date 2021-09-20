@@ -363,11 +363,11 @@ function DocSidebar({
       </div>
       {hideableSidebar && <HideableSidebarButton onClick={onCollapse} />}
 
-      {process.env.NODE_ENV !== 'development' && (
-        <div tw="hidden lg:block">
-          <CarbonAds />
-        </div>
-      )}
+      {/* {process.env.NODE_ENV !== 'development' && ( */}
+      {/*  <div tw="hidden lg:block"> */}
+      {/*    <CarbonAds /> */}
+      {/*  </div> */}
+      {/* )} */}
     </div>
   );
 }

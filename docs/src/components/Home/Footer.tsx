@@ -1,7 +1,7 @@
 import 'twin.macro';
 import * as React from 'react';
 import Link from '@docusaurus/Link';
-import { CarbonAds } from './CarbonAds';
+import { PoweredByVercel } from './PoweredByVercel';
 
 export const Footer = () => (
   <div tw="bg-gray-50 dark:bg-gray-850 border-t border-gray-200">
@@ -43,11 +43,11 @@ export const Footer = () => (
           </ul>
         </div>
 
-        {process.env.NODE_ENV !== 'development' && (
-          <div tw="mt-12 md:mt-0">
-            <CarbonAds />
-          </div>
-        )}
+        {/* {process.env.NODE_ENV !== 'development' && ( */}
+        {/*  <div tw="mt-12 md:mt-0"> */}
+        {/*    <CarbonAds /> */}
+        {/*  </div> */}
+        {/* )} */}
 
         <div tw="mt-12 md:mt-0">
           <h4 tw="text-sm leading-5 font-semibold tracking-wider text-gray-400 dark:text-white uppercase">
@@ -82,7 +82,13 @@ export const Footer = () => (
         </div>
       </div>
       <div tw="mt-8 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
-        <div tw="flex md:order-2">
+        <p tw="mt-8 text-base leading-6 text-gray-400 md:mt-0">
+          &copy; {new Date().getFullYear()} Ziad Beyens. All rights reserved.
+        </p>
+
+        <PoweredByVercel utmSource="udemus" />
+
+        <div tw="flex items-center">
           <a
             href="https://twitter.com/zbeyens"
             tw="ml-6 text-gray-400 hover:text-gray-500 dark:text-gray-300"
@@ -110,9 +116,6 @@ export const Footer = () => (
             </svg>
           </a>
         </div>
-        <p tw="mt-8 text-base leading-6 text-gray-400 md:mt-0 md:order-1">
-          &copy; {new Date().getFullYear()} Ziad Beyens. All rights reserved.
-        </p>
       </div>
     </div>
   </div>
