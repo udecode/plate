@@ -13,12 +13,9 @@ Plate
   <a target="_blank" href="https://slate-js.slack.com/messages/plate"><img src="https://img.shields.io/badge/slack-slate-yellow?logo=slack" /></a>
 </div>
 <div align="center">
+<a href="https://vercel.com/?utm_source=udemus&utm_campaign=oss"><img height="32" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
 </div>
 </p>
-
-> 🎉 🎉 🎉 Version 1 of `@udecode/plate` is now available! 🎉 🎉 🎉  
->  
-> The **Slate Plugins** project has evolved to **Plate**.
 
 ## Visit [plate.udecode.io](https://plate.udecode.io/) for docs, guides, API and more!
 
