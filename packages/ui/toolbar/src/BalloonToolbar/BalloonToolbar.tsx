@@ -18,11 +18,11 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
 
   const popupRef = React.useRef<HTMLDivElement>(null);
   const editor = useStoreEditorState(useEventEditorId('focus'))!;
-
   const [popperStyles, attributes, hidden] = usePopupPosition({
     editor,
     popupElem: popupRef.current,
     scrollContainer,
+    placement: direction,
   });
 
   const styles = getBalloonToolbarStyles({

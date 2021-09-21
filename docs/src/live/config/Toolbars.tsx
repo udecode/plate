@@ -230,7 +230,6 @@ export const BallonToolbarMarks = () => {
   const arrow = false;
   const theme = 'dark';
   const direction = 'top';
-  const hiddenDelay = 0;
   const tooltip: TippyProps = {
     arrow: true,
     delay: 0,
@@ -242,8 +241,8 @@ export const BallonToolbarMarks = () => {
 
   return (
     <BalloonToolbar
+      scrollContainer={document as any}
       direction={direction}
-      hiddenDelay={hiddenDelay}
       theme={theme}
       arrow={arrow}
     >

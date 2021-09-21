@@ -161,6 +161,7 @@ import {
   useMentionPlugin,
   usePlate,
   usePlateActions,
+  usePopupPosition,
   useStoreEditorEnabled,
   useStoreEditorRef,
   useStoreEditorSelection,
@@ -567,6 +568,7 @@ const ReactLiveScope = {
   createFontBackgroundColorPlugin,
   initialValueFont,
   ToolbarColorPicker,
+  usePopupPosition,
 };
 
 export default ReactLiveScope;

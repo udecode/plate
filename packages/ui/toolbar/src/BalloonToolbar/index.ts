@@ -7,5 +7,5 @@ export * from './BalloonToolbar';
 export * from './BalloonToolbar.types';
 export * from './setPositionAtSelection';
 export * from './useBalloonMove';
-export * from './useBalloonShow';
 export * from './useBalloonPosition';
+export * from './useBalloonShow';

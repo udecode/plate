@@ -27,6 +27,7 @@ export const usePopupPosition: UsePopupPosition = ({
   popupElem,
   scrollContainer = document.documentElement,
   modifiers = [],
+  placement = 'top',
 }) => {
   const [isHide, setIsHide] = useState(true);
 
@@ -37,7 +38,7 @@ export const usePopupPosition: UsePopupPosition = ({
     virtualReference,
     popupElem,
     {
-      placement: 'top',
+      placement,
       modifiers: [
         // default modifiers to position the popup correctly
         {

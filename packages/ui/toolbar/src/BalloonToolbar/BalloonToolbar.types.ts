@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Modifier } from '@popperjs/core';
+import * as PopperJS from '@popperjs/core';
 import { TEditor } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { ToolbarProps } from '../Toolbar/Toolbar.types';
@@ -14,7 +15,7 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   /**
    * Below of above the selection.
    */
-  direction?: 'top' | 'bottom';
+  direction?: UsePopupPositionProps['placement'];
 
   /**
    * Color theme for the background/foreground.
@@ -40,6 +41,7 @@ export interface UsePopupPositionProps {
   popupElem: HTMLElement | null;
   scrollContainer?: HTMLElement | null;
   modifiers?: Array<Partial<Modifier<string, any>>>;
+  placement?: PopperJS.Placement;
 }
 
 export type UsePopupPositionReturnType = [

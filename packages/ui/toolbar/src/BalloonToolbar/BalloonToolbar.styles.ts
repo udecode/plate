@@ -76,18 +76,12 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
       `,
   ];
 
-  if (props.direction === 'top') {
-    marginTop = -9;
-  } else {
-    marginTop = 9;
-  }
-
   return createStyles(
     { prefixClassNames: 'BalloonToolbar', ...props },
     {
       root: [
         ...getToolbarStyles(props).root.css,
-        tw`absolute whitespace-nowrap py-0 px-1 mb-2 opacity-100 transition[opacity .2s ease-in-out]`,
+        tw`absolute whitespace-nowrap opacity-100 transition[opacity .2s ease-in-out]`,
         props.hidden && tw`invisible opacity-0`,
         css`
           color: ${color};
@@ -95,7 +89,6 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
           z-index: 500;
           border: 1px solid ${borderColor};
           border-radius: 4px;
-          margin-top: ${marginTop}px;
 
           .slate-ToolbarButton-active,
           .slate-ToolbarButton:hover {
