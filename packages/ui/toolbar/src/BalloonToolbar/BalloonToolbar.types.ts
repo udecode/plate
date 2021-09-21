@@ -10,12 +10,6 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   children: ReactNode;
 
   /**
-   * When selecting characters, the balloon is hidden for a delay.
-   * If 0, the balloon is never hidden.
-   */
-  hiddenDelay?: number;
-
-  /**
    * Below of above the selection.
    */
   direction?: 'top' | 'bottom';
@@ -31,4 +25,10 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   arrow?: boolean;
 
   portalElement?: Element;
+
+  /**
+   * Parent scroll container element of the editor,
+   * if no scroll container provided, it will take document.documentElement as scrolling container
+   */
+  scrollContainer?: HTMLElement;
 }

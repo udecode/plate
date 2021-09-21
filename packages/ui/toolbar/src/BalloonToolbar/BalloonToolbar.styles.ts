@@ -87,10 +87,8 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
     {
       root: [
         ...getToolbarStyles(props).root.css,
-        tw`absolute whitespace-nowrap py-0 px-1`,
-        props.hidden && tw`invisible`,
-        !props.hiddenDelay &&
-          tw`transition[top 75ms ease-out,left 75ms ease-out]`,
+        tw`absolute whitespace-nowrap py-0 px-1 mb-2 opacity-100 transition[opacity .2s ease-in-out]`,
+        props.hidden && tw`invisible opacity-0`,
         css`
           color: ${color};
           background: ${background};
