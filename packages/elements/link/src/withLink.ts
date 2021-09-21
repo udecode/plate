@@ -108,12 +108,12 @@ export const withLink = ({
     const text = data.getData('text/plain');
 
     if (text) {
-      if (someNode(editor, { match: { type } })) {
-        return insertText(text);
-      }
-
       if (isUrl(text)) {
         return upsertLinkAtSelection(editor, { url: text });
+      }
+
+      if (someNode(editor, { match: { type } })) {
+        return insertText(text);
       }
     }
 
