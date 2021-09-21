@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { usePopper } from 'react-popper';
 import * as PopperJS from '@popperjs/core';
-import { getSelectionText, isSelectionExpanded } from '@udecode/plate';
+import { getSelectionText, isSelectionExpanded } from '@udecode/plate-common';
 import { UsePopupPosition } from './BalloonToolbar.types';
 
 const { useEffect, useState, useCallback } = React;
