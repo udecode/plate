@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-list': minor
+'@udecode/plate-list': patch
 ---
 
 fix: normalize direct child nested list ul -> ul
