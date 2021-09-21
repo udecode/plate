@@ -1,5 +1,12 @@
 # @udecode/plate-html-serializer
 
+## 3.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`0db393e1`](https://github.com/udecode/plate/commit/0db393e1cebec792c89a633cb8929a0786943713)]:
+  - @udecode/plate-serializer@3.5.1
+
 ## 3.4.0
 
 ### Patch Changes

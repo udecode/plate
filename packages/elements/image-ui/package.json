@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-image-ui",
-  "version": "3.4.0",
+  "version": "3.5.1",
   "description": "Image UI for Plate",
   "keywords": [
     "slate",
@@ -35,8 +35,8 @@
     "@udecode/plate-common": "3.4.0",
     "@udecode/plate-core": "3.4.0",
     "@udecode/plate-image": "3.4.0",
-    "@udecode/plate-styled-components": "3.4.0",
-    "@udecode/plate-toolbar": "3.4.0",
+    "@udecode/plate-styled-components": "3.5.1",
+    "@udecode/plate-toolbar": "3.5.1",
     "react-textarea-autosize": "^8.3.3",
     "re-resizable": "^6.9.0"
   },

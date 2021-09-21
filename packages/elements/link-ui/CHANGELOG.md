@@ -1,5 +1,13 @@
 # @udecode/plate-link-ui
 
+## 3.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`0db393e1`](https://github.com/udecode/plate/commit/0db393e1cebec792c89a633cb8929a0786943713)]:
+  - @udecode/plate-styled-components@3.5.1
+  - @udecode/plate-toolbar@3.5.1
+
 ## 3.5.0
 
 ### Patch Changes
