@@ -201,12 +201,12 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
             <hli>
               <hp>two</hp>
+              <hul>
+                <hli>
+                  <hp>three</hp>
+                </hli>
+              </hul>
             </hli>
-            <hul>
-              <hli>
-                <hp>three</hp>
-              </hli>
-            </hul>
           </hul>
         </fragment>
       ) as any) as TDescendant[];
@@ -223,12 +223,12 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
             <hli>
               <hlic>two</hlic>
+              <hul>
+                <hli>
+                  <hlic>three</hlic>
+                </hli>
+              </hul>
             </hli>
-            <hul>
-              <hli>
-                <hlic>three</hlic>
-              </hli>
-            </hul>
           </hul>
         </editor>
       ) as any) as SPEditor;
