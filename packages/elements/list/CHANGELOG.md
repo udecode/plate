@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 3.5.1
+
+### Patch Changes
+
+- [#1044](https://github.com/udecode/plate/pull/1044) [`b758cfb6`](https://github.com/udecode/plate/commit/b758cfb6ea955ab4d054c0873ab632aaf1c3e866) Thanks [@djagya](https://github.com/djagya)! - fix: normalize direct child nested list ul -> ul
+
 ## 3.4.0
 
 ### Patch Changes
