@@ -170,7 +170,7 @@ describe('p /w text + list when selection not in list', () => {
   });
 });
 
-describe('list + list when selection not in list', () => {
+describe('list + list when selection is at the end of the first list', () => {
   it('should merge the two list together', () => {
     const input = ((
       <editor>
