@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { usePopper } from 'react-popper';
 import * as PopperJS from '@popperjs/core';
-import { getSelectionText, isSelectionExpanded, TEditor } from '@udecode/plate';
+import { getSelectionText, isSelectionExpanded } from '@udecode/plate';
+import { UsePopupPosition } from './BalloonToolbar.types';
 
 const { useEffect, useState, useCallback } = React;
 
@@ -21,25 +22,12 @@ const virtualReference: PopperJS.VirtualElement = {
   },
 };
 
-export const usePopupPosition = ({
+export const usePopupPosition: UsePopupPosition = ({
   editor,
   popupElem,
   scrollContainer = document.documentElement,
-}: {
-  editor?: TEditor;
-  popupElem: HTMLElement | null;
-  scrollContainer?: HTMLElement | null;
-}): [
-  { [key: string]: React.CSSProperties },
-  {
-    [key: string]:
-      | {
-          [key: string]: string;
-        }
-      | undefined;
-  },
-  boolean
-] => {
+  modifiers = [],
+}) => {
   const [isHide, setIsHide] = useState(true);
 
   const selectionExpanded = editor && isSelectionExpanded(editor);
@@ -51,6 +39,7 @@ export const usePopupPosition = ({
     {
       placement: 'top',
       modifiers: [
+        // default modifiers to position the popup correctly
         {
           name: 'preventOverflow',
           enabled: true,
@@ -72,6 +61,8 @@ export const usePopupPosition = ({
             offset: [0, 8],
           },
         },
+        // user modifiers to override the default
+        ...modifiers,
       ],
       strategy: 'absolute',
     }
@@ -103,24 +94,13 @@ export const usePopupPosition = ({
   }, [update]);
 
   useEffect(() => {
-    scrollContainer?.addEventListener('scroll', () => {
-      setPosition();
-    });
+    scrollContainer?.addEventListener('scroll', setPosition);
+    return () => scrollContainer?.removeEventListener('scroll', setPosition);
   }, [setPosition, scrollContainer]);
 
   useEffect(() => {
     popupElem && selectionExpanded && setPosition();
   }, [selectionText?.length, selectionExpanded, popupElem, setPosition]);
 
-  return [
-    {
-      ...styles,
-      popper: {
-        ...styles.popper,
-        // display: isHide ? 'none' : undefined,
-      },
-    },
-    attributes,
-    isHide,
-  ];
+  return [styles, attributes, isHide];
 };

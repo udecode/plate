@@ -1,4 +1,6 @@
 import { ReactNode } from 'react';
+import { Modifier } from '@popperjs/core';
+import { TEditor } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { ToolbarProps } from '../Toolbar/Toolbar.types';
 
@@ -31,4 +33,31 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
    * if no scroll container provided, it will take document.documentElement as scrolling container
    */
   scrollContainer?: HTMLElement;
+}
+
+export interface UsePopupPositionProps {
+  editor: TEditor;
+  popupElem: HTMLElement | null;
+  scrollContainer?: HTMLElement | null;
+  modifiers?: Array<Partial<Modifier<string, any>>>;
+}
+
+export type UsePopupPositionReturnType = [
+  { [key: string]: React.CSSProperties },
+  {
+    [key: string]:
+      | {
+          [key: string]: string;
+        }
+      | undefined;
+  },
+  boolean
+];
+
+export interface UsePopupPosition {
+  ({
+    editor,
+    popupElem,
+    scrollContainer,
+  }: UsePopupPositionProps): UsePopupPositionReturnType;
 }

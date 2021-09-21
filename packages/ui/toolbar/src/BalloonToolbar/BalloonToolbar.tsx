@@ -16,12 +16,12 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
     scrollContainer,
   } = props;
 
-  const ref = React.useRef<HTMLDivElement>(null);
-  const editor = useStoreEditorState(useEventEditorId('focus'));
+  const popupRef = React.useRef<HTMLDivElement>(null);
+  const editor = useStoreEditorState(useEventEditorId('focus'))!;
 
   const [popperStyles, attributes, hidden] = usePopupPosition({
     editor,
-    popupElem: ref.current,
+    popupElem: popupRef.current,
     scrollContainer,
   });
 
@@ -36,7 +36,7 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
   return (
     <PortalBody element={portalElement}>
       <ToolbarBase
-        ref={ref}
+        ref={popupRef}
         css={styles.root.css}
         className={styles.root.className}
         style={popperStyles.popper}

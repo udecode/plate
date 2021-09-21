@@ -32,10 +32,12 @@
     "test": "jest"
   },
   "dependencies": {
+    "@popperjs/core": "^2.8.3",
     "@tippyjs/react": "^4.2.0",
     "@udecode/plate-common": "3.4.0",
     "@udecode/plate-core": "3.4.0",
     "@udecode/plate-styled-components": "3.4.0",
+    "react-popper": "^2.2.4",
     "react-use": "^17.1.1"
   },
   "peerDependencies": {

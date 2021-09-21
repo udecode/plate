@@ -8,3 +8,4 @@ export * from './BalloonToolbar.types';
 export * from './setPositionAtSelection';
 export * from './useBalloonMove';
 export * from './useBalloonShow';
+export * from './useBalloonPosition';
