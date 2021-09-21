@@ -15,6 +15,7 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
+import { normalizeNestedList } from './normalizeNestedList';
 
 /**
  * Normalize list node to force the ul>li>p+ul structure.
@@ -37,6 +38,10 @@ export const getListNormalizer = (
         !node.children.find((item) => (item as TDescendant).type === liType)
       ) {
         return Transforms.removeNodes(editor, { at: path });
+      }
+
+      if (normalizeNestedList(editor, { nestedListItem: [node, path] })) {
+        return;
       }
     }
 

@@ -86,7 +86,7 @@ export const Footer = () => (
           &copy; {new Date().getFullYear()} Ziad Beyens. All rights reserved.
         </p>
 
-        <PoweredByVercel utmSource="udemus" />
+        <PoweredByVercel />
 
         <div tw="flex items-center">
           <a

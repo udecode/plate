@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-const BASE_URL = 'https://vercel.com/';
+const BASE_URL = 'https://vercel.com/?utm_source=udecode&utm_campaign=oss';
 
 export type PoweredByVercelProps = {
-  utmSource?: string;
   svgProps?: React.SVGProps<SVGSVGElement>;
 } & React.DetailedHTMLProps<
   React.AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -11,16 +10,13 @@ export type PoweredByVercelProps = {
 >;
 
 export const PoweredByVercel: React.FC<PoweredByVercelProps> = ({
-  utmSource,
   svgProps = {
     width: 212,
   },
   ...props
 }) => {
-  let href = BASE_URL;
-  if (utmSource) {
-    href = `${BASE_URL}?utm_source=${utmSource}&utm_campaign=oss`;
-  }
+  const href = BASE_URL;
+
   return (
     <a href={href} {...props}>
       <svg

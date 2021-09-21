@@ -315,6 +315,86 @@ describe('withList', () => {
     });
   });
 
+  describe('when the list is nested and its children list is not wrapped in li', () => {
+    it('should move a nested list into previous sibling li', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>level 1.1</hlic>
+            </hli>
+            <hul>
+              <hli>
+                <hlic>
+                  level 2 <cursor />
+                </hlic>
+              </hli>
+            </hul>
+            <hli>
+              <hlic>level 1.2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>level 1.1</hlic>
+              <hul>
+                <hli>
+                  <hlic>level 2</hlic>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hlic>level 1.2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteBackward(input, expected);
+    });
+
+    it('should skip a nested list if there is no previous sibling li', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hul>
+              <hli>
+                <hlic>
+                  level 2 <cursor />
+                </hlic>
+              </hli>
+            </hul>
+            <hli>
+              <hlic>level 1.2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hul>
+              <hli>
+                <hlic>level 2</hlic>
+              </hli>
+            </hul>
+            <hli>
+              <hlic>level 1.2</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as Editor;
+
+      testDeleteBackward(input, expected);
+    });
+  });
+
   describe('when deleteForward at block end', () => {
     it('should merge the next element when last child', () => {
       const input = ((
