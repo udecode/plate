@@ -9,6 +9,6 @@ export * from './useStoreEditorRef';
 export * from './useStoreEditorSelection';
 export * from './useStoreEditorState';
 export * from './useStoreEditorValue';
-export * from './useStorePlatePluginKeys';
 export * from './useStorePlate';
+export * from './useStorePlatePluginKeys';
 export * from './useStoreState';

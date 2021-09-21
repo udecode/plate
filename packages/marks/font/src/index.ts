@@ -4,6 +4,6 @@
 
 export * from './createFontBackgroundColorPlugin';
 export * from './createFontColorPlugin';
+export * from './createFontSizePlugin';
 export * from './defaults';
 export * from './getFontDeserialize';
-export * from './createFontSizePlugin';
