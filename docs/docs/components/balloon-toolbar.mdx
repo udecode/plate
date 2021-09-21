@@ -34,6 +34,7 @@ npm install @udecode/plate-toolbar
         direction={direction}
         hiddenDelay={hiddenDelay}
         theme={theme}
+        scrollContainer={document}
         arrow={arrow}
       >
         <ToolbarMark
@@ -53,7 +54,7 @@ npm install @udecode/plate-toolbar
         />
       </BalloonToolbar>
     );
-  }
+  };
 
   const componentsPlaceholder = withStyledPlaceHolders(components);
 
@@ -72,6 +73,25 @@ npm install @udecode/plate-toolbar
   );
 }
 ```
+
+
+### Customizing the toolbar
+
+You can make your own hovering tool UI using the existing logic. Like below.
+
+```ts
+const [style, attributes, hidden] = usePopupPosition({
+  editor,
+  popupElem: popupRef.current,
+  scrollContainer, // optionally pass the scroll container if the editor is in nested scroll
+});
+
+return (
+  // You can add your own styles and actions now
+  <CustomHoveringToolbar style={style} {...attributes}/>
+);
+```
+
 
 ### Source Code
 
