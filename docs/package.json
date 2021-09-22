@@ -64,6 +64,7 @@
     "@udecode/plate-normalizers": "file:../packages/normalizers",
     "@udecode/plate-paragraph": "file:../packages/elements/paragraph",
     "@udecode/plate-horizontal-rule": "file:../packages/elements/horizontal-rule",
+    "@udecode/plate-horizontal-rule-ui": "file:../packages/elements/horizontal-rule-ui",
     "@udecode/plate-placeholder": "file:../packages/placeholder",
     "@udecode/plate-reset-node": "file:../packages/reset-node",
     "@udecode/plate-select": "file:../packages/select",
