@@ -4,6 +4,7 @@ import { getCodeBlockDecorate } from './getCodeBlockDecorate';
 import { getCodeBlockDeserialize } from './getCodeBlockDeserialize';
 import { getCodeBlockOnKeyDown } from './getCodeBlockOnKeyDown';
 import { getCodeBlockRenderLeaf } from './getCodeBlockRenderLeaf';
+import { getCodeLineDecorate } from './getCodeLineDecorate';
 import { withCodeBlock } from './withCodeBlock';
 
 /**

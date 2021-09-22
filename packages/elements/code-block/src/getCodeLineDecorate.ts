@@ -48,12 +48,12 @@ import {
   getPlatePluginOptions,
   isElement,
 } from '@udecode/plate-core';
-import Prism from 'prismjs';
+import Prism, { languages, Token, tokenize } from 'prismjs';
 import { Node, NodeEntry, Text } from 'slate';
-import { ELEMENT_CODE_BLOCK } from './defaults';
+import { ELEMENT_CODE_LINE } from './defaults';
 
-export const getCodeBlockDecorate = (): Decorate => (editor) => {
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+export const getCodeLineDecorate = (): Decorate => (editor) => {
+  const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
@@ -61,27 +61,27 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
 
     // const langName: any = parent.lang || 'markup';
     const langName: any = 'typescript';
-    const lang = Prism.languages[langName];
+    const lang = languages[langName];
 
     if (!lang || !Text.isText(node)) {
       return ranges;
     }
 
-    if (isElement(node) && node.type === code_block.type) {
+    if (isElement(node) && node.type === code_line.type) {
       const text = Node.string(node);
-      const tokens = Prism.tokenize(text, lang);
+      const tokens = tokenize(text, lang);
       let offset = 0;
 
       for (const element of tokens) {
         if (typeof element === 'string') {
           offset += element.length;
         } else {
-          const token: Prism.Token = element;
+          const token: Token = element;
           ranges.push({
             anchor: { path, offset },
             focus: { path, offset: offset + token.length },
             className: `prism-token token ${token.type} `,
-            prism: true,
+            [token.type]: true,
           });
           offset += token.length;
         }

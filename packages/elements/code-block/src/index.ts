@@ -8,6 +8,7 @@ export * from './getCodeBlockDecorate';
 export * from './getCodeBlockDeserialize';
 export * from './getCodeBlockOnKeyDown';
 export * from './getCodeBlockRenderLeaf';
+export * from './getCodeLineDecorate';
 export * from './types';
 export * from './withCodeBlock';
 export * from './queries/index';

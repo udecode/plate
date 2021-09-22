@@ -34,7 +34,7 @@
   "dependencies": {
     "@udecode/plate-common": "3.4.0",
     "@udecode/plate-core": "3.4.0",
-    "prismjs": "^1.23.0"
+    "prismjs": "^1.25.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
