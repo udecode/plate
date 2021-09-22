@@ -3,12 +3,6 @@ import { useFocused, useSelected } from 'slate-react';
 import { getHrElementStyles } from './HrElement.styles';
 import { HrElementProps } from './HrElement.types';
 
-// const plugins = [
-//   createHistoryPlugin(),
-//   createReactPlugin(),
-//   createSingleLinePlugin(),
-// ];
-
 export const HrElement = (props: HrElementProps) => {
   const { attributes, children, nodeProps } = props;
 
