@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 3.5.1
+
+### Patch Changes
+
+- [#1044](https://github.com/udecode/plate/pull/1044) [`0db393e1`](https://github.com/udecode/plate/commit/0db393e1cebec792c89a633cb8929a0786943713) Thanks [@djagya](https://github.com/djagya)! - fix: exports
+
 ## 3.4.0
 
 ### Patch Changes

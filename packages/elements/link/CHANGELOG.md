@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 3.5.0
+
+### Minor Changes
+
+- [#1041](https://github.com/udecode/plate/pull/1041) [`7ab01674`](https://github.com/udecode/plate/commit/7ab016745c5eddcf4daa73bbc1958f087d0c4b90) Thanks [@aj-foster](https://github.com/aj-foster)! - feat(link): Unwrap selected links when pasting a URL. Previously, pasting any text (including a URL) with an existing link selected would insert plain text. With this change, pasting a URL will unwrap any selected links and wrap a new link.
+
 ## 3.4.0
 
 ### Patch Changes

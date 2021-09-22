@@ -1,5 +1,42 @@
 # @udecode/plate
 
+## 3.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`b758cfb6`](https://github.com/udecode/plate/commit/b758cfb6ea955ab4d054c0873ab632aaf1c3e866), [`0db393e1`](https://github.com/udecode/plate/commit/0db393e1cebec792c89a633cb8929a0786943713)]:
+  - @udecode/plate-list@3.5.1
+  - @udecode/plate-serializer@3.5.1
+  - @udecode/plate-styled-components@3.5.1
+  - @udecode/plate-list-ui@3.5.1
+  - @udecode/plate-ast-serializer@3.5.1
+  - @udecode/plate-md-serializer@3.5.1
+  - @udecode/plate-csv-serializer@3.5.1
+  - @udecode/plate-html-serializer@3.5.1
+  - @udecode/plate-dnd@3.5.1
+  - @udecode/plate-alignment-ui@3.5.1
+  - @udecode/plate-block-quote-ui@3.5.1
+  - @udecode/plate-code-block-ui@3.5.1
+  - @udecode/plate-image-ui@3.5.1
+  - @udecode/plate-link-ui@3.5.1
+  - @udecode/plate-media-embed-ui@3.5.1
+  - @udecode/plate-mention-ui@3.5.1
+  - @udecode/plate-table-ui@3.5.1
+  - @udecode/plate-find-replace-ui@3.5.1
+  - @udecode/plate-font-ui@3.5.1
+  - @udecode/plate-placeholder@3.5.1
+  - @udecode/plate-toolbar@3.5.1
+
+## 3.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ab01674`](https://github.com/udecode/plate/commit/7ab016745c5eddcf4daa73bbc1958f087d0c4b90)]:
+  - @udecode/plate-link@3.5.0
+  - @udecode/plate-link-ui@3.5.0
+  - @udecode/plate-ast-serializer@3.5.0
+  - @udecode/plate-md-serializer@3.5.0
+
 ## 3.4.1
 
 ### Patch Changes
