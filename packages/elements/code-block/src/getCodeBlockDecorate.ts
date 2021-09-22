@@ -1,3 +1,4 @@
+import * as Prism from 'prismjs';
 // import 'prismjs/components/prism-antlr4';
 // import 'prismjs/components/prism-bash';
 // import 'prismjs/components/prism-c';
@@ -48,7 +49,6 @@ import {
   getPlatePluginOptions,
   isElement,
 } from '@udecode/plate-core';
-import Prism from 'prismjs';
 import { Node, NodeEntry, Text } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './defaults';
 

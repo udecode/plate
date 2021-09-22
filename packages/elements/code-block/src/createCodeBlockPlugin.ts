@@ -15,7 +15,7 @@ export const createCodeBlockPlugin = (): PlatePlugin => ({
   renderElement: getRenderElement(KEYS_CODE_BLOCK),
   renderLeaf: getCodeBlockRenderLeaf(),
   deserialize: getCodeBlockDeserialize(),
-  decorate: getCodeBlockDecorate(),
+  decorate: getCodeLineDecorate(),
   onKeyDown: getCodeBlockOnKeyDown(),
   withOverrides: withCodeBlock(),
 });
