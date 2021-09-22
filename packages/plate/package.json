@@ -58,6 +58,7 @@
     "@udecode/plate-font-ui": "3.4.1",
     "@udecode/plate-heading": "3.4.0",
     "@udecode/plate-highlight": "3.4.0",
+    "@udecode/plate-horizontal-rule": "3.4.0",
     "@udecode/plate-html-serializer": "3.4.0",
     "@udecode/plate-image": "3.4.0",
     "@udecode/plate-image-ui": "3.4.0",

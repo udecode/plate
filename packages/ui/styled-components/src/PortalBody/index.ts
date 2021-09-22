@@ -3,3 +3,4 @@
  */
 
 export * from './PortalBody';
+export * from './PortalBody.types';

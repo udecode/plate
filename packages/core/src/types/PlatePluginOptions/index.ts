@@ -6,5 +6,5 @@ export * from './DeserializeOptions';
 export * from './GetNodeProps';
 export * from './OnKeyDownElementOptions';
 export * from './OnKeyDownMarkOptions';
-export * from './RenderNodeOptions';
 export * from './PlateOptions';
+export * from './RenderNodeOptions';
