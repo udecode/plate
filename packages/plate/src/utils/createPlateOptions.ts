@@ -45,7 +45,7 @@ import {
 import { DEFAULTS_HIGHLIGHT, MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { MARK_KBD } from '@udecode/plate-kbd';
-import { ELEMENT_LINK } from '@udecode/plate-link';
+import { DEFAULTS_LINK, ELEMENT_LINK } from '@udecode/plate-link';
 import {
   DEFAULTS_TODO_LIST,
   ELEMENT_LI,
@@ -131,7 +131,7 @@ export const createPlateOptions = <T extends string = string>(
     [ELEMENT_H6]: {},
     [ELEMENT_IMAGE]: {},
     [ELEMENT_LI]: {},
-    [ELEMENT_LINK]: {},
+    [ELEMENT_LINK]: DEFAULTS_LINK,
     [ELEMENT_MEDIA_EMBED]: {},
     [ELEMENT_MENTION]: {},
     [ELEMENT_OL]: {},
