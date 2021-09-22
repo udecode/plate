@@ -4,4 +4,5 @@ export const ELEMENT_LINK = 'a';
 
 export const DEFAULTS_LINK: Partial<PlatePluginOptions> = {
   getNodeProps: ({ element }) => ({ url: element?.url }),
+  hotkey: 'mod+k',
 };
