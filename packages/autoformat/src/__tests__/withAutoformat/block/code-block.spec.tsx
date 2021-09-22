@@ -1,14 +1,21 @@
 /** @jsx jsx */
 
+import {
+  ELEMENT_CODE_BLOCK,
+  insertEmptyCodeBlock,
+} from '@udecode/plate-code-block';
+import {
+  ELEMENT_DEFAULT,
+  getRangeFromBlockStart,
+  getText,
+} from '@udecode/plate-common';
+import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { Editor, Node, Range } from 'slate';
 import { withReact } from 'slate-react';
+import { preFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
 import { withAutoformat } from '../../../createAutoformatPlugin';
-import { ELEMENT_CODE_BLOCK, insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import { preFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
-import { ELEMENT_DEFAULT, getRangeFromBlockStart, getText } from '@udecode/plate-common';
-import { Editor, Node, Range } from 'slate';
 
 jsx;
 
@@ -43,7 +50,7 @@ describe('when ``` at block start', () => {
 });
 
 describe('when ``` at block start, but customising with query we get the most recent character typed', () => {
-  it.only('should insert a code block below', () => {
+  it('should insert a code block below', () => {
     const input = (
       <editor>
         <hp>
@@ -63,8 +70,9 @@ describe('when ``` at block start, but customising with query we get the most re
       </editor>
     ) as any;
 
-    const editor = withAutoformat({
-      rules: [{
+    const codeEditor = withAutoformat({
+      rules: [
+        {
           mode: 'block',
           type: ELEMENT_CODE_BLOCK,
           match: '```',
@@ -72,7 +80,10 @@ describe('when ``` at block start, but customising with query we get the most re
           preFormat,
           format: (editor) => {
             insertEmptyCodeBlock(editor as SPEditor, {
-              defaultType: getPlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),
+              defaultType: getPlatePluginType(
+                editor as SPEditor,
+                ELEMENT_DEFAULT
+              ),
               insertNodesOptions: { select: true },
             });
           },
@@ -87,12 +98,12 @@ describe('when ``` at block start, but customising with query we get the most re
 
             return rule.match === currentNodeText;
           },
-      }],
-    })
-    (withReact(input));
+        },
+      ],
+    })(withReact(input));
 
-    editor.insertText('`');
-    editor.insertText('inside code-block');
+    codeEditor.insertText('`');
+    codeEditor.insertText('inside code-block');
 
     expect(input.children).toEqual(output.children);
   });
