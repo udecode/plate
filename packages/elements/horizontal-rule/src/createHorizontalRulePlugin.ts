@@ -11,11 +11,4 @@ export const createHorizontalRulePlugin = (): PlatePlugin => ({
   renderElement: getRenderElement(ELEMENT_HR),
   voidTypes: getPlatePluginTypes(ELEMENT_HR),
   deserialize: getHorizontalRuleDeserialize(),
-  // serialize: {
-  // 	element: ({ element }) => {
-  // 		if (element.type === ELEMENT_HR) {
-  // 			return <hr />
-  // 		}
-  // 	}
-  // }
 });
