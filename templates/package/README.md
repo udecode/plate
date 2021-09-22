@@ -1,6 +1,14 @@
-# plate-template
+# Plate template plugin
 
-See [README](https://github.com/udecode/plate).
+This package implements the template plugin for Plate.
+
+## Documentation
+
+Check out [template](https://plate.udecode.io/docs/plugins/template).
+
+## API
+
+See the [API documentation](https://plate-api.udecode.io/globals.html). 
 
 ## License
 
