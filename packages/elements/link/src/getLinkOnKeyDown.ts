@@ -13,6 +13,7 @@ export const getLinkOnKeyDown = (
 
   if (isHotkey(hotkey, e as any)) {
     e.preventDefault();
+    e.stopPropagation();
 
     getAndUpsertLink(editor, options?.getLinkUrl);
   }
