@@ -13,58 +13,35 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { BlockquoteElement } from '@udecode/plate-block-quote-ui';
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-} from '@udecode/plate-code-block';
-import {
-  CodeBlockElement,
-  CodeLineElement,
-} from '@udecode/plate-code-block-ui';
-import { withProps } from '@udecode/plate-common';
-import { PlatePluginComponent } from '@udecode/plate-core';
-import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { HrElement } from '@udecode/plate-horizontal-rule-ui';
-import { ELEMENT_IMAGE } from '@udecode/plate-image';
-import { ImageElement } from '@udecode/plate-image-ui';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { ELEMENT_LINK } from '@udecode/plate-link';
-import { LinkElement } from '@udecode/plate-link-ui';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
-} from '@udecode/plate-list';
-import { TodoListElement } from '@udecode/plate-list-ui';
-import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed';
-import { MediaEmbedElement } from '@udecode/plate-media-embed-ui';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { MentionElement } from '@udecode/plate-mention-ui';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-} from '@udecode/plate-table';
-import { TableElement } from '@udecode/plate-table-ui';
-import { css } from 'styled-components';
+import {ELEMENT_BLOCKQUOTE} from '@udecode/plate-block-quote';
+import {BlockquoteElement} from '@udecode/plate-block-quote-ui';
+import {ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE,} from '@udecode/plate-code-block';
+import {CodeBlockElement, CodeLineElement,} from '@udecode/plate-code-block-ui';
+import {withProps} from '@udecode/plate-common';
+import {PlatePluginComponent} from '@udecode/plate-core';
+import {MARK_SEARCH_HIGHLIGHT} from '@udecode/plate-find-replace';
+import {ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, ELEMENT_H4, ELEMENT_H5, ELEMENT_H6,} from '@udecode/plate-heading';
+import {MARK_HIGHLIGHT} from '@udecode/plate-highlight';
+import {ELEMENT_HR} from '@udecode/plate-horizontal-rule';
+import {HrElement} from '@udecode/plate-horizontal-rule-ui';
+import {ELEMENT_IMAGE} from '@udecode/plate-image';
+import {ImageElement} from '@udecode/plate-image-ui';
+import {MARK_KBD} from '@udecode/plate-kbd';
+import {ELEMENT_LINK} from '@udecode/plate-link';
+import {LinkElement} from '@udecode/plate-link-ui';
+import {ELEMENT_LI, ELEMENT_OL, ELEMENT_TODO_LI, ELEMENT_UL,} from '@udecode/plate-list';
+import {TodoListElement} from '@udecode/plate-list-ui';
+import {ELEMENT_MEDIA_EMBED} from '@udecode/plate-media-embed';
+import {MediaEmbedElement} from '@udecode/plate-media-embed-ui';
+import {ELEMENT_MENTION} from '@udecode/plate-mention';
+import {MentionElement} from '@udecode/plate-mention-ui';
+import {ELEMENT_PARAGRAPH} from '@udecode/plate-paragraph';
+import {StyledElement, StyledLeaf} from '@udecode/plate-styled-components';
+import {ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR,} from '@udecode/plate-table';
+import {TableElement} from '@udecode/plate-table-ui';
+import {css} from 'styled-components';
 import tw from 'twin.macro';
-import { DefaultPlatePluginKey } from './createPlateOptions';
+import {DefaultPlatePluginKey} from './createPlateOptions';
 
 export const createPlateComponents = <T extends string = string>(
   overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>
@@ -93,9 +70,7 @@ export const createPlateComponents = <T extends string = string>(
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
-    [ELEMENT_HR]: withProps(HrElement, {
-      styles: {},
-    }),
+    [ELEMENT_HR]: HrElement,
     [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',
       styles: {
