@@ -9,21 +9,21 @@ import {
   TodoListItemNodeData,
 } from '@udecode/plate';
 import { Editor } from 'slate';
-import { formatList, preFormat } from './autoformatUtils';
+import { clearBlockFormat, formatList } from './autoformatUtils';
 
 export const autoformatLists: AutoformatRule[] = [
   {
     mode: 'block',
     type: ELEMENT_LI,
     match: ['* ', '- '],
-    preFormat,
+    preFormat: clearBlockFormat,
     format: (editor) => formatList(editor, ELEMENT_UL),
   },
   {
     mode: 'block',
     type: ELEMENT_LI,
     match: ['1. ', '1) '],
-    preFormat,
+    preFormat: clearBlockFormat,
     format: (editor) => formatList(editor, ELEMENT_OL),
   },
   {

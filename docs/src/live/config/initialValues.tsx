@@ -35,6 +35,7 @@ import {
 } from '@udecode/plate';
 import { jsx } from '@udecode/plate-test-utils';
 import * as faker from 'faker';
+import { ELEMENT_HR } from '../../../../packages/elements/horizontal-rule/src/defaults';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { initialDataExcalidraw } from './initialDataExcalidraw';
@@ -58,6 +59,20 @@ export const initialValuePlaceholder: any = (
     <hp>
       <htext />
     </hp>
+  </fragment>
+);
+
+export const initialValueHorizontalRule: any = (
+  <fragment>
+    <hp>This is a paragraph.</hp>
+    <element type={ELEMENT_HR}>
+      <htext />
+    </element>
+    <hp>And this is another paragraph.</hp>
+    <element type={ELEMENT_HR}>
+      <htext />
+    </element>
+    <hp>But between those paragraphs are horizontal rules.</hp>
   </fragment>
 );
 
@@ -261,6 +276,11 @@ export const initialValueAutoformat: any = (
       <hli>
         <hlic>
           Type <htext code>```</htext> to create a code block.
+        </hlic>
+      </hli>
+      <hli>
+        <hlic>
+          Type <htext code>---</htext> to create a horizontal rule.
         </hlic>
       </hli>
       <hli>
@@ -1173,6 +1193,7 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueFont,
   ...initialValueHighlight,
   ...initialValueBasicElements,
+  ...initialValueHorizontalRule,
   ...initialValueList,
   ...initialValueTables,
   ...initialValueLinks,

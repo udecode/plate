@@ -41,6 +41,7 @@ module.exports = {
             'plugins/alignment',
             'plugins/basic-elements',
             'plugins/excalidraw',
+            'plugins/horizontal-rule',
             'plugins/image',
             'plugins/link',
             'plugins/list',

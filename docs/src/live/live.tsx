@@ -60,6 +60,7 @@ import {
   createHeadingPlugin,
   createHighlightPlugin,
   createHistoryPlugin,
+  createHorizontalRulePlugin,
   createImagePlugin,
   createItalicPlugin,
   createKbdPlugin,
@@ -99,6 +100,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_HR,
   ELEMENT_IMAGE,
   ELEMENT_LI,
   ELEMENT_LIC,
@@ -120,6 +122,7 @@ import {
   getRenderLeaf,
   HeadingToolbar,
   insertEmptyCodeBlock,
+  insertNodes,
   insertTable,
   isBlockAboveEmpty,
   isElement,
@@ -142,6 +145,7 @@ import {
   MentionSelect,
   Plate,
   serializeHTMLFromNodes,
+  setNodes,
   StyledLeaf,
   toggleList,
   ToolbarAlign,
@@ -176,6 +180,7 @@ import {
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { css } from 'styled-components';
+import { clearBlockFormat } from './config/autoformat/autoformatUtils';
 import {
   getHugeDocument,
   initialValueAutoformat,
@@ -189,6 +194,7 @@ import {
   initialValueFont,
   initialValueForcedLayout,
   initialValueHighlight,
+  initialValueHorizontalRule,
   initialValueIframe,
   initialValueImages,
   initialValueKbd,
@@ -313,6 +319,12 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  clearBlockFormat,
+  setNodes,
+  insertNodes,
+  initialValueHorizontalRule,
+  createHorizontalRulePlugin,
+  ELEMENT_HR,
   isType,
   insertEmptyCodeBlock,
   ELEMENT_DEFAULT,

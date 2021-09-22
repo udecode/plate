@@ -11,7 +11,7 @@ import {
   unwrapList,
 } from '@udecode/plate';
 
-export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
+export const clearBlockFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor as SPEditor);
 
 export const format = (editor: TEditor, customFormatting: any) => {
