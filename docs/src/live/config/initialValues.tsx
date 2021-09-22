@@ -10,6 +10,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_HR,
   ELEMENT_LI,
   ELEMENT_LIC,
   ELEMENT_LINK,
@@ -35,7 +36,6 @@ import {
 } from '@udecode/plate';
 import { jsx } from '@udecode/plate-test-utils';
 import * as faker from 'faker';
-import { ELEMENT_HR } from '../../../../packages/elements/horizontal-rule/src/defaults';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
 import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { initialDataExcalidraw } from './initialDataExcalidraw';

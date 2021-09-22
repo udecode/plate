@@ -36,6 +36,7 @@ import {
 } from '@udecode/plate-heading';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { HrElement } from '@udecode/plate-horizontal-rule-ui';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { ImageElement } from '@udecode/plate-image-ui';
 import { MARK_KBD } from '@udecode/plate-kbd';
@@ -63,7 +64,6 @@ import {
 import { TableElement } from '@udecode/plate-table-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { HrElement } from '../../../elements/horizontal-rule-ui/src/HrElement/HrElement';
 import { DefaultPlatePluginKey } from './createPlateOptions';
 
 export const createPlateComponents = <T extends string = string>(
