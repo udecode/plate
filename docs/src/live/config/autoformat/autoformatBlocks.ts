@@ -9,68 +9,77 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_HR,
   getPlatePluginType,
   insertEmptyCodeBlock,
+  insertNodes,
+  setNodes,
   SPEditor,
 } from '@udecode/plate';
-import { preFormat } from './autoformatUtils';
+import { clearBlockFormat } from './autoformatUtils';
 
 export const autoformatBlocks: AutoformatRule[] = [
   {
     mode: 'block',
     type: ELEMENT_H1,
     match: '# ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H2,
     match: '## ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H3,
     match: '### ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H4,
     match: '#### ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H5,
     match: '##### ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_H6,
     match: '###### ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
   {
     mode: 'block',
     type: ELEMENT_BLOCKQUOTE,
     match: '> ',
-    preFormat,
+    preFormat: clearBlockFormat,
   },
-  // nested blockquote
-  // {
-  //  mode: 'block',
-  //  type: ELEMENT_BLOCKQUOTE,
-  //  match: '> >',
-  //  preFormat,
-  // },
+  {
+    mode: 'block',
+    type: ELEMENT_HR,
+    match: ['---', '—-'],
+    preFormat: clearBlockFormat,
+    format: (editor) => {
+      setNodes(editor, { type: ELEMENT_HR });
+      insertNodes(editor, {
+        type: ELEMENT_DEFAULT,
+        children: [{ text: '' }],
+      });
+    },
+  },
   {
     mode: 'block',
     type: ELEMENT_CODE_BLOCK,
     match: '```',
     triggerAtBlockStart: false,
-    preFormat,
+    preFormat: clearBlockFormat,
     format: (editor) => {
       insertEmptyCodeBlock(editor as SPEditor, {
         defaultType: getPlatePluginType(editor as SPEditor, ELEMENT_DEFAULT),

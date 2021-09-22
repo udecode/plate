@@ -35,6 +35,8 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { HrElement } from '@udecode/plate-horizontal-rule-ui';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { ImageElement } from '@udecode/plate-image-ui';
 import { MARK_KBD } from '@udecode/plate-kbd';
@@ -91,6 +93,7 @@ export const createPlateComponents = <T extends string = string>(
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
+    [ELEMENT_HR]: HrElement,
     [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',
       styles: {

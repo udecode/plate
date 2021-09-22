@@ -10,6 +10,7 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_HR,
   ELEMENT_LI,
   ELEMENT_LIC,
   ELEMENT_LINK,
@@ -58,6 +59,20 @@ export const initialValuePlaceholder: any = (
     <hp>
       <htext />
     </hp>
+  </fragment>
+);
+
+export const initialValueHorizontalRule: any = (
+  <fragment>
+    <hp>This is a paragraph.</hp>
+    <element type={ELEMENT_HR}>
+      <htext />
+    </element>
+    <hp>And this is another paragraph.</hp>
+    <element type={ELEMENT_HR}>
+      <htext />
+    </element>
+    <hp>But between those paragraphs are horizontal rules.</hp>
   </fragment>
 );
 
@@ -261,6 +276,11 @@ export const initialValueAutoformat: any = (
       <hli>
         <hlic>
           Type <htext code>```</htext> to create a code block.
+        </hlic>
+      </hli>
+      <hli>
+        <hlic>
+          Type <htext code>---</htext> to create a horizontal rule.
         </hlic>
       </hli>
       <hli>
@@ -1173,6 +1193,7 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueFont,
   ...initialValueHighlight,
   ...initialValueBasicElements,
+  ...initialValueHorizontalRule,
   ...initialValueList,
   ...initialValueTables,
   ...initialValueLinks,

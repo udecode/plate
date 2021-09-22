@@ -54,6 +54,7 @@ See [Installation](/docs/installation)
         createTodoListPlugin(),
         createHeadingPlugin(),
         createImagePlugin(),
+        createHorizontalRulePlugin(),
         createLinkPlugin(),
         createListPlugin(),
         createTablePlugin(),
@@ -82,7 +83,7 @@ See [Installation](/docs/installation)
           rules: [{ path: [0], strictType: ELEMENT_H1 }],
         }),
         createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
-        createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
+        createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE, ELEMENT_HR] }),
         mentionPlugin,
         searchHighlightPlugin,
       ];
