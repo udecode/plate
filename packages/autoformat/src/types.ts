@@ -33,9 +33,10 @@ export interface AutoformatCommonRule {
    */
   query?: (
     editor: TEditor,
-    rule: Omit<AutoformatCommonRule, 'query'>,
-    text: string
+    rule: Omit<AutoformatCommonRule, 'query'>
   ) => boolean;
+
+  text?: string;
 }
 
 export interface AutoformatBlockRule extends AutoformatCommonRule {

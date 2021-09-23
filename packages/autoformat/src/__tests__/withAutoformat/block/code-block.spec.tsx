@@ -16,6 +16,7 @@ import { withReact } from 'slate-react';
 import { preFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
 import { withAutoformat } from '../../../createAutoformatPlugin';
+import { AutoformatCommonRule } from '../../../types';
 
 jsx;
 
@@ -87,14 +88,14 @@ describe('when ``` at block start, but customising with query we get the most re
               insertNodesOptions: { select: true },
             });
           },
-          query: (editor, rule, text): boolean => {
+          query: (editor, rule): boolean => {
             if (!editor.selection) {
               return false;
             }
 
             const matchRange = getRangeFromBlockStart(editor) as Range;
             const textFromBlockStart = getText(editor, matchRange);
-            const currentNodeText = (textFromBlockStart || '') + text;
+            const currentNodeText = (textFromBlockStart || '') + rule.text;
 
             return rule.match === currentNodeText;
           },

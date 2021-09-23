@@ -20,7 +20,7 @@ export const withAutoformat = ({
     for (const rule of rules) {
       const { mode = 'text', insertTrigger, query } = rule;
 
-      if (query && !query(editor, rule, text)) continue;
+      if (query && !query(editor, { ...rule, text })) continue;
 
       const autoformatter: Record<typeof mode, Function> = {
         block: autoformatBlock,
