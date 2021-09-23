@@ -1,46 +1,139 @@
 import {
   ELEMENT_DEFAULT,
+  findNode,
   getNodes,
+  isCollapsed,
   setNodes,
-  someNode,
   wrapNodes,
 } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
-import { Editor } from 'slate';
+import { Editor, Node, NodeEntry, Path, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
+import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
-  if (!editor.selection) return;
+  if (!editor.selection) {
+    return;
+  }
 
   Editor.withoutNormalizing(editor, () => {
-    const isActive = someNode(editor, { match: { type } });
+    if (isCollapsed(editor.selection)) {
+      // selection is collapsed
+      const res = getListItemEntry(editor);
 
-    unwrapList(editor);
+      if (res) {
+        const { list } = res;
+        if (list[0].type !== type) {
+          setNodes(
+            editor,
+            { type },
+            {
+              at: editor.selection as Range,
+              match: (n) => getListTypes(editor).includes(n.type),
+              mode: 'lowest',
+            }
+          );
+        } else {
+          unwrapList(editor);
+        }
+      } else {
+        const list = { type, children: [] };
+        wrapNodes(editor, list);
 
-    setNodes<TElement>(editor, {
-      type: getPlatePluginType(editor, ELEMENT_DEFAULT),
-    });
+        const nodes = [
+          ...getNodes(editor, {
+            match: { type: getPlatePluginType(editor, ELEMENT_DEFAULT) },
+          }),
+        ];
+        setNodes(editor, { type: getPlatePluginType(editor, ELEMENT_LIC) });
 
-    if (!isActive) {
-      const list = { type, children: [] };
-      wrapNodes(editor, list);
+        const listItem = {
+          type: getPlatePluginType(editor, ELEMENT_LI),
+          children: [],
+        };
 
-      const nodes = [
-        ...getNodes(editor, {
-          match: { type: getPlatePluginType(editor, ELEMENT_DEFAULT) },
-        }),
-      ];
-      setNodes(editor, { type: getPlatePluginType(editor, ELEMENT_LIC) });
+        for (const [, path] of nodes) {
+          wrapNodes(editor, listItem, {
+            at: path,
+          });
+        }
+      }
+    } else {
+      // selection is a range
+      const [statPoint, endPoint] = Range.edges(editor.selection!);
 
-      const listItem = {
-        type: getPlatePluginType(editor, ELEMENT_LI),
-        children: [],
-      };
+      const commonEntry: NodeEntry<Node> = Node.common(
+        editor,
+        statPoint.path,
+        endPoint.path
+      );
 
-      for (const [, path] of nodes) {
-        wrapNodes(editor, listItem, {
-          at: path,
+      if (
+        getListTypes(editor).includes((commonEntry[0] as TElement).type) ||
+        (commonEntry[0] as TElement).type ===
+          getPlatePluginType(editor, ELEMENT_LI)
+      ) {
+        if ((commonEntry[0] as TElement).type !== type) {
+          const startList = findNode(editor, {
+            at: Range.start(editor.selection as Range).path,
+            match: { type: getListTypes(editor) },
+            mode: 'lowest',
+          });
+          const endList = findNode(editor, {
+            at: Range.end(editor.selection as Range).path,
+            match: { type: getListTypes(editor) },
+            mode: 'lowest',
+          });
+          const rangeLength = Math.min(
+            startList![1].length,
+            endList![1].length
+          );
+          setNodes(
+            editor,
+            { type },
+            {
+              at: editor.selection as Range,
+              match: (n: TElement, path: Path) =>
+                getListTypes(editor).includes(n.type) &&
+                path.length >= rangeLength,
+              mode: 'all',
+            }
+          );
+        } else {
+          unwrapList(editor);
+        }
+      } else {
+        const rootPathLength = commonEntry[1].length;
+        const nodes = (Array.from(
+          getNodes(editor, {
+            mode: 'all',
+          })
+        ) as NodeEntry<TElement>[])
+          .filter(([, path]) => path.length === rootPathLength + 1)
+          .reverse();
+
+        nodes.forEach((n) => {
+          if (getListTypes(editor).includes(n[0].type)) {
+            setNodes(editor, { type }, { at: n[1] });
+          } else {
+            setNodes(
+              editor,
+              { type: getPlatePluginType(editor, ELEMENT_LIC) },
+              { at: n[1] }
+            );
+
+            const listItem = {
+              type: getPlatePluginType(editor, ELEMENT_LI),
+              children: [],
+            };
+            wrapNodes(editor, listItem, {
+              at: n[1],
+            });
+
+            const list = { type, children: [] };
+            wrapNodes(editor, list, { at: n[1] });
+          }
         });
       }
     }

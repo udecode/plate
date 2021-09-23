@@ -1,5 +1,6 @@
 import {
   getChildren,
+  getParent,
   insertEmptyElement,
   match,
   setNodes,
@@ -12,6 +13,8 @@ import {
 } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { getListTypes } from '../queries';
+import { moveListItemsToList, moveListItemUp, unwrapList } from '../transforms';
 import { ListNormalizerOptions } from '../types';
 
 /**
@@ -73,7 +76,8 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   const firstLiChild: NodeEntry<any> | undefined = liChildren[0];
-  const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
+  const [firstLiChildNode, firstLiChildPath] =
+    (firstLiChild as NodeEntry<TElement>) ?? [];
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
@@ -90,6 +94,26 @@ export const normalizeListItem = (
       type: getPlatePluginType(editor, ELEMENT_LIC),
     })
   ) {
+    if (
+      match(firstLiChildNode as any, {
+        type: getListTypes(editor),
+      })
+    ) {
+      // the listItem has no lic so we move the children up a level
+      const parent = getParent(editor, listItem[1]);
+      const sublist = firstLiChild;
+      const children = getChildren(firstLiChild).reverse();
+      Editor.withoutNormalizing(editor, () => {
+        children.forEach((c) => {
+          moveListItemUp(editor, { list: sublist, listItem: c });
+        });
+
+        Transforms.removeNodes(editor, { at: [...parent![1], 0] });
+      });
+
+      return true;
+    }
+
     setNodes<TElement>(
       editor,
       {
@@ -99,6 +123,7 @@ export const normalizeListItem = (
         at: firstLiChildPath,
       }
     );
+
     changed = true;
   }
 

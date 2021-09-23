@@ -1,21 +1,12 @@
-import {
-  ELEMENT_DEFAULT,
-  getParent,
-  match,
-  setNodes,
-} from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  isElement,
-  SPEditor,
-  TDescendant,
-} from '@udecode/plate-core';
+import { ELEMENT_DEFAULT, getNode, getParent, match, setNodes } from '@udecode/plate-common';
+import { getPlatePluginType, isElement, SPEditor, TDescendant, TElement } from '@udecode/plate-core';
 import { NodeEntry, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
+import { moveListItemsToList } from '../transforms';
 
 /**
  * Normalize list node to force the ul>li>p+ul structure.
@@ -32,6 +23,7 @@ export const getListNormalizer = (
   return ([node, path]: NodeEntry) => {
     if (!isElement(node)) return;
 
+    // remove empty list
     if (match(node, { type: getListTypes(editor) })) {
       if (
         !node.children.length ||
@@ -40,9 +32,33 @@ export const getListNormalizer = (
         return Transforms.removeNodes(editor, { at: path });
       }
 
-      if (normalizeNestedList(editor, { nestedListItem: [node, path] })) {
-        return;
+      const nextPath = [...path.slice(0, -1), path[path.length - 1] + 1];
+      const nextNode = getNode(editor, nextPath) as TElement;
+
+      // Has a list afterwards with the same type
+      if (nextNode && nextNode.type === node.type) {
+        moveListItemsToList(editor, {
+          fromList: [nextNode, nextPath],
+          toList: [node, path],
+          deleteFromList: true,
+        });
       }
+
+      if (path[path.length - 1] > 0) {
+        const prevPath = [...path.slice(0, -1), path[path.length - 1] - 1];
+        const prevNode = getNode(editor, prevPath) as TElement;
+
+        // Has a list afterwards with the same type
+        if (prevNode && prevNode.type === node.type) {
+          editor.normalizeNode([prevNode, prevPath]);
+
+          return;
+        }
+      }
+
+      normalizeNestedList(editor, { nestedListItem: [node, path] })
+
+      return;
     }
 
     if (node.type === getPlatePluginType(editor, ELEMENT_LI)) {

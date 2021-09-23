@@ -5,7 +5,7 @@ import {
   toggleNodeType,
 } from '@udecode/plate-common';
 import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
-import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
+import { ToolbarButton } from '../ToolbarButton';
 import { ToolbarElementProps } from './ToolbarElement.types';
 
 /**
@@ -14,13 +14,16 @@ import { ToolbarElementProps } from './ToolbarElement.types';
 export const ToolbarElement = ({
   type,
   inactiveType,
+  active,
   ...props
 }: ToolbarElementProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
-      active={!!editor?.selection && someNode(editor, { match: { type } })}
+      active={
+        active ?? (!!editor?.selection && someNode(editor, { match: { type } }))
+      }
       onMouseDown={
         editor &&
         getPreventDefaultHandler(toggleNodeType, editor, {
