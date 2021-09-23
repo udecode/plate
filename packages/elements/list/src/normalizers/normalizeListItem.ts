@@ -14,7 +14,7 @@ import {
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { getListTypes } from '../queries';
-import { moveListItemsToList, moveListItemUp, unwrapList } from '../transforms';
+import { moveListItemUp } from '../transforms';
 import { ListNormalizerOptions } from '../types';
 
 /**

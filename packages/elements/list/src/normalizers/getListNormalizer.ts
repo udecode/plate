@@ -1,12 +1,24 @@
-import { ELEMENT_DEFAULT, getNode, getParent, match, setNodes } from '@udecode/plate-common';
-import { getPlatePluginType, isElement, SPEditor, TDescendant, TElement } from '@udecode/plate-core';
+import {
+  ELEMENT_DEFAULT,
+  getNode,
+  getParent,
+  match,
+  setNodes,
+} from '@udecode/plate-common';
+import {
+  getPlatePluginType,
+  isElement,
+  SPEditor,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-core';
 import { NodeEntry, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
+import { moveListItemsToList } from '../transforms';
 import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
-import { moveListItemsToList } from '../transforms';
 
 /**
  * Normalize list node to force the ul>li>p+ul structure.
@@ -56,7 +68,7 @@ export const getListNormalizer = (
         }
       }
 
-      normalizeNestedList(editor, { nestedListItem: [node, path] })
+      normalizeNestedList(editor, { nestedListItem: [node, path] });
 
       return;
     }
