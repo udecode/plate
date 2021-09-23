@@ -1,5 +1,12 @@
 # @udecode/plate-list-ui
 
+## 4.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`eb30aa5d`](https://github.com/udecode/plate/commit/eb30aa5d355abb81bc3e8577fedb3800e1b056aa)]:
+  - @udecode/plate-list@4.1.0
+
 ## 4.0.0
 
 ### Patch Changes
