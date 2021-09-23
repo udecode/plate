@@ -6,6 +6,14 @@ export interface MatchRange {
   end: string;
 }
 
+export interface AutoformatQueryOptions
+  extends Omit<AutoformatCommonRule, 'query'> {
+  /**
+   * `insertText` text.
+   */
+  text: string;
+}
+
 export interface AutoformatCommonRule {
   /**
    * The rule applies when the trigger and the text just before the cursor matches.
@@ -31,12 +39,7 @@ export interface AutoformatCommonRule {
   /**
    * Query to allow autoformat.
    */
-  query?: (
-    editor: TEditor,
-    rule: Omit<AutoformatCommonRule, 'query'>
-  ) => boolean;
-
-  text?: string;
+  query?: (editor: TEditor, options: AutoformatQueryOptions) => boolean;
 }
 
 export interface AutoformatBlockRule extends AutoformatCommonRule {
