@@ -23,6 +23,8 @@ export * from '@udecode/plate-find-replace';
 export * from '@udecode/plate-find-replace-ui';
 export * from '@udecode/plate-heading';
 export * from '@udecode/plate-highlight';
+export * from '@udecode/plate-horizontal-rule';
+export * from '@udecode/plate-horizontal-rule-ui';
 export * from '@udecode/plate-html-serializer';
 export * from '@udecode/plate-image';
 export * from '@udecode/plate-image-ui';
