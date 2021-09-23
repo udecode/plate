@@ -1,5 +1,15 @@
 # @udecode/plate-link-ui
 
+## 4.0.0
+
+### Patch Changes
+
+- [#1052](https://github.com/udecode/plate/pull/1052) [`22da824e`](https://github.com/udecode/plate/commit/22da824e9acea62cbd9073a150b543348a1b128b) Thanks [@aj-foster](https://github.com/aj-foster)! - Add keyboard shortcut for inserting a link at the current selection
+
+- Updated dependencies [[`22da824e`](https://github.com/udecode/plate/commit/22da824e9acea62cbd9073a150b543348a1b128b), [`d5667409`](https://github.com/udecode/plate/commit/d5667409e4e53b4b41a14335a7298c260c52019e), [`a899c585`](https://github.com/udecode/plate/commit/a899c5850fbe09792113b2b3f4787d869568427d)]:
+  - @udecode/plate-link@4.0.0
+  - @udecode/plate-toolbar@4.0.0
+
 ## 3.5.1
 
 ### Patch Changes

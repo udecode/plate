@@ -1,5 +1,12 @@
 # @udecode/plate-image-ui
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`d5667409`](https://github.com/udecode/plate/commit/d5667409e4e53b4b41a14335a7298c260c52019e), [`a899c585`](https://github.com/udecode/plate/commit/a899c5850fbe09792113b2b3f4787d869568427d)]:
+  - @udecode/plate-toolbar@4.0.0
+
 ## 3.5.1
 
 ### Patch Changes

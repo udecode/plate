@@ -1,5 +1,31 @@
 # @udecode/plate
 
+## 4.0.0
+
+### Minor Changes
+
+- [#1054](https://github.com/udecode/plate/pull/1054) [`9f7abfc4`](https://github.com/udecode/plate/commit/9f7abfc42e0c97585f3784e4bbe8d93ec3655082) Thanks [@zbeyens](https://github.com/zbeyens)! - New plugin: horizontal rule
+
+### Patch Changes
+
+- [#1052](https://github.com/udecode/plate/pull/1052) [`22da824e`](https://github.com/udecode/plate/commit/22da824e9acea62cbd9073a150b543348a1b128b) Thanks [@aj-foster](https://github.com/aj-foster)! - Add keyboard shortcut for inserting a link at the current selection
+
+- Updated dependencies [[`22da824e`](https://github.com/udecode/plate/commit/22da824e9acea62cbd9073a150b543348a1b128b), [`9f7abfc4`](https://github.com/udecode/plate/commit/9f7abfc42e0c97585f3784e4bbe8d93ec3655082), [`cc14dfd4`](https://github.com/udecode/plate/commit/cc14dfd4c5eddd62e9e86de2034df5c7d054dbff), [`d5667409`](https://github.com/udecode/plate/commit/d5667409e4e53b4b41a14335a7298c260c52019e), [`a899c585`](https://github.com/udecode/plate/commit/a899c5850fbe09792113b2b3f4787d869568427d)]:
+  - @udecode/plate-link@4.0.0
+  - @udecode/plate-link-ui@4.0.0
+  - @udecode/plate-horizontal-rule@4.0.0
+  - @udecode/plate-autoformat@4.0.0
+  - @udecode/plate-toolbar@4.0.0
+  - @udecode/plate-ast-serializer@4.0.0
+  - @udecode/plate-md-serializer@4.0.0
+  - @udecode/plate-alignment-ui@4.0.0
+  - @udecode/plate-code-block-ui@4.0.0
+  - @udecode/plate-image-ui@4.0.0
+  - @udecode/plate-list-ui@4.0.0
+  - @udecode/plate-table-ui@4.0.0
+  - @udecode/plate-find-replace-ui@4.0.0
+  - @udecode/plate-font-ui@4.0.0
+
 ## 3.5.1
 
 ### Patch Changes

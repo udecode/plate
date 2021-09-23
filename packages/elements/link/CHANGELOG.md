@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 4.0.0
+
+### Minor Changes
+
+- [#1052](https://github.com/udecode/plate/pull/1052) [`22da824e`](https://github.com/udecode/plate/commit/22da824e9acea62cbd9073a150b543348a1b128b) Thanks [@aj-foster](https://github.com/aj-foster)! - Add keyboard shortcut for inserting a link at the current selection
+
 ## 3.5.0
 
 ### Minor Changes
