@@ -11,12 +11,11 @@ import {
 } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor, Node, Range } from 'slate';
+import { Range } from 'slate';
 import { withReact } from 'slate-react';
-import { preFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
+import { clearBlockFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
 import { withAutoformat } from '../../../createAutoformatPlugin';
-import { AutoformatCommonRule } from '../../../types';
 
 jsx;
 
@@ -78,7 +77,7 @@ describe('when ``` at block start, but customising with query we get the most re
           type: ELEMENT_CODE_BLOCK,
           match: '```',
           triggerAtBlockStart: false,
-          preFormat,
+          preFormat: clearBlockFormat,
           format: (editor) => {
             insertEmptyCodeBlock(editor as SPEditor, {
               defaultType: getPlatePluginType(
