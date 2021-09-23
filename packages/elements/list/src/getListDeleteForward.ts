@@ -69,9 +69,8 @@ const selectionIsNotInAListHandler = (editor: SPEditor): boolean => {
 const selectionIsInAListHandler = (
   editor: SPEditor,
   res: { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> }
-): boolean | undefined => {
+): boolean => {
   const { listItem } = res;
-  let skipDefaultDelete: boolean | undefined = false;
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
@@ -118,12 +117,11 @@ const selectionIsInAListHandler = (
             deleteFromList: true,
           });
 
-          skipDefaultDelete = true;
-          return skipDefaultDelete;
+          return true;
         }
       }
 
-      return skipDefaultDelete;
+      return false;
     }
 
     const siblingListItem: NodeEntry<TDescendant> = pathToEntry(
@@ -136,15 +134,19 @@ const selectionIsInAListHandler = (
       siblingListItem[1]
     );
 
-    skipDefaultDelete = removeListItem(editor, {
-      list: siblingList,
-      listItem: siblingListItem,
-      reverse: false,
-    });
+    if (
+      removeListItem(editor, {
+        list: siblingList,
+        listItem: siblingListItem,
+        reverse: false,
+      })
+    ) {
+      return true;
+    }
 
     // if (skipDefaultDelete) return skipDefaultDelete;
 
-    return skipDefaultDelete;
+    return false;
   }
 
   // if it has children
@@ -154,23 +156,29 @@ const selectionIsInAListHandler = (
   );
   const nestedListItem = getChildren<TDescendant>(nestedList)[0];
 
-  skipDefaultDelete = removeFirstListItem(editor, {
-    list: nestedList,
-    listItem: nestedListItem,
-  });
+  if (
+    removeFirstListItem(editor, {
+      list: nestedList,
+      listItem: nestedListItem,
+    })
+  ) {
+    return true;
+  }
 
-  if (skipDefaultDelete) return skipDefaultDelete;
+  if (
+    removeListItem(editor, {
+      list: nestedList,
+      listItem: nestedListItem,
+    })
+  ) {
+    return true;
+  }
 
-  skipDefaultDelete = removeListItem(editor, {
-    list: nestedList,
-    listItem: nestedListItem,
-  });
-
-  return skipDefaultDelete;
+  return false;
 };
 
 export const getListDeleteForward = (editor: SPEditor) => {
-  let skipDefaultDelete: boolean | undefined = false;
+  let skipDefaultDelete = false;
 
   if (!editor?.selection) {
     return skipDefaultDelete;
