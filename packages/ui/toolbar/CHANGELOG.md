@@ -1,5 +1,18 @@
 # @udecode/plate-toolbar
 
+## 4.0.0
+
+### Major Changes
+
+- [#1048](https://github.com/udecode/plate/pull/1048) [`d5667409`](https://github.com/udecode/plate/commit/d5667409e4e53b4b41a14335a7298c260c52019e) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - Removed `hiddenDelay` prop from `BalloonToolbar` component.
+
+### Minor Changes
+
+- [#1048](https://github.com/udecode/plate/pull/1048) [`a899c585`](https://github.com/udecode/plate/commit/a899c5850fbe09792113b2b3f4787d869568427d) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - added:
+  - `usePopupPosition` hook to position the hovering popup correctly even in the nested scroll, this hook using `react-popper` internally and user can pass modifiers, placements to customise the behaviour
+  - transition for showing the balloon toolbar smoothly.
+  - `scrollContainer` prop to the BalloonToolbar as well.
+
 ## 3.5.1
 
 ### Patch Changes

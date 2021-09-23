@@ -1,5 +1,11 @@
 # @udecode/plate-autoformat
 
+## 4.0.0
+
+### Patch Changes
+
+- [#1053](https://github.com/udecode/plate/pull/1053) [`cc14dfd4`](https://github.com/udecode/plate/commit/cc14dfd4c5eddd62e9e86de2034df5c7d054dbff) Thanks [@bensquire](https://github.com/bensquire)! - Passes the most recent keystroke into auto-format rule "query"
+
 ## 3.4.0
 
 ### Patch Changes
