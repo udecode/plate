@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 4.1.0
+
+### Minor Changes
+
+- [#1028](https://github.com/udecode/plate/pull/1028) [`eb30aa5d`](https://github.com/udecode/plate/commit/eb30aa5d355abb81bc3e8577fedb3800e1b056aa) Thanks [@ghingis](https://github.com/ghingis)! - feat: handle more `deleteForward` edge case scenarios
+
 ## 3.5.1
 
 ### Patch Changes
