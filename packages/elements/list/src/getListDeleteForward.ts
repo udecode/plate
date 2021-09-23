@@ -142,6 +142,8 @@ const selectionIsInAListHandler = (
       reverse: false,
     });
 
+    // if (skipDefaultDelete) return skipDefaultDelete;
+
     return skipDefaultDelete;
   }
 
