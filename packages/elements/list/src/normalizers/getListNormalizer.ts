@@ -33,7 +33,7 @@ export const getListNormalizer = (
   const licType = getPlatePluginType(editor, ELEMENT_LIC);
   const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: NodeEntry<TElement>) => {
+  return ([node, path]: NodeEntry) => {
     if (!isElement(node)) return;
 
     // remove empty list
