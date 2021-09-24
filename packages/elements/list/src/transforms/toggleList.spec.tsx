@@ -80,7 +80,7 @@ describe('toggle on', () => {
 });
 
 describe('toggle off', () => {
-  it('should spit a simple list to two', () => {
+  it('should split a simple list to two', () => {
     const input = ((
       <editor>
         <hul>
@@ -300,7 +300,7 @@ describe('toggle over', () => {
     expect(input.children).toEqual(output.children);
   });
 
-  it('should only toggle everything that selected', () => {
+  it('should only toggle everything that is selected', () => {
     const input = ((
       <editor>
         <hul>

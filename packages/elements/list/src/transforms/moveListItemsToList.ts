@@ -5,7 +5,7 @@ import {
   MoveChildrenOptions,
 } from '@udecode/plate-common';
 import { SPEditor, TElement } from '@udecode/plate-core';
-import { NodeEntry, Path, Transforms } from 'slate';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions {
@@ -57,46 +57,49 @@ export const moveListItemsToList = (
   }: MergeListItemIntoListOptions
 ) => {
   let fromListPath: Path | undefined;
+  let moved;
 
-  if (fromListItem) {
-    const fromListItemSublist = findDescendant(editor, {
-      at: fromListItem[1],
-      match: {
-        type: getListTypes(editor),
-      },
-    });
-    if (!fromListItemSublist) return 0;
+  Editor.withoutNormalizing(editor, () => {
+    if (fromListItem) {
+      const fromListItemSublist = findDescendant(editor, {
+        at: fromListItem[1],
+        match: {
+          type: getListTypes(editor),
+        },
+      });
+      if (!fromListItemSublist) return 0;
 
-    fromListPath = fromListItemSublist?.[1];
-  } else if (fromList) {
-    // eslint-disable-next-line prefer-destructuring
-    fromListPath = fromList[1];
-  } else {
-    return;
-  }
-
-  let to: Path | null = null;
-
-  if (_to) to = _to;
-  if (toList) {
-    if (toListIndex !== null) to = toList[1].concat([toListIndex]);
-    else {
-      const lastChildPath = getLastChildPath(toList);
-      to = Path.next(lastChildPath);
+      fromListPath = fromListItemSublist?.[1];
+    } else if (fromList) {
+      // eslint-disable-next-line prefer-destructuring
+      fromListPath = fromList[1];
+    } else {
+      return;
     }
-  }
-  if (!to) return;
 
-  const moved = moveChildren(editor, {
-    at: fromListPath,
-    to,
-    fromStartIndex,
+    let to: Path | null = null;
+
+    if (_to) to = _to;
+    if (toList) {
+      if (toListIndex !== null) to = toList[1].concat([toListIndex]);
+      else {
+        const lastChildPath = getLastChildPath(toList);
+        to = Path.next(lastChildPath);
+      }
+    }
+    if (!to) return;
+
+    moved = moveChildren(editor, {
+      at: fromListPath,
+      to,
+      fromStartIndex,
+    });
+
+    // Remove the empty list
+    if (deleteFromList) {
+      Transforms.delete(editor, { at: fromListPath });
+    }
   });
-
-  // Remove the empty list
-  if (deleteFromList) {
-    Transforms.delete(editor, { at: fromListPath });
-  }
 
   return moved;
 };

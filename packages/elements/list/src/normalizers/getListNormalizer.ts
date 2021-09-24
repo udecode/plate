@@ -2,6 +2,7 @@ import {
   ELEMENT_DEFAULT,
   getNode,
   getParent,
+  getPreviousPath,
   match,
   setNodes,
 } from '@udecode/plate-common';
@@ -12,7 +13,7 @@ import {
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
-import { NodeEntry, Transforms } from 'slate';
+import { Descendant, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
 import { moveListItemsToList } from '../transforms';
@@ -32,23 +33,25 @@ export const getListNormalizer = (
   const licType = getPlatePluginType(editor, ELEMENT_LIC);
   const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: NodeEntry) => {
+  return ([node, path]: NodeEntry<TElement>) => {
     if (!isElement(node)) return;
 
     // remove empty list
     if (match(node, { type: getListTypes(editor) })) {
       if (
         !node.children.length ||
-        !node.children.find((item) => (item as TDescendant).type === liType)
+        !node.children.find(
+          (item: Descendant) => (item as TDescendant).type === liType
+        )
       ) {
         return Transforms.removeNodes(editor, { at: path });
       }
 
-      const nextPath = [...path.slice(0, -1), path[path.length - 1] + 1];
-      const nextNode = getNode(editor, nextPath) as TElement;
+      const nextPath = Path.next(path);
+      const nextNode = getNode(editor, nextPath) as TElement | null;
 
       // Has a list afterwards with the same type
-      if (nextNode && nextNode.type === node.type) {
+      if (nextNode?.type === node.type) {
         moveListItemsToList(editor, {
           fromList: [nextNode, nextPath],
           toList: [node, path],
@@ -56,21 +59,20 @@ export const getListNormalizer = (
         });
       }
 
-      if (path[path.length - 1] > 0) {
-        const prevPath = [...path.slice(0, -1), path[path.length - 1] - 1];
-        const prevNode = getNode(editor, prevPath) as TElement;
+      const prevPath = getPreviousPath(path) as Path;
+      const prevNode = getNode(editor, prevPath) as TElement | null;
 
-        // Has a list afterwards with the same type
-        if (prevNode && prevNode.type === node.type) {
-          editor.normalizeNode([prevNode, prevPath]);
+      // Has a list before with the same type
+      if (prevNode?.type === node.type) {
+        editor.normalizeNode([prevNode, prevPath]);
 
-          return;
-        }
+        // early return since this node will no longer exists
+        return;
       }
 
-      normalizeNestedList(editor, { nestedListItem: [node, path] });
-
-      return;
+      if (normalizeNestedList(editor, { nestedListItem: [node, path] })) {
+        return;
+      }
     }
 
     if (node.type === getPlatePluginType(editor, ELEMENT_LI)) {

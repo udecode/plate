@@ -12,12 +12,12 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
-  if (!editor.selection) {
-    return;
-  }
-
+export const toggleList = (editor: SPEditor, { type }: { type: string }) =>
   Editor.withoutNormalizing(editor, () => {
+    if (!editor.selection) {
+      return;
+    }
+
     if (isCollapsed(editor.selection)) {
       // selection is collapsed
       const res = getListItemEntry(editor);
@@ -29,7 +29,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
             editor,
             { type },
             {
-              at: editor.selection as Range,
+              at: editor.selection,
               match: (n) => getListTypes(editor).includes(n.type),
               mode: 'lowest',
             }
@@ -61,13 +61,9 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
       }
     } else {
       // selection is a range
-      const [statPoint, endPoint] = Range.edges(editor.selection!);
+      const [startPoint, endPoint] = Range.edges(editor.selection!);
 
-      const commonEntry: NodeEntry<Node> = Node.common(
-        editor,
-        statPoint.path,
-        endPoint.path
-      );
+      const commonEntry = Node.common(editor, startPoint.path, endPoint.path);
 
       if (
         getListTypes(editor).includes((commonEntry[0] as TElement).type) ||
@@ -76,12 +72,12 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
       ) {
         if ((commonEntry[0] as TElement).type !== type) {
           const startList = findNode(editor, {
-            at: Range.start(editor.selection as Range).path,
+            at: Range.start(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
           const endList = findNode(editor, {
-            at: Range.end(editor.selection as Range).path,
+            at: Range.end(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
@@ -93,7 +89,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
             editor,
             { type },
             {
-              at: editor.selection as Range,
+              at: editor.selection,
               match: (n: TElement, path: Path) =>
                 getListTypes(editor).includes(n.type) &&
                 path.length >= rangeLength,
@@ -138,4 +134,3 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) => {
       }
     }
   });
-};

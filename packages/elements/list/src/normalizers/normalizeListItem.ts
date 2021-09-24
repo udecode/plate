@@ -103,13 +103,11 @@ export const normalizeListItem = (
       const parent = getParent(editor, listItem[1]);
       const sublist = firstLiChild;
       const children = getChildren(firstLiChild).reverse();
-      Editor.withoutNormalizing(editor, () => {
-        children.forEach((c) => {
-          moveListItemUp(editor, { list: sublist, listItem: c });
-        });
-
-        Transforms.removeNodes(editor, { at: [...parent![1], 0] });
+      children.forEach((c) => {
+        moveListItemUp(editor, { list: sublist, listItem: c });
       });
+
+      Transforms.removeNodes(editor, { at: [...parent![1], 0] });
 
       return true;
     }
@@ -130,49 +128,47 @@ export const normalizeListItem = (
   const licChildren = getChildren(firstLiChild);
 
   if (licChildren.length) {
-    Editor.withoutNormalizing(editor, () => {
-      const blockPathRefs: PathRef[] = [];
-      const inlineChildren: NodeEntry[] = [];
+    const blockPathRefs: PathRef[] = [];
+    const inlineChildren: NodeEntry[] = [];
 
-      // Check that lic has no block children
-      for (const licChild of licChildren) {
-        if (!Editor.isBlock(editor, licChild[0])) {
-          break;
-        }
-
-        blockPathRefs.push(Editor.pathRef(editor, licChild[1]));
-
-        inlineChildren.push(
-          ...getDeepInlineChildren(editor, {
-            children: getChildren(licChild),
-          })
-        );
+    // Check that lic has no block children
+    for (const licChild of licChildren) {
+      if (!Editor.isBlock(editor, licChild[0])) {
+        break;
       }
 
-      const to = Path.next(licChildren[licChildren.length - 1]?.[1]);
+      blockPathRefs.push(Editor.pathRef(editor, licChild[1]));
 
-      // Move lic nested inline children to its children
-      inlineChildren.reverse().forEach(([, path]) => {
-        Transforms.moveNodes(editor, {
-          at: path,
-          to,
-        });
+      inlineChildren.push(
+        ...getDeepInlineChildren(editor, {
+          children: getChildren(licChild),
+        })
+      );
+    }
+
+    const to = Path.next(licChildren[licChildren.length - 1]?.[1]);
+
+    // Move lic nested inline children to its children
+    inlineChildren.reverse().forEach(([, path]) => {
+      Transforms.moveNodes(editor, {
+        at: path,
+        to,
       });
-
-      // Remove lic block children
-      blockPathRefs.forEach((pathRef) => {
-        const path = pathRef.unref();
-
-        path &&
-          Transforms.removeNodes(editor, {
-            at: path,
-          });
-      });
-
-      if (blockPathRefs.length) {
-        changed = true;
-      }
     });
+
+    // Remove lic block children
+    blockPathRefs.forEach((pathRef) => {
+      const path = pathRef.unref();
+
+      path &&
+        Transforms.removeNodes(editor, {
+          at: path,
+        });
+    });
+
+    if (blockPathRefs.length) {
+      changed = true;
+    }
   }
 
   if (changed) return true;

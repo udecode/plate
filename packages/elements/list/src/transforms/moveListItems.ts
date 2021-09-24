@@ -52,24 +52,26 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  licPathRefsToMove.forEach((licPathRef) => {
-    const licPath = licPathRef.unref();
-    if (!licPath) return;
+  Editor.withoutNormalizing(editor, () => {
+    licPathRefsToMove.forEach((licPathRef) => {
+      const licPath = licPathRef.unref();
+      if (!licPath) return;
 
-    const listItem = getParent(editor, licPath);
-    if (!listItem) return;
-    const listEntry = getParent(editor, listItem[1]);
+      const listItem = getParent(editor, licPath);
+      if (!listItem) return;
+      const listEntry = getParent(editor, listItem[1]);
 
-    if (increase) {
-      moveListItemDown(editor, {
-        list: listEntry as any,
-        listItem: listItem as any,
-      });
-    } else if (listEntry && isListNested(editor, listEntry[1])) {
-      moveListItemUp(editor, {
-        list: listEntry as any,
-        listItem: listItem as any,
-      });
-    }
+      if (increase) {
+        moveListItemDown(editor, {
+          list: listEntry as any,
+          listItem: listItem as any,
+        });
+      } else if (listEntry && isListNested(editor, listEntry[1])) {
+        moveListItemUp(editor, {
+          list: listEntry as any,
+          listItem: listItem as any,
+        });
+      }
+    });
   });
 };
