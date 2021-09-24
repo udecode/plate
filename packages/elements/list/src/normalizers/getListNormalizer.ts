@@ -1,6 +1,8 @@
 import {
   ELEMENT_DEFAULT,
+  getNode,
   getParent,
+  getPreviousPath,
   match,
   setNodes,
 } from '@udecode/plate-common';
@@ -9,10 +11,12 @@ import {
   isElement,
   SPEditor,
   TDescendant,
+  TElement,
 } from '@udecode/plate-core';
-import { NodeEntry, Transforms } from 'slate';
+import { Descendant, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListTypes } from '../queries/getListTypes';
+import { moveListItemsToList } from '../transforms';
 import { ListNormalizerOptions } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
@@ -32,12 +36,38 @@ export const getListNormalizer = (
   return ([node, path]: NodeEntry) => {
     if (!isElement(node)) return;
 
+    // remove empty list
     if (match(node, { type: getListTypes(editor) })) {
       if (
         !node.children.length ||
-        !node.children.find((item) => (item as TDescendant).type === liType)
+        !node.children.find(
+          (item: Descendant) => (item as TDescendant).type === liType
+        )
       ) {
         return Transforms.removeNodes(editor, { at: path });
+      }
+
+      const nextPath = Path.next(path);
+      const nextNode = getNode(editor, nextPath) as TElement | null;
+
+      // Has a list afterwards with the same type
+      if (nextNode?.type === node.type) {
+        moveListItemsToList(editor, {
+          fromList: [nextNode, nextPath],
+          toList: [node, path],
+          deleteFromList: true,
+        });
+      }
+
+      const prevPath = getPreviousPath(path) as Path;
+      const prevNode = getNode(editor, prevPath) as TElement | null;
+
+      // Has a list before with the same type
+      if (prevNode?.type === node.type) {
+        editor.normalizeNode([prevNode, prevPath]);
+
+        // early return since this node will no longer exists
+        return;
       }
 
       if (normalizeNestedList(editor, { nestedListItem: [node, path] })) {

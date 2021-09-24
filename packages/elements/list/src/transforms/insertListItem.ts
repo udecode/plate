@@ -13,28 +13,34 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (editor: SPEditor) => {
+export const insertListItem = (editor: SPEditor): boolean => {
   const liType = getPlatePluginType(editor, ELEMENT_LI);
   const licType = getPlatePluginType(editor, ELEMENT_LIC);
 
-  if (editor.selection) {
-    const licEntry = getAbove(editor, { match: { type: licType } });
-    if (!licEntry) return;
-    const [, paragraphPath] = licEntry;
+  if (!editor.selection) {
+    return false;
+  }
 
-    const listItemEntry = getParent(editor, paragraphPath);
-    if (!listItemEntry) return;
-    const [listItemNode, listItemPath] = listItemEntry;
+  const licEntry = getAbove(editor, { match: { type: licType } });
+  if (!licEntry) return false;
+  const [, paragraphPath] = licEntry;
 
-    if (listItemNode.type !== liType) return;
+  const listItemEntry = getParent(editor, paragraphPath);
+  if (!listItemEntry) return false;
+  const [listItemNode, listItemPath] = listItemEntry;
 
-    if (!Range.isCollapsed(editor.selection)) {
+  if (listItemNode.type !== liType) return false;
+
+  let success = false;
+
+  Editor.withoutNormalizing(editor, () => {
+    if (!Range.isCollapsed(editor.selection!)) {
       Transforms.delete(editor);
     }
 
     const isStart = Editor.isStart(
       editor,
-      editor.selection.focus,
+      editor.selection!.focus,
       paragraphPath
     );
     const isEnd = isBlockTextEmptyAfterSelection(editor);
@@ -54,7 +60,10 @@ export const insertListItem = (editor: SPEditor) => {
         },
         { at: listItemPath }
       );
-      return true;
+
+      success = true;
+
+      return;
     }
 
     /**
@@ -106,6 +115,8 @@ export const insertListItem = (editor: SPEditor) => {
       });
     }
 
-    return true;
-  }
+    success = true;
+  });
+
+  return success;
 };

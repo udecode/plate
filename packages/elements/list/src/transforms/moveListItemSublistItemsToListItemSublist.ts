@@ -6,7 +6,7 @@ import {
   moveChildren,
 } from '@udecode/plate-common';
 import { SPEditor, TElement } from '@udecode/plate-core';
-import { NodeEntry, Path, Transforms } from 'slate';
+import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
@@ -40,56 +40,59 @@ export const moveListItemSublistItemsToListItemSublist = (
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
+  let moved = 0;
 
-  const fromListItemSublist = findDescendant<TElement>(editor, {
-    at: fromListItemPath,
-    match: {
-      type: getListTypes(editor),
-    },
+  Editor.withoutNormalizing(editor, () => {
+    const fromListItemSublist = findDescendant<TElement>(editor, {
+      at: fromListItemPath,
+      match: {
+        type: getListTypes(editor),
+      },
+    });
+    if (!fromListItemSublist) return 0;
+
+    const [, fromListItemSublistPath] = fromListItemSublist;
+
+    const toListItemSublist = findDescendant<TElement>(editor, {
+      at: toListItemPath,
+      match: {
+        type: getListTypes(editor),
+      },
+    });
+
+    let to: Path;
+
+    if (!toListItemSublist) {
+      const fromList = getParent(editor, fromListItemPath);
+      if (!fromList) return 0;
+      const [fromListNode] = fromList;
+
+      const fromListType = fromListNode.type;
+
+      const toListItemSublistPath = toListItemPath.concat([1]);
+
+      insertNodes<TElement>(
+        editor,
+        { type: fromListType, children: [] },
+        { at: toListItemSublistPath }
+      );
+
+      to = toListItemSublistPath.concat([0]);
+    } else if (start) {
+      const [, toListItemSublistPath] = toListItemSublist;
+      to = toListItemSublistPath.concat([0]);
+    } else {
+      to = Path.next(getLastChildPath(toListItemSublist));
+    }
+
+    moved = moveChildren(editor, {
+      at: fromListItemSublistPath,
+      to,
+    });
+
+    // Remove the empty list
+    Transforms.delete(editor, { at: fromListItemSublistPath });
   });
-  if (!fromListItemSublist) return 0;
-
-  const [, fromListItemSublistPath] = fromListItemSublist;
-
-  const toListItemSublist = findDescendant<TElement>(editor, {
-    at: toListItemPath,
-    match: {
-      type: getListTypes(editor),
-    },
-  });
-
-  let to: Path;
-
-  if (!toListItemSublist) {
-    const fromList = getParent(editor, fromListItemPath);
-    if (!fromList) return 0;
-    const [fromListNode] = fromList;
-
-    const fromListType = fromListNode.type;
-
-    const toListItemSublistPath = toListItemPath.concat([1]);
-
-    insertNodes<TElement>(
-      editor,
-      { type: fromListType, children: [] },
-      { at: toListItemSublistPath }
-    );
-
-    to = toListItemSublistPath.concat([0]);
-  } else if (start) {
-    const [, toListItemSublistPath] = toListItemSublist;
-    to = toListItemSublistPath.concat([0]);
-  } else {
-    to = Path.next(getLastChildPath(toListItemSublist));
-  }
-
-  const moved = moveChildren(editor, {
-    at: fromListItemSublistPath,
-    to,
-  });
-
-  // Remove the empty list
-  Transforms.delete(editor, { at: fromListItemSublistPath });
 
   return moved;
 };

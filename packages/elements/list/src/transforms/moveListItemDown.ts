@@ -1,7 +1,7 @@
 import { match, wrapNodes } from '@udecode/plate-common';
 import { SPEditor, TElement } from '@udecode/plate-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
-import { getListTypes } from '../queries/getListTypes';
+import { getListTypes } from '../queries';
 
 export interface MoveListItemDownOptions {
   list: NodeEntry<TElement>;
@@ -39,19 +39,21 @@ export const moveListItemDown = (
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    if (!sublist) {
-      // Create new sublist
-      wrapNodes(
-        editor,
-        { type: listNode.type, children: [] },
-        { at: listItemPath }
-      );
-    }
+    Editor.withoutNormalizing(editor, () => {
+      if (!sublist) {
+        // Create new sublist
+        wrapNodes(
+          editor,
+          { type: listNode.type, children: [] },
+          { at: listItemPath }
+        );
+      }
 
-    // Move the current item to the sublist
-    Transforms.moveNodes(editor, {
-      at: listItemPath,
-      to: newPath,
+      // Move the current item to the sublist
+      Transforms.moveNodes(editor, {
+        at: listItemPath,
+        to: newPath,
+      });
     });
   }
 };

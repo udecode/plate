@@ -1,5 +1,6 @@
 import {
   getChildren,
+  getParent,
   insertEmptyElement,
   match,
   setNodes,
@@ -12,6 +13,8 @@ import {
 } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { getListTypes } from '../queries';
+import { moveListItemUp } from '../transforms';
 import { ListNormalizerOptions } from '../types';
 
 /**
@@ -73,7 +76,8 @@ export const normalizeListItem = (
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
   const firstLiChild: NodeEntry<any> | undefined = liChildren[0];
-  const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
+  const [firstLiChildNode, firstLiChildPath] =
+    (firstLiChild as NodeEntry<TElement>) ?? [];
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
@@ -90,6 +94,24 @@ export const normalizeListItem = (
       type: getPlatePluginType(editor, ELEMENT_LIC),
     })
   ) {
+    if (
+      match(firstLiChildNode as any, {
+        type: getListTypes(editor),
+      })
+    ) {
+      // the listItem has no lic so we move the children up a level
+      const parent = getParent(editor, listItem[1]);
+      const sublist = firstLiChild;
+      const children = getChildren(firstLiChild).reverse();
+      children.forEach((c) => {
+        moveListItemUp(editor, { list: sublist, listItem: c });
+      });
+
+      Transforms.removeNodes(editor, { at: [...parent![1], 0] });
+
+      return true;
+    }
+
     setNodes<TElement>(
       editor,
       {
@@ -99,55 +121,54 @@ export const normalizeListItem = (
         at: firstLiChildPath,
       }
     );
+
     changed = true;
   }
 
   const licChildren = getChildren(firstLiChild);
 
   if (licChildren.length) {
-    Editor.withoutNormalizing(editor, () => {
-      const blockPathRefs: PathRef[] = [];
-      const inlineChildren: NodeEntry[] = [];
+    const blockPathRefs: PathRef[] = [];
+    const inlineChildren: NodeEntry[] = [];
 
-      // Check that lic has no block children
-      for (const licChild of licChildren) {
-        if (!Editor.isBlock(editor, licChild[0])) {
-          break;
-        }
-
-        blockPathRefs.push(Editor.pathRef(editor, licChild[1]));
-
-        inlineChildren.push(
-          ...getDeepInlineChildren(editor, {
-            children: getChildren(licChild),
-          })
-        );
+    // Check that lic has no block children
+    for (const licChild of licChildren) {
+      if (!Editor.isBlock(editor, licChild[0])) {
+        break;
       }
 
-      const to = Path.next(licChildren[licChildren.length - 1]?.[1]);
+      blockPathRefs.push(Editor.pathRef(editor, licChild[1]));
 
-      // Move lic nested inline children to its children
-      inlineChildren.reverse().forEach(([, path]) => {
-        Transforms.moveNodes(editor, {
-          at: path,
-          to,
-        });
+      inlineChildren.push(
+        ...getDeepInlineChildren(editor, {
+          children: getChildren(licChild),
+        })
+      );
+    }
+
+    const to = Path.next(licChildren[licChildren.length - 1]?.[1]);
+
+    // Move lic nested inline children to its children
+    inlineChildren.reverse().forEach(([, path]) => {
+      Transforms.moveNodes(editor, {
+        at: path,
+        to,
       });
-
-      // Remove lic block children
-      blockPathRefs.forEach((pathRef) => {
-        const path = pathRef.unref();
-
-        path &&
-          Transforms.removeNodes(editor, {
-            at: path,
-          });
-      });
-
-      if (blockPathRefs.length) {
-        changed = true;
-      }
     });
+
+    // Remove lic block children
+    blockPathRefs.forEach((pathRef) => {
+      const path = pathRef.unref();
+
+      path &&
+        Transforms.removeNodes(editor, {
+          at: path,
+        });
+    });
+
+    if (blockPathRefs.length) {
+      changed = true;
+    }
   }
 
   if (changed) return true;
