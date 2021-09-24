@@ -1,5 +1,19 @@
 # @udecode/plate-list
 
+## 4.2.0
+
+### Minor Changes
+
+- [#1058](https://github.com/udecode/plate/pull/1058) [`6fe49e22`](https://github.com/udecode/plate/commit/6fe49e22e51b5fbec8695629e77ab149d80ce4cb) Thanks [@ghingis](https://github.com/ghingis)! - Normalizer:
+  - now merges lists with the same type next to each other
+  - if a list has no lic and it has children it moves those childrens up a level
+
+### Patch Changes
+
+- [#1058](https://github.com/udecode/plate/pull/1058) [`87cca4a0`](https://github.com/udecode/plate/commit/87cca4a0894b512a8257257570952e827924c13b) Thanks [@ghingis](https://github.com/ghingis)! - fix:
+  - `toggleList` works as expected
+  - `moveListItemDown` wrap transformations in `withoutNormalizing` (it caused a pathing issue since the normalization would remove the created empty list)
+
 ## 4.1.0
 
 ### Minor Changes
