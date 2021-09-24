@@ -1,5 +1,15 @@
 # @udecode/plate-list-ui
 
+## 4.2.0
+
+### Patch Changes
+
+- [#1058](https://github.com/udecode/plate/pull/1058) [`8ec2679b`](https://github.com/udecode/plate/commit/8ec2679bf76f6ff285b6bf046dfd1df57b83655a) Thanks [@ghingis](https://github.com/ghingis)! - fix: `ToolbarList` is now using `active` prop because the default `ToolbarElement` solution was activating both button when there was an unordered list within an ordered list
+
+- Updated dependencies [[`87cca4a0`](https://github.com/udecode/plate/commit/87cca4a0894b512a8257257570952e827924c13b), [`6fe49e22`](https://github.com/udecode/plate/commit/6fe49e22e51b5fbec8695629e77ab149d80ce4cb), [`ea693250`](https://github.com/udecode/plate/commit/ea6932504e1639f38a28c177ac0ef7de5b9ea79d)]:
+  - @udecode/plate-list@4.2.0
+  - @udecode/plate-toolbar@4.2.0
+
 ## 4.1.0
 
 ### Patch Changes

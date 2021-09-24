@@ -1,5 +1,23 @@
 # @udecode/plate
 
+## 4.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`87cca4a0`](https://github.com/udecode/plate/commit/87cca4a0894b512a8257257570952e827924c13b), [`6fe49e22`](https://github.com/udecode/plate/commit/6fe49e22e51b5fbec8695629e77ab149d80ce4cb), [`8ec2679b`](https://github.com/udecode/plate/commit/8ec2679bf76f6ff285b6bf046dfd1df57b83655a), [`ea693250`](https://github.com/udecode/plate/commit/ea6932504e1639f38a28c177ac0ef7de5b9ea79d)]:
+  - @udecode/plate-list@4.2.0
+  - @udecode/plate-list-ui@4.2.0
+  - @udecode/plate-toolbar@4.2.0
+  - @udecode/plate-ast-serializer@4.2.0
+  - @udecode/plate-md-serializer@4.2.0
+  - @udecode/plate-alignment-ui@4.2.0
+  - @udecode/plate-code-block-ui@4.2.0
+  - @udecode/plate-image-ui@4.2.0
+  - @udecode/plate-link-ui@4.2.0
+  - @udecode/plate-table-ui@4.2.0
+  - @udecode/plate-find-replace-ui@4.2.0
+  - @udecode/plate-font-ui@4.2.0
+
 ## 4.1.0
 
 ### Patch Changes
