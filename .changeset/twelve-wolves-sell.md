@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-toolbar": fix
+"@udecode/plate-toolbar": patch
 ---
 
 fix:
