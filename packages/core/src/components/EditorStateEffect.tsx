@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react';
 import { Editor } from 'slate';
-import { useSlateStatic } from 'slate-react';
+import { useEditorRef } from '../hooks';
 import { useEditorState } from '../hooks/useEditorState';
 import { usePlateActions } from '../stores/plate/plate.actions';
 import { PlateProps } from './Plate';
@@ -12,7 +12,7 @@ export const EditorStateEffect = memo(
   }: Pick<PlateProps, 'id' | 'normalizeInitialValue'>) => {
     const { setSelection, incrementKeyChange } = usePlateActions(id);
     const editorState = useEditorState();
-    const editor = useSlateStatic();
+    const editor = useEditorRef();
 
     useEffect(() => {
       incrementKeyChange();
@@ -23,11 +23,11 @@ export const EditorStateEffect = memo(
     }, [editorState.selection, setSelection]);
 
     useEffect(() => {
-      if (normalizeInitialValue) {
+      if (editor && normalizeInitialValue) {
         Editor.normalize(editor, { force: true });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [editor]);
 
     return null;
   }
