@@ -18,6 +18,7 @@ export const usePlate = <T extends SPEditor = SPEditor>({
   plugins,
   onChange,
   editableProps,
+  normalizeInitialValue,
 }: UsePlateOptions<T>) => {
   usePlateEffects({
     id,
@@ -27,6 +28,7 @@ export const usePlate = <T extends SPEditor = SPEditor>({
     editor,
     value,
     options,
+    normalizeInitialValue,
   });
 
   return {
