@@ -1,16 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import {
-  createEditor,
-  Descendant,
-  Editor,
-  NodeEntry,
-  Transforms,
-  Selection,
-} from 'slate';
-import { Plate } from './Plate';
-import { PlatePlugin, TEditor } from '../types';
 import { isEqual, memoize } from 'lodash';
+import { createEditor, Editor, NodeEntry, Transforms } from 'slate';
+import { PlatePlugin, TEditor } from '../types';
+import { Plate } from './Plate';
 
 describe('Plate', () => {
   it('should render', () => {
