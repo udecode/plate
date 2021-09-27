@@ -82,6 +82,7 @@ export const getCodeLineDecorate = (): Decorate => (editor) => {
             focus: { path, offset: offset + token.length },
             className: `prism-token token ${token.type} `,
             [token.type]: true,
+            prism: true,
           });
           offset += token.length;
         }
