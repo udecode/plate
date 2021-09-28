@@ -35,7 +35,7 @@ export const CodeBlockSelectElement = ({
       <option value="jsx">JSX</option>
       <option value="php">PHP</option>
       <option value="python">Python</option>
-      <option value="SQL">SQL</option>
+      <option value="sql">SQL</option>
       <option value="typescript">TypeScript</option>
       <option value="tsx">TSX</option>
     </select>
