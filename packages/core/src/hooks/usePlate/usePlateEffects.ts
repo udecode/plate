@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createEditor } from 'slate';
+import { createEditor, Editor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { usePlateActions } from '../../stores/plate/plate.actions';
@@ -24,6 +24,7 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
   components,
   options,
   initialValue,
+  normalizeInitialValue,
   plugins,
 }: UsePlateEffectsOptions<T>) => {
   const {
@@ -114,4 +115,10 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
     storePlugins,
     setEditor,
   ]);
+
+  useEffect(() => {
+    if (storeEditor && normalizeInitialValue) {
+      Editor.normalize(storeEditor, { force: true });
+    }
+  }, [storeEditor, normalizeInitialValue]);
 };

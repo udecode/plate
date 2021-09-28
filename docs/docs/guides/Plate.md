@@ -94,6 +94,12 @@ props if `editor` is defined.
 
 - Initial value of the editor.
 
+### `normalizeInitialValue`
+ 
+- When `true`, it will normalize the initial value passed to the `editor` once it gets created.
+- This is useful when adding normalization rules on already existing content.
+- Default is `false`.
+
 ### `options`
 
 - Options stored by plugin key.
