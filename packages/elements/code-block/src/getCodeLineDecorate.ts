@@ -6,7 +6,7 @@ import Prism, { languages, Token, tokenize } from 'prismjs';
 // import 'prismjs/components/prism-coffeescript';
 // import 'prismjs/components/prism-cpp';
 // import 'prismjs/components/prism-csharp';
-// import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-css';
 // import 'prismjs/components/prism-django';
 // import 'prismjs/components/prism-docker';
 // import 'prismjs/components/prism-ejs';
@@ -15,9 +15,10 @@ import Prism, { languages, Token, tokenize } from 'prismjs';
 // import 'prismjs/components/prism-go';
 // import 'prismjs/components/prism-graphql';
 // import 'prismjs/components/prism-groovy';
-// import 'prismjs/components/prism-java';
-// import 'prismjs/components/prism-json';
-// import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-jsx';
 // import 'prismjs/components/prism-kotlin';
 // import 'prismjs/components/prism-latex';
 // import 'prismjs/components/prism-less';
@@ -27,20 +28,20 @@ import Prism, { languages, Token, tokenize } from 'prismjs';
 // import 'prismjs/components/prism-matlab';
 // import 'prismjs/components/prism-objectivec';
 // import 'prismjs/components/prism-perl';
-// import 'prismjs/components/prism-php';
+import 'prismjs/components/prism-php';
 // import 'prismjs/components/prism-powershell';
 // import 'prismjs/components/prism-properties';
 // import 'prismjs/components/prism-protobuf';
-// import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-python';
 // import 'prismjs/components/prism-r';
 // import 'prismjs/components/prism-ruby';
 // import 'prismjs/components/prism-sass';
 // import 'prismjs/components/prism-scala';
 // import 'prismjs/components/prism-scheme';
 // import 'prismjs/components/prism-scss';
-// import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-sql';
 // import 'prismjs/components/prism-swift';
-// import 'prismjs/components/prism-tsx';
+import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 // import 'prismjs/components/prism-wasm';
 // import 'prismjs/components/prism-yaml';
@@ -50,6 +51,7 @@ import {
   isElement,
 } from '@udecode/plate-core';
 import { Node, NodeEntry, Text } from 'slate';
+import { getParent } from '@udecode/plate-common';
 import { ELEMENT_CODE_LINE } from './defaults';
 
 export const getCodeLineDecorate = (): Decorate => (editor) => {
@@ -58,9 +60,16 @@ export const getCodeLineDecorate = (): Decorate => (editor) => {
   return (entry: NodeEntry) => {
     const ranges: any = [];
     const [node, path] = entry;
+    const codeBlock = getParent(editor, path);
+    let langName = '';
+    if (isElement(codeBlock)) {
+      const [codeBlockNode] = codeBlock;
+      langName = codeBlockNode?.lang;
+    }
 
-    // const langName: any = parent.lang || 'markup';
-    const langName: any = 'typescript';
+    if (langName === 'plain') {
+      langName = '';
+    }
     const lang = languages[langName];
 
     if (!lang || !Text.isText(node)) {

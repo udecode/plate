@@ -1,6 +1,5 @@
 import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
 import { KEYS_CODE_BLOCK } from './defaults';
-import { getCodeBlockDecorate } from './getCodeBlockDecorate';
 import { getCodeBlockDeserialize } from './getCodeBlockDeserialize';
 import { getCodeBlockOnKeyDown } from './getCodeBlockOnKeyDown';
 import { getCodeBlockRenderLeaf } from './getCodeBlockRenderLeaf';
