@@ -34,7 +34,7 @@ describe('when ``` at block start', () => {
     const output = (
       <editor>
         <hp>hello</hp>
-        <hcodeblock>
+        <hcodeblock lang="">
           <hcodeline>new</hcodeline>
         </hcodeblock>
       </editor>
@@ -64,7 +64,7 @@ describe('when ``` at block start, but customising with query we get the most re
     const output = (
       <editor>
         <hp>hello</hp>
-        <hcodeblock>
+        <hcodeblock lang="">
           <hcodeline>inside code-block</hcodeline>
         </hcodeblock>
       </editor>
@@ -124,7 +124,7 @@ describe('when ```', () => {
     const output = (
       <editor>
         <hp>helloworld</hp>
-        <hcodeblock>
+        <hcodeblock lang="">
           <hcodeline>new</hcodeline>
         </hcodeblock>
       </editor>
