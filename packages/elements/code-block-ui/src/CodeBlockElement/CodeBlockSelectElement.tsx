@@ -13,9 +13,6 @@ export const CodeBlockSelectElement = ({
   onChange: Function;
 }) => {
   const [value, setValue] = React.useState(lang);
-
-  // TODO: Replace options with something generated from CODE_BLOCK_LANGUAGES
-
   return (
     <select
       value={value}
@@ -27,17 +24,9 @@ export const CodeBlockSelectElement = ({
       {...props}
     >
       <option value="">Plain text</option>
-      <option value="css">CSS</option>
-      <option value="markup">HTML</option>
-      <option value="java">Java</option>
-      <option value="javascript">JavaScript</option>
-      <option value="json">JSON</option>
-      <option value="jsx">JSX</option>
-      <option value="php">PHP</option>
-      <option value="python">Python</option>
-      <option value="sql">SQL</option>
-      <option value="typescript">TypeScript</option>
-      <option value="tsx">TSX</option>
+      {Object.entries(CODE_BLOCK_LANGUAGES).map(([key, val]) => (
+        <option value={key}>{val}</option>
+      ))}
     </select>
   );
 };
