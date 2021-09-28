@@ -3,4 +3,6 @@
 '@udecode/plate-code-block-ui': minor
 ---
 
-Enable syntax highlighting for `code_block`
+changes:
+- enable syntax highlighting for `code_block`
+- new prop to `code_block` node: `lang?: string`
