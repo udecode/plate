@@ -49,7 +49,6 @@ export const insertCodeBlock = (
     {
       type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
       children: [],
-      lang: '',
     },
     insertNodesOptions
   );

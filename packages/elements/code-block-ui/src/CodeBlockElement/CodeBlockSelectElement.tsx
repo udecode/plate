@@ -7,10 +7,10 @@ export const CodeBlockSelectElement = ({
   onChange,
   ...props
 }: {
-  lang: string;
+  lang?: string;
+  onChange: Function;
   className?: string;
   css?: CSSProp;
-  onChange: Function;
 }) => {
   const [value, setValue] = React.useState(lang);
   return (
