@@ -28,7 +28,7 @@ export const insertEmptyCodeBlock = (
     const insertPath = Path.next(selectionPath.slice(0, level + 1));
     insertNodes<TElement>(
       editor,
-      { type: defaultType, children: [{ text: '' }], lang: '' },
+      { type: defaultType, children: [{ text: '' }] },
       {
         at: insertPath,
         select: true,
