@@ -25,17 +25,11 @@ export interface PlateProps<T extends SPEditor = SPEditor>
    * Custom `Editable` node.
    */
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
-
-  /**
-   * Force normalization after initial render
-   */
-  normalizeInitialValue?: boolean;
 }
 
 export const Plate = <T extends SPEditor = SPEditor>({
   children,
   renderEditable,
-  normalizeInitialValue,
   ...options
 }: PlateProps<T>) => {
   const { slateProps, editableProps } = usePlate(options);
@@ -47,10 +41,7 @@ export const Plate = <T extends SPEditor = SPEditor>({
   return (
     <Slate {...(slateProps as SlateProps)}>
       {children}
-      <EditorStateEffect
-        id={options.id}
-        normalizeInitialValue={normalizeInitialValue}
-      />
+      <EditorStateEffect id={options.id} />
       {renderEditable ? renderEditable(editable) : editable}
     </Slate>
   );
