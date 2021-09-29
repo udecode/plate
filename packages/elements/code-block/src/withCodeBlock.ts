@@ -1,8 +1,8 @@
 import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
-import { getCodeLineEntry } from './queries/getCodeLineEntry';
-import { getIndentDepth } from './queries/getIndentDepth';
-import { insertCodeLine } from './transforms/insertCodeLine';
+import { getCodeBlockInsertFragment } from './getCodeBlockInsertFragment';
+import { getCodeLineEntry, getIndentDepth } from './queries';
+import { insertCodeLine } from './transforms';
 
 export const withCodeBlock = (): WithOverride<ReactEditor & SPEditor> => (
   editor
@@ -30,6 +30,8 @@ export const withCodeBlock = (): WithOverride<ReactEditor & SPEditor> => (
 
     insertBreak();
   };
+
+  editor.insertFragment = getCodeBlockInsertFragment(editor);
 
   return editor;
 };
