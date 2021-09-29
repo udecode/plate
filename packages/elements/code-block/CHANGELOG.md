@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 4.3.1
+
+### Patch Changes
+
+- [#1072](https://github.com/udecode/plate/pull/1072) [`a692c078`](https://github.com/udecode/plate/commit/a692c078f9386ebb63aea9cb704decf554b07e8e) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Pasting into a code block always adds codelines. All non code blocks are converted to text.
+
 ## 4.3.0
 
 ### Minor Changes
