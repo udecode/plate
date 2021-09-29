@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 4.3.0
+
+### Minor Changes
+
+- [#1063](https://github.com/udecode/plate/pull/1063) [`6af469cd`](https://github.com/udecode/plate/commit/6af469cd5ac310e831eb8a99a71eba73bde62fc6) Thanks [@ghingis](https://github.com/ghingis)! - add `normalizeInitialValue` prop to `Plate`. When `true`, it will normalize the initial value passed to the `editor` once it's created. This is useful when adding normalization rules on already existing content. Default is `false`.
+
 ## 3.4.0
 
 ### Minor Changes
