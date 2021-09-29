@@ -66,7 +66,7 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
     }
     const lang = languages[langName];
 
-    if (!lang || !Text.isText(node)) {
+    if (!lang) {
       return ranges;
     }
 
