@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 4.3.2
+
+### Patch Changes
+
+- Updated dependencies [[`56ff3d62`](https://github.com/udecode/plate/commit/56ff3d6235a9d8aaeb76d9bc8ec229850af9c891)]:
+  - @udecode/plate-code-block-ui@4.3.2
+
 ## 4.3.1
 
 ### Patch Changes
