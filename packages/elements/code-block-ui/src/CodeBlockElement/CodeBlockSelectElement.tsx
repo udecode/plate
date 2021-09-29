@@ -25,7 +25,9 @@ export const CodeBlockSelectElement = ({
     >
       <option value="">Plain text</option>
       {Object.entries(CODE_BLOCK_LANGUAGES).map(([key, val]) => (
-        <option value={key}>{val}</option>
+        <option key={key} value={key}>
+          {val}
+        </option>
       ))}
     </select>
   );
