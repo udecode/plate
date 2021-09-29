@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 4.3.3
+
+### Patch Changes
+
+- [#1070](https://github.com/udecode/plate/pull/1070) [`39b29f66`](https://github.com/udecode/plate/commit/39b29f66216d8cb26ac142f57cbee220e9ee2570) Thanks [@dylans](https://github.com/dylans)! - add missing key for iterating over languages for syntax highlighting
+
 ## 4.3.2
 
 ### Patch Changes
