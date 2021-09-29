@@ -1,5 +1,16 @@
 # @udecode/plate-font-ui
 
+## 4.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`6af469cd`](https://github.com/udecode/plate/commit/6af469cd5ac310e831eb8a99a71eba73bde62fc6)]:
+  - @udecode/plate-core@4.3.0
+  - @udecode/plate-common@4.3.0
+  - @udecode/plate-font@4.3.0
+  - @udecode/plate-styled-components@4.3.0
+  - @udecode/plate-toolbar@4.3.0
+
 ## 4.2.0
 
 ### Patch Changes

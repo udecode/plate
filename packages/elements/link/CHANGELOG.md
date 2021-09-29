@@ -1,5 +1,14 @@
 # @udecode/plate-link
 
+## 4.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`6af469cd`](https://github.com/udecode/plate/commit/6af469cd5ac310e831eb8a99a71eba73bde62fc6)]:
+  - @udecode/plate-core@4.3.0
+  - @udecode/plate-common@4.3.0
+  - @udecode/plate-normalizers@4.3.0
+
 ## 4.0.0
 
 ### Minor Changes
