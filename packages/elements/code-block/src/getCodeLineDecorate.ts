@@ -51,17 +51,23 @@ import {
   isElement,
 } from '@udecode/plate-core';
 import { Node, NodeEntry, Text } from 'slate';
-import { ELEMENT_CODE_BLOCK } from './defaults';
-import { CodeBlockNodeData } from './types';
+import { getParent } from '@udecode/plate-common';
+import { ELEMENT_CODE_LINE } from './defaults';
 
-export const getCodeBlockDecorate = (): Decorate => (editor) => {
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+export const getCodeLineDecorate = (): Decorate => (editor) => {
+  const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
     const [node, path] = entry;
-    let langName = (node as Node & CodeBlockNodeData)?.lang;
-    if (!langName || langName === 'plain') {
+    const codeBlock = getParent(editor, path);
+    let langName = '';
+    if (isElement(codeBlock)) {
+      const [codeBlockNode] = codeBlock;
+      langName = codeBlockNode?.lang;
+    }
+
+    if (langName === 'plain') {
       langName = '';
     }
     const lang = languages[langName];
@@ -70,7 +76,7 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
       return ranges;
     }
 
-    if (isElement(node) && node.type === code_block.type) {
+    if (isElement(node) && node.type === code_line.type) {
       const text = Node.string(node);
       const tokens = tokenize(text, lang);
       let offset = 0;
@@ -84,6 +90,7 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
             anchor: { path, offset },
             focus: { path, offset: offset + token.length },
             className: `prism-token token ${token.type} `,
+            [token.type]: true,
             prism: true,
           });
           offset += token.length;

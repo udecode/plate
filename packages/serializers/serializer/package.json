@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer",
-  "version": "3.5.1",
+  "version": "4.3.0",
   "description": "Utilities for Plate serializers",
   "keywords": [
     "slate",
@@ -33,8 +33,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "3.4.0",
-    "@udecode/plate-core": "3.4.0"
+    "@udecode/plate-common": "4.3.0",
+    "@udecode/plate-core": "4.3.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

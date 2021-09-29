@@ -28,4 +28,11 @@ export interface UsePlateEffectsOptions<T extends SPEditor = SPEditor>
    * @see {@link EditorId}
    */
   components?: Record<string, PlatePluginComponent>;
+
+  /**
+   * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
+   * This is useful when adding normalization rules on already existing content.
+   * @default false
+   */
+  normalizeInitialValue?: boolean;
 }
