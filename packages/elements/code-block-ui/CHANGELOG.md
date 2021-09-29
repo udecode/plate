@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 4.3.4
+
+### Patch Changes
+
+- [#1079](https://github.com/udecode/plate/pull/1079) [`fe1ff731`](https://github.com/udecode/plate/commit/fe1ff731f7757603fde06c5d042ec2e1a2e4305a) Thanks [@dylans](https://github.com/dylans)! - Syntax highlighting select element should not be editable
+
 ## 4.3.3
 
 ### Patch Changes
