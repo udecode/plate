@@ -60,10 +60,7 @@ npm install @udecode/plate-mention-ui
         editableProps={editableProps}
         initialValue={initialValueMentions}
       >
-        <MentionSelect
-          {...getMentionSelectProps()}
-          renderLabel={renderMentionLabel}
-        />
+        <MentionCombobox />
       </Plate>
     );
   };

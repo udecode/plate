@@ -141,6 +141,7 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  MentionCombobox,
   MentionElement,
   MentionSelect,
   Plate,
@@ -188,7 +189,6 @@ import {
   initialValueBalloonToolbar,
   initialValueBasicElements,
   initialValueBasicMarks,
-  initialValueCombobox,
   initialValueEmbeds,
   initialValueExcalidraw,
   initialValueExitBreak,
@@ -238,22 +238,11 @@ import {
 } from './config/Toolbars';
 import { withStyledDraggables } from './config/withStyledDraggables';
 import { withStyledPlaceHolders } from './config/withStyledPlaceHolders';
-import { useComboboxControls } from './examples/combobox/hooks/useComboboxControls';
-import { useComboboxOnChange } from './examples/combobox/hooks/useComboboxOnChange';
-import { useComboboxOnKeyDown } from './examples/combobox/hooks/useComboboxOnKeyDown';
-import { useComboboxIsOpen } from './examples/combobox/selectors/useComboboxIsOpen';
-import { useComboboxStore } from './examples/combobox/useComboboxStore';
 import { createEditableVoidPlugin } from './examples/editable-voids/createEditableVoidPlugin';
 import { EDITABLE_VOID } from './examples/editable-voids/defaults';
 import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
 import { IFrame } from './examples/iframe/IFrame';
 import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
-import { TagCombobox } from './examples/tag/components/TagCombobox';
-import { TagElement } from './examples/tag/components/TagElement';
-import { createTagPlugin } from './examples/tag/createTagPlugin';
-import { ELEMENT_TAG } from './examples/tag/defaults';
-import { useTagOnChange } from './examples/tag/hooks/useTagOnChange';
-import { useTagOnSelectItem } from './examples/tag/hooks/useTagOnSelectItem';
 import { HighlightHTML } from './utils/HighlightHTML';
 
 const editableProps = {
@@ -320,6 +309,7 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  MentionCombobox,
   clearBlockFormat,
   setNodes,
   insertNodes,
@@ -384,24 +374,12 @@ const ReactLiveScope = {
   usePlateActions,
   useStoreEditorEnabled,
   renderMentionLabel,
-  useComboboxOnChange,
   CodeBlockElement,
   Slate,
   Editable,
   createPlateOptions,
   IFrame,
   useCallback,
-  initialValueCombobox,
-  useComboboxControls,
-  useComboboxOnKeyDown,
-  useComboboxIsOpen,
-  useComboboxStore,
-  TagCombobox,
-  TagElement,
-  createTagPlugin,
-  ELEMENT_TAG,
-  useTagOnChange,
-  useTagOnSelectItem,
   ReactEditor,
   EDITABLE_VOID,
   EditableVoidElement,

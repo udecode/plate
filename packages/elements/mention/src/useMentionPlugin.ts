@@ -133,12 +133,12 @@ export const useMentionPlugin = ({
     plugin: useMemo(
       () => ({
         pluginKeys: pluginKey,
-        onChange: onChangeMention,
         renderElement: getRenderElement(pluginKey),
-        onKeyDown: onKeyDownMention,
         deserialize: getMentionDeserialize(pluginKey),
         inlineTypes: getPlatePluginTypes(pluginKey),
         voidTypes: getPlatePluginTypes(pluginKey),
+        onChange: onChangeMention,
+        onKeyDown: onKeyDownMention,
       }),
       [onChangeMention, onKeyDownMention, pluginKey]
     ),

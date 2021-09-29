@@ -1,7 +1,7 @@
 {
-  "name": "@udecode/plate-mention",
+  "name": "@udecode/plate-combobox",
   "version": "4.3.0",
-  "description": "Mention plugin for Plate",
+  "description": "Combobox UI for Plate",
   "keywords": [
     "slate",
     "plate",
@@ -14,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/elements/mention"
+    "directory": "packages/ui/combobox"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -32,16 +32,21 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "4.3.0",
+    "@tippyjs/react": "4.2.5",
     "@udecode/plate-common": "4.3.0",
-    "@udecode/plate-core": "4.3.0"
+    "@udecode/plate-core": "4.3.0",
+    "@udecode/plate-styled-components": "4.3.0",
+    "@udecode/zustood": "0.3.0",
+    "zustand": "3.5.11",
+    "downshift": "6.1.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.66.1"
+    "slate-react": ">=0.66.1",
+    "styled-components": ">=5.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -4,6 +4,7 @@
 
 export * from './defaults';
 export * from './getMentionDeserialize';
+export * from './getMentionOnSelectItem';
 export * from './types';
 export * from './useMentionPlugin';
 export * from './queries/index';

@@ -37,7 +37,6 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import * as faker from 'faker';
 import { EDITABLE_VOID } from '../examples/editable-voids/defaults';
-import { ELEMENT_TAG } from '../examples/tag/defaults';
 import { initialDataExcalidraw } from './initialDataExcalidraw';
 import { createElement, createList, getNodesWithRandomId } from './utils';
 
@@ -1268,17 +1267,6 @@ export const initialValueIframe: any = [
       {
         text: ' in your CSS.',
       },
-    ],
-  },
-];
-
-export const initialValueCombobox: any = [
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      { text: 'Example using useCombobox from downshift with # trigger: ' },
-      { type: ELEMENT_TAG, children: [{ text: '' }], value: 'tag' },
-      { text: '' },
     ],
   },
 ];

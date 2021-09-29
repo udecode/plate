@@ -37,6 +37,7 @@
     "@udecode/plate-break": "file:../packages/break",
     "@udecode/plate-code-block": "file:../packages/elements/code-block",
     "@udecode/plate-code-block-ui": "file:../packages/elements/code-block-ui",
+    "@udecode/plate-combobox": "file:../packages/ui/combobox",
     "@udecode/plate-common": "file:../packages/common",
     "@udecode/plate-core": "file:../packages/core",
     "@udecode/plate-csv-serializer": "file:../packages/serializers/csv-serializer",
