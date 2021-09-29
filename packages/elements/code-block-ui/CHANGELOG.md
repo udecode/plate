@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 4.3.6
+
+### Patch Changes
+
+- [#1083](https://github.com/udecode/plate/pull/1083) [`826a1c0a`](https://github.com/udecode/plate/commit/826a1c0a048e4e52a3d04e21a7325e9b05f3dd89) Thanks [@dylans](https://github.com/dylans)! - Prevent event propagation for clicking on syntax highlight language selector
+
 ## 4.3.5
 
 ### Patch Changes
