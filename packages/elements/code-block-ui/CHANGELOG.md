@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 4.3.2
+
+### Patch Changes
+
+- [#1076](https://github.com/udecode/plate/pull/1076) [`56ff3d62`](https://github.com/udecode/plate/commit/56ff3d6235a9d8aaeb76d9bc8ec229850af9c891) Thanks [@dylans](https://github.com/dylans)! - Add missing export from index barrel for code-block-ui
+
 ## 4.3.1
 
 ### Patch Changes
