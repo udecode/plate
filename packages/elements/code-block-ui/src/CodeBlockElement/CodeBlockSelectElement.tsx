@@ -17,6 +17,9 @@ export const CodeBlockSelectElement = ({
     <select
       value={value}
       style={{ float: 'right' }}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       onChange={(e) => {
         onChange(e.target.value);
         setValue(e.target.value);
