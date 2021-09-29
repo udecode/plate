@@ -52,17 +52,18 @@ import {
 } from '@udecode/plate-core';
 import { Node, NodeEntry, Text } from 'slate';
 import { getParent } from '@udecode/plate-common';
-import { ELEMENT_CODE_LINE } from './defaults';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
 
 export const getCodeLineDecorate = (): Decorate => (editor) => {
   const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
+  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
     const [node, path] = entry;
     const codeBlock = getParent(editor, path);
     let langName = '';
-    if (isElement(codeBlock)) {
+    if (codeBlock?.[0].type === code_block.type) {
       const [codeBlockNode] = codeBlock;
       langName = codeBlockNode?.lang;
     }
@@ -72,7 +73,7 @@ export const getCodeLineDecorate = (): Decorate => (editor) => {
     }
     const lang = languages[langName];
 
-    if (!lang || !Text.isText(node)) {
+    if (!lang) {
       return ranges;
     }
 

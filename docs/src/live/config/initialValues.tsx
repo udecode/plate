@@ -794,6 +794,7 @@ export const initialValueBasicElements: any = [
   createElement('Blockquote', { type: ELEMENT_BLOCKQUOTE }),
   {
     type: ELEMENT_CODE_BLOCK,
+    lang: 'javascript',
     children: [
       {
         type: ELEMENT_CODE_LINE,
@@ -1137,7 +1138,12 @@ export const initialValueSoftBreak: any = [
   },
   {
     type: ELEMENT_CODE_BLOCK,
-    children: [{ text: 'And ⏎ here.' }],
+    children: [
+      {
+        type: ELEMENT_CODE_LINE,
+        children: [{ text: 'And ⏎ here.' }],
+      },
+    ],
   },
 ];
 
@@ -1177,7 +1183,12 @@ export const initialValueExitBreak: any = [
   },
   {
     type: ELEMENT_CODE_BLOCK,
-    children: [{ text: 'And in the middle ⌘⏎ of the block.' }],
+    children: [
+      {
+        type: ELEMENT_CODE_LINE,
+        children: [{ text: 'And in the middle ⌘⏎ of the block.' }],
+      },
+    ],
   },
   {
     type: ELEMENT_PARAGRAPH,

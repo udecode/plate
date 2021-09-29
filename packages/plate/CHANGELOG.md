@@ -1,5 +1,48 @@
 # @udecode/plate
 
+## 4.3.5
+
+### Patch Changes
+
+- Updated dependencies [[`8525af01`](https://github.com/udecode/plate/commit/8525af01b2ca705665bad3ada73b8e906620dad8)]:
+  - @udecode/plate-code-block@4.3.5
+  - @udecode/plate-basic-elements@4.3.5
+  - @udecode/plate-code-block-ui@4.3.5
+  - @udecode/plate-ast-serializer@4.3.5
+  - @udecode/plate-md-serializer@4.3.5
+
+## 4.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`fe1ff731`](https://github.com/udecode/plate/commit/fe1ff731f7757603fde06c5d042ec2e1a2e4305a)]:
+  - @udecode/plate-code-block-ui@4.3.4
+
+## 4.3.3
+
+### Patch Changes
+
+- Updated dependencies [[`39b29f66`](https://github.com/udecode/plate/commit/39b29f66216d8cb26ac142f57cbee220e9ee2570)]:
+  - @udecode/plate-code-block-ui@4.3.3
+
+## 4.3.2
+
+### Patch Changes
+
+- Updated dependencies [[`56ff3d62`](https://github.com/udecode/plate/commit/56ff3d6235a9d8aaeb76d9bc8ec229850af9c891)]:
+  - @udecode/plate-code-block-ui@4.3.2
+
+## 4.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`a692c078`](https://github.com/udecode/plate/commit/a692c078f9386ebb63aea9cb704decf554b07e8e)]:
+  - @udecode/plate-code-block@4.3.1
+  - @udecode/plate-basic-elements@4.3.1
+  - @udecode/plate-code-block-ui@4.3.1
+  - @udecode/plate-ast-serializer@4.3.1
+  - @udecode/plate-md-serializer@4.3.1
+
 ## 4.3.0
 
 ### Patch Changes

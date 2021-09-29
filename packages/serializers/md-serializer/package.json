@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-md-serializer",
-  "version": "4.3.0",
+  "version": "4.3.5",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@udecode/plate-block-quote": "4.3.0",
-    "@udecode/plate-code-block": "4.3.0",
+    "@udecode/plate-code-block": "4.3.5",
     "@udecode/plate-common": "4.3.0",
     "@udecode/plate-core": "4.3.0",
     "@udecode/plate-heading": "4.3.0",

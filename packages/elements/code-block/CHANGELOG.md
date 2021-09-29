@@ -1,5 +1,17 @@
 # @udecode/plate-code-block
 
+## 4.3.5
+
+### Patch Changes
+
+- [#1081](https://github.com/udecode/plate/pull/1081) [`8525af01`](https://github.com/udecode/plate/commit/8525af01b2ca705665bad3ada73b8e906620dad8) Thanks [@dylans](https://github.com/dylans)! - Fix check for language attribute for syntax highlighting
+
+## 4.3.1
+
+### Patch Changes
+
+- [#1072](https://github.com/udecode/plate/pull/1072) [`a692c078`](https://github.com/udecode/plate/commit/a692c078f9386ebb63aea9cb704decf554b07e8e) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Pasting into a code block always adds codelines. All non code blocks are converted to text.
+
 ## 4.3.0
 
 ### Minor Changes
