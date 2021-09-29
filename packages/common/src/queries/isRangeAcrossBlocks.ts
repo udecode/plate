@@ -1,5 +1,5 @@
 import { TEditor } from '@udecode/plate-core';
-import { Editor, Path, Range } from 'slate';
+import { Path, Range } from 'slate';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getBlockAbove } from './getBlockAbove';
 
@@ -21,7 +21,7 @@ export const isRangeAcrossBlocks = (
     at: start,
     ...options,
   });
-  const endBlock = Editor.above(editor, {
+  const endBlock = getBlockAbove(editor, {
     at: end,
     ...options,
   });
