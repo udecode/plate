@@ -5,4 +5,4 @@
 export * from './getNextNonDisabledIndex';
 export * from './getNextWrappingIndex';
 export * from './getTextFromTrigger';
-export * from './setElementPositionByRange';
+export * from '../popper/getRangeBoundingClientRect';

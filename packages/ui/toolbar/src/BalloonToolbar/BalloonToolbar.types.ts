@@ -39,7 +39,7 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
 export interface UsePopupPositionProps {
   editor: TEditor;
   popupElem: HTMLElement | null;
-  scrollContainer?: HTMLElement | null;
+  scrollContainer?: Document | HTMLElement | null;
   modifiers?: Array<Partial<Modifier<string, any>>>;
   placement?: PopperJS.Placement;
 }

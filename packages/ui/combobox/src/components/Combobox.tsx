@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import Tippy from '@tippyjs/react';
+import React, { useCallback, useEffect } from 'react';
 import { useEditorState, useEventEditorId } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { comboboxStore, getComboboxStoreById } from '../combobox.store';
 import { useComboboxControls } from '../hooks/useComboboxControls';
-import { setElementPositionByRange } from '../utils/setElementPositionByRange';
+import { getRangeBoundingClientRect } from '../popper/getRangeBoundingClientRect';
+import { usePopperPosition } from '../popper/usePopperPosition';
 import { ComboboxItem, ComboboxRoot } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
@@ -16,85 +16,105 @@ const ComboboxContent = ({
   const targetRange = comboboxStore.use.targetRange();
   const items = comboboxStore.use.items();
   const itemIndex = comboboxStore.use.itemIndex();
-  const isOpen = comboboxStore.use.isOpen();
+  const popperContainer = comboboxStore.use.popperContainer();
+  const popperOptions = comboboxStore.use.popperOptions();
+  const editor = useEditorState();
   const combobox = useComboboxControls();
 
-  console.log('halo');
+  const popperRef = React.useRef<any>(null);
 
-  const editor = useEditorState();
-  const focusedEditorId = useEventEditorId('focus');
-  const ref = React.useRef<any>(null);
+  const getBoundingClientRect = useCallback(
+    () => getRangeBoundingClientRect(editor, targetRange),
+    [editor, targetRange]
+  );
 
-  useEffect(() => {
-    if (focusedEditorId !== editor.id) return;
-
-    setElementPositionByRange(editor, { ref, at: targetRange });
-  }, [targetRange, editor, focusedEditorId]);
+  const [popperStyles, attributes] = usePopperPosition({
+    popperElement: popperRef.current,
+    popperContainer,
+    popperOptions,
+    placement: 'bottom-start',
+    getBoundingClientRect,
+    offset: [0, 4],
+  });
 
   const menuProps = combobox
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
-  if (focusedEditorId !== editor.id || !editor.selection || !combobox)
-    return null;
-
   return (
     <PortalBody>
-      <Tippy
-        render={(attrs) => (
-          <ComboboxRoot {...menuProps} {...attrs}>
-            <Component />
-
-            {items.map((item, index) => {
-              const Item = onRenderItem ? onRenderItem({ item }) : item.text;
-
-              return (
-                <ComboboxItem
-                  key={item.key}
-                  highlighted={index === itemIndex}
-                  {...combobox.getItemProps({
-                    item,
-                    index,
-                  })}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-
-                    const onSelectItem = getComboboxStoreById(
-                      id
-                    )?.get.onSelectItem();
-                    onSelectItem?.(editor, item);
-                  }}
-                >
-                  {Item}
-                </ComboboxItem>
-              );
-            })}
-          </ComboboxRoot>
-        )}
-        visible={isOpen}
-        placement="bottom-start"
-        interactive
-        offset={[0, 0]}
+      <ComboboxRoot
+        {...menuProps}
+        ref={popperRef}
+        style={popperStyles.popper}
+        {...attributes.popper}
       >
-        <div ref={ref} className="absolute z-20 h-6" />
-      </Tippy>
+        <Component />
+
+        {items.map((item, index) => {
+          const Item = onRenderItem ? onRenderItem({ item }) : item.text;
+
+          return (
+            <ComboboxItem
+              key={item.key}
+              highlighted={index === itemIndex}
+              {...combobox.getItemProps({
+                item,
+                index,
+              })}
+              onMouseDown={(e) => {
+                e.preventDefault();
+
+                const onSelectItem = getComboboxStoreById(
+                  id
+                )?.get.onSelectItem();
+                onSelectItem?.(editor, item);
+              }}
+            >
+              {Item}
+            </ComboboxItem>
+          );
+        })}
+      </ComboboxRoot>
+
+      {/* <Tippy */}
+      {/*  render={(attrs) => ( */}
+      {/*    */}
+      {/*  )} */}
+      {/*  visible={isOpen} */}
+      {/*  placement="bottom-start" */}
+      {/*  interactive */}
+      {/*  offset={[0, 0]} */}
+      {/* > */}
+      {/*  <div ref={popupRef} css={tw`absolute z-20 h-6`} /> */}
+      {/* </Tippy> */}
     </PortalBody>
   );
 };
 
+/**
+ * Register the combobox id, trigger, onSelectItem
+ * Renders the combobox if active.
+ */
 export const Combobox = (props: ComboboxProps) => {
   const { id, trigger, onSelectItem, component, onRenderItem } = props;
   const activeId = comboboxStore.use.activeId();
+  const editor = useEditorState();
+  const focusedEditorId = useEventEditorId('focus');
 
-  useComboboxControls();
+  const combobox = useComboboxControls();
 
   useEffect(() => {
     comboboxStore.set.setComboboxById({ id, trigger, onSelectItem });
   }, [id, onSelectItem, trigger]);
 
-  console.log(activeId, id);
-
-  if (activeId !== id) return null;
+  if (
+    activeId !== id ||
+    !combobox ||
+    !editor.selection ||
+    focusedEditorId !== editor.id
+  )
+    return null;
 
   return (
     <ComboboxContent

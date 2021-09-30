@@ -5,8 +5,6 @@ import { getTextFromTrigger } from './utils/getTextFromTrigger';
 import { comboboxStore } from './combobox.store';
 
 export const getComboboxOnChange = (): OnChange => (editor) => () => {
-  // const shouldClose = true;
-
   const byId = comboboxStore.get.byId();
 
   let shouldClose = true;

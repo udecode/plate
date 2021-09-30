@@ -46,6 +46,7 @@ npm install @udecode/plate-mention-ui
     const plugins = useMemo(
       () => [
         ...pluginsBasic,
+        createComboboxPlugin(),
         mentionPlugin,
       ],
       [mentionPlugin]

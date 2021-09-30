@@ -44,7 +44,7 @@ import { createListPlugin } from '../../../elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { useMentionPlugin } from '../../../elements/mention/src/useMentionPlugin';
-import { MentionSelect } from '../../../elements/mention-ui/src/MentionSelect/MentionSelect';
+import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../../../find-replace/src/useFindReplacePlugin';
@@ -122,10 +122,7 @@ const PlateContainer = () => {
 
       <BallonToolbarMarks />
 
-      <MentionSelect
-        {...getMentionSelectProps()}
-        renderLabel={renderMentionLabel}
-      />
+      <MentionCombobox />
     </Plate>
   );
 };

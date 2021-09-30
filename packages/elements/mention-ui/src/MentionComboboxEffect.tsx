@@ -5,8 +5,6 @@ import { isDefined } from '@udecode/plate-common';
 export const MentionComboboxEffect = () => {
   const search = comboboxStore.use.search();
 
-  console.log('search', search);
-
   useEffect(() => {
     if (!isDefined(search)) return;
 
@@ -15,13 +13,50 @@ export const MentionComboboxEffect = () => {
         key: '1',
         text: 'one',
       },
+      {
+        key: '@',
+        text: 'one',
+      },
+      {
+        key: '#',
+        text: 'one',
+      },
+      {
+        key: '$',
+        text: 'one',
+      },
+      {
+        key: '%',
+        text: 'one',
+      },
     ].filter(
       (c) =>
         !isDefined(search) ||
         c.text?.toLowerCase().includes(search.toLowerCase())
     );
 
-    comboboxStore.set.items(items);
+    comboboxStore.set.items([
+      {
+        key: '1',
+        text: 'one',
+      },
+      {
+        key: '@',
+        text: 'one',
+      },
+      {
+        key: '#',
+        text: 'one',
+      },
+      {
+        key: '$',
+        text: 'one',
+      },
+      {
+        key: '%',
+        text: 'one',
+      },
+    ]);
   }, [search]);
 
   return null;

@@ -20,10 +20,10 @@ import {
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
-import { optionsAutoformat } from '../docs/src/live/config/autoformat';
 import { initialValuePlayground } from '../docs/src/live/config/initialValues';
 import {
   editableProps,
+  optionsAutoformat,
   optionsExitBreakPlugin,
   optionsMentionPlugin,
   optionsResetBlockTypePlugin,
@@ -52,7 +52,7 @@ import { createListPlugin } from '../packages/elements/list/src/createListPlugin
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
 import { useMentionPlugin } from '../packages/elements/mention/src/useMentionPlugin';
-import { MentionSelect } from '../packages/elements/mention-ui/src/MentionSelect/MentionSelect';
+import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../packages/find-replace/src/useFindReplacePlugin';
 import { ToolbarSearchHighlight } from '../packages/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
@@ -161,10 +161,7 @@ export const Example = () => {
 
         <BallonToolbarMarks />
 
-        <MentionSelect
-          {...getMentionSelectProps()}
-          renderLabel={renderMentionLabel}
-        />
+        <MentionCombobox />
       </Plate>
     );
   };

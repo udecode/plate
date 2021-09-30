@@ -19,16 +19,6 @@ export const useComboboxControls = () => {
     highlightedIndex: itemIndex,
     items,
     circularNavigation: true,
-    // onInputValueChange: ({inputValue}) => {
-    //   setInputItems(
-    //     items.filter(item =>
-    //       item.toLowerCase().startsWith(inputValue.toLowerCase()),
-    //     ),
-    //   )
-    // },
-    // onSelectedItemChange: (changes) => {
-    //   console.info(changes);
-    // },
   });
   getMenuProps({}, { suppressRefError: true });
   getComboboxProps({}, { suppressRefError: true });

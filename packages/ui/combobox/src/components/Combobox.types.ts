@@ -1,12 +1,6 @@
 import { ComboboxStateById } from '../combobox.store';
 import { RenderFunction } from '../types/RenderFunction';
 
-export enum ComboboxItemType {
-  Normal = 0,
-  Divider = 1,
-  Header = 2,
-}
-
 export interface IComboboxItem {
   /**
    * Arbitrary string associated with this option.
@@ -17,11 +11,6 @@ export interface IComboboxItem {
    * Text to render for this option
    */
   text: any;
-
-  /**
-   * Text to render for this option
-   */
-  itemType?: ComboboxItemType;
 
   /**
    * Whether the option is disabled

@@ -48,6 +48,7 @@ import {
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
+  createComboboxPlugin,
   createDeserializeAstPlugin,
   createDeserializeCSVPlugin,
   createDeserializeHTMLPlugin,
@@ -309,6 +310,7 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  createComboboxPlugin,
   MentionCombobox,
   clearBlockFormat,
   setNodes,
