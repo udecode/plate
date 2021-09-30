@@ -39,7 +39,7 @@ describe('toggle on', () => {
     expect(input.children).toEqual(output.children);
   });
 
-  it('should turn a p selection to list', () => {
+  it('should turn a p with a selection to list', () => {
     const input = ((
       <editor>
         <hp>
