@@ -1,31 +1,18 @@
 import { TEditor } from '@udecode/plate-core';
-import { Editor, Range, Text, Transforms } from 'slate';
+import { Text, Transforms } from 'slate';
+import { SetNodesOptions } from '../types';
 
 /**
  * Remove mark and trigger `onChange` if collapsed selection.
  */
 export const removeMark = (
   editor: TEditor,
-  {
-    key,
-    shouldChange = true,
-  }: {
-    key: string;
-    shouldChange?: boolean;
-  }
+  key: string | string[],
+  options: Omit<SetNodesOptions, 'match' | 'split'>
 ) => {
-  const { selection } = editor;
-  if (selection) {
-    if (Range.isExpanded(selection)) {
-      Transforms.unsetNodes(editor, key, {
-        match: Text.isText,
-        split: true,
-      });
-    } else {
-      const marks = { ...(Editor.marks(editor) || {}) };
-      delete marks[key];
-      editor.marks = marks;
-      shouldChange && editor.onChange();
-    }
-  }
+  Transforms.unsetNodes(editor, key, {
+    match: Text.isText,
+    split: true,
+    ...options,
+  });
 };

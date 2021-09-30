@@ -65,7 +65,7 @@ export const autoformatMark = (
     });
     Transforms.collapse(editor, { edge: 'end' });
     marks.forEach((mark) => {
-      removeMark(editor, { key: mark, shouldChange: false });
+      removeMark(editor, { key: mark });
     });
 
     Transforms.delete(editor, {
