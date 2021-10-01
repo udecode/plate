@@ -7,6 +7,8 @@ export const KEYS_CODE_BLOCK = [ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE];
 
 export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
+  syntax: true,
+  syntaxPopularFirst: false,
 };
 
 // `
@@ -65,35 +67,19 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
 
 export const CODE_BLOCK_LANGUAGES_POPULAR: Record<string, string> = {
   bash: 'Bash',
-  c: 'C',
-  csharp: 'C#',
   css: 'CSS',
-  dart: 'Dart',
   git: 'Git',
-  go: 'Go',
   graphql: 'GraphQL',
-  groovy: 'Groovy',
   html: 'HTML',
-  java: 'Java',
   javascript: 'JavaScript',
   json: 'JSON',
   jsx: 'JSX',
-  kotlin: 'Kotlin',
   markdown: 'Markdown',
-  php: 'PHP',
-  python: 'Python',
-  ruby: 'Ruby',
-  // FIXME: Error with current scala grammar
-  // scala: 'Scala',
   sql: 'SQL',
-  shell: 'Shell',
-  swift: 'Swift',
   svg: 'SVG',
   tsx: 'TSX',
   typescript: 'TypeScript',
   wasm: 'WebAssembly',
-  yaml: 'YAML',
-  xml: 'XML',
 };
 
 export const CODE_BLOCK_LANGUAGES: Record<string, string> = {

@@ -17,9 +17,11 @@ import { BasicElementPluginsOptions } from './types';
 
 export const createBasicElementPlugins = ({
   heading,
+  syntax,
+  syntaxPopularFirst,
 }: BasicElementPluginsOptions = {}): PlatePlugin[] => [
   createBlockquotePlugin(),
-  createCodeBlockPlugin({ syntax: true, syntaxPopularFirst: true }),
+  createCodeBlockPlugin({ syntax, syntaxPopularFirst }),
   createHeadingPlugin(heading),
   createParagraphPlugin(),
 ];
