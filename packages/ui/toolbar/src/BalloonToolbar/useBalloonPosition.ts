@@ -63,7 +63,7 @@ export const usePopupPosition: UsePopupPosition = ({
           },
         },
         // user modifiers to override the default
-        ...modifiers,
+        ...(modifiers as any),
       ],
       strategy: 'absolute',
     }
