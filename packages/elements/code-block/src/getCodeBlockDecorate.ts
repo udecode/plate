@@ -7,6 +7,7 @@ import 'prismjs/components/prism-coffeescript';
 import 'prismjs/components/prism-cpp';
 import 'prismjs/components/prism-csharp';
 import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-dart';
 import 'prismjs/components/prism-django';
 import 'prismjs/components/prism-docker';
 import 'prismjs/components/prism-ejs';
@@ -50,7 +51,7 @@ import {
   getPlatePluginOptions,
   isElement,
 } from '@udecode/plate-core';
-import { Node, NodeEntry, Text } from 'slate';
+import { Node, NodeEntry } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './defaults';
 import { CodeBlockNodeData } from './types';
 
@@ -61,7 +62,7 @@ export const getCodeBlockDecorate = (): Decorate => (editor) => {
     const ranges: any = [];
     const [node, path] = entry;
     let langName = (node as Node & CodeBlockNodeData)?.lang;
-    if (!langName || langName === 'plain') {
+    if (!code_block?.syntax || !langName || langName === 'plain') {
       langName = '';
     }
     const lang = languages[langName];

@@ -63,6 +63,39 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
 // wasm
 // `;
 
+export const CODE_BLOCK_LANGUAGES_POPULAR: Record<string, string> = {
+  bash: 'Bash',
+  c: 'C',
+  csharp: 'C#',
+  css: 'CSS',
+  dart: 'Dart',
+  git: 'Git',
+  go: 'Go',
+  graphql: 'GraphQL',
+  groovy: 'Groovy',
+  html: 'HTML',
+  java: 'Java',
+  javascript: 'JavaScript',
+  json: 'JSON',
+  jsx: 'JSX',
+  kotlin: 'Kotlin',
+  markdown: 'Markdown',
+  php: 'PHP',
+  python: 'Python',
+  ruby: 'Ruby',
+  // FIXME: Error with current scala grammar
+  // scala: 'Scala',
+  sql: 'SQL',
+  shell: 'Shell',
+  swift: 'Swift',
+  svg: 'SVG',
+  tsx: 'TSX',
+  typescript: 'TypeScript',
+  wasm: 'WebAssembly',
+  yaml: 'YAML',
+  xml: 'XML',
+};
+
 export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   antlr4: 'ANTLR4',
   bash: 'Bash',
@@ -71,6 +104,7 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   css: 'CSS',
   coffeescript: 'CoffeeScript',
   cmake: 'CMake',
+  dart: 'Dart',
   django: 'Django',
   docker: 'Docker',
   ejs: 'EJS',
