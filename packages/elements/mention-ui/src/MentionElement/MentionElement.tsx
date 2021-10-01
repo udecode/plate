@@ -21,8 +21,6 @@ export const MentionElement = (props: MentionElementProps) => {
 
   const styles = getMentionElementStyles({ ...props, selected, focused });
 
-  console.log(element);
-
   return (
     <span
       {...attributes}

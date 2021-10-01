@@ -21,7 +21,7 @@ export type ComboboxStateById = {
   /**
    * Items filtering function from search
    */
-  filter: ((search: string) => (item: ComboboxItemData) => boolean) | null;
+  filter?: (search: string) => (item: ComboboxItemData) => boolean;
 
   /**
    * Called when an item is selected

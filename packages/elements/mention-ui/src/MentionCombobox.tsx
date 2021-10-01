@@ -13,7 +13,7 @@ export const MentionCombobox = ({
   trigger = COMBOBOX_TRIGGER_MENTION,
   onSelectItem = onSelectMentionItem,
   ...props
-}: ComboboxProps) => {
+}: Partial<ComboboxProps>) => {
   const defaultProps: ComboboxProps = {
     id,
     trigger,

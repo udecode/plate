@@ -17,7 +17,6 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
     borderColor = 'rgb(196, 196, 196)';
   }
 
-  let marginTop;
   const arrowStyle: CSSProp = [
     props.arrow &&
       css`

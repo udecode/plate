@@ -1,15 +1,9 @@
-import { comboboxStore } from '@udecode/plate-combobox';
+import { ComboboxOnSelectItem, comboboxStore } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import { getPlatePluginType, TElement } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
-import { ComboboxItemData } from '../../../ui/combobox/src/components/Combobox.types';
 import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData } from './types';
-
-export type ComboboxOnSelectItem = (
-  editor: SPEditor,
-  item: ComboboxItemData
-) => any;
 
 export const getMentionOnSelectItem = (): ComboboxOnSelectItem => (
   editor,

@@ -33,7 +33,8 @@ const ComboboxContent = ({
   const search = comboboxStore.use.search();
   const storeItems = comboboxStore.use.items();
   const filter = activeComboboxStore.use.filter?.();
-  const maxSuggestions = activeComboboxStore.use.maxSuggestions?.() ?? 10;
+  const maxSuggestions =
+    activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
 
   const popperRef = React.useRef<any>(null);
 
@@ -47,7 +48,9 @@ const ComboboxContent = ({
     if (!isDefined(search)) return;
 
     if (search.length === 0) {
-      return comboboxStore.set.filteredItems(storeItems);
+      return comboboxStore.set.filteredItems(
+        storeItems.slice(0, maxSuggestions)
+      );
     }
 
     const _filteredItems = storeItems

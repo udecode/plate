@@ -14,11 +14,9 @@ import {
   editableProps,
   optionsAutoformat,
   optionsExitBreakPlugin,
-  optionsMentionPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../../../../docs/src/live/config/pluginOptions';
-import { renderMentionLabel } from '../../../../docs/src/live/config/renderMentionLabel';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -66,9 +64,6 @@ const options = createPlateOptions();
 
 const PlateContainer = () => {
   const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
-  const { getMentionSelectProps, plugin: mentionPlugin } = createMentionPlugin(
-    optionsMentionPlugin
-  );
 
   const plugins: PlatePlugin<SPEditor & ReactEditor>[] = [
     createReactPlugin(),
@@ -86,7 +81,7 @@ const PlateContainer = () => {
     createMediaEmbedPlugin(),
     createAlignPlugin(),
     createHighlightPlugin(),
-    mentionPlugin,
+    createMentionPlugin(),
     findReplacePlugin,
     createNodeIdPlugin(),
     createAutoformatPlugin(optionsAutoformat),

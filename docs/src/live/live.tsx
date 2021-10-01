@@ -221,11 +221,9 @@ import { MENTIONABLES } from './config/mentionables';
 import {
   optionsAutoformat,
   optionsExitBreakPlugin,
-  optionsMentionPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from './config/pluginOptions';
-import { renderMentionLabel } from './config/renderMentionLabel';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -371,10 +369,8 @@ const ReactLiveScope = {
   LooksOne,
   LooksTwo,
   initialValuePlayground,
-  optionsMentionPlugin,
   usePlateActions,
   useStoreEditorEnabled,
-  renderMentionLabel,
   CodeBlockElement,
   Slate,
   Editable,

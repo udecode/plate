@@ -148,7 +148,7 @@ it('should be', () => {
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
-    createMentionPlugin().plugin,
+    createMentionPlugin(),
     createParagraphPlugin(),
     createCodeBlockPlugin(),
     createTablePlugin(),
