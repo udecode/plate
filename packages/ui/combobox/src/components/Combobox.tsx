@@ -1,33 +1,73 @@
 import React, { useCallback, useEffect } from 'react';
+import { isDefined } from '@udecode/plate-common';
 import { useEditorState, useEventEditorId } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
-import { comboboxStore, getComboboxStoreById } from '../combobox.store';
+import {
+  comboboxStore,
+  getComboboxStoreById,
+  useActiveComboboxStore,
+} from '../combobox.store';
 import { useComboboxControls } from '../hooks/useComboboxControls';
 import { getRangeBoundingClientRect } from '../popper/getRangeBoundingClientRect';
-import { usePopperPosition } from '../popper/usePopperPosition';
+import {
+  usePopperPosition,
+  virtualReference,
+} from '../popper/usePopperPosition';
 import { ComboboxItem, ComboboxRoot } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
 const ComboboxContent = ({
   id,
   component: Component,
+  items,
   onRenderItem,
-}: Pick<ComboboxProps, 'id' | 'component' | 'onRenderItem'>) => {
+}: Pick<ComboboxProps, 'id' | 'component' | 'onRenderItem' | 'items'>) => {
   const targetRange = comboboxStore.use.targetRange();
-  const items = comboboxStore.use.items();
+  const filteredItems = comboboxStore.use.filteredItems();
   const itemIndex = comboboxStore.use.itemIndex();
   const popperContainer = comboboxStore.use.popperContainer();
   const popperOptions = comboboxStore.use.popperOptions();
   const editor = useEditorState();
   const combobox = useComboboxControls();
+  const activeComboboxStore = useActiveComboboxStore()!;
+  const search = comboboxStore.use.search();
+  const storeItems = comboboxStore.use.items();
+  const filter = activeComboboxStore.use.filter?.();
+  const maxSuggestions = activeComboboxStore.use.maxSuggestions?.() ?? 10;
 
   const popperRef = React.useRef<any>(null);
 
+  // Update items
+  useEffect(() => {
+    items && comboboxStore.set.items(items);
+  }, [items]);
+
+  // Filter items
+  useEffect(() => {
+    if (!isDefined(search)) return;
+
+    if (search.length === 0) {
+      return comboboxStore.set.filteredItems(storeItems);
+    }
+
+    const _filteredItems = storeItems
+      .filter(
+        filter
+          ? filter(search)
+          : (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
+      )
+      .slice(0, maxSuggestions);
+
+    comboboxStore.set.filteredItems(_filteredItems);
+  }, [filter, storeItems, maxSuggestions, search]);
+
+  // Get target range rect
   const getBoundingClientRect = useCallback(
-    () => getRangeBoundingClientRect(editor, targetRange),
+    () => getRangeBoundingClientRect(editor, targetRange) ?? virtualReference,
     [editor, targetRange]
   );
 
+  // Update popper position
   const [popperStyles, attributes] = usePopperPosition({
     popperElement: popperRef.current,
     popperContainer,
@@ -46,12 +86,12 @@ const ComboboxContent = ({
       <ComboboxRoot
         {...menuProps}
         ref={popperRef}
-        style={popperStyles.popper}
+        style={{ ...popperStyles.popper, maxHeight: 288, overflow: 'scroll' }}
         {...attributes.popper}
       >
-        <Component />
+        {Component ? Component({ store: activeComboboxStore }) : null}
 
-        {items.map((item, index) => {
+        {filteredItems.map((item, index) => {
           const Item = onRenderItem ? onRenderItem({ item }) : item.text;
 
           return (
@@ -76,18 +116,6 @@ const ComboboxContent = ({
           );
         })}
       </ComboboxRoot>
-
-      {/* <Tippy */}
-      {/*  render={(attrs) => ( */}
-      {/*    */}
-      {/*  )} */}
-      {/*  visible={isOpen} */}
-      {/*  placement="bottom-start" */}
-      {/*  interactive */}
-      {/*  offset={[0, 0]} */}
-      {/* > */}
-      {/*  <div ref={popupRef} css={tw`absolute z-20 h-6`} /> */}
-      {/* </Tippy> */}
     </PortalBody>
   );
 };
@@ -97,7 +125,7 @@ const ComboboxContent = ({
  * Renders the combobox if active.
  */
 export const Combobox = (props: ComboboxProps) => {
-  const { id, trigger, onSelectItem, component, onRenderItem } = props;
+  const { component, onRenderItem, items, ...comboboxProps } = props;
   const activeId = comboboxStore.use.activeId();
   const editor = useEditorState();
   const focusedEditorId = useEventEditorId('focus');
@@ -105,11 +133,11 @@ export const Combobox = (props: ComboboxProps) => {
   const combobox = useComboboxControls();
 
   useEffect(() => {
-    comboboxStore.set.setComboboxById({ id, trigger, onSelectItem });
-  }, [id, onSelectItem, trigger]);
+    comboboxStore.set.setComboboxById(comboboxProps);
+  }, [comboboxProps]);
 
   if (
-    activeId !== id ||
+    activeId !== comboboxProps.id ||
     !combobox ||
     !editor.selection ||
     focusedEditorId !== editor.id
@@ -118,7 +146,8 @@ export const Combobox = (props: ComboboxProps) => {
 
   return (
     <ComboboxContent
-      id={id}
+      id={comboboxProps.id}
+      items={items}
       component={component}
       onRenderItem={onRenderItem}
     />

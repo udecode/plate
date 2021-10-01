@@ -8,5 +8,6 @@ export * from './getComboboxOnChange';
 export * from './getComboboxOnKeyDown';
 export * from './components/index';
 export * from './hooks/index';
+export * from './popper/index';
 export * from './types/index';
 export * from './utils/index';

@@ -33,7 +33,7 @@ export type UsePopperPositionReturnType = [
   boolean
 ];
 
-const virtualReference: PopperJS.VirtualElement = {
+export const virtualReference: PopperJS.VirtualElement = {
   getBoundingClientRect() {
     return {
       top: -9999,

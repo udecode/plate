@@ -14,43 +14,14 @@ npm install @udecode/plate-mention-ui
 
 ```ts live
 () => {
-  const renderMentionLabel = (mentionable) => {
-    const entry = MENTIONABLES.find((m) => m.value === mentionable.value);
-    if (!entry) return 'unknown option';
-    return `${entry.name} - ${entry.email}`;
-  };
-
-  const styledComponents = createPlateComponents({
-    ...components,
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
-  });
-
-  const optionsMentionPlugin = {
-    mentionables: MENTIONABLES,
-    maxSuggestions: 10,
-    insertSpaceAfterMention: false,
-    trigger: '@',
-    mentionableFilter: (s) => (mentionable) =>
-      mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
-      mentionable.name.toLowerCase().includes(s.toLowerCase()),
-    mentionableSearchPattern: '\\S*',
-  };
+  const styledComponents = createPlateComponents();
 
   const Editor = () => {
-    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-      optionsMentionPlugin
-    );
-
-    const plugins = useMemo(
-      () => [
-        ...pluginsBasic,
-        createComboboxPlugin(),
-        mentionPlugin,
-      ],
-      [mentionPlugin]
-    );
+    const plugins = [
+      ...pluginsBasic,
+      createComboboxPlugin(),
+      createMentionPlugin(),
+    ];
 
     return (
       <Plate
@@ -61,7 +32,7 @@ npm install @udecode/plate-mention-ui
         editableProps={editableProps}
         initialValue={initialValueMentions}
       >
-        <MentionCombobox />
+        <MentionCombobox items={MENTIONABLES} />
       </Plate>
     );
   };

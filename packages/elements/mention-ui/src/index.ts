@@ -3,6 +3,4 @@
  */
 
 export * from './MentionCombobox';
-export * from './MentionComboboxItem';
 export * from './MentionElement/index';
-export * from './MentionSelect/index';

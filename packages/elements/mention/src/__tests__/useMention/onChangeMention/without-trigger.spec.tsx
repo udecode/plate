@@ -4,7 +4,7 @@ import { withPlate } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { pipe } from '../../../../../../plate/src/pipe/pipe';
-import { useMentionPlugin } from '../../../useMentionPlugin';
+import { createMentionPlugin } from '../../../createMentionPlugin';
 
 jsx;
 
@@ -20,7 +20,7 @@ const input = ((
 it('should do nothing', () => {
   const editor = pipe(input, withPlate());
 
-  const { result } = renderHook(() => useMentionPlugin());
+  const { result } = renderHook(() => createMentionPlugin());
 
   act(() => {
     result.current.plugin.onChange?.(editor)([]);

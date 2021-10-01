@@ -1,21 +1,25 @@
 import React from 'react';
-import { Combobox } from '@udecode/plate-combobox';
+import { Combobox, ComboboxProps } from '@udecode/plate-combobox';
 import {
   COMBOBOX_TRIGGER_MENTION,
   ELEMENT_MENTION,
   getMentionOnSelectItem,
 } from '@udecode/plate-mention';
-import { MentionComboboxEffect } from './MentionComboboxEffect';
-import { MentionComboboxItem } from './MentionComboboxItem';
 
-const onSelectItem = getMentionOnSelectItem();
+const onSelectMentionItem = getMentionOnSelectItem();
 
-export const MentionCombobox = () => (
-  <Combobox
-    id={ELEMENT_MENTION}
-    component={MentionComboboxEffect}
-    trigger={COMBOBOX_TRIGGER_MENTION}
-    onRenderItem={MentionComboboxItem}
-    onSelectItem={onSelectItem}
-  />
-);
+export const MentionCombobox = ({
+  id = ELEMENT_MENTION,
+  trigger = COMBOBOX_TRIGGER_MENTION,
+  onSelectItem = onSelectMentionItem,
+  ...props
+}: ComboboxProps) => {
+  const defaultProps: ComboboxProps = {
+    id,
+    trigger,
+    onSelectItem,
+    ...props,
+  };
+
+  return <Combobox {...defaultProps} />;
+};

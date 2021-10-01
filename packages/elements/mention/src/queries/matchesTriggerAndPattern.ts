@@ -2,6 +2,10 @@ import { escapeRegExp, getText } from '@udecode/plate-common';
 import { TEditor } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
+/**
+ * deprecated
+ * TODO: move to getTextFromTrigger
+ */
 export const matchesTriggerAndPattern = (
   editor: TEditor,
   { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }

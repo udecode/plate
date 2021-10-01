@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { useMentionPlugin } from '../../../../useMentionPlugin';
+import { createMentionPlugin } from '../../../../createMentionPlugin';
 
 jsx;
 
@@ -13,7 +13,7 @@ const input = ((
 ) as any) as SPEditor;
 
 it('should be', () => {
-  const { result } = renderHook(() => useMentionPlugin());
+  const { result } = renderHook(() => createMentionPlugin());
 
   act(() => {
     result.current.plugin.onKeyDown?.(input)(

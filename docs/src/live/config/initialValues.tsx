@@ -333,11 +333,11 @@ export const initialValueMentions: any = (
     </hp>
     <hp>
       Try mentioning characters, like{' '}
-      <hmention value="289">
+      <hmention value="R2-D2">
         <htext />
       </hmention>{' '}
       or{' '}
-      <hmention value="224">
+      <hmention value="Mace Windu">
         <htext />
       </hmention>
       !

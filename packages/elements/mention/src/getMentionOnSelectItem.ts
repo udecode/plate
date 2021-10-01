@@ -2,13 +2,13 @@ import { comboboxStore } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
-import { IComboboxItem } from '../../../ui/combobox/src/components/Combobox.types';
+import { ComboboxItemData } from '../../../ui/combobox/src/components/Combobox.types';
 import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData } from './types';
 
 export type ComboboxOnSelectItem = (
   editor: SPEditor,
-  item: IComboboxItem
+  item: ComboboxItemData
 ) => any;
 
 export const getMentionOnSelectItem = (): ComboboxOnSelectItem => (
@@ -30,14 +30,14 @@ export const getMentionOnSelectItem = (): ComboboxOnSelectItem => (
     Transforms.insertText(editor, ' ');
   }
 
-  // select the tag text and insert the tag element
+  // select the text and insert the element
   Transforms.select(editor, targetRange);
   insertNodes<TElement<MentionNodeData>>(editor, {
     type,
     children: [{ text: '' }],
     value: item.text,
   });
-  // move the selection after the tag element
+  // move the selection after the element
   Transforms.move(editor);
 
   // delete the inserted space

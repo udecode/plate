@@ -1,7 +1,7 @@
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { UseComboboxReturnValue } from 'downshift';
 import { Range } from 'slate';
-import { IComboboxItem } from './components/Combobox.types';
+import { ComboboxItemData } from './components/Combobox.types';
 import { UsePopperOptions } from './popper/usePopperPosition';
 import { ComboboxOnSelectItem } from './types/ComboboxOnSelectItem';
 
@@ -19,24 +19,39 @@ export type ComboboxStateById = {
   trigger: string;
 
   /**
+   * Items filtering function from search
+   */
+  filter: ((search: string) => (item: ComboboxItemData) => boolean) | null;
+
+  /**
    * Called when an item is selected
    */
   onSelectItem: ComboboxOnSelectItem | null;
 };
 
+export type ComboboxStoreById = StoreApi<
+  string,
+  ComboboxStateById,
+  StateActions<ComboboxStateById>
+>;
+
 export type ComboboxState = {
   // Combobox key
   activeId: string | null;
 
-  byId: Record<
-    string,
-    StoreApi<string, ComboboxStateById, StateActions<ComboboxStateById>>
-  >;
+  byId: Record<string, ComboboxStoreById>;
 
-  combobox: UseComboboxReturnValue<IComboboxItem> | null;
+  combobox: UseComboboxReturnValue<ComboboxItemData> | null;
 
-  // Fetched tags
-  items: IComboboxItem[];
+  /**
+   * Unfiltered items
+   */
+  items: ComboboxItemData[];
+
+  /**
+   * Filtered items
+   */
+  filteredItems: ComboboxItemData[];
 
   // Highlighted index
   itemIndex: number;
@@ -68,6 +83,7 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
   combobox: null,
   itemIndex: 0,
   items: [],
+  filteredItems: [],
   popperContainer: null,
   popperOptions: null,
   search: null,
@@ -102,3 +118,10 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
 
 export const getComboboxStoreById = (id: string | null) =>
   id ? comboboxStore.get.byId()[id] : null;
+
+export const useActiveComboboxStore = () => {
+  const activeId = comboboxStore.use.activeId();
+  const comboboxes = comboboxStore.use.byId();
+
+  return activeId ? comboboxes[activeId] : null;
+};

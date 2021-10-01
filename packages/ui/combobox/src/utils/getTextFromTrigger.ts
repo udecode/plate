@@ -4,7 +4,6 @@ import { Editor, Point } from 'slate';
 /**
  * Get text and range from trigger to cursor.
  * Starts with trigger and ends with non-whitespace character.
- * TODO: move to plugins
  */
 export const getTextFromTrigger = (
   editor: Editor,

@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { useMentionPlugin } from '../../useMentionPlugin';
+import { createMentionPlugin } from '../../createMentionPlugin';
 
 it('should accept arbirtrary data with value field', () => {
   const { result } = renderHook(() =>
-    useMentionPlugin({
+    createMentionPlugin({
       mentionables: [
         { value: 'John Snow', id: 5, house: ['Targaryen', 'Stark'] },
       ],

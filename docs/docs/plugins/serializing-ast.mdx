@@ -13,8 +13,6 @@ npm install @udecode/plate-ast-serializer
 
 ```ts live
 () => {
-  const { plugin: mentionPlugin } = useMentionPlugin();
-
   const plugins = useMemo(() => {
     const _plugins = [
       ...pluginsBasic,
@@ -27,13 +25,13 @@ npm install @udecode/plate-ast-serializer
       createExcalidrawPlugin(),
       createHighlightPlugin(),
       createSoftBreakPlugin(optionsSoftBreakPlugin),
-      mentionPlugin,
+      createMentionPlugin(),
     ];
 
     _plugins.push(createDeserializeAstPlugin({ plugins: _plugins }));
 
     return _plugins;
-  }, [mentionPlugin]);
+  }, []);
 
   return (
     <Plate

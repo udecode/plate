@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
-import { useMentionPlugin } from '../../../useMentionPlugin';
+import { createMentionPlugin } from '../../../createMentionPlugin';
 
 jsx;
 
@@ -18,7 +18,7 @@ it('should do nothing', () => {
     editor: input,
   });
 
-  const { result } = renderHook(() => useMentionPlugin());
+  const { result } = renderHook(() => createMentionPlugin());
 
   act(() => {
     result.current.plugin.onChange?.(editor)([]);

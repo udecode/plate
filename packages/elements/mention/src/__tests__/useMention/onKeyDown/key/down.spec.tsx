@@ -5,7 +5,7 @@ import { Editor } from 'slate';
 import { withHistory } from 'slate-history';
 import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../../plate/src/utils/createEditorPlugins';
-import { useMentionPlugin } from '../../../../useMentionPlugin';
+import { createMentionPlugin } from '../../../../createMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 
 jsx;
@@ -26,7 +26,7 @@ it('should go down', () => {
     editor: input,
   });
 
-  const { result } = renderHook(() => useMentionPlugin({ mentionables }));
+  const { result } = renderHook(() => createMentionPlugin({ mentionables }));
 
   act(() => {
     result.current.plugin.onChange?.(editor)([]);

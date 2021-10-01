@@ -51,7 +51,7 @@ import { ToolbarLink } from '../packages/elements/link-ui/src/ToolbarLink/Toolba
 import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
-import { useMentionPlugin } from '../packages/elements/mention/src/useMentionPlugin';
+import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../packages/find-replace/src/useFindReplacePlugin';
@@ -91,9 +91,10 @@ export const Example = () => {
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
-    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-      optionsMentionPlugin
-    );
+    const {
+      getMentionSelectProps,
+      plugin: mentionPlugin,
+    } = createMentionPlugin(optionsMentionPlugin);
 
     const pluginsMemo = useMemo(() => {
       const plugins = [

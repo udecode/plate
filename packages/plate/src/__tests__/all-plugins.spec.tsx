@@ -43,7 +43,7 @@ import { ToolbarLink } from '../../../elements/link-ui/src/ToolbarLink/ToolbarLi
 import { createListPlugin } from '../../../elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { useMentionPlugin } from '../../../elements/mention/src/useMentionPlugin';
+import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
@@ -66,7 +66,7 @@ const options = createPlateOptions();
 
 const PlateContainer = () => {
   const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
-  const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
+  const { getMentionSelectProps, plugin: mentionPlugin } = createMentionPlugin(
     optionsMentionPlugin
   );
 

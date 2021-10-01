@@ -1,7 +1,11 @@
-import { ComboboxStateById } from '../combobox.store';
+import {
+  ComboboxState,
+  ComboboxStateById,
+  ComboboxStoreById,
+} from '../combobox.store';
 import { RenderFunction } from '../types/RenderFunction';
 
-export interface IComboboxItem {
+export interface ComboboxItemData {
   /**
    * Arbitrary string associated with this option.
    */
@@ -25,12 +29,20 @@ export interface IComboboxItem {
 }
 
 export interface ComboboxItemProps {
-  item: IComboboxItem;
+  item: ComboboxItemData;
 }
 
-export interface ComboboxProps extends ComboboxStateById {
-  id: string;
-  component?: any;
+export interface ComboboxProps
+  extends ComboboxStateById,
+    Partial<Pick<ComboboxState, 'items'>> {
+  /**
+   * Render this component when the combobox is open (useful to inject hooks).
+   */
+  component?: RenderFunction<{ store: ComboboxStoreById }>;
+
+  /**
+   * Render combobox item.
+   */
   onRenderItem?: RenderFunction<ComboboxItemProps>;
   // data: Record<string, ComboboxDataProps>;
 }

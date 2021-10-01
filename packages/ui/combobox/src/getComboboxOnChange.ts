@@ -4,6 +4,14 @@ import { Range } from 'slate';
 import { getTextFromTrigger } from './utils/getTextFromTrigger';
 import { comboboxStore } from './combobox.store';
 
+/**
+ * For each combobox state (byId):
+ * - if the selection is collapsed
+ * - if the cursor follows the trigger
+ * - if there is text without whitespaces after the trigger
+ * - open the combobox: set id, search, targetRange in the store
+ * Close the combobox if needed
+ */
 export const getComboboxOnChange = (): OnChange => (editor) => () => {
   const byId = comboboxStore.get.byId();
 

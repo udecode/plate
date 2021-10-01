@@ -4,7 +4,7 @@ import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../../../../plate/src/utils/createEditorPlugins';
-import { useMentionPlugin } from '../../../../useMentionPlugin';
+import { createMentionPlugin } from '../../../../createMentionPlugin';
 import { mentionables } from '../mentionables.fixture';
 
 jsx;
@@ -31,7 +31,7 @@ const output = ((
 ) as any) as Editor;
 
 it('should go down', () => {
-  const { result } = renderHook(() => useMentionPlugin({ mentionables }));
+  const { result } = renderHook(() => createMentionPlugin({ mentionables }));
 
   const editor = createEditorPlugins({
     editor: input,

@@ -2,10 +2,17 @@ import { KeyboardHandler } from '@udecode/plate-core';
 import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
 import { comboboxStore, getComboboxStoreById } from './combobox.store';
 
+/**
+ * If the combobox is open, handle:
+ * - down (next item)
+ * - up (previous item)
+ * - escape (reset combobox)
+ * - tab, enter (select item)
+ */
 export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
   event
 ) => {
-  const { itemIndex, items, activeId } = comboboxStore.get.state();
+  const { itemIndex, filteredItems, activeId } = comboboxStore.get.state();
   const isOpen = comboboxStore.get.isOpen();
 
   if (!isOpen) return;
@@ -21,7 +28,7 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
     const newIndex = getNextWrappingIndex(
       1,
       itemIndex,
-      items.length,
+      filteredItems.length,
       () => {},
       true
     );
@@ -34,7 +41,7 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
     const newIndex = getNextWrappingIndex(
       -1,
       itemIndex,
-      items.length,
+      filteredItems.length,
       () => {},
       true
     );
@@ -49,8 +56,8 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
 
   if (['Tab', 'Enter'].includes(event.key)) {
     event.preventDefault();
-    if (items[itemIndex]) {
-      onSelectItem?.(editor, items[itemIndex]);
+    if (filteredItems[itemIndex]) {
+      onSelectItem?.(editor, filteredItems[itemIndex]);
     }
   }
 };
