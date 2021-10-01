@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { usePlateActions } from '../../stores/plate/plate.actions';
 import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
 import { useStoreEditorValue } from '../../stores/plate/selectors/useStoreEditorValue';
@@ -20,23 +20,28 @@ export const useSlateProps = ({
   const value = useStoreEditorValue(id);
   const plugins = useStorePlate(id);
 
+  const onChange = useCallback(
+    (newValue: TNode[]) => {
+      if (!editor) return;
+
+      const eventIsHandled = pipeOnChange(editor, plugins)(newValue);
+
+      if (!eventIsHandled) {
+        _onChange?.(newValue);
+      }
+
+      setValue(newValue);
+    },
+    [_onChange, editor, plugins, setValue]
+  );
+
   return useMemo(
     () => ({
       key: editor?.key,
       editor,
-      onChange: (newValue: TNode[]) => {
-        if (!editor) return;
-
-        const eventIsHandled = pipeOnChange(editor, plugins)(newValue);
-
-        if (!eventIsHandled) {
-          _onChange?.(newValue);
-        }
-
-        setValue(newValue);
-      },
+      onChange,
       value,
     }),
-    [_onChange, editor, plugins, setValue, value]
+    [editor, onChange, value]
   );
 };
