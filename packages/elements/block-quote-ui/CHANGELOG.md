@@ -1,5 +1,15 @@
 # @udecode/plate-block-quote-ui
 
+## 4.3.7
+
+### Patch Changes
+
+- Updated dependencies [[`58f6fb53`](https://github.com/udecode/plate/commit/58f6fb53bf45a2e0509f4aca617aa21356952fca)]:
+  - @udecode/plate-core@4.3.7
+  - @udecode/plate-common@4.3.7
+  - @udecode/plate-block-quote@4.3.7
+  - @udecode/plate-styled-components@4.3.7
+
 ## 4.3.0
 
 ### Patch Changes
