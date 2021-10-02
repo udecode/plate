@@ -8,12 +8,15 @@ export function getCodeBlockInsertFragment(editor: SPEditor) {
   const codeBlockType = getPlatePluginType(editor, ELEMENT_CODE_BLOCK);
   const codeLineType = getPlatePluginType(editor, ELEMENT_CODE_LINE);
 
-  function convertNodeToCodeLine(node: TDescendant) {
-    return {
-      type: codeLineType,
-      children: [{ text: Node.string(node) }],
-    };
-  }
+  const convertNodeToCodeLine = (node: TDescendant) => {
+    const nodes = node.split('\\n');
+    return nodes.map((line: TDescendant) => {
+      return {
+        type: codeLineType,
+        children: [{ text: Node.string(line) }],
+      };
+    });
+  };
 
   function extractCodeLinesFromCodeBlock(node: TDescendant) {
     return node.children;
