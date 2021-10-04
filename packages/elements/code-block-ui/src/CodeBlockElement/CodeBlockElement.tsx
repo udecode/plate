@@ -1,7 +1,14 @@
 import * as React from 'react';
-import { CodeBlockNodeData } from '@udecode/plate-code-block/src';
+import {
+  CodeBlockNodeData,
+  ELEMENT_CODE_BLOCK,
+} from '@udecode/plate-code-block';
 import { setNodes } from '@udecode/plate-common';
-import { TElement, useEditorRef } from '@udecode/plate-core';
+import {
+  getPlatePluginOptions,
+  TElement,
+  useEditorRef,
+} from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ReactEditor } from 'slate-react';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
@@ -12,6 +19,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
   const { lang } = element;
   const editor = useEditorRef();
   const { root } = getCodeBlockElementStyles(props);
+  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
 
   return (
     <>
@@ -21,18 +29,20 @@ export const CodeBlockElement = (props: StyledElementProps) => {
         className={root.className}
         {...nodeProps}
       >
-        <CodeBlockSelectElement
-          data-testid="CodeBlockSelectElement"
-          lang={lang}
-          onChange={(val: string) => {
-            const path = ReactEditor.findPath(editor, element);
-            setNodes<TElement<CodeBlockNodeData>>(
-              editor,
-              { lang: val },
-              { at: path }
-            );
-          }}
-        />
+        {code_block?.syntax && (
+          <CodeBlockSelectElement
+            data-testid="CodeBlockSelectElement"
+            lang={lang}
+            onChange={(val: string) => {
+              const path = ReactEditor.findPath(editor, element);
+              setNodes<TElement<CodeBlockNodeData>>(
+                editor,
+                { lang: val },
+                { at: path }
+              );
+            }}
+          />
+        )}
         <code>{children}</code>
       </pre>
     </>
