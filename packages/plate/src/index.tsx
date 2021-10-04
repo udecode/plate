@@ -42,6 +42,7 @@ export * from '@udecode/plate-mention-ui';
 export * from '@udecode/plate-node-id';
 export * from '@udecode/plate-normalizers';
 export * from '@udecode/plate-paragraph';
+export * from '@udecode/plate-popper';
 export * from '@udecode/plate-reset-node';
 export * from '@udecode/plate-select';
 export * from '@udecode/plate-serializer';

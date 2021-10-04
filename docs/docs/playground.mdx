@@ -15,9 +15,6 @@ See [Installation](/docs/installation)
 () => {
   let styledComponents = createPlateComponents({
     ...components,
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
@@ -81,6 +78,7 @@ See [Installation](/docs/installation)
         }),
         createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
         createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE, ELEMENT_HR] }),
+        createComboboxPlugin(),
         createMentionPlugin(),
         searchHighlightPlugin,
       ];
@@ -127,7 +125,7 @@ See [Installation](/docs/installation)
 
         <BallonToolbarMarks />
 
-        <MentionCombobox />
+        <MentionCombobox items={MENTIONABLES} />
       </Plate>
     );
   }

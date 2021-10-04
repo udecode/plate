@@ -1,8 +1,8 @@
+import { UsePopperOptions } from '@udecode/plate-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { UseComboboxReturnValue } from 'downshift';
 import { Range } from 'slate';
 import { ComboboxItemData } from './components/Combobox.types';
-import { UsePopperOptions } from './popper/usePopperPosition';
 import { ComboboxOnSelectItem } from './types/ComboboxOnSelectItem';
 
 export type ComboboxStateById = {
@@ -36,15 +36,19 @@ export type ComboboxStoreById = StoreApi<
 >;
 
 export type ComboboxState = {
-  // Combobox key
+  /**
+   * Active id (open).
+   */
   activeId: string | null;
 
+  /**
+   * Object whose keys are ids and values are config stores
+   * (e.g. one for tag, one for mention,...).
+   */
   byId: Record<string, ComboboxStoreById>;
 
-  combobox: UseComboboxReturnValue<ComboboxItemData> | null;
-
   /**
-   * Unfiltered items
+   * Unfiltered items.
    */
   items: ComboboxItemData[];
 
@@ -53,7 +57,9 @@ export type ComboboxState = {
    */
   filteredItems: ComboboxItemData[];
 
-  // Highlighted index
+  /**
+   * Highlighted index.
+   */
   itemIndex: number;
 
   /**
@@ -63,11 +69,13 @@ export type ComboboxState = {
   popperContainer: Document | HTMLElement | null;
 
   /**
-   * Overrides `usePopper` options
+   * Overrides `usePopper` options.
    */
   popperOptions: UsePopperOptions | null;
 
-  // Search value
+  /**
+   * Search text after the trigger.
+   */
   search: string | null;
 
   // Range from the trigger to the cursor
@@ -80,7 +88,6 @@ const createComboboxStore = (state: ComboboxStateById) =>
 export const comboboxStore = createStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
-  combobox: null,
   itemIndex: 0,
   items: [],
   filteredItems: [],

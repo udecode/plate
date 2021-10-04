@@ -18,8 +18,9 @@ npm install @udecode/plate-toolbar
 
     const arrow = false;
     const theme = 'dark';
-    const direction = 'top';
-    const hiddenDelay = 0;
+    const popperOptions = {
+      placement: 'top'
+    };
     const tooltip = {
       arrow: true,
       delay: 0,
@@ -31,8 +32,7 @@ npm install @udecode/plate-toolbar
 
     return (
       <BalloonToolbar
-        direction={direction}
-        hiddenDelay={hiddenDelay}
+        popperOptions={popperOptions}
         theme={theme}
         arrow={arrow}
       >

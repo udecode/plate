@@ -63,6 +63,7 @@ const alias = {
   '@udecode/plate-normalizers': 'normalizers',
   '@udecode/plate-paragraph': 'elements/paragraph',
   '@udecode/plate-placeholder': 'placeholder',
+  '@udecode/plate-popper': 'ui/popper',
   '@udecode/plate-reset-node': 'reset-node',
   '@udecode/plate-select': 'select',
   '@udecode/plate-styled-components': 'ui/styled-components',

@@ -8,14 +8,6 @@ export const ToolbarBase = React.forwardRef<HTMLDivElement, ToolbarProps>(
   }
 );
 
-// export const withStyles = <T,>(
-//   Component: FunctionComponent<T>,
-//   styles
-// ) =>
-//   React.forwardRef<HTMLElement, T>((props: T, ref) => (
-//     <Component {...props} ref={ref} styles={getToolbarStyles(props)} />
-//   ));
-
 export const Toolbar = React.forwardRef<HTMLDivElement, ToolbarProps>(
   (props: ToolbarProps, ref) => {
     const { root } = getToolbarStyles(props);

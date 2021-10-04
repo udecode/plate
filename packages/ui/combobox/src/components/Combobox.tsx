@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect } from 'react';
 import { isDefined } from '@udecode/plate-common';
 import { useEditorState, useEventEditorId } from '@udecode/plate-core';
+import {
+  getRangeBoundingClientRect,
+  usePopperPosition,
+  virtualReference,
+} from '@udecode/plate-popper';
 import { PortalBody } from '@udecode/plate-styled-components';
 import {
   comboboxStore,
@@ -8,11 +13,6 @@ import {
   useActiveComboboxStore,
 } from '../combobox.store';
 import { useComboboxControls } from '../hooks/useComboboxControls';
-import { getRangeBoundingClientRect } from '../popper/getRangeBoundingClientRect';
-import {
-  usePopperPosition,
-  virtualReference,
-} from '../popper/usePopperPosition';
 import { ComboboxItem, ComboboxRoot } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
@@ -71,7 +71,7 @@ const ComboboxContent = ({
   );
 
   // Update popper position
-  const [popperStyles, attributes] = usePopperPosition({
+  const { styles: popperStyles, attributes } = usePopperPosition({
     popperElement: popperRef.current,
     popperContainer,
     popperOptions,
@@ -144,8 +144,9 @@ export const Combobox = (props: ComboboxProps) => {
     !combobox ||
     !editor.selection ||
     focusedEditorId !== editor.id
-  )
+  ) {
     return null;
+  }
 
   return (
     <ComboboxContent

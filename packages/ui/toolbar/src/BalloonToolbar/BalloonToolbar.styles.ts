@@ -17,6 +17,8 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
     borderColor = 'rgb(196, 196, 196)';
   }
 
+  const { placement = 'top' } = props.popperOptions ?? {};
+
   const arrowStyle: CSSProp = [
     props.arrow &&
       css`
@@ -32,7 +34,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
       `,
 
     props.arrow &&
-      props.direction === 'top' &&
+      placement.includes('top') &&
       css`
         ::after {
           top: 100%;
@@ -42,7 +44,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
       `,
 
     props.arrow &&
-      props.direction !== 'top' &&
+      !placement.includes('top') &&
       css`
         ::after {
           top: auto;
@@ -54,7 +56,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
 
   const arrowBorderStyle: CSSProp = [
     props.arrow &&
-      props.direction === 'top' &&
+      placement.includes('top') &&
       props.theme === 'light' &&
       css`
         ::before {
@@ -64,7 +66,7 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
         }
       `,
     props.arrow &&
-      props.direction !== 'top' &&
+      !placement.includes('top') &&
       props.theme === 'light' &&
       css`
         ::before {
@@ -81,7 +83,6 @@ export const getBalloonToolbarStyles = (props: BalloonToolbarStyleProps) => {
       root: [
         ...getToolbarStyles(props).root.css,
         tw`absolute whitespace-nowrap opacity-100 transition[opacity .2s ease-in-out]`,
-        props.hidden && tw`invisible opacity-0`,
         css`
           color: ${color};
           background: ${background};

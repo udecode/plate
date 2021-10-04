@@ -67,6 +67,7 @@
     "@udecode/plate-horizontal-rule": "link:../packages/elements/horizontal-rule",
     "@udecode/plate-horizontal-rule-ui": "link:../packages/elements/horizontal-rule-ui",
     "@udecode/plate-placeholder": "link:../packages/placeholder",
+    "@udecode/plate-popper": "link:../packages/ui/popper",
     "@udecode/plate-reset-node": "link:../packages/reset-node",
     "@udecode/plate-select": "link:../packages/select",
     "@udecode/plate-serializer": "link:../packages/serializers/serializer",

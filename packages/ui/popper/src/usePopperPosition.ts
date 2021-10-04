@@ -10,8 +10,21 @@ export type UsePopperOptions = Omit<Partial<PopperJS.Options>, 'modifiers'> & {
   modifiers?: ReadonlyArray<Partial<Modifier<string, object>>>;
 };
 
+export interface UsePopperReturnType {
+  styles: { [key: string]: React.CSSProperties };
+  attributes: { [key: string]: { [key: string]: string } | undefined };
+  state: PopperJS.State | null;
+  update: PopperJS.Instance['update'] | null;
+  forceUpdate: PopperJS.Instance['forceUpdate'] | null;
+}
+
 export interface UsePopperPositionOptions {
   popperElement: HTMLElement | null;
+
+  /**
+   * Container element of editor popper,
+   * if no scroll container provided, it will take document.documentElement as scrolling container
+   */
   popperContainer?: Document | HTMLElement | null;
   popperOptions?: UsePopperOptions | null;
   modifiers?: UsePopperOptions['modifiers'];
@@ -20,18 +33,6 @@ export interface UsePopperPositionOptions {
   getBoundingClientRect?: any;
   offset?: number[];
 }
-
-export type UsePopperPositionReturnType = [
-  { [key: string]: React.CSSProperties },
-  {
-    [key: string]:
-      | {
-          [key: string]: string;
-        }
-      | undefined;
-  },
-  boolean
-];
 
 export const virtualReference: PopperJS.VirtualElement = {
   getBoundingClientRect() {
@@ -61,50 +62,57 @@ export const usePopperPosition = ({
   placement = 'auto',
   isHidden = false,
   getBoundingClientRect = getSelectionBoundingClientRect,
-}: UsePopperPositionOptions): UsePopperPositionReturnType => {
-  const { styles, attributes, update } = usePopper(
-    virtualReference,
-    popperElement,
-    {
-      placement,
-      modifiers: [
-        // default modifiers to position the popper correctly
-        {
-          name: 'preventOverflow',
-          enabled: true,
-          options: { boundary: popperContainer ?? undefined },
+}: UsePopperPositionOptions): UsePopperReturnType => {
+  const popperResult = usePopper(virtualReference, popperElement, {
+    placement,
+    modifiers: [
+      // default modifiers to position the popper correctly
+      {
+        name: 'preventOverflow',
+        enabled: true,
+        options: { boundary: popperContainer },
+      },
+      {
+        name: 'flip',
+        enabled: true,
+        options: { padding: 8 },
+      },
+      {
+        name: 'eventListeners',
+        enabled: true,
+        options: { scroll: !isHidden, resize: true },
+      },
+      {
+        name: 'offset',
+        options: {
+          offset,
         },
-        {
-          name: 'flip',
-          enabled: true,
-          options: { padding: 8 },
-        },
-        {
-          name: 'eventListeners',
-          enabled: true,
-          options: { scroll: !isHidden, resize: true },
-        },
-        {
-          name: 'offset',
-          options: {
-            offset,
-          },
-        },
-        // user modifiers to override the default
-        ...modifiers,
-      ],
-      strategy: 'absolute',
-      ...(popperOptions as any),
-    }
-  );
+      },
+      // user modifiers to override the default
+      ...modifiers,
+    ],
+    strategy: 'absolute',
+    ...(popperOptions as any),
+  });
 
-  const updatePosition = useCallback(() => {
+  const { update } = popperResult;
+  const styles = !isHidden
+    ? popperResult.styles
+    : {
+        ...popperResult.styles,
+        popper: { ...popperResult.styles.popper, display: 'none' },
+      };
+
+  useEffect(() => {
+    virtualReference.getBoundingClientRect = getBoundingClientRect;
+  }, [getBoundingClientRect]);
+
+  const updatePosition = useCallback((): any => {
     if (isHidden) return;
     if (!popperElement) return;
 
-    virtualReference.getBoundingClientRect = getBoundingClientRect;
     update?.();
-  }, [getBoundingClientRect, isHidden, popperElement, update]);
+  }, [isHidden, popperElement, update]);
 
   useEffect(() => {
     updatePosition();
@@ -115,5 +123,5 @@ export const usePopperPosition = ({
     return () => popperContainer?.removeEventListener('scroll', updatePosition);
   }, [updatePosition, popperContainer]);
 
-  return [styles, attributes, isHidden];
+  return { ...popperResult, update: updatePosition, styles };
 };

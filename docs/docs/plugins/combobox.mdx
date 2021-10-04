@@ -1,0 +1,87 @@
+---
+slug: /plugins/combobox
+title: Combobox
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-combobox
+```
+
+### Combobox Store
+
+The combobox state is stored in `comboboxStore`.
+
+- `activeId` – Active id (open).
+- `byId` – Object whose keys are ids and values are config stores (e.g. one for tag, one for mention,...).
+- `items` – Unfiltered items.
+- `filteredItems` – Filtered items.
+- `itemIndex` – Highlighted index.
+- `popperContainer` – Parent element of the popper element (the one that has the scroll).
+- `popperOptions` – Overrides `usePopper` options.
+- `search` – Search text after the trigger.
+
+
+### Combobox component
+
+- its state is stored in the combobox store
+- designed as a singleton (only one combobox can be opened)  
+- the Combobox is rendered in a popper and its position is configurable
+
+Props:
+- `id`: needed to store the config to the store
+- `component`: Render this component when the combobox is open (useful to inject hooks).
+- `onRenderItem`: Render combobox item
+
+Combobox items have the following interface:
+
+```ts
+export interface ComboboxItemData {
+  /**
+   * Arbitrary string associated with this option.
+   */
+  key: string;
+
+  /**
+   * Text to render for this option
+   */
+  text: any;
+
+  /**
+   * Whether the option is disabled
+   * @defaultvalue false
+   */
+  disabled?: boolean;
+
+  /**
+   * Data available to onRenderItem.
+   */
+  data?: unknown;
+}
+```
+
+### Combobox plugin
+
+`onChange`:
+
+For each combobox state (byId):
+- if the selection is collapsed
+- if the cursor follows the trigger
+- if there is text without whitespaces after the trigger
+- open the combobox: set id, search, targetRange in the store 
+
+Close the combobox if needed
+
+`onKeyDown`:
+
+If the combobox is open, handle:
+- down (next item)
+- up (previous item)
+- escape (reset combobox)
+- tab, enter (select item)
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/ui/combobox](https://github.com/udecode/plate/tree/main/packages/ui/combobox/src)

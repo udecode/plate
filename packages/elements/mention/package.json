@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "4.3.5",
+    "@udecode/plate-combobox": "4.3.7",
     "@udecode/plate-common": "4.3.7",
     "@udecode/plate-core": "4.3.7"
   },
