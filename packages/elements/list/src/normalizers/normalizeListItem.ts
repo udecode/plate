@@ -112,6 +112,10 @@ export const normalizeListItem = (
       return true;
     }
 
+    if (!validLiChildrenTypes.includes(firstLiChildNode.type)) {
+      return true;
+    }
+
     setNodes<TElement>(
       editor,
       {
