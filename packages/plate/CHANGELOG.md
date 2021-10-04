@@ -1,5 +1,58 @@
 # @udecode/plate
 
+## 4.3.7
+
+### Patch Changes
+
+- Updated dependencies [[`58f6fb53`](https://github.com/udecode/plate/commit/58f6fb53bf45a2e0509f4aca617aa21356952fca)]:
+  - @udecode/plate-core@4.3.7
+  - @udecode/plate-autoformat@4.3.7
+  - @udecode/plate-break@4.3.7
+  - @udecode/plate-common@4.3.7
+  - @udecode/plate-dnd@4.3.7
+  - @udecode/plate-alignment@4.3.7
+  - @udecode/plate-alignment-ui@4.3.7
+  - @udecode/plate-basic-elements@4.3.7
+  - @udecode/plate-block-quote@4.3.7
+  - @udecode/plate-block-quote-ui@4.3.7
+  - @udecode/plate-code-block@4.3.7
+  - @udecode/plate-code-block-ui@4.3.7
+  - @udecode/plate-heading@4.3.7
+  - @udecode/plate-horizontal-rule@4.3.7
+  - @udecode/plate-image@4.3.7
+  - @udecode/plate-image-ui@4.3.7
+  - @udecode/plate-link@4.3.7
+  - @udecode/plate-link-ui@4.3.7
+  - @udecode/plate-list@4.3.7
+  - @udecode/plate-list-ui@4.3.7
+  - @udecode/plate-media-embed@4.3.7
+  - @udecode/plate-media-embed-ui@4.3.7
+  - @udecode/plate-mention@4.3.7
+  - @udecode/plate-mention-ui@4.3.7
+  - @udecode/plate-paragraph@4.3.7
+  - @udecode/plate-table@4.3.7
+  - @udecode/plate-table-ui@4.3.7
+  - @udecode/plate-find-replace@4.3.7
+  - @udecode/plate-find-replace-ui@4.3.7
+  - @udecode/plate-basic-marks@4.3.7
+  - @udecode/plate-font@4.3.7
+  - @udecode/plate-font-ui@4.3.7
+  - @udecode/plate-highlight@4.3.7
+  - @udecode/plate-kbd@4.3.7
+  - @udecode/plate-node-id@4.3.7
+  - @udecode/plate-normalizers@4.3.7
+  - @udecode/plate-placeholder@4.3.7
+  - @udecode/plate-reset-node@4.3.7
+  - @udecode/plate-select@4.3.7
+  - @udecode/plate-ast-serializer@4.3.7
+  - @udecode/plate-csv-serializer@4.3.7
+  - @udecode/plate-html-serializer@4.3.7
+  - @udecode/plate-md-serializer@4.3.7
+  - @udecode/plate-serializer@4.3.7
+  - @udecode/plate-trailing-block@4.3.7
+  - @udecode/plate-styled-components@4.3.7
+  - @udecode/plate-toolbar@4.3.7
+
 ## 4.3.6
 
 ### Patch Changes
