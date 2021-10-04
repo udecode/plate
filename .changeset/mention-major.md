@@ -12,27 +12,23 @@ The mention plugin is now using the combobox.
   - `trigger`: moved to `comboboxStore`
   - `mentionables`: moved to `items` in `comboboxStore` 
   - `mentionableFilter`: moved to `filter` in `comboboxStore` 
-- removed `MentionNodeData` in favor of `ComboboxItemData`
 - removed `matchesTriggerAndPattern` in favor of `getTextFromTrigger`
-
+- removed `MentionNodeData` in favor of `ComboboxItemData`
 ```ts
 export interface ComboboxItemData {
   /**
    * Unique key.
    */
   key: string;
-
   /**
    * Item text.
    */
   text: any;
-
   /**
    * Whether the item is disabled.
    * @default false
    */
   disabled?: boolean;
-
   /**
    * Data available to `onRenderItem`.
    */
