@@ -112,7 +112,6 @@ module.exports = {
       label: 'Examples',
       items: [
         'examples/introduction',
-        'examples/combobox',
         'examples/editable-voids',
         'examples/huge-document',
         'examples/iframe',
