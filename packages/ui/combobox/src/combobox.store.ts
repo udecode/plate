@@ -70,12 +70,12 @@ export type ComboboxState = {
    * Parent element of the popper element (the one that has the scroll).
    * @default document
    */
-  popperContainer: Document | HTMLElement | null;
+  popperContainer?: Document | HTMLElement;
 
   /**
    * Overrides `usePopper` options.
    */
-  popperOptions: UsePopperOptions | null;
+  popperOptions?: UsePopperOptions;
 
   /**
    * Range from the trigger to the cursor.
@@ -97,8 +97,6 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
   highlightedIndex: 0,
   items: [],
   filteredItems: [],
-  popperContainer: null,
-  popperOptions: null,
   targetRange: null,
   text: null,
 })
