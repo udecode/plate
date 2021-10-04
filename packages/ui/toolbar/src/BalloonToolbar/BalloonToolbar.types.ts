@@ -20,5 +20,5 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
 
   portalElement?: Element;
 
-  popperOptions?: UsePopperPositionOptions;
+  popperOptions?: Partial<UsePopperPositionOptions>;
 }

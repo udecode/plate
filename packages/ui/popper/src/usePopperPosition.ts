@@ -26,7 +26,7 @@ export interface UsePopperPositionOptions {
    * if no scroll container provided, it will take document.documentElement as scrolling container
    */
   popperContainer?: Document | HTMLElement | null;
-  popperOptions?: UsePopperOptions | null;
+  popperOptions?: Partial<UsePopperOptions>;
   modifiers?: UsePopperOptions['modifiers'];
   placement?: PopperJS.Placement;
   isHidden?: boolean;
@@ -92,7 +92,7 @@ export const usePopperPosition = ({
       ...modifiers,
     ],
     strategy: 'absolute',
-    ...(popperOptions as any),
+    ...popperOptions,
   });
 
   const { update } = popperResult;
