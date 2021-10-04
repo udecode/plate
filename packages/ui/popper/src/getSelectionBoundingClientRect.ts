@@ -6,5 +6,6 @@ export const getSelectionBoundingClientRect = () => {
   if (!domSelection || domSelection.rangeCount < 1) return;
 
   const domRange = domSelection.getRangeAt(0);
+
   return domRange.getBoundingClientRect();
 };

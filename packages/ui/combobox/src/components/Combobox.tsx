@@ -24,13 +24,13 @@ const ComboboxContent = ({
 }: Pick<ComboboxProps, 'id' | 'component' | 'onRenderItem' | 'items'>) => {
   const targetRange = comboboxStore.use.targetRange();
   const filteredItems = comboboxStore.use.filteredItems();
-  const itemIndex = comboboxStore.use.itemIndex();
+  const highlightedIndex = comboboxStore.use.highlightedIndex();
   const popperContainer = comboboxStore.use.popperContainer();
   const popperOptions = comboboxStore.use.popperOptions();
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;
-  const search = comboboxStore.use.search();
+  const text = comboboxStore.use.text();
   const storeItems = comboboxStore.use.items();
   const filter = activeComboboxStore.use.filter?.();
   const maxSuggestions =
@@ -45,9 +45,9 @@ const ComboboxContent = ({
 
   // Filter items
   useEffect(() => {
-    if (!isDefined(search)) return;
+    if (!isDefined(text)) return;
 
-    if (search.length === 0) {
+    if (text.length === 0) {
       return comboboxStore.set.filteredItems(
         storeItems.slice(0, maxSuggestions)
       );
@@ -56,13 +56,13 @@ const ComboboxContent = ({
     const _filteredItems = storeItems
       .filter(
         filter
-          ? filter(search)
-          : (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
+          ? filter(text)
+          : (value) => value.text.toLowerCase().startsWith(text.toLowerCase())
       )
       .slice(0, maxSuggestions);
 
     comboboxStore.set.filteredItems(_filteredItems);
-  }, [filter, storeItems, maxSuggestions, search]);
+  }, [filter, storeItems, maxSuggestions, text]);
 
   // Get target range rect
   const getBoundingClientRect = useCallback(
@@ -100,7 +100,7 @@ const ComboboxContent = ({
           return (
             <ComboboxItem
               key={item.key}
-              highlighted={index === itemIndex}
+              highlighted={index === highlightedIndex}
               {...combobox.getItemProps({
                 item,
                 index,

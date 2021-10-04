@@ -103,16 +103,13 @@ export const usePopperPosition = ({
         popper: { ...popperResult.styles.popper, display: 'none' },
       };
 
-  useEffect(() => {
-    virtualReference.getBoundingClientRect = getBoundingClientRect;
-  }, [getBoundingClientRect]);
-
   const updatePosition = useCallback((): any => {
     if (isHidden) return;
     if (!popperElement) return;
 
+    virtualReference.getBoundingClientRect = getBoundingClientRect;
     update?.();
-  }, [isHidden, popperElement, update]);
+  }, [getBoundingClientRect, isHidden, popperElement, update]);
 
   useEffect(() => {
     updatePosition();

@@ -38,7 +38,7 @@ export const getComboboxOnChange = (): OnChange => (editor) => () => {
 
         comboboxStore.set.open({
           activeId: id,
-          search: textAfterTrigger,
+          text: textAfterTrigger,
           targetRange: range,
         });
 

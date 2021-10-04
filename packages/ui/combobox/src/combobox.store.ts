@@ -1,30 +1,34 @@
 import { UsePopperOptions } from '@udecode/plate-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
-import { UseComboboxReturnValue } from 'downshift';
 import { Range } from 'slate';
 import { ComboboxItemData } from './components/Combobox.types';
 import { ComboboxOnSelectItem } from './types/ComboboxOnSelectItem';
 
 export type ComboboxStateById = {
   /**
-   * Combobox id
+   * Combobox id.
    */
   id: string;
 
-  maxSuggestions?: number;
-
   /**
-   * Trigger that activates the combobox
-   */
-  trigger: string;
-
-  /**
-   * Items filtering function from search
+   * Items filter function by text.
+   * @default (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
    */
   filter?: (search: string) => (item: ComboboxItemData) => boolean;
 
   /**
-   * Called when an item is selected
+   * Max number of items.
+   * @default items.length
+   */
+  maxSuggestions?: number;
+
+  /**
+   * Trigger that activates the combobox.
+   */
+  trigger: string;
+
+  /**
+   * Called when an item is selected.
    */
   onSelectItem: ComboboxOnSelectItem | null;
 };
@@ -37,12 +41,12 @@ export type ComboboxStoreById = StoreApi<
 
 export type ComboboxState = {
   /**
-   * Active id (open).
+   * Active id (combobox id which is opened).
    */
   activeId: string | null;
 
   /**
-   * Object whose keys are ids and values are config stores
+   * Object whose keys are combobox ids and values are config stores
    * (e.g. one for tag, one for mention,...).
    */
   byId: Record<string, ComboboxStoreById>;
@@ -60,7 +64,7 @@ export type ComboboxState = {
   /**
    * Highlighted index.
    */
-  itemIndex: number;
+  highlightedIndex: number;
 
   /**
    * Parent element of the popper element (the one that has the scroll).
@@ -74,12 +78,14 @@ export type ComboboxState = {
   popperOptions: UsePopperOptions | null;
 
   /**
-   * Search text after the trigger.
+   * Range from the trigger to the cursor.
    */
-  search: string | null;
-
-  // Range from the trigger to the cursor
   targetRange: Range | null;
+
+  /**
+   * Text after the trigger.
+   */
+  text: string | null;
 };
 
 const createComboboxStore = (state: ComboboxStateById) =>
@@ -88,13 +94,13 @@ const createComboboxStore = (state: ComboboxStateById) =>
 export const comboboxStore = createStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
-  itemIndex: 0,
+  highlightedIndex: 0,
   items: [],
   filteredItems: [],
   popperContainer: null,
   popperOptions: null,
-  search: null,
   targetRange: null,
+  text: null,
 })
   .extendActions((set, get) => ({
     setComboboxById: (state: ComboboxStateById) => {
@@ -104,17 +110,15 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
         draft.byId[state.id] = createComboboxStore(state);
       });
     },
-    open: (
-      state: Pick<ComboboxState, 'activeId' | 'targetRange' | 'search'>
-    ) => {
+    open: (state: Pick<ComboboxState, 'activeId' | 'targetRange' | 'text'>) => {
       set.mergeState(state);
     },
     reset: () => {
       set.state((draft) => {
         draft.activeId = null;
-        draft.itemIndex = 0;
+        draft.highlightedIndex = 0;
         draft.items = [];
-        draft.search = null;
+        draft.text = null;
         draft.targetRange = null;
       });
     },

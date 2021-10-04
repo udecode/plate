@@ -7,23 +7,23 @@ import { RenderFunction } from '../types/RenderFunction';
 
 export interface ComboboxItemData {
   /**
-   * Arbitrary string associated with this option.
+   * Unique key.
    */
   key: string;
 
   /**
-   * Text to render for this option
+   * Item text.
    */
   text: any;
 
   /**
-   * Whether the option is disabled
-   * @defaultvalue false
+   * Whether the item is disabled.
+   * @default false
    */
   disabled?: boolean;
 
   /**
-   * Data available to onRenderItem.
+   * Data available to `onRenderItem`.
    */
   data?: unknown;
 }
@@ -42,7 +42,7 @@ export interface ComboboxProps
 
   /**
    * Render combobox item.
+   * @default text
    */
   onRenderItem?: RenderFunction<ComboboxItemProps>;
-  // data: Record<string, ComboboxDataProps>;
 }

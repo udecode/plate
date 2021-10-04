@@ -12,7 +12,11 @@ import { comboboxStore, getComboboxStoreById } from './combobox.store';
 export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
   event
 ) => {
-  const { itemIndex, filteredItems, activeId } = comboboxStore.get.state();
+  const {
+    highlightedIndex,
+    filteredItems,
+    activeId,
+  } = comboboxStore.get.state();
   const isOpen = comboboxStore.get.isOpen();
 
   if (!isOpen) return;
@@ -27,12 +31,12 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
 
     const newIndex = getNextWrappingIndex(
       1,
-      itemIndex,
+      highlightedIndex,
       filteredItems.length,
       () => {},
       true
     );
-    comboboxStore.set.itemIndex(newIndex);
+    comboboxStore.set.highlightedIndex(newIndex);
     return;
   }
   if (event.key === 'ArrowUp') {
@@ -40,12 +44,12 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
 
     const newIndex = getNextWrappingIndex(
       -1,
-      itemIndex,
+      highlightedIndex,
       filteredItems.length,
       () => {},
       true
     );
-    comboboxStore.set.itemIndex(newIndex);
+    comboboxStore.set.highlightedIndex(newIndex);
     return;
   }
   if (event.key === 'Escape') {
@@ -56,8 +60,8 @@ export const getComboboxOnKeyDown = (): KeyboardHandler => (editor) => (
 
   if (['Tab', 'Enter'].includes(event.key)) {
     event.preventDefault();
-    if (filteredItems[itemIndex]) {
-      onSelectItem?.(editor, filteredItems[itemIndex]);
+    if (filteredItems[highlightedIndex]) {
+      onSelectItem?.(editor, filteredItems[highlightedIndex]);
     }
   }
 };

@@ -4,10 +4,9 @@ import { comboboxStore } from '../combobox.store';
 
 export const useComboboxControls = () => {
   const isOpen = comboboxStore.use.isOpen();
-  const itemIndex = comboboxStore.use.itemIndex();
+  const highlightedIndex = comboboxStore.use.highlightedIndex();
   const filteredItems = comboboxStore.use.filteredItems();
 
-  // Menu combobox
   const {
     closeMenu,
     getMenuProps,
@@ -16,7 +15,7 @@ export const useComboboxControls = () => {
     getItemProps,
   } = useCombobox({
     isOpen,
-    highlightedIndex: itemIndex,
+    highlightedIndex,
     items: filteredItems,
     circularNavigation: true,
   });

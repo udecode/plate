@@ -46,6 +46,7 @@ module.exports = {
             'plugins/link',
             'plugins/list',
             'plugins/media-embed',
+            'plugins/combobox',
             'plugins/mention',
             'plugins/table',
           ],
