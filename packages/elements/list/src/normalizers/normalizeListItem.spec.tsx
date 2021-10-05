@@ -5,6 +5,7 @@ import { getNode } from '@udecode/plate-common';
 import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from '../createListPlugin';
+import { Editor } from 'slate';
 
 jsx;
 
@@ -37,6 +38,84 @@ describe('clean up list items', () => {
     const editor = createEditorPlugins({
       editor: input,
       plugins: [createListPlugin()],
+    });
+
+    const path = [0, 0];
+    const node = getNode(editor, path);
+
+    editor.normalizeNode([node!, path]);
+
+    expect(input.children).toEqual(output.children);
+  });
+});
+
+describe('validLiChildrenTypes', () => {
+  it('should replace children block item with lic', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <element>
+                <hp>hell</hp>
+              </element>
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as Editor;
+
+    const output = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>hello</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as Editor;
+
+    const editor = createEditorPlugins({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    const path = [0, 0];
+    const node = getNode(editor, path);
+
+    editor.normalizeNode([node!, path]);
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should keep children block item when it is listed as valid', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <element>
+                <hp>hell</hp>
+              </element>
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as Editor;
+
+    const output = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>hello</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as Editor;
+
+    const editor = createEditorPlugins({
+      editor: input,
+      plugins: [createListPlugin({ validLiChildrenTypes: ['element'] })],
     });
 
     const path = [0, 0];
