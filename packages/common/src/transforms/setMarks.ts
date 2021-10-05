@@ -1,6 +1,6 @@
 import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { isMarkActive } from '../queries/isMarkActive';
+import { Editor } from 'slate';
 import { removeMark } from './removeMark';
 
 /**
@@ -13,18 +13,13 @@ export const setMarks = (
 ) => {
   if (!editor.selection) return;
 
-  const clears: string[] = castArray(clear);
-  clears.forEach((item) => {
-    removeMark(editor, { key: item });
-  });
+  Editor.withoutNormalizing(editor, () => {
+    const clears: string[] = castArray(clear);
+    removeMark(editor, { key: clears });
+    removeMark(editor, { key: Object.keys(marks) });
 
-  Object.keys(marks).forEach((key) => {
-    const markIsActive = isMarkActive(editor, key);
-
-    if (markIsActive) {
-      removeMark(editor, { key });
-    }
-
-    editor.addMark(key, marks[key]);
+    Object.keys(marks).forEach((key) => {
+      editor.addMark(key, marks[key]);
+    });
   });
 };
