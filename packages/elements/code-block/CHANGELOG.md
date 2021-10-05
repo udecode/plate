@@ -1,5 +1,39 @@
 # @udecode/plate-code-block
 
+## 4.3.7
+
+### Patch Changes
+
+- Updated dependencies [[`58f6fb53`](https://github.com/udecode/plate/commit/58f6fb53bf45a2e0509f4aca617aa21356952fca)]:
+  - @udecode/plate-core@4.3.7
+  - @udecode/plate-common@4.3.7
+
+## 4.3.5
+
+### Patch Changes
+
+- [#1081](https://github.com/udecode/plate/pull/1081) [`8525af01`](https://github.com/udecode/plate/commit/8525af01b2ca705665bad3ada73b8e906620dad8) Thanks [@dylans](https://github.com/dylans)! - Fix check for language attribute for syntax highlighting
+
+## 4.3.1
+
+### Patch Changes
+
+- [#1072](https://github.com/udecode/plate/pull/1072) [`a692c078`](https://github.com/udecode/plate/commit/a692c078f9386ebb63aea9cb704decf554b07e8e) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Pasting into a code block always adds codelines. All non code blocks are converted to text.
+
+## 4.3.0
+
+### Minor Changes
+
+- [#1055](https://github.com/udecode/plate/pull/1055) [`7b892a59`](https://github.com/udecode/plate/commit/7b892a59f27bdaa81c90097534c411cc80b92e8a) Thanks [@dylans](https://github.com/dylans)! - changes:
+  - enable syntax highlighting for `code_block`
+  - new prop to `code_block` node: `lang?: string`
+
+### Patch Changes
+
+- Updated dependencies [[`6af469cd`](https://github.com/udecode/plate/commit/6af469cd5ac310e831eb8a99a71eba73bde62fc6)]:
+  - @udecode/plate-core@4.3.0
+  - @udecode/plate-common@4.3.0
+
 ## 3.4.0
 
 ### Patch Changes

@@ -243,7 +243,11 @@ module.exports = {
   },
   overrides: [
     {
-      files: 'server/**/*.js',
+      files: [
+        'server/**/*.js',
+        'getCodeBlockDecorate.ts',
+        'getCodeLineDecorate.ts',
+      ],
       env: { node: true },
       rules: {
         'simple-import-sort/imports': 'off',

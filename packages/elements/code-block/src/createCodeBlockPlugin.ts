@@ -1,9 +1,9 @@
 import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
 import { KEYS_CODE_BLOCK } from './defaults';
-import { getCodeBlockDecorate } from './getCodeBlockDecorate';
 import { getCodeBlockDeserialize } from './getCodeBlockDeserialize';
 import { getCodeBlockOnKeyDown } from './getCodeBlockOnKeyDown';
 import { getCodeBlockRenderLeaf } from './getCodeBlockRenderLeaf';
+import { getCodeLineDecorate } from './getCodeLineDecorate';
 import { withCodeBlock } from './withCodeBlock';
 
 /**
@@ -14,7 +14,7 @@ export const createCodeBlockPlugin = (): PlatePlugin => ({
   renderElement: getRenderElement(KEYS_CODE_BLOCK),
   renderLeaf: getCodeBlockRenderLeaf(),
   deserialize: getCodeBlockDeserialize(),
-  decorate: getCodeBlockDecorate(),
+  decorate: getCodeLineDecorate(),
   onKeyDown: getCodeBlockOnKeyDown(),
   withOverrides: withCodeBlock(),
 });

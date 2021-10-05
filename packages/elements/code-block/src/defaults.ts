@@ -7,6 +7,8 @@ export const KEYS_CODE_BLOCK = [ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE];
 
 export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
+  syntax: true,
+  syntaxPopularFirst: false,
 };
 
 // `
@@ -63,6 +65,23 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
 // wasm
 // `;
 
+export const CODE_BLOCK_LANGUAGES_POPULAR: Record<string, string> = {
+  bash: 'Bash',
+  css: 'CSS',
+  git: 'Git',
+  graphql: 'GraphQL',
+  html: 'HTML',
+  javascript: 'JavaScript',
+  json: 'JSON',
+  jsx: 'JSX',
+  markdown: 'Markdown',
+  sql: 'SQL',
+  svg: 'SVG',
+  tsx: 'TSX',
+  typescript: 'TypeScript',
+  wasm: 'WebAssembly',
+};
+
 export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   antlr4: 'ANTLR4',
   bash: 'Bash',
@@ -71,6 +90,7 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   css: 'CSS',
   coffeescript: 'CoffeeScript',
   cmake: 'CMake',
+  dart: 'Dart',
   django: 'Django',
   docker: 'Docker',
   ejs: 'EJS',
@@ -83,6 +103,7 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   java: 'Java',
   javascript: 'JavaScript',
   json: 'JSON',
+  jsx: 'JSX',
   kotlin: 'Kotlin',
   latex: 'LaTeX',
   less: 'Less',
@@ -99,17 +120,17 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   protobuf: 'Protocol Buffers',
   python: 'Python',
   r: 'R',
-  jsx: 'React JSX',
-  tsx: 'React TSX',
   ruby: 'Ruby',
   sass: 'Sass (Sass)',
   scss: 'Sass (Scss)',
-  scala: 'Scala',
+  // FIXME: Error with current scala grammar
+  // scala: 'Scala',
   scheme: 'Scheme',
   sql: 'SQL',
   shell: 'Shell',
   swift: 'Swift',
   svg: 'SVG',
+  tsx: 'TSX',
   typescript: 'TypeScript',
   wasm: 'WebAssembly',
   yaml: 'YAML',
