@@ -1,5 +1,17 @@
 # @udecode/plate-code-block-ui
 
+## 4.4.0
+
+### Patch Changes
+
+- [#1090](https://github.com/udecode/plate/pull/1090) [`7c32d4ef`](https://github.com/udecode/plate/commit/7c32d4efc0e84f6e2878473a3dd0efad3740ba9e) Thanks [@dylans](https://github.com/dylans)! - Add configuration options for code-block syntax highlighting
+
+- Updated dependencies [[`7c32d4ef`](https://github.com/udecode/plate/commit/7c32d4efc0e84f6e2878473a3dd0efad3740ba9e), [`b22c06aa`](https://github.com/udecode/plate/commit/b22c06aad1cfed08069dadc7ec39bcbfb1d0af37)]:
+  - @udecode/plate-code-block@4.4.0
+  - @udecode/plate-common@4.4.0
+  - @udecode/plate-styled-components@4.4.0
+  - @udecode/plate-toolbar@4.4.0
+
 ## 4.3.7
 
 ### Patch Changes

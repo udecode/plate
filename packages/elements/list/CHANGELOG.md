@@ -1,5 +1,15 @@
 # @udecode/plate-list
 
+## 4.4.0
+
+### Patch Changes
+
+- [#1098](https://github.com/udecode/plate/pull/1098) [`c353b008`](https://github.com/udecode/plate/commit/c353b0085804fa9099f0c18405ca01b0b25da03a) Thanks [@djagya](https://github.com/djagya)! - Respect validLiChildrenTypes by keeping valid block elements as direct li children
+
+- Updated dependencies [[`b22c06aa`](https://github.com/udecode/plate/commit/b22c06aad1cfed08069dadc7ec39bcbfb1d0af37)]:
+  - @udecode/plate-common@4.4.0
+  - @udecode/plate-reset-node@4.4.0
+
 ## 4.3.7
 
 ### Patch Changes
