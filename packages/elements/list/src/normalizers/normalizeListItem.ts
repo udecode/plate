@@ -112,6 +112,11 @@ export const normalizeListItem = (
       return true;
     }
 
+    // Allow block elements listed as valid li children types to be a first child instead of LIC
+    if (validLiChildrenTypes.includes(firstLiChildNode.type)) {
+      return true;
+    }
+
     setNodes<TElement>(
       editor,
       {

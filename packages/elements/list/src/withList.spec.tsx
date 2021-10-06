@@ -6,13 +6,22 @@ import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugin
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
 import { createListPlugin } from './createListPlugin';
+import { WithListOptions } from './types';
 
 jsx;
 
-const testInsertText = (input: any, expected: any) => {
+const testInsertText = (
+  input: any,
+  expected: any,
+  listPluginOptions?: WithListOptions
+) => {
   const editor = createEditorPlugins({
     editor: input,
-    plugins: [createParagraphPlugin(), createListPlugin(), createLinkPlugin()],
+    plugins: [
+      createParagraphPlugin(),
+      createListPlugin(listPluginOptions),
+      createLinkPlugin(),
+    ],
   });
 
   editor.insertText('o');
@@ -201,6 +210,47 @@ describe('withList', () => {
         ) as any) as Editor;
 
         testInsertText(input, expected);
+      });
+    });
+
+    describe('when li > block, with block in validLiChildrenTypes', () => {
+      it('should keep the block untouched', () => {
+        const input = ((
+          <editor>
+            <hul>
+              <hli>
+                <hp>world</hp>
+                <hul>
+                  <hli>
+                    <hblockquote>
+                      hell
+                      <cursor />
+                    </hblockquote>
+                  </hli>
+                </hul>
+              </hli>
+            </hul>
+          </editor>
+        ) as any) as Editor;
+
+        const expected = ((
+          <editor>
+            <hul>
+              <hli>
+                <hp>world</hp>
+                <hul>
+                  <hli>
+                    <hblockquote>hello</hblockquote>
+                  </hli>
+                </hul>
+              </hli>
+            </hul>
+          </editor>
+        ) as any) as Editor;
+
+        testInsertText(input, expected, {
+          validLiChildrenTypes: ['p', 'blockquote'],
+        });
       });
     });
   });
