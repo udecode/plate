@@ -35,9 +35,12 @@ export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
     ...options,
   });
 
+  const selectionTextLength = selectionText?.length ?? 0;
+  const { update } = popperResult;
+
   useEffect(() => {
-    selectionExpanded && popperResult.update?.();
-  }, [selectionText?.length, selectionExpanded, popperResult, selectionText]);
+    selectionTextLength > 0 && update?.();
+  }, [selectionTextLength, update]);
 
   return popperResult;
 };
