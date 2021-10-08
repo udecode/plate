@@ -3,7 +3,7 @@
 ---
 
 feat:
-- new dependency: `"@udecode/plate-combobox": "4.3.7"`
+- new dependency: `"@udecode/plate-combobox": "4.4.0"`
 - new component: `MentionCombobox` – default props:
   - `trigger: '@'`
   - `id: ELEMENT_MENTION`

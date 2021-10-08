@@ -36,8 +36,8 @@
     "@udecode/plate-common": "4.4.0",
     "@udecode/plate-core": "4.3.7",
     "react-popper": "^2.2.4",
-    "@udecode/plate-popper": "4.3.7",
-    "@udecode/plate-styled-components": "4.3.7",
+    "@udecode/plate-popper": "4.4.0",
+    "@udecode/plate-styled-components": "4.4.0",
     "react-use": "^17.1.1"
   },
   "peerDependencies": {

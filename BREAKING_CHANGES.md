@@ -1,5 +1,57 @@
 # Breaking Changes
 
+## 5.0.0
+
+### `@udecode/plate-mention`
+
+The mention plugin is now using the combobox.
+- removed `useMentionPlugin` in favor of `createMentionPlugin`
+  - migration: replace `useMentionPlugin().plugin` by `createMentionPlugin()`
+- removed options:
+  - `mentionableSearchPattern`
+  - `insertSpaceAfterMention`
+  - `maxSuggestions`: moved to `comboboxStore`
+  - `trigger`: moved to `comboboxStore`
+  - `mentionables`: moved to `items` in `comboboxStore` 
+  - `mentionableFilter`: moved to `filter` in `comboboxStore` 
+- removed `matchesTriggerAndPattern` in favor of `getTextFromTrigger`
+- removed `MentionNodeData` in favor of `ComboboxItemData`
+```ts
+export interface ComboboxItemData {
+  /**
+   * Unique key.
+   */
+  key: string;
+  /**
+   * Item text.
+   */
+  text: any;
+  /**
+   * Whether the item is disabled.
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * Data available to `onRenderItem`.
+   */
+  data?: unknown;
+}
+```
+
+### `@udecode/plate-mention-ui`
+
+- removed `MentionSelect` in favor of `MentionCombobox`
+
+### `@udecode/plate-toolbar`
+
+- removed `setPositionAtSelection` in favor of `useBalloonToolbarPopper`
+- removed `useBalloonMove` in favor of `useBalloonToolbarPopper`
+- removed `usePopupPosition` in favor of `useBalloonToolbarPopper`
+- removed `useBalloonShow` in favor of `useBalloonToolbarPopper`
+`BalloonToolbar` props:
+- removed `direction` in favor of `popperOptions.placement`
+- renamed `scrollContainer` to `popperContainer`
+
 ## 4.0.0
 
 ### `@udecode/plate-toolbar`
