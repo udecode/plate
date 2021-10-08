@@ -17,9 +17,7 @@ import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
 const ComboboxContent = (props: ComboboxProps) => {
-  const { comboboxProps, component: Component, items, onRenderItem } = props;
-
-  const { id } = comboboxProps;
+  const { component: Component, items, onRenderItem } = props;
 
   const targetRange = comboboxStore.use.targetRange();
   const filteredItems = comboboxStore.use.filteredItems();
@@ -119,7 +117,7 @@ const ComboboxContent = (props: ComboboxProps) => {
                 e.preventDefault();
 
                 const onSelectItem = getComboboxStoreById(
-                  id
+                  comboboxStore.get.activeId()
                 )?.get.onSelectItem();
                 onSelectItem?.(editor, item);
               }}
@@ -138,24 +136,12 @@ const ComboboxContent = (props: ComboboxProps) => {
  * Renders the combobox if active.
  */
 export const Combobox = (props: ComboboxProps) => {
-  const { comboboxProps } = props;
-
-  const activeId = comboboxStore.use.activeId();
   const editor = useEditorState();
   const focusedEditorId = useEventEditorId('focus');
 
   const combobox = useComboboxControls();
 
-  useEffect(() => {
-    comboboxStore.set.setComboboxById(comboboxProps);
-  }, [comboboxProps]);
-
-  if (
-    activeId !== comboboxProps.id ||
-    !combobox ||
-    !editor.selection ||
-    focusedEditorId !== editor.id
-  ) {
+  if (!combobox || !editor.selection || focusedEditorId !== editor.id) {
     return null;
   }
 

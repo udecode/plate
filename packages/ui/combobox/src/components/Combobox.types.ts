@@ -46,8 +46,6 @@ export interface ComboboxItemProps {
 export interface ComboboxProps
   extends Partial<Pick<ComboboxState, 'items'>>,
     StyledProps<ComboboxStyles> {
-  comboboxProps: ComboboxStateById;
-
   /**
    * Render this component when the combobox is open (useful to inject hooks).
    */

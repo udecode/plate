@@ -1,5 +1,9 @@
-import React from 'react';
-import { Combobox, ComboboxProps } from '@udecode/plate-combobox';
+import React, { useEffect } from 'react';
+import {
+  Combobox,
+  ComboboxProps,
+  comboboxStore,
+} from '@udecode/plate-combobox';
 import {
   COMBOBOX_TRIGGER_MENTION,
   ELEMENT_MENTION,
@@ -8,18 +12,20 @@ import {
 
 const onSelectMentionItem = getMentionOnSelectItem();
 
-export const MentionCombobox = ({
-  id = ELEMENT_MENTION,
-  trigger = COMBOBOX_TRIGGER_MENTION,
-  onSelectItem = onSelectMentionItem,
-  ...props
-}: Partial<ComboboxProps>) => {
-  const defaultProps: ComboboxProps = {
-    id,
-    trigger,
-    onSelectItem,
-    ...props,
-  };
+const id = ELEMENT_MENTION;
 
-  return <Combobox {...defaultProps} />;
+export const MentionCombobox = ({ items }: Pick<ComboboxProps, 'items'>) => {
+  const activeId = comboboxStore.use.activeId();
+
+  useEffect(() => {
+    comboboxStore.set.setComboboxById({
+      id,
+      trigger: COMBOBOX_TRIGGER_MENTION,
+      onSelectItem: onSelectMentionItem,
+    });
+  }, []);
+
+  if (activeId !== id) return null;
+
+  return <Combobox items={items} />;
 };
