@@ -1,5 +1,59 @@
 # @udecode/plate
 
+## 5.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a), [`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a)]:
+  - @udecode/plate-list@5.1.0
+  - @udecode/plate-common@5.1.0
+  - @udecode/plate-list-ui@5.1.0
+  - @udecode/plate-ast-serializer@5.1.0
+  - @udecode/plate-md-serializer@5.1.0
+  - @udecode/plate-autoformat@5.1.0
+  - @udecode/plate-break@5.1.0
+  - @udecode/plate-dnd@5.1.0
+  - @udecode/plate-alignment@5.1.0
+  - @udecode/plate-alignment-ui@5.1.0
+  - @udecode/plate-basic-elements@5.1.0
+  - @udecode/plate-block-quote@5.1.0
+  - @udecode/plate-block-quote-ui@5.1.0
+  - @udecode/plate-code-block@5.1.0
+  - @udecode/plate-code-block-ui@5.1.0
+  - @udecode/plate-heading@5.1.0
+  - @udecode/plate-horizontal-rule@5.1.0
+  - @udecode/plate-image@5.1.0
+  - @udecode/plate-image-ui@5.1.0
+  - @udecode/plate-link@5.1.0
+  - @udecode/plate-link-ui@5.1.0
+  - @udecode/plate-media-embed@5.1.0
+  - @udecode/plate-media-embed-ui@5.1.0
+  - @udecode/plate-mention@5.1.0
+  - @udecode/plate-mention-ui@5.1.0
+  - @udecode/plate-paragraph@5.1.0
+  - @udecode/plate-table@5.1.0
+  - @udecode/plate-table-ui@5.1.0
+  - @udecode/plate-find-replace@5.1.0
+  - @udecode/plate-find-replace-ui@5.1.0
+  - @udecode/plate-basic-marks@5.1.0
+  - @udecode/plate-font@5.1.0
+  - @udecode/plate-font-ui@5.1.0
+  - @udecode/plate-highlight@5.1.0
+  - @udecode/plate-kbd@5.1.0
+  - @udecode/plate-node-id@5.1.0
+  - @udecode/plate-normalizers@5.1.0
+  - @udecode/plate-placeholder@5.1.0
+  - @udecode/plate-reset-node@5.1.0
+  - @udecode/plate-select@5.1.0
+  - @udecode/plate-csv-serializer@5.1.0
+  - @udecode/plate-html-serializer@5.1.0
+  - @udecode/plate-serializer@5.1.0
+  - @udecode/plate-trailing-block@5.1.0
+  - @udecode/plate-combobox@5.1.0
+  - @udecode/plate-popper@5.1.0
+  - @udecode/plate-styled-components@5.1.0
+  - @udecode/plate-toolbar@5.1.0
+
 ## 5.0.1
 
 ### Patch Changes
