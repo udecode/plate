@@ -1,5 +1,14 @@
 # @udecode/plate-toolbar
 
+## 5.0.1
+
+### Patch Changes
+
+- [#1103](https://github.com/udecode/plate/pull/1103) [`53d13cbc`](https://github.com/udecode/plate/commit/53d13cbcfc7af26040cb86182a7ea0ba9ae5abec) Thanks [@zbeyens](https://github.com/zbeyens)! - fix infinite loop happening when selecting text with the balloon toolbar
+
+- Updated dependencies [[`53d13cbc`](https://github.com/udecode/plate/commit/53d13cbcfc7af26040cb86182a7ea0ba9ae5abec), [`53d13cbc`](https://github.com/udecode/plate/commit/53d13cbcfc7af26040cb86182a7ea0ba9ae5abec)]:
+  - @udecode/plate-popper@5.0.1
+
 ## 5.0.0
 
 ### Major Changes

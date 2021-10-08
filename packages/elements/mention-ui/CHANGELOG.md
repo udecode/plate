@@ -1,5 +1,13 @@
 # @udecode/plate-mention-ui
 
+## 5.0.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @udecode/plate-combobox@5.0.1
+  - @udecode/plate-mention@5.0.1
+
 ## 5.0.0
 
 ### Major Changes
