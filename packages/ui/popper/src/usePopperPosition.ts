@@ -88,6 +88,12 @@ export const usePopperPosition = ({
           offset,
         },
       },
+      {
+        name: 'computeStyles',
+        options: {
+          gpuAcceleration: false,
+        },
+      },
       // user modifiers to override the default
       ...modifiers,
     ],
@@ -95,8 +101,10 @@ export const usePopperPosition = ({
     ...popperOptions,
   });
 
-  const { update } = popperResult;
-  const styles = !isHidden
+  const { update, state } = popperResult;
+  const isReady = !isHidden && !!state;
+
+  const styles = isReady
     ? popperResult.styles
     : {
         ...popperResult.styles,
@@ -106,6 +114,8 @@ export const usePopperPosition = ({
   const updatePosition = useCallback((): any => {
     if (isHidden) return;
     if (!popperElement) return;
+
+    console.log('a');
 
     virtualReference.getBoundingClientRect = getBoundingClientRect;
     update?.();
