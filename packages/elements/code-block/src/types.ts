@@ -1,6 +1,11 @@
 import { InsertNodesOptions } from '@udecode/plate-common';
 import { PlatePluginOptions } from '@udecode/plate-core';
 
+export interface CodeBlockPluginOptions {
+  syntax?: boolean;
+  syntaxPopularFirst?: boolean;
+}
+
 export interface CodeBlockNodeData {
   lang?: string;
 }

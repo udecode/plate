@@ -1,5 +1,13 @@
 # @udecode/plate-common
 
+## 4.4.0
+
+### Minor Changes
+
+- [#1085](https://github.com/udecode/plate/pull/1085) [`b22c06aa`](https://github.com/udecode/plate/commit/b22c06aad1cfed08069dadc7ec39bcbfb1d0af37) Thanks [@ghingis](https://github.com/ghingis)! - `removeMark`:
+  - `key` can be an array (to remove multiple marks)
+  - `options` are extended so we can use other location than `editor.selection`
+
 ## 4.3.7
 
 ### Patch Changes

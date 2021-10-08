@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-paragraph",
-  "version": "4.3.7",
+  "version": "4.4.0",
   "description": "Paragraph plugin for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "4.3.7",
+    "@udecode/plate-common": "4.4.0",
     "@udecode/plate-core": "4.3.7"
   },
   "peerDependencies": {
