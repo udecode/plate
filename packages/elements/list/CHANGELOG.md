@@ -1,5 +1,17 @@
 # @udecode/plate-list
 
+## 5.1.0
+
+### Minor Changes
+
+- [#1105](https://github.com/udecode/plate/pull/1105) [`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a) Thanks [@aj-foster](https://github.com/aj-foster)! - Unwrap list item only if selection is at start of list item, not any block
+
+### Patch Changes
+
+- Updated dependencies [[`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a)]:
+  - @udecode/plate-common@5.1.0
+  - @udecode/plate-reset-node@5.1.0
+
 ## 4.4.0
 
 ### Patch Changes

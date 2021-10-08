@@ -1,5 +1,13 @@
 # @udecode/plate-link
 
+## 5.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a)]:
+  - @udecode/plate-common@5.1.0
+  - @udecode/plate-normalizers@5.1.0
+
 ## 4.4.0
 
 ### Patch Changes

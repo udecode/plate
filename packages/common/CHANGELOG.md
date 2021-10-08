@@ -1,5 +1,11 @@
 # @udecode/plate-common
 
+## 5.1.0
+
+### Patch Changes
+
+- [#1105](https://github.com/udecode/plate/pull/1105) [`503956fd`](https://github.com/udecode/plate/commit/503956fd9f71253249b3ad699b81c1c465351b0a) Thanks [@aj-foster](https://github.com/aj-foster)! - Allow options passed to isSelectionAtBlockStart
+
 ## 4.4.0
 
 ### Minor Changes
