@@ -28,7 +28,11 @@ export const getListDeleteBackward = (
   if (res) {
     const { list, listItem } = res;
 
-    if (isSelectionAtBlockStart(editor)) {
+    if (
+      isSelectionAtBlockStart(editor, {
+        match: (node) => node.type === ELEMENT_LI,
+      })
+    ) {
       Editor.withoutNormalizing(editor, () => {
         moved = removeFirstListItem(editor, { list, listItem });
         if (moved) return true;
