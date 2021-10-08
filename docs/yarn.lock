@@ -1113,6 +1113,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.14.8":
+  version "7.15.4"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.15.4.tgz#fd17d16bfdf878e6dd02d19753a39fa8a8d9c84a"
+  integrity sha512-99catp6bHCaxr4sJ/DbTGgHS4+Rs2RVd2g7iOap6SLGPDknRK9ztKNsE/Fg6QhSeh1FGE5f6gHGQmvvn3I3xhw==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/template@^7.12.7", "@babel/template@^7.14.5":
   version "7.14.5"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.14.5.tgz#a9bc9d8b33354ff6e55a9c60d1109200a68974f4"
@@ -1808,7 +1815,7 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@tippyjs/react@^4.2.0":
+"@tippyjs/react@4.2.5", "@tippyjs/react@^4.2.0":
   version "4.2.5"
   resolved "https://registry.yarnpkg.com/@tippyjs/react/-/react-4.2.5.tgz#9b5837db93a1cac953962404df906aef1a18e80d"
   integrity sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==
@@ -2005,417 +2012,416 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.5.tgz#fdd299f23205c3455af88ce618dd65c14cb73e22"
   integrity sha512-wnra4Vw9dopnuybR6HBywJ/URYpYrKLoepBTEtgfJup8Ahoi2zJECPP2cwiXp7btTvOT2CULv87aQRA4eZSP6g==
 
-"@udecode/plate-alignment-ui@3.5.1", "@udecode/plate-alignment-ui@file:../packages/elements/alignment-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-alignment" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-alignment-ui@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-alignment@3.4.0", "@udecode/plate-alignment@file:../packages/elements/alignment":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-alignment-ui@link:../packages/elements/alignment-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-ast-serializer@3.5.1", "@udecode/plate-ast-serializer@file:../packages/serializers/ast-serializer":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-block-quote" "3.4.0"
-    "@udecode/plate-code-block" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-heading" "3.4.0"
-    "@udecode/plate-link" "3.5.0"
-    "@udecode/plate-list" "3.5.1"
-    "@udecode/plate-paragraph" "3.4.0"
-    "@udecode/plate-serializer" "3.5.1"
-    remark-parse "^9.0.0"
-    remark-slate "^1.4.0"
-    unified "^9.2.0"
+"@udecode/plate-alignment@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-autoformat@3.4.0", "@udecode/plate-autoformat@file:../packages/autoformat":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-alignment@link:../packages/elements/alignment":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-basic-elements@3.4.0", "@udecode/plate-basic-elements@file:../packages/elements/basic-elements":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-block-quote" "3.4.0"
-    "@udecode/plate-code-block" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-heading" "3.4.0"
-    "@udecode/plate-paragraph" "3.4.0"
+"@udecode/plate-ast-serializer@4.3.5":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-basic-marks@3.4.0", "@udecode/plate-basic-marks@file:../packages/marks/basic-marks":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-ast-serializer@link:../packages/serializers/ast-serializer":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-block-quote-ui@3.5.1", "@udecode/plate-block-quote-ui@file:../packages/elements/block-quote-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-block-quote" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
+"@udecode/plate-autoformat@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-block-quote@3.4.0", "@udecode/plate-block-quote@file:../packages/elements/block-quote":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-autoformat@link:../packages/autoformat":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-break@3.4.0", "@udecode/plate-break@file:../packages/break":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-basic-elements@4.3.5":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-code-block-ui@3.5.1", "@udecode/plate-code-block-ui@file:../packages/elements/code-block-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-code-block" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-basic-elements@link:../packages/elements/basic-elements":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-code-block@3.4.0", "@udecode/plate-code-block@file:../packages/elements/code-block":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    prismjs "^1.23.0"
+"@udecode/plate-basic-marks@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-common@3.4.0", "@udecode/plate-common@file:../packages/common":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-core" "3.4.0"
-    is-hotkey "^0.1.6"
+"@udecode/plate-basic-marks@link:../packages/marks/basic-marks":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-core@3.4.0", "@udecode/plate-core@file:../packages/core":
-  version "3.4.0"
-  dependencies:
-    lodash "^4.17.21"
-    zustand "^3.4.2"
+"@udecode/plate-block-quote-ui@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-csv-serializer@3.5.1", "@udecode/plate-csv-serializer@file:../packages/serializers/csv-serializer":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-serializer" "3.5.1"
-    "@udecode/plate-table" "3.4.0"
-    papaparse "^5.3.1"
+"@udecode/plate-block-quote-ui@link:../packages/elements/block-quote-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-dnd@3.5.1", "@udecode/plate-dnd@file:../packages/dnd":
-  version "3.5.1"
-  dependencies:
-    "@react-hook/merged-ref" "^1.3.0"
-    "@tippyjs/react" "^4.2.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    react-dnd "^14.0.2"
-    react-dnd-html5-backend "^14.0.0"
+"@udecode/plate-block-quote@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-excalidraw@file:../packages/elements/excalidraw":
-  version "3.5.1"
-  dependencies:
-    "@excalidraw/excalidraw-next" "0.8.0-69b6fbb"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
+"@udecode/plate-block-quote@link:../packages/elements/block-quote":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-find-replace-ui@3.5.1", "@udecode/plate-find-replace-ui@file:../packages/find-replace-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-find-replace" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-break@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-find-replace@3.4.0", "@udecode/plate-find-replace@file:../packages/find-replace":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-break@link:../packages/break":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-font-ui@3.5.1", "@udecode/plate-font-ui@file:../packages/marks/font-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-font" "3.4.1"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-code-block-ui@4.3.5":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-font@3.4.1", "@udecode/plate-font@file:../packages/marks/font":
-  version "3.4.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-code-block-ui@link:../packages/elements/code-block-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-heading@3.4.0", "@udecode/plate-heading@file:../packages/elements/heading":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-code-block@4.3.5":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-highlight@3.4.0", "@udecode/plate-highlight@file:../packages/marks/highlight":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-code-block@link:../packages/elements/code-block":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-html-serializer@3.5.1", "@udecode/plate-html-serializer@file:../packages/serializers/html-serializer":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-serializer" "3.5.1"
+"@udecode/plate-combobox@4.3.5":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-image-ui@3.5.1", "@udecode/plate-image-ui@file:../packages/elements/image-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-image" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
-    re-resizable "^6.9.0"
-    react-textarea-autosize "^8.3.3"
+"@udecode/plate-combobox@link:../packages/ui/combobox":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-image@3.4.0", "@udecode/plate-image@file:../packages/elements/image":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-common@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-kbd@3.4.0", "@udecode/plate-kbd@file:../packages/marks/kbd":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-common@link:../packages/common":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-link-ui@3.5.1", "@udecode/plate-link-ui@file:../packages/elements/link-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-link" "3.5.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-core@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-link@3.5.0", "@udecode/plate-link@file:../packages/elements/link":
-  version "3.5.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-normalizers" "3.4.0"
+"@udecode/plate-core@link:../packages/core":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-list-ui@3.5.1", "@udecode/plate-list-ui@file:../packages/elements/list-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-list" "3.5.1"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-csv-serializer@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-list@3.5.1", "@udecode/plate-list@file:../packages/elements/list":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-reset-node" "3.4.0"
+"@udecode/plate-csv-serializer@link:../packages/serializers/csv-serializer":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-md-serializer@3.5.1", "@udecode/plate-md-serializer@file:../packages/serializers/md-serializer":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-block-quote" "3.4.0"
-    "@udecode/plate-code-block" "3.4.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-heading" "3.4.0"
-    "@udecode/plate-link" "3.5.0"
-    "@udecode/plate-list" "3.5.1"
-    "@udecode/plate-paragraph" "3.4.0"
-    "@udecode/plate-serializer" "3.5.1"
-    remark-parse "^9.0.0"
-    remark-slate "^1.4.0"
-    unified "^9.2.0"
+"@udecode/plate-dnd@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-media-embed-ui@3.5.1", "@udecode/plate-media-embed-ui@file:../packages/elements/media-embed-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-media-embed" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
+"@udecode/plate-dnd@link:../packages/dnd":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-media-embed@3.4.0", "@udecode/plate-media-embed@file:../packages/elements/media-embed":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-excalidraw@link:../packages/elements/excalidraw":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-mention-ui@3.5.1", "@udecode/plate-mention-ui@file:../packages/elements/mention-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-mention" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
+"@udecode/plate-find-replace-ui@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-mention@3.4.0", "@udecode/plate-mention@file:../packages/elements/mention":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-find-replace-ui@link:../packages/find-replace-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-node-id@3.4.0", "@udecode/plate-node-id@file:../packages/node-id":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-find-replace@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-normalizers@3.4.0", "@udecode/plate-normalizers@file:../packages/normalizers":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-find-replace@link:../packages/find-replace":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-paragraph@3.4.0", "@udecode/plate-paragraph@file:../packages/elements/paragraph":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-font-ui@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-placeholder@3.5.1", "@udecode/plate-placeholder@file:../packages/placeholder":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
+"@udecode/plate-font-ui@link:../packages/marks/font-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-reset-node@3.4.0", "@udecode/plate-reset-node@file:../packages/reset-node":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-font@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-select@3.4.0", "@udecode/plate-select@file:../packages/select":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-font@link:../packages/marks/font":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-serializer@3.5.1", "@udecode/plate-serializer@file:../packages/serializers/serializer":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-heading@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-styled-components@3.5.1", "@udecode/plate-styled-components@file:../packages/ui/styled-components":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    clsx "^1.1.1"
+"@udecode/plate-heading@link:../packages/elements/heading":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-table-ui@3.5.1", "@udecode/plate-table-ui@file:../packages/elements/table-ui":
-  version "3.5.1"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-table" "3.4.0"
-    "@udecode/plate-toolbar" "3.5.1"
+"@udecode/plate-highlight@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-table@3.4.0", "@udecode/plate-table@file:../packages/elements/table":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-highlight@link:../packages/marks/highlight":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-test-utils@file:../packages/test-utils":
-  version "3.2.0"
+"@udecode/plate-horizontal-rule-ui@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-toolbar@3.5.1", "@udecode/plate-toolbar@file:../packages/ui/toolbar":
-  version "3.5.1"
-  dependencies:
-    "@popperjs/core" "^2.8.3"
-    "@tippyjs/react" "^4.2.0"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-styled-components" "3.5.1"
-    react-popper "^2.2.4"
-    react-use "^17.1.1"
+"@udecode/plate-horizontal-rule-ui@link:../packages/elements/horizontal-rule-ui":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate-trailing-block@3.4.0", "@udecode/plate-trailing-block@file:../packages/trailing-block":
-  version "3.4.0"
-  dependencies:
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
+"@udecode/plate-horizontal-rule@4.3.0":
+  version "0.0.0"
+  uid ""
 
-"@udecode/plate@file:../packages/plate":
-  version "3.5.1"
+"@udecode/plate-horizontal-rule@link:../packages/elements/horizontal-rule":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-html-serializer@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-html-serializer@link:../packages/serializers/html-serializer":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-image-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-image-ui@link:../packages/elements/image-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-image@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-image@link:../packages/elements/image":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-kbd@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-kbd@link:../packages/marks/kbd":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-link-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-link-ui@link:../packages/elements/link-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-link@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-link@link:../packages/elements/link":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-list-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-list-ui@link:../packages/elements/list-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-list@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-list@link:../packages/elements/list":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-md-serializer@4.3.5":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-md-serializer@link:../packages/serializers/md-serializer":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-media-embed-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-media-embed-ui@link:../packages/elements/media-embed-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-media-embed@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-media-embed@link:../packages/elements/media-embed":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-mention-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-mention-ui@link:../packages/elements/mention-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-mention@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-mention@link:../packages/elements/mention":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-node-id@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-node-id@link:../packages/node-id":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-normalizers@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-normalizers@link:../packages/normalizers":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-paragraph@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-paragraph@link:../packages/elements/paragraph":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-placeholder@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-placeholder@link:../packages/placeholder":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-reset-node@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-reset-node@link:../packages/reset-node":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-select@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-select@link:../packages/select":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-serializer@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-serializer@link:../packages/serializers/serializer":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-styled-components@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-styled-components@link:../packages/ui/styled-components":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-table-ui@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-table-ui@link:../packages/elements/table-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-table@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-table@link:../packages/elements/table":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-test-utils@link:../packages/test-utils":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-toolbar@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-toolbar@link:../packages/ui/toolbar":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-trailing-block@4.3.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-trailing-block@link:../packages/trailing-block":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate@link:../packages/plate":
+  version "0.0.0"
+  uid ""
+
+"@udecode/zustood@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.3.0.tgz#ad41e45aa9af065da2fe6e073b754d1065b9937c"
+  integrity sha512-MG9CZPlQUmWd6sseAx2uF2PJLusyaejTg2fm3feuYd72ujYZetUH+t6Wszhj5eVzMFR04qvWyMUCZwEXig2bfg==
   dependencies:
-    "@udecode/plate-alignment" "3.4.0"
-    "@udecode/plate-alignment-ui" "3.5.1"
-    "@udecode/plate-ast-serializer" "3.5.1"
-    "@udecode/plate-autoformat" "3.4.0"
-    "@udecode/plate-basic-elements" "3.4.0"
-    "@udecode/plate-basic-marks" "3.4.0"
-    "@udecode/plate-block-quote" "3.4.0"
-    "@udecode/plate-block-quote-ui" "3.5.1"
-    "@udecode/plate-break" "3.4.0"
-    "@udecode/plate-code-block" "3.4.0"
-    "@udecode/plate-code-block-ui" "3.5.1"
-    "@udecode/plate-common" "3.4.0"
-    "@udecode/plate-core" "3.4.0"
-    "@udecode/plate-csv-serializer" "3.5.1"
-    "@udecode/plate-dnd" "3.5.1"
-    "@udecode/plate-find-replace" "3.4.0"
-    "@udecode/plate-find-replace-ui" "3.5.1"
-    "@udecode/plate-font" "3.4.1"
-    "@udecode/plate-font-ui" "3.5.1"
-    "@udecode/plate-heading" "3.4.0"
-    "@udecode/plate-highlight" "3.4.0"
-    "@udecode/plate-html-serializer" "3.5.1"
-    "@udecode/plate-image" "3.4.0"
-    "@udecode/plate-image-ui" "3.5.1"
-    "@udecode/plate-kbd" "3.4.0"
-    "@udecode/plate-link" "3.5.0"
-    "@udecode/plate-link-ui" "3.5.1"
-    "@udecode/plate-list" "3.5.1"
-    "@udecode/plate-list-ui" "3.5.1"
-    "@udecode/plate-md-serializer" "3.5.1"
-    "@udecode/plate-media-embed" "3.4.0"
-    "@udecode/plate-media-embed-ui" "3.5.1"
-    "@udecode/plate-mention" "3.4.0"
-    "@udecode/plate-mention-ui" "3.5.1"
-    "@udecode/plate-node-id" "3.4.0"
-    "@udecode/plate-normalizers" "3.4.0"
-    "@udecode/plate-paragraph" "3.4.0"
-    "@udecode/plate-placeholder" "3.5.1"
-    "@udecode/plate-reset-node" "3.4.0"
-    "@udecode/plate-select" "3.4.0"
-    "@udecode/plate-serializer" "3.5.1"
-    "@udecode/plate-styled-components" "3.5.1"
-    "@udecode/plate-table" "3.4.0"
-    "@udecode/plate-table-ui" "3.5.1"
-    "@udecode/plate-toolbar" "3.5.1"
-    "@udecode/plate-trailing-block" "3.4.0"
+    immer "9.0.6"
 
 "@webassemblyjs/ast@1.11.0":
   version "1.11.0"
@@ -4431,6 +4437,17 @@ dot-prop@^5.2.0:
   dependencies:
     is-obj "^2.0.0"
 
+downshift@6.1.7:
+  version "6.1.7"
+  resolved "https://registry.yarnpkg.com/downshift/-/downshift-6.1.7.tgz#fdb4c4e4f1d11587985cd76e21e8b4b3fa72e44c"
+  integrity sha512-cVprZg/9Lvj/uhYRxELzlu1aezRcgPWBjTvspiGTVEU64gF5pRdSRKFVLcxqsZC637cLAGMbL40JavEfWnqgNg==
+  dependencies:
+    "@babel/runtime" "^7.14.8"
+    compute-scroll-into-view "^1.0.17"
+    prop-types "^15.7.2"
+    react-is "^17.0.2"
+    tslib "^2.3.0"
+
 downshift@^6.1.3:
   version "6.1.3"
   resolved "https://registry.yarnpkg.com/downshift/-/downshift-6.1.3.tgz#e794b7805d24810968f21e81ad6bdd9f3fdc40da"
@@ -5781,6 +5798,11 @@ immer@8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.1.tgz#9c73db683e2b3975c424fb0572af5889877ae656"
   integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
+
+immer@9.0.6:
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.6.tgz#7a96bf2674d06c8143e327cbf73539388ddf1a73"
+  integrity sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==
 
 import-cwd@^3.0.0:
   version "3.0.0"
@@ -8156,6 +8178,11 @@ prismjs@^1.23.0:
   resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.24.1.tgz#c4d7895c4d6500289482fa8936d9cdd192684036"
   integrity sha512-mNPsedLuk90RVJioIky8ANZEwYm5w9LcvCXrxHlwf4fNVSn8jEipMybMkWUyyF0JhnC+C4VcOVSBuHRKs1L5Ow==
 
+prismjs@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.25.0.tgz#6f822df1bdad965734b310b315a23315cf999756"
+  integrity sha512-WCjJHl1KEWbnkQom1+SzftbtXMKQoezOCYs5rECqMN+jP+apI7ftoflyqigqzopSO3hMhTEb0mFClA8lkolgEg==
+
 process-nextick-args@~2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
@@ -10170,6 +10197,11 @@ tslib@^2.0.3, tslib@^2.1.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.0.tgz#803b8cdab3e12ba581a4ca41c8839bbb0dacb09e"
   integrity sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==
 
+tslib@^2.3.0:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
+  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
+
 tunnel-agent@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/tunnel-agent/-/tunnel-agent-0.6.0.tgz#27a5dea06b36b04a0a9966774b290868f0fc40fd"
@@ -10990,6 +11022,11 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zustand@3.5.11:
+  version "3.5.11"
+  resolved "https://registry.yarnpkg.com/zustand/-/zustand-3.5.11.tgz#3a8fd24f7a63d02a6532ab230accc2108051d635"
+  integrity sha512-V3Ys0ik2flOnWr0h9D4ZTCdcpK4feg71vLWaxjw+D+PLxM0+6KITdLedgDa97yAS6YDQTBD0Gw+NbsdAiMCqfA==
 
 zustand@^3.4.2:
   version "3.5.5"

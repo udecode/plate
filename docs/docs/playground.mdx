@@ -15,9 +15,6 @@ See [Installation](/docs/installation)
 () => {
   let styledComponents = createPlateComponents({
     ...components,
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
@@ -41,9 +38,6 @@ See [Installation](/docs/installation)
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
-    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-      optionsMentionPlugin
-    );
 
     const pluginsMemo = useMemo(() => {
       const plugins = [
@@ -84,7 +78,8 @@ See [Installation](/docs/installation)
         }),
         createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
         createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE, ELEMENT_HR] }),
-        mentionPlugin,
+        createComboboxPlugin(),
+        createMentionPlugin(),
         searchHighlightPlugin,
       ];
 
@@ -98,7 +93,7 @@ See [Installation](/docs/installation)
       );
 
       return plugins;
-    }, [mentionPlugin, options, searchHighlightPlugin]);
+    }, [options, searchHighlightPlugin]);
 
     return (
       <Plate
@@ -130,10 +125,7 @@ See [Installation](/docs/installation)
 
         <BallonToolbarMarks />
 
-        <MentionSelect
-          {...getMentionSelectProps()}
-          renderLabel={renderMentionLabel}
-        />
+        <MentionCombobox items={MENTIONABLES} />
       </Plate>
     );
   }

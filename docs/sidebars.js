@@ -46,6 +46,7 @@ module.exports = {
             'plugins/link',
             'plugins/list',
             'plugins/media-embed',
+            'plugins/combobox',
             'plugins/mention',
             'plugins/table',
           ],
@@ -111,7 +112,6 @@ module.exports = {
       label: 'Examples',
       items: [
         'examples/introduction',
-        'examples/combobox',
         'examples/editable-voids',
         'examples/huge-document',
         'examples/iframe',

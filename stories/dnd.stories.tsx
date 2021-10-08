@@ -8,28 +8,24 @@ import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { withProps } from '@udecode/plate-common';
 import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
 import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
 import { createImagePlugin, ELEMENT_IMAGE } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { MentionElement } from '@udecode/plate-mention-ui';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
-import { optionsAutoformat } from '../docs/src/live/config/autoformat';
 import { initialValuePlayground } from '../docs/src/live/config/initialValues';
+import { MENTIONABLES } from '../docs/src/live/config/mentionables';
 import {
   editableProps,
+  optionsAutoformat,
   optionsExitBreakPlugin,
-  optionsMentionPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../docs/src/live/config/pluginOptions';
-import { renderMentionLabel } from '../docs/src/live/config/renderMentionLabel';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -51,8 +47,8 @@ import { ToolbarLink } from '../packages/elements/link-ui/src/ToolbarLink/Toolba
 import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
-import { useMentionPlugin } from '../packages/elements/mention/src/useMentionPlugin';
-import { MentionSelect } from '../packages/elements/mention-ui/src/MentionSelect/MentionSelect';
+import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
+import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../packages/find-replace/src/useFindReplacePlugin';
 import { ToolbarSearchHighlight } from '../packages/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
@@ -79,11 +75,7 @@ export default {
 } as Meta;
 
 export const Example = () => {
-  let styledComponents = createPlateComponents({
-    [ELEMENT_MENTION]: withProps(MentionElement, {
-      renderLabel: renderMentionLabel,
-    }),
-  });
+  let styledComponents = createPlateComponents();
   styledComponents = withStyledPlaceHolders(styledComponents);
   styledComponents = withStyledDraggables(styledComponents);
 
@@ -91,9 +83,6 @@ export const Example = () => {
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
-    const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-      optionsMentionPlugin
-    );
 
     const pluginsMemo = useMemo(() => {
       const plugins = [
@@ -129,7 +118,7 @@ export const Example = () => {
         }),
         createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
         createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
-        mentionPlugin,
+        createMentionPlugin(),
         searchHighlightPlugin,
         createDndPlugin(),
       ];
@@ -137,7 +126,7 @@ export const Example = () => {
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
       return plugins;
-    }, [mentionPlugin, searchHighlightPlugin]);
+    }, [searchHighlightPlugin]);
 
     return (
       <Plate
@@ -161,10 +150,7 @@ export const Example = () => {
 
         <BallonToolbarMarks />
 
-        <MentionSelect
-          {...getMentionSelectProps()}
-          renderLabel={renderMentionLabel}
-        />
+        <MentionCombobox items={MENTIONABLES} />
       </Plate>
     );
   };

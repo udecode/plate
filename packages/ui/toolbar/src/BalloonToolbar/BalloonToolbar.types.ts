@@ -1,21 +1,12 @@
 import { ReactNode } from 'react';
-import { Modifier } from '@popperjs/core';
-import * as PopperJS from '@popperjs/core';
-import { TEditor } from '@udecode/plate-core';
+import { UsePopperPositionOptions } from '@udecode/plate-popper';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { ToolbarProps } from '../Toolbar/Toolbar.types';
 
-export interface BalloonToolbarStyleProps extends BalloonToolbarProps {
-  hidden?: boolean;
-}
+export interface BalloonToolbarStyleProps extends BalloonToolbarProps {}
 
 export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
   children: ReactNode;
-
-  /**
-   * Below of above the selection.
-   */
-  direction?: UsePopupPositionProps['placement'];
 
   /**
    * Color theme for the background/foreground.
@@ -29,37 +20,5 @@ export interface BalloonToolbarProps extends StyledProps<ToolbarProps> {
 
   portalElement?: Element;
 
-  /**
-   * Parent scroll container element of the editor,
-   * if no scroll container provided, it will take document.documentElement as scrolling container
-   */
-  scrollContainer?: HTMLElement;
-}
-
-export interface UsePopupPositionProps {
-  editor: TEditor;
-  popupElem: HTMLElement | null;
-  scrollContainer?: HTMLElement | null;
-  modifiers?: Array<Partial<Modifier<string, any>>>;
-  placement?: PopperJS.Placement;
-}
-
-export type UsePopupPositionReturnType = [
-  { [key: string]: React.CSSProperties },
-  {
-    [key: string]:
-      | {
-          [key: string]: string;
-        }
-      | undefined;
-  },
-  boolean
-];
-
-export interface UsePopupPosition {
-  ({
-    editor,
-    popupElem,
-    scrollContainer,
-  }: UsePopupPositionProps): UsePopupPositionReturnType;
+  popperOptions?: Partial<UsePopperPositionOptions>;
 }

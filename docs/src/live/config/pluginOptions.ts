@@ -9,26 +9,13 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
-  MentionNodeData,
   ResetBlockTypePluginOptions,
   SoftBreakPluginOptions,
   WithAutoformatOptions,
 } from '@udecode/plate';
 import { autoformatRules } from './autoformat/autoformatRules';
-import { MENTIONABLES } from './mentionables';
 
 export const options = createPlateOptions();
-
-export const optionsMentionPlugin = {
-  mentionables: MENTIONABLES,
-  maxSuggestions: 10,
-  insertSpaceAfterMention: false,
-  trigger: '@',
-  mentionableFilter: (s: string) => (mentionable: MentionNodeData) =>
-    mentionable.email.toLowerCase().includes(s.toLowerCase()) ||
-    mentionable.name.toLowerCase().includes(s.toLowerCase()),
-  mentionableSearchPattern: '\\S*',
-};
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],

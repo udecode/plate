@@ -28,9 +28,6 @@ npm install @udecode/plate-dnd
 <!-- ```ts live-->
 <!-- () => { -->
 <!--   let styledComponents = createPlateComponents({ -->
-<!--     [ELEMENT_MENTION]: withProps(MentionElement, { -->
-<!--       renderLabel: renderMentionLabel, -->
-<!--     }), -->
 <!--   }); -->
 <!--   styledComponents = withStyledPlaceHolders(styledComponents); -->
 <!--   styledComponents = withStyledDraggables(styledComponents); -->
@@ -39,9 +36,6 @@ npm install @udecode/plate-dnd
 
 <!--   const Editor = () => { -->
 <!--     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin(); -->
-<!--     const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin( -->
-<!--       optionsMentionPlugin -->
-<!--     ); -->
 
 <!--     const pluginsMemo = useMemo(() => { -->
 <!--       const plugins = [ -->
@@ -108,10 +102,6 @@ npm install @udecode/plate-dnd
 
 <!--         <BallonToolbarMarks /> -->
 
-<!--         <MentionSelect -->
-<!--           {...getMentionSelectProps()} -->
-<!--           renderLabel={renderMentionLabel} -->
-<!--         /> -->
 <!--       </Plate> -->
 <!--     ); -->
 <!--   } -->

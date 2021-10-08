@@ -14,11 +14,9 @@ import {
   editableProps,
   optionsAutoformat,
   optionsExitBreakPlugin,
-  optionsMentionPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from '../../../../docs/src/live/config/pluginOptions';
-import { renderMentionLabel } from '../../../../docs/src/live/config/renderMentionLabel';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -43,8 +41,8 @@ import { ToolbarLink } from '../../../elements/link-ui/src/ToolbarLink/ToolbarLi
 import { createListPlugin } from '../../../elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { useMentionPlugin } from '../../../elements/mention/src/useMentionPlugin';
-import { MentionSelect } from '../../../elements/mention-ui/src/MentionSelect/MentionSelect';
+import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
+import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../../../find-replace/src/useFindReplacePlugin';
@@ -66,9 +64,6 @@ const options = createPlateOptions();
 
 const PlateContainer = () => {
   const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
-  const { getMentionSelectProps, plugin: mentionPlugin } = useMentionPlugin(
-    optionsMentionPlugin
-  );
 
   const plugins: PlatePlugin<SPEditor & ReactEditor>[] = [
     createReactPlugin(),
@@ -86,7 +81,7 @@ const PlateContainer = () => {
     createMediaEmbedPlugin(),
     createAlignPlugin(),
     createHighlightPlugin(),
-    mentionPlugin,
+    createMentionPlugin(),
     findReplacePlugin,
     createNodeIdPlugin(),
     createAutoformatPlugin(optionsAutoformat),
@@ -122,10 +117,7 @@ const PlateContainer = () => {
 
       <BallonToolbarMarks />
 
-      <MentionSelect
-        {...getMentionSelectProps()}
-        renderLabel={renderMentionLabel}
-      />
+      <MentionCombobox />
     </Plate>
   );
 };

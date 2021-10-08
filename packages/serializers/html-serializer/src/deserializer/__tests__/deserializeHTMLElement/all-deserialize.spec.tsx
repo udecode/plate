@@ -18,8 +18,8 @@ import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/tod
 import { createTodoListPlugin } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
+import { createMentionPlugin } from '../../../../../../elements/mention/src/createMentionPlugin';
 import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
-import { useMentionPlugin } from '../../../../../../elements/mention/src/useMentionPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../../../../../../find-replace/src/useFindReplacePlugin';
@@ -148,7 +148,7 @@ it('should be', () => {
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
-    useMentionPlugin().plugin,
+    createMentionPlugin(),
     createParagraphPlugin(),
     createCodeBlockPlugin(),
     createTablePlugin(),

@@ -31,7 +31,7 @@ export const CodeBlockSelectElement = ({
         onChange(e.target.value);
         setValue(e.target.value);
       }}
-      contentEditable="false"
+      contentEditable={false}
       {...props}
     >
       <option value="">Plain text</option>

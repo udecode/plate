@@ -38,8 +38,6 @@ Use `serializeHTMLFromNodes`:
 
 ```ts live
 () => {
-  const { plugin: mentionPlugin } = useMentionPlugin();
-
   const plugins = useMemo(() => {
     const _plugins = [
       ...pluginsBasic,
@@ -52,13 +50,13 @@ Use `serializeHTMLFromNodes`:
       createExcalidrawPlugin(),
       createHighlightPlugin(),
       createSoftBreakPlugin(optionsSoftBreakPlugin),
-      mentionPlugin,
+      createMentionPlugin(),
     ];
 
     _plugins.push(createDeserializeHTMLPlugin({ plugins: _plugins }));
 
     return _plugins;
-  }, [mentionPlugin]);
+  }, []);
 
   return (
     <Plate
