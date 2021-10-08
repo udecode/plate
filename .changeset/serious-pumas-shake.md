@@ -2,4 +2,4 @@
 '@udecode/plate-popper': patch
 ---
 
-hide the combobox when not yet placed at the expected position
+hide the popper when not yet placed at the expected position
