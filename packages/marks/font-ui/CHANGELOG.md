@@ -1,5 +1,12 @@
 # @udecode/plate-font-ui
 
+## 5.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8)]:
+  - @udecode/plate-toolbar@5.0.0
+
 ## 4.4.0
 
 ### Patch Changes

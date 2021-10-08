@@ -1,5 +1,30 @@
 # @udecode/plate
 
+## 5.0.0
+
+### Minor Changes
+
+- [#1086](https://github.com/udecode/plate/pull/1086) [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8) Thanks [@zbeyens](https://github.com/zbeyens)! - new exports:
+  - `@udecode/plate-combobox`
+  - `@udecode/plate-popper`
+
+### Patch Changes
+
+- Updated dependencies [[`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8)]:
+  - @udecode/plate-code-block-ui@5.0.0
+  - @udecode/plate-combobox@5.0.0
+  - @udecode/plate-popper@5.0.0
+  - @udecode/plate-mention@5.0.0
+  - @udecode/plate-mention-ui@5.0.0
+  - @udecode/plate-toolbar@5.0.0
+  - @udecode/plate-alignment-ui@5.0.0
+  - @udecode/plate-image-ui@5.0.0
+  - @udecode/plate-link-ui@5.0.0
+  - @udecode/plate-list-ui@5.0.0
+  - @udecode/plate-table-ui@5.0.0
+  - @udecode/plate-find-replace-ui@5.0.0
+  - @udecode/plate-font-ui@5.0.0
+
 ## 4.4.0
 
 ### Patch Changes
