@@ -145,7 +145,7 @@ export const Combobox = (props: ComboboxProps) => {
   const focusedEditorId = useEventEditorId('focus');
 
   const combobox = useComboboxControls();
- 
+
   useEffect(() => {
     comboboxStore.set.setComboboxById(comboboxProps);
   }, [comboboxProps]);
