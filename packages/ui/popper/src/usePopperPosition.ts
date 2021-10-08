@@ -115,8 +115,6 @@ export const usePopperPosition = ({
     if (isHidden) return;
     if (!popperElement) return;
 
-    console.log('a');
-
     virtualReference.getBoundingClientRect = getBoundingClientRect;
     update?.();
   }, [getBoundingClientRect, isHidden, popperElement, update]);
