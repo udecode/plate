@@ -1,5 +1,55 @@
 # @udecode/plate-mention
 
+## 5.0.0
+
+### Major Changes
+
+- [#1086](https://github.com/udecode/plate/pull/1086) [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8) Thanks [@zbeyens](https://github.com/zbeyens)! - The mention plugin is now using the combobox.
+  - removed `useMentionPlugin` in favor of `createMentionPlugin`
+    - migration: replace `useMentionPlugin().plugin` by `createMentionPlugin()`
+  - removed options:
+    - `mentionableSearchPattern`
+    - `insertSpaceAfterMention`
+    - `maxSuggestions`: moved to `comboboxStore`
+    - `trigger`: moved to `comboboxStore`
+    - `mentionables`: moved to `items` in `comboboxStore`
+    - `mentionableFilter`: moved to `filter` in `comboboxStore`
+  - removed `matchesTriggerAndPattern` in favor of `getTextFromTrigger`
+  - removed `MentionNodeData` in favor of `ComboboxItemData`
+  ```ts
+  export interface ComboboxItemData {
+    /**
+     * Unique key.
+     */
+    key: string;
+    /**
+     * Item text.
+     */
+    text: any;
+    /**
+     * Whether the item is disabled.
+     * @default false
+     */
+    disabled?: boolean;
+    /**
+     * Data available to `onRenderItem`.
+     */
+    data?: unknown;
+  }
+  ```
+
+### Minor Changes
+
+- [#1086](https://github.com/udecode/plate/pull/1086) [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
+  - dependency: `"@udecode/plate-combobox": "4.4.0"`
+  - defaults: `COMBOBOX_TRIGGER_MENTION = '@'`
+  - `getMentionOnSelectItem`
+
+### Patch Changes
+
+- Updated dependencies [[`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8)]:
+  - @udecode/plate-combobox@5.0.0
+
 ## 4.4.0
 
 ### Patch Changes

@@ -1,5 +1,27 @@
 # @udecode/plate-mention-ui
 
+## 5.0.0
+
+### Major Changes
+
+- [#1086](https://github.com/udecode/plate/pull/1086) [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8) Thanks [@zbeyens](https://github.com/zbeyens)! - changes:
+  - removed `MentionSelect` in favor of `MentionCombobox`
+
+### Minor Changes
+
+- [#1086](https://github.com/udecode/plate/pull/1086) [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
+  - new dependency: `"@udecode/plate-combobox": "4.4.0"`
+  - new component: `MentionCombobox` – default props:
+    - `trigger: '@'`
+    - `id: ELEMENT_MENTION`
+    - `onSelectItem: onSelectMentionItem`
+
+### Patch Changes
+
+- Updated dependencies [[`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8), [`9a091446`](https://github.com/udecode/plate/commit/9a091446ae393c23f64f0b011e431fb2d002aaf8)]:
+  - @udecode/plate-combobox@5.0.0
+  - @udecode/plate-mention@5.0.0
+
 ## 4.4.0
 
 ### Patch Changes
