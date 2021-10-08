@@ -13,15 +13,14 @@ import {
   useActiveComboboxStore,
 } from '../combobox.store';
 import { useComboboxControls } from '../hooks/useComboboxControls';
-import { ComboboxItem, ComboboxRoot } from './Combobox.styles';
+import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
-const ComboboxContent = ({
-  id,
-  component: Component,
-  items,
-  onRenderItem,
-}: Pick<ComboboxProps, 'id' | 'component' | 'onRenderItem' | 'items'>) => {
+const ComboboxContent = (props: ComboboxProps) => {
+  const { comboboxProps, component: Component, items, onRenderItem } = props;
+
+  const { id } = comboboxProps;
+
   const targetRange = comboboxStore.use.targetRange();
   const filteredItems = comboboxStore.use.filteredItems();
   const highlightedIndex = comboboxStore.use.highlightedIndex();
@@ -84,12 +83,18 @@ const ComboboxContent = ({
     ? combobox.getMenuProps({}, { suppressRefError: true })
     : { ref: null };
 
+  const { root, item: styleItem, highlightedItem } = getComboboxStyles(
+    props as any
+  );
+
   return (
     <PortalBody>
-      <ComboboxRoot
+      <ul
         {...menuProps}
         ref={popperRef}
-        style={{ ...popperStyles.popper, maxHeight: 288, overflow: 'scroll' }}
+        style={popperStyles.popper}
+        css={root.css}
+        className={root.className}
         {...attributes.popper}
       >
         {Component ? Component({ store: activeComboboxStore }) : null}
@@ -97,10 +102,15 @@ const ComboboxContent = ({
         {filteredItems.map((item, index) => {
           const Item = onRenderItem ? onRenderItem({ item }) : item.text;
 
+          const highlighted = index === highlightedIndex;
+
           return (
-            <ComboboxItem
+            <div
               key={item.key}
-              highlighted={index === highlightedIndex}
+              css={!highlighted ? styleItem?.css : highlightedItem?.css}
+              className={
+                !highlighted ? styleItem?.className : highlightedItem?.css
+              }
               {...combobox.getItemProps({
                 item,
                 index,
@@ -115,10 +125,10 @@ const ComboboxContent = ({
               }}
             >
               {Item}
-            </ComboboxItem>
+            </div>
           );
         })}
-      </ComboboxRoot>
+      </ul>
     </PortalBody>
   );
 };
@@ -128,13 +138,14 @@ const ComboboxContent = ({
  * Renders the combobox if active.
  */
 export const Combobox = (props: ComboboxProps) => {
-  const { component, onRenderItem, items, ...comboboxProps } = props;
+  const { comboboxProps } = props;
+
   const activeId = comboboxStore.use.activeId();
   const editor = useEditorState();
   const focusedEditorId = useEventEditorId('focus');
 
   const combobox = useComboboxControls();
-
+ 
   useEffect(() => {
     comboboxStore.set.setComboboxById(comboboxProps);
   }, [comboboxProps]);
@@ -148,12 +159,5 @@ export const Combobox = (props: ComboboxProps) => {
     return null;
   }
 
-  return (
-    <ComboboxContent
-      id={comboboxProps.id}
-      items={items}
-      component={component}
-      onRenderItem={onRenderItem}
-    />
-  );
+  return <ComboboxContent {...props} />;
 };
