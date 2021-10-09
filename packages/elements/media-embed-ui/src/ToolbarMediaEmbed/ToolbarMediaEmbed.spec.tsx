@@ -2,13 +2,11 @@ import * as React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
-import { createImagePlugin } from '@udecode/plate-image';
+import { createMediaEmbedPlugin } from '@udecode/plate-media-embed';
 import { Plate } from '../../../../core/src/components/Plate';
 import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
 import { ToolbarMediaEmbed } from './ToolbarMediaEmbed';
 import { input1, input2, output2 } from './ToolbarMediaEmbed.fixtures';
-
-const plugins = [createImagePlugin()];
 
 describe('ToolbarMediaEmbed', () => {
   describe('when with url', () => {
@@ -45,7 +43,7 @@ describe('ToolbarMediaEmbed', () => {
       const { getByTestId } = render(
         <Plate
           initialValue={input2.children}
-          plugins={[createImagePlugin()]}
+          plugins={[createMediaEmbedPlugin()]}
           options={createPlateOptions()}
         >
           <ToolbarMediaEmbed type={ELEMENT_H1} icon={null} />
