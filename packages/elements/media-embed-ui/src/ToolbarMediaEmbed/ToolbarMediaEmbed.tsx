@@ -5,7 +5,7 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarMediaEmbedProps extends ToolbarButtonProps {
   /**
-   * Default onMouseDown is getting the embed url by calling this promise before inserting the image.
+   * Default onMouseDown is getting the embed url by calling this promise before inserting the embed.
    */
   getEmbedUrl?: () => Promise<string>;
 }
