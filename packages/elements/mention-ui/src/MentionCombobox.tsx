@@ -16,6 +16,8 @@ const id = ELEMENT_MENTION;
 
 export const MentionCombobox = ({
   items,
+  component,
+  onRenderItem,
 }: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'>) => {
   const activeId = comboboxStore.use.activeId();
 
@@ -29,5 +31,7 @@ export const MentionCombobox = ({
 
   if (activeId !== id) return null;
 
-  return <Combobox items={items} />;
+  return (
+    <Combobox items={items} component={component} onRenderItem={onRenderItem} />
+  );
 };
