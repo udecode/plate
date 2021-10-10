@@ -14,7 +14,9 @@ const onSelectMentionItem = getMentionOnSelectItem();
 
 const id = ELEMENT_MENTION;
 
-export const MentionCombobox = ({ items }: Pick<ComboboxProps, 'items'>) => {
+export const MentionCombobox = ({
+  items,
+}: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'>) => {
   const activeId = comboboxStore.use.activeId();
 
   useEffect(() => {
