@@ -12,22 +12,25 @@ import {
 
 const onSelectMentionItem = getMentionOnSelectItem();
 
-const id = ELEMENT_MENTION;
-
 export const MentionCombobox = ({
   items,
   component,
   onRenderItem,
-}: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'>) => {
+  id,
+  trigger,
+}: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'> & {
+  id?: string;
+  trigger?: string;
+}) => {
   const activeId = comboboxStore.use.activeId();
 
   useEffect(() => {
     comboboxStore.set.setComboboxById({
-      id,
-      trigger: COMBOBOX_TRIGGER_MENTION,
+      id: id || ELEMENT_MENTION,
+      trigger: trigger || COMBOBOX_TRIGGER_MENTION,
       onSelectItem: onSelectMentionItem,
     });
-  }, []);
+  }, [id, trigger]);
 
   if (activeId !== id) return null;
 

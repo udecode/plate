@@ -30,7 +30,7 @@ export type ComboboxStateById = {
   /**
    * Called when an item is selected.
    */
-  onSelectItem?: ComboboxOnSelectItem;
+  onSelectItem: ComboboxOnSelectItem | null;
 };
 
 export type ComboboxStoreById = StoreApi<
