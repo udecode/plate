@@ -1,5 +1,16 @@
 # @udecode/plate-mention-ui
 
+## 5.1.1
+
+### Patch Changes
+
+- [#1110](https://github.com/udecode/plate/pull/1110) [`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a) Thanks [@dylans](https://github.com/dylans)! 
+  - Improve type definitions for MentionCombobox
+  - Allow override of id, trigger when invoking MentionCombobox
+- Updated dependencies [[`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a)]:
+  - @udecode/plate-combobox@5.1.1
+  - @udecode/plate-mention@5.1.1
+
 ## 5.1.0
 
 ### Patch Changes
