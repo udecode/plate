@@ -1,13 +1,20 @@
 import { ComboboxOnSelectItem, comboboxStore } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
-import { getPlatePluginType, TElement } from '@udecode/plate-core';
+import {
+  getPlatePluginType,
+  PlatePluginKey,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData } from './types';
 
-export const getMentionOnSelectItem = (
-  pluginKey?: string
-): ComboboxOnSelectItem => (editor, item) => {
+export const getMentionOnSelectItem = ({
+  pluginKey = ELEMENT_MENTION,
+  insertSpaceAfterMention,
+}: {
+  insertSpaceAfterMention?: boolean;
+} & PlatePluginKey): ComboboxOnSelectItem => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
@@ -34,7 +41,7 @@ export const getMentionOnSelectItem = (
   Transforms.move(editor);
 
   // delete the inserted space
-  if (isBlockEnd) {
+  if (isBlockEnd && !insertSpaceAfterMention) {
     Transforms.delete(editor);
   }
 
