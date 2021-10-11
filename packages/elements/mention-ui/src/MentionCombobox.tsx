@@ -10,8 +10,6 @@ import {
   getMentionOnSelectItem,
 } from '@udecode/plate-mention';
 
-const onSelectMentionItem = getMentionOnSelectItem();
-
 export const MentionCombobox = ({
   items,
   component,
@@ -23,16 +21,18 @@ export const MentionCombobox = ({
   trigger?: string;
 }) => {
   const activeId = comboboxStore.use.activeId();
+  const pluginKey = id || ELEMENT_MENTION;
+  const onSelectMentionItem = getMentionOnSelectItem(pluginKey);
 
   useEffect(() => {
     comboboxStore.set.setComboboxById({
-      id: id || ELEMENT_MENTION,
+      id: pluginKey,
       trigger: trigger || COMBOBOX_TRIGGER_MENTION,
       onSelectItem: onSelectMentionItem,
     });
-  }, [id, trigger]);
+  }, [pluginKey, onSelectMentionItem, trigger]);
 
-  if (activeId !== id) return null;
+  if (activeId !== pluginKey) return null;
 
   return (
     <Combobox items={items} component={component} onRenderItem={onRenderItem} />

@@ -5,14 +5,13 @@ import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION } from './defaults';
 import { MentionNodeData } from './types';
 
-export const getMentionOnSelectItem = (): ComboboxOnSelectItem => (
-  editor,
-  item
-) => {
+export const getMentionOnSelectItem = (
+  pluginKey?: string
+): ComboboxOnSelectItem => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
-  const type = getPlatePluginType(editor, ELEMENT_MENTION);
+  const type = getPlatePluginType(editor, pluginKey || ELEMENT_MENTION);
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
     editor.selection &&
