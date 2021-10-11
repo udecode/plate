@@ -38,7 +38,7 @@ export const MentionCombobox = ({
     });
   }, [pluginKey, onSelectMentionItem, trigger, id]);
 
-  if (activeId !== id) return null;
+  if (activeId !== id || pluginKey) return null;
 
   return (
     <Combobox items={items} component={component} onRenderItem={onRenderItem} />
