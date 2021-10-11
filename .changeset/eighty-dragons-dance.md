@@ -1,5 +1,8 @@
 ---
+'@udecode/plate-mention': patch
 '@udecode/plate-mention-ui': patch
 ---
 
-Missing default for id check in mention plugin
+- mention: customizable `createMentionNode`
+- mention: missing default for id
+- mention: fix playground examples

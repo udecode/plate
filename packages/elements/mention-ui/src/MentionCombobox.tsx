@@ -7,6 +7,7 @@ import {
 import { PlatePluginKey } from '@udecode/plate-core';
 import {
   COMBOBOX_TRIGGER_MENTION,
+  CreateMentionNode,
   ELEMENT_MENTION,
   getMentionOnSelectItem,
 } from '@udecode/plate-mention';
@@ -19,15 +20,18 @@ export const MentionCombobox = ({
   pluginKey = ELEMENT_MENTION,
   trigger,
   insertSpaceAfterMention,
+  createMentionNode,
 }: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'> & {
   id?: string;
   trigger?: string;
   insertSpaceAfterMention?: boolean;
+  createMentionNode?: CreateMentionNode;
 } & PlatePluginKey) => {
   const activeId = comboboxStore.use.activeId();
   const onSelectMentionItem = getMentionOnSelectItem({
     pluginKey,
     insertSpaceAfterMention,
+    createMentionNode,
   });
 
   useEffect(() => {

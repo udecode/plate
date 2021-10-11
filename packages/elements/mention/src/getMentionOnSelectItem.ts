@@ -7,12 +7,19 @@ import {
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION } from './defaults';
-import { MentionNodeData } from './types';
+// FIXME: Cannot figure out the TS for this to work with insertNodes
+// import { MentionNodeData } from './types';
+
+export interface CreateMentionNode {
+  (item: any): Pick<TElement, 'children'>;
+}
 
 export const getMentionOnSelectItem = ({
   pluginKey = ELEMENT_MENTION,
+  createMentionNode,
   insertSpaceAfterMention,
 }: {
+  createMentionNode?: CreateMentionNode;
   insertSpaceAfterMention?: boolean;
 } & PlatePluginKey): ComboboxOnSelectItem => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
@@ -32,10 +39,12 @@ export const getMentionOnSelectItem = ({
 
   // select the text and insert the element
   Transforms.select(editor, targetRange);
-  insertNodes<TElement<MentionNodeData>>(editor, {
+  insertNodes<TElement>(editor, {
     type,
-    children: [{ text: '' }],
-    value: item.text,
+    ...(createMentionNode?.(item) ?? {
+      children: [{ text: '' }],
+      value: item.text,
+    }),
   });
   // move the selection after the element
   Transforms.move(editor);
