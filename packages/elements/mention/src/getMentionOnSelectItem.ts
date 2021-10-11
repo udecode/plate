@@ -1,4 +1,8 @@
-import { ComboboxOnSelectItem, comboboxStore } from '@udecode/plate-combobox';
+import {
+  ComboboxItemData,
+  ComboboxOnSelectItem,
+  comboboxStore,
+} from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
 import {
   getPlatePluginType,
@@ -11,12 +15,12 @@ import { ELEMENT_MENTION } from './defaults';
 // import { MentionNodeData } from './types';
 
 export interface CreateMentionNode {
-  (item: any): Pick<TElement, 'children'>;
+  (item: ComboboxItemData): Record<string, unknown>;
 }
 
 export const getMentionOnSelectItem = ({
   pluginKey = ELEMENT_MENTION,
-  createMentionNode,
+  createMentionNode = (item) => ({ value: item.text }),
   insertSpaceAfterMention,
 }: {
   createMentionNode?: CreateMentionNode;
@@ -41,10 +45,8 @@ export const getMentionOnSelectItem = ({
   Transforms.select(editor, targetRange);
   insertNodes<TElement>(editor, {
     type,
-    ...(createMentionNode?.(item) ?? {
-      children: [{ text: '' }],
-      value: item.text,
-    }),
+    children: [{ text: '' }],
+    ...createMentionNode(item),
   });
   // move the selection after the element
   Transforms.move(editor);
