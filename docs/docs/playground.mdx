@@ -125,7 +125,9 @@ See [Installation](/docs/installation)
 
         <BallonToolbarMarks />
 
-        <MentionCombobox items={MENTIONABLES} />
+        <MentionCombobox items={MENTIONABLES} id="mention" trigger="@" />
+
+        <MentionCombobox items={MENTIONABLES} id="mention2" trigger="#" />
       </Plate>
     );
   }

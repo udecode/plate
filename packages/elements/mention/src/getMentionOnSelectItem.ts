@@ -1,4 +1,8 @@
-import { ComboboxOnSelectItem, comboboxStore } from '@udecode/plate-combobox';
+import {
+  ComboboxItemData,
+  ComboboxOnSelectItem,
+  comboboxStore,
+} from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
 import {
   getPlatePluginType,
@@ -7,18 +11,25 @@ import {
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION } from './defaults';
-import { MentionNodeData } from './types';
+// FIXME: Cannot figure out the TS for this to work with insertNodes
+// import { MentionNodeData } from './types';
+
+export interface CreateMentionNode {
+  (item: ComboboxItemData): Record<string, unknown>;
+}
 
 export const getMentionOnSelectItem = ({
   pluginKey = ELEMENT_MENTION,
+  createMentionNode = (item) => ({ value: item.text }),
   insertSpaceAfterMention,
 }: {
+  createMentionNode?: CreateMentionNode;
   insertSpaceAfterMention?: boolean;
 } & PlatePluginKey): ComboboxOnSelectItem => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
-  const type = getPlatePluginType(editor, pluginKey || ELEMENT_MENTION);
+  const type = getPlatePluginType(editor, pluginKey);
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
     editor.selection &&
@@ -32,10 +43,10 @@ export const getMentionOnSelectItem = ({
 
   // select the text and insert the element
   Transforms.select(editor, targetRange);
-  insertNodes<TElement<MentionNodeData>>(editor, {
+  insertNodes<TElement>(editor, {
     type,
     children: [{ text: '' }],
-    value: item.text,
+    ...createMentionNode(item),
   });
   // move the selection after the element
   Transforms.move(editor);

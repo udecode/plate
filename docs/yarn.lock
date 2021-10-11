@@ -1658,6 +1658,11 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.15.tgz#6a9d143f7f4f49db2d782f9e1c8839a29b43ae23"
   integrity sha512-15spi3V28QdevleWBNXE4pIls3nFZmBbUGrW9IVPwiQczuSb9n76TCB4bsk8TSel+I1OkHEdPhu5QKMfY6rQHA==
 
+"@popperjs/core@2.10.2":
+  version "2.10.2"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.10.2.tgz#0798c03351f0dea1a5a4cabddf26a55a7cbee590"
+  integrity sha512-IXf3XA7+XyN7CP9gGh/XB0UxVMlvARGEgGXLubFICsUMGz6Q+DU+i4gGlpOxTjKvXjkJDJC8YdqdKkDj9qZHEQ==
+
 "@popperjs/core@^2.8.3":
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.2.tgz#adea7b6953cbb34651766b0548468e743c6a2353"
@@ -1815,7 +1820,7 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@tippyjs/react@4.2.5", "@tippyjs/react@^4.2.0":
+"@tippyjs/react@^4.2.0":
   version "4.2.5"
   resolved "https://registry.yarnpkg.com/@tippyjs/react/-/react-4.2.5.tgz#9b5837db93a1cac953962404df906aef1a18e80d"
   integrity sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==
@@ -2012,7 +2017,7 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.5.tgz#fdd299f23205c3455af88ce618dd65c14cb73e22"
   integrity sha512-wnra4Vw9dopnuybR6HBywJ/URYpYrKLoepBTEtgfJup8Ahoi2zJECPP2cwiXp7btTvOT2CULv87aQRA4eZSP6g==
 
-"@udecode/plate-alignment-ui@4.3.0":
+"@udecode/plate-alignment-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2020,7 +2025,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-alignment@4.3.0":
+"@udecode/plate-alignment@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2028,7 +2033,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ast-serializer@4.3.5":
+"@udecode/plate-ast-serializer@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2036,7 +2041,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-autoformat@4.3.0":
+"@udecode/plate-autoformat@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2044,7 +2049,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-elements@4.3.5":
+"@udecode/plate-basic-elements@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2052,7 +2057,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-marks@4.3.0":
+"@udecode/plate-basic-marks@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2060,7 +2065,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-block-quote-ui@4.3.0":
+"@udecode/plate-block-quote-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2068,7 +2073,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-block-quote@4.3.0":
+"@udecode/plate-block-quote@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2076,7 +2081,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-break@4.3.0":
+"@udecode/plate-break@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2084,7 +2089,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-code-block-ui@4.3.5":
+"@udecode/plate-code-block-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2092,7 +2097,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-code-block@4.3.5":
+"@udecode/plate-code-block@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2100,7 +2105,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-combobox@4.3.5":
+"@udecode/plate-combobox@5.1.1":
   version "0.0.0"
   uid ""
 
@@ -2108,7 +2113,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-common@4.3.0":
+"@udecode/plate-common@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2116,7 +2121,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-core@4.3.0":
+"@udecode/plate-core@4.3.7":
   version "0.0.0"
   uid ""
 
@@ -2124,7 +2129,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-csv-serializer@4.3.0":
+"@udecode/plate-csv-serializer@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2132,7 +2137,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-dnd@4.3.0":
+"@udecode/plate-dnd@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2144,7 +2149,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-find-replace-ui@4.3.0":
+"@udecode/plate-find-replace-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2152,7 +2157,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-find-replace@4.3.0":
+"@udecode/plate-find-replace@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2160,7 +2165,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-font-ui@4.3.0":
+"@udecode/plate-font-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2168,7 +2173,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-font@4.3.0":
+"@udecode/plate-font@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2176,7 +2181,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-heading@4.3.0":
+"@udecode/plate-heading@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2184,7 +2189,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-highlight@4.3.0":
+"@udecode/plate-highlight@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2192,15 +2197,11 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-horizontal-rule-ui@4.3.0":
-  version "0.0.0"
-  uid ""
-
 "@udecode/plate-horizontal-rule-ui@link:../packages/elements/horizontal-rule-ui":
   version "0.0.0"
   uid ""
 
-"@udecode/plate-horizontal-rule@4.3.0":
+"@udecode/plate-horizontal-rule@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2208,7 +2209,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-html-serializer@4.3.0":
+"@udecode/plate-html-serializer@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2216,7 +2217,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image-ui@4.3.0":
+"@udecode/plate-image-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2224,7 +2225,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image@4.3.0":
+"@udecode/plate-image@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2232,7 +2233,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-kbd@4.3.0":
+"@udecode/plate-kbd@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2240,7 +2241,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-link-ui@4.3.0":
+"@udecode/plate-link-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2248,7 +2249,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-link@4.3.0":
+"@udecode/plate-link@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2256,7 +2257,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list-ui@4.3.0":
+"@udecode/plate-list-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2264,7 +2265,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list@4.3.0":
+"@udecode/plate-list@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2272,7 +2273,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-md-serializer@4.3.5":
+"@udecode/plate-md-serializer@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2280,7 +2281,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-media-embed-ui@4.3.0":
+"@udecode/plate-media-embed-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2288,7 +2289,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-media-embed@4.3.0":
+"@udecode/plate-media-embed@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2296,7 +2297,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention-ui@4.3.0":
+"@udecode/plate-mention-ui@5.2.0":
   version "0.0.0"
   uid ""
 
@@ -2304,7 +2305,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention@4.3.0":
+"@udecode/plate-mention@5.2.0":
   version "0.0.0"
   uid ""
 
@@ -2312,7 +2313,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-node-id@4.3.0":
+"@udecode/plate-node-id@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2320,7 +2321,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-normalizers@4.3.0":
+"@udecode/plate-normalizers@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2328,7 +2329,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-paragraph@4.3.0":
+"@udecode/plate-paragraph@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2336,7 +2337,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-placeholder@4.3.0":
+"@udecode/plate-placeholder@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2344,7 +2345,15 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-reset-node@4.3.0":
+"@udecode/plate-popper@5.1.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-popper@link:../packages/ui/popper":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-reset-node@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2352,7 +2361,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-select@4.3.0":
+"@udecode/plate-select@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2360,7 +2369,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer@4.3.0":
+"@udecode/plate-serializer@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2368,7 +2377,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-styled-components@4.3.0":
+"@udecode/plate-styled-components@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2376,7 +2385,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table-ui@4.3.0":
+"@udecode/plate-table-ui@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2384,7 +2393,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@4.3.0":
+"@udecode/plate-table@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2396,7 +2405,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-toolbar@4.3.0":
+"@udecode/plate-toolbar@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -2404,7 +2413,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-trailing-block@4.3.0":
+"@udecode/plate-trailing-block@5.1.0":
   version "0.0.0"
   uid ""
 
@@ -8519,7 +8528,7 @@ react-loadable@^5.5.0:
   dependencies:
     prop-types "^15.5.0"
 
-react-popper@^2.2.4:
+react-popper@2.2.5, react-popper@^2.2.4:
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-2.2.5.tgz#1214ef3cec86330a171671a4fbcbeeb65ee58e96"
   integrity sha512-kxGkS80eQGtLl18+uig1UIf9MKixFSyPxglsgLBxlYnyDf65BiY9B3nZSc6C9XUNDgStROB0fMQlTEz1KxGddw==
