@@ -3,6 +3,6 @@
 '@udecode/plate-mention-ui': patch
 ---
 
-mention: customizable `createMentionNode`
-mention: missing default for id 
-mention: fix playground examples
+changes:
+- customizable `createMentionNode`
+- missing default for `id` 
