@@ -18,7 +18,7 @@ export const getMentionOnSelectItem = ({
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
-  const type = getPlatePluginType(editor, pluginKey || ELEMENT_MENTION);
+  const type = getPlatePluginType(editor, pluginKey);
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
     editor.selection &&
