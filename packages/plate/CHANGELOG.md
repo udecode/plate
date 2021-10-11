@@ -1,5 +1,13 @@
 # @udecode/plate
 
+## 5.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`9910a511`](https://github.com/udecode/plate/commit/9910a511998649641e3938f3569eed1ded711842), [`86837955`](https://github.com/udecode/plate/commit/86837955ebcdf7d93e10cdcfe3a97181611500bf)]:
+  - @udecode/plate-mention@5.2.0
+  - @udecode/plate-mention-ui@5.2.0
+
 ## 5.1.1
 
 ### Patch Changes

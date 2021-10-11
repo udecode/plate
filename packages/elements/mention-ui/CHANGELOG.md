@@ -1,10 +1,23 @@
 # @udecode/plate-mention-ui
 
+## 5.2.0
+
+### Minor Changes
+
+- [#1116](https://github.com/udecode/plate/pull/1116) [`86837955`](https://github.com/udecode/plate/commit/86837955ebcdf7d93e10cdcfe3a97181611500bf) Thanks [@dylans](https://github.com/dylans)! - mention, reintroduce insertSpaceAfterMention, decouple id from pluginKey
+
+### Patch Changes
+
+- [#1112](https://github.com/udecode/plate/pull/1112) [`9910a511`](https://github.com/udecode/plate/commit/9910a511998649641e3938f3569eed1ded711842) Thanks [@dylans](https://github.com/dylans)! - `Mention`: `getMentionOnSelectItem` now receives an optional pluginKey
+
+- Updated dependencies [[`9910a511`](https://github.com/udecode/plate/commit/9910a511998649641e3938f3569eed1ded711842), [`86837955`](https://github.com/udecode/plate/commit/86837955ebcdf7d93e10cdcfe3a97181611500bf)]:
+  - @udecode/plate-mention@5.2.0
+
 ## 5.1.1
 
 ### Patch Changes
 
-- [#1110](https://github.com/udecode/plate/pull/1110) [`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a) Thanks [@dylans](https://github.com/dylans)! 
+- [#1110](https://github.com/udecode/plate/pull/1110) [`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a) Thanks [@dylans](https://github.com/dylans)!
   - Improve type definitions for MentionCombobox
   - Allow override of id, trigger when invoking MentionCombobox
 - Updated dependencies [[`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a)]:
