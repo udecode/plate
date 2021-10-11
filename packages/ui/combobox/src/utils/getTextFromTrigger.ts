@@ -7,10 +7,14 @@ import { Editor, Point } from 'slate';
  */
 export const getTextFromTrigger = (
   editor: Editor,
-  { at, trigger }: { at: Point; trigger: string }
+  {
+    at,
+    trigger,
+    searchPattern,
+  }: { at: Point; trigger: string; searchPattern?: string }
 ) => {
   const escapedTrigger = escapeRegExp(trigger);
-  const triggerRegex = new RegExp(`^${escapedTrigger}`);
+  const triggerRegex = new RegExp(`^${escapedTrigger}(${searchPattern})$`);
   const noWhiteSpaceRegex = new RegExp(`\\S+`);
 
   let start: Point | undefined = at;
