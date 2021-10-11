@@ -32,13 +32,13 @@ export const MentionCombobox = ({
 
   useEffect(() => {
     comboboxStore.set.setComboboxById({
-      id: id || pluginKey,
-      trigger: trigger || COMBOBOX_TRIGGER_MENTION,
+      id: id ?? pluginKey,
+      trigger: trigger ?? COMBOBOX_TRIGGER_MENTION,
       onSelectItem: onSelectMentionItem,
     });
   }, [pluginKey, onSelectMentionItem, trigger, id]);
 
-  if (activeId !== id || pluginKey) return null;
+  if (activeId !== id ?? pluginKey) return null;
 
   return (
     <Combobox items={items} component={component} onRenderItem={onRenderItem} />
