@@ -1,10 +1,18 @@
 # @udecode/plate-combobox
 
+## 5.2.1
+
+### Patch Changes
+
+- [#1119](https://github.com/udecode/plate/pull/1119) [`882308a8`](https://github.com/udecode/plate/commit/882308a81a5ed18669c8209d8b74d3fca76a4dd2) Thanks [@dylans](https://github.com/dylans)! - changes:
+
+  - add `searchPattern` similar to previous `mentionableSearchPattern`
+
 ## 5.1.1
 
 ### Patch Changes
 
-- [#1110](https://github.com/udecode/plate/pull/1110) [`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a) Thanks [@dylans](https://github.com/dylans)! 
+- [#1110](https://github.com/udecode/plate/pull/1110) [`73ca0d4e`](https://github.com/udecode/plate/commit/73ca0d4ef46c77423926721a6e14dc09cd45e45a) Thanks [@dylans](https://github.com/dylans)!
   - Improve type definitions for MentionCombobox
   - Allow override of id, trigger when invoking MentionCombobox
 
