@@ -15,7 +15,7 @@ export const getTextFromTrigger = (
 ) => {
   const escapedTrigger = escapeRegExp(trigger);
   const triggerRegex = searchPattern
-    ? new RegExp(`(?:^|\\s)${escapedTrigger}(${searchPattern})$`)
+    ? new RegExp(`(?:^|\\s)${escapedTrigger}(${searchPattern})`)
     : new RegExp(`${escapedTrigger}`);
   const noWhiteSpaceRegex = new RegExp(`\\S+`);
 
