@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 5.2.2
+
+### Patch Changes
+
+- [#1120](https://github.com/udecode/plate/pull/1120) [`b8f2f97b`](https://github.com/udecode/plate/commit/b8f2f97be28db3f0eb4e8e5222dabe5aa0c2fb3b) Thanks [@dylans](https://github.com/dylans)! - fix mention searchPattern undefined
+
 ## 5.2.1
 
 ### Patch Changes
