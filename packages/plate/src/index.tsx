@@ -29,6 +29,7 @@ export * from '@udecode/plate-horizontal-rule-ui';
 export * from '@udecode/plate-html-serializer';
 export * from '@udecode/plate-image';
 export * from '@udecode/plate-image-ui';
+export * from '@udecode/plate-indent';
 export * from '@udecode/plate-kbd';
 export * from '@udecode/plate-link';
 export * from '@udecode/plate-link-ui';
