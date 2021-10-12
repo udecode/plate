@@ -3,8 +3,8 @@ import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { TRenderElementProps } from '../types/TRenderElementProps';
-import { getSlateClass } from './getSlateClass';
+import { SPRenderElementProps } from '../types/SPRenderElementProps';
+import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
  * Get a `Editable.renderElement` handler for `options.type`.
@@ -13,9 +13,7 @@ import { getSlateClass } from './getSlateClass';
  */
 export const getEditableRenderElement = (
   options: RenderNodeOptions | RenderNodeOptions[]
-) => ({ attributes, element, children }: TRenderElementProps) => {
-  const renderNodeProps = { attributes, element, children };
-
+) => (props: SPRenderElementProps) => {
   const _options = castArray<RenderNodeOptions>(options);
 
   for (const option of _options) {
@@ -26,27 +24,19 @@ export const getEditableRenderElement = (
       overrideProps,
     } = option;
 
+    const { element, children } = props;
+
     if (element.type === type) {
-      const nodeProps =
-        getNodeProps?.(renderNodeProps) ?? element.attributes ?? {};
-
-      let props: any = {};
-
-      if (overrideProps) {
-        props =
-          typeof overrideProps === 'function'
-            ? overrideProps(renderNodeProps)
-            : overrideProps;
-      }
+      const nodeProps = getRenderNodeProps({
+        attributes: element.attributes,
+        getNodeProps,
+        overrideProps,
+        props,
+        type,
+      });
 
       return (
-        <Element
-          className={getSlateClass(type)}
-          attributes={attributes}
-          element={element}
-          nodeProps={nodeProps}
-          {...props}
-        >
+        <Element {...props} {...nodeProps}>
           {children}
         </Element>
       );

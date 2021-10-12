@@ -16,12 +16,10 @@ export const pipeRenderElement = (
   );
 
   const propsOverriders = plugins.flatMap(
-    (plugin) => plugin.overrideProps ?? []
+    (plugin) => plugin.overrideProps?.(editor) ?? []
   );
 
   return (renderElementProps) => {
-    let element;
-
     let props = renderElementProps as any;
 
     propsOverriders.forEach((overrideProps) => {
@@ -35,10 +33,13 @@ export const pipeRenderElement = (
       }
     });
 
+    let element;
+
     renderElements.some((renderElement) => {
       element = renderElement(props);
       return !!element;
     });
+
     if (element) return element;
 
     return <DefaultElement {...props} />;

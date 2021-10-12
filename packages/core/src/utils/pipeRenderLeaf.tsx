@@ -15,16 +15,31 @@ export const pipeRenderLeaf = (
     (plugin) => plugin.renderLeaf?.(editor) ?? []
   );
 
-  return (props) => {
-    const leafProps: RenderLeafProps = { ...props }; // workaround for children readonly error.
+  const propsOverriders = plugins.flatMap(
+    (plugin) => plugin.overrideProps?.(editor) ?? []
+  );
 
-    renderLeafs.forEach((renderLeaf) => {
-      const newChildren = renderLeaf(leafProps);
-      if (newChildren !== undefined) {
-        leafProps.children = newChildren;
+  return (renderLeafProps) => {
+    let props = renderLeafProps as any;
+
+    propsOverriders.forEach((overrideProps) => {
+      const newProps = overrideProps(props);
+
+      if (newProps) {
+        props = {
+          ...props,
+          ...newProps,
+        };
       }
     });
 
-    return <DefaultLeaf {...leafProps} />;
+    renderLeafs.forEach((renderLeaf) => {
+      const newChildren = renderLeaf(props);
+      if (newChildren !== undefined) {
+        props.children = newChildren;
+      }
+    });
+
+    return <DefaultLeaf {...props} />;
   };
 };

@@ -1,5 +1,5 @@
 import { SPEditor } from '../SPEditor';
-import { TRenderElementProps } from '../TRenderElementProps';
+import { SPRenderElementProps } from '../SPRenderElementProps';
 
 /**
  * Function used to render an element.
@@ -8,4 +8,4 @@ import { TRenderElementProps } from '../TRenderElementProps';
  */
 export type RenderElement<T extends SPEditor = SPEditor> = (
   editor: T
-) => (props: TRenderElementProps) => JSX.Element | undefined;
+) => (props: SPRenderElementProps) => JSX.Element | undefined;

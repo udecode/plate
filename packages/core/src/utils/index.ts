@@ -24,3 +24,4 @@ export * from './pipeOnChange';
 export * from './pipeRenderElement';
 export * from './pipeRenderLeaf';
 export * from './withPlate';
+export { getRenderNodeProps } from './getRenderNodeProps';

@@ -38,6 +38,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "clsx": "^1.1.1",
     "lodash": "^4.17.21",
     "zustand": "^3.4.2"
   },
