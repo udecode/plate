@@ -1,5 +1,13 @@
 # @udecode/plate-mention-ui
 
+## 5.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`25b359a2`](https://github.com/udecode/plate/commit/25b359a23df79bc3b5f710fe9f58c4b549c72e75)]:
+  - @udecode/plate-combobox@5.2.3
+  - @udecode/plate-mention@5.2.3
+
 ## 5.2.2
 
 ### Patch Changes

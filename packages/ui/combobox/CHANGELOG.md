@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 5.2.3
+
+### Patch Changes
+
+- [#1124](https://github.com/udecode/plate/pull/1124) [`25b359a2`](https://github.com/udecode/plate/commit/25b359a23df79bc3b5f710fe9f58c4b549c72e75) Thanks [@dylans](https://github.com/dylans)! - Refactor `getTextFromTrigger` to not match email addresses, refine searchPattern logic
+
 ## 5.2.2
 
 ### Patch Changes
