@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-mention",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "Mention plugin for Plate",
   "keywords": [
     "slate",
@@ -32,7 +32,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "5.2.1",
+    "@udecode/plate-combobox": "5.2.2",
     "@udecode/plate-common": "5.1.0",
     "@udecode/plate-core": "4.3.7"
   },
