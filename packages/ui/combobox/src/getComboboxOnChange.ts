@@ -22,6 +22,7 @@ export const getComboboxOnChange = (): OnChange => (editor) => () => {
 
     const id = store.get.id();
     const trigger = store.get.trigger();
+    const searchPattern = store.get?.searchPattern?.();
 
     const { selection } = editor;
 
@@ -31,6 +32,7 @@ export const getComboboxOnChange = (): OnChange => (editor) => () => {
       const isCursorAfterTrigger = getTextFromTrigger(editor, {
         at: cursor,
         trigger,
+        searchPattern,
       });
 
       if (isCursorAfterTrigger) {

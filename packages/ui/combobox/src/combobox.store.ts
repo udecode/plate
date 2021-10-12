@@ -28,6 +28,11 @@ export type ComboboxStateById = {
   trigger: string;
 
   /**
+   * Regular expression for search, for example to allow whitespace
+   */
+  searchPattern?: string;
+
+  /**
    * Called when an item is selected.
    */
   onSelectItem: ComboboxOnSelectItem | null;
