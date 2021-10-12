@@ -1,0 +1,47 @@
+---
+slug: /plugins/indent
+title: Indent
+---
+
+### `createIndentPlugin`
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-indent
+```
+
+### Usage
+
+```ts live
+() => {
+  const plugins = [
+    ...pluginsBasic,
+    createIndentPlugin(optionsIndentPlugin),
+    createResetNodePlugin(optionsResetBlockTypePlugin),
+    createSoftBreakPlugin(optionsSoftBreakPlugin),
+    createExitBreakPlugin(optionsExitBreakPlugin),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsIndent />
+      </HeadingToolbar>
+      <Plate
+        id="indent"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueBasicElements}
+      />
+    </>
+  );
+}
+```
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/indent](https://github.com/udecode/plate/tree/main/packages/indent/src)

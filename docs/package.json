@@ -51,6 +51,7 @@
     "@udecode/plate-html-serializer": "link:../packages/serializers/html-serializer",
     "@udecode/plate-image": "link:../packages/elements/image",
     "@udecode/plate-image-ui": "link:../packages/elements/image-ui",
+    "@udecode/plate-indent": "link:../packages/indent",
     "@udecode/plate-kbd": "link:../packages/marks/kbd",
     "@udecode/plate-link": "link:../packages/elements/link",
     "@udecode/plate-link-ui": "link:../packages/elements/link-ui",

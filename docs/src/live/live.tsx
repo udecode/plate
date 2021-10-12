@@ -63,6 +63,7 @@ import {
   createHistoryPlugin,
   createHorizontalRulePlugin,
   createImagePlugin,
+  createIndentPlugin,
   createItalicPlugin,
   createKbdPlugin,
   createLinkPlugin,
@@ -221,6 +222,7 @@ import { MENTIONABLES } from './config/mentionables';
 import {
   optionsAutoformat,
   optionsExitBreakPlugin,
+  optionsIndentPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from './config/pluginOptions';
@@ -229,6 +231,7 @@ import {
   ToolbarButtonsAlign,
   ToolbarButtonsBasicElements,
   ToolbarButtonsBasicMarks,
+  ToolbarButtonsIndent,
   ToolbarButtonsList,
   ToolbarButtonsTable,
   ToolbarHighlight,
@@ -307,6 +310,9 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  ToolbarButtonsIndent,
+  optionsIndentPlugin,
+  createIndentPlugin,
   createComboboxPlugin,
   MentionCombobox,
   clearBlockFormat,
