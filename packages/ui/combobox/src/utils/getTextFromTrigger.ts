@@ -10,14 +10,11 @@ export const getTextFromTrigger = (
   {
     at,
     trigger,
-    searchPattern,
+    searchPattern = `\\S+`,
   }: { at: Point; trigger: string; searchPattern?: string }
 ) => {
   const escapedTrigger = escapeRegExp(trigger);
-  const triggerRegex = searchPattern
-    ? new RegExp(`(?:^|\\s)${escapedTrigger}(${searchPattern})$`)
-    : new RegExp(`${escapedTrigger}`);
-  const noWhiteSpaceRegex = new RegExp(`\\S+`);
+  const triggerRegex = new RegExp(`(?:^|\\s)${escapedTrigger}`);
 
   let start: Point | undefined = at;
   let end: Point | undefined;
@@ -31,8 +28,7 @@ export const getTextFromTrigger = (
     const charRange = start && Editor.range(editor, start, end);
     const charText = getText(editor, charRange);
 
-    // Match non-whitespace character on before text
-    if (!charText.match(noWhiteSpaceRegex)) {
+    if (!charText.match(searchPattern)) {
       start = end;
       break;
     }
