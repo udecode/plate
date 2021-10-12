@@ -3,7 +3,16 @@ import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getTableElementStyles } from './TableElement.styles';
 
 export const TableElement = (props: StyledElementProps) => {
-  const { attributes, children, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const { root } = getTableElementStyles(props);
 
@@ -13,6 +22,7 @@ export const TableElement = (props: StyledElementProps) => {
       css={root.css}
       className={root.className}
       {...nodeProps}
+      {...rootProps}
     >
       <tbody>{children}</tbody>
     </table>

@@ -8,7 +8,16 @@ import { getTodoListElementStyles } from './TodoListElement.styles';
 import { TodoListElementProps } from './TodoListElement.types';
 
 export const TodoListElement = (props: TodoListElementProps) => {
-  const { attributes, children, element, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles: _styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const editor = useEditorRef();
   const readOnly = useReadOnly();
@@ -22,6 +31,7 @@ export const TodoListElement = (props: TodoListElementProps) => {
       {...attributes}
       css={styles.root.css}
       className={clsx(styles.root.className, styles.rootChecked?.className)}
+      {...rootProps}
     >
       <div
         contentEditable={false}
