@@ -1,3 +1,4 @@
+import { GetNodeProps } from '../PlatePluginOptions/GetNodeProps';
 import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
@@ -40,6 +41,8 @@ export interface PlatePlugin<T extends SPEditor = SPEditor>
    * @see {@link OnChange}
    */
   onChange?: OnChange<T>;
+
+  overrideProps?: GetNodeProps;
 
   /**
    * Plugin keys to support configuration.

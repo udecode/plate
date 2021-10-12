@@ -4,7 +4,7 @@ import { TText } from '../TText';
 /**
  * Map slate node properties to component props.
  */
-export type GetNodeProps = (options: {
+export type GetNodeProps = (props: {
   attributes: any;
   children: any;
   element?: TElement;
