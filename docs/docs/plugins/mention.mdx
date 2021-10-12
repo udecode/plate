@@ -35,7 +35,7 @@ npm install @udecode/plate-mention-ui
         editableProps={editableProps}
         initialValue={initialValueMentions}
       >
-        <MentionCombobox items={MENTIONABLES} id="mention" trigger="@"/>
+        <MentionCombobox items={MENTIONABLES} id="mention" trigger="@" searchPattern="[\\S\\s]*" />
 
         <MentionCombobox items={MENTIONABLES} id="mention2" trigger="#" />
       </Plate>

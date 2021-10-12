@@ -14,7 +14,9 @@ export const getTextFromTrigger = (
   }: { at: Point; trigger: string; searchPattern?: string }
 ) => {
   const escapedTrigger = escapeRegExp(trigger);
-  const triggerRegex = new RegExp(`^${escapedTrigger}(${searchPattern})$`);
+  const triggerRegex = searchPattern
+    ? new RegExp(`(?:^|\\s)${escapedTrigger}(${searchPattern})$`)
+    : new RegExp(`${escapedTrigger}`);
   const noWhiteSpaceRegex = new RegExp(`\\S+`);
 
   let start: Point | undefined = at;
