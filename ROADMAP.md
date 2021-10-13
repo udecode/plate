@@ -71,7 +71,7 @@ Here is our roadmap to have a complete rich-text editor.
     - [ ] Supports all features of regular lists by reusing ActionItem.
 - [x] MediaEmbed – Enables support for embeddable media such as YouTube
       or Vimeo videos, Instagram posts and tweets or Google Maps.
-  - [ ] MediaEmbedToolbar – Provides an optional toolbar for media embed
+  - [x] MediaEmbedToolbar – Provides an optional toolbar for media embed
         that shows up when the media element is selected.
   - [x] Insert videos
   - [ ] Balloon to insert, edit, delete
