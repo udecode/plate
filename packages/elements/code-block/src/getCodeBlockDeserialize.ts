@@ -12,7 +12,7 @@ export const getCodeBlockDeserialize = (): Deserialize => (editor) => {
 
   return {
     isDisabled: (deserializerId) =>
-      !code_block.derserializers.includes(deserializerId),
+      !code_block.deserializers.includes(deserializerId),
     element: [
       ...getElementDeserializer({
         type: code_block.type,
