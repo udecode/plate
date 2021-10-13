@@ -4,7 +4,16 @@ import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';
 
 export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {
-  const { attributes, children, element, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles: _styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const { root } = getLinkElementStyles(props);
 
@@ -14,6 +23,7 @@ export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {
       href={element.url}
       css={root.css}
       className={root.className}
+      {...rootProps}
       {...nodeProps}
     >
       {children}

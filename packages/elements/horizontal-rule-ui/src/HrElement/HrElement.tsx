@@ -4,7 +4,16 @@ import { getHrElementStyles } from './HrElement.styles';
 import { HrElementProps } from './HrElement.types';
 
 export const HrElement = (props: HrElementProps) => {
-  const { attributes, children, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles: _styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const selected = useSelected();
   const focused = useFocused();
@@ -15,6 +24,8 @@ export const HrElement = (props: HrElementProps) => {
       {...attributes}
       css={styles.root?.css}
       className={styles.root?.className}
+      {...rootProps}
+      {...nodeProps}
     >
       <hr
         contentEditable={false}

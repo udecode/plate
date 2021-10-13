@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { TEditor } from '@udecode/plate-core';
 import {
   Editor,

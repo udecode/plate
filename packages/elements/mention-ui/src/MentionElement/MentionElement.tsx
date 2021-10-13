@@ -8,12 +8,16 @@ export const MentionElement = (props: MentionElementProps) => {
   const {
     attributes,
     children,
-    element,
-    prefix,
     nodeProps,
+    styles: _styles,
+    element,
+    classNames,
+    prefixClassNames,
+    prefix,
     as,
     onClick,
     renderLabel,
+    ...rootProps
   } = props;
 
   const selected = useSelected();
@@ -30,6 +34,7 @@ export const MentionElement = (props: MentionElementProps) => {
       css={styles.root.css}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
+      {...rootProps}
       {...nodeProps}
     >
       {prefix}

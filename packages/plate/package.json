@@ -63,6 +63,7 @@
     "@udecode/plate-html-serializer": "5.1.0",
     "@udecode/plate-image": "5.1.0",
     "@udecode/plate-image-ui": "5.1.0",
+    "@udecode/plate-indent": "5.2.3",
     "@udecode/plate-kbd": "5.1.0",
     "@udecode/plate-link": "5.1.0",
     "@udecode/plate-link-ui": "5.1.0",

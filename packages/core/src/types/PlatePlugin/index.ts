@@ -6,6 +6,7 @@ export * from './DOMHandlers';
 export * from './Decorate';
 export * from './Deserialize';
 export * from './OnChange';
+export * from './OverrideProps';
 export * from './PlatePlugin';
 export * from './RenderElement';
 export * from './RenderLeaf';

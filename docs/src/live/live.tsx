@@ -6,6 +6,7 @@ import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
 import { Subscript } from '@styled-icons/foundation/Subscript';
 import { Superscript } from '@styled-icons/foundation/Superscript';
+import { FormatIndentDecrease } from '@styled-icons/material';
 import { BorderAll } from '@styled-icons/material/BorderAll';
 import { BorderBottom } from '@styled-icons/material/BorderBottom';
 import { BorderClear } from '@styled-icons/material/BorderClear';
@@ -19,6 +20,7 @@ import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { FormatBold } from '@styled-icons/material/FormatBold';
 import { FormatColorText } from '@styled-icons/material/FormatColorText';
+import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
 import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
@@ -63,6 +65,7 @@ import {
   createHistoryPlugin,
   createHorizontalRulePlugin,
   createImagePlugin,
+  createIndentPlugin,
   createItalicPlugin,
   createKbdPlugin,
   createLinkPlugin,
@@ -123,6 +126,7 @@ import {
   getPlatePluginType,
   getRenderLeaf,
   HeadingToolbar,
+  indent,
   insertEmptyCodeBlock,
   insertNodes,
   insertTable,
@@ -145,6 +149,7 @@ import {
   MARK_UNDERLINE,
   MentionCombobox,
   MentionElement,
+  outdent,
   Plate,
   serializeHTMLFromNodes,
   setNodes,
@@ -198,6 +203,7 @@ import {
   initialValueHorizontalRule,
   initialValueIframe,
   initialValueImages,
+  initialValueIndent,
   initialValueKbd,
   initialValueLinks,
   initialValueList,
@@ -221,6 +227,7 @@ import { MENTIONABLES } from './config/mentionables';
 import {
   optionsAutoformat,
   optionsExitBreakPlugin,
+  optionsIndentPlugin,
   optionsResetBlockTypePlugin,
   optionsSoftBreakPlugin,
 } from './config/pluginOptions';
@@ -229,6 +236,7 @@ import {
   ToolbarButtonsAlign,
   ToolbarButtonsBasicElements,
   ToolbarButtonsBasicMarks,
+  ToolbarButtonsIndent,
   ToolbarButtonsList,
   ToolbarButtonsTable,
   ToolbarHighlight,
@@ -307,6 +315,14 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  indent,
+  outdent,
+  FormatIndentDecrease,
+  FormatIndentIncrease,
+  initialValueIndent,
+  ToolbarButtonsIndent,
+  optionsIndentPlugin,
+  createIndentPlugin,
   createComboboxPlugin,
   MentionCombobox,
   clearBlockFormat,
