@@ -5,7 +5,7 @@ import {
   SPEditor,
   TDescendant,
 } from '@udecode/plate-core';
-import { Node, NodeEntry, Path, Transforms } from 'slate';
+import { Node, NodeEntry, Path, Text, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
 
 export const getListInsertFragment = (editor: SPEditor) => {
@@ -63,7 +63,7 @@ export const getListInsertFragment = (editor: SPEditor) => {
       mode: 'lowest',
     });
 
-    if (liEntry) {
+    if (liEntry && !Text.isTextList(fragment)) {
       const [, liPath] = liEntry;
 
       // FIXME: fork insertFragment for edge cases
