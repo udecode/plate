@@ -53,6 +53,7 @@ import {
   ELEMENT_OL,
   ELEMENT_UL,
   getPlatePluginType,
+  getPreventDefaultHandler,
   indent,
   insertTable,
   MARK_BOLD,
@@ -76,7 +77,6 @@ import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { ToolbarCodeBlock } from '@udecode/plate-code-block-ui';
 import { useEventEditorId } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { getPreventDefaultHandler } from '../../../../packages/common/src/utils/getPreventDefaultHandler';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));

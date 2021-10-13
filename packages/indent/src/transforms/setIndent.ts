@@ -24,6 +24,8 @@ export const setIndent = (
     }),
   ];
 
+  console.log(nodes);
+
   nodes.forEach(([node, path]) => {
     const blockIndent = node.indent ?? 0;
     const newIndent = blockIndent + offset;
