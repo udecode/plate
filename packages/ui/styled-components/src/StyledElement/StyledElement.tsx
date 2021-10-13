@@ -1,5 +1,4 @@
 import * as React from 'react';
-import clsx from 'clsx';
 import castArray from 'lodash/castArray';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';
 import { StyledElementProps } from './StyledElement.types';

@@ -26,14 +26,6 @@ export const TodoListElement = (props: TodoListElementProps) => {
 
   const styles = getTodoListElementStyles({ ...props, checked });
 
-  console.log(
-    clsx(
-      styles.root.className,
-      styles.rootChecked?.className,
-      rootProps?.className
-    )
-  );
-
   return (
     <div
       {...attributes}
