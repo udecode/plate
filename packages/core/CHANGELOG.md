@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 5.3.1
+
+### Patch Changes
+
+- [#1136](https://github.com/udecode/plate/pull/1136) [`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118) Thanks [@dylans](https://github.com/dylans)! - allow disabling deserializer by paste target
+
 ## 5.3.0
 
 ### Minor Changes
