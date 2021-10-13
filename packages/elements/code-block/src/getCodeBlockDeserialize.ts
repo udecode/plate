@@ -11,6 +11,8 @@ export const getCodeBlockDeserialize = (): Deserialize => (editor) => {
   const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
 
   return {
+    isDisabled: (deserializerId) =>
+      !code_block.deserializers.includes(deserializerId),
     element: [
       ...getElementDeserializer({
         type: code_block.type,

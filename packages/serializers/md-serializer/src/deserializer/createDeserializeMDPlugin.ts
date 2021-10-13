@@ -5,15 +5,21 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { insertDeserializedFragment } from '@udecode/plate-serializer';
+import { csvDeserializerId } from '@udecode/plate-csv-serializer/src';
+import {
+  insertDeserializedFragment,
+  isDeserializerEnabled,
+} from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
-import { deserializeMD } from './utils/deserializeMD';
+import { deserializeMD } from './utils';
 
 export interface WithDeserializeMarkdownOptions<
   T extends SPEditor = SPEditor & ReactEditor
 > {
   plugins?: PlatePlugin<T>[];
 }
+
+export const mdDeserializerId = 'MD Deserializer';
 
 /**
  * Enables support for deserializing content
@@ -28,8 +34,11 @@ export const withDeserializeMD = <
 
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
+
+    const isEnabled = isDeserializerEnabled(editor, plugins, csvDeserializerId);
+
     const { files } = data;
-    if (content && !files?.length) {
+    if (content && isEnabled && !files?.length) {
       // if content is simply a URL pass through to not break LinkPlugin
       if (isUrl(content)) {
         return insertData(data);

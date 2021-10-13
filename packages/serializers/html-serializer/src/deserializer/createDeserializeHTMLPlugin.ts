@@ -4,7 +4,11 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { insertDeserializedFragment } from '@udecode/plate-serializer';
+import {
+  insertDeserializedFragment,
+  isDeserializerEnabled,
+} from '@udecode/plate-serializer';
+import {} from '@udecode/plate-serializer/src';
 import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
@@ -13,6 +17,8 @@ export interface WithDeserializeHTMLOptions<
 > {
   plugins?: PlatePlugin<T>[];
 }
+
+export const htmlDeserializerId = 'HTML Deserializer';
 
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
@@ -27,7 +33,13 @@ export const withDeserializeHTML = <
   editor.insertData = (data: DataTransfer) => {
     const html = data.getData('text/html');
 
-    if (html) {
+    const isEnabled = isDeserializerEnabled(
+      editor,
+      plugins,
+      htmlDeserializerId
+    );
+
+    if (html && isEnabled) {
       const { body } = new DOMParser().parseFromString(html, 'text/html');
 
       const fragment = deserializeHTMLToDocumentFragment(editor, {
