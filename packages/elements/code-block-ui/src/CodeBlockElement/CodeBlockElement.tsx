@@ -30,30 +30,33 @@ export const CodeBlockElement = (props: StyledElementProps) => {
   const editor = useEditorRef();
   const { root } = getCodeBlockElementStyles(props);
   const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const codeClassName = lang ? `${lang} language-${lang}` : '';
 
   return (
-    <pre
-      {...attributes}
-      css={root.css}
-      className={root.className}
-      {...nodeProps}
-      {...rootProps}
-    >
-      {code_block?.syntax && (
-        <CodeBlockSelectElement
-          data-testid="CodeBlockSelectElement"
-          lang={lang}
-          onChange={(val: string) => {
-            const path = ReactEditor.findPath(editor, element);
-            setNodes<TElement<CodeBlockNodeData>>(
-              editor,
-              { lang: val },
-              { at: path }
-            );
-          }}
-        />
-      )}
-      <code>{children}</code>
-    </pre>
+    <>
+      <pre
+        {...attributes}
+        css={root.css}
+        className={root.className}
+        {...nodeProps}
+        {...rootProps}
+      >
+        {code_block?.syntax && (
+          <CodeBlockSelectElement
+            data-testid="CodeBlockSelectElement"
+            lang={lang}
+            onChange={(val: string) => {
+              const path = ReactEditor.findPath(editor, element);
+              setNodes<TElement<CodeBlockNodeData>>(
+                editor,
+                { lang: val },
+                { at: path }
+              );
+            }}
+          />
+        )}
+        <code className={codeClassName}>{children}</code>
+      </pre>
+    </>
   );
 };
