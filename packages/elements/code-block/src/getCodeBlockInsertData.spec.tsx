@@ -3,17 +3,12 @@
 import { createEditorPlugins } from '@udecode/plate/src/utils/createEditorPlugins';
 import { createDeserializeAstPlugin } from '@udecode/plate-ast-serializer';
 import { SPEditor } from '@udecode/plate-core';
-import { createDeserializeCSVPlugin } from '@udecode/plate-csv-serializer';
 import { createDeserializeHTMLPlugin } from '@udecode/plate-html-serializer';
-import { createDeserializeMDPlugin } from '@udecode/plate-md-serializer';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 
 jsx;
-
-const a = 'b';
-const c = 'd';
 
 const createDataTransfer = (dataMap: Map<string, any> = new Map()) => {
   return ({
@@ -25,8 +20,10 @@ const createDataTransfer = (dataMap: Map<string, any> = new Map()) => {
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
 
-  plugins.push(createDeserializeHTMLPlugin({ plugins }));
-  plugins.push(createDeserializeAstPlugin({ plugins }));
+  plugins.push(
+    createDeserializeHTMLPlugin({ plugins }),
+    createDeserializeAstPlugin({ plugins })
+  );
 
   const editor = createEditorPlugins({
     editor: input,
@@ -44,7 +41,7 @@ describe('when pasting text into a code block', () => {
       <editor>
         <hcodeblock>
           <hcodeline>
-            a
+            <htext />
             <cursor />
           </hcodeline>
         </hcodeblock>
@@ -64,7 +61,7 @@ describe('when pasting text into a code block', () => {
     const expected = ((
       <editor>
         <hcodeblock>
-          <hcodeline>aconst a = "b";</hcodeline>
+          <hcodeline>const a = "b";</hcodeline>
           <hcodeline>const c = "d";</hcodeline>
         </hcodeblock>
       </editor>

@@ -35,11 +35,7 @@ export const withDeserializeMD = <
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    const isEnabled = isDeserializerEnabled(
-      editor,
-      plugins as PlatePlugin[],
-      csvDeserializerId
-    );
+    const isEnabled = isDeserializerEnabled(editor, plugins, csvDeserializerId);
 
     const { files } = data;
     if (content && isEnabled && !files?.length) {

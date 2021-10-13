@@ -38,11 +38,7 @@ export const withDeserializeCSV = <
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    const isEnabled = isDeserializerEnabled(
-      editor,
-      plugins as PlatePlugin[],
-      csvDeserializerId
-    );
+    const isEnabled = isDeserializerEnabled(editor, plugins, csvDeserializerId);
 
     if (content && isEnabled) {
       const fragment = deserializeCSV(editor, content, true, errorTolerance);

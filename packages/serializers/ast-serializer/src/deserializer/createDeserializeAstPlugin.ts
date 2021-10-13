@@ -4,7 +4,6 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { csvDeserializerId } from '@udecode/plate-csv-serializer/src';
 import {
   insertDeserializedFragment,
   isDeserializerEnabled,
@@ -33,13 +32,7 @@ export const withDeserializeAst = <
   editor.insertData = (data: DataTransfer) => {
     const ast = data.getData('application/x-slate-fragment');
 
-    isDeserializerEnabled(editor, plugins as PlatePlugin[], astDeserializerId);
-
-    const isEnabled = plugins.reduce(
-      (all, { deserialize }) =>
-        all || (deserialize?.(editor).isDisabled?.(csvDeserializerId) ?? false),
-      true
-    );
+    const isEnabled = isDeserializerEnabled(editor, plugins, astDeserializerId);
 
     if (ast && isEnabled) {
       const decoded = decodeURIComponent(window.atob(ast));

@@ -32,8 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@udecode/plate-ast-serializer": "^5.1.0",
     "@udecode/plate-common": "5.1.0",
     "@udecode/plate-core": "4.3.7",
+    "@udecode/plate-html-serializer": "^5.1.0",
     "prismjs": "^1.25.0"
   },
   "peerDependencies": {

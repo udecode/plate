@@ -1,4 +1,5 @@
 import { PlatePluginOptions } from '@udecode/plate-core';
+import { astDeserializerId } from '@udecode/plate-ast-serializer';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
@@ -9,7 +10,7 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
   syntax: true,
   syntaxPopularFirst: false,
-  deserializers: ['AST Deserializer'],
+  deserializers: [astDeserializerId],
 };
 
 // `

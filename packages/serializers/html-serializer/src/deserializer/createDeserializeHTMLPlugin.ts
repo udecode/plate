@@ -35,7 +35,7 @@ export const withDeserializeHTML = <
 
     const isEnabled = isDeserializerEnabled(
       editor,
-      plugins as PlatePlugin[],
+      plugins,
       htmlDeserializerId
     );
 
