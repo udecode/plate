@@ -36,6 +36,7 @@ import { Looks5 } from '@styled-icons/material/Looks5';
 import { Looks6 } from '@styled-icons/material/Looks6';
 import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
+import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
 import {
   addColumn,
@@ -164,6 +165,7 @@ import {
   ToolbarLink,
   ToolbarList,
   ToolbarMark,
+  ToolbarMediaEmbed,
   ToolbarSearchHighlight,
   ToolbarTable,
   unwrapList,
@@ -315,8 +317,10 @@ const initialValueBasic = [
 const ReactLiveScope = {
   React,
   ...React,
+  OndemandVideo,
   indent,
   outdent,
+  ToolbarMediaEmbed,
   FormatIndentDecrease,
   FormatIndentIncrease,
   initialValueIndent,

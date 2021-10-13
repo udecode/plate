@@ -35,7 +35,8 @@
     "@udecode/plate-common": "5.1.0",
     "@udecode/plate-core": "4.3.7",
     "@udecode/plate-media-embed": "5.1.0",
-    "@udecode/plate-styled-components": "5.1.0"
+    "@udecode/plate-styled-components": "5.1.0",
+    "@udecode/plate-toolbar": "5.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

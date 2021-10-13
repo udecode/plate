@@ -21,14 +21,20 @@ npm install @udecode/plate-media-embed-ui
   ];
 
   return (
-    <Plate
-      id="media-embed"
-      plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueEmbeds}
-    />
+    <>
+      <HeadingToolbar>
+        <ToolbarMediaEmbed icon={<OndemandVideo />} />
+      </HeadingToolbar>
+   
+      <Plate
+        id="media-embed"
+        plugins={plugins}
+        components={components}
+        options={options}
+        editableProps={editableProps}
+        initialValue={initialValueEmbeds}
+      />
+    </>
   );
 }
 ```
