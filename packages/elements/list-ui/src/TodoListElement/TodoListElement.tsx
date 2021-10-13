@@ -26,12 +26,24 @@ export const TodoListElement = (props: TodoListElementProps) => {
 
   const styles = getTodoListElementStyles({ ...props, checked });
 
+  console.log(
+    clsx(
+      styles.root.className,
+      styles.rootChecked?.className,
+      rootProps?.className
+    )
+  );
+
   return (
     <div
       {...attributes}
       css={styles.root.css}
-      className={clsx(styles.root.className, styles.rootChecked?.className)}
       {...rootProps}
+      className={clsx(
+        styles.root.className,
+        styles.rootChecked?.className,
+        rootProps?.className
+      )}
     >
       <div
         contentEditable={false}

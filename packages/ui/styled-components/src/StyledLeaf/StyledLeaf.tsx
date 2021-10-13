@@ -28,7 +28,7 @@ export const StyledLeaf = (props: StyledLeafProps) => {
   });
 
   return (
-    <span {...attributes} css={root.css} {...nodeProps} {...rootProps}>
+    <span {...attributes} css={root.css} {...rootProps} {...nodeProps}>
       {children}
     </span>
   );

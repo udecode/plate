@@ -24,8 +24,8 @@ export const HrElement = (props: HrElementProps) => {
       {...attributes}
       css={styles.root?.css}
       className={styles.root?.className}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       <hr
         contentEditable={false}

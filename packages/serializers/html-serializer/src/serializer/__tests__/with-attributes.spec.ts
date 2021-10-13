@@ -37,7 +37,7 @@ it('serialize link to html with attributes', () => {
       }
     )
   ).toBe(
-    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-LinkElement" target="_blank" rel="noopener nofollow">link</a> part.'
+    'Some paragraph of text with <a href="https://theuselessweb.com/" class="slate-a" target="_blank" rel="noopener nofollow">link</a> part.'
   );
 });
 

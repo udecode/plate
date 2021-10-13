@@ -21,8 +21,8 @@ export const BlockquoteElement = (props: StyledElementProps) => {
       {...attributes}
       css={root.css}
       className={root.className}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       {children}
     </blockquote>

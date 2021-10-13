@@ -21,8 +21,8 @@ export const TableElement = (props: StyledElementProps) => {
       {...attributes}
       css={root.css}
       className={root.className}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       <tbody>{children}</tbody>
     </table>

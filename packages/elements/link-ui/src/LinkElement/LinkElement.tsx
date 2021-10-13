@@ -23,8 +23,8 @@ export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {
       href={element.url}
       css={root.css}
       className={root.className}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       {children}
     </a>

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import clsx from 'clsx';
 import castArray from 'lodash/castArray';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';
 import { StyledElementProps } from './StyledElement.types';
@@ -27,7 +28,7 @@ export const StyledElement = (props: StyledElementProps) => {
   });
 
   return (
-    <div {...attributes} css={root.css} {...nodeProps} {...rootProps}>
+    <div {...attributes} css={root.css} {...rootProps} {...nodeProps}>
       {children}
     </div>
   );

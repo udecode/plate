@@ -46,7 +46,7 @@ it('serialize link to html with attributes', () => {
       ],
     })
   ).toBe(
-    'An external <a href="https://theuselessweb.com/" class="slate-LinkElement" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-LinkElement">link</a>.'
+    'An external <a href="https://theuselessweb.com/" class="slate-a" target="_blank">link</a> and an internal <a href="https://slatejs.org/" class="slate-a">link</a>.'
   );
 });
 

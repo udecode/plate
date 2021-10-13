@@ -90,8 +90,8 @@ export const ImageElement = (props: ImageElementProps) => {
       {...attributes}
       css={styles.root.css}
       className={styles.root.className}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       <div contentEditable={false}>
         <figure

@@ -34,8 +34,8 @@ export const MentionElement = (props: MentionElementProps) => {
       css={styles.root.css}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
-      {...nodeProps}
       {...rootProps}
+      {...nodeProps}
     >
       {prefix}
       {renderLabel ? renderLabel(element) : element.value}

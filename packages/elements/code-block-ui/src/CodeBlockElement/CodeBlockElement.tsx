@@ -38,8 +38,8 @@ export const CodeBlockElement = (props: StyledElementProps) => {
         {...attributes}
         css={root.css}
         className={root.className}
-        {...nodeProps}
         {...rootProps}
+        {...nodeProps}
       >
         {code_block?.syntax && (
           <CodeBlockSelectElement
