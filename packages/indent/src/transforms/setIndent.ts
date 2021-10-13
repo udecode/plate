@@ -17,12 +17,12 @@ export const setIndent = (
     ...options
   }: EditorNodesOptions & UnhangRangeOptions & { offset: number }
 ) => {
-  const nodes = [
-    ...getNodes(editor, {
+  const nodes = Array.from(
+    getNodes(editor, {
       block: true,
       ...options,
-    }),
-  ];
+    })
+  );
 
   nodes.forEach(([node, path]) => {
     const blockIndent = node.indent ?? 0;
