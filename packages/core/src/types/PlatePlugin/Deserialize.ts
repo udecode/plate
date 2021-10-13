@@ -35,4 +35,6 @@ export type Deserialize<T extends SPEditor = SPEditor> = (
    * @return if true, the next handlers will be skipped.
    */
   preInsert?: (fragment: TDescendant[]) => HandlerReturnType;
+
+  isDisabled?: (deserializerId: string) => boolean;
 };

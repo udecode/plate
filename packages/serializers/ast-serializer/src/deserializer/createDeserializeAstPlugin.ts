@@ -4,7 +4,11 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { insertDeserializedFragment } from '@udecode/plate-serializer';
+import { csvDeserializerId } from '@udecode/plate-csv-serializer/src';
+import {
+  insertDeserializedFragment,
+  isDeserializerEnabled,
+} from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 
 export interface WithDeserializeAstOptions<
@@ -12,6 +16,8 @@ export interface WithDeserializeAstOptions<
 > {
   plugins?: PlatePlugin<T>[];
 }
+
+export const astDeserializerId = 'AST Deserializer';
 
 /**
  * Enables support for deserializing inserted content from Slate Ast format to Slate format
@@ -27,7 +33,15 @@ export const withDeserializeAst = <
   editor.insertData = (data: DataTransfer) => {
     const ast = data.getData('application/x-slate-fragment');
 
-    if (ast) {
+    isDeserializerEnabled(editor, plugins as PlatePlugin[], astDeserializerId);
+
+    const isEnabled = plugins.reduce(
+      (all, { deserialize }) =>
+        all || (deserialize?.(editor).isDisabled?.(csvDeserializerId) ?? false),
+      true
+    );
+
+    if (ast && isEnabled) {
       const decoded = decodeURIComponent(window.atob(ast));
       const fragment = JSON.parse(decoded);
 

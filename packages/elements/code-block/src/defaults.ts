@@ -9,6 +9,7 @@ export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
   syntax: true,
   syntaxPopularFirst: false,
+  deserializers: ['AST Deserializer'],
 };
 
 // `
