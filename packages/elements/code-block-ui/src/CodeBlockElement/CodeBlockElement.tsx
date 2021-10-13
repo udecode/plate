@@ -20,6 +20,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
   const editor = useEditorRef();
   const { root } = getCodeBlockElementStyles(props);
   const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const codeClassName = lang ? `${lang} language-${lang}` : '';
 
   return (
     <>
@@ -43,7 +44,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
             }}
           />
         )}
-        <code>{children}</code>
+        <code className={codeClassName}>{children}</code>
       </pre>
     </>
   );
