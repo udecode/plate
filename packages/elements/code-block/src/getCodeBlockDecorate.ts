@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Prism, { languages, Token, tokenize } from 'prismjs';
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';

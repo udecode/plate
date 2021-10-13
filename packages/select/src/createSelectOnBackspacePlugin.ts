@@ -28,7 +28,7 @@ export const withSelectOnBackspace = (
       });
       if (prevNode) {
         const [prevCell] = Editor.nodes<TNode>(editor, {
-          match: (node) => queryNode([node, prevNode.path], query),
+          match: (node) => queryNode([node as TNode, prevNode.path], query),
           at: prevNode,
         });
 

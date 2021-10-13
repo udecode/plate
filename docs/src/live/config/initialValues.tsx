@@ -42,6 +42,20 @@ import { createElement, createList, getNodesWithRandomId } from './utils';
 
 jsx;
 
+export const initialValueIndent: any = (
+  <fragment>
+    <hh1>Changing block indentation</hh1>
+    <hp indent={1}>
+      Use the toolbar buttons to control the indentation of specific blocks. You
+      can use these tools to highlight an important piece of information,
+      communicate a hierarchy or just give your content some room.
+    </hp>
+    <hp indent={2}>
+      For instance, this paragraph looks like it belongs to the previous one.
+    </hp>
+  </fragment>
+);
+
 export const initialValueEmpty: any = (
   <fragment>
     <hp>
@@ -1204,6 +1218,7 @@ export const initialValuePlayground: any = getNodesWithRandomId([
   ...initialValueHighlight,
   ...initialValueBasicElements,
   ...initialValueHorizontalRule,
+  ...initialValueIndent,
   ...initialValueList,
   ...initialValueTables,
   ...initialValueLinks,

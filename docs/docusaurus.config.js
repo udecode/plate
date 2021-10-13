@@ -49,6 +49,7 @@ const alias = {
   '@udecode/plate-html-serializer': 'serializers/html-serializer',
   '@udecode/plate-image': 'elements/image',
   '@udecode/plate-image-ui': 'elements/image-ui',
+  '@udecode/plate-indent': 'indent',
   '@udecode/plate-kbd': 'marks/kbd',
   '@udecode/plate-link': 'elements/link',
   '@udecode/plate-link-ui': 'elements/link-ui',

@@ -1,5 +1,65 @@
 # @udecode/plate
 
+## 5.3.0
+
+### Minor Changes
+
+- [#1126](https://github.com/udecode/plate/pull/1126) [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930) Thanks [@zbeyens](https://github.com/zbeyens)! - new package: plate-indent
+
+### Patch Changes
+
+- Updated dependencies [[`09234c44`](https://github.com/udecode/plate/commit/09234c44e69f59ad493a3b2ab2d72d735c254f43), [`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33), [`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930)]:
+  - @udecode/plate-media-embed-ui@5.3.0
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-code-block-ui@5.3.0
+  - @udecode/plate-code-block@5.3.0
+  - @udecode/plate-indent@5.3.0
+  - @udecode/plate-block-quote-ui@5.3.0
+  - @udecode/plate-image-ui@5.3.0
+  - @udecode/plate-link-ui@5.3.0
+  - @udecode/plate-list-ui@5.3.0
+  - @udecode/plate-mention-ui@5.3.0
+  - @udecode/plate-table-ui@5.3.0
+  - @udecode/plate-styled-components@5.3.0
+  - @udecode/plate-autoformat@5.3.0
+  - @udecode/plate-break@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-dnd@5.3.0
+  - @udecode/plate-alignment@5.3.0
+  - @udecode/plate-alignment-ui@5.3.0
+  - @udecode/plate-basic-elements@5.3.0
+  - @udecode/plate-block-quote@5.3.0
+  - @udecode/plate-heading@5.3.0
+  - @udecode/plate-horizontal-rule@5.3.0
+  - @udecode/plate-image@5.3.0
+  - @udecode/plate-link@5.3.0
+  - @udecode/plate-list@5.3.0
+  - @udecode/plate-media-embed@5.3.0
+  - @udecode/plate-mention@5.3.0
+  - @udecode/plate-paragraph@5.3.0
+  - @udecode/plate-table@5.3.0
+  - @udecode/plate-find-replace@5.3.0
+  - @udecode/plate-find-replace-ui@5.3.0
+  - @udecode/plate-basic-marks@5.3.0
+  - @udecode/plate-font@5.3.0
+  - @udecode/plate-font-ui@5.3.0
+  - @udecode/plate-highlight@5.3.0
+  - @udecode/plate-kbd@5.3.0
+  - @udecode/plate-node-id@5.3.0
+  - @udecode/plate-normalizers@5.3.0
+  - @udecode/plate-placeholder@5.3.0
+  - @udecode/plate-reset-node@5.3.0
+  - @udecode/plate-select@5.3.0
+  - @udecode/plate-ast-serializer@5.3.0
+  - @udecode/plate-csv-serializer@5.3.0
+  - @udecode/plate-html-serializer@5.3.0
+  - @udecode/plate-md-serializer@5.3.0
+  - @udecode/plate-serializer@5.3.0
+  - @udecode/plate-trailing-block@5.3.0
+  - @udecode/plate-combobox@5.3.0
+  - @udecode/plate-popper@5.3.0
+  - @udecode/plate-toolbar@5.3.0
+
 ## 5.2.3
 
 ### Patch Changes

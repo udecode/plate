@@ -15,11 +15,22 @@ import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 import { CodeBlockSelectElement } from './CodeBlockSelectElement';
 
 export const CodeBlockElement = (props: StyledElementProps) => {
-  const { attributes, children, element, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
+
   const { lang } = element;
   const editor = useEditorRef();
   const { root } = getCodeBlockElementStyles(props);
   const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const codeClassName = lang ? `${lang} language-${lang}` : '';
 
   return (
     <>
@@ -27,6 +38,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
         {...attributes}
         css={root.css}
         className={root.className}
+        {...rootProps}
         {...nodeProps}
       >
         {code_block?.syntax && (
@@ -43,7 +55,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
             }}
           />
         )}
-        <code>{children}</code>
+        <code className={codeClassName}>{children}</code>
       </pre>
     </>
   );

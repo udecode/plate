@@ -14,6 +14,7 @@ export * from './getPlatePluginTypes';
 export * from './getPlatePluginWithOverrides';
 export * from './getRenderElement';
 export * from './getRenderLeaf';
+export * from './getRenderNodeProps';
 export * from './getSlateClass';
 export * from './getVoidTypes';
 export * from './mapPlatePluginKeysToOptions';

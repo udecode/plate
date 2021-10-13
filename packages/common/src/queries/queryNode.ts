@@ -1,30 +1,36 @@
 import { TNode } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
-import { Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 /**
  * Query the node entry.
  */
-export const queryNode = <T extends Node>(
+export const queryNode = <T extends TNode>(
   entry?: NodeEntry<T>,
-  { filter = () => true, allow = [], exclude = [] }: QueryNodeOptions = {}
+  { filter, allow, exclude }: QueryNodeOptions = {}
 ) => {
-  const allows = castArray(allow);
-  const excludes = castArray(exclude);
+  if (!entry) return false;
 
-  let filterAllow: typeof filter = () => true;
-  if (allows.length) {
-    filterAllow = ([n]) => allows.includes(n.type);
+  if (filter && !filter(entry)) {
+    return false;
   }
 
-  let filterExclude: typeof filter = () => true;
-  if (excludes.length) {
-    filterExclude = ([n]) => !excludes.includes(n.type);
+  if (allow) {
+    const allows = castArray(allow);
+
+    if (allows.length && !allows.includes(entry[0].type)) {
+      return false;
+    }
   }
 
-  const _entry = entry as NodeEntry<TNode>;
-  return (
-    !!_entry && filter(_entry) && filterAllow(_entry) && filterExclude(_entry)
-  );
+  if (exclude) {
+    const excludes = castArray(exclude);
+
+    if (excludes.length && excludes.includes(entry[0].type)) {
+      return false;
+    }
+  }
+
+  return true;
 };

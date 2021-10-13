@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-code-block",
-  "version": "5.1.0",
+  "version": "5.3.0",
   "description": "Code block plugin for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-ast-serializer": "^5.1.0",
-    "@udecode/plate-common": "5.1.0",
-    "@udecode/plate-core": "4.3.7",
-    "@udecode/plate-html-serializer": "^5.1.0",
+    "@udecode/plate-ast-serializer": "^5.3.0",
+    "@udecode/plate-common": "5.3.0",
+    "@udecode/plate-core": "5.3.0",
+    "@udecode/plate-html-serializer": "^5.3.0",
     "prismjs": "^1.25.0"
   },
   "peerDependencies": {

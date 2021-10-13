@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-combobox",
-  "version": "5.2.3",
+  "version": "5.3.0",
   "description": "Combobox UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "5.1.0",
-    "@udecode/plate-core": "4.3.7",
-    "@udecode/plate-popper": "5.1.0",
-    "@udecode/plate-styled-components": "5.1.0",
+    "@udecode/plate-common": "5.3.0",
+    "@udecode/plate-core": "5.3.0",
+    "@udecode/plate-popper": "5.3.0",
+    "@udecode/plate-styled-components": "5.3.0",
     "@udecode/zustood": "0.3.0",
     "downshift": "6.1.7",
     "zustand": "3.5.11"

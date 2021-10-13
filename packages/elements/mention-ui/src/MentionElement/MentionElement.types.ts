@@ -7,7 +7,8 @@ export interface MentionElementStyleProps extends MentionElementProps {
 }
 
 // renderElement props
-export interface MentionElementProps extends StyledElementProps<MentionNode> {
+export interface MentionElementProps
+  extends Omit<StyledElementProps<MentionNode>, 'onClick'> {
   /**
    * Prefix rendered before mention
    */

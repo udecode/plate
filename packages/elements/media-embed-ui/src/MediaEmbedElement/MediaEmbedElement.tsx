@@ -8,7 +8,16 @@ import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
-  const { attributes, children, element, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles: _styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const editor = useEditorRef();
   const { url } = element;
@@ -20,6 +29,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
       {...attributes}
       css={styles.root.css}
       className={styles.root.className}
+      {...rootProps}
     >
       <div contentEditable={false}>
         <div

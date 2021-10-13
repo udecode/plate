@@ -10,9 +10,13 @@ export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
     children,
     nodeProps,
     element,
+    styles: _styles,
+    classNames,
+    prefixClassNames,
     scrollToContent = true,
     libraryItems = [],
     excalidrawProps: _excalidrawProps,
+    ...rootProps
   } = props;
 
   const [Excalidraw, setExcalidraw] = useState<any>(null);
@@ -47,7 +51,7 @@ export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
   };
 
   return (
-    <div {...attributes}>
+    <div {...attributes} {...rootProps}>
       <div contentEditable={false}>
         <div
           css={styles.excalidrawWrapper?.css}

@@ -68,7 +68,7 @@ const ComboboxContent = (props: ComboboxProps) => {
   );
 
   // Update popper position
-  const { styles: popperStyles, attributes, state } = usePopperPosition({
+  const { styles: popperStyles, attributes } = usePopperPosition({
     popperElement: popperRef.current,
     popperContainer,
     popperOptions,
