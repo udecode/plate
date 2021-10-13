@@ -1,5 +1,28 @@
 # @udecode/plate-core
 
+## 5.3.0
+
+### Minor Changes
+
+- [#1126](https://github.com/udecode/plate/pull/1126) [`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
+  - `PlatePlugin`
+    - new field: `overrideProps`
+      - Overrides rendered node props (shallow merge).
+      - This enables controlling the props of any node component (use cases: indent, align,...).
+      - used by `pipeRenderElement` and `pipeRenderLeaf`
+  - `getRenderElement` and `getRenderLeaf`:
+    - pass the rest of the props to the component
+    - `getRenderNodeProps`:
+      - computes slate class and `nodeProps`
+  - new dependency: `clsx`
+  - new types:
+    - `OverrideProps`
+    - `PlatePluginEditor`
+    - `PlatePluginSerialize`
+    - `PlatePluginNode`
+    - `PlatePluginElement`
+    - `PlatePluginLeaf`
+
 ## 4.3.7
 
 ### Patch Changes

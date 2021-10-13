@@ -1,5 +1,22 @@
 # @udecode/plate-code-block-ui
 
+## 5.3.0
+
+### Minor Changes
+
+- [#1126](https://github.com/udecode/plate/pull/1126) [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930) Thanks [@zbeyens](https://github.com/zbeyens)! - pass rest of props to the root tag
+
+### Patch Changes
+
+- [#1131](https://github.com/udecode/plate/pull/1131) [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33) Thanks [@bensquire](https://github.com/bensquire)! - Adds language class to codeblock <code> element, this enable language specifix syntax highlighting.
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33), [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-code-block@5.3.0
+  - @udecode/plate-styled-components@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-toolbar@5.3.0
+
 ## 5.1.0
 
 ### Patch Changes
