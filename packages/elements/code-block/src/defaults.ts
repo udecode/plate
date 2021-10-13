@@ -1,5 +1,5 @@
-import { PlatePluginOptions } from '@udecode/plate-core';
 import { astDeserializerId } from '@udecode/plate-ast-serializer';
+import { PlatePluginOptions } from '@udecode/plate-core';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
