@@ -1,4 +1,3 @@
-import { GetNodeProps } from '../PlatePluginOptions/GetNodeProps';
 import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
