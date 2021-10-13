@@ -1,7 +1,4 @@
-import { getSlateClass } from '@udecode/plate-core';
-import { CLASS_TODO_LIST_CHECKED } from '../../../../../elements/list/src/todo-list/constants';
 import { createTodoListPlugin } from '../../../../../elements/list/src/todo-list/createTodoListPlugin';
-import { ELEMENT_TODO_LI } from '../../../../../elements/list/src/todo-list/defaults';
 import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
