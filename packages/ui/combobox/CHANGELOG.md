@@ -1,5 +1,15 @@
 # @udecode/plate-combobox
 
+## 5.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-styled-components@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-popper@5.3.0
+
 ## 5.2.3
 
 ### Patch Changes
