@@ -76,6 +76,7 @@ import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { ToolbarCodeBlock } from '@udecode/plate-code-block-ui';
 import { useEventEditorId } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
+import { getPreventDefaultHandler } from '../../../../packages/common/src/utils/getPreventDefaultHandler';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -124,17 +125,11 @@ export const ToolbarButtonsIndent = () => {
   return (
     <>
       <ToolbarButton
-        onMouseDown={(e) => {
-          e.preventDefault();
-          outdent(editor);
-        }}
+        onMouseDown={editor && getPreventDefaultHandler(outdent, editor)}
         icon={<FormatIndentDecrease />}
       />
       <ToolbarButton
-        onMouseDown={(e) => {
-          e.preventDefault();
-          indent(editor);
-        }}
+        onMouseDown={editor && getPreventDefaultHandler(indent, editor)}
         icon={<FormatIndentIncrease />}
       />
     </>
