@@ -53,7 +53,6 @@ import {
   ELEMENT_OL,
   ELEMENT_UL,
   getPlatePluginType,
-  getPreventDefaultHandler,
   indent,
   insertTable,
   MARK_BOLD,
@@ -125,11 +124,17 @@ export const ToolbarButtonsIndent = () => {
   return (
     <>
       <ToolbarButton
-        onMouseDown={editor && getPreventDefaultHandler(outdent, editor)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          outdent(editor);
+        }}
         icon={<FormatIndentDecrease />}
       />
       <ToolbarButton
-        onMouseDown={editor && getPreventDefaultHandler(indent, editor)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          indent(editor);
+        }}
         icon={<FormatIndentIncrease />}
       />
     </>

@@ -7,6 +7,9 @@ import {
 import { TEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 
+/**
+ * Add offset to the indentation of the selected blocks.
+ */
 export const setIndent = (
   editor: TEditor,
   {
