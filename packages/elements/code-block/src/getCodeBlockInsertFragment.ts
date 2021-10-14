@@ -1,12 +1,12 @@
 import { findNode } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TDescendant } from '@udecode/plate-core';
-import { Node, Path, Transforms } from 'slate';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
+import { SPEditor, TDescendant } from '@udecode/plate-core';
+import { Node, Transforms } from 'slate';
+import { getCodeBlockType, getCodeLineType } from './options';
 
 export function getCodeBlockInsertFragment(editor: SPEditor) {
   const { insertFragment } = editor;
-  const codeBlockType = getPlatePluginType(editor, ELEMENT_CODE_BLOCK);
-  const codeLineType = getPlatePluginType(editor, ELEMENT_CODE_LINE);
+  const codeBlockType = getCodeBlockType(editor);
+  const codeLineType = getCodeLineType(editor);
 
   function convertNodeToCodeLine(node: TDescendant) {
     return {
@@ -20,33 +20,18 @@ export function getCodeBlockInsertFragment(editor: SPEditor) {
   }
 
   return (fragment: TDescendant[]) => {
-    const codeLineEntry = findNode(editor, {
-      match: { type: codeLineType },
-      mode: 'lowest',
-    });
-
-    if (codeLineEntry) {
-      const [codeLineNode, codeLinePath] = codeLineEntry;
-      const isEmptyCodeLine = Node.string(codeLineNode);
-
-      if (!isEmptyCodeLine) {
-        Transforms.removeNodes(editor, { at: codeLinePath });
-      }
-
-      return Transforms.insertNodes(
-        editor,
-        fragment.flatMap((node) =>
-          node.type === codeBlockType
-            ? extractCodeLinesFromCodeBlock(node)
-            : convertNodeToCodeLine(node)
-        ),
-        {
-          at: isEmptyCodeLine ? Path.next(codeLinePath) : codeLinePath,
-          select: true,
-        }
-      );
+    const inCodeLine = findNode(editor, { match: { type: codeLineType } });
+    if (!inCodeLine) {
+      return insertFragment(fragment);
     }
 
-    insertFragment(fragment);
+    return Transforms.insertFragment(
+      editor,
+      fragment.flatMap((node) =>
+        node.type === codeBlockType
+          ? extractCodeLinesFromCodeBlock(node)
+          : convertNodeToCodeLine(node)
+      )
+    );
   };
 }

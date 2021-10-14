@@ -47,18 +47,14 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
-import {
-  Decorate,
-  getPlatePluginOptions,
-  isElement,
-} from '@udecode/plate-core';
+import { Decorate, isElement } from '@udecode/plate-core';
 import { Node, NodeEntry } from 'slate';
 import { getParent } from '@udecode/plate-common';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
+import { getCodeLinePluginOptions, getCodeBlockPluginOptions } from './options';
 
 export const getCodeLineDecorate = (): Decorate => (editor) => {
-  const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const code_line = getCodeLinePluginOptions(editor);
+  const code_block = getCodeBlockPluginOptions(editor);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
