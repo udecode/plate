@@ -1,12 +1,12 @@
 import { findNode } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TDescendant } from '@udecode/plate-core';
+import { SPEditor, TDescendant } from '@udecode/plate-core';
 import { Node, Transforms } from 'slate';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
+import { getCodeBlockType, getCodeLineType } from './options';
 
 export function getCodeBlockInsertFragment(editor: SPEditor) {
   const { insertFragment } = editor;
-  const codeBlockType = getPlatePluginType(editor, ELEMENT_CODE_BLOCK);
-  const codeLineType = getPlatePluginType(editor, ELEMENT_CODE_LINE);
+  const codeBlockType = getCodeBlockType(editor);
+  const codeLineType = getCodeLineType(editor);
 
   function convertNodeToCodeLine(node: TDescendant) {
     return {

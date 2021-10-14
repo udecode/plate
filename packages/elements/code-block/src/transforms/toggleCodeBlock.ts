@@ -1,36 +1,36 @@
 import { getNodes, setNodes, someNode, wrapNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
+import { SPEditor, TElement } from '@udecode/plate-core';
+import { getCodeBlockType, getCodeLineType } from '../options';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: SPEditor) => {
   if (!editor.selection) return;
 
   const isActive = someNode(editor, {
-    match: { type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK) },
+    match: { type: getCodeBlockType(editor) },
   });
 
   unwrapCodeBlock(editor);
 
   setNodes<TElement>(editor, {
-    type: getPlatePluginType(editor, ELEMENT_CODE_LINE),
+    type: getCodeLineType(editor),
   });
 
   if (!isActive) {
     const codeBlock = {
-      type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
+      type: getCodeBlockType(editor),
       children: [],
     };
     wrapNodes(editor, codeBlock);
 
     const nodes = [
       ...getNodes(editor, {
-        match: { type: getPlatePluginType(editor, ELEMENT_CODE_LINE) },
+        match: { type: getCodeLineType(editor) },
       }),
     ];
 
     const codeLine = {
-      type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
+      type: getCodeBlockType(editor),
       children: [],
     };
 

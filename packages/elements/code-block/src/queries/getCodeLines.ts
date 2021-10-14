@@ -1,7 +1,7 @@
 import { getNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { SPEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
-import { ELEMENT_CODE_LINE } from '../defaults';
+import { getCodeLineType } from '../options';
 
 /**
  * Get code line entries
@@ -15,7 +15,7 @@ export const getCodeLines = (
   return [
     ...getNodes(editor, {
       at,
-      match: { type: getPlatePluginType(editor, ELEMENT_CODE_LINE) },
+      match: { type: getCodeLineType(editor) },
     }),
   ];
 };

@@ -2,9 +2,9 @@ import * as React from 'react';
 import {
   CODE_BLOCK_LANGUAGES,
   CODE_BLOCK_LANGUAGES_POPULAR,
-  ELEMENT_CODE_BLOCK,
+  getCodeBlockPluginOptions,
 } from '@udecode/plate-code-block';
-import { getPlatePluginOptions, useEditorRef } from '@udecode/plate-core';
+import { useEditorRef } from '@udecode/plate-core';
 import { CSSProp } from 'styled-components';
 
 export const CodeBlockSelectElement = ({
@@ -19,7 +19,7 @@ export const CodeBlockSelectElement = ({
 }) => {
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const code_block = getCodeBlockPluginOptions(editor);
   return (
     <select
       value={value}

@@ -1,18 +1,14 @@
 import { getElementDeserializer } from '@udecode/plate-common';
-import {
-  Deserialize,
-  getPlatePluginOptions,
-  getSlateClass,
-} from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
+import { Deserialize, getSlateClass } from '@udecode/plate-core';
+import { getCodeBlockPluginOptions, getCodeLinePluginOptions } from './options';
 
 export const getCodeBlockDeserialize = (): Deserialize => (editor) => {
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
-  const code_line = getPlatePluginOptions(editor, ELEMENT_CODE_LINE);
+  const code_block = getCodeBlockPluginOptions(editor);
+  const code_line = getCodeLinePluginOptions(editor);
 
   return {
     isDisabled: (deserializerId) =>
-      !code_block.deserializers.includes(deserializerId),
+      !code_block.deserializers?.includes(deserializerId),
     element: [
       ...getElementDeserializer({
         type: code_block.type,
