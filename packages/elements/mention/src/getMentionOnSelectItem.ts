@@ -2,6 +2,7 @@ import {
   ComboboxItemData,
   ComboboxOnSelectItem,
   comboboxStore,
+  ItemData,
 } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
 import {
@@ -14,18 +15,18 @@ import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './defaults';
 // FIXME: Cannot figure out the TS for this to work with insertNodes
 // import { MentionNodeData } from './types';
 
-export interface CreateMentionNode {
-  (item: ComboboxItemData): Record<string, unknown>;
+export interface CreateMentionNode<TItemData extends ItemData> {
+  (item: ComboboxItemData<TItemData>): Record<string, unknown>;
 }
 
-export const getMentionOnSelectItem = ({
+export const getMentionOnSelectItem = <TItemData extends ItemData>({
   pluginKey = ELEMENT_MENTION,
   createMentionNode = (item) => ({ value: item.text }),
   insertSpaceAfterMention,
 }: {
-  createMentionNode?: CreateMentionNode;
+  createMentionNode?: CreateMentionNode<TItemData>;
   insertSpaceAfterMention?: boolean;
-} & PlatePluginKey = {}): ComboboxOnSelectItem => (editor, item) => {
+} & PlatePluginKey = {}): ComboboxOnSelectItem<TItemData> => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 

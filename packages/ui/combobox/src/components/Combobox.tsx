@@ -14,10 +14,15 @@ import {
 } from '../combobox.store';
 import { useComboboxControls } from '../hooks';
 import { getComboboxStyles } from './Combobox.styles';
-import { ComboboxProps } from './Combobox.types';
+import {
+  ComboboxItemData,
+  ComboboxProps,
+  ItemData,
+  NoItemData,
+} from './Combobox.types';
 
-const ComboboxContent = (
-  props: Pick<ComboboxProps, 'component' | 'items' | 'onRenderItem'>
+const ComboboxContent = <TItemData extends ItemData = NoItemData>(
+  props: Pick<ComboboxProps<TItemData>, 'component' | 'items' | 'onRenderItem'>
 ) => {
   const { component: Component, items, onRenderItem } = props;
 
@@ -100,7 +105,9 @@ const ComboboxContent = (
         {Component ? Component({ store: activeComboboxStore }) : null}
 
         {filteredItems.map((item, index) => {
-          const Item = onRenderItem ? onRenderItem({ item }) : item.text;
+          const Item = onRenderItem
+            ? onRenderItem({ item: item as ComboboxItemData<TItemData> })
+            : item.text;
 
           const highlighted = index === highlightedIndex;
 
@@ -137,14 +144,14 @@ const ComboboxContent = (
  * Register the combobox id, trigger, onSelectItem
  * Renders the combobox if active.
  */
-export const Combobox = ({
+export const Combobox = <TItemData extends ItemData = NoItemData>({
   id,
   trigger,
   searchPattern,
   onSelectItem,
   controlled,
   ...props
-}: ComboboxProps) => {
+}: ComboboxProps<TItemData>) => {
   const editor = useEditorState();
   const focusedEditorId = useEventEditorId('focus');
   const combobox = useComboboxControls();

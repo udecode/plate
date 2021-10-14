@@ -1,10 +1,10 @@
 import { UsePopperOptions } from '@udecode/plate-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { Range } from 'slate';
-import { ComboboxItemData } from './components/Combobox.types';
-import { ComboboxOnSelectItem } from './types/ComboboxOnSelectItem';
+import { ComboboxItemData, NoItemData } from './components';
+import { ComboboxOnSelectItem } from './types';
 
-export type ComboboxStateById = {
+export type ComboboxStateById<TItemData = NoItemData> = {
   /**
    * Combobox id.
    */
@@ -14,7 +14,7 @@ export type ComboboxStateById = {
    * Items filter function by text.
    * @default (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
    */
-  filter?: (search: string) => (item: ComboboxItemData) => boolean;
+  filter?: (search: string) => (item: ComboboxItemData<TItemData>) => boolean;
 
   /**
    * Max number of items.
@@ -35,7 +35,7 @@ export type ComboboxStateById = {
   /**
    * Called when an item is selected.
    */
-  onSelectItem: ComboboxOnSelectItem | null;
+  onSelectItem: ComboboxOnSelectItem<TItemData> | null;
 
   /**
    * Is opening/closing the combobox controlled by the client.
@@ -43,13 +43,13 @@ export type ComboboxStateById = {
   controlled?: boolean;
 };
 
-export type ComboboxStoreById = StoreApi<
+export type ComboboxStoreById<TItemData = NoItemData> = StoreApi<
   string,
-  ComboboxStateById,
-  StateActions<ComboboxStateById>
+  ComboboxStateById<TItemData>,
+  StateActions<ComboboxStateById<TItemData>>
 >;
 
-export type ComboboxState = {
+export type ComboboxState<TItemData = NoItemData> = {
   /**
    * Active id (combobox id which is opened).
    */
@@ -64,12 +64,12 @@ export type ComboboxState = {
   /**
    * Unfiltered items.
    */
-  items: ComboboxItemData[];
+  items: ComboboxItemData<TItemData>[];
 
   /**
    * Filtered items
    */
-  filteredItems: ComboboxItemData[];
+  filteredItems: ComboboxItemData<TItemData>[];
 
   /**
    * Highlighted index.
@@ -111,11 +111,15 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
   text: null,
 })
   .extendActions((set, get) => ({
-    setComboboxById: (state: ComboboxStateById) => {
+    setComboboxById: <TItemData = NoItemData>(
+      state: ComboboxStateById<TItemData>
+    ) => {
       if (get.byId()[state.id]) return;
 
       set.state((draft) => {
-        draft.byId[state.id] = createComboboxStore(state);
+        draft.byId[state.id] = createComboboxStore(
+          (state as unknown) as ComboboxStateById
+        );
       });
     },
     open: (state: Pick<ComboboxState, 'activeId' | 'targetRange' | 'text'>) => {
