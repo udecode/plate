@@ -1,7 +1,7 @@
 import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, isElement, SPEditor } from '@udecode/plate-core';
+import { isElement, SPEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
-import { ELEMENT_CODE_LINE } from '../defaults';
+import { getCodeLineType } from '../options';
 
 /**
  * If at (default = selection) is in ul>li>p, return li and ul node entries.
@@ -14,7 +14,7 @@ export const getCodeLineEntry = (
     at &&
     someNode(editor, {
       at,
-      match: { type: getPlatePluginType(editor, ELEMENT_CODE_LINE) },
+      match: { type: getCodeLineType(editor) },
     })
   ) {
     const selectionParent = getParent(editor, at);
@@ -24,7 +24,7 @@ export const getCodeLineEntry = (
     const codeLine =
       getAbove(editor, {
         at,
-        match: { type: getPlatePluginType(editor, ELEMENT_CODE_LINE) },
+        match: { type: getCodeLineType(editor) },
       }) || getParent(editor, parentPath);
 
     if (!codeLine) return;
@@ -32,7 +32,7 @@ export const getCodeLineEntry = (
 
     if (
       isElement(codeLineNode) &&
-      codeLineNode.type !== getPlatePluginType(editor, ELEMENT_CODE_LINE)
+      codeLineNode.type !== getCodeLineType(editor)
     )
       return;
 

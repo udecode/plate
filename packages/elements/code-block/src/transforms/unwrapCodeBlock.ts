@@ -1,13 +1,13 @@
 import { unwrapNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
+import { SPEditor } from '@udecode/plate-core';
+import { getCodeBlockType, getCodeLineType } from '../options';
 
 export const unwrapCodeBlock = (editor: SPEditor) => {
   unwrapNodes(editor, {
-    match: { type: getPlatePluginType(editor, ELEMENT_CODE_LINE) },
+    match: { type: getCodeLineType(editor) },
   });
   unwrapNodes(editor, {
-    match: { type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK) },
+    match: { type: getCodeBlockType(editor) },
     split: true,
   });
 };

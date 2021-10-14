@@ -1,5 +1,35 @@
 # @udecode/plate-media-embed-ui
 
+## 5.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118)]:
+  - @udecode/plate-core@5.3.1
+  - @udecode/plate-common@5.3.1
+  - @udecode/plate-media-embed@5.3.1
+  - @udecode/plate-styled-components@5.3.1
+  - @udecode/plate-toolbar@5.3.1
+
+## 5.3.0
+
+### Minor Changes
+
+- [#1107](https://github.com/udecode/plate/pull/1107) [`09234c44`](https://github.com/udecode/plate/commit/09234c44e69f59ad493a3b2ab2d72d735c254f43) Thanks [@welcometogithubletsbegintheadventur](https://github.com/welcometogithubletsbegintheadventur)! - feat:
+
+  - `ToolbarMediaEmbed`
+
+- [#1126](https://github.com/udecode/plate/pull/1126) [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930) Thanks [@zbeyens](https://github.com/zbeyens)! - pass rest of props to the root tag
+
+### Patch Changes
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-styled-components@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-media-embed@5.3.0
+  - @udecode/plate-toolbar@5.3.0
+
 ## 5.1.0
 
 ### Patch Changes

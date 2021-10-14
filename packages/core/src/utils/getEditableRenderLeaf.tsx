@@ -2,8 +2,8 @@ import * as React from 'react';
 import { DefaultLeaf } from 'slate-react';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { TRenderLeafProps } from '../types/TRenderLeafProps';
-import { getSlateClass } from './getSlateClass';
+import { SPRenderLeafProps } from '../types/SPRenderLeafProps';
+import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
  * Get a `Editable.renderLeaf` handler for `options.type`.
@@ -15,40 +15,20 @@ export const getEditableRenderLeaf = ({
   component: Leaf = DefaultLeaf as PlatePluginComponent,
   getNodeProps,
   overrideProps,
-}: RenderNodeOptions) => ({
-  children,
-  leaf,
-  text,
-  attributes,
-}: TRenderLeafProps) => {
+}: RenderNodeOptions) => (props: SPRenderLeafProps) => {
+  const { leaf, children } = props;
+
   if (leaf[type] && !!leaf.text) {
-    const renderNodeProps = {
-      children,
-      leaf,
-      text,
-      attributes,
-    };
-
-    const nodeProps = getNodeProps?.(renderNodeProps) ?? leaf.attributes ?? {};
-
-    let props: any = {};
-
-    if (overrideProps) {
-      props =
-        typeof overrideProps === 'function'
-          ? overrideProps(renderNodeProps)
-          : overrideProps;
-    }
+    const nodeProps = getRenderNodeProps({
+      attributes: leaf.attributes,
+      getNodeProps,
+      overrideProps,
+      props,
+      type,
+    });
 
     return (
-      <Leaf
-        className={getSlateClass(type)}
-        attributes={attributes}
-        leaf={leaf}
-        text={text}
-        nodeProps={nodeProps}
-        {...props}
-      >
+      <Leaf {...props} {...nodeProps}>
         {children}
       </Leaf>
     );

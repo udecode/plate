@@ -39,6 +39,41 @@ describe('toggle on', () => {
     expect(input.children).toEqual(output.children);
   });
 
+  it('should turn a p with a selection to list', () => {
+    const input = ((
+      <editor>
+        <hp>
+          Planetas <anchor />
+          mori in
+          <focus /> gandavum!
+        </hp>
+      </editor>
+    ) as any) as SPEditor;
+
+    const output = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              Planetas <anchor />
+              mori in
+              <focus /> gandavum!
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as SPEditor;
+
+    const editor = createEditorPlugins({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+
+    expect(input.children).toEqual(output.children);
+  });
+
   it('should turn multiple p to list', () => {
     const input = ((
       <editor>

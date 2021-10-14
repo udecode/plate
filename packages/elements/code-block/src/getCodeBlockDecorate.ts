@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Prism, { languages, Token, tokenize } from 'prismjs';
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';
@@ -46,17 +47,13 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
-import {
-  Decorate,
-  getPlatePluginOptions,
-  isElement,
-} from '@udecode/plate-core';
+import { Decorate, isElement } from '@udecode/plate-core';
 import { Node, NodeEntry } from 'slate';
-import { ELEMENT_CODE_BLOCK } from './defaults';
 import { CodeBlockNodeData } from './types';
+import { getCodeBlockPluginOptions } from './options';
 
 export const getCodeBlockDecorate = (): Decorate => (editor) => {
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const code_block = getCodeBlockPluginOptions(editor);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];

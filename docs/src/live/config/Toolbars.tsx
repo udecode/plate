@@ -17,6 +17,8 @@ import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease';
+import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
 import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
 import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
@@ -51,6 +53,8 @@ import {
   ELEMENT_OL,
   ELEMENT_UL,
   getPlatePluginType,
+  getPreventDefaultHandler,
+  indent,
   insertTable,
   MARK_BOLD,
   MARK_CODE,
@@ -60,7 +64,9 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  outdent,
   ToolbarAlign,
+  ToolbarButton,
   ToolbarElement,
   ToolbarList,
   ToolbarMark,
@@ -108,6 +114,23 @@ export const ToolbarButtonsBasicElements = () => {
       <ToolbarCodeBlock
         type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
         icon={<CodeBlock />}
+      />
+    </>
+  );
+};
+
+export const ToolbarButtonsIndent = () => {
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+  return (
+    <>
+      <ToolbarButton
+        onMouseDown={editor && getPreventDefaultHandler(outdent, editor)}
+        icon={<FormatIndentDecrease />}
+      />
+      <ToolbarButton
+        onMouseDown={editor && getPreventDefaultHandler(indent, editor)}
+        icon={<FormatIndentIncrease />}
       />
     </>
   );

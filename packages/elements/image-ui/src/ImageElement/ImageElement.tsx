@@ -27,12 +27,16 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     element,
     nodeProps,
+    styles: _styles,
+    classNames,
+    prefixClassNames,
     caption = {},
     resizableProps = {
       minWidth: 92,
     },
     align = 'center',
     draggable,
+    ...rootProps
   } = props;
 
   const { placeholder = 'Write a caption...' } = caption;
@@ -86,6 +90,8 @@ export const ImageElement = (props: ImageElementProps) => {
       {...attributes}
       css={styles.root.css}
       className={styles.root.className}
+      {...rootProps}
+      {...nodeProps}
     >
       <div contentEditable={false}>
         <figure

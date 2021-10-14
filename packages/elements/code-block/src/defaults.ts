@@ -1,14 +1,16 @@
-import { PlatePluginOptions } from '@udecode/plate-core';
+import { astDeserializerId } from '@udecode/plate-ast-serializer';
+import { CodeBlockPluginOptions } from './types';
 
 export const ELEMENT_CODE_BLOCK = 'code_block';
 export const ELEMENT_CODE_LINE = 'code_line';
 
 export const KEYS_CODE_BLOCK = [ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE];
 
-export const DEFAULTS_CODE_BLOCK: Partial<PlatePluginOptions> = {
+export const DEFAULTS_CODE_BLOCK: Partial<CodeBlockPluginOptions> = {
   hotkey: ['mod+opt+8', 'mod+shift+8'],
   syntax: true,
   syntaxPopularFirst: false,
+  deserializers: [astDeserializerId],
 };
 
 // `

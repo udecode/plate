@@ -1,5 +1,51 @@
 # @udecode/plate-md-serializer
 
+## 5.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`f45ed8cf`](https://github.com/udecode/plate/commit/f45ed8cff140a604169bfa0d042447a8fd0236ed), [`9b61b9d5`](https://github.com/udecode/plate/commit/9b61b9d5a631c9b0e14dfd081f70a633a3c0b436), [`a574a753`](https://github.com/udecode/plate/commit/a574a7537f7a4a25bb6a527a08ad6698da1dc7b1)]:
+  - @udecode/plate-serializer@5.3.4
+  - @udecode/plate-code-block@5.3.4
+
+## 5.3.3
+
+### Patch Changes
+
+- [#1141](https://github.com/udecode/plate/pull/1141) [`cff2a6a0`](https://github.com/udecode/plate/commit/cff2a6a0dea34dae0beea9e5d5001c494d8435fe) Thanks [@dylans](https://github.com/dylans)! - fix typo in markdown deserializer
+
+## 5.3.1
+
+### Patch Changes
+
+- [#1136](https://github.com/udecode/plate/pull/1136) [`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118) Thanks [@dylans](https://github.com/dylans)! - allow disabling deserializer by paste target
+
+- Updated dependencies [[`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118)]:
+  - @udecode/plate-core@5.3.1
+  - @udecode/plate-code-block@5.3.1
+  - @udecode/plate-serializer@5.3.1
+  - @udecode/plate-common@5.3.1
+  - @udecode/plate-block-quote@5.3.1
+  - @udecode/plate-heading@5.3.1
+  - @udecode/plate-link@5.3.1
+  - @udecode/plate-list@5.3.1
+  - @udecode/plate-paragraph@5.3.1
+
+## 5.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-code-block@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-block-quote@5.3.0
+  - @udecode/plate-heading@5.3.0
+  - @udecode/plate-link@5.3.0
+  - @udecode/plate-list@5.3.0
+  - @udecode/plate-paragraph@5.3.0
+  - @udecode/plate-serializer@5.3.0
+
 ## 5.1.0
 
 ### Patch Changes

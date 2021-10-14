@@ -1,5 +1,29 @@
 # @udecode/plate-serializer
 
+## 5.3.4
+
+### Patch Changes
+
+- [#1101](https://github.com/udecode/plate/pull/1101) [`f45ed8cf`](https://github.com/udecode/plate/commit/f45ed8cff140a604169bfa0d042447a8fd0236ed) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Refactor isDeserializerEnabled
+
+## 5.3.1
+
+### Patch Changes
+
+- [#1136](https://github.com/udecode/plate/pull/1136) [`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118) Thanks [@dylans](https://github.com/dylans)! - allow disabling deserializer by paste target
+
+- Updated dependencies [[`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118)]:
+  - @udecode/plate-core@5.3.1
+  - @udecode/plate-common@5.3.1
+
+## 5.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-common@5.3.0
+
 ## 5.1.0
 
 ### Patch Changes

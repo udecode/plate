@@ -7,7 +7,16 @@ import { StyledElementProps } from './StyledElement.types';
  * StyledElement with no default styles.
  */
 export const StyledElement = (props: StyledElementProps) => {
-  const { attributes, children, as, nodeProps, className, styles } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
 
   const rootStyles = castArray(styles?.root ?? []);
   const nodePropsStyles = nodeProps?.styles?.root?.css ?? [];
@@ -18,13 +27,7 @@ export const StyledElement = (props: StyledElementProps) => {
   });
 
   return (
-    <div
-      {...attributes}
-      as={as}
-      css={root.css}
-      className={className}
-      {...nodeProps}
-    >
+    <div {...attributes} css={root.css} {...rootProps} {...nodeProps}>
       {children}
     </div>
   );

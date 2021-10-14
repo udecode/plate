@@ -6,8 +6,8 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from '../defaults';
+import { SPEditor, TElement } from '@udecode/plate-core';
+import { getCodeBlockType, getCodeLineType } from '../options';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
@@ -20,8 +20,8 @@ export const insertCodeBlock = (
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === getPlatePluginType(editor, ELEMENT_CODE_BLOCK) ||
-    node.type === getPlatePluginType(editor, ELEMENT_CODE_LINE);
+    node.type === getCodeBlockType(editor) ||
+    node.type === getCodeLineType(editor);
 
   if (
     someNode(editor, {
@@ -38,7 +38,7 @@ export const insertCodeBlock = (
   setNodes<TElement>(
     editor,
     {
-      type: getPlatePluginType(editor, ELEMENT_CODE_LINE),
+      type: getCodeLineType(editor),
       children: [{ text: '' }],
     },
     insertNodesOptions
@@ -47,7 +47,7 @@ export const insertCodeBlock = (
   wrapNodes(
     editor,
     {
-      type: getPlatePluginType(editor, ELEMENT_CODE_BLOCK),
+      type: getCodeBlockType(editor),
       children: [],
     },
     insertNodesOptions

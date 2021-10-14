@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "4.3.7",
+  "version": "5.3.1",
   "description": "The core architecture of Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -38,6 +38,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "clsx": "^1.1.1",
     "lodash": "^4.17.21",
     "zustand": "^3.4.2"
   },

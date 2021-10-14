@@ -3,3 +3,4 @@
  */
 
 export * from './MediaEmbedElement/index';
+export * from './ToolbarMediaEmbed/index';

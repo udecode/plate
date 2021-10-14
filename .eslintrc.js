@@ -214,7 +214,7 @@ module.exports = {
     //   2,
     //   { allowTernary: true, allowShortCircuit: true },
     // ],
-    '@typescript-eslint/no-unused-vars': ['warn'],
+    '@typescript-eslint/no-unused-vars': ['warn', { ignoreRestSiblings: true }],
     '@typescript-eslint/no-useless-constructor': 'error',
     '@typescript-eslint/no-var-requires': 'off',
 

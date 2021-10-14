@@ -1,5 +1,42 @@
 # @udecode/plate-code-block-ui
 
+## 5.3.4
+
+### Patch Changes
+
+- [#1101](https://github.com/udecode/plate/pull/1101) [`9b61b9d5`](https://github.com/udecode/plate/commit/9b61b9d5a631c9b0e14dfd081f70a633a3c0b436) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Strong typing of code block options, refactor options usage to use concrete code block/code line types.
+
+- Updated dependencies [[`9b61b9d5`](https://github.com/udecode/plate/commit/9b61b9d5a631c9b0e14dfd081f70a633a3c0b436), [`a574a753`](https://github.com/udecode/plate/commit/a574a7537f7a4a25bb6a527a08ad6698da1dc7b1)]:
+  - @udecode/plate-code-block@5.3.4
+
+## 5.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118)]:
+  - @udecode/plate-core@5.3.1
+  - @udecode/plate-code-block@5.3.1
+  - @udecode/plate-common@5.3.1
+  - @udecode/plate-styled-components@5.3.1
+  - @udecode/plate-toolbar@5.3.1
+
+## 5.3.0
+
+### Minor Changes
+
+- [#1126](https://github.com/udecode/plate/pull/1126) [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930) Thanks [@zbeyens](https://github.com/zbeyens)! - pass rest of props to the root tag
+
+### Patch Changes
+
+- [#1131](https://github.com/udecode/plate/pull/1131) [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33) Thanks [@bensquire](https://github.com/bensquire)! - Adds language class to codeblock <code> element, this enable language specifix syntax highlighting.
+
+- Updated dependencies [[`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e), [`5c68eb04`](https://github.com/udecode/plate/commit/5c68eb04b5f528d08d45a4f994ef8c1d7924ab33), [`1021397d`](https://github.com/udecode/plate/commit/1021397df42ee13006892372bd329446f362a930)]:
+  - @udecode/plate-core@5.3.0
+  - @udecode/plate-code-block@5.3.0
+  - @udecode/plate-styled-components@5.3.0
+  - @udecode/plate-common@5.3.0
+  - @udecode/plate-toolbar@5.3.0
+
 ## 5.1.0
 
 ### Patch Changes

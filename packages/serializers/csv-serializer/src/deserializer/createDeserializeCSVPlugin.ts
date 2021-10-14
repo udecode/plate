@@ -4,7 +4,10 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { insertDeserializedFragment } from '@udecode/plate-serializer';
+import {
+  insertDeserializedFragment,
+  isDeserializerEnabled,
+} from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 import { deserializeCSV } from './utils';
 
@@ -17,6 +20,8 @@ export interface WithDeserializeCSVOptions<
   // Percentage based on number of errors compared to number of rows
   errorTolerance?: number;
 }
+
+export const csvDeserializerId = 'CSV Deserializer';
 
 /**
  * Enables support for deserializing content
@@ -33,7 +38,9 @@ export const withDeserializeCSV = <
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    if (content) {
+    const isEnabled = isDeserializerEnabled(editor, plugins, csvDeserializerId);
+
+    if (content && isEnabled) {
       const fragment = deserializeCSV(editor, content, true, errorTolerance);
 
       if (fragment?.length) {

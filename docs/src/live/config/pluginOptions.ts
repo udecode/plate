@@ -2,10 +2,17 @@ import {
   createPlateOptions,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
   ELEMENT_PARAGRAPH,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
   ExitBreakPluginOptions,
+  IndentPluginOptions,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
@@ -16,6 +23,20 @@ import {
 import { autoformatRules } from './autoformat/autoformatRules';
 
 export const options = createPlateOptions();
+
+export const optionsIndentPlugin: IndentPluginOptions = {
+  types: [
+    ELEMENT_PARAGRAPH,
+    ELEMENT_H1,
+    ELEMENT_H2,
+    ELEMENT_H3,
+    ELEMENT_H4,
+    ELEMENT_H5,
+    ELEMENT_H6,
+    ELEMENT_BLOCKQUOTE,
+    ELEMENT_CODE_BLOCK,
+  ],
+};
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],

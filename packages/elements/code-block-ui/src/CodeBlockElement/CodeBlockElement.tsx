@@ -1,25 +1,32 @@
 import * as React from 'react';
 import {
   CodeBlockNodeData,
-  ELEMENT_CODE_BLOCK,
+  getCodeBlockPluginOptions,
 } from '@udecode/plate-code-block';
 import { setNodes } from '@udecode/plate-common';
-import {
-  getPlatePluginOptions,
-  TElement,
-  useEditorRef,
-} from '@udecode/plate-core';
+import { TElement, useEditorRef } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { ReactEditor } from 'slate-react';
 import { getCodeBlockElementStyles } from './CodeBlockElement.styles';
 import { CodeBlockSelectElement } from './CodeBlockSelectElement';
 
 export const CodeBlockElement = (props: StyledElementProps) => {
-  const { attributes, children, element, nodeProps } = props;
+  const {
+    attributes,
+    children,
+    nodeProps,
+    styles,
+    element,
+    classNames,
+    prefixClassNames,
+    ...rootProps
+  } = props;
+
   const { lang } = element;
   const editor = useEditorRef();
   const { root } = getCodeBlockElementStyles(props);
-  const code_block = getPlatePluginOptions(editor, ELEMENT_CODE_BLOCK);
+  const code_block = getCodeBlockPluginOptions(editor);
+  const codeClassName = lang ? `${lang} language-${lang}` : '';
 
   return (
     <>
@@ -27,6 +34,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
         {...attributes}
         css={root.css}
         className={root.className}
+        {...rootProps}
         {...nodeProps}
       >
         {code_block?.syntax && (
@@ -43,7 +51,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
             }}
           />
         )}
-        <code>{children}</code>
+        <code className={codeClassName}>{children}</code>
       </pre>
     </>
   );

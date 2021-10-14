@@ -19,9 +19,9 @@ const editorTest = (input: any, fragment: any, expected: any) => {
   expect(editor.children).toEqual(expected.children);
 };
 
-describe('when pasting a code block', () => {
+describe('pasting a code block', () => {
   describe('when selection outside of code block', () => {
-    it('should paste only the fragment', () => {
+    it('should paste the code block', () => {
       const input = ((
         <editor>
           <hcodeblock>
@@ -64,47 +64,8 @@ describe('when pasting a code block', () => {
     });
   });
 
-  describe('when selection in empty code line', () => {
-    it('should replace the code line', () => {
-      const input = ((
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any) as SPEditor;
-
-      const fragment = ((
-        <fragment>
-          <hcodeblock>
-            <hcodeline>hello world</hcodeline>
-          </hcodeblock>
-        </fragment>
-      ) as any) as TDescendant[];
-
-      const expected = ((
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>hello world</hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any) as SPEditor;
-
-      editorTest(input, fragment, expected);
-    });
-  });
-
-  describe('when selection in non-empty code line', () => {
-    it('should paste after the code line', () => {
+  describe('when selection inside of code block', () => {
+    it('should insert code lines as a fragment', () => {
       const input = ((
         <editor>
           <hcodeblock>
@@ -123,6 +84,7 @@ describe('when pasting a code block', () => {
         <fragment>
           <hcodeblock>
             <hcodeline>world</hcodeline>
+            <hcodeline>!</hcodeline>
           </hcodeblock>
         </fragment>
       ) as any) as TDescendant[];
@@ -133,8 +95,8 @@ describe('when pasting a code block', () => {
             <hcodeline>
               <htext />
             </hcodeline>
-            <hcodeline>hello</hcodeline>
-            <hcodeline>world</hcodeline>
+            <hcodeline>helloworld</hcodeline>
+            <hcodeline>!</hcodeline>
           </hcodeblock>
         </editor>
       ) as any) as SPEditor;
@@ -142,42 +104,43 @@ describe('when pasting a code block', () => {
       editorTest(input, fragment, expected);
     });
   });
+});
 
-  describe('pasting non-code block elements', () => {
-    it('should extract text and paste code line', () => {
-      const input = ((
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>
-              hello
-              <cursor />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any) as SPEditor;
+describe('pasting non-code block elements', () => {
+  it('should extract text and insert as code lines', () => {
+    const input = ((
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <htext />
+          </hcodeline>
+          <hcodeline>
+            hello
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any) as SPEditor;
 
-      const fragment = ((
-        <fragment>
-          <hp>world</hp>
-        </fragment>
-      ) as any) as TDescendant[];
+    const fragment = ((
+      <fragment>
+        <hp>world</hp>
+        <hp>!</hp>
+      </fragment>
+    ) as any) as TDescendant[];
 
-      const expected = ((
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>hello</hcodeline>
-            <hcodeline>world</hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any) as SPEditor;
+    const expected = ((
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <htext />
+          </hcodeline>
+          <hcodeline>helloworld</hcodeline>
+          <hcodeline>!</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any) as SPEditor;
 
-      editorTest(input, fragment, expected);
-    });
+    editorTest(input, fragment, expected);
   });
 });

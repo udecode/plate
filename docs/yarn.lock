@@ -2105,7 +2105,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-combobox@5.1.1":
+"@udecode/plate-combobox@5.2.2":
   version "0.0.0"
   uid ""
 
@@ -2233,6 +2233,14 @@
   version "0.0.0"
   uid ""
 
+"@udecode/plate-indent@5.2.2":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-indent@link:../packages/indent":
+  version "0.0.0"
+  uid ""
+
 "@udecode/plate-kbd@5.1.0":
   version "0.0.0"
   uid ""
@@ -2297,7 +2305,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention-ui@5.2.0":
+"@udecode/plate-mention-ui@5.2.2":
   version "0.0.0"
   uid ""
 
@@ -2305,7 +2313,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention@5.2.0":
+"@udecode/plate-mention@5.2.2":
   version "0.0.0"
   uid ""
 

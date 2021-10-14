@@ -1,10 +1,6 @@
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
-import {
-  ComboboxState,
-  ComboboxStateById,
-  ComboboxStoreById,
-} from '../combobox.store';
+import { ComboboxState, ComboboxStoreById } from '../combobox.store';
 import { RenderFunction } from '../types/RenderFunction';
 
 export interface ComboboxStyleProps extends ComboboxProps {

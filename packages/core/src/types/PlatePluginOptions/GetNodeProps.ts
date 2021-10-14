@@ -1,16 +1,12 @@
-import { TElement } from '../TElement';
-import { TText } from '../TText';
+import { SPRenderElementProps } from '../SPRenderElementProps';
+import { SPRenderLeafProps } from '../SPRenderLeafProps';
 
 /**
  * Map slate node properties to component props.
  */
-export type GetNodeProps = (options: {
-  attributes: any;
-  children: any;
-  element?: TElement;
-  leaf?: TText;
-  text?: TText;
-}) => NodeProps;
+export type GetNodeProps = (
+  props: SPRenderElementProps | SPRenderLeafProps
+) => NodeProps | undefined;
 
 /**
  * Props passed from `getNodeProps` option.
