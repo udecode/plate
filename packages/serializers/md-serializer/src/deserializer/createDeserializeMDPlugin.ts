@@ -5,7 +5,6 @@ import {
   SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
-import { csvDeserializerId } from '@udecode/plate-csv-serializer/src';
 import {
   insertDeserializedFragment,
   isDeserializerEnabled,
@@ -35,7 +34,7 @@ export const withDeserializeMD = <
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    const isEnabled = isDeserializerEnabled(editor, plugins, csvDeserializerId);
+    const isEnabled = isDeserializerEnabled(editor, plugins, mdDeserializerId);
 
     const { files } = data;
     if (content && isEnabled && !files?.length) {
