@@ -1,5 +1,16 @@
 # @udecode/plate-code-block
 
+## 5.3.5
+
+### Patch Changes
+
+- [#1148](https://github.com/udecode/plate/pull/1148) [`25dcad65`](https://github.com/udecode/plate/commit/25dcad654b8297a50c905cc427a59e68c0ff8093) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Limit disabling deserialization only when selection in code line.
+
+- Updated dependencies [[`a6bf8c5e`](https://github.com/udecode/plate/commit/a6bf8c5e6897c6ab443e0ac3d69a30befeaddadf)]:
+  - @udecode/plate-common@5.3.5
+  - @udecode/plate-ast-serializer@5.3.5
+  - @udecode/plate-html-serializer@5.3.5
+
 ## 5.3.4
 
 ### Patch Changes

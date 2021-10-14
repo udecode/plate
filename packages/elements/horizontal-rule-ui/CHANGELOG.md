@@ -1,5 +1,14 @@
 # @udecode/plate-horizontal-rule-ui
 
+## 5.3.5
+
+### Patch Changes
+
+- Updated dependencies [[`a6bf8c5e`](https://github.com/udecode/plate/commit/a6bf8c5e6897c6ab443e0ac3d69a30befeaddadf)]:
+  - @udecode/plate-common@5.3.5
+  - @udecode/plate-horizontal-rule@5.3.5
+  - @udecode/plate-styled-components@5.3.5
+
 ## 5.3.1
 
 ### Patch Changes
