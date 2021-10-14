@@ -1,5 +1,11 @@
 # @udecode/plate-html-serializer
 
+## 5.3.2
+
+### Patch Changes
+
+- [#1139](https://github.com/udecode/plate/pull/1139) [`4e3e55f2`](https://github.com/udecode/plate/commit/4e3e55f20b77c4208b1054fd878cd05bb1700eb9) Thanks [@dylans](https://github.com/dylans)! - Extraneous import was breaking builds leveraging Plate 5.3.1
+
 ## 5.3.1
 
 ### Patch Changes
