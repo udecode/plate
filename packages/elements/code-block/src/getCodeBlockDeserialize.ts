@@ -1,4 +1,4 @@
-import { getElementDeserializer } from '@udecode/plate-common';
+import { findNode, getElementDeserializer } from '@udecode/plate-common';
 import { Deserialize, getSlateClass } from '@udecode/plate-core';
 import { getCodeBlockPluginOptions, getCodeLinePluginOptions } from './options';
 
@@ -7,8 +7,15 @@ export const getCodeBlockDeserialize = (): Deserialize => (editor) => {
   const code_line = getCodeLinePluginOptions(editor);
 
   return {
-    isDisabled: (deserializerId) =>
-      !code_block.deserializers?.includes(deserializerId),
+    isDisabled: (deserializerId) => {
+      const isSelectionInCodeLine =
+        findNode(editor, { match: { type: code_line.type } }) !== undefined;
+
+      return (
+        isSelectionInCodeLine &&
+        !code_block.deserializers?.includes(deserializerId)
+      );
+    },
     element: [
       ...getElementDeserializer({
         type: code_block.type,
