@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 5.3.3
+
+### Patch Changes
+
+- [#1141](https://github.com/udecode/plate/pull/1141) [`cff2a6a0`](https://github.com/udecode/plate/commit/cff2a6a0dea34dae0beea9e5d5001c494d8435fe) Thanks [@dylans](https://github.com/dylans)! - fix typo in markdown deserializer
+
 ## 5.3.1
 
 ### Patch Changes
