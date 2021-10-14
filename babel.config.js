@@ -5,7 +5,7 @@ module.exports = {
     ['styled-components', { ssr: true }],
   ],
   presets: [
-    ['@babel/preset-react', { runtime: 'automatic' }],
+    ['@babel/preset-react', { runtime: 'classic' }],
     '@babel/preset-typescript',
   ],
   sourceType: 'unambiguous',
