@@ -1,5 +1,61 @@
 # @udecode/plate
 
+## 5.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`8aec270f`](https://github.com/udecode/plate/commit/8aec270f8b06a3b25b8d7144c2e23b0dc12de118), [`2c50679e`](https://github.com/udecode/plate/commit/2c50679efb5f9dfdfae0a7b34ab77d2d7120ad6a)]:
+  - @udecode/plate-core@5.3.1
+  - @udecode/plate-code-block@5.3.1
+  - @udecode/plate-ast-serializer@5.3.1
+  - @udecode/plate-csv-serializer@5.3.1
+  - @udecode/plate-html-serializer@5.3.1
+  - @udecode/plate-md-serializer@5.3.1
+  - @udecode/plate-serializer@5.3.1
+  - @udecode/plate-indent@5.3.1
+  - @udecode/plate-autoformat@5.3.1
+  - @udecode/plate-break@5.3.1
+  - @udecode/plate-common@5.3.1
+  - @udecode/plate-dnd@5.3.1
+  - @udecode/plate-alignment@5.3.1
+  - @udecode/plate-alignment-ui@5.3.1
+  - @udecode/plate-basic-elements@5.3.1
+  - @udecode/plate-block-quote@5.3.1
+  - @udecode/plate-block-quote-ui@5.3.1
+  - @udecode/plate-code-block-ui@5.3.1
+  - @udecode/plate-heading@5.3.1
+  - @udecode/plate-horizontal-rule@5.3.1
+  - @udecode/plate-image@5.3.1
+  - @udecode/plate-image-ui@5.3.1
+  - @udecode/plate-link@5.3.1
+  - @udecode/plate-link-ui@5.3.1
+  - @udecode/plate-list@5.3.1
+  - @udecode/plate-list-ui@5.3.1
+  - @udecode/plate-media-embed@5.3.1
+  - @udecode/plate-media-embed-ui@5.3.1
+  - @udecode/plate-mention@5.3.1
+  - @udecode/plate-mention-ui@5.3.1
+  - @udecode/plate-paragraph@5.3.1
+  - @udecode/plate-table@5.3.1
+  - @udecode/plate-table-ui@5.3.1
+  - @udecode/plate-find-replace@5.3.1
+  - @udecode/plate-find-replace-ui@5.3.1
+  - @udecode/plate-basic-marks@5.3.1
+  - @udecode/plate-font@5.3.1
+  - @udecode/plate-font-ui@5.3.1
+  - @udecode/plate-highlight@5.3.1
+  - @udecode/plate-kbd@5.3.1
+  - @udecode/plate-node-id@5.3.1
+  - @udecode/plate-normalizers@5.3.1
+  - @udecode/plate-placeholder@5.3.1
+  - @udecode/plate-reset-node@5.3.1
+  - @udecode/plate-select@5.3.1
+  - @udecode/plate-trailing-block@5.3.1
+  - @udecode/plate-combobox@5.3.1
+  - @udecode/plate-popper@5.3.1
+  - @udecode/plate-styled-components@5.3.1
+  - @udecode/plate-toolbar@5.3.1
+
 ## 5.3.0
 
 ### Minor Changes
