@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer",
-  "version": "5.3.1",
+  "version": "5.3.4",
   "description": "Utilities for Plate serializers",
   "keywords": [
     "slate",

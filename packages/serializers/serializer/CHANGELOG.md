@@ -1,5 +1,11 @@
 # @udecode/plate-serializer
 
+## 5.3.4
+
+### Patch Changes
+
+- [#1101](https://github.com/udecode/plate/pull/1101) [`f45ed8cf`](https://github.com/udecode/plate/commit/f45ed8cff140a604169bfa0d042447a8fd0236ed) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Refactor isDeserializerEnabled
+
 ## 5.3.1
 
 ### Patch Changes

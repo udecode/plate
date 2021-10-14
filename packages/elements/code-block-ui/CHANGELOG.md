@@ -1,5 +1,14 @@
 # @udecode/plate-code-block-ui
 
+## 5.3.4
+
+### Patch Changes
+
+- [#1101](https://github.com/udecode/plate/pull/1101) [`9b61b9d5`](https://github.com/udecode/plate/commit/9b61b9d5a631c9b0e14dfd081f70a633a3c0b436) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Strong typing of code block options, refactor options usage to use concrete code block/code line types.
+
+- Updated dependencies [[`9b61b9d5`](https://github.com/udecode/plate/commit/9b61b9d5a631c9b0e14dfd081f70a633a3c0b436), [`a574a753`](https://github.com/udecode/plate/commit/a574a7537f7a4a25bb6a527a08ad6698da1dc7b1)]:
+  - @udecode/plate-code-block@5.3.4
+
 ## 5.3.1
 
 ### Patch Changes
