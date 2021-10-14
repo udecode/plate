@@ -8,7 +8,6 @@ import {
   insertDeserializedFragment,
   isDeserializerEnabled,
 } from '@udecode/plate-serializer';
-import {} from '@udecode/plate-serializer/src';
 import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
