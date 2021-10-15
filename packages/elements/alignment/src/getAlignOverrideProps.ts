@@ -19,6 +19,7 @@ export const getAlignOverrideProps = ({
 
   // TODO: extend plate-core to register options
   editor.options[KEY_ALIGN] = {
+    type: KEY_ALIGN,
     types,
     alignments,
     defaultAlignment,

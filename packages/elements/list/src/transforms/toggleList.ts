@@ -7,7 +7,7 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry, Path, Range } from 'slate';
+import { Editor, Node, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
@@ -90,7 +90,7 @@ export const toggleList = (editor: SPEditor, { type }: { type: string }) =>
             { type },
             {
               at: editor.selection,
-              match: (n: TElement, path: Path) =>
+              match: (n, path) =>
                 getListTypes(editor).includes(n.type) &&
                 path.length >= rangeLength,
               mode: 'all',

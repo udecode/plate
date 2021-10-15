@@ -1,6 +1,4 @@
 import { FunctionComponent } from 'react';
-import { SPRenderElementProps } from '../SPRenderElementProps';
-import { SPRenderLeafProps } from '../SPRenderLeafProps';
 import { AnyObject } from '../utility/AnyObject';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps, NodeProps } from './GetNodeProps';
@@ -9,9 +7,7 @@ import { GetNodeProps, NodeProps } from './GetNodeProps';
  * React component rendering a slate element or leaf.
  * @default DefaultElement | DefaultLeaf
  */
-export type PlatePluginComponent = FunctionComponent<
-  SPRenderElementProps | SPRenderLeafProps
->;
+export type PlatePluginComponent = FunctionComponent;
 
 export interface PlatePluginOptions extends AnyObject {
   /**
@@ -56,7 +52,7 @@ export interface PlatePluginOptions extends AnyObject {
    * Element or mark type.
    * @default plugin key
    */
-  type?: string;
+  type: string;
 }
 
 /**
