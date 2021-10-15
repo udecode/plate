@@ -63,11 +63,11 @@ npm install @udecode/plate-basic-elements
   };
 
   const plugins = [
-    ...pluginsCore,
+    ...PLUGINS.core,
     ...createBasicElementPlugins(),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
   ];
 
   return (
@@ -78,10 +78,10 @@ npm install @udecode/plate-basic-elements
       <Plate
         id="basic-elements"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueBasicElements}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.basicElements}
       />
     </>
   );

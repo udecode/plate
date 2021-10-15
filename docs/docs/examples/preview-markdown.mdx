@@ -6,7 +6,7 @@ title: Preview Markdown
 ```ts live
 () => {
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createPreviewPlugin(),
   ];
 
@@ -14,10 +14,10 @@ title: Preview Markdown
     <Plate
       id="editable-voids"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePreview}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.previewMd}
     />
   );
 }

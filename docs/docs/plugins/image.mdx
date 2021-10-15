@@ -15,7 +15,7 @@ npm install @udecode/plate-image-ui
 ```ts live
 () => {
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createImagePlugin(),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
   ];
@@ -28,10 +28,10 @@ npm install @udecode/plate-image-ui
       <Plate
         id="image"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueImages}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.image}
       />
     </>
   );

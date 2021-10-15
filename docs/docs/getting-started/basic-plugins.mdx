@@ -59,7 +59,7 @@ export const createElement = (
   };
 };
 
-const initialValueBasicElements = [
+const initialValueBasicNodes = [
   createElement('🧱 Elements', { type: ELEMENT_H1 }),
   createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
   createElement('These are the most common elements, known as blocks:'),
@@ -137,9 +137,9 @@ The `type` property is needed on elements as `Plate` will map a React component 
     <>
       <Plate
         id="1"
-        editableProps={editableProps}
-        initialValue={initialValueBasic}
-        plugins={pluginsBasic}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.basicNodes}
+        plugins={PLUGINS.basicNodes}
         onChange={onChangeDebug}
       />
       {debugValue}
@@ -169,7 +169,7 @@ const options = createPlateOptions();
 ```tsx live
 () => {
   // try to remove some plugins!
-  const pluginsBasicElements = [
+  const pluginsBasicNodes = [
     // editor
     createReactPlugin(),          // withReact
     createHistoryPlugin(),        // withHistory
@@ -191,11 +191,11 @@ const options = createPlateOptions();
   return (
     <Plate
       id="2"
-      editableProps={editableProps}
-      initialValue={initialValueBasic}
-      plugins={pluginsBasicElements}
-      components={components}
-      options={options}
+      plugins={pluginsBasicNodes}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.basicNodes}
+      components={CONFIG.components}
+      options={CONFIG.options}
     />
   );
 }

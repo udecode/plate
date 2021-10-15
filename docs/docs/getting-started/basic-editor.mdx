@@ -37,7 +37,7 @@ Let's add a placeholder and some padding using `editableProps` props.
     },
   };
 
-  return <Plate id="1" editableProps={editableProps} />;
+  return <Plate id="1" editableProps={CONFIG.editableProps} />;
 }
 ```
 
@@ -68,8 +68,8 @@ Let's set the initial value of the editor to one block of text.
   return (
     <Plate
       id="2"
-      editableProps={editableProps}
-      initialValue={initialValuePlainText}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.plainText}
     />
   );
 }
@@ -87,8 +87,8 @@ Let's use `onChange` props.
   return (
     <Plate
       id="3"
-      editableProps={editableProps}
-      initialValue={initialValuePlainText}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.plainText}
       onChange={(newValue) => {
         setDebugValue(newValue);
         // save newValue...

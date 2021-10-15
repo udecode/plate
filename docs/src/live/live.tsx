@@ -93,9 +93,6 @@ import {
   deleteColumn,
   deleteRow,
   deleteTable,
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_RIGHT,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
@@ -173,7 +170,6 @@ import {
   useFindReplacePlugin,
   usePlate,
   usePlateActions,
-  usePopupPosition,
   useStoreEditorEnabled,
   useStoreEditorRef,
   useStoreEditorSelection,
@@ -188,51 +184,7 @@ import {
 } from '@udecode/plate-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
-import { css } from 'styled-components';
 import { clearBlockFormat } from './config/autoformat/autoformatUtils';
-import {
-  getHugeDocument,
-  initialValueAutoformat,
-  initialValueBalloonToolbar,
-  initialValueBasicElements,
-  initialValueBasicMarks,
-  initialValueEmbeds,
-  initialValueExcalidraw,
-  initialValueExitBreak,
-  initialValueFont,
-  initialValueForcedLayout,
-  initialValueHighlight,
-  initialValueHorizontalRule,
-  initialValueIframe,
-  initialValueImages,
-  initialValueIndent,
-  initialValueKbd,
-  initialValueLinks,
-  initialValueList,
-  initialValueMarks,
-  initialValueMentions,
-  initialValuePasteAst,
-  initialValuePasteCSV,
-  initialValuePasteHtml,
-  initialValuePasteMd,
-  initialValuePlaceholder,
-  initialValuePlainText,
-  initialValuePlayground,
-  initialValuePreview,
-  initialValueSearchHighlighting,
-  initialValueSingleLine,
-  initialValueSoftBreak,
-  initialValueTables,
-  initialValueVoids,
-} from './config/initialValues';
-import { MENTIONABLES } from './config/mentionables';
-import {
-  optionsAutoformat,
-  optionsExitBreakPlugin,
-  optionsIndentPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from './config/pluginOptions';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -243,9 +195,12 @@ import {
   ToolbarButtonsTable,
   ToolbarHighlight,
   ToolbarKbd,
-} from './config/Toolbars';
-import { withStyledDraggables } from './config/withStyledDraggables';
-import { withStyledPlaceHolders } from './config/withStyledPlaceHolders';
+} from './config/components/Toolbars';
+import { withStyledDraggables } from './config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
+import { CONFIG } from './config/config';
+import { PLUGINS } from './config/plugins';
+import { VALUES } from './config/values/values';
 import { createEditableVoidPlugin } from './examples/editable-voids/createEditableVoidPlugin';
 import { EDITABLE_VOID } from './examples/editable-voids/defaults';
 import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
@@ -253,86 +208,25 @@ import { IFrame } from './examples/iframe/IFrame';
 import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
 import { HighlightHTML } from './utils/HighlightHTML';
 
-const editableProps = {
-  placeholder: 'Type…',
-  style: {
-    padding: '15px',
-  },
-};
-
-const components = createPlateComponents({
-  [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
-    styles: {
-      root: [
-        css`
-          background-color: #111827;
-          code {
-            color: white;
-          }
-        `,
-      ],
-    },
-  }),
-});
-
-const options = createPlateOptions();
-
-const pluginsCore = [createReactPlugin(), createHistoryPlugin()];
-
-const pluginsBasicElements = [
-  createParagraphPlugin(), // paragraph element
-  createBlockquotePlugin(), // blockquote element
-  createCodeBlockPlugin(), // code block element
-  createHeadingPlugin(), // heading elements
-];
-
-const pluginsBasicMarks = [
-  createBoldPlugin(), // bold mark
-  createItalicPlugin(), // italic mark
-  createUnderlinePlugin(), // underline mark
-  createStrikethroughPlugin(), // strikethrough mark
-  createCodePlugin(), // code mark
-];
-
-const pluginsBasic = [
-  ...pluginsCore,
-  ...pluginsBasicElements,
-  ...pluginsBasicMarks,
-];
-
-const pluginsImage = [
-  ...pluginsCore,
-  ...createBasicElementPlugins(),
-  ...pluginsBasicMarks,
-  createImagePlugin(),
-  createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
-];
-
-const initialValueBasic = [
-  ...initialValueBasicElements,
-  ...initialValueBasicMarks,
-];
-
 // Add react-live imports you need here
 const ReactLiveScope = {
   React,
   ...React,
+  VALUES,
   OndemandVideo,
   indent,
   outdent,
   ToolbarMediaEmbed,
   FormatIndentDecrease,
   FormatIndentIncrease,
-  initialValueIndent,
   ToolbarButtonsIndent,
-  optionsIndentPlugin,
+  CONFIG,
   createIndentPlugin,
   createComboboxPlugin,
   MentionCombobox,
   clearBlockFormat,
   setNodes,
   insertNodes,
-  initialValueHorizontalRule,
   createHorizontalRulePlugin,
   ELEMENT_HR,
   isType,
@@ -350,9 +244,6 @@ const ReactLiveScope = {
   deleteRow,
   KEYS_HEADING,
   deleteTable,
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_RIGHT,
   insertTable,
   ToolbarAlign,
   ToolbarElement,
@@ -388,7 +279,6 @@ const ReactLiveScope = {
   Looks6,
   LooksOne,
   LooksTwo,
-  initialValuePlayground,
   usePlateActions,
   useStoreEditorEnabled,
   CodeBlockElement,
@@ -400,20 +290,13 @@ const ReactLiveScope = {
   ReactEditor,
   EDITABLE_VOID,
   EditableVoidElement,
-  initialValueIframe,
   usePlate,
   useStoreEditorRef,
   HighlightHTML,
   BallonToolbarMarks,
-  initialValuePasteMd,
-  initialValuePasteAst,
-  initialValuePasteCSV,
   createDeserializeMDPlugin,
   createDeserializeCSVPlugin,
   createPreviewPlugin,
-  initialValuePreview,
-  components,
-  corePlugins: pluginsCore,
   createAlignPlugin,
   createAutoformatPlugin,
   createBasicElementPlugins,
@@ -456,17 +339,14 @@ const ReactLiveScope = {
   createTrailingBlockPlugin,
   createUnderlinePlugin,
   DndProvider,
-  editableProps,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-  initialValueExcalidraw,
   ELEMENT_EXCALIDRAW,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
-  initialValueBalloonToolbar,
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_IMAGE,
@@ -489,28 +369,6 @@ const ReactLiveScope = {
   BalloonToolbar,
   ToolbarMark,
   getPlatePluginType,
-  initialValueAutoformat,
-  initialValueBasic,
-  initialValueBasicElements,
-  initialValueBasicMarks,
-  initialValueEmbeds,
-  initialValueExitBreak,
-  initialValueForcedLayout,
-  initialValueHighlight,
-  initialValueImages,
-  initialValueKbd,
-  initialValueLinks,
-  initialValueList,
-  initialValueMarks,
-  initialValueMentions,
-  initialValuePasteHtml,
-  initialValuePlaceholder,
-  initialValuePlainText,
-  initialValueSearchHighlighting,
-  initialValueSoftBreak,
-  initialValueSingleLine,
-  initialValueTables,
-  initialValueVoids,
   useEventEditorId,
   Link,
   MARK_BOLD,
@@ -522,19 +380,9 @@ const ReactLiveScope = {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  MENTIONABLES,
   MentionElement,
-  options,
-  optionsAutoformat,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-  pluginsBasic,
-  pluginsBasicElements,
-  pluginsBasicMarks,
-  pluginsCore,
   createFontSizePlugin,
-  pluginsImage,
+  PLUGINS,
   Search,
   serializeHTMLFromNodes,
   Plate,
@@ -553,7 +401,6 @@ const ReactLiveScope = {
   withProps,
   withStyledDraggables,
   withStyledPlaceHolders,
-  getHugeDocument,
   withReact,
   MARK_COLOR,
   MARK_BG_COLOR,
@@ -572,9 +419,7 @@ const ReactLiveScope = {
   getNodeDeserializer,
   createFontColorPlugin,
   createFontBackgroundColorPlugin,
-  initialValueFont,
   ToolbarColorPicker,
-  usePopupPosition,
 };
 
 export default ReactLiveScope;

@@ -9,23 +9,11 @@ import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
-import { createHeadingPlugin, ELEMENT_H1 } from '@udecode/plate-heading';
-import { createImagePlugin, ELEMENT_IMAGE } from '@udecode/plate-image';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
-import {
-  createParagraphPlugin,
-  ELEMENT_PARAGRAPH,
-} from '@udecode/plate-paragraph';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
-import { initialValuePlayground } from '../docs/src/live/config/initialValues';
-import { MENTIONABLES } from '../docs/src/live/config/mentionables';
-import {
-  editableProps,
-  optionsAutoformat,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from '../docs/src/live/config/pluginOptions';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -33,9 +21,10 @@ import {
   ToolbarButtonsBasicMarks,
   ToolbarButtonsList,
   ToolbarButtonsTable,
-} from '../docs/src/live/config/Toolbars';
-import { withStyledDraggables } from '../docs/src/live/config/withStyledDraggables';
-import { withStyledPlaceHolders } from '../docs/src/live/config/withStyledPlaceHolders';
+} from '../docs/src/live/config/components/Toolbars';
+import { withStyledDraggables } from '../docs/src/live/config/components/withStyledDraggables';
+import { withStyledPlaceHolders } from '../docs/src/live/config/components/withStyledPlaceHolders';
+import { CONFIG } from '../docs/src/live/config/config';
 import { createAutoformatPlugin } from '../packages/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../packages/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../packages/break/src/soft-break/createSoftBreakPlugin';
@@ -109,15 +98,13 @@ export const Example = () => {
         createSuperscriptPlugin(),
         createKbdPlugin(),
         createNodeIdPlugin(),
-        createAutoformatPlugin(optionsAutoformat),
-        createResetNodePlugin(optionsResetBlockTypePlugin),
-        createSoftBreakPlugin(optionsSoftBreakPlugin),
-        createExitBreakPlugin(optionsExitBreakPlugin),
-        createNormalizeTypesPlugin({
-          rules: [{ path: [0], strictType: ELEMENT_H1 }],
-        }),
-        createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
-        createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
+        createAutoformatPlugin(CONFIG.autoformat),
+        createResetNodePlugin(CONFIG.resetBlockType),
+        createSoftBreakPlugin(CONFIG.softBreak),
+        createExitBreakPlugin(CONFIG.exitBreak),
+        createNormalizeTypesPlugin(CONFIG.forceLayout),
+        createTrailingBlockPlugin(CONFIG.trailingBlock),
+        createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
         createMentionPlugin(),
         searchHighlightPlugin,
         createDndPlugin(),
@@ -134,8 +121,8 @@ export const Example = () => {
         plugins={pluginsMemo}
         components={styledComponents}
         options={defaultOptions}
-        editableProps={editableProps}
-        initialValue={initialValuePlayground}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.playground}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <HeadingToolbar>
@@ -150,7 +137,7 @@ export const Example = () => {
 
         <BallonToolbarMarks />
 
-        <MentionCombobox items={MENTIONABLES} />
+        <MentionCombobox items={CONFIG.mentionItems} />
       </Plate>
     );
   };

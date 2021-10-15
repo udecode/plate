@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { optionsAutoformat } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;

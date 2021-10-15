@@ -1,13 +1,13 @@
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
-import { KEYS_ALIGN } from './defaults';
-import { getAlignDeserialize } from './getAlignDeserialize';
+import { PlatePlugin } from '@udecode/plate-core';
+import { getAlignOverrideProps } from './getAlignOverrideProps';
+import { AlignPluginOptions } from './types';
 
 /**
  * Enables support for text alignment, useful to align your content
- * to left, right and center it.
+ * to left, right, center or justify.
  */
-export const createAlignPlugin = (): PlatePlugin => ({
-  pluginKeys: KEYS_ALIGN,
-  renderElement: getRenderElement(KEYS_ALIGN),
-  deserialize: getAlignDeserialize(),
+export const createAlignPlugin = (
+  options?: AlignPluginOptions
+): PlatePlugin => ({
+  overrideProps: getAlignOverrideProps(options),
 });

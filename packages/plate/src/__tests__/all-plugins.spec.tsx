@@ -9,14 +9,6 @@ import {
   SPEditor,
 } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
-import { initialValuePlayground } from '../../../../docs/src/live/config/initialValues';
-import {
-  editableProps,
-  optionsAutoformat,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from '../../../../docs/src/live/config/pluginOptions';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -24,7 +16,15 @@ import {
   ToolbarButtonsBasicMarks,
   ToolbarButtonsList,
   ToolbarButtonsTable,
-} from '../../../../docs/src/live/config/Toolbars';
+} from '../../../../docs/src/live/config/components/Toolbars';
+import {
+  editableProps,
+  optionsAutoformat,
+  optionsExitBreakPlugin,
+  optionsResetBlockTypePlugin,
+  optionsSoftBreakPlugin,
+} from '../../../../docs/src/live/config/config';
+import { initialValuePlayground } from '../../../../docs/src/live/config/values/values';
 import { createAutoformatPlugin } from '../../../autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../break/src/soft-break/createSoftBreakPlugin';

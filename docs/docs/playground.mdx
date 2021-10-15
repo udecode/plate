@@ -13,8 +13,8 @@ See [Installation](/docs/installation)
 
 ```ts live
 () => {
-  let styledComponents = createPlateComponents({
-    ...components,
+  let components = createPlateComponents({
+    ...CONFIG.components,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
@@ -32,9 +32,9 @@ See [Installation](/docs/installation)
       },
     }),
   });
-  styledComponents = withStyledPlaceHolders(styledComponents);
+  components = withStyledPlaceHolders(components);
 
-  const defaultOptions = createPlateOptions();
+  const options = createPlateOptions();
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
@@ -55,7 +55,7 @@ See [Installation](/docs/installation)
         createMediaEmbedPlugin(),
         createExcalidrawPlugin(),
         createCodeBlockPlugin(),
-        createAlignPlugin(),
+        createAlignPlugin(CONFIG.align),
         createBoldPlugin(),
         createCodePlugin(),
         createItalicPlugin(),
@@ -68,17 +68,15 @@ See [Installation](/docs/installation)
         createFontBackgroundColorPlugin(),
         createFontSizePlugin(),
         createKbdPlugin(),
-        createIndentPlugin(optionsIndentPlugin),
         createNodeIdPlugin(),
-        createAutoformatPlugin(optionsAutoformat),
-        createResetNodePlugin(optionsResetBlockTypePlugin),
-        createSoftBreakPlugin(optionsSoftBreakPlugin),
-        createExitBreakPlugin(optionsExitBreakPlugin),
-        createNormalizeTypesPlugin({
-          rules: [{ path: [0], strictType: ELEMENT_H1 }],
-        }),
-        createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
-        createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE, ELEMENT_HR] }),
+        createIndentPlugin(CONFIG.indent),
+        createAutoformatPlugin(CONFIG.autoformat),
+        createResetNodePlugin(CONFIG.resetBlockType),
+        createSoftBreakPlugin(CONFIG.softBreak),
+        createExitBreakPlugin(CONFIG.exitBreak),
+        createNormalizeTypesPlugin(CONFIG.forceLayout),
+        createTrailingBlockPlugin(CONFIG.trailingBlock),
+        createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
         createComboboxPlugin(),
         createMentionPlugin(),
         searchHighlightPlugin,
@@ -100,10 +98,10 @@ See [Installation](/docs/installation)
       <Plate
         id="playground"
         plugins={pluginsMemo}
-        components={styledComponents}
-        options={defaultOptions}
-        editableProps={editableProps}
-        initialValue={initialValuePlayground}
+        components={components}
+        options={options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.playground}
       >
         <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
         <HeadingToolbar>
@@ -128,9 +126,9 @@ See [Installation](/docs/installation)
 
         <BallonToolbarMarks />
 
-        <MentionCombobox items={MENTIONABLES} id="mention" trigger="@" />
+        <MentionCombobox items={CONFIG.mentionItems} id="mention" trigger="@" />
 
-        <MentionCombobox items={MENTIONABLES} id="mention2" trigger="#" />
+        <MentionCombobox items={CONFIG.mentionItems} id="mention2" trigger="#" />
       </Plate>
     );
   }

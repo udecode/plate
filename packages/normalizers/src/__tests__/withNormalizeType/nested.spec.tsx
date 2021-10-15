@@ -3,7 +3,7 @@
 import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../docs/src/live/config/pluginOptions';
+import { options } from '../../../../../docs/src/live/config/config';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
 import { withNormalizeTypes } from '../../createNormalizeTypesPlugin';
 

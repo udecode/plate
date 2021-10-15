@@ -16,26 +16,24 @@ npm install @udecode/plate-autoformat
 
 ```ts live
 () => {
-  const preFormat = (editor) => unwrapList(editor);
-
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createListPlugin(),
     createHorizontalRulePlugin(),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createAutoformatPlugin(optionsAutoformat),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createAutoformatPlugin(CONFIG.autoformat),
   ];
 
   return (
     <Plate
       id="autoformat"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueAutoformat}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.autoformat}
     />
   );
 }

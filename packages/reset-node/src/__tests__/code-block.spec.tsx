@@ -4,7 +4,7 @@ import { isBlockAboveEmpty } from '@udecode/plate-common';
 import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { options } from '../../../../docs/src/live/config/pluginOptions';
+import { options } from '../../../../docs/src/live/config/config';
 import { ELEMENT_CODE_BLOCK } from '../../../elements/code-block/src/defaults';
 import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
 

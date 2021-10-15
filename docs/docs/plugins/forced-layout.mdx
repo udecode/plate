@@ -20,8 +20,8 @@ npm install @udecode/plate-trailing-block
 ```ts live
 () => {
   const plugins = [
-    ...pluginsBasic,
-    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+    ...PLUGINS.basicNodes,
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
     createNormalizeTypesPlugin({
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     }),
@@ -31,10 +31,10 @@ npm install @udecode/plate-trailing-block
     <Plate
       id="forced-layout"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueForcedLayout}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.forcedLayout}
     />
   );
 }

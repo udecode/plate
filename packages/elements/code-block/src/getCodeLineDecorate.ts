@@ -60,6 +60,9 @@ export const getCodeLineDecorate = (): Decorate => (editor) => {
     const ranges: any = [];
     const [node, path] = entry;
     const codeBlock = getParent(editor, path);
+
+    if (!codeBlock) return;
+
     let langName = '';
     if (codeBlock?.[0].type === code_block.type) {
       const [codeBlockNode] = codeBlock;

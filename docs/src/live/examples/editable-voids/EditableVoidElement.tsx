@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   createBasicElementPlugins,
   createHistoryPlugin,
-  createPlateComponents,
   createReactPlugin,
 } from '@udecode/plate';
 import {
@@ -11,25 +10,17 @@ import {
 } from '@udecode/plate-break';
 import { Plate, SPRenderElementProps } from '@udecode/plate-core';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import { initialValueBasicElements } from '../../config/initialValues';
-import {
-  editableProps,
-  options,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from '../../config/pluginOptions';
+import { CONFIG } from '../../config/config';
+import { VALUES } from '../../config/values/values';
 
 const plugins = [
   createReactPlugin(),
   createHistoryPlugin(),
   ...createBasicElementPlugins(),
-  createResetNodePlugin(optionsResetBlockTypePlugin),
-  createSoftBreakPlugin(optionsSoftBreakPlugin),
-  createExitBreakPlugin(optionsExitBreakPlugin),
+  createResetNodePlugin(CONFIG.resetBlockType),
+  createSoftBreakPlugin(CONFIG.softBreak),
+  createExitBreakPlugin(CONFIG.exitBreak),
 ];
-
-const components = createPlateComponents();
 
 export const EditableVoidElement = ({
   attributes,
@@ -71,10 +62,10 @@ export const EditableVoidElement = ({
           <Plate
             id="editable-void-basic-elements"
             plugins={plugins}
-            components={components}
-            options={options}
-            editableProps={editableProps}
-            initialValue={initialValueBasicElements}
+            components={CONFIG.components}
+            options={CONFIG.options}
+            editableProps={CONFIG.editableProps}
+            initialValue={VALUES.basicElements}
           />
         </div>
       </div>

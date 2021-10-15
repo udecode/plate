@@ -17,36 +17,34 @@ npm install @udecode/plate-break
 
 ```ts live
 () => {
-  const optionsSoftBreakPlugin = {
-    rules: [
-      { hotkey: 'shift+enter' },
-      {
-        hotkey: 'enter',
-        query: {
-          allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
-        },
-      },
-    ],
-  };
-
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createSoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          },
+        },
+      ],
+    }),
   ];
 
   return (
     <Plate
       id="soft-break"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueSoftBreak}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.softBreak}
     />
   );
 }

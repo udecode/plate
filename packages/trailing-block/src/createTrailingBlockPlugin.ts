@@ -14,7 +14,7 @@ import {
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 
-export interface WithTrailingBlock extends QueryNodeOptions {
+export interface TrailingBlockPluginOptions extends QueryNodeOptions {
   /**
    * Type of the trailing block
    */
@@ -32,7 +32,7 @@ export const withTrailingBlock = ({
   type: _type,
   level = 0,
   ...query
-}: WithTrailingBlock = {}): WithOverride => (editor) => {
+}: TrailingBlockPluginOptions = {}): WithOverride => (editor) => {
   const { normalizeNode } = editor;
 
   const type =

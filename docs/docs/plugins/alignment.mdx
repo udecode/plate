@@ -3,15 +3,8 @@ slug: /plugins/alignment
 title: Alignment
 ---
 
-### `createAlignPlugin`
-
-Align element which aligns its children:
-- default `type` are:
-  - `'align_left'`
-  - `'align_center'`
-  - `'align_right'`
-  - `'align_justify'`
-- wrap node strategy
+The alignment plugin enables support for text alignment.
+You can use it to align your content to left, right, center or to justify it.
 
 ### Installation
 
@@ -22,6 +15,8 @@ npm install @udecode/plate-alignment-ui
 
 ### Usage
 
+Click inside a paragraph or a header and click on a toolbar button to apply the desired text alignment.
+
 ```ts live
 () => {
   const ToolbarButtonsAlign = () => {
@@ -29,17 +24,17 @@ npm install @udecode/plate-alignment-ui
 
     return (
       <>
-        <ToolbarAlign icon={<FormatAlignLeft />} />
+        <ToolbarAlign align="left" icon={<FormatAlignLeft />} />
         <ToolbarAlign
-          type={getPlatePluginType(editor, ELEMENT_ALIGN_CENTER)}
+          align="center"
           icon={<FormatAlignCenter />}
         />
         <ToolbarAlign
-          type={getPlatePluginType(editor, ELEMENT_ALIGN_RIGHT)}
+          align="right"
           icon={<FormatAlignRight />}
         />
         <ToolbarAlign
-          type={getPlatePluginType(editor, ELEMENT_ALIGN_JUSTIFY)}
+          align="justify"
           icon={<FormatAlignJustify />}
         />
       </>
@@ -47,8 +42,18 @@ npm install @udecode/plate-alignment-ui
   };
 
   const plugins = [
-    ...pluginsBasic,
-    createAlignPlugin()
+    ...PLUGINS.basicNodes,
+    createAlignPlugin({
+      types: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+      ],
+    })
   ];
 
   return (
@@ -59,15 +64,39 @@ npm install @udecode/plate-alignment-ui
       <Plate
         id="alignment"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueBasicElements}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.align}
       />
     </>
   );
 }
 ```
+
+### Options
+
+#### `types`
+
+- List of block types supporting alignment.
+- Default is the paragraph type.
+
+#### `alignments`
+
+- List of supported `text-align` values.
+- Default is `['left', 'center', 'right', 'justify']`
+
+#### `defaultAlignment`
+
+- Default alignment will not be set to the node
+- Default is `'left'`
+
+#### `classNames`
+
+- By default, the plugin is setting an inline style with `text-align` CSS property.
+- If you want more semantic content that uses classes instead,
+you can specify class names and style them by using a style sheet.
+
 
 ### Source Code
 

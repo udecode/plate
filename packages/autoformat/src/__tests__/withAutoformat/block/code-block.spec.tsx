@@ -14,7 +14,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { optionsAutoformat } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;

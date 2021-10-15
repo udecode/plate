@@ -27,7 +27,7 @@ interface Rule {
   path: Path;
 }
 
-export interface WithNormalizeTypes extends ErrorHandler {
+export interface NormalizeTypesPluginOptions extends ErrorHandler {
   /**
    * Set of rules for the types.
    * For each rule, provide a `path` and either `strictType` or `type`.
@@ -42,7 +42,7 @@ export interface WithNormalizeTypes extends ErrorHandler {
 export const withNormalizeTypes = ({
   rules,
   onError,
-}: WithNormalizeTypes): WithOverride => (editor) => {
+}: NormalizeTypesPluginOptions): WithOverride => (editor) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {

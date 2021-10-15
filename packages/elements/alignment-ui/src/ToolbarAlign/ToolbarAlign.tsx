@@ -1,16 +1,20 @@
 import * as React from 'react';
-import { KEYS_ALIGN, upsertAlign } from '@udecode/plate-alignment';
+import {
+  Alignment,
+  KEYS_ALIGN,
+  setAlign,
+  upsertAlign,
+} from '@udecode/plate-alignment';
 import { getPreventDefaultHandler, someNode } from '@udecode/plate-common';
 import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarAlignProps extends ToolbarButtonProps {
-  type?: string;
-  unwrapTypes?: string[];
+  align: Alignment;
 }
 
 export const ToolbarAlign = ({
-  type,
+  align,
   unwrapTypes = KEYS_ALIGN,
   ...props
 }: ToolbarAlignProps) => {
@@ -18,14 +22,16 @@ export const ToolbarAlign = ({
 
   return (
     <ToolbarButton
-      active={
-        !!editor?.selection && !!type && someNode(editor, { match: { type } })
-      }
+      // active={
+      //   !!editor?.selection && !!type && someNode(editor, { match: { type } })
+      // }
       onMouseDown={
         editor
-          ? getPreventDefaultHandler(upsertAlign, editor, {
-              type,
-              unwrapTypes,
+          ? getPreventDefaultHandler(setAlign, editor, {
+              align,
+
+              // type,
+              // unwrapTypes,
             })
           : undefined
       }

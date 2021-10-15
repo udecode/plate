@@ -55,18 +55,16 @@ npm install @udecode/plate-toolbar
     );
   };
 
-  const componentsPlaceholder = withStyledPlaceHolders(components);
-
   return (
     <>
       <BallonToolbarMarks />
       <Plate
         id="balloon-toolbar"
-        plugins={pluginsBasic}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueBalloonToolbar}
+        plugins={PLUGINS.basicNodes}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.balloonToolbar}
       />
     </>
   );

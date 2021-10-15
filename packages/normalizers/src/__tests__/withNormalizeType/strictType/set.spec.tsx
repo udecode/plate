@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../../docs/src/live/config/pluginOptions';
+import { options } from '../../../../../../docs/src/live/config/config';
 import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';
 
 jsx;

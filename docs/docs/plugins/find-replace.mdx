@@ -22,7 +22,7 @@ npm install @udecode/plate-find-replace-ui
 
   const plugins = useMemo(
     () => [
-      ...pluginsBasic,
+      ...PLUGINS.basicNodes,
       searchHighlightPlugin,
     ],
     [searchHighlightPlugin]
@@ -34,10 +34,10 @@ npm install @udecode/plate-find-replace-ui
       <Plate
         id="find-replace"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueSearchHighlighting}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.findReplace}
       />
     </>
   );

@@ -20,7 +20,7 @@ Use [remark-slate](https://github.com/hanford/remark-slate).
 ```ts live
 () => {
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
@@ -32,10 +32,10 @@ Use [remark-slate](https://github.com/hanford/remark-slate).
     <Plate
       id="deserialize-md"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePasteMd}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.pasteMd}
     />
   );
 }

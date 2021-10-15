@@ -5,21 +5,20 @@ title: Huge Document
 
 ```ts live
 () => {
-  const initialValueHugeDocument = getHugeDocument();
-  const _editableProps = {
-    ...editableProps,
-    // spellcheck adds some lag so we disable it
-    spellCheck: false,
-  };
+  const initialValue = VALUES.createHugeDocument();
 
   const WithPlate = () => (
     <Plate
       id="huge-document"
-      plugins={pluginsBasic}
-      components={components}
-      options={options}
-      editableProps={_editableProps}
-      initialValue={initialValueHugeDocument}
+      plugins={PLUGINS.basicNodes}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={{
+        ...CONFIG.editableProps,
+        // spellcheck adds some lag so we disable it
+        spellCheck: false,
+      }}
+      initialValue={initialValue}
     />
   );
 
@@ -33,7 +32,7 @@ title: Huge Document
   };
 
   const WithoutPlate = () => {
-    const [value, setValue] = useState(initialValueHugeDocument);
+    const [value, setValue] = useState(initialValue);
     const renderElement = useCallback((p) => <Element {...p} />, []);
     const editor = useMemo(() => withReact(createEditor()), []);
 
@@ -43,7 +42,7 @@ title: Huge Document
         value={value}
         onChange={useCallback((v) => setValue(v), [])}
       >
-        <Editable renderElement={renderElement} {..._editableProps} />
+        <Editable renderElement={renderElement} {...CONFIG.editableProps} />
       </Slate>
     );
   }

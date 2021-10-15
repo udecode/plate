@@ -5,13 +5,13 @@ title: Editable Voids
 
 ```ts live
 () => {
-  const componentsEditableVoids = {
-    ...components,
+  const components = {
+    ...CONFIG.components,
     [EDITABLE_VOID]: EditableVoidElement,
   }
 
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createEditableVoidPlugin(),
   ];
 
@@ -19,10 +19,10 @@ title: Editable Voids
     <Plate
       id="editable-voids"
       plugins={plugins}
-      components={componentsEditableVoids}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueVoids}
+      components={components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.editableVoids}
     />
   );
 }

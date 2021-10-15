@@ -42,21 +42,21 @@ export interface PlatePluginOptions extends AnyObject {
   getNodeProps?: GetNodeProps;
 
   /**
+   * Hotkeys to listen to trigger a plugin action.
+   */
+  hotkey?: string | string[];
+
+  /**
    * If it's a function, its return value will override the component props.
    * If it's an object, it will override the component props.
    */
   overrideProps?: GetNodeProps | NodeProps;
 
   /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-
-  /**
    * Element or mark type.
    * @default plugin key
    */
-  type: string;
+  type?: string;
 }
 
 /**

@@ -64,8 +64,8 @@ npm install @udecode/plate-basic-marks
   };
 
   const plugins = [
-    ...pluginsCore,
-    ...pluginsBasicElements,
+    ...PLUGINS.core,
+    ...PLUGINS.basicElements,
     ...createBasicMarkPlugins(),
   ];
 
@@ -77,10 +77,10 @@ npm install @udecode/plate-basic-marks
       <Plate
         id="basic-marks"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueBasicMarks}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.basicMarks}
       />
     </>
   );
