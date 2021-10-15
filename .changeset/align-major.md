@@ -14,3 +14,9 @@ breaking changes:
   - `KEYS_ALIGN` in favor of `KEY_ALIGN`
   - `getAlignDeserialize`
   - `upsertAlign` in favor of `setAlign`
+  
+Migration (normalizer):  
+- for each node:
+  - run `parent = getParent(editor, path)`, if `parent[0].type` is one of the alignment values:
+    - run `setAlign(editor, { align }, { at: path })`
+    - run `unwrapNodes(editor, { at: path })`
