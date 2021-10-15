@@ -1,6 +1,6 @@
 import { Alignment } from './types';
 
-export const KEY_ALIGNMENT = 'align';
+export const KEY_ALIGN = 'align';
 
 export const DEFAULT_ALIGNMENTS: Alignment[] = [
   'left',

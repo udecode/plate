@@ -3,4 +3,4 @@
  */
 
 export * from './insertDeserializedFragment';
-export * from './queries';
+export * from './queries/index';

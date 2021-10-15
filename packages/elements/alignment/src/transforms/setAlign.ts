@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
-import { KEY_ALIGNMENT } from '../defaults';
+import { KEY_ALIGN } from '../defaults';
 import { Alignment, AlignPluginOptions } from '../types';
 
 export const setAlign = (
@@ -14,10 +14,7 @@ export const setAlign = (
   { align }: AlignPluginOptions & { align: Alignment },
   options?: SetNodesOptions
 ) => {
-  const { types, defaultAlignment } = getPlatePluginOptions(
-    editor,
-    KEY_ALIGNMENT
-  );
+  const { types, defaultAlignment } = getPlatePluginOptions(editor, KEY_ALIGN);
 
   const match: TNodeMatch = (n) =>
     Editor.isBlock(editor, n) && types.includes(n.type);
