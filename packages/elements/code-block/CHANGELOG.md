@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 6.0.0
+
+### Patch Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – fix: `codeBlock` is undefined
+
 ## 5.3.5
 
 ### Patch Changes

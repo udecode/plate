@@ -1,5 +1,15 @@
 # @udecode/plate-common
 
+## 6.0.0
+
+### Minor Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – `unsetNodes`
+
+### Patch Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – fix: EditorNodesOptions `at` option
+
 ## 5.3.5
 
 ### Patch Changes

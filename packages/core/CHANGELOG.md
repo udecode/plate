@@ -1,5 +1,22 @@
 # @udecode/plate-core
 
+## 6.0.0
+
+### Patch Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – fix: `PlatePluginComponent` type
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – generic type support:
+
+  - `getEditorOptions`
+  - `getPlatePluginOptions`
+  - `PlatePluginOptions`
+  - `PlateOptions`
+
+- [#1150](https://github.com/udecode/plate/pull/1150) by [@jeffsee55](https://github.com/jeffsee55) –
+  - Fixes dependencie issue for React<17 users by using the classic `React.createElement` function rather than the newer `jsx-runtime` transform.
+  - Per babel docs: https://babeljs.io/docs/en/babel-preset-react#with-a-configuration-file-recommended
+
 ## 5.3.1
 
 ### Patch Changes
