@@ -1,5 +1,15 @@
 # @udecode/plate-alignment-ui
 
+## 6.0.0
+
+### Major Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) –
+  - `ToolbarAlignProps`:
+    - removed `type` in favor of `align`
+    - removed `unwrapTypes`
+    - added `align`
+
 ## 5.3.5
 
 ### Patch Changes

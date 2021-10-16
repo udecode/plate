@@ -1,5 +1,7 @@
 # @udecode/plate-ast-serializer
 
+## 6.0.0
+
 ## 5.3.5
 
 ### Patch Changes

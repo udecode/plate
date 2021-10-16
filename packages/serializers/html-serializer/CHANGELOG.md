@@ -1,5 +1,11 @@
 # @udecode/plate-html-serializer
 
+## 6.0.0
+
+### Patch Changes
+
+- [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) – fix: add overrideProps to the serializer (align, indent)
+
 ## 5.3.5
 
 ### Patch Changes
