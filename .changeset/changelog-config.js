@@ -77,14 +77,25 @@ module.exports = {
           .join(", ")
       : links.user;
 
+    const pull = links.pull === null ? "" : ` ${links.pull}`
+    const commit = !!pull || links.commit === null ? "" : ` ${links.commit}`
+    
     const prefix = [
-      links.pull === null ? "" : ` ${links.pull}`,
-      links.commit === null ? "" : ` ${links.commit}`,
-      users === null ? "" : ` Thanks ${users}!`
+      pull,
+      commit,
+      users === null ? "" : ` by ${users}`
     ].join("");
 
-    return `\n\n-${prefix ? `${prefix} -` : ""} ${firstLine}\n${futureLines
+    let lines = `${firstLine}\n${futureLines
       .map(l => `  ${l}`)
       .join("\n")}`;
+    
+    if (firstLine[0] === '-') {
+      lines = `${[firstLine, ...futureLines]
+        .map(l => `  ${l}`)
+        .join("\n")}`;
+    }
+    
+    return `\n\n-${prefix ? `${prefix} –` : ""} ${lines}`;
   }
 };

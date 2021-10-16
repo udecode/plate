@@ -2,7 +2,6 @@
 '@udecode/plate-alignment': major
 ---
 
-breaking changes:
 - `createAlignPlugin`:
   - this plugin is no longer wrapping a block, but instead setting an `align` field to an existing block 
   - removed `pluginKeys`, `renderElement` and `deserialize`
