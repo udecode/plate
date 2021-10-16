@@ -6,7 +6,7 @@ config();
 module.exports = {
   getDependencyReleaseLine: async (
   ) => {
-    return
+    return ""
   },
   getReleaseLine: async (changeset, type, options) => {
     if (!options || !options.repo) {
