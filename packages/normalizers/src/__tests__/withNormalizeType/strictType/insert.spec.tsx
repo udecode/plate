@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Editor } from 'slate';
-import { options } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';
 
 jsx;
@@ -24,7 +24,7 @@ const output = (
 
 it('should be', () => {
   const editor = withNormalizeTypes({
-    rules: [{ path: [1], strictType: options.h2.type }],
+    rules: [{ path: [1], strictType: CONFIG.options.h2.type }],
   })(input as Editor);
 
   editor.normalizeNode([input, []]);

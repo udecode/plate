@@ -1,7 +1,10 @@
 import * as React from 'react';
 import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
-import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
+import {
+  PlatePluginComponent,
+  PlatePluginOptions,
+} from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
 import { SPRenderElementProps } from '../types/SPRenderElementProps';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -11,9 +14,9 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate element type, render `options.component`.
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
-export const getEditableRenderElement = (
-  options: RenderNodeOptions | RenderNodeOptions[]
-) => (props: SPRenderElementProps) => {
+export const getEditableRenderElement = (options: PlatePluginOptions[]) => (
+  props: SPRenderElementProps
+) => {
   const _options = castArray<RenderNodeOptions>(options);
 
   for (const option of _options) {

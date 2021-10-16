@@ -14,7 +14,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;
@@ -40,7 +40,7 @@ describe('when ``` at block start', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText('`');
     editor.insertText('new');
@@ -130,7 +130,7 @@ describe('when ```', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText('`');
     editor.insertText('new');

@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;
@@ -29,7 +29,7 @@ describe('when -space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 
@@ -59,7 +59,7 @@ describe('when 1.space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 
@@ -85,7 +85,7 @@ describe('when [].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 
@@ -111,7 +111,7 @@ describe('when [x].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 

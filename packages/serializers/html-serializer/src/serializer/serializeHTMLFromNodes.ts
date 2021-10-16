@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElementWithSlate } from '@udecode/plate-common';
 import {
+  pipeOverrideProps,
   PlatePlugin,
   SlateProps,
   SPEditor,
@@ -68,6 +69,12 @@ const getNode = (
 
   let html: string | undefined;
 
+  const overriders = plugins.flatMap(
+    (plugin) => plugin.overrideProps?.(editor) ?? []
+  );
+
+  elementProps = pipeOverrideProps(elementProps, overriders);
+
   // Search for matching plugin based on element type
   plugins.some((plugin) => {
     if (!plugin.serialize?.element && !plugin.renderElement) return false;
@@ -125,8 +132,10 @@ const getLeaf = (
     )
       return result;
 
-    const newLeafProps = {
-      ...leafProps,
+    const overriders = plugins.flatMap((p) => p.overrideProps?.(editor) ?? []);
+
+    leafProps = {
+      ...pipeOverrideProps(leafProps, overriders),
       children: encodeURIComponent(result),
     };
 
@@ -135,8 +144,8 @@ const getLeaf = (
         createElementWithSlate({
           ...slateProps,
           children:
-            plugin.serialize?.leaf?.(newLeafProps) ??
-            plugin.renderLeaf?.(editor)(newLeafProps),
+            plugin.serialize?.leaf?.(leafProps) ??
+            plugin.renderLeaf?.(editor)(leafProps),
         })
       )
     );

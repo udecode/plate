@@ -25,7 +25,7 @@ npm install @udecode/plate-kbd
   };
 
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createKbdPlugin(),
   ];
 
@@ -37,10 +37,10 @@ npm install @udecode/plate-kbd
       <Plate
         id="kbd"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueKbd}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.kbd}
       />
     </>
   );

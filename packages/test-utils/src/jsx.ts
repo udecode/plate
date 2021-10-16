@@ -1,9 +1,6 @@
 import { createHyperscript } from 'slate-hyperscript';
 import { createText } from './hyperscript/creators';
 
-const ELEMENT_ALIGN_RIGHT = 'align_right';
-const ELEMENT_ALIGN_CENTER = 'align_center';
-const ELEMENT_ALIGN_JUSTIFY = 'align_justify';
 const ELEMENT_H1 = 'h1';
 const ELEMENT_H2 = 'h2';
 const ELEMENT_H3 = 'h3';
@@ -48,7 +45,6 @@ export const jsx = createHyperscript({
   elements: {
     ha: { type: ELEMENT_LINK },
     hblockquote: { type: ELEMENT_BLOCKQUOTE },
-    hcenter: { type: ELEMENT_ALIGN_CENTER },
     hcodeblock: { type: ELEMENT_CODE_BLOCK },
     hcodeline: { type: ELEMENT_CODE_LINE },
     hexcalidraw: { type: ELEMENT_EXCALIDRAW },
@@ -59,13 +55,11 @@ export const jsx = createHyperscript({
     hh5: { type: ELEMENT_H5 },
     hh6: { type: ELEMENT_H6 },
     himg: { type: ELEMENT_IMAGE, children: voidChildren },
-    hjustify: { type: ELEMENT_ALIGN_JUSTIFY },
     hli: { type: ELEMENT_LI },
     hmention: { type: ELEMENT_MENTION, children: voidChildren },
     hmediaembed: { type: ELEMENT_MEDIA_EMBED, children: voidChildren },
     hol: { type: ELEMENT_OL },
     hp: { type: ELEMENT_PARAGRAPH },
-    hright: { type: ELEMENT_ALIGN_RIGHT },
     htable: { type: ELEMENT_TABLE },
     htd: { type: ELEMENT_TD },
     hth: { type: ELEMENT_TH },

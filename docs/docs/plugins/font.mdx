@@ -16,8 +16,8 @@ npm install @udecode/plate-font-ui
 
 ```ts live
 () => {
-  let styledComponents = createPlateComponents({
-    ...components,
+  const components = createPlateComponents({
+    ...CONFIG.components,
     [MARK_COLOR]: withStyledProps(StyledLeaf, {
       leafProps: {
         [MARK_COLOR]: ['color'],
@@ -36,7 +36,7 @@ npm install @udecode/plate-font-ui
   });
 
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createFontColorPlugin(),
     createFontBackgroundColorPlugin(),
     createFontSizePlugin(),
@@ -62,10 +62,10 @@ npm install @udecode/plate-font-ui
       <Plate
         id="font"
         plugins={plugins}
-        components={styledComponents}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueFont}
+        components={components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.font}
       >
         <HeadingToolbar>
           <ToolbarColorPicker

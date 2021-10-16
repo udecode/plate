@@ -26,10 +26,10 @@ npm install @udecode/plate-table-ui
   );
 
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
     createTablePlugin(),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
   ];
 
   return (
@@ -40,10 +40,10 @@ npm install @udecode/plate-table-ui
       <Plate
         id="table"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueTables}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.table}
       />
     </>
   );

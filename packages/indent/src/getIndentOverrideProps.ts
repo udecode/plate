@@ -1,42 +1,37 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import {
   AnyObject,
-  getPlatePluginType,
+  getPlatePluginOptions,
   OverrideProps,
 } from '@udecode/plate-core';
 import clsx from 'clsx';
 import { Editor } from 'slate';
-import { IndentOverridePropsOptions } from './types';
+import { KEY_INDENT } from './defaults';
+import { IndentPluginOptions } from './types';
 
-export const getIndentOverrideProps = ({
-  classNames,
-  offset = 24,
-  unit = 'px',
-  types: _types,
-}: IndentOverridePropsOptions = {}): OverrideProps => (editor) => ({
-  element,
-  style,
-  className,
-}) => {
-  if (!element) return;
+export const getIndentOverrideProps = (): OverrideProps => (editor) => {
+  const { types, classNames, offset, unit } = getPlatePluginOptions<
+    Required<IndentPluginOptions>
+  >(editor, KEY_INDENT);
 
-  const { indent } = element;
-  if (!indent) return;
+  return ({ element, style, className }) => {
+    if (!element) return;
 
-  const isBlock = Editor.isBlock(editor, element);
-  if (!isBlock) return;
+    const { indent } = element;
+    if (!indent) return;
 
-  const types = _types ?? getPlatePluginType(editor, ELEMENT_DEFAULT);
+    const isBlock = Editor.isBlock(editor, element);
+    if (!isBlock) return;
 
-  if (types.includes(element.type)) {
-    const res: AnyObject = {};
+    if (types.includes(element.type)) {
+      const res: AnyObject = {};
 
-    if (classNames) {
-      res.className = clsx(className, classNames[indent - 1]);
-    } else {
-      res.style = { ...style, marginLeft: offset * indent + unit };
+      if (classNames) {
+        res.className = clsx(className, classNames[indent - 1]);
+      } else {
+        res.style = { ...style, marginLeft: offset * indent + unit };
+      }
+
+      return res;
     }
-
-    return res;
-  }
+  };
 };

@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../docs/src/live/config/autoformat/autoformatUtils';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { ELEMENT_H1 } from '../../../../../elements/heading/src/defaults';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
@@ -62,7 +62,7 @@ describe('when ##space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 

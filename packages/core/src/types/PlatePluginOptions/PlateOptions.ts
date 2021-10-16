@@ -1,6 +1,4 @@
 import { FunctionComponent } from 'react';
-import { SPRenderElementProps } from '../SPRenderElementProps';
-import { SPRenderLeafProps } from '../SPRenderLeafProps';
 import { AnyObject } from '../utility/AnyObject';
 import { DeserializeOptions } from './DeserializeOptions';
 import { GetNodeProps, NodeProps } from './GetNodeProps';
@@ -9,11 +7,9 @@ import { GetNodeProps, NodeProps } from './GetNodeProps';
  * React component rendering a slate element or leaf.
  * @default DefaultElement | DefaultLeaf
  */
-export type PlatePluginComponent = FunctionComponent<
-  SPRenderElementProps | SPRenderLeafProps
->;
+export type PlatePluginComponent = FunctionComponent;
 
-export interface PlatePluginOptions extends AnyObject {
+export type PlatePluginOptions<T = AnyObject> = T & {
   /**
    * Node properties to delete.
    */
@@ -42,22 +38,22 @@ export interface PlatePluginOptions extends AnyObject {
   getNodeProps?: GetNodeProps;
 
   /**
+   * Hotkeys to listen to trigger a plugin action.
+   */
+  hotkey?: string | string[];
+
+  /**
    * If it's a function, its return value will override the component props.
    * If it's an object, it will override the component props.
    */
   overrideProps?: GetNodeProps | NodeProps;
 
   /**
-   * Hotkeys to listen to trigger a plugin action.
-   */
-  hotkey?: string | string[];
-
-  /**
    * Element or mark type.
    * @default plugin key
    */
   type: string;
-}
+};
 
 /**
  * A unique key to store the plugin options by key.
@@ -71,4 +67,7 @@ export type PluginKey = string;
  * @default {}
  * @see {@link PluginKey}
  */
-export type PlateOptions = Record<PluginKey, PlatePluginOptions>;
+export type PlateOptions<T = AnyObject> = Record<
+  PluginKey,
+  PlatePluginOptions<T>
+>;

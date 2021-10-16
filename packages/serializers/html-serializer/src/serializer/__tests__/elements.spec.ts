@@ -1,3 +1,4 @@
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import {
   createAlignPlugin,
   createBlockquotePlugin,
@@ -185,13 +186,41 @@ it('serialize table to html', () => {
   );
 });
 
-it('serialize alignments to html', () => {
+it('serialize align style to html', () => {
+  const plugins = [createParagraphPlugin(), createAlignPlugin()];
+
   expect(
-    serializeHTMLFromNodes(editor, {
-      plugins: [createAlignPlugin()],
+    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+      plugins,
       nodes: [
-        { type: 'align_center', children: [{ text: 'I am centered text!' }] },
+        {
+          type: ELEMENT_PARAGRAPH,
+          align: 'center',
+          children: [{ text: 'I am centered text!' }],
+        },
       ],
     })
-  ).toBe('<div class="slate-align_center">I am centered text!</div>');
+  ).toBe(
+    '<p style="text-align:center" class="slate-p">I am centered text!</p>'
+  );
+});
+
+it('serialize align className to html', () => {
+  const plugins = [
+    createParagraphPlugin(),
+    createAlignPlugin({ classNames: { center: 'slate-align-center' } }),
+  ];
+
+  expect(
+    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+      plugins,
+      nodes: [
+        {
+          type: ELEMENT_PARAGRAPH,
+          align: 'center',
+          children: [{ text: 'I am centered text!' }],
+        },
+      ],
+    })
+  ).toBe('<p class="slate-p slate-align-center">I am centered text!</p>');
 });

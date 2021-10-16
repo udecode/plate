@@ -46,3 +46,4 @@ export * from './match';
 export * from './queryEditor';
 export * from './queryNode';
 export * from './someNode';
+export * from './unsetNodes';

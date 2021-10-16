@@ -40,10 +40,8 @@ import {
   deleteColumn,
   deleteRow,
   deleteTable,
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_RIGHT,
   ELEMENT_BLOCKQUOTE,
+  ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -58,6 +56,7 @@ import {
   insertTable,
   MARK_BOLD,
   MARK_CODE,
+  MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
   MARK_STRIKETHROUGH,
@@ -67,16 +66,14 @@ import {
   outdent,
   ToolbarAlign,
   ToolbarButton,
+  ToolbarCodeBlock,
   ToolbarElement,
   ToolbarList,
   ToolbarMark,
   ToolbarTable,
+  useEventEditorId,
   useStoreEditorRef,
 } from '@udecode/plate';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { ToolbarCodeBlock } from '@udecode/plate-code-block-ui';
-import { useEventEditorId } from '@udecode/plate-core';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -154,23 +151,12 @@ export const ToolbarButtonsList = () => {
 };
 
 export const ToolbarButtonsAlign = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
-
   return (
     <>
-      <ToolbarAlign icon={<FormatAlignLeft />} />
-      <ToolbarAlign
-        type={getPlatePluginType(editor, ELEMENT_ALIGN_CENTER)}
-        icon={<FormatAlignCenter />}
-      />
-      <ToolbarAlign
-        type={getPlatePluginType(editor, ELEMENT_ALIGN_RIGHT)}
-        icon={<FormatAlignRight />}
-      />
-      <ToolbarAlign
-        type={getPlatePluginType(editor, ELEMENT_ALIGN_JUSTIFY)}
-        icon={<FormatAlignJustify />}
-      />
+      <ToolbarAlign align="left" icon={<FormatAlignLeft />} />
+      <ToolbarAlign align="center" icon={<FormatAlignCenter />} />
+      <ToolbarAlign align="right" icon={<FormatAlignRight />} />
+      <ToolbarAlign align="justify" icon={<FormatAlignJustify />} />
     </>
   );
 };

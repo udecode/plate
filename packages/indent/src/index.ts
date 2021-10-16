@@ -3,6 +3,7 @@
  */
 
 export * from './createIndentPlugin';
+export * from './defaults';
 export * from './getIndentOverrideProps';
 export * from './types';
 export * from './withIndent';

@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../../createAutoformatPlugin';
 
 jsx;
@@ -24,7 +24,7 @@ const output = (
 ) as any;
 
 it('should autoformat', () => {
-  const editor = withAutoformat(optionsAutoformat)(withReact(input));
+  const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
   editor.insertText(' ');
 

@@ -17,44 +17,42 @@ npm install @udecode/plate-break
 
 ```ts live
 () => {
-  const optionsExitBreakPlugin = {
-    rules: [
-      {
-        hotkey: 'mod+enter',
-      },
-      {
-        hotkey: 'mod+shift+enter',
-        before: true,
-      },
-      {
-        hotkey: 'enter',
-        query: {
-          start: true,
-          end: true,
-          allow: KEYS_HEADING,
-        },
-      },
-    ],
-  };
-
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: KEYS_HEADING,
+          },
+        },
+      ],
+    }),
   ];
 
   return (
     <Plate
       id="exit-break"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueExitBreak}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.exitBreak}
     />
   );
 }

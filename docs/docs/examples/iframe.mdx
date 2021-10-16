@@ -7,8 +7,8 @@ title: IFrame
 () => {
   const editor = useStoreEditorRef('iframe');
 
-  const componentsIFrame = {
-    ...components,
+  const components = {
+    ...CONFIG.components,
     [EDITABLE_VOID]: EditableVoidElement,
   };
 
@@ -16,11 +16,11 @@ title: IFrame
     <IFrame>
       <Plate
         id="iframe"
-        plugins={pluginsBasic}
-        components={componentsIFrame}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueIframe}
+        plugins={PLUGINS.basicNodes}
+        components={components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.iframe}
       />
     </IFrame>
   );

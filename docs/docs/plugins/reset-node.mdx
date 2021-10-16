@@ -24,39 +24,37 @@ npm install @udecode/plate-reset-node
     defaultType: ELEMENT_PARAGRAPH,
   };
 
-  const optionsResetBlockTypePlugin = {
-    rules: [
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Enter',
-        predicate: isBlockAboveEmpty,
-      },
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtBlockStart,
-      },
-    ],
-  };
-
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createResetNodePlugin({
+      rules: [
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Enter',
+          predicate: isBlockAboveEmpty,
+        },
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtBlockStart,
+        },
+      ],
+    }),
   ];
 
   return (
     <Plate
       id="reset-node"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValueBasicElements}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.basicElements}
     />
   );
 }

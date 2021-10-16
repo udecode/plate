@@ -1,10 +1,4 @@
 import {
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_LEFT,
-  ELEMENT_ALIGN_RIGHT,
-} from '@udecode/plate-alignment';
-import {
   DEFAULTS_BOLD,
   DEFAULTS_CODE,
   DEFAULTS_ITALIC,
@@ -69,10 +63,6 @@ import {
 } from '@udecode/plate-table';
 
 export type DefaultPlatePluginKey =
-  | typeof ELEMENT_ALIGN_CENTER
-  | typeof ELEMENT_ALIGN_JUSTIFY
-  | typeof ELEMENT_ALIGN_LEFT
-  | typeof ELEMENT_ALIGN_RIGHT
   | typeof ELEMENT_BLOCKQUOTE
   | typeof ELEMENT_CODE_BLOCK
   | typeof ELEMENT_CODE_LINE
@@ -116,10 +106,6 @@ export const createPlateOptions = <T extends string = string>(
   >
 ) => {
   const options: Record<DefaultPlatePluginKey, Partial<PlatePluginOptions>> = {
-    [ELEMENT_ALIGN_CENTER]: {},
-    [ELEMENT_ALIGN_JUSTIFY]: {},
-    [ELEMENT_ALIGN_LEFT]: {},
-    [ELEMENT_ALIGN_RIGHT]: {},
     [ELEMENT_BLOCKQUOTE]: DEFAULTS_BLOCKQUOTE,
     [ELEMENT_CODE_BLOCK]: DEFAULTS_CODE_BLOCK,
     [ELEMENT_CODE_LINE]: {},

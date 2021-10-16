@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
 import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
 import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/underline/defaults';
@@ -31,7 +31,7 @@ describe('when inserting ***', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText('*');
     editor.insertText('*');

@@ -9,14 +9,6 @@ import {
   SPEditor,
 } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
-import { initialValuePlayground } from '../../../../docs/src/live/config/initialValues';
-import {
-  editableProps,
-  optionsAutoformat,
-  optionsExitBreakPlugin,
-  optionsResetBlockTypePlugin,
-  optionsSoftBreakPlugin,
-} from '../../../../docs/src/live/config/pluginOptions';
 import {
   BallonToolbarMarks,
   ToolbarButtonsAlign,
@@ -24,7 +16,9 @@ import {
   ToolbarButtonsBasicMarks,
   ToolbarButtonsList,
   ToolbarButtonsTable,
-} from '../../../../docs/src/live/config/Toolbars';
+} from '../../../../docs/src/live/config/components/Toolbars';
+import { CONFIG } from '../../../../docs/src/live/config/config';
+import { VALUES } from '../../../../docs/src/live/config/values/values';
 import { createAutoformatPlugin } from '../../../autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../break/src/soft-break/createSoftBreakPlugin';
@@ -32,9 +26,7 @@ import { createAlignPlugin } from '../../../elements/alignment/src/createAlignPl
 import { createBasicElementPlugins } from '../../../elements/basic-elements/src/createBasicElementPlugins';
 import { createBlockquotePlugin } from '../../../elements/block-quote/src/createBlockquotePlugin';
 import { createHeadingPlugin } from '../../../elements/heading/src/createHeadingPlugin';
-import { ELEMENT_H1 } from '../../../elements/heading/src/defaults';
 import { createImagePlugin } from '../../../elements/image/src/createImagePlugin';
-import { ELEMENT_IMAGE } from '../../../elements/image/src/defaults';
 import { ToolbarImage } from '../../../elements/image-ui/src/ToolbarImage/ToolbarImage';
 import { createLinkPlugin } from '../../../elements/link/src/createLinkPlugin';
 import { ToolbarLink } from '../../../elements/link-ui/src/ToolbarLink/ToolbarLink';
@@ -43,7 +35,6 @@ import { createTodoListPlugin } from '../../../elements/list/src/todo-list/creat
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
 import { useFindReplacePlugin } from '../../../find-replace/src/useFindReplacePlugin';
 import { ToolbarSearchHighlight } from '../../../find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
@@ -84,15 +75,13 @@ const PlateContainer = () => {
     createMentionPlugin(),
     findReplacePlugin,
     createNodeIdPlugin(),
-    createAutoformatPlugin(optionsAutoformat),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createNormalizeTypesPlugin({
-      rules: [{ path: [0], strictType: ELEMENT_H1 }],
-    }),
-    createTrailingBlockPlugin({ type: ELEMENT_PARAGRAPH }),
-    createSelectOnBackspacePlugin({ allow: ELEMENT_IMAGE }),
+    createAutoformatPlugin(CONFIG.autoformat),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createNormalizeTypesPlugin(CONFIG.forceLayout),
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
   ];
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
@@ -101,8 +90,8 @@ const PlateContainer = () => {
       plugins={plugins}
       components={components}
       options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePlayground}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.playground}
     >
       <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
       <HeadingToolbar>

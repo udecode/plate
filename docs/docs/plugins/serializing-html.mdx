@@ -18,13 +18,13 @@ Use `serializeHTMLFromNodes`:
 ```ts live
 () => {
   const nodes = [
-    ...initialValueBasic
+    ...VALUES.basicNodes
   ];
   
   const editor = createEditorPlugins();
 
   const html = serializeHTMLFromNodes(editor, {
-    plugins: pluginsBasic,
+    plugins: PLUGINS.basicNodes,
     nodes,
   })
 
@@ -38,34 +38,30 @@ Use `serializeHTMLFromNodes`:
 
 ```ts live
 () => {
-  const plugins = useMemo(() => {
-    const _plugins = [
-      ...pluginsBasic,
-      createImagePlugin(),
-      createLinkPlugin(),
-      createListPlugin(),
-      createTablePlugin(),
-      createTodoListPlugin(),
-      createMediaEmbedPlugin(),
-      createExcalidrawPlugin(),
-      createHighlightPlugin(),
-      createSoftBreakPlugin(optionsSoftBreakPlugin),
-      createMentionPlugin(),
-    ];
-
-    _plugins.push(createDeserializeHTMLPlugin({ plugins: _plugins }));
-
-    return _plugins;
-  }, []);
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createImagePlugin(),
+    createLinkPlugin(),
+    createListPlugin(),
+    createTablePlugin(),
+    createTodoListPlugin(),
+    createMediaEmbedPlugin(),
+    createExcalidrawPlugin(),
+    createHighlightPlugin(),
+    createMentionPlugin(),
+    createSoftBreakPlugin(CONFIG.softBreak),
+  ];
+    
+  plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
   return (
     <Plate
       id="deserialize-html"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePasteHtml}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.pasteHtml}
     />
   );
 }

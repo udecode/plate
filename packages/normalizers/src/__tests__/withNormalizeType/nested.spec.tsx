@@ -2,8 +2,7 @@
 
 import { SPEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
-import { options } from '../../../../../docs/src/live/config/pluginOptions';
+import { ELEMENT_H1 } from '../../../../elements/heading/src/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
 import { withNormalizeTypes } from '../../createNormalizeTypesPlugin';
 
@@ -33,7 +32,7 @@ it('should be', () => {
     rules: [
       {
         path: [0, 0],
-        strictType: options.h1.type,
+        strictType: ELEMENT_H1,
       },
       { path: [0, 1], type: ELEMENT_PARAGRAPH },
     ],

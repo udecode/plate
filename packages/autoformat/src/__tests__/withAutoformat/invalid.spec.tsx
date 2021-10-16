@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { optionsAutoformat } from '../../../../../docs/src/live/config/pluginOptions';
+import { CONFIG } from '../../../../../docs/src/live/config/config';
 import { withAutoformat } from '../../createAutoformatPlugin';
 
 jsx;
@@ -24,7 +24,7 @@ describe('when the start match is not present and the end match is present', () 
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 
@@ -49,7 +49,7 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText('*');
     editor.insertText('*');
@@ -75,7 +75,7 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText('*');
     editor.insertText('*');
@@ -98,7 +98,7 @@ describe('when selection is null', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(optionsAutoformat)(withReact(input));
+    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
 
     editor.insertText(' ');
 

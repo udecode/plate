@@ -3,6 +3,7 @@ import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
+import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
  * @see {@link RenderElement}
@@ -20,23 +21,12 @@ export const pipeRenderElement = (
   );
 
   return (renderElementProps) => {
-    let props = renderElementProps as any;
-
-    propsOverriders.forEach((overrideProps) => {
-      const newProps = overrideProps(props);
-
-      if (newProps) {
-        props = {
-          ...props,
-          ...newProps,
-        };
-      }
-    });
+    const props = pipeOverrideProps(renderElementProps, propsOverriders);
 
     let element;
 
     renderElements.some((renderElement) => {
-      element = renderElement(props);
+      element = renderElement(props as any);
       return !!element;
     });
 

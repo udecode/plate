@@ -13,34 +13,30 @@ npm install @udecode/plate-ast-serializer
 
 ```ts live
 () => {
-  const plugins = useMemo(() => {
-    const _plugins = [
-      ...pluginsBasic,
-      createImagePlugin(),
-      createLinkPlugin(),
-      createListPlugin(),
-      createTablePlugin(),
-      createTodoListPlugin(),
-      createMediaEmbedPlugin(),
-      createExcalidrawPlugin(),
-      createHighlightPlugin(),
-      createSoftBreakPlugin(optionsSoftBreakPlugin),
-      createMentionPlugin(),
-    ];
-
-    _plugins.push(createDeserializeAstPlugin({ plugins: _plugins }));
-
-    return _plugins;
-  }, []);
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createImagePlugin(),
+    createLinkPlugin(),
+    createListPlugin(),
+    createTablePlugin(),
+    createTodoListPlugin(),
+    createMediaEmbedPlugin(),
+    createExcalidrawPlugin(),
+    createHighlightPlugin(),
+    createMentionPlugin(),
+    createSoftBreakPlugin(CONFIG.softBreak),
+  ];
+                      
+  plugins.push(createDeserializeAstPlugin({ plugins }));
 
   return (
     <Plate
       id="deserialize-ast"
       plugins={plugins}
-      components={components}
-      options={options}
-      editableProps={editableProps}
-      initialValue={initialValuePasteAst}
+      components={CONFIG.components}
+      options={CONFIG.options}
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.pasteAst}
     />
   );
 }

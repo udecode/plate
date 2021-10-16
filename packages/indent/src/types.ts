@@ -12,21 +12,20 @@ export interface IndentPluginOptions {
   unit?: string;
 
   /**
-   * If you want more semantics in your content, use CSS classes instead of fixed indentation units.
-   * You can then adjust the levels in the style sheets of your application whenever you want.
+   * List of classNames to pass to each indented block.
+   * First item is indent=1, second item is indent=2,...
+   * If defined, the plugin will pass a className prop instead of a style prop.
    */
   classNames?: string[];
 
+  /**
+   * List of block types supporting indentation.
+   * Default is the paragraph type.
+   */
   types?: string[];
 
+  /**
+   * Maximum number of indentation.
+   */
   indentMax?: number;
 }
-
-export interface IndentOverridePropsOptions
-  extends Pick<
-    IndentPluginOptions,
-    'types' | 'offset' | 'unit' | 'classNames'
-  > {}
-
-export interface WithIndentOptions
-  extends Pick<IndentPluginOptions, 'types' | 'indentMax'> {}

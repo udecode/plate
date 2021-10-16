@@ -32,12 +32,12 @@ npm install @udecode/plate-list-ui
   };
 
   const plugins = [
-    ...pluginsBasic,
-    createTodoListPlugin(),
-    createSoftBreakPlugin(optionsSoftBreakPlugin),
-    createExitBreakPlugin(optionsExitBreakPlugin),
-    createResetNodePlugin(optionsResetBlockTypePlugin),
+    ...PLUGINS.basicNodes,
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
     createListPlugin(),
+    createTodoListPlugin(),
   ];
 
   return (
@@ -48,10 +48,10 @@ npm install @udecode/plate-list-ui
       <Plate
         id="list"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueList}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.list}
       />
     </>
   );

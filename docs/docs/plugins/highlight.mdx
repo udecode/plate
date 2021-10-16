@@ -25,7 +25,7 @@ npm install @udecode/plate-highlight
   };
 
   const plugins = [
-    ...pluginsBasic,
+    ...PLUGINS.basicNodes,
     createHighlightPlugin(),
   ];
 
@@ -37,10 +37,10 @@ npm install @udecode/plate-highlight
       <Plate
         id="highlight"
         plugins={plugins}
-        components={components}
-        options={options}
-        editableProps={editableProps}
-        initialValue={initialValueHighlight}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.highlight}
       />
     </>
   );

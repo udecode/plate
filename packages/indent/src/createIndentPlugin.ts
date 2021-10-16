@@ -4,8 +4,8 @@ import { IndentPluginOptions } from './types';
 import { withIndent } from './withIndent';
 
 export const createIndentPlugin = (
-  options: IndentPluginOptions = {}
+  options?: IndentPluginOptions
 ): PlatePluginEditor => ({
-  overrideProps: getIndentOverrideProps(options),
+  overrideProps: getIndentOverrideProps(),
   withOverrides: withIndent(options),
 });

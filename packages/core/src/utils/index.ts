@@ -22,6 +22,7 @@ export * from './pipe';
 export * from './pipeDecorate';
 export * from './pipeHandler';
 export * from './pipeOnChange';
+export * from './pipeOverrideProps';
 export * from './pipeRenderElement';
 export * from './pipeRenderLeaf';
 export * from './withPlate';

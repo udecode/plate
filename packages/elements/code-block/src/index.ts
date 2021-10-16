@@ -12,6 +12,6 @@ export * from './getCodeBlockRenderLeaf';
 export * from './getCodeLineDecorate';
 export * from './types';
 export * from './withCodeBlock';
+export * from './options/index';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './options/index';

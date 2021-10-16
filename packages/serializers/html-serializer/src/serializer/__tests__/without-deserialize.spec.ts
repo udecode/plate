@@ -1,10 +1,11 @@
-import { createAlignPlugin } from '../../../../../elements/alignment/src/createAlignPlugin';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
-    const plugin = createAlignPlugin();
+    const plugin = createParagraphPlugin();
     delete plugin.deserialize;
 
     expect(
@@ -16,7 +17,7 @@ describe('when there is no deserializer', () => {
           plugins: [plugin],
           nodes: [
             {
-              type: 'align_center',
+              type: ELEMENT_PARAGRAPH,
               children: [{ text: 'I am centered text!' }],
             },
           ],

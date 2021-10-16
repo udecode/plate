@@ -1,10 +1,4 @@
 import {
-  ELEMENT_ALIGN_CENTER,
-  ELEMENT_ALIGN_JUSTIFY,
-  ELEMENT_ALIGN_LEFT,
-  ELEMENT_ALIGN_RIGHT,
-} from '@udecode/plate-alignment';
-import {
   MARK_BOLD,
   MARK_CODE,
   MARK_ITALIC,
@@ -70,26 +64,6 @@ export const createPlateComponents = <T extends string = string>(
   overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>
 ) => {
   const components = {
-    [ELEMENT_ALIGN_CENTER]: withProps(StyledElement, {
-      styles: {
-        root: tw`text-center`,
-      },
-    }),
-    [ELEMENT_ALIGN_JUSTIFY]: withProps(StyledElement, {
-      styles: {
-        root: tw`text-justify`,
-      },
-    }),
-    [ELEMENT_ALIGN_LEFT]: withProps(StyledElement, {
-      styles: {
-        root: tw`text-left`,
-      },
-    }),
-    [ELEMENT_ALIGN_RIGHT]: withProps(StyledElement, {
-      styles: {
-        root: tw`text-right`,
-      },
-    }),
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
