@@ -91,7 +91,7 @@ module.exports = {
       .join("\n")}`;
     
     if (firstLine[0] === '-') {
-      lines = `\n${[firstLine, ...futureLines]
+      lines = `\n  ${firstLine}\n${futureLines
         .map(l => `  ${l}`)
         .join("\n")}`;
     }
