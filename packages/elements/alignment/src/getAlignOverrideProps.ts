@@ -5,6 +5,7 @@ import {
 } from '@udecode/plate-core';
 import clsx from 'clsx';
 import { Editor } from 'slate';
+import { KEY_ALIGN } from './defaults';
 import { AlignPluginOptions } from './types';
 
 export const getAlignOverrideProps = (): OverrideProps => (editor) => {
@@ -13,7 +14,7 @@ export const getAlignOverrideProps = (): OverrideProps => (editor) => {
     classNames,
     defaultAlignment,
     types,
-  } = getPlatePluginOptions<Required<AlignPluginOptions>>(editor);
+  } = getPlatePluginOptions<Required<AlignPluginOptions>>(editor, KEY_ALIGN);
 
   return ({ element, style, className }) => {
     if (!element) return;
