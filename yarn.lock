@@ -2046,15 +2046,6 @@
     "@manypkg/get-packages" "^1.0.1"
     semver "^5.4.1"
 
-"@changesets/changelog-github@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@changesets/changelog-github/-/changelog-github-0.4.0.tgz#ec80b18b9a5645191b5323fbddce4e4a012302d4"
-  integrity sha512-4GphTAdHJfECuuQg4l0eFGYyUh26mfyXpAi2FImrQvaN+boqTM+9EAAJe2b8Y3OKRfoET+ihgo+LARhW2xJoiw==
-  dependencies:
-    "@changesets/get-github-info" "^0.5.0"
-    "@changesets/types" "^4.0.0"
-    dotenv "^8.1.0"
-
 "@changesets/cli@^2.16.0":
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/@changesets/cli/-/cli-2.16.0.tgz#9f794005d0503efba5e348b929821a1732fd0f0d"
@@ -2175,6 +2166,14 @@
     "@changesets/types" "^4.0.0"
     js-yaml "^3.13.1"
 
+"@changesets/parse@^0.3.9":
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/@changesets/parse/-/parse-0.3.9.tgz#c518792b05f15ab418d58dc1cea81601556e845e"
+  integrity sha512-XoTEkMpvRRVxSlhvOaK4YSFM+RZhYFTksxRh7ieNkb6pMxkpq8MOYSi/07BuqkODn4dJEMOoSy3RzL99P6FyqA==
+  dependencies:
+    "@changesets/types" "^4.0.1"
+    js-yaml "^3.13.1"
+
 "@changesets/pre@^1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@changesets/pre/-/pre-1.0.6.tgz#45700cf18274b35b2296000befe7fe4df8ff046f"
@@ -2204,6 +2203,11 @@
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@changesets/types/-/types-4.0.0.tgz#635f804546b0a96ecc0ca3f26403a6782a3dc938"
   integrity sha512-whLmPx2wgJRoOtxVZop+DJ71z1gTSkij7osiHgN+pe//FiE6bb4ffvBBb0rACs2cUPfAkWxgSPzqkECgKS1jvQ==
+
+"@changesets/types@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@changesets/types/-/types-4.0.1.tgz#85cf3cc32baff0691112d9d15fc21fbe022c9f0a"
+  integrity sha512-zVfv752D8K2tjyFmxU/vnntQ+dPu+9NupOSguA/2Zuym4tVxRh0ylArgKZ1bOAi2eXfGlZMxJU/kj7uCSI15RQ==
 
 "@changesets/write@^0.1.4":
   version "0.1.4"
