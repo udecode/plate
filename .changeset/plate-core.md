@@ -2,4 +2,4 @@
 '@udecode/plate-core': patch
 ---
 
-fix `PlatePluginComponent` type
+fix: `PlatePluginComponent` type

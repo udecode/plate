@@ -1,6 +1,6 @@
 ---
 '@udecode/plate-common': minor
 ---
+  
+`unsetNodes`
 
-feat:  
-- `unsetNodes`

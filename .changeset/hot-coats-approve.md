@@ -2,4 +2,4 @@
 '@udecode/plate-common': patch
 ---
 
-fix EditorNodesOptions `at` option
+fix: EditorNodesOptions `at` option
