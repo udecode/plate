@@ -1,5 +1,4 @@
 ---
-'@udecode/plate-autoformat': patch
 '@udecode/plate-break': patch
 '@udecode/plate-common': patch
 '@udecode/plate-core': patch
