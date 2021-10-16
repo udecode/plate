@@ -1,13 +1,12 @@
-import { ChangelogFunctions } from "@changesets/types";
-import { config } from "dotenv";
-import { getInfo, getInfoFromPullRequest } from "@changesets/get-github-info";
+const { config } = require("dotenv");
+const { getInfo, getInfoFromPullRequest } = require("@changesets/get-github-info");
 
 config();
 
-const changelogFunctions: ChangelogFunctions = {
+module.exports = {
   getDependencyReleaseLine: async (
   ) => {
-    return ""
+    return
   },
   getReleaseLine: async (changeset, type, options) => {
     if (!options || !options.repo) {
@@ -16,9 +15,9 @@ const changelogFunctions: ChangelogFunctions = {
       );
     }
 
-    let prFromSummary: number | undefined;
-    let commitFromSummary: string | undefined;
-    let usersFromSummary: string[] = [];
+    let prFromSummary;
+    let commitFromSummary;
+    let usersFromSummary = [];
 
     const replacedChangelog = changeset.summary
       .replace(/^\s*(?:pr|pull|pull\s+request):\s*#?(\d+)/im, (_, pr) => {
@@ -89,5 +88,3 @@ const changelogFunctions: ChangelogFunctions = {
       .join("\n")}`;
   }
 };
-
-export default changelogFunctions;

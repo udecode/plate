@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.0/schema.json",
-  "changelog": [".changeset/changelog-config.ts", { "repo": "udecode/plate" }],
+  "changelog": ["@udecode/changelog-config", { "repo": "udecode/plate" }],
   "commit": false,
   "linked": [["@udecode/plate*"]],
   "access": "public",
