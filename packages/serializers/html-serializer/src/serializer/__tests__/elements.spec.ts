@@ -187,9 +187,11 @@ it('serialize table to html', () => {
 });
 
 it('serialize align style to html', () => {
+  const plugins = [createParagraphPlugin(), createAlignPlugin()];
+
   expect(
-    serializeHTMLFromNodes(editor, {
-      plugins: [createParagraphPlugin(), createAlignPlugin()],
+    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+      plugins,
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -204,12 +206,14 @@ it('serialize align style to html', () => {
 });
 
 it('serialize align className to html', () => {
+  const plugins = [
+    createParagraphPlugin(),
+    createAlignPlugin({ classNames: { center: 'slate-align-center' } }),
+  ];
+
   expect(
-    serializeHTMLFromNodes(editor, {
-      plugins: [
-        createParagraphPlugin(),
-        createAlignPlugin({ classNames: { center: 'slate-align-center' } }),
-      ],
+    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+      plugins,
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
