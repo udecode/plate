@@ -50,7 +50,7 @@ export interface PlatePluginEditor<T extends SPEditor = SPEditor>
   /**
    * Editor method overriders.
    */
-  withOverrides?: WithOverride | WithOverride[];
+  withOverrides?: WithOverride<T> | WithOverride<T>[];
 }
 
 export interface PlatePluginSerialize<T extends SPEditor = SPEditor> {

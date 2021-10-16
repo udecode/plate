@@ -9,7 +9,7 @@ import { GetNodeProps, NodeProps } from './GetNodeProps';
  */
 export type PlatePluginComponent = FunctionComponent;
 
-export interface PlatePluginOptions extends AnyObject {
+export type PlatePluginOptions<T = AnyObject> = T & {
   /**
    * Node properties to delete.
    */
@@ -53,7 +53,7 @@ export interface PlatePluginOptions extends AnyObject {
    * @default plugin key
    */
   type: string;
-}
+};
 
 /**
  * A unique key to store the plugin options by key.
@@ -67,4 +67,7 @@ export type PluginKey = string;
  * @default {}
  * @see {@link PluginKey}
  */
-export type PlateOptions = Record<PluginKey, PlatePluginOptions>;
+export type PlateOptions<T = AnyObject> = Record<
+  PluginKey,
+  PlatePluginOptions<T>
+>;

@@ -29,12 +29,3 @@ export interface IndentPluginOptions {
    */
   indentMax?: number;
 }
-
-export interface IndentOverridePropsOptions
-  extends Pick<
-    IndentPluginOptions,
-    'types' | 'offset' | 'unit' | 'classNames'
-  > {}
-
-export interface WithIndentOptions
-  extends Pick<IndentPluginOptions, 'types' | 'indentMax'> {}

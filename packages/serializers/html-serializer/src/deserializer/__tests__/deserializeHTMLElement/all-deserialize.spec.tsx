@@ -6,7 +6,6 @@ import { getSlateClass } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createSoftBreakPlugin } from '../../../../../../break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
-import { ELEMENT_ALIGN_CENTER } from '../../../../../../elements/alignment/src/defaults';
 import { createBlockquotePlugin } from '../../../../../../elements/block-quote/src/createBlockquotePlugin';
 import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugin';
 import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/defaults';
@@ -74,7 +73,6 @@ const elementTags = [
     ELEMENT_TODO_LI
   )} ${CLASS_TODO_LIST_CHECKED}">checked</div>`,
   `<div class="${getSlateClass(ELEMENT_TODO_LI)}">unchecked</div>`,
-  `<div class="${getSlateClass(ELEMENT_ALIGN_CENTER)}">center</div>`,
   `<iframe src="https://player.vimeo.com/video/26689853" />`,
 ];
 
@@ -133,7 +131,6 @@ const output = (
     </htable>
     <htodoli checked>checked</htodoli>
     <htodoli checked={false}>unchecked</htodoli>
-    <hcenter>center</hcenter>
     <hmediaembed url="https://player.vimeo.com/video/26689853">
       {'</body></html>'}
     </hmediaembed>

@@ -11,7 +11,7 @@ export interface AlignPluginOptions {
    * Object of classNames to pass to each alignment value.
    * If defined, the plugin will pass a className prop instead of a style prop.
    */
-  classNames?: Record<Alignment, string>;
+  classNames?: Partial<Record<Alignment, string>>;
 
   /**
    * Default alignment will not be set to the node.

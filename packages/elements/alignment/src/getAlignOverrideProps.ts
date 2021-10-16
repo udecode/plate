@@ -1,29 +1,19 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import {
   AnyObject,
-  getPlatePluginType,
+  getPlatePluginOptions,
   OverrideProps,
 } from '@udecode/plate-core';
 import clsx from 'clsx';
 import { Editor } from 'slate';
-import { DEFAULT_ALIGNMENT, DEFAULT_ALIGNMENTS, KEY_ALIGN } from './defaults';
 import { AlignPluginOptions } from './types';
 
-export const getAlignOverrideProps = ({
-  alignments = DEFAULT_ALIGNMENTS,
-  classNames,
-  defaultAlignment = DEFAULT_ALIGNMENT,
-  types: _types,
-}: AlignPluginOptions = {}): OverrideProps => (editor) => {
-  const types = _types ?? getPlatePluginType(editor, ELEMENT_DEFAULT);
-
-  // TODO: extend plate-core to register options
-  editor.options[KEY_ALIGN] = {
-    type: KEY_ALIGN,
-    types,
+export const getAlignOverrideProps = (): OverrideProps => (editor) => {
+  const {
     alignments,
+    classNames,
     defaultAlignment,
-  };
+    types,
+  } = getPlatePluginOptions<Required<AlignPluginOptions>>(editor);
 
   return ({ element, style, className }) => {
     if (!element) return;

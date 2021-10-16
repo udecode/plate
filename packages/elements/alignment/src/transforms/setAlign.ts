@@ -14,7 +14,9 @@ export const setAlign = (
   { align }: AlignPluginOptions & { align: Alignment },
   options?: SetNodesOptions
 ) => {
-  const { types, defaultAlignment } = getPlatePluginOptions(editor, KEY_ALIGN);
+  const { types, defaultAlignment } = getPlatePluginOptions<
+    Required<AlignPluginOptions>
+  >(editor, KEY_ALIGN);
 
   const match: TNodeMatch = (n) =>
     Editor.isBlock(editor, n) && types.includes(n.type);

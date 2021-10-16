@@ -3,11 +3,10 @@
 ---
 
 feat:
-- added:
-  - `KEY_ALIGNMENT`
-  - `DEFAULT_ALIGNMENTS`
-  - `DEFAULT_ALIGNMENT`
-  - `getAlignOverrideProps`
-  - `setAlign`
-- added types:
+- `KEY_ALIGNMENT`
+- `DEFAULT_ALIGNMENTS`
+- `DEFAULT_ALIGNMENT`
+- `getAlignOverrideProps`
+- `setAlign`
+- types:
   - `AlignPluginOptions`
