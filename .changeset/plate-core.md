@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': fix
+'@udecode/plate-core': patch
 ---
 
 fix `PlatePluginComponent` type
