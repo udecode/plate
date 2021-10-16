@@ -19,6 +19,7 @@
     "internal:release:next": "yarn prerelease && yarn changeset publish --tag next",
     "link-all": "yarn unlink-all && lerna exec --parallel yarn link",
     "lint": "eslint \"packages/**/src/**/*.{js,jsx,ts,tsx}\"",
+    "postinstall": "cp .changeset/changelog-config.js node_modules/@udecode/changelog-config.js",
     "prerelease": "yarn build && yarn test && yarn lint",
     "release:experimental": "yarn prerelease && lerna publish --dist-tag experimental",
     "release:latest": "yarn prerelease && lerna publish --force-publish",
