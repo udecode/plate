@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 12
 
-      - name: Run lint
+      - name: Run ${{ matrix.command }}
         run: yarn && yarn build && yarn ${{ matrix.command }}
         env:
           CI: true
