@@ -10,7 +10,7 @@ import {
   TElement,
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
-import { ELEMENT_MENTION } from './defaults';
+import { ELEMENT_MENTION, ELEMENT_MENTION_PROPOSAL } from './defaults';
 // FIXME: Cannot figure out the TS for this to work with insertNodes
 // import { MentionNodeData } from './types';
 
@@ -36,25 +36,31 @@ export const getMentionOnSelectItem = ({
     pathAbove &&
     Editor.isEnd(editor, editor.selection.anchor, pathAbove);
 
-  // insert a space to fix the bug
-  if (isBlockEnd) {
-    Transforms.insertText(editor, ' ');
-  }
+  Editor.withoutNormalizing(editor, () => {
+    // insert a space to fix the bug
+    if (isBlockEnd) {
+      Transforms.insertText(editor, ' ');
+    }
 
-  // select the text and insert the element
-  Transforms.select(editor, targetRange);
-  insertNodes<TElement>(editor, {
-    type,
-    children: [{ text: '' }],
-    ...createMentionNode(item),
+    // select the text and insert the element
+    Transforms.select(editor, targetRange);
+
+    Transforms.removeNodes(editor, {
+      // TODO: replace any
+      match: (node: any) => node.type === ELEMENT_MENTION_PROPOSAL,
+    });
+    insertNodes<TElement>(editor, {
+      type,
+      children: [{ text: '' }],
+      ...createMentionNode(item),
+    });
+    // move the selection after the element
+    Transforms.move(editor);
+
+    // delete the inserted space
+    if (isBlockEnd && !insertSpaceAfterMention) {
+      Transforms.delete(editor);
+    }
   });
-  // move the selection after the element
-  Transforms.move(editor);
-
-  // delete the inserted space
-  if (isBlockEnd && !insertSpaceAfterMention) {
-    Transforms.delete(editor);
-  }
-
   return comboboxStore.set.reset();
 };

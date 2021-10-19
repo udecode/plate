@@ -45,8 +45,14 @@ import {
 import { TodoListElement } from '@udecode/plate-list-ui';
 import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed';
 import { MediaEmbedElement } from '@udecode/plate-media-embed-ui';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { MentionElement } from '@udecode/plate-mention-ui';
+import {
+  ELEMENT_MENTION,
+  ELEMENT_MENTION_PROPOSAL,
+} from '@udecode/plate-mention';
+import {
+  MentionElement,
+  MentionProposalElement,
+} from '@udecode/plate-mention-ui';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { StyledElement, StyledLeaf } from '@udecode/plate-styled-components';
 import {
@@ -147,6 +153,7 @@ export const createPlateComponents = <T extends string = string>(
     [ELEMENT_LINK]: LinkElement,
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
     [ELEMENT_MENTION]: MentionElement,
+    [ELEMENT_MENTION_PROPOSAL]: MentionProposalElement,
     [ELEMENT_UL]: withProps(StyledElement, {
       as: 'ul',
       styles: {
