@@ -13,7 +13,6 @@ import {
   createSelectOnBackspacePlugin,
   createStrikethroughPlugin,
   createUnderlinePlugin,
-  ELEMENT_IMAGE,
 } from '@udecode/plate';
 import { CONFIG } from './config';
 

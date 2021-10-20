@@ -18,7 +18,8 @@ If you don't provide any plugins to `Plate` as done in the previous section, `cr
 Let's add basic elements and marks using the `plugins` props.
 
 ```tsx
-const pluginsBasic = [
+// Stored in PLUGINS.basicNodes
+const basicNodesPlugins = [
   // editor
   createReactPlugin(),          // withReact
   createHistoryPlugin(),        // withHistory
@@ -59,7 +60,8 @@ export const createElement = (
   };
 };
 
-const initialValueBasicNodes = [
+// Stored in VALUES.basicNodes
+const basicNodesInitialValue = [
   createElement('🧱 Elements', { type: ELEMENT_H1 }),
   createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
   createElement('These are the most common elements, known as blocks:'),
@@ -169,7 +171,7 @@ const options = createPlateOptions();
 ```tsx live
 () => {
   // try to remove some plugins!
-  const pluginsBasicNodes = [
+  const basicNodesPlugins = [
     // editor
     createReactPlugin(),          // withReact
     createHistoryPlugin(),        // withHistory
@@ -191,11 +193,11 @@ const options = createPlateOptions();
   return (
     <Plate
       id="2"
-      plugins={pluginsBasicNodes}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.basicNodes}
-      components={CONFIG.components}
-      options={CONFIG.options}
+      plugins={basicNodesPlugins}
+      components={components}
+      options={options}
     />
   );
 }

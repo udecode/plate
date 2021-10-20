@@ -30,6 +30,7 @@ Let's add a placeholder and some padding using `editableProps` props.
 
 ```tsx live
 () => {
+  // Stored in CONFIG.editableProps
   const editableProps = {
     placeholder: 'Type…',
     style: {
@@ -37,7 +38,7 @@ Let's add a placeholder and some padding using `editableProps` props.
     },
   };
 
-  return <Plate id="1" editableProps={CONFIG.editableProps} />;
+  return <Plate id="1" editableProps={editableProps} />;
 }
 ```
 
@@ -54,7 +55,8 @@ Let's set the initial value of the editor to one block of text.
 
 ```tsx live
 () => {
-  const initialValuePlainText = [
+  // Stored in VALUES.plainText
+  const initialValue = [
     {
       children: [
         {
@@ -69,11 +71,18 @@ Let's set the initial value of the editor to one block of text.
     <Plate
       id="2"
       editableProps={CONFIG.editableProps}
-      initialValue={VALUES.plainText}
+      initialValue={initialValue}
     />
   );
 }
 ```
+
+:::note
+
+For readability, we're storing common constants in `CONFIG`, `VALUES`,...
+See all the imported [variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx).
+
+:::
 
 ### Change Handler
 
