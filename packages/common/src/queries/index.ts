@@ -4,6 +4,7 @@
 
 export * from './findDescendant';
 export * from './findNode';
+export * from './findNodePath';
 export * from './getAbove';
 export * from './getBlockAbove';
 export * from './getChildren';
