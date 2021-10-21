@@ -16,17 +16,21 @@ export const MentionCombobox = ({
   items,
   component,
   onRenderItem,
+  id: _id,
   pluginKey = ELEMENT_MENTION,
   trigger = COMBOBOX_TRIGGER_MENTION,
   searchPattern,
   insertSpaceAfterMention,
   createMentionNode,
 }: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'> & {
+  id?: string;
   trigger?: string;
   searchPattern?: string;
   insertSpaceAfterMention?: boolean;
   createMentionNode?: CreateMentionNode;
 } & PlatePluginKey) => {
+  const id = _id ?? pluginKey;
+
   const activeId = comboboxStore.use.activeId();
   const onSelectMentionItem = getMentionOnSelectItem({
     pluginKey,
@@ -36,14 +40,14 @@ export const MentionCombobox = ({
 
   useEffect(() => {
     comboboxStore.set.setComboboxById({
-      id: pluginKey,
+      id,
       trigger,
       searchPattern,
       onSelectItem: onSelectMentionItem,
     });
-  }, [pluginKey, onSelectMentionItem, trigger, searchPattern]);
+  }, [pluginKey, onSelectMentionItem, trigger, id, searchPattern]);
 
-  if (activeId !== pluginKey) return null;
+  if (activeId !== id) return null;
 
   return (
     <Combobox items={items} component={component} onRenderItem={onRenderItem} />
