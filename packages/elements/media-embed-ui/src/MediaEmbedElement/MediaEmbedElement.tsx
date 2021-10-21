@@ -21,6 +21,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
 
   const editor = useEditorRef();
   const { url } = element;
+  const querySeparator = url.includes('?') ? '' : '?';
 
   const styles = getMediaEmbedElementStyles(props);
 
@@ -40,7 +41,7 @@ export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
             css={styles.iframe?.css}
             className={styles.iframe?.className}
             title="embed"
-            src={`${url}?title=0&byline=0&portrait=0`}
+            src={`${url}${querySeparator}&title=0&byline=0&portrait=0`}
             frameBorder="0"
             {...nodeProps}
           />
