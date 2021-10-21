@@ -13,18 +13,25 @@ import {
   useStoreEditorSelection,
   useStoreEditorState,
 } from '@udecode/plate-core';
-import { ToolbarButton, ToolbarDropdown } from '@udecode/plate-toolbar';
+import {
+  ToolbarButton,
+  ToolbarButtonProps,
+  ToolbarDropdown,
+} from '@udecode/plate-toolbar';
 import { BaseSelection, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 
+type ToolbarColorPickerProps = {
+  pluginKey?: string;
+  icon: ReactNode;
+};
+
 export const ToolbarColorPicker = ({
   pluginKey,
   icon,
-}: {
-  pluginKey?: string;
-  icon: ReactNode;
-}) => {
+  ...rest
+}: ToolbarColorPickerProps & ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
   const selection = useStoreEditorSelection(useEventEditorId('focus'));
@@ -53,6 +60,7 @@ export const ToolbarColorPicker = ({
         <ToolbarButton
           active={!!editor?.selection && isMarkActive(editor, type)}
           icon={icon}
+          {...rest}
         />
       }
       onClose={(e: MouseEvent) => {
