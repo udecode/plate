@@ -46,6 +46,162 @@ package manager. See
 
 ### Editing
 
+#### How to: Create a plate package
+
+- `packages/`
+    - copy paste `templates/package` or `templates/nested/packages`
+    - find & replace all `template` or `ntemplate` by `x`
+    - `README.md`
+    - `package.json`: update
+        - `version`
+        - `description`
+        - `dependencies`
+        - `repository.directory`
+- `/src`
+    - plate plugin?
+        - *How to: Create a plate plugin*
+- `packages/plate`
+    - `package.json`
+        - add the package to dependencies
+    - `src/index.tsx`
+        - add `export * from '@udecode/plate-x';`
+- `yarn install`
+- `yarn build`
+- `/docs`
+    - `package.json`
+        - add `"@udecode/plate-x": "file:../packages/x",`
+    - `docusaurus.config`
+        - add `'@udecode/plate-x': path.resolve(__dirname, '../packages/x/src'),` to alias plugin
+    - `yarn install`
+    - can have an example?
+        - `/docs`
+            - create a new doc example in `/docs`
+        - `sidebars`
+            - add the example doc
+
+#### How to: Create a plate plugin
+
+- create file `createXPlugin.ts`
+    
+    ```tsx
+    import { PlatePlugin } from '@udecode/plate-core';
+    
+    export const createXPlugin = (): PlatePlugin => ({
+    
+    });
+    ```
+    
+- is node?
+    
+    
+    - create file `defaults.ts`
+        
+        
+        ```tsx
+        // for elements
+        export const ELEMENT_X = 'x';
+        
+        // for marks
+        export const MARK_X = 'x';
+        
+        // for options
+        export const DEFAULTS_X: : Partial<PlatePluginOptions> = {}
+        ```
+        
+    - add to plugin:
+        
+        ```tsx
+        pluginKeys: ELEMENT_X,
+        ```
+        
+    - has node data?
+        - create file `types.ts`
+            
+            
+            ```tsx
+            export interface XNodeData {
+              
+            }
+            ```
+            
+    
+    - is element?
+        - add to plugin:
+            
+            ```tsx
+            renderElement: getRenderElement(ELEMENT_X),
+            ```
+            
+        - inline?
+            
+            add to plugin:
+            
+            ```tsx
+            inlineTypes: getPlatePluginTypes(ELEMENT_X),
+            ```
+            
+        - create `/components/XElement`
+            
+            ```tsx
+            export const XElement = (props: SPRenderElementProps) => {
+              const { attributes, children } = props;
+            
+              return (
+                <div {...attributes}>
+                  {children}
+                </div>
+              );
+            };
+            ```
+            
+    - is void?
+        
+        add to plugin:
+        
+        ```tsx
+        voidTypes: getPlatePluginTypes(ELEMENT_X),
+        ```
+        
+    - deserializer?
+        - create `getXDeserialize` file
+        
+        ```tsx
+        export const getXDeserialize = (): Deserialize => (editor) => {
+          const options = getPlatePluginOptions(editor, ELEMENT_X);
+        
+          return {
+            element: getNodeDeserializer({
+              type: options.type,
+              getNode: (el) => ({
+                type: options.type,
+                value: el.getAttribute('data-slate-value'),
+              }),
+              rules: [{ className: getSlateClass(options.type) }],
+              ...options.deserialize,
+            }),
+          };
+        };
+        ```
+        
+        ```tsx
+        // add to plugin
+        deserialize: getXDeserialize(),
+        ```
+        
+    - `createPlateComponents`
+        - add the plugin component to `components` object
+            
+            ```tsx
+            [ELEMENT_X]: XElement,
+            ```
+            
+    - `createPlateOptions`
+        - add the plugin options to `options` object
+            
+            ```tsx
+            [ELEMENT_X]: DEFAULTS_X,
+            ```
+
 #### Run Linter
 
 We use eslint as a linter for all code (including typescript code).
