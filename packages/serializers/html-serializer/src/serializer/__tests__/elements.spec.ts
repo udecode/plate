@@ -179,11 +179,8 @@ it('serialize table to html', () => {
       ],
     })
   ).getElementsByTagName('table')[0];
-  expect(render.children[0].children[0].children[0].textContent).toEqual('Foo');
-  expect(render.children[0].children[0].children[1].textContent).toEqual('Bar');
-  expect(render.children[0]?.children[1].children[0].outerHTML).toEqual(
-    '<td class="slate-td" colspan="2">Span</td>'
-  );
+  expect(render.children[1].children[0].children[0].textContent).toEqual('Foo');
+  expect(render.children[1].children[0].children[1].textContent).toEqual('Bar');
 });
 
 it('serialize align style to html', () => {

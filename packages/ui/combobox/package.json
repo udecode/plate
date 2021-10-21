@@ -36,7 +36,7 @@
     "@udecode/plate-core": "6.0.0",
     "@udecode/plate-popper": "6.0.0",
     "@udecode/plate-styled-components": "6.0.0",
-    "@udecode/zustood": "0.3.0",
+    "@udecode/zustood": "0.4.0",
     "downshift": "6.1.7",
     "zustand": "3.5.11"
   },

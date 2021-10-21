@@ -1,8 +1,11 @@
 import * as React from 'react';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import { withProviders } from '@udecode/plate-common';
+import { Provider } from 'jotai';
+import { useTableColSizes } from '../hooks/useTableColSizes';
 import { getTableElementStyles } from './TableElement.styles';
+import { TableElementProps } from './TableElement.types';
 
-export const TableElement = (props: StyledElementProps) => {
+const TableElementRaw = (props: TableElementProps) => {
   const {
     attributes,
     children,
@@ -11,10 +14,17 @@ export const TableElement = (props: StyledElementProps) => {
     element,
     classNames,
     prefixClassNames,
+    transformColSizes,
     ...rootProps
   } = props;
 
-  const { root } = getTableElementStyles(props);
+  const { root, tbody } = getTableElementStyles(props);
+
+  let colSizes = useTableColSizes(element);
+
+  if (transformColSizes) {
+    colSizes = transformColSizes(colSizes);
+  }
 
   return (
     <table
@@ -24,7 +34,16 @@ export const TableElement = (props: StyledElementProps) => {
       {...rootProps}
       {...nodeProps}
     >
-      <tbody>{children}</tbody>
+      <colgroup>
+        {colSizes.map((width, index) => (
+          <col key={index} style={width ? { width } : undefined} />
+        ))}
+      </colgroup>
+      <tbody css={tbody?.css} className={tbody?.className}>
+        {children}
+      </tbody>
     </table>
   );
 };
+
+export const TableElement = withProviders(Provider)(TableElementRaw);
