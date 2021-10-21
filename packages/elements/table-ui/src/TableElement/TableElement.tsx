@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { withProviders } from '@udecode/plate-common';
-import { getTableColumnCount } from '@udecode/plate-table';
 import { Provider } from 'jotai';
 import { useTableColSizes } from '../hooks/useTableColSizes';
 import { getTableElementStyles } from './TableElement.styles';
@@ -15,14 +14,17 @@ const TableElementRaw = (props: TableElementProps) => {
     element,
     classNames,
     prefixClassNames,
+    transformColSizes,
     ...rootProps
   } = props;
 
   const { root, tbody } = getTableElementStyles(props);
 
-  const colCount = getTableColumnCount(element);
+  let colSizes = useTableColSizes(element);
 
-  const colSizes = useTableColSizes(element);
+  if (transformColSizes) {
+    colSizes = transformColSizes(colSizes);
+  }
 
   return (
     <table
@@ -33,11 +35,9 @@ const TableElementRaw = (props: TableElementProps) => {
       {...nodeProps}
     >
       <colgroup>
-        {Array.from(Array(colCount), (e, index) => {
-          const width = colSizes?.[index];
-
-          return <col key={index} style={width ? { width } : undefined} />;
-        })}
+        {colSizes.map((width, index) => (
+          <col key={index} style={width ? { width } : undefined} />
+        ))}
       </colgroup>
       <tbody css={tbody?.css} className={tbody?.className}>
         {children}

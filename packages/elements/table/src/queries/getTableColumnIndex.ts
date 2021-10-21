@@ -19,6 +19,7 @@ export const getTableColumnIndex = (
       colIndex = index;
       return true;
     }
+    return false;
   });
 
   return colIndex;

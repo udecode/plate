@@ -9,4 +9,9 @@ export interface TableElementStyles {
 }
 
 export interface TableElementProps
-  extends StyledElementProps<TableNodeData, TableElementStyles> {}
+  extends StyledElementProps<TableNodeData, TableElementStyles> {
+  /**
+   * Transform node column sizes
+   */
+  transformColSizes: (colSizes: number[]) => number[];
+}
