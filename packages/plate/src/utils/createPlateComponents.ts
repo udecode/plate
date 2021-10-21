@@ -55,7 +55,7 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
-import { TableElement } from '@udecode/plate-table-ui';
+import { TableCellElement, TableElement } from '@udecode/plate-table-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { DefaultPlatePluginKey } from './createPlateOptions';
@@ -169,23 +169,7 @@ export const createPlateComponents = <T extends string = string>(
       prefixClassNames: 'p',
     }),
     [ELEMENT_TABLE]: TableElement,
-    [ELEMENT_TD]: withProps(StyledElement, {
-      as: 'td',
-      styles: {
-        root: [
-          tw`p-2`,
-          css`
-            background-color: rgb(255, 255, 255);
-            border: 1px solid rgb(193, 199, 208);
-            min-width: 48px;
-
-            > * {
-              margin: 0;
-            }
-          `,
-        ],
-      },
-    }),
+    [ELEMENT_TD]: TableCellElement,
     [ELEMENT_TH]: withProps(StyledElement, {
       as: 'th',
       styles: {

@@ -36,7 +36,9 @@
     "@udecode/plate-core": "6.0.0",
     "@udecode/plate-styled-components": "6.0.0",
     "@udecode/plate-table": "6.0.0",
-    "@udecode/plate-toolbar": "6.0.0"
+    "@udecode/plate-toolbar": "6.0.0",
+    "jotai": "^1.4.0",
+    "re-resizable": "^6.9.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
