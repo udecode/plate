@@ -44,8 +44,6 @@ export const getComboboxOnChange = (): OnChange => (editor) => () => {
           targetRange: range,
         });
 
-        console.log(textAfterTrigger);
-
         shouldClose = false;
         return true;
       }
