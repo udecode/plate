@@ -1,7 +1,8 @@
 import { TEditor, TNode } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry } from 'slate';
+import { NodeEntry } from 'slate';
 import { EditorNodesOptions } from '../types';
-import { match } from './match';
+import { getNodes } from './getNodes';
+import { getQueryOptions } from './match';
 
 export type FindNodeOptions<T extends TNode = TNode> = EditorNodesOptions<T>;
 
@@ -14,10 +15,9 @@ export const findNode = <T extends TNode = TNode>(
 ): NodeEntry<T> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
-    const nodeEntries = Editor.nodes<T>(editor, {
+    const nodeEntries = getNodes<T>(editor, {
       at: editor.selection || [],
-      ...options,
-      match: (node) => match<Node>(node, options.match),
+      ...getQueryOptions(editor, options),
     });
 
     for (const [node, path] of nodeEntries) {

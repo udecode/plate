@@ -8,3 +8,4 @@ export * from './deleteColumn';
 export * from './deleteRow';
 export * from './deleteTable';
 export * from './insertTable';
+export * from './setTableColSize';

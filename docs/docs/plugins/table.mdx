@@ -42,7 +42,7 @@ npm install @udecode/plate-table-ui
         plugins={plugins}
         components={CONFIG.components}
         options={CONFIG.options}
-        editableProps={CONFIG.editableProps}
+        editableProps={{...CONFIG.editableProps, autoFocus: true}}
         initialValue={VALUES.table}
       />
     </>
