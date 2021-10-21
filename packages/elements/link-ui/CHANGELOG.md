@@ -1,5 +1,7 @@
 # @udecode/plate-link-ui
 
+## 6.1.0
+
 ## 6.0.0
 
 ## 5.3.5
