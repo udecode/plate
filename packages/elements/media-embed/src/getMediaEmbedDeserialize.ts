@@ -15,10 +15,8 @@ export const getMediaEmbedDeserialize = (
     element: getNodeDeserializer({
       type: options.type,
       getNode: (el: HTMLElement) => {
-        let url = el.getAttribute('src');
+        const url = el.getAttribute('src');
         if (url) {
-          [url] = url.split('?');
-
           return {
             type: options.type,
             url,
