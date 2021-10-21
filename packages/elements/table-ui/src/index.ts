@@ -4,6 +4,6 @@
 
 export * from './table.atoms';
 export * from './TableElement/index';
-export * from './TdElement/index';
+export * from './TableCellElement/index';
 export * from './ToolbarTable/index';
 export * from './hooks/index';

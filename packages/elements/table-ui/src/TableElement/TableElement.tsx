@@ -2,7 +2,7 @@ import * as React from 'react';
 import { withProviders } from '@udecode/plate-common';
 import { getTableColumnCount } from '@udecode/plate-table';
 import { Provider } from 'jotai';
-import { useTableColSizes } from '../hooks/useColWidth';
+import { useTableColSizes } from '../hooks/useTableColSizes';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
 
