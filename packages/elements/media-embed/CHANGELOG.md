@@ -1,5 +1,11 @@
 # @udecode/plate-media-embed
 
+## 6.1.0
+
+### Patch Changes
+
+- [#1165](https://github.com/udecode/plate/pull/1165) by [@dylans](https://github.com/dylans) – Improve reliability of url parsing
+
 ## 6.0.0
 
 ## 5.3.5

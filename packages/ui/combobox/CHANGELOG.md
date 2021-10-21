@@ -1,5 +1,15 @@
 # @udecode/plate-combobox
 
+## 6.1.0
+
+### Patch Changes
+
+- [#1161](https://github.com/udecode/plate/pull/1161) by [@zbeyens](https://github.com/zbeyens) – Update deps
+
+- [#1166](https://github.com/udecode/plate/pull/1166) by [@zbeyens](https://github.com/zbeyens) –
+  - `getTextFromTrigger`:
+    - `searchPattern` default option is '\\s+' (whitespace)
+
 ## 6.0.0
 
 ## 5.3.5

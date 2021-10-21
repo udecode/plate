@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-csv-serializer",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "CSV serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -34,10 +34,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "6.0.0",
+    "@udecode/plate-common": "6.1.0",
     "@udecode/plate-core": "6.0.0",
-    "@udecode/plate-serializer": "6.0.0",
-    "@udecode/plate-table": "6.0.0",
+    "@udecode/plate-serializer": "6.1.0",
+    "@udecode/plate-table": "6.1.0",
     "papaparse": "^5.3.1"
   },
   "devDependencies": {

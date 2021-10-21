@@ -1,5 +1,17 @@
 # @udecode/plate-common
 
+## 6.1.0
+
+### Minor Changes
+
+- [#1161](https://github.com/udecode/plate/pull/1161) by [@zbeyens](https://github.com/zbeyens) –
+  - `withProviders`: Wrap a component into multiple providers
+  - `findNodePath`: `ReactEditor.findPath` without error throw
+
+### Patch Changes
+
+- [#1161](https://github.com/udecode/plate/pull/1161) by [@zbeyens](https://github.com/zbeyens) – `findNode` is now using `getNodes`
+
 ## 6.0.0
 
 ### Minor Changes

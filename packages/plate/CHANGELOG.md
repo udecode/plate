@@ -1,5 +1,11 @@
 # @udecode/plate
 
+## 6.1.0
+
+### Minor Changes
+
+- [#1161](https://github.com/udecode/plate/pull/1161) by [@zbeyens](https://github.com/zbeyens) – `ELEMENT_TD` component is now using `TableCellElement`
+
 ## 6.0.0
 
 ## 5.3.5

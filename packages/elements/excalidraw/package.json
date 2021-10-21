@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-excalidraw",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "Excalidraw plugin for Plate",
   "keywords": [
     "slate",
@@ -33,9 +33,9 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
-    "@udecode/plate-common": "6.0.0",
+    "@udecode/plate-common": "6.1.0",
     "@udecode/plate-core": "6.0.0",
-    "@udecode/plate-styled-components": "6.0.0"
+    "@udecode/plate-styled-components": "6.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
