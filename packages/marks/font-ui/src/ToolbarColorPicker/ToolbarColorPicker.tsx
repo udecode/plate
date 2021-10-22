@@ -25,11 +25,13 @@ import { ColorPicker } from '../ColorPicker/ColorPicker';
 type ToolbarColorPickerProps = {
   pluginKey?: string;
   icon: ReactNode;
+  selectedIcon: ReactNode;
 };
 
 export const ToolbarColorPicker = ({
   pluginKey,
   icon,
+  selectedIcon,
   ...rest
 }: ToolbarColorPickerProps & ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
@@ -76,7 +78,11 @@ export const ToolbarColorPicker = ({
         }
       }}
     >
-      <ColorPicker color={selectedColor || color} updateColor={updateColor} />
+      <ColorPicker
+        color={selectedColor || color}
+        selectedIcon={selectedIcon}
+        updateColor={updateColor}
+      />
     </ToolbarDropdown>
   );
 };

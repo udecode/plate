@@ -73,7 +73,7 @@ export const DEFAULT_COLORS: ColorType[] = [
   {
     name: 'yellow',
     value: '#FEFF00',
-    isBrightColor: false,
+    isBrightColor: true,
   },
   {
     name: 'green',
@@ -175,7 +175,7 @@ export const DEFAULT_COLORS: ColorType[] = [
   {
     name: 'light yellow 2',
     value: '#FFE598',
-    isBrightColor: false,
+    isBrightColor: true,
   },
   {
     name: 'light green 2',
@@ -317,7 +317,7 @@ export const DEFAULT_COLORS: ColorType[] = [
   },
   {
     name: 'dark red 2',
-    value: '#84200D',
+    value: '#990001',
     isBrightColor: false,
   },
   {
@@ -332,7 +332,7 @@ export const DEFAULT_COLORS: ColorType[] = [
   },
   {
     name: 'dark green 2',
-    value: '#BF9002',
+    value: '#38761D',
     isBrightColor: false,
   },
   {
@@ -413,45 +413,4 @@ export const DEFAULT_COLORS: ColorType[] = [
   },
 ];
 
-export const DEFAULT_CUSTOM_COLORS: ColorType[] = [
-  {
-    name: 'red',
-    value: 'red',
-    isBrightColor: false,
-  },
-  {
-    name: 'green',
-    value: 'green',
-    isBrightColor: false,
-  },
-  {
-    name: 'blue',
-    value: 'blue',
-    isBrightColor: false,
-  },
-  {
-    name: 'yellow',
-    value: 'yellow',
-    isBrightColor: true,
-  },
-  {
-    name: 'red-2',
-    value: 'red',
-    isBrightColor: false,
-  },
-  {
-    name: 'green-2',
-    value: 'green',
-    isBrightColor: false,
-  },
-  {
-    name: 'blue-2',
-    value: 'blue',
-    isBrightColor: false,
-  },
-  {
-    name: 'yellow-2',
-    value: 'yellow',
-    isBrightColor: false,
-  },
-];
+export const DEFAULT_CUSTOM_COLORS: ColorType[] = [];

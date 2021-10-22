@@ -13,6 +13,7 @@ import { BorderClear } from '@styled-icons/material/BorderClear';
 import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
+import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
@@ -261,6 +262,7 @@ const ReactLiveScope = {
   BorderLeft,
   BorderRight,
   BorderTop,
+  Check,
   FormatAlignCenter,
   FormatAlignJustify,
   FormatAlignLeft,
