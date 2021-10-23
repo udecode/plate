@@ -1,5 +1,19 @@
 # @udecode/plate-table-ui
 
+## 6.1.0
+
+### Minor Changes
+
+- [#1161](https://github.com/udecode/plate/pull/1161) by [@zbeyens](https://github.com/zbeyens) – Added support for resizing columns:
+  - styles
+  - `TableCellElement` component:
+    - Show a blue vertical line when hovering between columns
+    - Use of jotai to share resizing width, hovering column
+  - `useTableColSizes` hook
+  - `hoveredColIndexAtom`, `resizingColAtom` atoms
+  - Support undo/redo
+  - deps: `jotai` and `re-resizable`
+
 ## 6.0.0
 
 ## 5.3.5
