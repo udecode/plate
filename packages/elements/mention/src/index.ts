@@ -9,4 +9,4 @@ export * from './getMentionOnSelectItem';
 export * from './types';
 export * from './options';
 export * from './queries';
-export * from './moveSelectionViaOffset';
+export * from './moveSelectionByOffset';

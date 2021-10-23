@@ -9,7 +9,7 @@ import {
   ELEMENT_MENTION_PROPOSAL,
 } from './defaults';
 import { getMentionDeserialize } from './getMentionDeserialize';
-import { moveSelectionViaOffset } from './moveSelectionViaOffset';
+import { moveSelectionByOffset } from './moveSelectionByOffset';
 import { isSelectionInMentionProposal } from './queries';
 import { MentionPluginOptions } from './types';
 import { withMention } from './withMention';
@@ -28,5 +28,5 @@ export const createMentionPlugin = ({
   voidTypes: getPlatePluginTypes(pluginKey),
   withOverrides: withMention({ id: pluginKey, trigger }),
   onKeyDown: (editor) =>
-    moveSelectionViaOffset(editor, { when: isSelectionInMentionProposal }),
+    moveSelectionByOffset(editor, { query: isSelectionInMentionProposal }),
 });

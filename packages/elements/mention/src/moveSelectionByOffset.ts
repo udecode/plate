@@ -3,12 +3,12 @@ import { SPEditor } from '@udecode/plate-core';
 import { HandlerReturnType } from '@udecode/plate-core/src';
 import { Range, Transforms } from 'slate';
 
-export const moveSelectionViaOffset = (
+export const moveSelectionByOffset = (
   editor: SPEditor,
-  { when = () => true }: { when: (editor: SPEditor) => boolean }
+  { query = () => true }: { query: (editor: SPEditor) => boolean }
 ) => (event: KeyboardEvent): HandlerReturnType => {
   const { selection } = editor;
-  if (!selection || Range.isExpanded(selection) || !when(editor)) {
+  if (!selection || Range.isExpanded(selection) || !query(editor)) {
     return false;
   }
 
