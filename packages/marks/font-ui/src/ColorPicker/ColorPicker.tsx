@@ -1,5 +1,6 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback, useState } from 'react';
 import Tippy from '@tippyjs/react';
+import debounce from 'lodash/debounce';
 import tw, { css } from 'twin.macro';
 import { ColorInput } from './ColorInput';
 import { ColorType, DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './colors';
@@ -65,6 +66,18 @@ const CustomColors = ({
   selectedIcon,
   updateColor,
 }: CustomColorsProps) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updateColorDebounced = useCallback(
+    debounce(
+      (ev: React.ChangeEvent<HTMLInputElement>) =>
+        updateColor(ev, ev.target.value),
+      100
+    ),
+    [updateColor]
+  );
+
+  const [value, setValue] = useState<string>(color || '#000000');
+
   const computedColors =
     !color || customColors.some((customColor) => customColor.value === color)
       ? customColors
@@ -80,8 +93,11 @@ const CustomColors = ({
   return (
     <div>
       <ColorInput
-        value={color || '#000000'}
-        onChange={(ev) => updateColor(ev, ev.target.value)}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          updateColorDebounced(e);
+        }}
       >
         <button
           type="button"
@@ -103,13 +119,13 @@ const CustomColors = ({
             `,
           ]}
         >
-          {computedColors.map(({ name, value, isBrightColor }) => (
+          {computedColors.map((c) => (
             <Color
-              key={name || value}
-              name={name}
-              value={value}
-              isBrightColor={isBrightColor}
-              isSelected={color === value}
+              key={c.name || c.value}
+              name={c.name}
+              value={c.value}
+              isBrightColor={c.isBrightColor}
+              isSelected={color === c.value}
               selectedIcon={selectedIcon}
               updateColor={updateColor}
             />
