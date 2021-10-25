@@ -12,10 +12,8 @@ export const getTableCellElementStyles = (
     { prefixClassNames: 'TableCellElement', ...props },
     {
       root: [
-        tw`relative p-0 overflow-visible`,
+        tw`relative p-0 overflow-visible bg-white border-gray-300`,
         css`
-          background-color: rgb(255, 255, 255);
-          border: 1px solid rgb(193, 199, 208);
           min-width: 48px;
         `,
       ],

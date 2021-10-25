@@ -37,6 +37,9 @@
     "@udecode/plate-styled-components": "6.1.0",
     "@udecode/plate-table": "6.1.0",
     "@udecode/plate-toolbar": "6.1.0",
+    "@udecode/plate-ui-button": "6.1.0",
+    "@udecode/plate-ui-menu": "6.1.0",
+    "@udecode/plate-ui-popover": "6.1.0",
     "jotai": "^1.4.0",
     "re-resizable": "^6.9.1"
   },

@@ -1,14 +1,8 @@
 {
-  "name": "@udecode/plate-core",
-  "version": "6.0.0",
-  "description": "The core architecture of Plate – a plugin system for slate",
+  "name": "@udecode/plate-ui-button",
+  "version": "6.1.0",
+  "description": "Button UI for Plate",
   "keywords": [
-    "wysiwyg",
-    "rich text",
-    "editor",
-    "html",
-    "contentEditable",
-    "framework",
     "slate",
     "plate",
     "plugin"
@@ -20,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/core"
+    "directory": "packages/ui/button"
   },
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,15 +27,14 @@
     "prebuild": "rimraf dist",
     "build": "tsc && yarn rollup",
     "build:w": "yarn rollup -w",
-    "cti": "sh ../../cti.sh",
-    "rollup": "rollup -c=../../rollup.config.js",
+    "cti": "sh ../../../cti.sh",
+    "rollup": "rollup -c=../../../rollup.config.js",
     "test": "jest"
   },
   "dependencies": {
-    "clsx": "^1.1.1",
-    "jotai": "^1.4.2",
-    "lodash": "^4.17.21",
-    "zustand": "^3.4.2"
+    "@udecode/plate-common": "6.1.0",
+    "@udecode/plate-core": "6.0.0",
+    "@udecode/plate-styled-components": "6.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
