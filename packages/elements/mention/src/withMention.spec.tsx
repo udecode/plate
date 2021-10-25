@@ -7,6 +7,7 @@ import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
 import { createMentionPlugin } from './createMentionPlugin';
+import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
 
 jsx;
@@ -204,6 +205,33 @@ describe('withMention', () => {
         <hp>
           <htext />
           <hmentionproposal>{trigger}</hmentionproposal>
+          <htext />
+        </hp>,
+      ]);
+    });
+  });
+
+  describe('history', () => {
+    it('should not capture transformations inside a mention proposal', async () => {
+      const editor = createEditorWithMentionProposal(
+        <hp>
+          <cursor />
+        </hp>
+      );
+
+      // flush previous ops to get a new undo batch going for mention proposal
+      await Promise.resolve();
+
+      editor.insertText('test');
+      getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
+
+      // flush previous ops to get a new undo batch going for mention proposal
+      await Promise.resolve();
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
           <htext />
         </hp>,
       ]);

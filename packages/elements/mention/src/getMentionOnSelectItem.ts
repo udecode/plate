@@ -25,7 +25,7 @@ export const getMentionOnSelectItem = ({
 }: {
   createMentionNode?: CreateMentionNode;
   insertSpaceAfterMention?: boolean;
-} & PlatePluginKey): ComboboxOnSelectItem => (editor, item) => {
+} & PlatePluginKey = {}): ComboboxOnSelectItem => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 

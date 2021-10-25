@@ -2,6 +2,7 @@ import { comboboxStore } from '@udecode/plate-combobox';
 import { insertNodes } from '@udecode/plate-common';
 import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
+import { HistoryEditor } from 'slate-history';
 import { ReactEditor } from 'slate-react';
 import { getMentionProposalType } from './options';
 import {
@@ -47,7 +48,11 @@ export const withMention = ({
   };
 
   editor.apply = (operation) => {
-    apply(operation);
+    if (HistoryEditor.isHistoryEditor(editor) && findMentionProposal(editor)) {
+      HistoryEditor.withoutSaving(editor, () => apply(operation));
+    } else {
+      apply(operation);
+    }
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionProposal = findMentionProposal(editor);
