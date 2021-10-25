@@ -5,7 +5,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { getMark, isMarkActive, setMarks } from '@udecode/plate-common';
+import {
+  getMark,
+  isMarkActive,
+  removeMark,
+  setMarks,
+} from '@udecode/plate-common';
 import {
   getPlatePluginType,
   useEventEditorId,
@@ -41,13 +46,24 @@ export const ToolbarColorPicker = ({
 
   const color = editorRef && getMark(editorRef, type);
 
-  const [selectedColor, setSelectedColor] = useState<string>();
+  const [selectedColor, setSelectedColor] = useState<string | undefined>();
 
   const latestSelection = useRef<BaseSelection>();
 
   const updateColor = useCallback((ev: any, colorParam: string) => {
     setSelectedColor(colorParam);
   }, []);
+
+  const clearColor = useCallback(() => {
+    if (editorRef && editor && latestSelection.current) {
+      Transforms.select(editorRef, latestSelection.current);
+      ReactEditor.focus(editorRef);
+
+      if (selectedColor) {
+        removeMark(editor, { key: type });
+      }
+    }
+  }, [editor, editorRef, selectedColor, type]);
 
   useEffect(() => {
     if (selection) {
@@ -82,6 +98,7 @@ export const ToolbarColorPicker = ({
         color={selectedColor || color}
         selectedIcon={selectedIcon}
         updateColor={updateColor}
+        clearColor={clearColor}
       />
     </ToolbarDropdown>
   );

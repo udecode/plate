@@ -174,6 +174,7 @@ type ColorPickerProps = {
   customColors?: ColorType[];
   selectedIcon: ReactNode;
   updateColor: (ev: any, colorObj: string) => void;
+  clearColor: () => void;
 };
 
 export const ColorPicker = ({
@@ -182,6 +183,7 @@ export const ColorPicker = ({
   customColors = DEFAULT_CUSTOM_COLORS,
   selectedIcon,
   updateColor,
+  clearColor,
 }: ColorPickerProps) => {
   return (
     <div css={tw`p-2`}>
@@ -199,6 +201,13 @@ export const ColorPicker = ({
         selectedIcon={selectedIcon}
         updateColor={updateColor}
       />
+      <button
+        type="button"
+        onClick={clearColor}
+        css={tw`w-full bg-transparent hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border-none rounded cursor-pointer`}
+      >
+        Clear
+      </button>
     </div>
   );
 };

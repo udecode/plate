@@ -415,13 +415,8 @@ export const DEFAULT_COLORS: ColorType[] = [
 
 export const DEFAULT_CUSTOM_COLORS: ColorType[] = [
   {
-    name: 'black',
-    value: '#000000',
-    isBrightColor: false,
-  },
-  {
-    name: 'dark grey 4',
-    value: '#434343',
+    name: 'dark orange 3',
+    value: '#783F04',
     isBrightColor: false,
   },
   {
@@ -435,13 +430,13 @@ export const DEFAULT_CUSTOM_COLORS: ColorType[] = [
     isBrightColor: false,
   },
   {
-    name: 'dark grey 1',
-    value: '#B7B7B7',
+    name: 'light cornflower blue 1',
+    value: '#6C9EEB',
     isBrightColor: false,
   },
   {
-    name: 'grey',
-    value: '#CCCCCC',
+    name: 'dark magenta 3',
+    value: '#4C1130',
     isBrightColor: false,
   },
 ];
