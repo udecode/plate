@@ -169,6 +169,27 @@ describe('withMention', () => {
         focus: { path: [0, 0], offset: 6 },
       });
     });
+
+    it('should remove the proposal when deleting backward in empty proposal', () => {
+      const editor = createEditor(
+        <hp>
+          <htext />
+          <hmentionproposal>
+            <cursor />
+          </hmentionproposal>
+          <htext />
+        </hp>
+      );
+
+      editor.deleteBackward('character');
+
+      expect(editor.children).toEqual([<hp>@</hp>]);
+
+      expect(editor.selection).toEqual<Range>({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+    });
   });
 
   describe('typing in a mention proposal', () => {

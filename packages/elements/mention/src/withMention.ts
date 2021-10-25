@@ -4,6 +4,7 @@ import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { ReactEditor } from 'slate-react';
+import { removeMentionProposal } from './transforms/removeMentionProposal';
 import { getMentionProposalType } from './options';
 import {
   findMentionProposal,
@@ -18,7 +19,19 @@ export const withMention = ({
   id: string;
   trigger: string;
 }): WithOverride<ReactEditor & SPEditor> => (editor) => {
-  const { apply, insertText } = editor;
+  const { apply, insertText, deleteBackward } = editor;
+
+  editor.deleteBackward = (unit) => {
+    const currentMentionProposal = findMentionProposal(editor);
+    if (
+      currentMentionProposal &&
+      Node.string(currentMentionProposal[0]) === ''
+    ) {
+      return removeMentionProposal(editor, trigger, currentMentionProposal[1]);
+    }
+
+    deleteBackward(unit);
+  };
 
   editor.insertText = (text) => {
     if (isSelectionInMentionProposal(editor)) {
@@ -69,14 +82,7 @@ export const withMention = ({
         : undefined;
 
       if (previousMentionProposalPath && !currentMentionProposalPath) {
-        Editor.withoutNormalizing(editor, () => {
-          Transforms.insertText(editor, trigger, {
-            at: { path: [...previousMentionProposalPath, 0], offset: 0 },
-          });
-          Transforms.unwrapNodes(editor, {
-            at: previousMentionProposalPath,
-          });
-        });
+        removeMentionProposal(editor, trigger, previousMentionProposalPath);
       }
 
       if (currentMentionProposalPath) {
