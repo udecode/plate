@@ -77,14 +77,6 @@ To find out more see the following Plate documentation sections:
 The documentation is far from being complete and will be constantly
 evolving (as will the packages).
 
-## Looking for `slate-plugins`?
-
-This repo has been renamed to `plate`. The name change should not
-disrupt any current usage, repo clones, pull requests or issue
-reporting. Links should redirect to the new location. The library
-formerly known as `@udecode/slate-plugins` is now available as
-`@udecode/plate`.
-
 ## Contributing and project organization
 
 ### Ideas and discussions
@@ -102,6 +94,15 @@ packages are implemented.
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute
 your code to the project.
+
+### Looking to hire?
+
+We're advertising Plate developers open to job opportunities. We're only asking that the job includes contributing to Plate, even partially.
+
+- [@seloner](https://github.com/seloner)
+- [@sanj44](https://github.com/sanj44)
+
+DM [@zbeyens](https://github.com/zbeyens) to be added to the list.
 
 ## Packages
 
@@ -176,6 +177,13 @@ your code to the project.
 | [`@udecode/plate-trailing-block`](packages/trailing-block)          | [<img src="https://img.shields.io/npm/v/@udecode/plate-trailing-block.svg" alt="@udecode/plate-trailing-block npm package badge">](https://www.npmjs.com/package/@udecode/plate-trailing-block)    | Trailing-block plugin.                                                                                         |
 | [`@udecode/plate-toolbar`](packages/ui/toolbar)                     | [<img src="https://img.shields.io/npm/v/@udecode/plate-toolbar.svg" alt="@udecode/plate-toolbar npm package badge">](https://www.npmjs.com/package/@udecode/plate-toolbar)                         | Toolbar UI (balloon, heading, buttons, etc.).                                                                  |
 | [`@udecode/plate-test-utils`](packages/test-utils/)                 | [<img src="https://img.shields.io/npm/v/@udecode/plate-test-utils.svg" alt="@udecode/plate-test-utils npm package badge">](https://www.npmjs.com/package/@udecode/plate-test-utils)                | Test utilities.                                                                                                |
+## Looking for `slate-plugins`?
+
+This repo has been renamed to `plate`. The name change should not
+disrupt any current usage, repo clones, pull requests or issue
+reporting. Links should redirect to the new location. The library
+formerly known as `@udecode/slate-plugins` is now available as
+`@udecode/plate`.
 
 ### Author's Note
 
