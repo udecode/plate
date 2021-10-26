@@ -1,3 +1,6 @@
+/**
+ * Render function interface for providing overrideable render callbacks.
+ */
 export interface RenderFunction<P = { [key: string]: any }> {
   (
     props: P,

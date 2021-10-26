@@ -1,3 +1,4 @@
+import { RenderFunction } from '@udecode/plate-common';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { TableNodeData } from '@udecode/plate-table';
 import { PopoverProps } from '@udecode/plate-ui-popover';
@@ -22,5 +23,5 @@ export interface TableElementProps
    * An override to render the table container.
    * @default TablePopover
    */
-  onRenderContainer?: (props: TableElementProps) => JSX.Element;
+  onRenderContainer?: RenderFunction<TableElementProps>;
 }
