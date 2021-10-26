@@ -88,7 +88,6 @@
     "@udecode/plate-toolbar": "6.1.0",
     "@udecode/plate-trailing-block": "6.1.0",
     "@udecode/plate-ui-button": "6.1.0",
-    "@udecode/plate-ui-menu": "6.1.0",
     "@udecode/plate-ui-popover": "6.1.0"
   },
   "peerDependencies": {

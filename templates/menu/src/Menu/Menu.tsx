@@ -1,5 +1,4 @@
 import React from 'react';
-import { Menu as MenuBase } from '@szhsin/react-menu';
 import { getMenuStyles } from './Menu.styles';
 import { MenuProps } from './Menu.types';
 
@@ -10,12 +9,12 @@ export const Menu = (props: MenuProps) => {
 
   return (
     <div css={root.css} className={root.className} {...rootProps}>
-      <MenuBase
-        offsetY={8}
-        viewScroll="auto"
-        position="anchor"
-        {...menuProps}
-      />
+      {/* <MenuBase */}
+      {/*  offsetY={8} */}
+      {/*  viewScroll="auto" */}
+      {/*  position="anchor" */}
+      {/*  {...menuProps} */}
+      {/* /> */}
     </div>
   );
 };

@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "clsx": "^1.1.1",
-    "jotai": "^1.4.2",
     "lodash": "^4.17.21",
     "zustand": "^3.4.2"
   },

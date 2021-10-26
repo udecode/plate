@@ -74,7 +74,6 @@ const alias = {
   '@udecode/plate-toolbar': 'ui/toolbar',
   '@udecode/plate-trailing-block': 'trailing-block',
   '@udecode/plate-ui-button': 'ui/button',
-  '@udecode/plate-ui-menu': 'ui/menu',
   '@udecode/plate-ui-popover': 'ui/popover',
 };
 

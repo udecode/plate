@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { withProviders } from '@udecode/plate-common';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';
-import { useStoreElementAtom } from '../hooks/useStoreElementAtom';
 import { useTableColSizes } from '../hooks/useTableColSizes';
 import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
 
-const TableElementRaw = (props: TableElementProps) => {
+export const TableElementBase = (props: TableElementProps) => {
   const {
     attributes,
     children,
@@ -16,6 +16,7 @@ const TableElementRaw = (props: TableElementProps) => {
     element,
     classNames,
     prefixClassNames,
+    popoverProps,
     transformColSizes,
     ...rootProps
   } = props;
@@ -28,10 +29,8 @@ const TableElementRaw = (props: TableElementProps) => {
     colSizes = transformColSizes(colSizes);
   }
 
-  useStoreElementAtom(element);
-
   return (
-    <TablePopover>
+    <TablePopover {...popoverProps} element={element}>
       <table
         {...attributes}
         css={root.css}
@@ -52,4 +51,6 @@ const TableElementRaw = (props: TableElementProps) => {
   );
 };
 
-export const TableElement = withProviders(Provider)(TableElementRaw);
+export const TableElement = withProviders([Provider, { scope: ELEMENT_TABLE }])(
+  TableElementBase
+);

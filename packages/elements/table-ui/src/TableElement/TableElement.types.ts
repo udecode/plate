@@ -1,5 +1,6 @@
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { TableNodeData } from '@udecode/plate-table';
+import { PopoverProps } from '@udecode/plate-ui-popover';
 import { CSSProp } from 'styled-components';
 
 export interface TableElementStyleProps extends TableElementProps {}
@@ -13,5 +14,6 @@ export interface TableElementProps
   /**
    * Transform node column sizes
    */
-  transformColSizes: (colSizes: number[]) => number[];
+  popoverProps?: PopoverProps;
+  transformColSizes?: (colSizes: number[]) => number[];
 }

@@ -4379,14 +4379,6 @@
     "@babel/runtime" "^7.10.5"
     "@emotion/is-prop-valid" "^0.8.7"
 
-"@szhsin/react-menu@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@szhsin/react-menu/-/react-menu-2.1.0.tgz#6a5c45c4ee91a553beef47de8ec565e4424ecc0d"
-  integrity sha512-2HY37TlXpM2rOianNz3vDiWrqtrNl2Y9Kf5L/z6VHG2WtvX4JdP+qg3KTl3n/wgEtXOUHjjy59nICllUQ9pH7A==
-  dependencies:
-    prop-types "^15.7.2"
-    react-transition-state "^1.0.1"
-
 "@testing-library/dom@^7.28.1":
   version "7.30.4"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-7.30.4.tgz#c6a4a91557e92035fd565246bbbfb8107aa4634d"
@@ -14319,11 +14311,6 @@ react-textarea-autosize@^8.3.0, react-textarea-autosize@^8.3.3:
     "@babel/runtime" "^7.10.2"
     use-composed-ref "^1.0.0"
     use-latest "^1.0.0"
-
-react-transition-state@^1.0.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/react-transition-state/-/react-transition-state-1.1.1.tgz#e1e0bfc16738f65d826f0dc15380fa29b8d09949"
-  integrity sha512-1pcQQONBuWt2ncEotp8GH36C99+ShGuv3bJCHCbeWBENMRAg412URQO7T2PUfQWbNeaowBaHEPbOBGD6AQijkQ==
 
 react-universal-interface@^0.6.2:
   version "0.6.2"

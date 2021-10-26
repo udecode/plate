@@ -78,7 +78,6 @@
     "@udecode/plate-toolbar": "link:../packages/ui/toolbar",
     "@udecode/plate-trailing-block": "link:../packages/trailing-block",
     "@udecode/plate-ui-button": "link:../packages/ui/button",
-    "@udecode/plate-ui-menu": "link:../packages/ui/menu",
     "@udecode/plate-ui-popover": "link:../packages/ui/popover"
   },
   "dependencies": {

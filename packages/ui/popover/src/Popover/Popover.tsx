@@ -14,8 +14,6 @@ export const Popover = ({ rootProps, content, ...props }: PopoverProps) => {
   const readOnly = useReadOnly();
   const selected = useSelected();
 
-  const visible = !readOnly && selected;
-
   const tippyProps: TippyProps = {
     animation: '',
     arrow: false,
@@ -26,7 +24,7 @@ export const Popover = ({ rootProps, content, ...props }: PopoverProps) => {
     placement: 'bottom',
     theme: 'custom',
     trigger: 'click',
-    visible,
+    visible: !readOnly && selected,
     render: (attrs) => {
       const { root } = getPopoverStyles(props);
 
