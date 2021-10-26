@@ -1,6 +1,6 @@
 import React from 'react';
-import { DefaultLeaf } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
 import { pipeOverrideProps } from './pipeOverrideProps';

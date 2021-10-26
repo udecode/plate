@@ -1,9 +1,21 @@
-import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
-import { MARK_FONT_SIZE } from './defaults';
+import { PlatePlugin } from '@udecode/plate-core';
+import { defaults } from 'lodash';
+import { MARK_FONT_FAMILY } from './defaults';
 import { getFontSizeDeserialize } from './getFontDeserialize';
+import { getFontFamilyOverrideProps } from './getOverrideProps';
+import { FontFamilyPluginOptions } from './types';
 
-export const createFontSizePlugin = (): PlatePlugin => ({
-  pluginKeys: MARK_FONT_SIZE,
-  renderLeaf: getRenderLeaf(MARK_FONT_SIZE),
+export const createFontFamilyPlugin = (
+  options: FontFamilyPluginOptions = {}
+): PlatePlugin => ({
+  overrideProps: getFontFamilyOverrideProps(),
   deserialize: getFontSizeDeserialize(),
+  withOverrides: (editor) => {
+    // TODO: extend plate-core to register options
+    editor.options[MARK_FONT_FAMILY] = defaults(options, {
+      type: MARK_FONT_FAMILY,
+    });
+
+    return editor;
+  },
 });
