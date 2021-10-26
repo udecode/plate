@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useRef } from 'react';
-import { css } from 'twin.macro';
+import { getColorInputStyles } from './ColorInput.styles';
 
 export type ColorInputProps = {
   value?: string;
@@ -13,6 +13,8 @@ export function ColorInput({
 }: React.PropsWithChildren<ColorInputProps>) {
   const ref = useRef<HTMLInputElement | null>(null);
 
+  const styles = getColorInputStyles();
+
   function handleClick() {
     // force click action on the input to open color picker
     ref.current?.click();
@@ -23,13 +25,7 @@ export function ColorInput({
   }
 
   return (
-    <div
-      css={css`
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      `}
-    >
+    <div css={styles.root.css}>
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
@@ -43,16 +39,7 @@ export function ColorInput({
         type="color"
         onChange={handleOnChange}
         value={value}
-        // setting all dimensions to zero so that it won't take up any space
-        // the will still trigger the browser native color picker
-        css={css`
-          width: 0px;
-          height: 0px;
-          padding: 0px;
-          margin: 0px;
-          border: 0px;
-          overflow: hidden;
-        `}
+        css={styles.input?.css}
       />
     </div>
   );

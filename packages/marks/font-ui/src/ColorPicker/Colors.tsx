@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
-import { css } from 'styled-components';
 import { Color } from './Color';
+import { getColorsStyles } from './Colors.styles';
 import { ColorType } from './defaults';
 
 type ColorsProps = {
@@ -16,14 +16,10 @@ export const Colors = ({
   selectedIcon,
   updateColor,
 }: ColorsProps) => {
+  const styles = getColorsStyles();
+
   return (
-    <div
-      css={css`
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 0.25rem;
-      `}
-    >
+    <div css={styles.root.css}>
       {colors.map(({ name, value, isBrightColor }) => (
         <Color
           key={name || value}

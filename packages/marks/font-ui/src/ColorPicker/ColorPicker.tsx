@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import tw from 'twin.macro';
+import { getColorPickerStyles } from './ColorPicker.styles';
 import { Colors } from './Colors';
 import { CustomColors } from './CustomColors';
 import { ColorType, DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './defaults';
@@ -21,8 +22,10 @@ export const ColorPicker = ({
   updateColor,
   clearColor,
 }: ColorPickerProps) => {
+  const styles = getColorPickerStyles();
+
   return (
-    <div css={tw`p-4 flex flex-col space-y-4`}>
+    <div css={styles.root.css}>
       <CustomColors
         color={color}
         colors={colors}
