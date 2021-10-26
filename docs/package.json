@@ -54,6 +54,8 @@
     "@udecode/plate-image-ui": "link:../packages/elements/image-ui",
     "@udecode/plate-indent": "link:../packages/indent",
     "@udecode/plate-kbd": "link:../packages/marks/kbd",
+    "@udecode/plate-line-height": "link:../packages/elements/line-height",
+    "@udecode/plate-line-height-ui": "link:../packages/elements/line-height-ui",
     "@udecode/plate-link": "link:../packages/elements/link",
     "@udecode/plate-link-ui": "link:../packages/elements/link-ui",
     "@udecode/plate-list": "link:../packages/elements/list",

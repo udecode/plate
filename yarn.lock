@@ -4959,23 +4959,6 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
-"@udecode/plate-common@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-common/-/plate-common-6.0.0.tgz#21f4416696b7d182e9d9b0c26972b81b2f71c45c"
-  integrity sha512-HozHGL7nSR+qqOdNczc/KGJXyXPq44sWp2IF7K9Bt0OxrSGmbHV9/tX9n1YMof/s4BbeFgFtS6wlGM3aSuzhyg==
-  dependencies:
-    "@udecode/plate-core" "6.0.0"
-    is-hotkey "^0.1.6"
-
-"@udecode/plate-styled-components@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@udecode/plate-styled-components/-/plate-styled-components-6.0.0.tgz#21c7e228bd4b38fe7426b1a3f8509b8c15bc2def"
-  integrity sha512-jprfczR4yXlDJEWEvXEra8yd1+JKJKvhyxCioOMAqqEVdPBj3QEXNCG8LZiM80qKhtM3EQP3M5fDsZeYxeJfHA==
-  dependencies:
-    "@udecode/plate-common" "6.0.0"
-    "@udecode/plate-core" "6.0.0"
-    clsx "^1.1.1"
-
 "@udecode/zustood@0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.4.0.tgz#f06983bb7f8e8e911d2d1be140cb1f189a2d864b"
