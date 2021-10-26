@@ -1,5 +1,15 @@
 # @udecode/plate
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1173](https://github.com/udecode/plate/pull/1173) by [@zbeyens](https://github.com/zbeyens) –
+  - new package exports:
+    - `@udecode/plate-ui-button`
+    - `@udecode/plate-ui-popover`
+  - register `TableRowElement` component for `ELEMENT_TR` plugin key.
+
 ## 6.1.0
 
 ### Minor Changes
