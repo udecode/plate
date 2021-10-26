@@ -16,8 +16,8 @@ export const TableElementBase = (props: TableElementProps) => {
     element,
     classNames,
     prefixClassNames,
-    popoverProps,
     transformColSizes,
+    onRenderContainer: Popover = TablePopover,
     ...rootProps
   } = props;
 
@@ -30,7 +30,7 @@ export const TableElementBase = (props: TableElementProps) => {
   }
 
   return (
-    <TablePopover {...popoverProps} element={element}>
+    <Popover {...props}>
       <table
         {...attributes}
         css={root.css}
@@ -47,7 +47,7 @@ export const TableElementBase = (props: TableElementProps) => {
           {children}
         </tbody>
       </table>
-    </TablePopover>
+    </Popover>
   );
 };
 

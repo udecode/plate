@@ -15,5 +15,12 @@ export interface TableElementProps
    * Transform node column sizes
    */
   popoverProps?: PopoverProps;
+
   transformColSizes?: (colSizes: number[]) => number[];
+
+  /**
+   * An override to render the table container.
+   * @default TablePopover
+   */
+  onRenderContainer?: (props: TableElementProps) => JSX.Element;
 }
