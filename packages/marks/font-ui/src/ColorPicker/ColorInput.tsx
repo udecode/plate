@@ -1,17 +1,20 @@
-import React, { ChangeEvent, ReactElement, useRef } from 'react';
+import React, { ChangeEvent, useRef } from 'react';
 import { css } from 'twin.macro';
 
-export interface ColorInputProps {
+export type ColorInputProps = {
   value?: string;
-  children?: ReactElement;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-}
+};
 
-export function ColorInput({ value, onChange, children }: ColorInputProps) {
+export function ColorInput({
+  value = '#000000',
+  onChange,
+  children,
+}: React.PropsWithChildren<ColorInputProps>) {
   const ref = useRef<HTMLInputElement | null>(null);
 
   function handleClick() {
-    // force click action on the input to open files selection
+    // force click action on the input to open color picker
     ref.current?.click();
   }
 
@@ -30,7 +33,7 @@ export function ColorInput({ value, onChange, children }: ColorInputProps) {
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
-        return React.cloneElement(child, {
+        return React.cloneElement(child as React.ReactElement, {
           onClick: handleClick,
         });
       })}
@@ -39,7 +42,9 @@ export function ColorInput({ value, onChange, children }: ColorInputProps) {
         ref={ref}
         type="color"
         onChange={handleOnChange}
-        value={value || '#000000'}
+        value={value}
+        // setting all dimensions to zero so that it won't take up any space
+        // the will still trigger the browser native color picker
         css={css`
           width: 0px;
           height: 0px;

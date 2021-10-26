@@ -46,7 +46,7 @@ export const ToolbarColorPicker = ({
 
   const color = editorRef && getMark(editorRef, type);
 
-  const [selectedColor, setSelectedColor] = useState<string | undefined>();
+  const [selectedColor, setSelectedColor] = useState<string>();
 
   const latestSelection = useRef<BaseSelection>();
 

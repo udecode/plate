@@ -2017,7 +2017,7 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.5.tgz#fdd299f23205c3455af88ce618dd65c14cb73e22"
   integrity sha512-wnra4Vw9dopnuybR6HBywJ/URYpYrKLoepBTEtgfJup8Ahoi2zJECPP2cwiXp7btTvOT2CULv87aQRA4eZSP6g==
 
-"@udecode/plate-alignment-ui@6.0.0":
+"@udecode/plate-alignment-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2025,7 +2025,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-alignment@6.0.0":
+"@udecode/plate-alignment@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2033,11 +2033,11 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ast-serializer@6.0.0":
+"@udecode/plate-ast-serializer@6.1.0":
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ast-serializer@^6.0.0":
+"@udecode/plate-ast-serializer@^6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2045,7 +2045,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-autoformat@6.0.0":
+"@udecode/plate-autoformat@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2053,7 +2053,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-elements@6.0.0":
+"@udecode/plate-basic-elements@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2061,7 +2061,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-marks@6.0.0":
+"@udecode/plate-basic-marks@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2069,7 +2069,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-block-quote-ui@6.0.0":
+"@udecode/plate-block-quote-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2077,7 +2077,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-block-quote@6.0.0":
+"@udecode/plate-block-quote@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2085,7 +2085,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-break@6.0.0":
+"@udecode/plate-break@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2093,7 +2093,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-code-block-ui@6.0.0":
+"@udecode/plate-code-block-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2101,7 +2101,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-code-block@6.0.0":
+"@udecode/plate-code-block@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2109,7 +2109,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-combobox@6.0.0":
+"@udecode/plate-combobox@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2117,7 +2117,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-common@6.0.0":
+"@udecode/plate-common@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2133,7 +2133,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-csv-serializer@6.0.0":
+"@udecode/plate-csv-serializer@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2141,7 +2141,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-dnd@6.0.0":
+"@udecode/plate-dnd@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2153,7 +2153,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-find-replace-ui@6.0.0":
+"@udecode/plate-find-replace-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2161,7 +2161,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-find-replace@6.0.0":
+"@udecode/plate-find-replace@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2169,7 +2169,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-font-ui@6.0.0":
+"@udecode/plate-font-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2177,7 +2177,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-font@6.0.0":
+"@udecode/plate-font@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2185,7 +2185,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-heading@6.0.0":
+"@udecode/plate-heading@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2193,7 +2193,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-highlight@6.0.0":
+"@udecode/plate-highlight@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2205,7 +2205,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-horizontal-rule@6.0.0":
+"@udecode/plate-horizontal-rule@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2213,11 +2213,11 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-html-serializer@6.0.0":
+"@udecode/plate-html-serializer@6.1.0":
   version "0.0.0"
   uid ""
 
-"@udecode/plate-html-serializer@^6.0.0":
+"@udecode/plate-html-serializer@^6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2225,7 +2225,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image-ui@6.0.0":
+"@udecode/plate-image-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2233,7 +2233,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image@6.0.0":
+"@udecode/plate-image@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2241,7 +2241,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-indent@6.0.0":
+"@udecode/plate-indent@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2249,7 +2249,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-kbd@6.0.0":
+"@udecode/plate-kbd@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2257,7 +2257,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-link-ui@6.0.0":
+"@udecode/plate-link-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2265,7 +2265,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-link@6.0.0":
+"@udecode/plate-link@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2273,7 +2273,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list-ui@6.0.0":
+"@udecode/plate-list-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2281,7 +2281,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list@6.0.0":
+"@udecode/plate-list@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2289,7 +2289,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-md-serializer@6.0.0":
+"@udecode/plate-md-serializer@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2297,7 +2297,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-media-embed-ui@6.0.0":
+"@udecode/plate-media-embed-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2305,7 +2305,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-media-embed@6.0.0":
+"@udecode/plate-media-embed@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2313,7 +2313,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention-ui@6.0.0":
+"@udecode/plate-mention-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2321,7 +2321,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention@6.0.0":
+"@udecode/plate-mention@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2329,7 +2329,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-node-id@6.0.0":
+"@udecode/plate-node-id@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2337,7 +2337,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-normalizers@6.0.0":
+"@udecode/plate-normalizers@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2345,7 +2345,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-paragraph@6.0.0":
+"@udecode/plate-paragraph@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2353,7 +2353,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-placeholder@6.0.0":
+"@udecode/plate-placeholder@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2361,7 +2361,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-popper@6.0.0":
+"@udecode/plate-popper@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2369,7 +2369,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-reset-node@6.0.0":
+"@udecode/plate-reset-node@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2377,7 +2377,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-select@6.0.0":
+"@udecode/plate-select@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2385,7 +2385,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer@6.0.0":
+"@udecode/plate-serializer@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2393,7 +2393,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-styled-components@6.0.0":
+"@udecode/plate-styled-components@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2401,7 +2401,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table-ui@6.0.0":
+"@udecode/plate-table-ui@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2409,7 +2409,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@6.0.0":
+"@udecode/plate-table@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2421,7 +2421,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-toolbar@6.0.0":
+"@udecode/plate-toolbar@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2429,7 +2429,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-trailing-block@6.0.0":
+"@udecode/plate-trailing-block@6.1.0":
   version "0.0.0"
   uid ""
 
@@ -2441,10 +2441,10 @@
   version "0.0.0"
   uid ""
 
-"@udecode/zustood@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.3.0.tgz#ad41e45aa9af065da2fe6e073b754d1065b9937c"
-  integrity sha512-MG9CZPlQUmWd6sseAx2uF2PJLusyaejTg2fm3feuYd72ujYZetUH+t6Wszhj5eVzMFR04qvWyMUCZwEXig2bfg==
+"@udecode/zustood@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.4.0.tgz#f06983bb7f8e8e911d2d1be140cb1f189a2d864b"
+  integrity sha512-mk3fhDdOJHIsv40wzDWLwp2GNGACMrhgdoTnNdFC+W+aYX8uMm3WNpW8/h9xbxR4X6fEpDXdJxapaOJKTMvwiw==
   dependencies:
     immer "9.0.6"
 
@@ -6415,6 +6415,11 @@ joi@^17.3.0, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
+jotai@^1.4.0:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.4.2.tgz#0747581840c82ec0862d4c15ee0f7d59246ed46e"
+  integrity sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==
+
 js-base64@^2.1.8:
   version "2.6.4"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.6.4.tgz#f4e686c5de1ea1f867dbcad3d46d969428df98c4"
@@ -8406,6 +8411,13 @@ re-resizable@^6.9.0:
   version "6.9.0"
   resolved "https://registry.yarnpkg.com/re-resizable/-/re-resizable-6.9.0.tgz#9c3059b389ced6ade602234cc5bb1e12d231cd47"
   integrity sha512-3cUDG81ylyqI0Pdgle/RHwwRYq0ORZzsUaySOCO8IbEtNyaRtrIHYm/jMQ5pjcNiKCxR3vsSymIQZHwJq4gg2Q==
+  dependencies:
+    fast-memoize "^2.5.1"
+
+re-resizable@^6.9.1:
+  version "6.9.1"
+  resolved "https://registry.yarnpkg.com/re-resizable/-/re-resizable-6.9.1.tgz#6be082b55d02364ca4bfee139e04feebdf52441c"
+  integrity sha512-KRYAgr9/j1PJ3K+t+MBhlQ+qkkoLDJ1rs0z1heIWvYbCW/9Vq4djDU+QumJ3hQbwwtzXF6OInla6rOx6hhgRhQ==
   dependencies:
     fast-memoize "^2.5.1"
 
