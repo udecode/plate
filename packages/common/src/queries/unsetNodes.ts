@@ -1,16 +1,13 @@
 import { TEditor, TNode } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { EditorNodesOptions } from '../types/Editor.types';
-import { getQueryOptions } from './match';
+import { SetNodesOptions } from '../types/Transforms.types';
 
-export const unsetNodes = <T extends TNode>(
+export const unsetNodes = <T extends TNode = TNode>(
   editor: TEditor,
-  props: string | string[],
-  options: EditorNodesOptions = {}
+  props:
+    | keyof Omit<T, 'children' | 'text'>
+    | (keyof Omit<T, 'children' | 'text'>)[],
+  options: SetNodesOptions = {}
 ) => {
-  return Transforms.unsetNodes<T>(
-    editor,
-    props,
-    getQueryOptions(editor, options)
-  );
+  return Transforms.unsetNodes<T>(editor, props as any, options as any);
 };
