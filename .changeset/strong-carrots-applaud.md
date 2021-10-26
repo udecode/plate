@@ -3,4 +3,4 @@
 ---
 
 - `TableElement` new prop:
-  - `onRenderContainer?: (props: TableElementProps) => JSX.Element` - default is `TablePopover`
+  - `onRenderContainer?: RenderFunction<TableElementProps>` - default is `TablePopover`
