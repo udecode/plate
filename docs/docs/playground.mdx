@@ -16,21 +16,6 @@ See [Installation](/docs/installation)
   let components = createPlateComponents({
     ...CONFIG.components,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-    [MARK_COLOR]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_COLOR]: ['color'],
-      },
-    }),
-    [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_BG_COLOR]: ['backgroundColor'],
-      },
-    }),
-    [MARK_FONT_SIZE]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_FONT_SIZE]: ['fontSize'],
-      },
-    }),
   });
   components = withStyledPlaceHolders(components);
 
@@ -67,7 +52,9 @@ See [Installation](/docs/installation)
         createSuperscriptPlugin(),
         createFontColorPlugin(),
         createFontBackgroundColorPlugin(),
+        createFontFamilyPlugin(),
         createFontSizePlugin(),
+        createFontWeightPlugin(),
         createKbdPlugin(),
         createNodeIdPlugin(),
         createIndentPlugin(CONFIG.indent),
@@ -110,6 +97,7 @@ See [Installation](/docs/installation)
           <ToolbarButtonsList />
           <ToolbarButtonsIndent />
           <ToolbarButtonsBasicMarks />
+          <ToolbarFontWeightMarks />
           <ToolbarColorPicker
             pluginKey={MARK_COLOR}
             icon={<FormatColorText />}
