@@ -1,5 +1,13 @@
 # @udecode/plate-table-ui
 
+## 6.3.0
+
+### Minor Changes
+
+- [#1177](https://github.com/udecode/plate/pull/1177) by [@zbeyens](https://github.com/zbeyens) –
+  - `TableElement` new prop:
+    - `onRenderContainer?: RenderFunction<TableElementProps>` - default is `TablePopover`
+
 ## 6.2.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-code-block-ui
 
+## 6.3.0
+
 ## 6.2.0
 
 ### Patch Changes
