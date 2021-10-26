@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { Button } from '@udecode/plate-ui-button';
 import tw from 'twin.macro';
 import { getColorPickerStyles } from './ColorPicker.styles';
 import { Colors } from './Colors';
@@ -40,13 +41,9 @@ export const ColorPicker = ({
         selectedIcon={selectedIcon}
         updateColor={updateColor}
       />
-      <button
-        type="button"
-        onClick={clearColor}
-        css={tw`w-full bg-transparent hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border-none rounded cursor-pointer`}
-      >
+      <Button css={tw`w-full py-2`} onClick={clearColor}>
         Clear
-      </button>
+      </Button>
     </div>
   );
 };

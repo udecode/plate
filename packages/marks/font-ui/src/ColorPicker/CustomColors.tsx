@@ -1,4 +1,5 @@
 import React, { ReactNode, useCallback, useState } from 'react';
+import { Button } from '@udecode/plate-ui-button';
 import debounce from 'lodash/debounce';
 import tw from 'twin.macro';
 import { ColorInput } from './ColorInput';
@@ -53,12 +54,7 @@ export const CustomColors = ({
           updateColorDebounced(e);
         }}
       >
-        <button
-          type="button"
-          css={tw`w-full bg-transparent hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 border-none rounded cursor-pointer mb-4`}
-        >
-          CUSTOM
-        </button>
+        <Button css={tw`w-full py-2 mb-4 font-semibold`}>CUSTOM</Button>
       </ColorInput>
 
       <Colors
