@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { SlateProps } from '@udecode/plate-core';
 import { createEditor } from 'slate';
 import { ReactEditor, Slate, withReact } from 'slate-react';

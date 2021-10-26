@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { LinkNodeData } from '@udecode/plate-link';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';

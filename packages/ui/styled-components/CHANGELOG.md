@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1173](https://github.com/udecode/plate/pull/1173) by [@zbeyens](https://github.com/zbeyens) – New component: `Divider`
+
 ## 6.1.0
 
 ## 6.0.0

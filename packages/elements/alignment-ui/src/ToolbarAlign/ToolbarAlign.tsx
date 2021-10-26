@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Alignment, setAlign } from '@udecode/plate-alignment';
 import {
   getPreventDefaultHandler,

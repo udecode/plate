@@ -1,5 +1,11 @@
 # @udecode/plate-mention-ui
 
+## 6.2.0
+
+### Patch Changes
+
+- [#1173](https://github.com/udecode/plate/pull/1173) by [@zbeyens](https://github.com/zbeyens) – Replace `import * as React` by `import React`
+
 ## 6.1.0
 
 ## 6.0.0

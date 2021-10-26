@@ -1,5 +1,5 @@
 import { ReactPortal } from 'react';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 import { PortalBodyProps } from './PortalBody.types';
 
 export const PortalBody: ({

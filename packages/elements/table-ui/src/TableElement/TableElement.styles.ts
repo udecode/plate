@@ -6,7 +6,7 @@ export const getTableElementStyles = (props: TableElementStyleProps) =>
   createStyles(
     { prefixClassNames: 'TableElement', ...props },
     {
-      root: tw`table w-full my-4 mx-0 border-collapse`,
+      root: [tw`table w-full my-4 mx-0 border-collapse`],
       tbody: tw`min-w-full`,
     }
   );

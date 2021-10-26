@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 const BASE_URL = 'https://vercel.com/?utm_source=udecode&utm_campaign=oss';
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
 import {

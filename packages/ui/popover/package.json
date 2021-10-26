@@ -1,0 +1,50 @@
+{
+  "name": "@udecode/plate-ui-popover",
+  "version": "6.2.0",
+  "description": "Popover UI for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin"
+  ],
+  "homepage": "https://plate.udecode.io",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/ui/popover"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc && yarn rollup",
+    "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@tippyjs/react": "^4.2.5",
+    "@udecode/plate-common": "6.2.0",
+    "@udecode/plate-core": "6.2.0",
+    "@udecode/plate-styled-components": "6.2.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.66.1",
+    "slate-history": ">=0.66.0",
+    "slate-react": ">=0.66.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

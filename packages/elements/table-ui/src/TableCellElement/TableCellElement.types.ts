@@ -16,4 +16,5 @@ export interface TableCellElementStyles {
 export interface TableCellElementProps
   extends StyledElementProps<{}, TableCellElementStyles> {
   resizableProps?: ResizableProps;
+  hideBorder?: boolean;
 }

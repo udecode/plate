@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { DefaultLeaf } from 'slate-react';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';

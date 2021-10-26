@@ -1,5 +1,20 @@
 # @udecode/plate-table-ui
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1173](https://github.com/udecode/plate/pull/1173) by [@zbeyens](https://github.com/zbeyens) –
+  - new deps: `@udecode/plate-ui-button` and `@udecode/plate-ui-popover`
+  - `TableCellElement` new prop:
+    - `hideBorder`
+  - `TableElement`:
+    - wrapping the table with `TablePopover` which displays a popover when selected.
+    - new prop: `popoverProps`, can be used to override the popover content
+  - new components:
+    - `TablePopover` which displays a button to delete the table
+    - `TableRowElement`
+
 ## 6.1.0
 
 ### Minor Changes
