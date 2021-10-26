@@ -1,5 +1,11 @@
 # @udecode/plate-indent
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1163](https://github.com/udecode/plate/pull/1163) by [@ghingis](https://github.com/ghingis) – feat: keyboard support to indent / outdent (Tab / Shift+Tab)
+
 ## 6.1.0
 
 ## 6.0.0

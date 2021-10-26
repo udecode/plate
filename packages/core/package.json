@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "6.0.0",
+  "version": "6.2.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
