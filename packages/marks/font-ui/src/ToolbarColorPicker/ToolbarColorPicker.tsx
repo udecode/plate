@@ -50,8 +50,8 @@ export const ToolbarColorPicker = ({
 
   const latestSelection = useRef<BaseSelection>();
 
-  const updateColor = useCallback((ev: any, colorParam: string) => {
-    setSelectedColor(colorParam);
+  const updateColor = useCallback((value: string) => {
+    setSelectedColor(value);
   }, []);
 
   const clearColor = useCallback(() => {

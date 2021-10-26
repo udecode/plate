@@ -11,7 +11,7 @@ type ColorPickerProps = {
   colors?: ColorType[];
   customColors?: ColorType[];
   selectedIcon: ReactNode;
-  updateColor: (ev: any, colorObj: string) => void;
+  updateColor: (color: string) => void;
   clearColor: () => void;
 };
 

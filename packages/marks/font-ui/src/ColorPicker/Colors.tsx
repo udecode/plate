@@ -7,7 +7,7 @@ type ColorsProps = {
   color?: string;
   colors: ColorType[];
   selectedIcon: ReactNode;
-  updateColor: (ev: any, colorObj: string) => void;
+  updateColor: (color: string) => void;
 };
 
 export const Colors = ({

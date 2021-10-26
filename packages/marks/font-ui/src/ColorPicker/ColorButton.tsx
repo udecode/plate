@@ -8,7 +8,7 @@ type ColorButtonProps = {
   isBrightColor: boolean;
   isSelected: boolean;
   selectedIcon: ReactNode;
-  updateColor: (ev: any, colorObj: string) => void;
+  updateColor: (color: string) => void;
 };
 
 export const ColorButton = ({
@@ -25,7 +25,7 @@ export const ColorButton = ({
     <button
       type="button"
       aria-label={name}
-      onClick={(ev) => updateColor(ev, value)}
+      onClick={() => updateColor(value)}
       css={styles.root.css}
     >
       {isSelected ? selectedIcon : null}

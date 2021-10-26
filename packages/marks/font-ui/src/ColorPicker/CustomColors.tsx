@@ -11,7 +11,7 @@ type CustomColorsProps = {
   colors: ColorType[];
   customColors: ColorType[];
   selectedIcon: ReactNode;
-  updateColor: (ev: any, colorObj: string) => void;
+  updateColor: (color: string) => void;
 };
 
 export const CustomColors = ({
@@ -22,14 +22,9 @@ export const CustomColors = ({
   updateColor,
 }: CustomColorsProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateColorDebounced = useCallback(
-    debounce(
-      (ev: React.ChangeEvent<HTMLInputElement>) =>
-        updateColor(ev, ev.target.value),
-      100
-    ),
-    [updateColor]
-  );
+  const updateColorDebounced = useCallback(debounce(updateColor, 100), [
+    updateColor,
+  ]);
 
   const [value, setValue] = useState<string>(color || '#000000');
 
@@ -51,7 +46,7 @@ export const CustomColors = ({
         value={value}
         onChange={(e) => {
           setValue(e.target.value);
-          updateColorDebounced(e);
+          updateColorDebounced(e.target.value);
         }}
       >
         <Button css={tw`w-full py-2 mb-4 font-semibold`}>CUSTOM</Button>
