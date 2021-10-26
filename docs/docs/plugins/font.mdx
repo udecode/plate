@@ -18,21 +18,6 @@ npm install @udecode/plate-font-ui
 () => {
   const components = createPlateComponents({
     ...CONFIG.components,
-    [MARK_COLOR]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_COLOR]: ['color'],
-      },
-    }),
-    [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_BG_COLOR]: ['backgroundColor'],
-      },
-    }),
-    [MARK_FONT_SIZE]: withStyledProps(StyledLeaf, {
-      leafProps: {
-        [MARK_FONT_SIZE]: ['fontSize'],
-      },
-    }),
   });
 
   const plugins = [
