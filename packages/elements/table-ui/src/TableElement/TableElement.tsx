@@ -1,11 +1,13 @@
-import * as React from 'react';
+import React from 'react';
 import { withProviders } from '@udecode/plate-common';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';
 import { useTableColSizes } from '../hooks/useTableColSizes';
+import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
 
-const TableElementRaw = (props: TableElementProps) => {
+export const TableElementBase = (props: TableElementProps) => {
   const {
     attributes,
     children,
@@ -14,6 +16,7 @@ const TableElementRaw = (props: TableElementProps) => {
     element,
     classNames,
     prefixClassNames,
+    popoverProps,
     transformColSizes,
     ...rootProps
   } = props;
@@ -27,23 +30,27 @@ const TableElementRaw = (props: TableElementProps) => {
   }
 
   return (
-    <table
-      {...attributes}
-      css={root.css}
-      className={root.className}
-      {...rootProps}
-      {...nodeProps}
-    >
-      <colgroup>
-        {colSizes.map((width, index) => (
-          <col key={index} style={width ? { width } : undefined} />
-        ))}
-      </colgroup>
-      <tbody css={tbody?.css} className={tbody?.className}>
-        {children}
-      </tbody>
-    </table>
+    <TablePopover {...popoverProps} element={element}>
+      <table
+        {...attributes}
+        css={root.css}
+        className={root.className}
+        {...rootProps}
+        {...nodeProps}
+      >
+        <colgroup>
+          {colSizes.map((width, index) => (
+            <col key={index} style={width ? { width } : undefined} />
+          ))}
+        </colgroup>
+        <tbody css={tbody?.css} className={tbody?.className}>
+          {children}
+        </tbody>
+      </table>
+    </TablePopover>
   );
 };
 
-export const TableElement = withProviders(Provider)(TableElementRaw);
+export const TableElement = withProviders([Provider, { scope: ELEMENT_TABLE }])(
+  TableElementBase
+);

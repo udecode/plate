@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import Tippy, { TippyProps } from '@tippyjs/react'; // optional
 import clsx from 'clsx';
 import { getToolbarButtonStyles } from './ToolbarButton.styles';

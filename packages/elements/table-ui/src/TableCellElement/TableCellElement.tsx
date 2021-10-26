@@ -1,7 +1,10 @@
-import * as React from 'react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useEditorRef } from '@udecode/plate-core';
-import { getTableColumnIndex, setTableColSize } from '@udecode/plate-table';
+import {
+  ELEMENT_TABLE,
+  getTableColumnIndex,
+  setTableColSize,
+} from '@udecode/plate-table';
 import clsx from 'clsx';
 import { useAtom } from 'jotai';
 import { Resizable, ResizableProps } from 're-resizable';
@@ -24,8 +27,11 @@ export const TableCellElement = (props: TableCellElementProps) => {
   } = props;
 
   const editor = useEditorRef();
-  const [hoveredColIndex, setHoveredColIndex] = useAtom(hoveredColIndexAtom);
-  const [, setResizingCol] = useAtom(resizingColAtom);
+  const [hoveredColIndex, setHoveredColIndex] = useAtom(
+    hoveredColIndexAtom,
+    ELEMENT_TABLE
+  );
+  const [, setResizingCol] = useAtom(resizingColAtom, ELEMENT_TABLE);
 
   const colIndex = useMemo(
     () => getTableColumnIndex(editor, { node: element }),

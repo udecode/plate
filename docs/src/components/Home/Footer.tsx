@@ -1,5 +1,5 @@
 import 'twin.macro';
-import * as React from 'react';
+import React from 'react';
 import Link from '@docusaurus/Link';
 import { PoweredByVercel } from './PoweredByVercel';
 

@@ -6,16 +6,15 @@ import { TableCellElementStyleProps } from './TableCellElement.types';
 export const getTableCellElementStyles = (
   props: TableCellElementStyleProps
 ) => {
-  const { hovered } = props;
+  const { hovered, hideBorder } = props;
 
   return createStyles(
     { prefixClassNames: 'TableCellElement', ...props },
     {
       root: [
-        tw`relative p-0 overflow-visible`,
+        tw`relative p-0 overflow-visible bg-white border-gray-300`,
+        hideBorder && tw`border-none`,
         css`
-          background-color: rgb(255, 255, 255);
-          border: 1px solid rgb(193, 199, 208);
           min-width: 48px;
         `,
       ],

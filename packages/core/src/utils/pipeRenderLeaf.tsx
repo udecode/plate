@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { DefaultLeaf } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';

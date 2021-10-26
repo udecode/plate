@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import castArray from 'lodash/castArray';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';
 import { StyledElementProps } from './StyledElement.types';

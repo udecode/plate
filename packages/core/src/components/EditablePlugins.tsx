@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { Editable } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
 import { UseEditablePropsOptions } from '../types/UseEditablePropsOptions';

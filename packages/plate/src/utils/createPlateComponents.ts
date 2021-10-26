@@ -55,7 +55,11 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
-import { TableCellElement, TableElement } from '@udecode/plate-table-ui';
+import {
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from '@udecode/plate-table-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { DefaultPlatePluginKey } from './createPlateOptions';
@@ -188,7 +192,7 @@ export const createPlateComponents = <T extends string = string>(
       },
     }),
     [ELEMENT_TODO_LI]: TodoListElement,
-    [ELEMENT_TR]: withProps(StyledElement, { as: 'tr' }),
+    [ELEMENT_TR]: TableRowElement,
     [MARK_BOLD]: withProps(StyledLeaf, { as: 'strong' }),
     [MARK_CODE]: withProps(StyledLeaf, {
       as: 'code',

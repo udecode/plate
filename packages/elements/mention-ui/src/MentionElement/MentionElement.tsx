@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { getHandler } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionElementStyles } from './MentionElement.styles';

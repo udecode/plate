@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useEventEditorId, useStoreEditorRef } from '@udecode/plate-core';
 import { insertMediaEmbed } from '@udecode/plate-media-embed';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';

@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { usePopper } from 'react-popper';
 import * as PopperJS from '@popperjs/core';
 import { Modifier } from '@popperjs/core';

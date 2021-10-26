@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { setNodes } from '@udecode/plate-common';
 import { TElement, useEditorRef } from '@udecode/plate-core';
 import { TodoListItemNodeData } from '@udecode/plate-list';

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { RenderLeaf } from '@udecode/plate-core';
 
 export const MARK_PRISM = 'prism';
