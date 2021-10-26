@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react';
 import Tippy from '@tippyjs/react';
-import { getColorStyles } from './Color.styles';
+import { getColorButtonStyles } from './ColorButton.styles';
 
-type ColorProps = {
+type ColorButtonProps = {
   name?: string;
   value: string;
   isBrightColor: boolean;
@@ -11,15 +11,15 @@ type ColorProps = {
   updateColor: (ev: any, colorObj: string) => void;
 };
 
-export const Color = ({
+export const ColorButton = ({
   name,
   value,
   isBrightColor,
   isSelected,
   selectedIcon,
   updateColor,
-}: ColorProps) => {
-  const styles = getColorStyles({ value, isBrightColor });
+}: ColorButtonProps) => {
+  const styles = getColorButtonStyles({ value, isBrightColor });
 
   const content = (
     <button

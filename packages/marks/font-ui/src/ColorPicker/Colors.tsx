@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Color } from './Color';
+import { ColorButton } from './ColorButton';
 import { getColorsStyles } from './Colors.styles';
 import { ColorType } from './defaults';
 
@@ -21,7 +21,7 @@ export const Colors = ({
   return (
     <div css={styles.root.css}>
       {colors.map(({ name, value, isBrightColor }) => (
-        <Color
+        <ColorButton
           key={name || value}
           name={name}
           value={value}

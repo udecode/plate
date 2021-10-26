@@ -2,14 +2,14 @@ import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
-type ColorStyleProps = {
+type ColorButtonStyleProps = {
   value: string;
   isBrightColor: boolean;
 };
 
-export const getColorStyles = (props: ColorStyleProps) =>
+export const getColorButtonStyles = (props: ColorButtonStyleProps) =>
   createStyles(
-    { prefixClassNames: 'Color', ...props },
+    { prefixClassNames: 'ColorButton', ...props },
     {
       root: [
         tw`cursor-pointer h-8 w-8 border-0 rounded-full`,
