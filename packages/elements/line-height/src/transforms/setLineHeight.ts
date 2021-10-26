@@ -14,8 +14,6 @@ export const setLineHeight = (
   { lineHeight }: LineHeightPluginOptions & { lineHeight: number },
   options?: SetNodesOptions
 ): void => {
-  console.log('setLineHeight called');
-
   const { types, defaultLineHeight } = getPlatePluginOptions<
     Required<LineHeightPluginOptions>
   >(editor, KEY_LINE_HEIGHT);
