@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { getCodeLineElementStyles } from './CodeLineElement.styles';
 

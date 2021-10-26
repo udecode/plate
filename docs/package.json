@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "docusaurus build",
+    "build:dev": "yarn clear && yarn build --no-minify && yarn serve",
     "clear": "docusaurus clear",
     "deploy": "docusaurus deploy",
     "docusaurus": "docusaurus",

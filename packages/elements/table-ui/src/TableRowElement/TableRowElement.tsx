@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { getTableRowElementStyles } from './TableRowElement.styles';
 import { TableRowElementProps } from './TableRowElement.types';
 

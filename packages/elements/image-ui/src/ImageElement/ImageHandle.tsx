@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { CSSProp } from 'styled-components';
 
 export interface ImageHandleProps

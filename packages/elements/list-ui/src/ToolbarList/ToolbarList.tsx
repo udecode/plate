@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { getPreventDefaultHandler } from '@udecode/plate-common';
 import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';

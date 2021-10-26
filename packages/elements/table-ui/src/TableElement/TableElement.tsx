@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { withProviders } from '@udecode/plate-common';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';

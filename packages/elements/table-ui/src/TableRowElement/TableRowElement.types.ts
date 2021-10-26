@@ -1,6 +1,4 @@
 import { StyledElementProps } from '@udecode/plate-styled-components';
-import { ResizableProps } from 're-resizable';
-import { CSSProp } from 'styled-components';
 
 export interface TableRowElementStyleProps extends TableRowElementProps {
   // hovered: boolean;
@@ -15,5 +13,6 @@ export interface TableRowElementStyles {
 
 export interface TableRowElementProps
   extends StyledElementProps<{}, TableRowElementStyles> {
+  hideBorder?: boolean;
   // resizableProps?: ResizableProps;
 }

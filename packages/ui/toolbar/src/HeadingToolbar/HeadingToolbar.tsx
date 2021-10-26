@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { ToolbarProps } from '../Toolbar/Toolbar.types';
 import { getHeadingToolbarStyles } from './HeadingToolbar.styles';

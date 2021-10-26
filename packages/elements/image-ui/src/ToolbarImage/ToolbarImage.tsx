@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { useEventEditorId, useStoreEditorRef } from '@udecode/plate-core';
 import { insertImage } from '@udecode/plate-image';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';

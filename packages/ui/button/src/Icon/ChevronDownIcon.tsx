@@ -1,7 +1,8 @@
 import React, { SVGProps } from 'react';
+import { StyledIcon, StyledIconProps } from './StyledIcon';
 
-export const ChevronDownIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg
+export const ChevronDownIcon = (props: StyledIconProps) => (
+  <StyledIcon
     viewBox="0 0 24 24"
     focusable="false"
     aria-hidden="true"
@@ -12,5 +13,5 @@ export const ChevronDownIcon = (props: SVGProps<SVGSVGElement>) => (
       fill="currentColor"
       d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
     />
-  </svg>
+  </StyledIcon>
 );
