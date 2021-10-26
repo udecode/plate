@@ -11,13 +11,11 @@ export const TableRowElement = (props: TableRowElementProps) => {
     element,
     classNames,
     prefixClassNames,
-    resizableProps,
+    // resizableProps,
     ...rootProps
   } = props;
 
-  const { root } = getTableRowElementStyles({
-    ...props,
-  });
+  const { root } = getTableRowElementStyles(props);
 
   return (
     <tr

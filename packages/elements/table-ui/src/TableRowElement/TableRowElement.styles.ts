@@ -6,6 +6,6 @@ export const getTableRowElementStyles = (props: TableRowElementStyleProps) =>
   createStyles(
     { prefixClassNames: 'TableRowElement', ...props },
     {
-      root: [tw`border-red-500`, props.hideBorder && tw`border-none`],
+      root: [props.hideBorder && tw`border-none`],
     }
   );
