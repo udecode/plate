@@ -1,7 +1,7 @@
+import { RenderFunction } from '@udecode/plate-common';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 import { ComboboxState, ComboboxStoreById } from '../combobox.store';
-import { RenderFunction } from '../types/RenderFunction';
 
 export interface ComboboxStyleProps extends ComboboxProps {
   highlighted?: boolean;
