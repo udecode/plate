@@ -40,9 +40,15 @@ package manager. See
 
 ### Docs
 
-5. `cd docs`
-6. `yarn install`
-7. `yarn start`
+Development: 
+
+- `yarn dev`
+- `Open [localhost:3000](localhost:3000)`
+
+Build:
+
+- `yarn build:docs` if you've already built the packages or 
+- `yarn build:all` to build both the packages and the docs
 
 ### Editing
 
