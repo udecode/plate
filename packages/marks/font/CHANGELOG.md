@@ -1,5 +1,42 @@
 # @udecode/plate-font
 
+## 6.4.0
+
+### Minor Changes
+
+- [`bb7f28c0`](https://github.com/udecode/plate/commit/bb7f28c025e60577265a2046aaea1b04c076a13e) by [@zbeyens](https://github.com/zbeyens) –
+
+  - These plugins are now using `overrideProps` and `withOverrides`:
+    - `createFontBackgroundColorPlugin`
+    - `createFontColorPlugin`
+    - `createFontSizePlugin`
+  - New plugins:
+    - `createFontFamilyPlugin`
+    - `createFontWeightPlugin`
+  - Previously, we had these mark components that can be removed now:
+
+  ```ts
+  [MARK_COLOR]: withStyledProps(StyledLeaf, {
+    leafProps: {
+      [MARK_COLOR]: ['color'],
+    },
+  }),
+  [MARK_BG_COLOR]: withStyledProps(StyledLeaf, {
+    leafProps: {
+      [MARK_BG_COLOR]: ['backgroundColor'],
+    },
+  }),
+  [MARK_FONT_SIZE]: withStyledProps(StyledLeaf, {
+    leafProps: {
+      [MARK_FONT_SIZE]: ['fontSize'],
+    },
+  }),
+  ```
+
+### Patch Changes
+
+- [#1184](https://github.com/udecode/plate/pull/1184) by [@ghingis](https://github.com/ghingis) – now uses `getElementOverrideProps` / `getLeafOverrideProps`
+
 ## 6.3.0
 
 ## 6.2.0
