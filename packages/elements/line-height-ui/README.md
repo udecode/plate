@@ -1,6 +1,6 @@
-# Plate text alignment UI
+# Plate line height UI plugin
 
-This package implements the text alignment UI for Plate.
+This package implements the line height UI plugin for Plate.
 
 ## Documentation
 
