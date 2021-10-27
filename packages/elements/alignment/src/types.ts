@@ -35,7 +35,6 @@ export interface AlignPluginOptions {
    * @default 'textAlign'
    */
   cssPropName?: keyof CSSProperties;
-  // the value of the style we be calculated by this
 
   /**
    * Transformation function that will be used to transform the value from the text
