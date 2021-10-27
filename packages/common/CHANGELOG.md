@@ -1,5 +1,19 @@
 # @udecode/plate-common
 
+## 6.4.0
+
+### Minor Changes
+
+- [#1184](https://github.com/udecode/plate/pull/1184) by [@ghingis](https://github.com/ghingis) –
+  - new utils:
+    - `getElementOverrideProps`
+    - `getLeafOverrideProps`
+    - `getOverrideProps`
+
+### Patch Changes
+
+- [#1179](https://github.com/udecode/plate/pull/1179) by [@zbeyens](https://github.com/zbeyens) – fix `unsetNodes` options
+
 ## 6.3.0
 
 ### Minor Changes

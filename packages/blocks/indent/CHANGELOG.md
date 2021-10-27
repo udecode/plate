@@ -1,5 +1,36 @@
 # @udecode/plate-indent
 
+## 6.4.0
+
+### Minor Changes
+
+- [#1184](https://github.com/udecode/plate/pull/1184) by [@ghingis](https://github.com/ghingis) – `classNames` plugin option now fits `getElementOverrideProps` API:
+
+  ```ts
+  // before
+  {
+    classNames: [
+      'slate-indent-1',
+      'slate-indent-2',
+      'slate-indent-3',
+    ],
+  }
+  // after
+  {
+    classNames: {
+      1: 'slate-indent-1',
+      2: 'slate-indent-2',
+      3: 'slate-indent-3',
+    },
+  }
+  ```
+
+### Patch Changes
+
+- [#1184](https://github.com/udecode/plate/pull/1184) by [@ghingis](https://github.com/ghingis) – now uses `getElementOverrideProps` / `getLeafOverrideProps`
+
+- [#1183](https://github.com/udecode/plate/pull/1183) by [@zbeyens](https://github.com/zbeyens) – fix import
+
 ## 6.3.0
 
 ## 6.2.0

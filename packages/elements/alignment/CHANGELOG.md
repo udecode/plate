@@ -1,5 +1,11 @@
 # @udecode/plate-alignment
 
+## 6.4.0
+
+### Patch Changes
+
+- [#1184](https://github.com/udecode/plate/pull/1184) by [@ghingis](https://github.com/ghingis) – now uses `getElementOverrideProps` / `getLeafOverrideProps`
+
 ## 6.3.0
 
 ## 6.2.0
