@@ -3,4 +3,3 @@
  */
 
 export * from './ComboboxOnSelectItem';
-export * from './RenderFunction';

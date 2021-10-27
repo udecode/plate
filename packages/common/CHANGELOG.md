@@ -1,5 +1,12 @@
 # @udecode/plate-common
 
+## 6.3.0
+
+### Minor Changes
+
+- [#1177](https://github.com/udecode/plate/pull/1177) by [@zbeyens](https://github.com/zbeyens) –
+  - moved `RenderFunction` type to `common`
+
 ## 6.2.0
 
 ### Patch Changes
