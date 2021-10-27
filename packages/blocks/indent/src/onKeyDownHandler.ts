@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEditor } from '../../../core/dist/index';
+import { TEditor } from '@udecode/plate-core';
 import { indent, outdent } from './transforms/index';
 
 export const onKeyDownHandler = (editor: TEditor) => (

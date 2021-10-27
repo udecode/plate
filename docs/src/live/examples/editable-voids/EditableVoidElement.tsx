@@ -4,12 +4,12 @@ import {
   createHistoryPlugin,
   createReactPlugin,
 } from '@udecode/plate';
-import { Plate, SPRenderElementProps } from '@udecode/plate-core';
 import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
-} from '../../../../../packages/editor/break';
-import { createResetNodePlugin } from '../../../../../packages/editor/reset-node';
+} from '@udecode/plate-break';
+import { Plate, SPRenderElementProps } from '@udecode/plate-core';
+import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { CONFIG } from '../../config/config';
 import { VALUES } from '../../config/values/values';
 
