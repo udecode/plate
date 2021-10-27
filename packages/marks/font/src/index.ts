@@ -4,8 +4,8 @@
 
 export * from './createFontBackgroundColorPlugin';
 export * from './createFontColorPlugin';
+export * from './createFontFamilyPlugin';
 export * from './createFontSizePlugin';
 export * from './createFontWeightPlugin';
-export * from './createFontFamilyPlugin';
 export * from './defaults';
 export * from './getFontDeserialize';

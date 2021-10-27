@@ -39,7 +39,7 @@ const handleOverrideProps = ({
     const value = props.text[type] as string | number;
 
     if (
-      (value ?? true) ||
+      !(value ?? false) ||
       (defaultOption !== undefined && value === defaultOption) ||
       (options && !options.includes(value))
     ) {
