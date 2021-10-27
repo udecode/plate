@@ -26,6 +26,16 @@ export const withIndent = (
     types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
     offset: 24,
     unit: 'px',
+    // the following props will be used by the getOverrideProps
+    // the following prop name should be used in the styles
+    cssPropName: 'marginLeft',
+    // the value of the style we be calculated by this
+    cssValueCalculator: (params: {
+      options: Required<IndentPluginOptions>;
+      value: number;
+    }) => {
+      return params.value * params.options.offset + params.options.unit;
+    },
   });
 
   const { types, indentMax } = getPlatePluginOptions<IndentPluginOptions>(

@@ -13,10 +13,9 @@ export interface IndentPluginOptions {
 
   /**
    * List of classNames to pass to each indented block.
-   * First item is indent=1, second item is indent=2,...
    * If defined, the plugin will pass a className prop instead of a style prop.
    */
-  classNames?: string[];
+  classNames?: Record<number, string>;
 
   /**
    * List of block types supporting indentation.
