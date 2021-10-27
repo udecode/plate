@@ -45,60 +45,60 @@ export interface FontColorPluginOptions {
 
 export interface FontFamilyPluginOptions {
   /**
-   * List of supported color values.
+   * List of supported font family values.
    * @default undefined
    */
   fontFamilies?: string[];
 
   /**
-   * Object of classNames to pass to each color value.
+   * Object of classNames to pass to each font family value.
    * If defined, the plugin will pass a className prop instead of a style prop.
    */
   classNames?: Partial<Record<string, string>>;
 
   /**
-   * Default color will not be set to the node.
-   * @default 'black'
+   * Default font family will not be set to the node.
+   * @default undefined
    */
   defaultFontFamily?: string;
 }
 
 export interface FontSizePluginOptions {
   /**
-   * List of supported size values.
+   * List of supported font size values.
    * @default undefined
    */
   fontSizes?: string[];
 
   /**
-   * Object of classNames to pass to each fontWeight value.
+   * Object of classNames to pass to each font size value.
    * If defined, the plugin will pass a className prop instead of a style prop.
    */
   classNames?: Partial<Record<string, string>>;
 
   /**
-   * Default fontWeight will not be set to the node.
-   * @default 'black'
+   * Default font size will not be set to the node.
+   * @default undefined
    */
   defaultFontSize?: string;
 }
 
 export interface FontWeightPluginOptions {
   /**
-   * List of supported fontWeight values.
+   * List of supported font weight values.
    * @default undefined
    */
   fontWeights?: FontWeight[];
 
   /**
-   * Object of classNames to pass to each fontWeight value.
+   * Object of classNames to pass to each font weight value.
    * If defined, the plugin will pass a className prop instead of a style prop.
    */
   classNames?: Partial<Record<FontWeight, string>>;
 
   /**
-   * Default fontWeight will not be set to the node.
-   * @default 400
+   * Default font weight will not be set to the node.
+   * @default undefined
    */
   defaultFontWeight?: FontWeight;
 }

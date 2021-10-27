@@ -2,7 +2,8 @@ import { getNodeDeserializer } from '@udecode/plate-common';
 import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
 import {
   MARK_BG_COLOR,
-  MARK_COLOR, MARK_FONT_FAMILY,
+  MARK_COLOR,
+  MARK_FONT_FAMILY,
   MARK_FONT_SIZE,
   MARK_FONT_WEIGHT,
 } from './defaults';
