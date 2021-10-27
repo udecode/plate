@@ -32,7 +32,7 @@ export function getOverrideProps(
   }
 
   const pluginOptions = getPlatePluginOptions(editor, type);
-  const { cssPropName, cssValueCalculator } = pluginOptions;
+  const { cssPropName, transformCssValue } = pluginOptions;
 
   const res: AnyObject = {};
 
@@ -42,8 +42,8 @@ export function getOverrideProps(
     res.style = {
       ...style,
       [cssPropName ?? type]:
-        cssValueCalculator && typeof cssValueCalculator === 'function'
-          ? cssValueCalculator({ options: pluginOptions, value })
+        transformCssValue && typeof transformCssValue === 'function'
+          ? transformCssValue({ options: pluginOptions, value })
           : value,
     };
   }
