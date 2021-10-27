@@ -21,6 +21,21 @@ const align: any = (
   </fragment>
 );
 
+const lineHeight: any = (
+  <fragment>
+    <hh1>Line Height</hh1>
+    <hp>This block text has default line height. {faker.lorem.paragraph()}</hp>
+    <hp lineHeight={2}>
+      This block text has a little bigger line height. {faker.lorem.paragraph()}
+    </hp>
+    <hh1 lineHeight={3}>Anything could have a Line Height</hh1>
+    <hp lineHeight={1}>
+      This block text has the same line height as ist font size.{' '}
+      {faker.lorem.paragraph()}
+    </hp>
+  </fragment>
+);
+
 const indent: any = (
   <fragment>
     <hh1>Changing block indentation</hh1>
@@ -835,6 +850,7 @@ const playground: any = getNodesWithRandomId([
   ...basicElements,
   ...horizontalRule,
   ...align,
+  ...lineHeight,
   ...indent,
   ...list,
   ...table,
@@ -853,6 +869,7 @@ const playground: any = getNodesWithRandomId([
 ]);
 
 export const VALUES: Record<string, any> = {
+  align,
   autoformat,
   balloonToolbar,
   basicElements,
@@ -874,6 +891,7 @@ export const VALUES: Record<string, any> = {
   image,
   indent,
   kbd,
+  lineHeight,
   link,
   list,
   marks,
@@ -890,5 +908,4 @@ export const VALUES: Record<string, any> = {
   singleLine,
   softBreak,
   table,
-  align,
 };

@@ -51,6 +51,8 @@ const alias = {
   '@udecode/plate-image-ui': 'elements/image-ui',
   '@udecode/plate-indent': 'indent',
   '@udecode/plate-kbd': 'marks/kbd',
+  '@udecode/plate-line-height': 'elements/line-height',
+  '@udecode/plate-line-height-ui': 'elements/line-height-ui',
   '@udecode/plate-link': 'elements/link',
   '@udecode/plate-link-ui': 'elements/link-ui',
   '@udecode/plate-list': 'elements/list',

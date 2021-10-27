@@ -1,0 +1,84 @@
+---
+slug: /plugins/line-height
+title: Line Height
+---
+
+The line height plugin enables support for line height.
+You can use it to set the line height for the selected element as required.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-line-height
+npm install @udecode/plate-line-height-ui
+```
+
+### Usage
+
+Click inside a paragraph or a header and click on a toolbar button to apply the desired line height.
+
+```ts live
+() => {
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createLineHeightPlugin({
+      ...CONFIG.lineHeight,
+      types: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+      ],
+    })
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarLineHeight icon={<LineWeight />} />
+      </HeadingToolbar>
+      <Plate
+        id="alignment"
+        plugins={plugins}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.lineHeight}
+      />
+    </>
+  );
+}
+```
+
+### Options
+
+#### `types`
+
+- List of block types supporting line height.
+- Default is the paragraph type.
+
+#### `lineHeights`
+
+- List of supported `line-height` values.
+- Default is `[1,1.2,1.5,2]`
+
+#### `defaultLineHeight`
+
+- Default line height will not be set to the node
+- Default is `1.2`
+
+#### `classNames`
+
+- By default, the plugin is setting an inline style with `line-height` CSS property.
+- If you want more semantic content that uses classes instead,
+you can specify class names and style them by using a style sheet.
+
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/elements/line-height](https://github.com/udecode/plate/tree/main/packages/elements/line-height/src)
+- [packages/elements/line-height-ui](https://github.com/udecode/plate/tree/main/packages/elements/line-height-ui/src)

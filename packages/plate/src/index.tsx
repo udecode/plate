@@ -31,6 +31,8 @@ export * from '@udecode/plate-image';
 export * from '@udecode/plate-image-ui';
 export * from '@udecode/plate-indent';
 export * from '@udecode/plate-kbd';
+export * from '@udecode/plate-line-height';
+export * from '@udecode/plate-line-height-ui';
 export * from '@udecode/plate-link';
 export * from '@udecode/plate-link-ui';
 export * from '@udecode/plate-list';

@@ -22,6 +22,7 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
+  LineHeightPluginOptions,
   NormalizeTypesPluginOptions,
   PlatePluginOptions,
   ResetBlockTypePluginOptions,
@@ -50,6 +51,7 @@ export const CONFIG: {
   exitBreak: ExitBreakPluginOptions;
   forceLayout: NormalizeTypesPluginOptions;
   indent: IndentPluginOptions;
+  lineHeight: LineHeightPluginOptions;
   mentionItems: any;
   resetBlockType: ResetBlockTypePluginOptions;
   selectOnBackspace: SelectOnBackspacePluginOptions;
@@ -103,6 +105,10 @@ export const CONFIG: {
       ELEMENT_BLOCKQUOTE,
       ELEMENT_CODE_BLOCK,
     ],
+  },
+  lineHeight: {
+    defaultLineHeight: 1.65,
+    lineHeights: [1, 1.2, 1.65, 2, 3],
   },
   resetBlockType: {
     rules: [

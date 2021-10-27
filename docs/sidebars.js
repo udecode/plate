@@ -44,6 +44,7 @@ module.exports = {
             'plugins/horizontal-rule',
             'plugins/image',
             'plugins/indent',
+            'plugins/line-height',
             'plugins/link',
             'plugins/list',
             'plugins/media-embed',
