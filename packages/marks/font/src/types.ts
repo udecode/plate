@@ -1,3 +1,5 @@
+import { CSSProperties } from 'react';
+
 export type FontWeight =
   | 'normal'
   | 'bold'
@@ -41,6 +43,25 @@ export interface FontColorPluginOptions {
    * @default 'black'
    */
   defaultColor?: string;
+
+  /** The following props will be used by the getOverrideProps */
+
+  /**
+   * camelCase name of the css property that the getOverrideProps will use
+   * if not provided it will fall back to the plugin key
+   * @default undefined
+   */
+  cssPropName?: keyof CSSProperties;
+
+  /**
+   * Transformation function that will be used to transform the value from the text
+   * if not provided the value will be used as is
+   * @default undefined
+   */
+  transformCssValue?: (params: {
+    options: FontColorPluginOptions;
+    value: string;
+  }) => string;
 }
 
 export interface FontFamilyPluginOptions {
@@ -61,6 +82,25 @@ export interface FontFamilyPluginOptions {
    * @default undefined
    */
   defaultFontFamily?: string;
+
+  /** The following props will be used by the getOverrideProps */
+
+  /**
+   * camelCase name of the css property that the getOverrideProps will use
+   * if not provided it will fall back to the plugin key
+   * @default undefined
+   */
+  cssPropName?: keyof CSSProperties;
+
+  /**
+   * Transformation function that will be used to transform the value from the text
+   * if not provided the value will be used as is
+   * @default undefined
+   */
+  transformCssValue?: (params: {
+    options: FontFamilyPluginOptions;
+    value: string;
+  }) => string;
 }
 
 export interface FontSizePluginOptions {
@@ -81,6 +121,25 @@ export interface FontSizePluginOptions {
    * @default undefined
    */
   defaultFontSize?: string;
+
+  /** The following props will be used by the getOverrideProps */
+
+  /**
+   * camelCase name of the css property that the getOverrideProps will use
+   * if not provided it will fall back to the plugin key
+   * @default undefined
+   */
+  cssPropName?: keyof CSSProperties;
+
+  /**
+   * Transformation function that will be used to transform the value from the text
+   * if not provided the value will be used as is
+   * @default undefined
+   */
+  transformCssValue?: (params: {
+    options: FontSizePluginOptions;
+    value: string;
+  }) => string;
 }
 
 export interface FontWeightPluginOptions {
@@ -101,4 +160,23 @@ export interface FontWeightPluginOptions {
    * @default undefined
    */
   defaultFontWeight?: FontWeight;
+
+  /** The following props will be used by the getOverrideProps */
+
+  /**
+   * camelCase name of the css property that the getOverrideProps will use
+   * if not provided it will fall back to the plugin key
+   * @default undefined
+   */
+  cssPropName?: keyof CSSProperties;
+
+  /**
+   * Transformation function that will be used to transform the value from the text
+   * if not provided the value will be used as is
+   * @default undefined
+   */
+  transformCssValue?: (params: {
+    options: FontWeightPluginOptions;
+    value: FontWeight;
+  }) => string;
 }
