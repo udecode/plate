@@ -25,11 +25,18 @@ import {
 import { withStyledDraggables } from '../docs/src/live/config/components/withStyledDraggables';
 import { withStyledPlaceHolders } from '../docs/src/live/config/components/withStyledPlaceHolders';
 import { CONFIG } from '../docs/src/live/config/config';
-import { createAutoformatPlugin } from '../packages/autoformat/src/createAutoformatPlugin';
-import { createExitBreakPlugin } from '../packages/break/src/exit-break/createExitBreakPlugin';
-import { createSoftBreakPlugin } from '../packages/break/src/soft-break/createSoftBreakPlugin';
+import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
-import { createDndPlugin } from '../packages/dnd/src/createDndPlugin';
+import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
+import { ToolbarSearchHighlight } from '../packages/decorators/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
+import { createAutoformatPlugin } from '../packages/editor/autoformat/src/createAutoformatPlugin';
+import { createExitBreakPlugin } from '../packages/editor/break/src/exit-break/createExitBreakPlugin';
+import { createSoftBreakPlugin } from '../packages/editor/break/src/soft-break/createSoftBreakPlugin';
+import { createNodeIdPlugin } from '../packages/editor/node-id/src/createNodeIdPlugin';
+import { createNormalizeTypesPlugin } from '../packages/editor/normalizers/src/createNormalizeTypesPlugin';
+import { createResetNodePlugin } from '../packages/editor/reset-node/src/createResetNodePlugin';
+import { createSelectOnBackspacePlugin } from '../packages/editor/select/src/createSelectOnBackspacePlugin';
+import { createTrailingBlockPlugin } from '../packages/editor/trailing-block/src/createTrailingBlockPlugin';
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
 import { ToolbarImage } from '../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
 import { ToolbarLink } from '../packages/elements/link-ui/src/ToolbarLink/ToolbarLink';
@@ -39,8 +46,6 @@ import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/cre
 import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
-import { useFindReplacePlugin } from '../packages/find-replace/src/useFindReplacePlugin';
-import { ToolbarSearchHighlight } from '../packages/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
 import { createItalicPlugin } from '../packages/marks/basic-marks/src/italic/createItalicPlugin';
@@ -50,14 +55,9 @@ import { createSuperscriptPlugin } from '../packages/marks/basic-marks/src/super
 import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/underline/createUnderlinePlugin';
 import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
-import { createNodeIdPlugin } from '../packages/node-id/src/createNodeIdPlugin';
-import { createNormalizeTypesPlugin } from '../packages/normalizers/src/createNormalizeTypesPlugin';
 import { createPlateComponents } from '../packages/plate/src/utils/createPlateComponents';
 import { createPlateOptions } from '../packages/plate/src/utils/createPlateOptions';
-import { createResetNodePlugin } from '../packages/reset-node/src/createResetNodePlugin';
-import { createSelectOnBackspacePlugin } from '../packages/select/src/createSelectOnBackspacePlugin';
-import { createDeserializeHTMLPlugin } from '../packages/serializers/html-serializer/src/deserializer/createDeserializeHTMLPlugin';
-import { createTrailingBlockPlugin } from '../packages/trailing-block/src/createTrailingBlockPlugin';
+import { createDeserializeHTMLPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHTMLPlugin';
 
 export default {
   title: 'Drag & Drop',
