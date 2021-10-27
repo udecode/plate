@@ -21,24 +21,21 @@ export const withIndent = (
   const { normalizeNode } = editor;
 
   // TODO: extend plate-core to register options
-  editor.options[KEY_INDENT] = {
-    ...defaults(options, {
-      type: KEY_INDENT,
-      types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-      offset: 24,
-      unit: 'px',
-    }),
-    // the following props will be used by the getOverrideProps
-    // the following prop name should be used in the styles
+  editor.options[KEY_INDENT] = defaults(options, {
+    type: KEY_INDENT,
+    types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+    offset: 24,
+    unit: 'px',
+
+    // The following props will be used by the getOverrideProps
     cssPropName: 'marginLeft',
-    // the value of the style we be calculated by this
     transformCssValue: (params: {
       options: Required<IndentPluginOptions>;
       value: number;
     }) => {
       return params.value * params.options.offset + params.options.unit;
     },
-  };
+  });
 
   const { types, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
     editor,
