@@ -1,6 +1,6 @@
 import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
-import { DEFAULT_BG_COLOR, MARK_BG_COLOR } from './defaults';
+import { MARK_BG_COLOR } from './defaults';
 import { getFontBackgroundColorDeserialize } from './getFontDeserialize';
 import { getFontBackgroundColorOverrideProps } from './getOverrideProps';
 import { FontColorPluginOptions } from './types';
@@ -14,7 +14,6 @@ export const createFontBackgroundColorPlugin = (
     // TODO: extend plate-core to register options
     editor.options[MARK_BG_COLOR] = defaults(options, {
       type: MARK_BG_COLOR,
-      defaultColor: DEFAULT_BG_COLOR,
     });
 
     return editor;
