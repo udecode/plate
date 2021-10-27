@@ -15,14 +15,16 @@ export const createAlignPlugin = (
   overrideProps: getAlignOverrideProps(),
   withOverrides: (editor) => {
     // TODO: extend plate-core to register options
-    editor.options[KEY_ALIGN] = defaults(options, {
-      type: KEY_ALIGN,
-      types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-      alignments: DEFAULT_ALIGNMENTS,
-      defaultAlignment: DEFAULT_ALIGNMENT,
+    editor.options[KEY_ALIGN] = {
+      ...defaults(options, {
+        type: KEY_ALIGN,
+        types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+        alignments: DEFAULT_ALIGNMENTS,
+        defaultAlignment: DEFAULT_ALIGNMENT,
+      }),
       // this will be used by the getOverrideProps so it can set the current value to the proper css prop
       cssPropName: 'textAlign',
-    });
+    };
 
     return editor;
   },
