@@ -1,12 +1,12 @@
 import { findNode, FindNodeOptions } from '@udecode/plate-common';
 import { SPEditor } from '@udecode/plate-core';
-import { getMentionProposalType } from '../options';
+import { getMentionInputType } from '../options';
 
-export const findMentionProposal = (
+export const findMentionInput = (
   editor: SPEditor,
   options?: Omit<FindNodeOptions, 'match'>
 ) =>
   findNode(editor, {
     ...options,
-    match: { type: getMentionProposalType(editor) },
+    match: { type: getMentionInputType(editor) },
   });

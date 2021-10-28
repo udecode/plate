@@ -21,7 +21,7 @@ describe('withMention', () => {
       plugins: [createParagraphPlugin(), createMentionPlugin()],
     });
 
-  const createEditorWithMentionProposal = (
+  const createEditorWithMentionInput = (
     at: JSX.Element = (
       <hp>
         <htext />
@@ -40,24 +40,24 @@ describe('withMention', () => {
     comboboxStore.set.byId({});
   });
 
-  describe('creating a mention proposal', () => {
-    it('should insert a mention proposal when the trigger is inserted after line beginning', () => {
-      const editor = createEditorWithMentionProposal();
+  describe('creating a mention input', () => {
+    it('should insert a mention input when the trigger is inserted after line beginning', () => {
+      const editor = createEditorWithMentionInput();
 
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             <htext />
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>,
       ]);
     });
 
-    it('should insert a mention proposal when the trigger is inserted after whitespace', () => {
-      const editor = createEditorWithMentionProposal(
+    it('should insert a mention input when the trigger is inserted after whitespace', () => {
+      const editor = createEditorWithMentionInput(
         <hp>
           hello world <cursor />
         </hp>
@@ -66,10 +66,10 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext>hello world </htext>
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             <htext />
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>,
       ]);
@@ -106,15 +106,15 @@ describe('withMention', () => {
     });
   });
 
-  describe('removing a mention proposal', () => {
-    it('should remove the mention proposal when the selection is removed from it', () => {
+  describe('removing a mention input', () => {
+    it('should remove the mention input when the selection is removed from it', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             <htext />
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>
       );
@@ -127,14 +127,14 @@ describe('withMention', () => {
       expect(editor.children).toEqual([<hp>@</hp>]);
     });
 
-    it('should preserve the text that was typed into the mention proposal after removing', () => {
+    it('should preserve the text that was typed into the mention input after removing', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             hello
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>
       );
@@ -151,10 +151,10 @@ describe('withMention', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             hello
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>
       );
@@ -170,13 +170,13 @@ describe('withMention', () => {
       });
     });
 
-    it('should remove the proposal when deleting backward in empty proposal', () => {
+    it('should remove the input when deleting backward in empty input', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>
+          <hmentioninput trigger={trigger}>
             <cursor />
-          </hmentionproposal>
+          </hmentioninput>
           <htext />
         </hp>
       );
@@ -192,10 +192,10 @@ describe('withMention', () => {
     });
   });
 
-  describe('typing in a mention proposal', () => {
+  describe('typing in a mention input', () => {
     // TODO: remove if slate upgrade handles
-    it('should type into a mention proposal if the selection is in it', () => {
-      const editor = createEditorWithMentionProposal(
+    it('should type into a mention input if the selection is in it', () => {
+      const editor = createEditorWithMentionInput(
         <hp>
           <htext />
           <cursor />
@@ -207,14 +207,14 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>a</hmentionproposal>
+          <hmentioninput trigger={trigger}>a</hmentioninput>
           <htext />
         </hp>,
       ]);
     });
 
-    it('should type the trigger as text when inside a mention proposal', () => {
-      const editor = createEditorWithMentionProposal(
+    it('should type the trigger as text when inside a mention input', () => {
+      const editor = createEditorWithMentionInput(
         <hp>
           <cursor />
         </hp>
@@ -225,7 +225,7 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal trigger={trigger}>{trigger}</hmentionproposal>
+          <hmentioninput trigger={trigger}>{trigger}</hmentioninput>
           <htext />
         </hp>,
       ]);
@@ -233,20 +233,20 @@ describe('withMention', () => {
   });
 
   describe('history', () => {
-    it('should not capture transformations inside a mention proposal', async () => {
-      const editor = createEditorWithMentionProposal(
+    it('should not capture transformations inside a mention input', async () => {
+      const editor = createEditorWithMentionInput(
         <hp>
           <cursor />
         </hp>
       );
 
-      // flush previous ops to get a new undo batch going for mention proposal
+      // flush previous ops to get a new undo batch going for mention input
       await Promise.resolve();
 
       editor.insertText('test');
       getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
 
-      // flush previous ops to get a new undo batch going for mention proposal
+      // flush previous ops to get a new undo batch going for mention input
       await Promise.resolve();
 
       editor.undo();
@@ -260,8 +260,8 @@ describe('withMention', () => {
   });
 
   describe('combobox', () => {
-    it('should show the combobox when a mention proposal is created', () => {
-      createEditorWithMentionProposal(
+    it('should show the combobox when a mention input is created', () => {
+      createEditorWithMentionInput(
         <hp>
           <cursor />
         </hp>
@@ -272,8 +272,8 @@ describe('withMention', () => {
       });
     });
 
-    it('should close the combobox when a mention proposal is removed', () => {
-      const editor = createEditorWithMentionProposal(
+    it('should close the combobox when a mention input is removed', () => {
+      const editor = createEditorWithMentionInput(
         <hp>
           <htext />
           <cursor />
@@ -291,7 +291,7 @@ describe('withMention', () => {
     });
 
     it('should update the text in the combobox when typing', () => {
-      const editor = createEditorWithMentionProposal();
+      const editor = createEditorWithMentionInput();
 
       editor.insertText('abc');
       expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({

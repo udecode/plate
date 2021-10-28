@@ -12,7 +12,7 @@ const ELEMENT_LI = 'li';
 const ELEMENT_LINK = 'a';
 const ELEMENT_MEDIA_EMBED = 'media_embed';
 const ELEMENT_MENTION = 'mention';
-const ELEMENT_MENTION_PROPOSAL = 'mention_proposal';
+const ELEMENT_MENTION_INPUT = 'mention_input';
 const ELEMENT_OL = 'ol';
 const ELEMENT_PARAGRAPH = 'p';
 const ELEMENT_TABLE = 'table';
@@ -58,8 +58,8 @@ export const jsx = createHyperscript({
     himg: { type: ELEMENT_IMAGE, children: voidChildren },
     hli: { type: ELEMENT_LI },
     hmention: { type: ELEMENT_MENTION, children: voidChildren },
-    hmentionproposal: {
-      type: ELEMENT_MENTION_PROPOSAL,
+    hmentioninput: {
+      type: ELEMENT_MENTION_INPUT,
       children: voidChildren,
     },
     hmediaembed: { type: ELEMENT_MEDIA_EMBED, children: voidChildren },

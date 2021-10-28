@@ -1,2 +1,2 @@
-export * from './getMentionProposalType';
-export * from './getMentionProposalPluginOptions';
+export * from './getMentionInputType';
+export * from './getMentionInputPluginOptions';

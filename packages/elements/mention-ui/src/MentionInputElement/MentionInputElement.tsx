@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { getHandler } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
-import { getMentionProposalElementStyles } from './MentionProposalElement.styles';
-import { MentionProposalElementProps } from './MentionProposalElement.types';
+import { getMentionInputElementStyles } from './MentionInputElement.styles';
+import { MentionInputElementProps } from './MentionInputElement.types';
 
-export const MentionProposalElement = (props: MentionProposalElementProps) => {
+export const MentionInputElement = (props: MentionInputElementProps) => {
   const {
     attributes,
     children,
@@ -23,7 +23,7 @@ export const MentionProposalElement = (props: MentionProposalElementProps) => {
   const selected = useSelected();
   const focused = useFocused();
 
-  const styles = getMentionProposalElementStyles({
+  const styles = getMentionInputElementStyles({
     ...props,
     selected,
     focused,

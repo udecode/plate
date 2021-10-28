@@ -4,4 +4,4 @@
 
 export * from './MentionCombobox/index';
 export * from './MentionElement/index';
-export * from './MentionProposalElement/index';
+export * from './MentionInputElement/index';

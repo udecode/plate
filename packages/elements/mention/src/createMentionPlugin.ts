@@ -6,11 +6,11 @@ import {
 import {
   COMBOBOX_TRIGGER_MENTION,
   ELEMENT_MENTION,
-  ELEMENT_MENTION_PROPOSAL,
+  ELEMENT_MENTION_INPUT,
 } from './defaults';
 import { getMentionDeserialize } from './getMentionDeserialize';
 import { moveSelectionByOffset } from './moveSelectionByOffset';
-import { isSelectionInMentionProposal } from './queries';
+import { isSelectionInMentionInput } from './queries';
 import { MentionPluginOptions } from './types';
 import { withMention } from './withMention';
 
@@ -21,12 +21,12 @@ export const createMentionPlugin = ({
   pluginKey = ELEMENT_MENTION,
   trigger = COMBOBOX_TRIGGER_MENTION,
 }: MentionPluginOptions = {}): PlatePlugin => ({
-  pluginKeys: [pluginKey, ELEMENT_MENTION_PROPOSAL],
-  renderElement: getRenderElement([pluginKey, ELEMENT_MENTION_PROPOSAL]),
+  pluginKeys: [pluginKey, ELEMENT_MENTION_INPUT],
+  renderElement: getRenderElement([pluginKey, ELEMENT_MENTION_INPUT]),
   deserialize: getMentionDeserialize(pluginKey),
-  inlineTypes: getPlatePluginTypes([pluginKey, ELEMENT_MENTION_PROPOSAL]),
+  inlineTypes: getPlatePluginTypes([pluginKey, ELEMENT_MENTION_INPUT]),
   voidTypes: getPlatePluginTypes(pluginKey),
   withOverrides: withMention({ id: pluginKey, trigger }),
   onKeyDown: (editor) =>
-    moveSelectionByOffset(editor, { query: isSelectionInMentionProposal }),
+    moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
 });

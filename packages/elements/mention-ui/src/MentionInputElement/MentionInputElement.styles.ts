@@ -1,13 +1,13 @@
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { MentionProposalElementStyleProps } from './MentionProposalElement.types';
+import { MentionInputElementStyleProps } from './MentionInputElement.types';
 
-export const getMentionProposalElementStyles = (
-  props: MentionProposalElementStyleProps
+export const getMentionInputElementStyles = (
+  props: MentionInputElementStyleProps
 ) =>
   createStyles(
-    { prefixClassNames: 'MentionProposalElement', ...props },
+    { prefixClassNames: 'MentionInputElement', ...props },
     {
       root: [
         tw`my-0 mx-px align-baseline inline-block`,

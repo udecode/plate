@@ -4,12 +4,12 @@ import { SPEditor, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { ReactEditor } from 'slate-react';
-import { removeMentionProposal } from './transforms/removeMentionProposal';
-import { getMentionProposalType } from './options';
+import { removeMentionInput } from './transforms/removeMentionInput';
+import { getMentionInputType } from './options';
 import {
-  findMentionProposal,
-  isNodeMentionProposal,
-  isSelectionInMentionProposal,
+  findMentionInput,
+  isNodeMentionInput,
+  isSelectionInMentionInput,
 } from './queries';
 
 export const withMention = ({
@@ -22,19 +22,16 @@ export const withMention = ({
   const { apply, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
-    const currentMentionProposal = findMentionProposal(editor);
-    if (
-      currentMentionProposal &&
-      Node.string(currentMentionProposal[0]) === ''
-    ) {
-      return removeMentionProposal(editor, currentMentionProposal[1]);
+    const currentMentionInput = findMentionInput(editor);
+    if (currentMentionInput && Node.string(currentMentionInput[0]) === '') {
+      return removeMentionInput(editor, currentMentionInput[1]);
     }
 
     deleteBackward(unit);
   };
 
   editor.insertText = (text) => {
-    if (isSelectionInMentionProposal(editor)) {
+    if (isSelectionInMentionInput(editor)) {
       return Transforms.insertText(editor, text);
     }
 
@@ -42,7 +39,7 @@ export const withMention = ({
       return insertText(text);
     }
 
-    // Make sure a mention proposal is created at the beginning of line or after a whitespace
+    // Make sure a mention input is created at the beginning of line or after a whitespace
     const previousCharLocation = Editor.before(editor, editor.selection);
     if (previousCharLocation) {
       const previousChar = Editor.string(
@@ -55,43 +52,43 @@ export const withMention = ({
     }
 
     insertNodes(editor, {
-      type: getMentionProposalType(editor),
+      type: getMentionInputType(editor),
       children: [{ text: '' }],
       trigger,
     });
   };
 
   editor.apply = (operation) => {
-    if (HistoryEditor.isHistoryEditor(editor) && findMentionProposal(editor)) {
+    if (HistoryEditor.isHistoryEditor(editor) && findMentionInput(editor)) {
       HistoryEditor.withoutSaving(editor, () => apply(operation));
     } else {
       apply(operation);
     }
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
-      const currentMentionProposal = findMentionProposal(editor);
-      if (currentMentionProposal) {
-        comboboxStore.set.text(Node.string(currentMentionProposal[0]));
+      const currentMentionInput = findMentionInput(editor);
+      if (currentMentionInput) {
+        comboboxStore.set.text(Node.string(currentMentionInput[0]));
       }
     } else if (operation.type === 'set_selection') {
-      const previousMentionProposalPath = Range.isRange(operation.properties)
-        ? findMentionProposal(editor, { at: operation.properties })?.[1]
+      const previousMentionInputPath = Range.isRange(operation.properties)
+        ? findMentionInput(editor, { at: operation.properties })?.[1]
         : undefined;
 
-      const currentMentionProposalPath = Range.isRange(operation.newProperties)
-        ? findMentionProposal(editor, { at: operation.newProperties })?.[1]
+      const currentMentionInputPath = Range.isRange(operation.newProperties)
+        ? findMentionInput(editor, { at: operation.newProperties })?.[1]
         : undefined;
 
-      if (previousMentionProposalPath && !currentMentionProposalPath) {
-        removeMentionProposal(editor, previousMentionProposalPath);
+      if (previousMentionInputPath && !currentMentionInputPath) {
+        removeMentionInput(editor, previousMentionInputPath);
       }
 
-      if (currentMentionProposalPath) {
+      if (currentMentionInputPath) {
         comboboxStore.set.targetRange(editor.selection);
       }
     } else if (
       operation.type === 'insert_node' &&
-      isNodeMentionProposal(editor, operation.node)
+      isNodeMentionInput(editor, operation.node)
     ) {
       comboboxStore.set.open({
         activeId: id,
@@ -100,7 +97,7 @@ export const withMention = ({
       });
     } else if (
       operation.type === 'remove_node' &&
-      isNodeMentionProposal(editor, operation.node)
+      isNodeMentionInput(editor, operation.node)
     ) {
       comboboxStore.set.reset();
     }

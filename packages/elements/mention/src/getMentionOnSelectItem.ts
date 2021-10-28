@@ -10,7 +10,7 @@ import {
   TElement,
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
-import { ELEMENT_MENTION, ELEMENT_MENTION_PROPOSAL } from './defaults';
+import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './defaults';
 // FIXME: Cannot figure out the TS for this to work with insertNodes
 // import { MentionNodeData } from './types';
 
@@ -47,7 +47,7 @@ export const getMentionOnSelectItem = ({
 
     Transforms.removeNodes(editor, {
       // TODO: replace any
-      match: (node: any) => node.type === ELEMENT_MENTION_PROPOSAL,
+      match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
     });
     insertNodes<TElement>(editor, {
       type,

@@ -1,14 +1,14 @@
 import { MentionNode, MentionNodeData } from '@udecode/plate-mention';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 
-export interface MentionProposalElementStyleProps
-  extends MentionProposalElementProps {
+export interface MentionInputElementStyleProps
+  extends MentionInputElementProps {
   selected?: boolean;
   focused?: boolean;
 }
 
 // renderElement props
-export interface MentionProposalElementProps
+export interface MentionInputElementProps
   extends Omit<StyledElementProps<MentionNode>, 'onClick'> {
   /**
    * Prefix rendered before mention

@@ -48,10 +48,7 @@ import {
   ELEMENT_UL,
 } from '@udecode/plate-list';
 import { ELEMENT_MEDIA_EMBED } from '@udecode/plate-media-embed';
-import {
-  ELEMENT_MENTION,
-  ELEMENT_MENTION_PROPOSAL,
-} from '@udecode/plate-mention';
+import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
 import {
   DEFAULTS_PARAGRAPH,
   ELEMENT_PARAGRAPH,
@@ -80,7 +77,7 @@ export type DefaultPlatePluginKey =
   | typeof ELEMENT_LINK
   | typeof ELEMENT_MEDIA_EMBED
   | typeof ELEMENT_MENTION
-  | typeof ELEMENT_MENTION_PROPOSAL
+  | typeof ELEMENT_MENTION_INPUT
   | typeof ELEMENT_OL
   | typeof ELEMENT_PARAGRAPH
   | typeof ELEMENT_TABLE
@@ -124,7 +121,7 @@ export const createPlateOptions = <T extends string = string>(
     [ELEMENT_LINK]: DEFAULTS_LINK,
     [ELEMENT_MEDIA_EMBED]: {},
     [ELEMENT_MENTION]: {},
-    [ELEMENT_MENTION_PROPOSAL]: {},
+    [ELEMENT_MENTION_INPUT]: {},
     [ELEMENT_OL]: {},
     [ELEMENT_PARAGRAPH]: DEFAULTS_PARAGRAPH,
     [ELEMENT_TABLE]: {},
