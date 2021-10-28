@@ -13,7 +13,7 @@ export const getTableCellElementStyles = (
     {
       root: [
         tw`relative p-0 overflow-visible bg-white`,
-        hideBorder ? tw`border-none` : tw`border border-solid border-gray-300`,
+        hideBorder ? tw`border-none` : tw`border border-gray-300`,
         css`
           min-width: 48px;
         `,
