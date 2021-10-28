@@ -1,0 +1,88 @@
+---
+slug: /plugins/indent-list
+title: Indent List
+---
+
+The list indentation feature allows you to set list indentation for blocks such as paragraphs or headings.
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-indent-list
+```
+
+### Usage
+
+Use the indent or outdent toolbar buttons in the editor below to control the level of indentation of the content, both for paragraph text and headers.
+
+```ts live
+() => {
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createIndentListPlugin({
+      types: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+      ],
+    }),
+  ];
+  
+  const ToolbarButtonsIndent = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  
+    return (
+      <>
+        <ToolbarButton
+          onMouseDown={(e) => {
+            e.preventDefault();
+            outdentList(editor);
+          }}
+          icon={<FormatIndentDecrease />}
+        />
+        <ToolbarButton
+          onMouseDown={(e) => {
+            e.preventDefault();
+            indentList(editor);
+          }}
+          icon={<FormatIndentIncrease />}
+        />
+      </>
+    );
+  };
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsIndent />
+      </HeadingToolbar>
+      <Plate
+        id="indent-list"
+        plugins={plugins}
+        components={CONFIG.components}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.indentList}
+      />
+    </>
+  );
+}
+```
+
+### Options
+
+See Indent
+
+### Commands
+
+#### `indentList`
+
+- Increase the list indentation of the selected blocks.
+
+#### `outdentList`
+
+- Decrease the list indentation of the selected blocks.
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/blocks/indent-list](https://github.com/udecode/plate/tree/main/packages/blocks/indent-list/src)

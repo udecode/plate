@@ -50,6 +50,20 @@ const indent: any = (
   </fragment>
 );
 
+const indentList: any = (
+  <fragment>
+    <hh1>Changing block indentation</hh1>
+    <hp indentList={1}>
+      Use the toolbar buttons to control the indentation of specific blocks. You
+      can use these tools to highlight an important piece of information,
+      communicate a hierarchy or just give your content some room.
+    </hp>
+    <hp indentList={2}>
+      For instance, this paragraph looks like it belongs to the previous one.
+    </hp>
+  </fragment>
+);
+
 const empty: any = (
   <fragment>
     <hp>
@@ -890,6 +904,7 @@ export const VALUES: Record<string, any> = {
   iframe,
   image,
   indent,
+  indentList,
   kbd,
   lineHeight,
   link,

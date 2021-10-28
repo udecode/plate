@@ -2,7 +2,7 @@ import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { MARK_FONT_SIZE } from './defaults';
 import { getFontSizeDeserialize } from './getFontDeserialize';
-import { getFontSizeOverrideProps } from './getOverrideProps';
+import { getFontSizeOverrideProps } from './getFontOverrideProps';
 import { FontSizePluginOptions } from './types';
 
 export const createFontSizePlugin = (

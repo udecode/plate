@@ -1,13 +1,14 @@
 import { CSSProperties } from 'react';
-import {
-  AnyObject,
-  getPlatePluginOptions,
-  SPEditor,
-} from '@udecode/plate-core';
+import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
 import clsx, { ClassDictionary } from 'clsx';
-import { GetOverridePropsParams } from '../types';
+import { NodeOverridePropsOptions } from '../types';
 
-export function getOverrideProps(
+export interface NodeOverridePropsReturnType {
+  className?: string;
+  style?: CSSProperties;
+}
+
+export function getNodeOverrideProps(
   editor: SPEditor,
   {
     defaultOption,
@@ -17,8 +18,8 @@ export function getOverrideProps(
     className,
     style,
     type,
-  }: GetOverridePropsParams
-): { className?: string; styles?: CSSProperties } {
+  }: NodeOverridePropsOptions
+): NodeOverridePropsReturnType {
   // early return if there is now reason to add styles
   if (
     // value not set
@@ -34,7 +35,7 @@ export function getOverrideProps(
   const pluginOptions = getPlatePluginOptions(editor, type);
   const { cssPropName, transformCssValue } = pluginOptions;
 
-  const res: AnyObject = {};
+  const res: NodeOverridePropsReturnType = {};
 
   if (classNames?.[value]) {
     res.className = clsx(className, classNames[value] as ClassDictionary);

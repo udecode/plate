@@ -3,12 +3,12 @@ import {
   SPRenderLeafProps,
   SPRenderNodeProps,
 } from '@udecode/plate-core';
-import { GetLeafOverrideProps } from '../types';
-import { getOverrideProps } from './getOverrideProps';
+import { LeafOverridePropsOptions } from '../types';
+import { getNodeOverrideProps } from './getNodeOverrideProps';
 
 export const getLeafOverrideProps = (
   editor: SPEditor,
-  { type, options, defaultOption, classNames }: GetLeafOverrideProps
+  { type, options, defaultOption, classNames }: LeafOverridePropsOptions
 ) => {
   return ({
     text,
@@ -19,7 +19,7 @@ export const getLeafOverrideProps = (
 
     const value = text[type];
 
-    return getOverrideProps(editor, {
+    return getNodeOverrideProps(editor, {
       className,
       classNames,
       defaultOption,

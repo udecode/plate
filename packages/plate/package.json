@@ -64,6 +64,7 @@
     "@udecode/plate-image": "6.4.0",
     "@udecode/plate-image-ui": "6.4.0",
     "@udecode/plate-indent": "6.4.0",
+    "@udecode/plate-indent-list": "6.4.0",
     "@udecode/plate-kbd": "6.4.0",
     "@udecode/plate-line-height": "6.4.0",
     "@udecode/plate-line-height-ui": "6.4.0",

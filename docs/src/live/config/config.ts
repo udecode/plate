@@ -59,8 +59,8 @@ export const CONFIG: {
   trailingBlock: TrailingBlockPluginOptions;
 } = {
   editableProps: {
+    autoFocus: true,
     spellCheck: false,
-    autoFocus: false,
     placeholder: 'Type…',
     style: {
       padding: '15px',

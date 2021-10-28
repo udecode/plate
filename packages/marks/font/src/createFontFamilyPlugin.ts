@@ -2,7 +2,7 @@ import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { MARK_FONT_FAMILY } from './defaults';
 import { getFontFamilyDeserialize } from './getFontDeserialize';
-import { getFontFamilyOverrideProps } from './getOverrideProps';
+import { getFontFamilyOverrideProps } from './getFontOverrideProps';
 import { FontFamilyPluginOptions } from './types';
 
 export const createFontFamilyPlugin = (

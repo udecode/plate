@@ -47,13 +47,6 @@ export interface FontColorPluginOptions {
   /** The following props will be used by the getOverrideProps */
 
   /**
-   * camelCase name of the css property that the getOverrideProps will use
-   * if not provided it will fall back to the plugin key
-   * @default undefined
-   */
-  cssPropName?: keyof CSSProperties;
-
-  /**
    * Transformation function that will be used to transform the value from the text
    * if not provided the value will be used as is
    * @default undefined
@@ -162,13 +155,6 @@ export interface FontWeightPluginOptions {
   defaultFontWeight?: FontWeight;
 
   /** The following props will be used by the getOverrideProps */
-
-  /**
-   * camelCase name of the css property that the getOverrideProps will use
-   * if not provided it will fall back to the plugin key
-   * @default undefined
-   */
-  cssPropName?: keyof CSSProperties;
 
   /**
    * Transformation function that will be used to transform the value from the text

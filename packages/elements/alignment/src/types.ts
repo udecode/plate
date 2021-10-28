@@ -1,8 +1,8 @@
-import { CSSProperties } from 'react';
+import { GetElementOverridePropsOptions } from '@udecode/plate-common';
 
 export type Alignment = 'left' | 'center' | 'right' | 'justify';
 
-export interface AlignPluginOptions {
+export interface AlignPluginOptions extends GetElementOverridePropsOptions {
   /**
    * List of supported text-align values.
    * @default ['left', 'center', 'right', 'justify']
@@ -26,15 +26,6 @@ export interface AlignPluginOptions {
    * Default is the paragraph type.
    */
   types?: string[];
-
-  /** The following props will be used by the getOverrideProps */
-
-  /**
-   * camelCase name of the css property that the getOverrideProps will use
-   * if not provided it will fall back to the plugin key
-   * @default 'textAlign'
-   */
-  cssPropName?: keyof CSSProperties;
 
   /**
    * Transformation function that will be used to transform the value from the text

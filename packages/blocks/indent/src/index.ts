@@ -8,4 +8,4 @@ export * from './getIndentOverrideProps';
 export * from './types';
 export * from './withIndent';
 export * from './transforms/index';
-export * from './onKeyDownHandler';
+export * from './getIndentOnKeyDown';

@@ -2,7 +2,7 @@ import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { MARK_FONT_WEIGHT } from './defaults';
 import { getFontWeightDeserialize } from './getFontDeserialize';
-import { getFontWeightOverrideProps } from './getOverrideProps';
+import { getFontWeightOverrideProps } from './getFontOverrideProps';
 import { FontWeightPluginOptions } from './types';
 
 export const createFontWeightPlugin = (

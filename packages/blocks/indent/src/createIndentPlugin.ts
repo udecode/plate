@@ -1,6 +1,6 @@
 import { PlatePluginEditor } from '@udecode/plate-core';
+import { getIndentOnKeyDown } from './getIndentOnKeyDown';
 import { getIndentOverrideProps } from './getIndentOverrideProps';
-import { onKeyDownHandler } from './onKeyDownHandler';
 import { IndentPluginOptions } from './types';
 import { withIndent } from './withIndent';
 
@@ -9,5 +9,5 @@ export const createIndentPlugin = (
 ): PlatePluginEditor => ({
   overrideProps: getIndentOverrideProps(),
   withOverrides: withIndent(options),
-  onKeyDown: onKeyDownHandler,
+  onKeyDown: getIndentOnKeyDown,
 });

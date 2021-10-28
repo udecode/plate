@@ -8,34 +8,30 @@ import {
 } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { Transforms } from 'slate';
-import { KEY_INDENT } from './defaults';
-import { IndentPluginOptions } from './types';
+import { KEY_LIST_TYPE } from './defaults';
+import { IndentListPluginOptions } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (
-  options?: IndentPluginOptions
+export const withIndentList = (
+  options?: IndentListPluginOptions
 ): WithOverride<SPEditor> => (editor) => {
   const { normalizeNode } = editor;
 
   // TODO: extend plate-core to register options
-  editor.options[KEY_INDENT] = defaults(options, {
-    type: KEY_INDENT,
+  editor.options[KEY_LIST_TYPE] = defaults(options, {
+    type: KEY_LIST_TYPE,
     types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-    offset: 24,
-    unit: 'px',
 
     // The following props will be used by the getOverrideProps
-    cssPropName: 'marginLeft',
-    transformCssValue: (params) =>
-      params.value * params.options.offset + params.options.unit,
-  } as IndentPluginOptions);
+    cssPropName: 'display',
+  } as IndentListPluginOptions);
 
-  const { types, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
+  const { types, indentMax } = getPlatePluginOptions<IndentListPluginOptions>(
     editor,
-    KEY_INDENT
+    KEY_LIST_TYPE
   );
 
   editor.normalizeNode = ([node, path]) => {

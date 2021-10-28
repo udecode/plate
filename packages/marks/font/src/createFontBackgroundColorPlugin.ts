@@ -2,7 +2,7 @@ import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { MARK_BG_COLOR } from './defaults';
 import { getFontBackgroundColorDeserialize } from './getFontDeserialize';
-import { getFontBackgroundColorOverrideProps } from './getOverrideProps';
+import { getFontBackgroundColorOverrideProps } from './getFontOverrideProps';
 import { FontColorPluginOptions } from './types';
 
 export const createFontBackgroundColorPlugin = (

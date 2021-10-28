@@ -12,7 +12,7 @@ export * from './getHandler';
 export * from './getLeafDeserializer';
 export * from './getLeafOverrideProps';
 export * from './getNodeDeserializer';
-export * from './getOverrideProps';
+export * from './getNodeOverrideProps';
 export * from './getPreventDefaultHandler';
 export * from './getToggleElementOnKeyDown';
 export * from './getToggleMarkOnKeyDown';

@@ -3,8 +3,8 @@ import {
   SPRenderLeafProps,
   SPRenderNodeProps,
 } from '@udecode/plate-core';
-import { GetElementOverridePropsParams } from '../types';
-import { getOverrideProps } from './getOverrideProps';
+import { ElementOverridePropsOptions } from '../types';
+import { getNodeOverrideProps } from './getNodeOverrideProps';
 
 export const getElementOverrideProps = (
   editor: SPEditor,
@@ -14,7 +14,7 @@ export const getElementOverrideProps = (
     options,
     defaultOption,
     classNames,
-  }: GetElementOverridePropsParams
+  }: ElementOverridePropsOptions
 ) => {
   return ({
     element,
@@ -27,7 +27,7 @@ export const getElementOverrideProps = (
 
     // check if the element type matches the allowed types
     if (types.includes(element.type)) {
-      return getOverrideProps(editor, {
+      return getNodeOverrideProps(editor, {
         className,
         classNames,
         defaultOption,

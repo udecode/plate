@@ -2,7 +2,7 @@ import { PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { MARK_COLOR } from './defaults';
 import { getFontColorDeserialize } from './getFontDeserialize';
-import { getFontColorOverrideProps } from './getOverrideProps';
+import { getFontColorOverrideProps } from './getFontOverrideProps';
 import { FontWeightPluginOptions } from './types';
 
 export const createFontColorPlugin = (
