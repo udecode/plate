@@ -27,7 +27,7 @@ export const withMention = ({
       currentMentionProposal &&
       Node.string(currentMentionProposal[0]) === ''
     ) {
-      return removeMentionProposal(editor, trigger, currentMentionProposal[1]);
+      return removeMentionProposal(editor, currentMentionProposal[1]);
     }
 
     deleteBackward(unit);
@@ -57,6 +57,7 @@ export const withMention = ({
     insertNodes(editor, {
       type: getMentionProposalType(editor),
       children: [{ text: '' }],
+      trigger,
     });
   };
 
@@ -82,7 +83,7 @@ export const withMention = ({
         : undefined;
 
       if (previousMentionProposalPath && !currentMentionProposalPath) {
-        removeMentionProposal(editor, trigger, previousMentionProposalPath);
+        removeMentionProposal(editor, previousMentionProposalPath);
       }
 
       if (currentMentionProposalPath) {

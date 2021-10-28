@@ -47,7 +47,7 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             <htext />
             <cursor />
           </hmentionproposal>
@@ -66,7 +66,7 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext>hello world </htext>
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             <htext />
             <cursor />
           </hmentionproposal>
@@ -111,7 +111,7 @@ describe('withMention', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             <htext />
             <cursor />
           </hmentionproposal>
@@ -131,7 +131,7 @@ describe('withMention', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             hello
             <cursor />
           </hmentionproposal>
@@ -151,7 +151,7 @@ describe('withMention', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             hello
             <cursor />
           </hmentionproposal>
@@ -174,7 +174,7 @@ describe('withMention', () => {
       const editor = createEditor(
         <hp>
           <htext />
-          <hmentionproposal>
+          <hmentionproposal trigger={trigger}>
             <cursor />
           </hmentionproposal>
           <htext />
@@ -207,7 +207,7 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal>a</hmentionproposal>
+          <hmentionproposal trigger={trigger}>a</hmentionproposal>
           <htext />
         </hp>,
       ]);
@@ -225,7 +225,7 @@ describe('withMention', () => {
       expect(editor.children).toEqual([
         <hp>
           <htext />
-          <hmentionproposal>{trigger}</hmentionproposal>
+          <hmentionproposal trigger={trigger}>{trigger}</hmentionproposal>
           <htext />
         </hp>,
       ]);

@@ -20,7 +20,7 @@ npm install @udecode/plate-mention-ui
   const plugins = [
     ...PLUGINS.basicNodes,
     createComboboxPlugin(),
-    createMentionPlugin(),
+    createMentionPlugin({ trigger: '@' }),
   ];
 
   return (
@@ -33,8 +33,6 @@ npm install @udecode/plate-mention-ui
       initialValue={VALUES.mentions}
     >
       <MentionCombobox items={CONFIG.mentionItems} trigger="@" />
-
-      <MentionCombobox items={CONFIG.mentionItems} id="mention2" trigger="#" />
     </Plate>
   );
 }
