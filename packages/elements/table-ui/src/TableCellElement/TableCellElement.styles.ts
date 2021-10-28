@@ -12,8 +12,8 @@ export const getTableCellElementStyles = (
     { prefixClassNames: 'TableCellElement', ...props },
     {
       root: [
-        tw`relative p-0 overflow-visible bg-white border-gray-300`,
-        hideBorder && tw`border-none`,
+        tw`relative p-0 overflow-visible bg-white`,
+        hideBorder ? tw`border-none` : tw`border border-solid border-gray-300`,
         css`
           min-width: 48px;
         `,
