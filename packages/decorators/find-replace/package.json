@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-find-replace",
-  "version": "6.4.0",
+  "version": "6.4.1",
   "description": "Find and replace plugin for Plate",
   "keywords": [
     "slate",
@@ -32,8 +32,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "6.4.0",
-    "@udecode/plate-core": "6.2.0"
+    "@udecode/plate-common": "6.4.1",
+    "@udecode/plate-core": "6.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
