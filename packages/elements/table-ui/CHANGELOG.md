@@ -1,5 +1,15 @@
 # @udecode/plate-table-ui
 
+## 6.4.2
+
+### Patch Changes
+
+- [#1187](https://github.com/udecode/plate/pull/1187) by [@zbeyens](https://github.com/zbeyens) – fix: show borders
+
+## 6.4.1
+
+## 6.4.0
+
 ## 6.3.0
 
 ### Minor Changes

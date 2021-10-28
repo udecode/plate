@@ -20,6 +20,8 @@ export const createAlignPlugin = (
       types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
       alignments: DEFAULT_ALIGNMENTS,
       defaultAlignment: DEFAULT_ALIGNMENT,
+      // The following props will be used by the getOverrideProps
+      cssPropName: 'textAlign',
     });
 
     return editor;

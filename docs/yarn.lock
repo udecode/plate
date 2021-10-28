@@ -2257,6 +2257,22 @@
   version "0.0.0"
   uid ""
 
+"@udecode/plate-line-height-ui@6.1.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-line-height-ui@link:../packages/elements/line-height-ui":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-line-height@6.1.0":
+  version "0.0.0"
+  uid ""
+
+"@udecode/plate-line-height@link:../packages/elements/line-height":
+  version "0.0.0"
+  uid ""
+
 "@udecode/plate-link-ui@6.1.0":
   version "0.0.0"
   uid ""
@@ -2443,7 +2459,7 @@
 
 "@udecode/zustood@0.4.0":
   version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.4.0.tgz#f06983bb7f8e8e911d2d1be140cb1f189a2d864b"
+  resolved "https://registry.npmjs.org/@udecode/zustood/-/zustood-0.4.0.tgz#f06983bb7f8e8e911d2d1be140cb1f189a2d864b"
   integrity sha512-mk3fhDdOJHIsv40wzDWLwp2GNGACMrhgdoTnNdFC+W+aYX8uMm3WNpW8/h9xbxR4X6fEpDXdJxapaOJKTMvwiw==
   dependencies:
     immer "9.0.6"
@@ -6417,7 +6433,7 @@ joi@^17.3.0, joi@^17.4.0:
 
 jotai@^1.4.0:
   version "1.4.2"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.4.2.tgz#0747581840c82ec0862d4c15ee0f7d59246ed46e"
+  resolved "https://registry.npmjs.org/jotai/-/jotai-1.4.2.tgz#0747581840c82ec0862d4c15ee0f7d59246ed46e"
   integrity sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==
 
 js-base64@^2.1.8:
@@ -8416,7 +8432,7 @@ re-resizable@^6.9.0:
 
 re-resizable@^6.9.1:
   version "6.9.1"
-  resolved "https://registry.yarnpkg.com/re-resizable/-/re-resizable-6.9.1.tgz#6be082b55d02364ca4bfee139e04feebdf52441c"
+  resolved "https://registry.npmjs.org/re-resizable/-/re-resizable-6.9.1.tgz#6be082b55d02364ca4bfee139e04feebdf52441c"
   integrity sha512-KRYAgr9/j1PJ3K+t+MBhlQ+qkkoLDJ1rs0z1heIWvYbCW/9Vq4djDU+QumJ3hQbwwtzXF6OInla6rOx6hhgRhQ==
   dependencies:
     fast-memoize "^2.5.1"
