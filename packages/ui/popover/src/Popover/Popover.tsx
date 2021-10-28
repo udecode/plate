@@ -23,7 +23,6 @@ export const Popover = ({ rootProps, content, ...props }: PopoverProps) => {
     offset: [0, 12],
     placement: 'bottom',
     theme: 'custom',
-    trigger: 'click',
     visible: !readOnly && selected,
     render: (attrs) => {
       const { root } = getPopoverStyles(props);
