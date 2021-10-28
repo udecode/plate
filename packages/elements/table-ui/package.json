@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table-ui",
-  "version": "6.4.1",
+  "version": "6.4.2",
   "description": "Table UI for Plate",
   "keywords": [
     "slate",
@@ -38,7 +38,7 @@
     "@udecode/plate-table": "6.4.1",
     "@udecode/plate-toolbar": "6.4.1",
     "@udecode/plate-ui-button": "6.4.1",
-    "@udecode/plate-ui-popover": "6.4.1",
+    "@udecode/plate-ui-popover": "6.4.2",
     "jotai": "^1.4.0",
     "re-resizable": "^6.9.1"
   },
