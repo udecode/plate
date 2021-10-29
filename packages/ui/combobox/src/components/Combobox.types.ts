@@ -7,8 +7,7 @@ import {
   ComboboxStoreById,
 } from '../combobox.store';
 
-export interface ComboboxStyleProps<TItemData>
-  extends ComboboxProps<TItemData> {
+export interface ComboboxStyleProps<TData> extends ComboboxProps<TData> {
   highlighted?: boolean;
 }
 
@@ -17,7 +16,7 @@ export interface ComboboxStyles {
   highlightedItem: CSSProp;
 }
 
-export interface ComboboxItemDataBase {
+export interface TComboboxItemBase {
   /**
    * Unique key.
    */
@@ -35,29 +34,29 @@ export interface ComboboxItemDataBase {
   disabled?: boolean;
 }
 
-export interface ComboboxItemDataWithData<TItemData extends ItemData>
-  extends ComboboxItemDataBase {
+export interface TComboboxItemWithData<TData extends Data>
+  extends TComboboxItemBase {
   /**
    * Data available to `onRenderItem`.
    */
-  data: TItemData;
+  data: TData;
 }
 
-export type NoItemData = undefined;
+export type NoData = undefined;
 
-export type ItemData = unknown;
+export type Data = unknown;
 
-export type ComboboxItemData<TItemData> = TItemData extends NoItemData
-  ? ComboboxItemDataBase
-  : ComboboxItemDataWithData<TItemData>;
+export type TComboboxItem<TData = NoData> = TData extends NoData
+  ? TComboboxItemBase
+  : TComboboxItemWithData<TData>;
 
-export interface ComboboxItemProps<TItemData> {
-  item: ComboboxItemData<TItemData>;
+export interface ComboboxItemProps<TData> {
+  item: TComboboxItem<TData>;
 }
 
-export interface ComboboxProps<TItemData = NoItemData>
-  extends Partial<Pick<ComboboxState<TItemData>, 'items'>>,
-    ComboboxStateById<TItemData>,
+export interface ComboboxProps<TData = NoData>
+  extends Partial<Pick<ComboboxState<TData>, 'items'>>,
+    ComboboxStateById<TData>,
     StyledProps<ComboboxStyles> {
   /**
    * Render this component when the combobox is open (useful to inject hooks).
@@ -68,5 +67,5 @@ export interface ComboboxProps<TItemData = NoItemData>
    * Render combobox item.
    * @default text
    */
-  onRenderItem?: RenderFunction<ComboboxItemProps<TItemData>>;
+  onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
 }

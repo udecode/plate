@@ -1,7 +1,7 @@
 import { SPEditor } from '@udecode/plate-core';
-import { ComboboxItemData } from '../components';
+import { TComboboxItem } from '../components';
 
-export type ComboboxOnSelectItem<TItemData> = (
+export type ComboboxOnSelectItem<TData> = (
   editor: SPEditor,
-  item: ComboboxItemData<TItemData>
+  item: TComboboxItem<TData>
 ) => any;
