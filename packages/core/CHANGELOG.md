@@ -1,5 +1,12 @@
 # @udecode/plate-core
 
+## 6.4.1
+
+### Patch Changes
+
+- [`87b133ce`](https://github.com/udecode/plate/commit/87b133cee230c79eaca7e6afb6e237bbc57f98c2) by [@zbeyens](https://github.com/zbeyens) –
+  - slate `DefaultLeaf` does not spread the props to the rendered span so we're using our own `DefaultLeaf` component which does it. It enables us to override the props leaves without having to register a component (e.g. fontColor)
+
 ## 6.2.0
 
 ### Patch Changes
