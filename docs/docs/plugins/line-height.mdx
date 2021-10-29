@@ -23,7 +23,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
       ...CONFIG.lineHeight,
-      types: [
+      validTypes: [
         ELEMENT_PARAGRAPH,
         ELEMENT_H1,
         ELEMENT_H2,
@@ -55,20 +55,20 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ### Options
 
-#### `types`
+#### `defaultNodeValue`
 
-- List of block types supporting line height.
-- Default is the paragraph type.
+- Default line height will not be set to the node
+- Default is `1.2`
 
-#### `lineHeights`
+#### `validNodeValues`
 
 - List of supported `line-height` values.
 - Default is `[1,1.2,1.5,2]`
 
-#### `defaultLineHeight`
+#### `validTypes`
 
-- Default line height will not be set to the node
-- Default is `1.2`
+- List of block types supporting line height.
+- Default is the paragraph type.
 
 #### `classNames`
 

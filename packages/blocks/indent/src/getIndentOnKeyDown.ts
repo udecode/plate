@@ -1,8 +1,8 @@
 import React from 'react';
-import { TEditor } from '@udecode/plate-core';
+import { SPEditor } from '@udecode/plate-core';
 import { indent, outdent } from './transforms/index';
 
-export const getIndentOnKeyDown = (editor: TEditor) => (
+export const getIndentOnKeyDown = (editor: SPEditor) => (
   event: React.KeyboardEvent
 ): void => {
   if (

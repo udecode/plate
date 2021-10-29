@@ -30,7 +30,7 @@ describe('when type (h1) is not in types', () => {
       plugins: [createAlignPlugin()],
     });
 
-    setAlign(editor, { align: 'center' });
+    setAlign(editor, { value: 'center' });
 
     expect(input.children).toEqual(output.children);
   });

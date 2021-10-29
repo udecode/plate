@@ -1,6 +1,7 @@
-import { ElementOverridePropsOptions } from '@udecode/plate-common';
+import { OverridePropsOptions } from '@udecode/plate-common';
 
-export interface IndentPluginOptions extends ElementOverridePropsOptions {
+export interface IndentPluginOptions
+  extends OverridePropsOptions<string | number> {
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
    * @default 40

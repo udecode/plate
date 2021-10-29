@@ -23,7 +23,8 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
   const plugins = [
     ...PLUGINS.basicNodes,
     createIndentPlugin({
-      types: [
+      offset: 10,
+      validTypes: [
         ELEMENT_PARAGRAPH,
         ELEMENT_H1,
       ],
@@ -75,7 +76,7 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 
 This plugin has a few configuration options that can be used to adjust the block indentation behavior.
 
-#### `types`
+#### `validTypes`
 
 - By default, only the paragraph can be indented.
 - You can use the `types` option to control which types of block can be indented.

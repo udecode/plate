@@ -20,20 +20,25 @@ export const withIndent = (
 ): WithOverride<SPEditor> => (editor) => {
   const { normalizeNode } = editor;
 
+  console.log(editor.id, options);
+
   // TODO: extend plate-core to register options
   editor.options[KEY_INDENT] = defaults(options, {
-    type: KEY_INDENT,
-    types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+    nodeKey: KEY_INDENT,
+    validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
     offset: 24,
     unit: 'px',
+    styleKey: 'marginLeft',
+    transformNodeValue: (e, { nodeValue }) => {
+      const { offset, unit } = getPlatePluginOptions<
+        Required<IndentPluginOptions>
+      >(e, KEY_INDENT);
 
-    // The following props will be used by the getOverrideProps
-    cssPropName: 'marginLeft',
-    transformCssValue: (params) =>
-      params.value * params.options.offset + params.options.unit,
+      return nodeValue * offset + unit;
+    },
   } as IndentPluginOptions);
 
-  const { types, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
+  const { validTypes, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
     editor,
     KEY_INDENT
   );
@@ -43,7 +48,7 @@ export const withIndent = (
     const { type } = element;
 
     if (type) {
-      if (types!.includes(type)) {
+      if (validTypes!.includes(type)) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setNodes(editor, { indent: indentMax }, { at: path });
           return;

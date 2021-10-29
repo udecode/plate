@@ -20,7 +20,8 @@ import { ReactEditor } from 'slate-react';
 
 export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
-  const { lineHeights } = getPlatePluginOptions<
+
+  const { validNodeValues } = getPlatePluginOptions<
     Required<LineHeightPluginOptions>
   >(editor, KEY_LINE_HEIGHT);
 
@@ -29,7 +30,7 @@ export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
       if (editor) {
         ReactEditor.focus(editor);
         setLineHeight(editor, {
-          lineHeight,
+          value: lineHeight,
         });
       }
     },
@@ -47,8 +48,8 @@ export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
         />
       }
     >
-      {lineHeights &&
-        lineHeights.map((lineHeight: number) => (
+      {validNodeValues &&
+        validNodeValues.map((lineHeight) => (
           <div
             style={{ cursor: 'pointer' }}
             key={lineHeight}

@@ -52,7 +52,7 @@ export type PlatePluginOptions<T = AnyObject> = T & {
    * Element or mark type.
    * @default plugin key
    */
-  type: string;
+  type?: string;
 };
 
 /**

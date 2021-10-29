@@ -30,7 +30,7 @@ it('should remove align prop', () => {
     plugins: [createAlignPlugin()],
   });
 
-  setAlign(editor, { align: 'left' });
+  setAlign(editor, { value: 'left' });
 
   expect(editor.children).toEqual(output.children);
 });

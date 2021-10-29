@@ -30,7 +30,7 @@ it('should align center', () => {
     plugins: [createAlignPlugin()],
   });
 
-  setAlign(editor, { align: 'center' });
+  setAlign(editor, { value: 'center' });
 
   expect(editor.children).toEqual(output.children);
 });

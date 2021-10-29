@@ -22,36 +22,34 @@ export const withIndentList = (
 
   // TODO: extend plate-core to register options
   editor.options[KEY_LIST_TYPE] = defaults(options, {
-    type: KEY_LIST_TYPE,
-    types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-
-    // The following props will be used by the getOverrideProps
-    cssPropName: 'display',
+    nodeKey: KEY_LIST_TYPE,
+    validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+    styleKey: 'display',
   } as IndentListPluginOptions);
 
-  const { types, indentMax } = getPlatePluginOptions<IndentListPluginOptions>(
-    editor,
-    KEY_LIST_TYPE
-  );
-
-  editor.normalizeNode = ([node, path]) => {
-    const element = node as TElement;
-    const { type } = element;
-
-    if (type) {
-      if (types!.includes(type)) {
-        if (indentMax && element.indent && element.indent > indentMax) {
-          setNodes(editor, { indent: indentMax }, { at: path });
-          return;
-        }
-      } else if (element.indent) {
-        Transforms.unsetNodes(editor, 'indent', { at: path });
-        return;
-      }
-    }
-
-    return normalizeNode([node, path]);
-  };
+  // const { types, indentMax } = getPlatePluginOptions<IndentListPluginOptions>(
+  //   editor,
+  //   KEY_LIST_TYPE
+  // );
+  //
+  // editor.normalizeNode = ([node, path]) => {
+  //   const element = node as TElement;
+  //   const { type } = element;
+  //
+  //   if (type) {
+  //     if (types!.includes(type)) {
+  //       if (indentMax && element.indent && element.indent > indentMax) {
+  //         setNodes(editor, { indent: indentMax }, { at: path });
+  //         return;
+  //       }
+  //     } else if (element.indent) {
+  //       Transforms.unsetNodes(editor, 'indent', { at: path });
+  //       return;
+  //     }
+  //   }
+  //
+  //   return normalizeNode([node, path]);
+  // };
 
   return editor;
 };

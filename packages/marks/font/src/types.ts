@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react';
+import { OverridePropsOptions } from '@udecode/plate-common';
 
 export type FontWeight =
   | 'normal'
@@ -25,144 +25,12 @@ export type FontWeight =
   | 'revert'
   | 'unset';
 
-export interface FontColorPluginOptions {
-  /**
-   * List of supported color values.
-   * @default undefined
-   */
-  colors?: string[];
+export interface FontColorPluginOptions extends OverridePropsOptions<string> {}
 
-  /**
-   * Object of classNames to pass to each color value.
-   * If defined, the plugin will pass a className prop instead of a style prop.
-   */
-  classNames?: Partial<Record<string, string>>;
+export interface FontFamilyPluginOptions extends OverridePropsOptions<string> {}
 
-  /**
-   * Default color will not be set to the node.
-   * @default 'black'
-   */
-  defaultColor?: string;
+export interface FontSizePluginOptions
+  extends OverridePropsOptions<string | number> {}
 
-  /** The following props will be used by the getOverrideProps */
-
-  /**
-   * Transformation function that will be used to transform the value from the text
-   * if not provided the value will be used as is
-   * @default undefined
-   */
-  transformCssValue?: (params: {
-    options: FontColorPluginOptions;
-    value: string;
-  }) => string;
-}
-
-export interface FontFamilyPluginOptions {
-  /**
-   * List of supported font family values.
-   * @default undefined
-   */
-  fontFamilies?: string[];
-
-  /**
-   * Object of classNames to pass to each font family value.
-   * If defined, the plugin will pass a className prop instead of a style prop.
-   */
-  classNames?: Partial<Record<string, string>>;
-
-  /**
-   * Default font family will not be set to the node.
-   * @default undefined
-   */
-  defaultFontFamily?: string;
-
-  /** The following props will be used by the getOverrideProps */
-
-  /**
-   * camelCase name of the css property that the getOverrideProps will use
-   * if not provided it will fall back to the plugin key
-   * @default undefined
-   */
-  cssPropName?: keyof CSSProperties;
-
-  /**
-   * Transformation function that will be used to transform the value from the text
-   * if not provided the value will be used as is
-   * @default undefined
-   */
-  transformCssValue?: (params: {
-    options: FontFamilyPluginOptions;
-    value: string;
-  }) => string;
-}
-
-export interface FontSizePluginOptions {
-  /**
-   * List of supported font size values.
-   * @default undefined
-   */
-  fontSizes?: string[];
-
-  /**
-   * Object of classNames to pass to each font size value.
-   * If defined, the plugin will pass a className prop instead of a style prop.
-   */
-  classNames?: Partial<Record<string, string>>;
-
-  /**
-   * Default font size will not be set to the node.
-   * @default undefined
-   */
-  defaultFontSize?: string;
-
-  /** The following props will be used by the getOverrideProps */
-
-  /**
-   * camelCase name of the css property that the getOverrideProps will use
-   * if not provided it will fall back to the plugin key
-   * @default undefined
-   */
-  cssPropName?: keyof CSSProperties;
-
-  /**
-   * Transformation function that will be used to transform the value from the text
-   * if not provided the value will be used as is
-   * @default undefined
-   */
-  transformCssValue?: (params: {
-    options: FontSizePluginOptions;
-    value: string;
-  }) => string;
-}
-
-export interface FontWeightPluginOptions {
-  /**
-   * List of supported font weight values.
-   * @default undefined
-   */
-  fontWeights?: FontWeight[];
-
-  /**
-   * Object of classNames to pass to each font weight value.
-   * If defined, the plugin will pass a className prop instead of a style prop.
-   */
-  classNames?: Partial<Record<FontWeight, string>>;
-
-  /**
-   * Default font weight will not be set to the node.
-   * @default undefined
-   */
-  defaultFontWeight?: FontWeight;
-
-  /** The following props will be used by the getOverrideProps */
-
-  /**
-   * Transformation function that will be used to transform the value from the text
-   * if not provided the value will be used as is
-   * @default undefined
-   */
-  transformCssValue?: (params: {
-    options: FontWeightPluginOptions;
-    value: FontWeight;
-  }) => string;
-}
+export interface FontWeightPluginOptions
+  extends OverridePropsOptions<FontWeight> {}

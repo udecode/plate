@@ -19,8 +19,14 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 () => {
   const plugins = [
     ...PLUGINS.basicNodes,
+    createIndentPlugin({
+      validTypes: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+      ],
+    }),
     createIndentListPlugin({
-      types: [
+      validTypes: [
         ELEMENT_PARAGRAPH,
         ELEMENT_H1,
       ],
