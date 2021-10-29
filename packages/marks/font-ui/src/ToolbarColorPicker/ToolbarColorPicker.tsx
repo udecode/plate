@@ -1,10 +1,4 @@
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   getMark,
   isMarkActive,
@@ -15,7 +9,6 @@ import {
   getPlatePluginType,
   useEventEditorId,
   useStoreEditorRef,
-  useStoreEditorSelection,
   useStoreEditorState,
 } from '@udecode/plate-core';
 import {
@@ -23,7 +16,7 @@ import {
   ToolbarButtonProps,
   ToolbarDropdown,
 } from '@udecode/plate-toolbar';
-import { BaseSelection, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 
@@ -41,22 +34,28 @@ export const ToolbarColorPicker = ({
 }: ToolbarColorPickerProps & ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
-  const selection = useStoreEditorSelection(useEventEditorId('focus'));
   const type = getPlatePluginType(editor, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 
   const [selectedColor, setSelectedColor] = useState<string>();
 
-  const latestSelection = useRef<BaseSelection>();
+  const updateColor = useCallback(
+    (value: string) => {
+      setSelectedColor(value);
+      if (editorRef && editor && editor.selection) {
+        Transforms.select(editorRef, editor.selection);
+        ReactEditor.focus(editorRef);
 
-  const updateColor = useCallback((value: string) => {
-    setSelectedColor(value);
-  }, []);
+        setMarks(editor, { [type]: value });
+      }
+    },
+    [editor, editorRef, type]
+  );
 
   const clearColor = useCallback(() => {
-    if (editorRef && editor && latestSelection.current) {
-      Transforms.select(editorRef, latestSelection.current);
+    if (editorRef && editor && editor.selection) {
+      Transforms.select(editorRef, editor.selection);
       ReactEditor.focus(editorRef);
 
       if (selectedColor) {
@@ -66,11 +65,10 @@ export const ToolbarColorPicker = ({
   }, [editor, editorRef, selectedColor, type]);
 
   useEffect(() => {
-    if (selection) {
-      latestSelection.current = selection;
+    if (editor?.selection) {
       setSelectedColor(color);
     }
-  }, [color, selection]);
+  }, [color, editor?.selection]);
 
   return (
     <ToolbarDropdown
@@ -81,18 +79,6 @@ export const ToolbarColorPicker = ({
           {...rest}
         />
       }
-      onClose={(e: MouseEvent) => {
-        if (editorRef && editor && latestSelection.current) {
-          e.preventDefault();
-
-          Transforms.select(editorRef, latestSelection.current);
-          ReactEditor.focus(editorRef);
-
-          if (selectedColor) {
-            setMarks(editor, { [type]: selectedColor });
-          }
-        }
-      }}
     >
       <ColorPicker
         color={selectedColor || color}

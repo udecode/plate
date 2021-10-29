@@ -25,6 +25,7 @@ export const ColorButton = ({
     <button
       type="button"
       aria-label={name}
+      name={name}
       onClick={() => updateColor(value)}
       css={styles.root.css}
     >
