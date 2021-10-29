@@ -14,12 +14,29 @@ jsx;
 
 describe('withMention', () => {
   const trigger = '@';
+  const pluginKey = 'mention';
 
-  const createEditor = (state: JSX.Element): SPEditor =>
-    createEditorPlugins({
+  type CreateEditorOptions = { multipleMentionPlugins?: boolean };
+
+  const createEditor = (
+    state: JSX.Element,
+    { multipleMentionPlugins }: CreateEditorOptions = {}
+  ): SPEditor => {
+    const plugins = [
+      createParagraphPlugin(),
+      createMentionPlugin({ pluginKey, trigger }),
+    ];
+    if (multipleMentionPlugins) {
+      plugins.push(
+        createMentionPlugin({ pluginKey: 'mention2', trigger: '#' })
+      );
+    }
+
+    return createEditorPlugins({
       editor: (<editor>{state}</editor>) as any,
-      plugins: [createParagraphPlugin(), createMentionPlugin()],
+      plugins,
     });
+  };
 
   const createEditorWithMentionInput = (
     at: JSX.Element = (
@@ -27,9 +44,10 @@ describe('withMention', () => {
         <htext />
         <cursor />
       </hp>
-    )
+    ),
+    options?: CreateEditorOptions
   ): SPEditor => {
-    const editor = createEditor(at);
+    const editor = createEditor(at, options);
 
     editor.insertText(trigger);
 
@@ -264,11 +282,12 @@ describe('withMention', () => {
       createEditorWithMentionInput(
         <hp>
           <cursor />
-        </hp>
+        </hp>,
+        { multipleMentionPlugins: true }
       );
 
       expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
-        activeId: expect.anything(),
+        activeId: pluginKey,
       });
     });
 

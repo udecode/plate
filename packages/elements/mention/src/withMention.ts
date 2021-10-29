@@ -90,6 +90,10 @@ export const withMention = ({
       operation.type === 'insert_node' &&
       isNodeMentionInput(editor, operation.node)
     ) {
+      if (operation.node.trigger !== trigger) {
+        return;
+      }
+
       comboboxStore.set.open({
         activeId: id,
         text: '',
@@ -99,6 +103,10 @@ export const withMention = ({
       operation.type === 'remove_node' &&
       isNodeMentionInput(editor, operation.node)
     ) {
+      if (operation.node.trigger !== trigger) {
+        return;
+      }
+
       comboboxStore.set.reset();
     }
   };
