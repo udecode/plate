@@ -17,8 +17,9 @@ export const MentionCombobox = ({
   trigger = COMBOBOX_TRIGGER_MENTION,
   insertSpaceAfterMention,
   createMentionNode,
-}: Pick<ComboboxProps, 'items' | 'component' | 'trigger' | 'onRenderItem'> & {
+}: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'> & {
   id?: string;
+  trigger?: string;
   insertSpaceAfterMention?: boolean;
   createMentionNode?: CreateMentionNode;
 } & PlatePluginKey) => (
