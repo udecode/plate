@@ -1,6 +1,5 @@
 import { createStyles } from '@udecode/plate-styled-components';
-import { css } from 'styled-components';
-import tw from 'twin.macro';
+import tw, { css } from 'twin.macro';
 import { MentionInputElementStyleProps } from './MentionInputElement.types';
 
 export const getMentionInputElementStyles = (
