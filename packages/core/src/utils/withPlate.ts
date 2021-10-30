@@ -4,8 +4,9 @@ import { createReactPlugin } from '../plugins/createReactPlugin';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { WithOverride } from '../types/PlatePlugin/WithOverride';
 import {
-  PlateOptions,
   PlatePluginComponent,
+  PlatePluginOptions,
+  PluginKey,
 } from '../types/PlatePluginOptions/PlateOptions';
 import { SPEditor } from '../types/SPEditor';
 import { TEditor } from '../types/TEditor';
@@ -15,7 +16,7 @@ import { pipe } from './pipe';
 export interface WithPlateOptions<T extends SPEditor = SPEditor> {
   id?: string | null;
   plugins?: PlatePlugin<T>[];
-  options?: PlateOptions;
+  options?: Record<PluginKey, Partial<PlatePluginOptions>>;
   components?: Record<string, PlatePluginComponent>;
 }
 
@@ -24,7 +25,7 @@ export interface WithPlateOptions<T extends SPEditor = SPEditor> {
  * Overrides:
  * - `id`: id of the editor.
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
- * - `options`: {@link PlateOptions}
+ * - `options`: Plate options
  */
 export const withPlate = <T extends SPEditor = SPEditor>({
   id = 'main',
@@ -40,14 +41,14 @@ export const withPlate = <T extends SPEditor = SPEditor>({
     Object.keys(components).forEach((key) => {
       options[key] = {
         component: components[key],
-        ...options[key],
+        ...(options[key] as any),
       };
     });
   }
 
   // Default option type is the plugin key
   Object.keys(options).forEach((key) => {
-    if (options[key].type === undefined) options[key].type = key;
+    if (options[key]!.type === undefined) options[key]!.type = key;
   });
   editor.options = options;
 

@@ -5,5 +5,6 @@ import { PlatePluginOptions } from './PlateOptions';
  */
 export type RenderNodeOptions = Pick<
   PlatePluginOptions,
-  'type' | 'component' | 'getNodeProps' | 'overrideProps'
->;
+  'component' | 'getNodeProps' | 'overrideProps'
+> &
+  Pick<Required<PlatePluginOptions>, 'type'>;

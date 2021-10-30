@@ -153,10 +153,10 @@ export const ToolbarButtonsList = () => {
 export const ToolbarButtonsAlign = () => {
   return (
     <>
-      <ToolbarAlign align="left" icon={<FormatAlignLeft />} />
-      <ToolbarAlign align="center" icon={<FormatAlignCenter />} />
-      <ToolbarAlign align="right" icon={<FormatAlignRight />} />
-      <ToolbarAlign align="justify" icon={<FormatAlignJustify />} />
+      <ToolbarAlign value="left" icon={<FormatAlignLeft />} />
+      <ToolbarAlign value="center" icon={<FormatAlignCenter />} />
+      <ToolbarAlign value="right" icon={<FormatAlignRight />} />
+      <ToolbarAlign value="justify" icon={<FormatAlignJustify />} />
     </>
   );
 };

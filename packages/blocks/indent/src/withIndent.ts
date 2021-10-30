@@ -20,8 +20,6 @@ export const withIndent = (
 ): WithOverride<SPEditor> => (editor) => {
   const { normalizeNode } = editor;
 
-  console.log(editor.id, options);
-
   // TODO: extend plate-core to register options
   editor.options[KEY_INDENT] = defaults(options, {
     nodeKey: KEY_INDENT,

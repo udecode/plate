@@ -7,4 +7,4 @@ import { getPlatePluginOptions } from './getPlatePluginOptions';
 export const getPlatePluginType = (
   editor?: SPEditor,
   pluginKey?: string
-): string => getPlatePluginOptions(editor, pluginKey).type ?? pluginKey;
+): string => getPlatePluginOptions(editor, pluginKey).type ?? pluginKey ?? '';

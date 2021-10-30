@@ -10,5 +10,7 @@ export const getPlatePluginOptions = <T = AnyObject>(
   editor?: SPEditor,
   pluginKey = ''
 ) =>
-  ((getEditorOptions(editor)[pluginKey] as any) as PlatePluginOptions<T>) ??
-  ({ type: pluginKey } as PlatePluginOptions<T>);
+  ({
+    type: pluginKey,
+    ...(getEditorOptions(editor)[pluginKey] as any),
+  } as PlatePluginOptions<T>);

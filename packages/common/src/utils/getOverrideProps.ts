@@ -77,8 +77,6 @@ export const getOverrideProps = (pluginKey: string): OverrideProps => (
 
   const value = transformNodeValue?.(editor, transformOptions) ?? nodeValue;
 
-  console.log(value);
-
   if (classNames?.[nodeValue]) {
     res.className =
       transformClassName?.(editor, transformOptions) ??

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alignment, setAlign } from '@udecode/plate-alignment';
+import { Alignment, KEY_ALIGN, setAlign } from '@udecode/plate-alignment';
 import {
   getPreventDefaultHandler,
   isCollapsed,
@@ -9,22 +9,22 @@ import { useEventEditorId, useStoreEditorState } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface ToolbarAlignProps extends ToolbarButtonProps {
-  align: Alignment;
+  value: Alignment;
 }
 
-export const ToolbarAlign = ({ align, ...props }: ToolbarAlignProps) => {
+export const ToolbarAlign = ({ value, ...props }: ToolbarAlignProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   return (
     <ToolbarButton
       active={
         isCollapsed(editor?.selection) &&
-        someNode(editor!, { match: { align } })
+        someNode(editor!, { match: { [KEY_ALIGN]: value } })
       }
       onMouseDown={
         editor
           ? getPreventDefaultHandler(setAlign, editor, {
-              align,
+              value,
             })
           : undefined
       }
