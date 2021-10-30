@@ -1,4 +1,10 @@
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Button } from '@udecode/plate-ui-button';
 import debounce from 'lodash/debounce';
 import tw from 'twin.macro';
@@ -21,6 +27,7 @@ export const CustomColors = ({
   selectedIcon,
   updateColor,
 }: CustomColorsProps) => {
+  const [customColor, setCustomColor] = useState<string>();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateColorDebounced = useCallback(debounce(updateColor, 100), [
     updateColor,
@@ -28,17 +35,32 @@ export const CustomColors = ({
 
   const [value, setValue] = useState<string>(color || '#000000');
 
-  const computedColors =
-    !color || customColors.some((customColor) => customColor.value === color)
-      ? customColors
-      : [
-          ...customColors,
-          colors.find((col) => col.value === color) || {
-            name: '',
-            value: color,
-            isBrightColor: false,
-          },
-        ];
+  useEffect(() => {
+    if (
+      !color ||
+      customColors.some((c) => c.value === color) ||
+      colors.some((c) => c.value === color)
+    ) {
+      return;
+    }
+
+    setCustomColor(color);
+  }, [color, colors, customColors]);
+
+  const computedColors = useMemo(
+    () =>
+      customColor
+        ? [
+            ...customColors,
+            {
+              name: '',
+              value: customColor,
+              isBrightColor: false,
+            },
+          ]
+        : customColors,
+    [customColor, customColors]
+  );
 
   return (
     <div>

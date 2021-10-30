@@ -16,8 +16,8 @@ describe('ColorPicker', () => {
       />
     );
 
-    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(86); // general, custom and selected colors
-    expect(await screen.findAllByTestId('SelectedIcon')).toHaveLength(2);
+    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(85);
+    expect(screen.queryByTestId('SelectedIcon')).toBeInTheDocument();
   });
 
   it('should render a color picker with no selected color', async () => {
@@ -31,7 +31,7 @@ describe('ColorPicker', () => {
       />
     );
 
-    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(85); // general and custom colors
+    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(85);
     expect(screen.queryByTestId('SelectedIcon')).not.toBeInTheDocument();
   });
 

@@ -42,8 +42,9 @@ export const ToolbarColorPicker = ({
 
   const updateColor = useCallback(
     (value: string) => {
-      setSelectedColor(value);
       if (editorRef && editor && editor.selection) {
+        setSelectedColor(value);
+
         Transforms.select(editorRef, editor.selection);
         ReactEditor.focus(editorRef);
 
