@@ -34,7 +34,7 @@ export const ToolbarColorPicker = ({
 }: ToolbarColorPickerProps & ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
-  const type = getPlatePluginType(editor, pluginKey);
+  const type = getPlatePluginType(editorRef, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 

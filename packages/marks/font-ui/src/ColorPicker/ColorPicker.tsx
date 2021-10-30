@@ -26,7 +26,7 @@ export const ColorPicker = ({
   const styles = getColorPickerStyles();
 
   return (
-    <div css={styles.root.css}>
+    <div data-testid="ColorPicker" css={styles.root.css}>
       <CustomColors
         color={color}
         colors={colors}
@@ -41,7 +41,11 @@ export const ColorPicker = ({
         selectedIcon={selectedIcon}
         updateColor={updateColor}
       />
-      <Button css={tw`w-full py-2`} onClick={clearColor}>
+      <Button
+        data-testid="ColorPickerClear"
+        css={tw`w-full py-2`}
+        onClick={clearColor}
+      >
         Clear
       </Button>
     </div>

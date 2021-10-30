@@ -23,6 +23,7 @@ export const ColorButton = ({
 
   const content = (
     <button
+      data-testid="ColorButton"
       type="button"
       aria-label={name}
       name={name}
