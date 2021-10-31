@@ -1,10 +1,4 @@
-export type ColorType = {
-  name: string;
-  value: string;
-  isBrightColor: boolean;
-};
-
-export const DEFAULT_COLORS: ColorType[] = [
+export const DEFAULT_COLORS = [
   {
     name: 'black',
     value: '#000000',
@@ -413,7 +407,7 @@ export const DEFAULT_COLORS: ColorType[] = [
   },
 ];
 
-export const DEFAULT_CUSTOM_COLORS: ColorType[] = [
+export const DEFAULT_CUSTOM_COLORS = [
   {
     name: 'dark orange 3',
     value: '#783F04',

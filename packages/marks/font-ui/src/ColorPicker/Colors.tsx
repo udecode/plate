@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { ColorButton } from './ColorButton';
 import { getColorsStyles } from './Colors.styles';
-import { ColorType } from './defaults';
+import { ColorType } from './ColorType';
 
 type ColorsProps = {
   color?: string;

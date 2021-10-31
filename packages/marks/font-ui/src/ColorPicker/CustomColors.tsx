@@ -10,7 +10,7 @@ import debounce from 'lodash/debounce';
 import tw from 'twin.macro';
 import { ColorInput } from './ColorInput';
 import { Colors } from './Colors';
-import { ColorType } from './defaults';
+import { ColorType } from './ColorType';
 
 type CustomColorsProps = {
   color?: string;

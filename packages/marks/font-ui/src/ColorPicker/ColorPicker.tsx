@@ -3,13 +3,13 @@ import { Button } from '@udecode/plate-ui-button';
 import tw from 'twin.macro';
 import { getColorPickerStyles } from './ColorPicker.styles';
 import { Colors } from './Colors';
+import { ColorType } from './ColorType';
 import { CustomColors } from './CustomColors';
-import { ColorType, DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './defaults';
 
 type ColorPickerProps = {
   color?: string;
-  colors?: ColorType[];
-  customColors?: ColorType[];
+  colors: ColorType[];
+  customColors: ColorType[];
   selectedIcon: ReactNode;
   updateColor: (color: string) => void;
   clearColor: () => void;
@@ -17,8 +17,8 @@ type ColorPickerProps = {
 
 export const ColorPicker = ({
   color,
-  colors = DEFAULT_COLORS,
-  customColors = DEFAULT_CUSTOM_COLORS,
+  colors,
+  customColors,
   selectedIcon,
   updateColor,
   clearColor,

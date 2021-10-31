@@ -19,17 +19,23 @@ import {
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
+import { ColorType } from '../ColorPicker/ColorType';
+import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './defaults';
 
 type ToolbarColorPickerProps = {
   pluginKey?: string;
   icon: ReactNode;
   selectedIcon: ReactNode;
+  colors?: ColorType[];
+  customColors?: ColorType[];
 };
 
 export const ToolbarColorPicker = ({
   pluginKey,
   icon,
   selectedIcon,
+  colors = DEFAULT_COLORS,
+  customColors = DEFAULT_CUSTOM_COLORS,
   ...rest
 }: ToolbarColorPickerProps & ToolbarButtonProps) => {
   const editor = useStoreEditorState(useEventEditorId('focus'));
@@ -84,6 +90,8 @@ export const ToolbarColorPicker = ({
       <ColorPicker
         color={selectedColor || color}
         selectedIcon={selectedIcon}
+        colors={colors}
+        customColors={customColors}
         updateColor={updateColor}
         clearColor={clearColor}
       />
