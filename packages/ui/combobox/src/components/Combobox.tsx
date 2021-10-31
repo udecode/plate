@@ -12,11 +12,13 @@ import {
   getComboboxStoreById,
   useActiveComboboxStore,
 } from '../combobox.store';
-import { useComboboxControls } from '../hooks/useComboboxControls';
+import { useComboboxControls } from '../hooks';
 import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
-const ComboboxContent = (props: ComboboxProps) => {
+const ComboboxContent = (
+  props: Pick<ComboboxProps, 'component' | 'items' | 'onRenderItem'>
+) => {
   const { component: Component, items, onRenderItem } = props;
 
   const targetRange = comboboxStore.use.targetRange();
@@ -135,13 +137,35 @@ const ComboboxContent = (props: ComboboxProps) => {
  * Register the combobox id, trigger, onSelectItem
  * Renders the combobox if active.
  */
-export const Combobox = (props: ComboboxProps) => {
+export const Combobox = ({
+  id,
+  trigger,
+  searchPattern,
+  onSelectItem,
+  controlled,
+  ...props
+}: ComboboxProps) => {
   const editor = useEditorState();
   const focusedEditorId = useEventEditorId('focus');
-
   const combobox = useComboboxControls();
+  const activeId = comboboxStore.use.activeId();
 
-  if (!combobox || !editor.selection || focusedEditorId !== editor.id) {
+  useEffect(() => {
+    comboboxStore.set.setComboboxById({
+      id,
+      trigger,
+      searchPattern,
+      controlled,
+      onSelectItem,
+    });
+  }, [id, trigger, searchPattern, controlled, onSelectItem]);
+
+  if (
+    !combobox ||
+    !editor.selection ||
+    focusedEditorId !== editor.id ||
+    activeId !== id
+  ) {
     return null;
   }
 

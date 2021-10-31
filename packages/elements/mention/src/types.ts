@@ -6,4 +6,6 @@ export interface MentionNodeData extends AnyObject {
 
 export type MentionNode = TElement<MentionNodeData>;
 
-export interface MentionPluginOptions extends PlatePluginKey {}
+export interface MentionPluginOptions extends PlatePluginKey {
+  trigger?: string;
+}

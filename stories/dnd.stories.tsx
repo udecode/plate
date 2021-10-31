@@ -44,7 +44,7 @@ import { createListPlugin } from '../packages/elements/list/src/createListPlugin
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
-import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox';
+import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
