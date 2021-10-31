@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "6.4.2",
+  "version": "6.5.0",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -48,7 +48,7 @@
     "@udecode/plate-break": "6.4.1",
     "@udecode/plate-code-block": "6.4.1",
     "@udecode/plate-code-block-ui": "6.4.1",
-    "@udecode/plate-combobox": "6.4.1",
+    "@udecode/plate-combobox": "6.5.0",
     "@udecode/plate-common": "6.4.1",
     "@udecode/plate-core": "6.4.1",
     "@udecode/plate-csv-serializer": "6.4.1",
@@ -74,8 +74,8 @@
     "@udecode/plate-md-serializer": "6.4.1",
     "@udecode/plate-media-embed": "6.4.1",
     "@udecode/plate-media-embed-ui": "6.4.1",
-    "@udecode/plate-mention": "6.4.1",
-    "@udecode/plate-mention-ui": "6.4.1",
+    "@udecode/plate-mention": "6.5.0",
+    "@udecode/plate-mention-ui": "6.5.0",
     "@udecode/plate-node-id": "6.4.1",
     "@udecode/plate-normalizers": "6.4.1",
     "@udecode/plate-paragraph": "6.4.1",
