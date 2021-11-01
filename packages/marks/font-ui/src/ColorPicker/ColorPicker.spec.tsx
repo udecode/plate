@@ -1,6 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
+import {
+  DEFAULT_COLORS,
+  DEFAULT_CUSTOM_COLORS,
+} from '../ToolbarColorPicker/defaults';
 import { ColorPicker } from './ColorPicker';
 
 describe('ColorPicker', () => {
@@ -10,6 +14,8 @@ describe('ColorPicker', () => {
     render(
       <ColorPicker
         color="#FFFFFF"
+        colors={DEFAULT_COLORS}
+        customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
         clearColor={clearColor}
@@ -25,6 +31,8 @@ describe('ColorPicker', () => {
     const clearColor = jest.fn();
     render(
       <ColorPicker
+        colors={DEFAULT_COLORS}
+        customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
         clearColor={clearColor}
@@ -41,6 +49,8 @@ describe('ColorPicker', () => {
     render(
       <ColorPicker
         color="#FFFFFF"
+        colors={DEFAULT_COLORS}
+        customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
         clearColor={clearColor}
@@ -59,6 +69,8 @@ describe('ColorPicker', () => {
     render(
       <ColorPicker
         color="#FFFFFF"
+        colors={DEFAULT_COLORS}
+        customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
         clearColor={clearColor}
