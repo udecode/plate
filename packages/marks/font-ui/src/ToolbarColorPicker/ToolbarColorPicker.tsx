@@ -28,6 +28,7 @@ type ToolbarColorPickerProps = {
   selectedIcon: ReactNode;
   colors?: ColorType[];
   customColors?: ColorType[];
+  closeOnSelect?: boolean;
 };
 
 export const ToolbarColorPicker = ({
@@ -36,8 +37,10 @@ export const ToolbarColorPicker = ({
   selectedIcon,
   colors = DEFAULT_COLORS,
   customColors = DEFAULT_CUSTOM_COLORS,
+  closeOnSelect = true,
   ...rest
 }: ToolbarColorPickerProps & ToolbarButtonProps) => {
+  const [open, setOpen] = useState(false);
   const editor = useStoreEditorState(useEventEditorId('focus'));
   const editorRef = useStoreEditorRef(useEventEditorId('focus'));
   const type = getPlatePluginType(editorRef, pluginKey);
@@ -45,6 +48,10 @@ export const ToolbarColorPicker = ({
   const color = editorRef && getMark(editorRef, type);
 
   const [selectedColor, setSelectedColor] = useState<string>();
+
+  const onToggle = useCallback(() => {
+    setOpen(!open);
+  }, [open, setOpen]);
 
   const updateColor = useCallback(
     (value: string) => {
@@ -60,6 +67,14 @@ export const ToolbarColorPicker = ({
     [editor, editorRef, type]
   );
 
+  const updateColorAndClose = useCallback(
+    (value: string) => {
+      updateColor(value);
+      closeOnSelect && onToggle();
+    },
+    [closeOnSelect, onToggle, updateColor]
+  );
+
   const clearColor = useCallback(() => {
     if (editorRef && editor && editor.selection) {
       Transforms.select(editorRef, editor.selection);
@@ -68,8 +83,10 @@ export const ToolbarColorPicker = ({
       if (selectedColor) {
         removeMark(editor, { key: type });
       }
+
+      closeOnSelect && onToggle();
     }
-  }, [editor, editorRef, selectedColor, type]);
+  }, [closeOnSelect, editor, editorRef, onToggle, selectedColor, type]);
 
   useEffect(() => {
     if (editor?.selection) {
@@ -86,13 +103,17 @@ export const ToolbarColorPicker = ({
           {...rest}
         />
       }
+      open={open}
+      onOpen={onToggle}
+      onClose={onToggle}
     >
       <ColorPicker
         color={selectedColor || color}
-        selectedIcon={selectedIcon}
         colors={colors}
         customColors={customColors}
-        updateColor={updateColor}
+        selectedIcon={selectedIcon}
+        updateColor={updateColorAndClose}
+        updateCustomColor={updateColor}
         clearColor={clearColor}
       />
     </ToolbarDropdown>

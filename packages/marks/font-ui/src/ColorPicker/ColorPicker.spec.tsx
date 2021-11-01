@@ -10,6 +10,7 @@ import { ColorPicker } from './ColorPicker';
 describe('ColorPicker', () => {
   it('should render a color picker', async () => {
     const updateColor = jest.fn();
+    const updateCustomColor = jest.fn();
     const clearColor = jest.fn();
     render(
       <ColorPicker
@@ -18,6 +19,7 @@ describe('ColorPicker', () => {
         customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
+        updateCustomColor={updateCustomColor}
         clearColor={clearColor}
       />
     );
@@ -28,6 +30,7 @@ describe('ColorPicker', () => {
 
   it('should render a color picker with no selected color', async () => {
     const updateColor = jest.fn();
+    const updateCustomColor = jest.fn();
     const clearColor = jest.fn();
     render(
       <ColorPicker
@@ -35,6 +38,7 @@ describe('ColorPicker', () => {
         customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
+        updateCustomColor={updateCustomColor}
         clearColor={clearColor}
       />
     );
@@ -45,6 +49,7 @@ describe('ColorPicker', () => {
 
   it('should update color', async () => {
     const updateColor = jest.fn();
+    const updateCustomColor = jest.fn();
     const clearColor = jest.fn();
     render(
       <ColorPicker
@@ -53,6 +58,7 @@ describe('ColorPicker', () => {
         customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
+        updateCustomColor={updateCustomColor}
         clearColor={clearColor}
       />
     );
@@ -65,6 +71,7 @@ describe('ColorPicker', () => {
 
   it('should clear selected color', async () => {
     const updateColor = jest.fn();
+    const updateCustomColor = jest.fn();
     const clearColor = jest.fn();
     render(
       <ColorPicker
@@ -73,6 +80,7 @@ describe('ColorPicker', () => {
         customColors={DEFAULT_CUSTOM_COLORS}
         selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
         updateColor={updateColor}
+        updateCustomColor={updateCustomColor}
         clearColor={clearColor}
       />
     );

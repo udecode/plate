@@ -12,6 +12,7 @@ type ColorPickerProps = {
   customColors: ColorType[];
   selectedIcon: ReactNode;
   updateColor: (color: string) => void;
+  updateCustomColor: (color: string) => void;
   clearColor: () => void;
 };
 
@@ -21,6 +22,7 @@ export const ColorPicker = ({
   customColors,
   selectedIcon,
   updateColor,
+  updateCustomColor,
   clearColor,
 }: ColorPickerProps) => {
   const styles = getColorPickerStyles();
@@ -33,6 +35,7 @@ export const ColorPicker = ({
         customColors={customColors}
         selectedIcon={selectedIcon}
         updateColor={updateColor}
+        updateCustomColor={updateCustomColor}
       />
       <div css={tw`border border-gray-200 border-solid`} />
       <Colors
