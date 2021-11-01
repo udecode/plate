@@ -1,7 +1,11 @@
 import { RenderFunction } from '@udecode/plate-common';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
-import { ComboboxState, ComboboxStoreById } from '../combobox.store';
+import {
+  ComboboxState,
+  ComboboxStateById,
+  ComboboxStoreById,
+} from '../combobox.store';
 
 export interface ComboboxStyleProps extends ComboboxProps {
   highlighted?: boolean;
@@ -41,6 +45,7 @@ export interface ComboboxItemProps {
 
 export interface ComboboxProps
   extends Partial<Pick<ComboboxState, 'items'>>,
+    ComboboxStateById,
     StyledProps<ComboboxStyles> {
   /**
    * Render this component when the combobox is open (useful to inject hooks).

@@ -1,5 +1,11 @@
 # @udecode/plate-mention-ui
 
+## 6.5.0
+
+### Minor Changes
+
+- [#1168](https://github.com/udecode/plate/pull/1168) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Inline mention proposal element instead of using whatever comes after a trigger.
+
 ## 6.4.1
 
 ## 6.4.0

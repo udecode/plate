@@ -7,5 +7,6 @@ export * from './defaults';
 export * from './getMentionDeserialize';
 export * from './getMentionOnSelectItem';
 export * from './types';
-export * from './transforms/index';
-export * from './utils/index';
+export * from './options';
+export * from './queries';
+export * from './moveSelectionByOffset';
