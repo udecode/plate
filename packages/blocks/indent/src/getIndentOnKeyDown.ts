@@ -3,14 +3,10 @@ import { SPEditor } from '@udecode/plate-core';
 import { indent, outdent } from './transforms/index';
 
 export const getIndentOnKeyDown = (editor: SPEditor) => (
-  event: React.KeyboardEvent
+  e: React.KeyboardEvent
 ): void => {
-  if (
-    event.key === 'Tab' &&
-    !event.altKey &&
-    !event.ctrlKey &&
-    !event.metaKey
-  ) {
-    event.shiftKey ? outdent(editor) : indent(editor);
+  if (e.key === 'Tab' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    e.shiftKey ? outdent(editor) : indent(editor);
   }
 };

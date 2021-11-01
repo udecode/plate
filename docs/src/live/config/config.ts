@@ -83,7 +83,7 @@ export const CONFIG: {
   }),
 
   align: {
-    types: [
+    validTypes: [
       ELEMENT_PARAGRAPH,
       ELEMENT_H1,
       ELEMENT_H2,
@@ -94,7 +94,7 @@ export const CONFIG: {
     ],
   },
   indent: {
-    types: [
+    validTypes: [
       ELEMENT_PARAGRAPH,
       ELEMENT_H1,
       ELEMENT_H2,
@@ -107,8 +107,17 @@ export const CONFIG: {
     ],
   },
   lineHeight: {
-    defaultLineHeight: 1.65,
-    lineHeights: [1, 1.2, 1.65, 2, 3],
+    defaultNodeValue: 1.5,
+    validNodeValues: [1, 1.2, 1.5, 2, 3],
+    validTypes: [
+      ELEMENT_PARAGRAPH,
+      ELEMENT_H1,
+      ELEMENT_H2,
+      ELEMENT_H3,
+      ELEMENT_H4,
+      ELEMENT_H5,
+      ELEMENT_H6,
+    ],
   },
   resetBlockType: {
     rules: [

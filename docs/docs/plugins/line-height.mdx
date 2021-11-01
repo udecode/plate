@@ -22,15 +22,11 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
   const plugins = [
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
-      ...CONFIG.lineHeight,
+      defaultNodeValue: 1.5,
+      validNodeValues: [1, 1.2, 1.5, 2, 3],
       validTypes: [
         ELEMENT_PARAGRAPH,
         ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
       ],
     })
   ];
