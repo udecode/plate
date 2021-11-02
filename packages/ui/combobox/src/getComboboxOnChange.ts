@@ -14,43 +14,53 @@ import { comboboxStore } from './combobox.store';
  */
 export const getComboboxOnChange = (): OnChange => (editor) => () => {
   const byId = comboboxStore.get.byId();
+  const activeId = comboboxStore.get.activeId();
 
   let shouldClose = true;
 
-  Object.keys(byId).some((key) => {
-    const store = byId[key];
-
+  for (const store of Object.values(byId)) {
     const id = store.get.id();
-    const trigger = store.get.trigger();
-    const searchPattern = store.get?.searchPattern?.();
+    const controlled = store.get.controlled?.();
 
-    const { selection } = editor;
-
-    if (selection && isCollapsed(selection)) {
-      const cursor = Range.start(selection);
-
-      const isCursorAfterTrigger = getTextFromTrigger(editor, {
-        at: cursor,
-        trigger,
-        searchPattern,
-      });
-
-      if (isCursorAfterTrigger) {
-        const { range, textAfterTrigger } = isCursorAfterTrigger;
-
-        comboboxStore.set.open({
-          activeId: id,
-          text: textAfterTrigger,
-          targetRange: range,
-        });
-
+    if (controlled) {
+      // do not close controlled comboboxes
+      if (activeId === id) {
         shouldClose = false;
-        return true;
+        break;
+      } else {
+        // do not open controlled comboboxes
+        continue;
       }
     }
 
-    return false;
-  });
+    const { selection } = editor;
+    if (!selection || !isCollapsed(selection)) {
+      continue;
+    }
+
+    const trigger = store.get.trigger();
+    const searchPattern = store.get.searchPattern?.();
+
+    const isCursorAfterTrigger = getTextFromTrigger(editor, {
+      at: Range.start(selection),
+      trigger,
+      searchPattern,
+    });
+    if (!isCursorAfterTrigger) {
+      continue;
+    }
+
+    const { range, textAfterTrigger } = isCursorAfterTrigger;
+
+    comboboxStore.set.open({
+      activeId: id,
+      text: textAfterTrigger,
+      targetRange: range,
+    });
+
+    shouldClose = false;
+    break;
+  }
 
   if (shouldClose && comboboxStore.get.isOpen()) {
     comboboxStore.set.reset();

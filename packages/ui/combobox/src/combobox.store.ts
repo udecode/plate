@@ -36,6 +36,11 @@ export type ComboboxStateById = {
    * Called when an item is selected.
    */
   onSelectItem: ComboboxOnSelectItem | null;
+
+  /**
+   * Is opening/closing the combobox controlled by the client.
+   */
+  controlled?: boolean;
 };
 
 export type ComboboxStoreById = StoreApi<

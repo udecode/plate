@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-mention-ui",
-  "version": "6.4.1",
+  "version": "6.5.0",
   "description": "Media embed UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "6.4.1",
+    "@udecode/plate-combobox": "6.5.0",
     "@udecode/plate-common": "6.4.1",
     "@udecode/plate-core": "6.4.1",
-    "@udecode/plate-mention": "6.4.1",
+    "@udecode/plate-mention": "6.5.0",
     "@udecode/plate-styled-components": "6.4.1"
   },
   "peerDependencies": {
