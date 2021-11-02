@@ -9,7 +9,6 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
 } from '@udecode/plate-font';
-import { HeadingToolbar } from '@udecode/plate-toolbar';
 import { createEditor, Editor, Transforms } from 'slate';
 import { ToolbarColorPicker } from './ToolbarColorPicker';
 
@@ -43,168 +42,100 @@ function renderWithPlate(
 ) {
   const Wrapper = ({ children }: { children?: ReactNode }) => (
     <Plate
-      editor={editor as SPEditor}
+      editor={editor}
       plugins={DEFAULT_PLUGINS}
       initialValue={initialValue}
     >
-      <HeadingToolbar>{children}</HeadingToolbar>
+      {children}
     </Plate>
   );
   return render(ui, { wrapper: Wrapper, ...options });
 }
 
 describe('ToolbarColorPicker', () => {
-  it('should apply font text color', async () => {
-    const editor = createEditor();
+  const runForPluginKey = (
+    pluginKey: typeof MARK_COLOR | typeof MARK_BG_COLOR
+  ) => {
+    const target = pluginKey === MARK_COLOR ? 'text color' : 'background color';
 
-    const Component = () => (
-      <ToolbarColorPicker
-        pluginKey={MARK_COLOR}
-        icon={<div>Color</div>}
-        selectedIcon={<div>Selected</div>}
-        tooltip={{ content: 'Text color' }}
-      />
-    );
+    describe(`${target}`, () => {
+      let Component: () => JSX.Element;
+      let editor: SPEditor;
 
-    const { rerender } = renderWithPlate(<Component />, {
-      editor: editor as SPEditor,
-    });
+      const openToolbar = () =>
+        userEvents.click(screen.getByTestId('ToolbarButton'));
 
-    const toolbarButton = screen.getByTestId('ToolbarButton');
+      const applyColor = () =>
+        userEvents.click(screen.getByRole('button', { name: 'light cyan 3' }));
 
-    Transforms.select(editor, {
-      anchor: Editor.start(editor, []),
-      focus: Editor.end(editor, []),
-    });
+      const clearColor = () =>
+        userEvents.click(screen.getByTestId('ColorPickerClear'));
 
-    // force rerender to reflect the editor's selection changes
-    rerender(<Component />);
+      beforeEach(() => {
+        editor = createEditor() as SPEditor;
 
-    userEvents.click(toolbarButton);
+        Component = () => (
+          <ToolbarColorPicker
+            pluginKey={pluginKey}
+            icon={<div>Color</div>}
+            selectedIcon={<div>Selected</div>}
+            tooltip={{ content: 'Text color' }}
+          />
+        );
 
-    const colorPicker = screen.getByTestId('ColorPicker');
+        renderWithPlate(<Component />, { editor });
 
-    expect(colorPicker).toBeVisible();
+        // select the entire text
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        });
+      });
 
-    const colorButton = screen.getByRole('button', { name: 'light cyan 3' });
+      it('should open the color picker', () => {
+        openToolbar();
 
-    userEvents.click(colorButton);
+        expect(screen.getByTestId('ColorPicker')).toBeVisible();
+      });
 
-    expect(editor.children).toEqual([
-      {
-        type: 'p',
-        children: [
+      it(`should apply ${target}`, () => {
+        openToolbar();
+
+        applyColor();
+
+        expect(editor.children).toEqual([
           {
-            text: 'This text has white color, black background.',
-            color: '#D0DFE3',
+            type: 'p',
+            children: [
+              {
+                text: 'This text has white color, black background.',
+                [pluginKey]: '#D0DFE3',
+              },
+            ],
           },
-        ],
-      },
-    ]);
-  });
+        ]);
+      });
 
-  it('should apply font background color', async () => {
-    const editor = createEditor();
+      it(`should clear selected ${target}`, () => {
+        openToolbar();
+        applyColor();
 
-    const Component = () => (
-      <ToolbarColorPicker
-        pluginKey={MARK_BG_COLOR}
-        icon={<div>Background Color</div>}
-        selectedIcon={<div>Selected</div>}
-        tooltip={{ content: 'Background color' }}
-      />
-    );
+        clearColor();
 
-    const { rerender } = renderWithPlate(<Component />, {
-      editor: editor as SPEditor,
-    });
-
-    const toolbarButton = screen.getByTestId('ToolbarButton');
-
-    Transforms.select(editor, {
-      anchor: Editor.start(editor, []),
-      focus: Editor.end(editor, []),
-    });
-    // force rerender to reflect the editor's selection changes
-    rerender(<Component />);
-
-    userEvents.click(toolbarButton);
-
-    const colorPicker = screen.getByTestId('ColorPicker');
-
-    expect(colorPicker).toBeVisible();
-
-    const colorButton = screen.getByRole('button', { name: 'light cyan 3' });
-
-    userEvents.click(colorButton);
-
-    expect(editor.children).toEqual([
-      {
-        type: 'p',
-        children: [
+        expect(editor.children).toEqual([
           {
-            text: 'This text has white color, black background.',
-            backgroundColor: '#D0DFE3',
+            type: 'p',
+            children: [
+              {
+                text: 'This text has white color, black background.',
+              },
+            ],
           },
-        ],
-      },
-    ]);
-  });
-
-  it('should clear selected font text color', async () => {
-    const editor = createEditor();
-
-    const Component = () => (
-      <ToolbarColorPicker
-        pluginKey={MARK_COLOR}
-        icon={<div>Color</div>}
-        selectedIcon={<div>Selected</div>}
-        tooltip={{ content: 'Text color' }}
-      />
-    );
-
-    const { rerender } = renderWithPlate(<Component />, {
-      editor: editor as SPEditor,
-      initialValue: [
-        {
-          type: 'p',
-          children: [
-            {
-              text: 'This text has white color, black background.',
-              color: '#D0DFE3',
-            },
-          ],
-        },
-      ],
+        ]);
+      });
     });
+  };
 
-    Transforms.select(editor, {
-      anchor: Editor.start(editor, []),
-      focus: Editor.end(editor, []),
-    });
-    // force rerender to reflect the editor's selection changes
-    rerender(<Component />);
-
-    const toolbarButton = screen.getByTestId('ToolbarButton');
-    userEvents.click(toolbarButton);
-
-    const colorPicker = screen.getByTestId('ColorPicker');
-
-    expect(colorPicker).toBeVisible();
-
-    const clearButton = screen.getByTestId('ColorPickerClear');
-
-    userEvents.click(clearButton);
-
-    expect(editor.children).toEqual([
-      {
-        type: 'p',
-        children: [
-          {
-            text: 'This text has white color, black background.',
-          },
-        ],
-      },
-    ]);
-  });
+  runForPluginKey(MARK_COLOR);
+  runForPluginKey(MARK_BG_COLOR);
 });

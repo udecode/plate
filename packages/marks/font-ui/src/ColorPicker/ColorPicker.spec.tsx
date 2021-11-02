@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, RenderResult, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import {
   DEFAULT_COLORS,
@@ -8,86 +8,65 @@ import {
 import { ColorPicker } from './ColorPicker';
 
 describe('ColorPicker', () => {
-  it('should render a color picker', async () => {
-    const updateColor = jest.fn();
-    const updateCustomColor = jest.fn();
-    const clearColor = jest.fn();
-    render(
-      <ColorPicker
-        color="#FFFFFF"
-        colors={DEFAULT_COLORS}
-        customColors={DEFAULT_CUSTOM_COLORS}
-        selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
-        updateColor={updateColor}
-        updateCustomColor={updateCustomColor}
-        clearColor={clearColor}
-      />
-    );
+  let updateColor: jest.Mock;
+  let updateCustomColor: jest.Mock;
+  let clearColor: jest.Mock;
 
-    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(85);
-    expect(screen.queryByTestId('SelectedIcon')).toBeInTheDocument();
+  let rerender: RenderResult['rerender'];
+
+  const Component = ({ color }: { color?: string }) => (
+    <ColorPicker
+      color={color}
+      colors={DEFAULT_COLORS}
+      customColors={DEFAULT_CUSTOM_COLORS}
+      selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
+      updateColor={updateColor}
+      updateCustomColor={updateCustomColor}
+      clearColor={clearColor}
+    />
+  );
+
+  beforeEach(() => {
+    updateColor = jest.fn();
+    updateCustomColor = jest.fn();
+    clearColor = jest.fn();
+
+    ({ rerender } = render(<Component />));
   });
 
-  it('should render a color picker with no selected color', async () => {
-    const updateColor = jest.fn();
-    const updateCustomColor = jest.fn();
-    const clearColor = jest.fn();
-    render(
-      <ColorPicker
-        colors={DEFAULT_COLORS}
-        customColors={DEFAULT_CUSTOM_COLORS}
-        selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
-        updateColor={updateColor}
-        updateCustomColor={updateCustomColor}
-        clearColor={clearColor}
-      />
-    );
-
-    expect(await screen.findAllByTestId('ColorButton')).toHaveLength(85);
+  it('should render a color picker with no selected color', () => {
     expect(screen.queryByTestId('SelectedIcon')).not.toBeInTheDocument();
   });
 
-  it('should update color', async () => {
-    const updateColor = jest.fn();
-    const updateCustomColor = jest.fn();
-    const clearColor = jest.fn();
-    render(
-      <ColorPicker
-        color="#FFFFFF"
-        colors={DEFAULT_COLORS}
-        customColors={DEFAULT_CUSTOM_COLORS}
-        selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
-        updateColor={updateColor}
-        updateCustomColor={updateCustomColor}
-        clearColor={clearColor}
-      />
+  it('should render the provided colors', () => {
+    expect(screen.queryAllByTestId('ColorButton')).toHaveLength(
+      DEFAULT_COLORS.length + DEFAULT_CUSTOM_COLORS.length
     );
+  });
 
+  it('should disable the clear color button', () => {
+    expect(screen.queryByTestId('ColorPickerClear')).toBeDisabled();
+  });
+
+  it('should update color', () => {
     const colorButton = screen.getByRole('button', { name: 'light cyan 3' });
     userEvents.click(colorButton);
 
     expect(updateColor).toHaveBeenCalledWith('#D0DFE3');
   });
 
-  it('should clear selected color', async () => {
-    const updateColor = jest.fn();
-    const updateCustomColor = jest.fn();
-    const clearColor = jest.fn();
-    render(
-      <ColorPicker
-        color="#FFFFFF"
-        colors={DEFAULT_COLORS}
-        customColors={DEFAULT_CUSTOM_COLORS}
-        selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
-        updateColor={updateColor}
-        updateCustomColor={updateCustomColor}
-        clearColor={clearColor}
-      />
-    );
+  describe('when color selected', () => {
+    beforeEach(() => rerender(<Component color="#FFFFFF" />));
 
-    const clearButton = screen.getByTestId('ColorPickerClear');
-    userEvents.click(clearButton);
+    it('should render a color picker', () => {
+      expect(screen.queryByTestId('SelectedIcon')).toBeInTheDocument();
+    });
 
-    expect(clearColor).toHaveBeenCalled();
+    it('should clear selected color', () => {
+      const clearButton = screen.getByTestId('ColorPickerClear');
+      userEvents.click(clearButton);
+
+      expect(clearColor).toHaveBeenCalled();
+    });
   });
 });

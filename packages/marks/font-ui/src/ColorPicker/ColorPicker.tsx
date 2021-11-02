@@ -48,6 +48,7 @@ export const ColorPicker = ({
         data-testid="ColorPickerClear"
         css={tw`w-full py-2`}
         onClick={clearColor}
+        disabled={!color}
       >
         Clear
       </Button>

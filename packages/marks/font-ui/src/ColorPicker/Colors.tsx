@@ -22,7 +22,7 @@ export const Colors = ({
     <div css={styles.root.css}>
       {colors.map(({ name, value, isBrightColor }) => (
         <ColorButton
-          key={name || value}
+          key={name ?? value}
           name={name}
           value={value}
           isBrightColor={isBrightColor}
