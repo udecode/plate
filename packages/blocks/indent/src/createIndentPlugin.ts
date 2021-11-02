@@ -10,5 +10,5 @@ export const createIndentPlugin = (
 ): PlatePluginEditor => ({
   overrideProps: getOverrideProps(KEY_INDENT),
   withOverrides: withIndent(options),
-  onKeyDown: getIndentOnKeyDown,
+  onKeyDown: getIndentOnKeyDown(),
 });

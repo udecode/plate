@@ -4,7 +4,6 @@
 
 export * from './createIndentListPlugin';
 export * from './defaults';
-export * from './getIndentListOnKeyDown';
 export * from './types';
 export * from './withIndentList';
 export * from './transforms/index';

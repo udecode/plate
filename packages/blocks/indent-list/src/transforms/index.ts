@@ -4,3 +4,4 @@
 
 export * from './indentList';
 export * from './outdentList';
+export * from './toggleIndentList';

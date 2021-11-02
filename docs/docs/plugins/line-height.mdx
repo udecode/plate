@@ -51,27 +51,17 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ### Options
 
-#### `defaultNodeValue`
+- See [getOverrideProps](plugin-utils#getoverrideprops)
+- Default options:
 
-- Default line height will not be set to the node
-- Default is `1.2`
-
-#### `validNodeValues`
-
-- List of supported `line-height` values.
-- Default is `[1,1.2,1.5,2]`
-
-#### `validTypes`
-
-- List of block types supporting line height.
-- Default is the paragraph type.
-
-#### `classNames`
-
-- By default, the plugin is setting an inline style with `line-height` CSS property.
-- If you want more semantic content that uses classes instead,
-you can specify class names and style them by using a style sheet.
-
+```ts
+{
+  nodeKey: KEY_LINE_HEIGHT,
+  defaultNodeValue: DEFAULT_LINE_HEIGHT,
+  validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+  validNodeValues: DEFAULT_LINE_HEIGHTS,
+}
+```
 
 ### Source Code
 

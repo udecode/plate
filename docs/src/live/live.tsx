@@ -158,6 +158,7 @@ import {
   serializeHTMLFromNodes,
   setNodes,
   StyledLeaf,
+  toggleIndentList,
   toggleList,
   ToolbarAlign,
   ToolbarButton,
@@ -219,6 +220,7 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  toggleIndentList,
   React,
   addColumn,
   addRow,

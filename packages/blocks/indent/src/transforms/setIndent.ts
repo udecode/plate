@@ -14,8 +14,6 @@ import { KEY_INDENT } from '../defaults';
 import { IndentPluginOptions } from '../types';
 
 export interface SetIndentOptions {
-  nodeKey?: string;
-
   /**
    * 1 to indent
    * -1 to outdent
@@ -24,15 +22,20 @@ export interface SetIndentOptions {
   offset?: number;
 
   /**
+   * getNodes options
+   */
+  getNodesOptions?: EditorNodesOptions & UnhangRangeOptions;
+
+  /**
    * Set other props than the indent one.
    * These will be unset if indent = 0.
    */
   setNodesProps?: ({ indent }: { indent: number }) => AnyObject;
 
   /**
-   * getNodes options
+   * Nodes props to unset when indent = 0.
    */
-  getNodesOptions?: EditorNodesOptions & UnhangRangeOptions;
+  unsetNodesProps?: string[];
 }
 
 /**
@@ -40,7 +43,12 @@ export interface SetIndentOptions {
  */
 export const setIndent = (
   editor: SPEditor,
-  { offset = 1, getNodesOptions, setNodesProps }: SetIndentOptions
+  {
+    offset = 1,
+    getNodesOptions,
+    setNodesProps,
+    unsetNodesProps = [],
+  }: SetIndentOptions
 ) => {
   const { nodeKey } = getPlatePluginOptions<Required<IndentPluginOptions>>(
     editor,
@@ -59,10 +67,11 @@ export const setIndent = (
     const newIndent = blockIndent + offset;
 
     const props = setNodesProps?.({ indent: newIndent }) ?? {};
-    const keys = Object.keys(props);
 
     if (newIndent <= 0) {
-      Transforms.unsetNodes(editor, [nodeKey, ...keys], { at: path });
+      Transforms.unsetNodes(editor, [nodeKey, ...unsetNodesProps], {
+        at: path,
+      });
     } else {
       setNodes(editor, { [nodeKey]: newIndent, ...props }, { at: path });
     }

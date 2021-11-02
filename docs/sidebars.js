@@ -25,6 +25,7 @@ module.exports = {
         'guides/styling',
         'guides/configuration',
         'guides/creating-plugins',
+        'guides/plugin-utils',
         'guides/multiple-editors',
       ],
       collapsed: false,
@@ -36,7 +37,7 @@ module.exports = {
       items: [
         {
           type: 'category',
-          label: 'Elements',
+          label: 'Blocks',
           items: [
             'plugins/alignment',
             'plugins/basic-elements',
@@ -46,13 +47,16 @@ module.exports = {
             'plugins/indent',
             'plugins/indent-list',
             'plugins/line-height',
-            'plugins/link',
             'plugins/list',
             'plugins/media-embed',
-            'plugins/combobox',
-            'plugins/mention',
             'plugins/table',
           ],
+          collapsed: false,
+        },
+        {
+          type: 'category',
+          label: 'Inline Elements',
+          items: ['plugins/link', 'plugins/combobox', 'plugins/mention'],
           collapsed: false,
         },
         {

@@ -5,7 +5,7 @@ import {
   WithOverride,
 } from '@udecode/plate-core';
 import { defaults } from 'lodash';
-import { KEY_LIST_TYPE } from './defaults';
+import { KEY_LIST_STYLE_TYPE } from './defaults';
 import { IndentListPluginOptions } from './types';
 
 /**
@@ -16,10 +16,14 @@ export const withIndentList = (
   options?: IndentListPluginOptions
 ): WithOverride<SPEditor> => (editor) => {
   // TODO: extend plate-core to register options
-  editor.options[KEY_LIST_TYPE] = defaults(options, {
-    nodeKey: KEY_LIST_TYPE,
+  editor.options[KEY_LIST_STYLE_TYPE] = defaults(options, {
+    nodeKey: KEY_LIST_STYLE_TYPE,
     validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-    styleKey: 'display',
+    transformStyle: (e, { style, nodeValue }) => ({
+      ...style,
+      display: 'list-item',
+      listStyleType: nodeValue,
+    }),
   } as IndentListPluginOptions);
 
   return editor;

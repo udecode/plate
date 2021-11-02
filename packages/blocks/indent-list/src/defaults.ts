@@ -1,1 +1,1 @@
-export const KEY_LIST_TYPE = 'listType';
+export const KEY_LIST_STYLE_TYPE = 'listStyleType';

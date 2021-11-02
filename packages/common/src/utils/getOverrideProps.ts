@@ -37,6 +37,14 @@ export interface OverridePropsReturnType {
   style?: CSSProperties;
 }
 
+/**
+ * Util for `overrideProps`.
+ * Return if `element`, `text`, `nodeKey` is defined.
+ * Return if `node.type` is not in `validTypes` (if defined).
+ * Return if `value = node[nodeKey]` is not in `validNodeValues` (if defined).
+ * If `classNames[value]` is defined, override `className` with it.
+ * If `styleKey` is defined, override `style` with `[styleKey]: value`.
+ */
 export const getOverrideProps = (pluginKey: string): OverrideProps => (
   editor
 ) => (

@@ -30,11 +30,13 @@ export interface WithPlateOptions<T extends SPEditor = SPEditor> {
 export const withPlate = <T extends SPEditor = SPEditor>({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
-  options = {},
+  options: _options = {},
   components = {},
 }: WithPlateOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
   let editor = e as typeof e & T;
   editor.id = id as string;
+
+  const options = { ..._options };
 
   if (components) {
     // Merge components into options
