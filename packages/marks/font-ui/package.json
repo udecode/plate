@@ -36,7 +36,8 @@
     "@udecode/plate-core": "6.4.1",
     "@udecode/plate-font": "6.4.1",
     "@udecode/plate-styled-components": "6.4.1",
-    "@udecode/plate-toolbar": "6.4.1"
+    "@udecode/plate-toolbar": "6.4.1",
+    "@udecode/plate-ui-button": "6.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
