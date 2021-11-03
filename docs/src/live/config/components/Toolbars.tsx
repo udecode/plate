@@ -54,6 +54,9 @@ import {
   getPreventDefaultHandler,
   indent,
   insertTable,
+  isLicMarkActive,
+  isMarkActive,
+  licSelectionState,
   MARK_BOLD,
   MARK_CODE,
   MARK_HIGHLIGHT,
@@ -64,6 +67,8 @@ import {
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
   outdent,
+  setLicMark,
+  toggleMark,
   ToolbarAlign,
   ToolbarButton,
   ToolbarCodeBlock,
@@ -73,7 +78,10 @@ import {
   ToolbarTable,
   useEventEditorId,
   useStoreEditorRef,
+  useStoreEditorState,
 } from '@udecode/plate';
+import { ToolbarButtonProps } from '@udecode/plate-toolbar/src';
+import { useAtom } from 'jotai';
 
 export const ToolbarButtonsBasicElements = () => {
   const editor = useStoreEditorRef(useEventEditorId('focus'));
@@ -145,6 +153,66 @@ export const ToolbarButtonsList = () => {
       <ToolbarList
         type={getPlatePluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
+      />
+    </>
+  );
+};
+
+export const ToolbarButtonsListExtension = () => {
+  const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+  const ToggleMarkButton = ({
+    type,
+    clear,
+    icon,
+  }: {
+    type: string;
+    clear?: string;
+  } & ToolbarButtonProps): JSX.Element => {
+    const internalEditor = useStoreEditorState(useEventEditorId('focus'));
+    const [licSelection] = useAtom(
+      licSelectionState({ id: useEventEditorId('focus') as string })
+    );
+
+    const active = licSelection
+      ? isLicMarkActive(internalEditor, licSelection, type)
+      : !!internalEditor?.selection && isMarkActive(internalEditor, type);
+
+    return (
+      <ToolbarButton
+        active={active}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          console.log(licSelection);
+          if (licSelection) {
+            setLicMark(internalEditor, licSelection, type, !active);
+          } else {
+            !!internalEditor?.selection &&
+              toggleMark(internalEditor, type, clear);
+          }
+        }}
+        icon={icon}
+      />
+    );
+  };
+
+  return (
+    <>
+      <ToolbarList
+        type={getPlatePluginType(editor, ELEMENT_UL)}
+        icon={<FormatListBulleted />}
+      />
+      <ToolbarList
+        type={getPlatePluginType(editor, ELEMENT_OL)}
+        icon={<FormatListNumbered />}
+      />
+      <ToggleMarkButton
+        type={getPlatePluginType(editor, MARK_BOLD)}
+        icon={<FormatBold />}
+      />
+      <ToggleMarkButton
+        type={getPlatePluginType(editor, MARK_ITALIC)}
+        icon={<FormatItalic />}
       />
     </>
   );

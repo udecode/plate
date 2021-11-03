@@ -36,6 +36,7 @@ export * from '@udecode/plate-line-height-ui';
 export * from '@udecode/plate-link';
 export * from '@udecode/plate-link-ui';
 export * from '@udecode/plate-list';
+export * from '@udecode/plate-list-extension';
 export * from '@udecode/plate-list-ui';
 export * from '@udecode/plate-md-serializer';
 export * from '@udecode/plate-media-embed';

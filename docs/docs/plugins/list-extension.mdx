@@ -1,0 +1,71 @@
+---
+slug: /plugins/list-extension
+title: List Extension
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-list
+npm install @udecode/plate-list-extension
+npm install @udecode/plate-list-ui
+```
+
+### Usage
+
+```ts live
+() => {
+  const ToolbarButtonsList = () => {
+    const editor = useStoreEditorRef(useEventEditorId('focus'));
+
+    return (
+      <>
+        <ToolbarList
+          type={getPlatePluginType(editor, ELEMENT_UL)}
+          icon={<FormatListBulleted />}
+        />
+        <ToolbarList
+          type={getPlatePluginType(editor, ELEMENT_OL)}
+          icon={<FormatListNumbered />}
+        />
+      </>
+    );
+  };
+
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createBoldPlugin(),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createListPlugin(),
+    createTodoListPlugin(),
+    createListExtensionPlugin(),
+  ];
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ToolbarButtonsListExtension />
+      </HeadingToolbar>
+      <Plate
+        id="list"
+        plugins={plugins}
+        components={CONFIG.listComponents}
+        options={CONFIG.options}
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.listExtension}
+        normalizeInitialValue={true}
+      >
+        <PlateListExtensionEffect />
+      </Plate>
+    </>
+  );
+}
+```
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/elements/list](https://github.com/udecode/plate/tree/main/packages/elements/list/src)
+- [packages/elements/list-ui](https://github.com/udecode/plate/tree/main/packages/elements/list-ui/src)

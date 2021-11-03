@@ -71,6 +71,7 @@
     "@udecode/plate-link-ui": "6.4.1",
     "@udecode/plate-list": "6.4.1",
     "@udecode/plate-list-ui": "6.4.1",
+    "@udecode/plate-list-extension": "6.4.1",
     "@udecode/plate-md-serializer": "6.4.1",
     "@udecode/plate-media-embed": "6.4.1",
     "@udecode/plate-media-embed-ui": "6.4.1",

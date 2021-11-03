@@ -635,6 +635,44 @@ const list: any = (
   </fragment>
 );
 
+const listExtension: any = (
+  <fragment>
+    <hh2>✍️ List Extensdions</hh2>
+    <hp>
+      <htext />
+    </hp>
+    <hol licStyles={{ 2: { italic: true } }}>
+      <hli>
+        <hlic>
+          <htext bold>Numbered list</htext>
+        </hlic>
+        <hol>
+          <hli>
+            <hlic>support</hlic>
+            <hol>
+              <hli>
+                <hlic>a</hlic>
+              </hli>
+            </hol>
+          </hli>
+          <hli>
+            <hlic>nesting</hlic>
+            <hol>
+              <hli>
+                <hlic>b</hlic>
+              </hli>
+            </hol>
+          </hli>
+        </hol>
+      </hli>
+      <hli>
+        <hlic>c</hlic>
+      </hli>
+    </hol>
+    <hp>Try it out for yourself!</hp>
+  </fragment>
+);
+
 const findReplace: any = (
   <fragment>
     <hp>
@@ -894,6 +932,7 @@ export const VALUES: Record<string, any> = {
   lineHeight,
   link,
   list,
+  listExtension,
   marks,
   mediaEmbed,
   mentions,

@@ -57,6 +57,7 @@ const alias = {
   '@udecode/plate-link': 'elements/link',
   '@udecode/plate-link-ui': 'elements/link-ui',
   '@udecode/plate-list': 'elements/list',
+  '@udecode/plate-list-extension': 'elements/list-extension',
   '@udecode/plate-list-ui': 'elements/list-ui',
   '@udecode/plate-md-serializer': 'serializers/md',
   '@udecode/plate-media-embed': 'elements/media-embed',
