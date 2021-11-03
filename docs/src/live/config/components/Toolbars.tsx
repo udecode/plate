@@ -174,9 +174,11 @@ export const ToolbarButtonsListExtension = () => {
       licSelectionState({ id: useEventEditorId('focus') as string })
     );
 
-    const active = licSelection
-      ? isLicMarkActive(internalEditor, licSelection, type)
-      : !!internalEditor?.selection && isMarkActive(internalEditor, type);
+    const active =
+      internalEditor &&
+      (licSelection
+        ? isLicMarkActive(internalEditor, licSelection, type)
+        : !!internalEditor?.selection && isMarkActive(internalEditor, type));
 
     return (
       <ToolbarButton
@@ -184,6 +186,10 @@ export const ToolbarButtonsListExtension = () => {
         onMouseDown={(event) => {
           event.preventDefault();
           console.log(licSelection);
+          if (!internalEditor) {
+            return;
+          }
+
           if (licSelection) {
             setLicMark(internalEditor, licSelection, type, !active);
           } else {
