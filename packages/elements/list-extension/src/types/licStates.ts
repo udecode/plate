@@ -8,18 +8,18 @@
  * Self is just flips / changes the current value
  */
 
-export type FormattingSources<T> = {
+export type FormattingSources = {
   text?: unknown;
   dirty?: boolean;
 };
 
 export type PreviousStates = {
-  bold: FormattingSources<boolean>;
-  italic: FormattingSources<boolean>;
-  underline: FormattingSources<boolean>;
-  crossed: FormattingSources<boolean>;
-  fontSize: FormattingSources<string>;
-  fontFamily: FormattingSources<string>;
+  bold: FormattingSources;
+  italic: FormattingSources;
+  underline: FormattingSources;
+  crossed: FormattingSources;
+  fontSize: FormattingSources;
+  fontFamily: FormattingSources;
 };
 
 export type LicNodeAdditionalProps = {
