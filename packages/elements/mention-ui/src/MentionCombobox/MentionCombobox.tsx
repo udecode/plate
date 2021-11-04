@@ -1,5 +1,5 @@
 import React from 'react';
-import { Combobox, ComboboxProps } from '@udecode/plate-combobox';
+import { Combobox, ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
 import { PlatePluginKey } from '@udecode/plate-core';
 import {
   COMBOBOX_TRIGGER_MENTION,
@@ -8,7 +8,7 @@ import {
   getMentionOnSelectItem,
 } from '@udecode/plate-mention';
 
-export const MentionCombobox = ({
+export const MentionCombobox = <TData extends Data = NoData>({
   items,
   component,
   onRenderItem,
@@ -17,11 +17,11 @@ export const MentionCombobox = ({
   trigger = COMBOBOX_TRIGGER_MENTION,
   insertSpaceAfterMention,
   createMentionNode,
-}: Pick<ComboboxProps, 'items' | 'component' | 'onRenderItem'> & {
+}: Pick<ComboboxProps<TData>, 'items' | 'component' | 'onRenderItem'> & {
   id?: string;
   trigger?: string;
   insertSpaceAfterMention?: boolean;
-  createMentionNode?: CreateMentionNode;
+  createMentionNode?: CreateMentionNode<TData>;
 } & PlatePluginKey) => (
   <Combobox
     id={id}
