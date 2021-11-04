@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../../../elements/heading/src/defaults';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
 import { withNormalizeTypes } from '../../createNormalizeTypesPlugin';
@@ -21,7 +21,7 @@ it('should be', () => {
       },
       { path: [0, 1], type: ELEMENT_PARAGRAPH },
     ],
-  })(input as Editor);
+  })(input as PlateEditor);
 
   editor.normalizeNode([input, []]);
 

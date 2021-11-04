@@ -1,13 +1,13 @@
 import { normalizeDescendantsToDocumentFragment } from '@udecode/plate-common';
-import { PlatePlugin, SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin, TDescendant } from '@udecode/plate-core';
 import { htmlStringToDOMNode } from '../../serializer/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHTMLToDocumentFragment = <T = TPlateEditor>(
-  editor: T,
+export const deserializeHTMLToDocumentFragment = <T = {}>(
+  editor: PlateEditor<T>,
   {
     plugins,
     element,

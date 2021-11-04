@@ -25,7 +25,7 @@ import { normalizeNestedList } from './normalizeNestedList';
  * Normalize list node to force the ul>li>p+ul structure.
  */
 export const getListNormalizer = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { validLiChildrenTypes }: ListNormalizerOptions
 ) => {
   const { normalizeNode } = editor;

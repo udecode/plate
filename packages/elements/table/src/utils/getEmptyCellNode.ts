@@ -1,14 +1,10 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
-  TPlateEditor,
-} from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { ELEMENT_TD, ELEMENT_TH } from '../defaults';
 import { TablePluginOptions } from '../types';
 
 export const getEmptyCellNode = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { header }: TablePluginOptions
 ) => {
   return {

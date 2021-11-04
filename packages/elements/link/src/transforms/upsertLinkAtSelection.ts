@@ -1,5 +1,5 @@
 import { insertNodes, isCollapsed, unwrapNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../defaults';
 import { wrapLink } from './wrapLink';
@@ -10,7 +10,7 @@ import { wrapLink } from './wrapLink';
  * Then, wrap the link at the location.
  */
 export const upsertLinkAtSelection = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     url,
     wrap,

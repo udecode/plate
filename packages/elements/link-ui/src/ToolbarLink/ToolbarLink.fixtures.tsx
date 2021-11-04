@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React from 'react';
-import { PlateEditor, TPlateEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -12,7 +12,7 @@ export const input1 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 export const output1 = (
   <editor>
@@ -35,7 +35,7 @@ export const input2 = ((
       </ha>
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 export const output2 = (
   <editor>
@@ -57,7 +57,7 @@ export const input3 = ((
       <cursor />
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 export const output3 = (
   <editor>

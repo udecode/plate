@@ -1,6 +1,6 @@
-import { PlateEditor, PlatePlugin, TPlateEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 
-export const isDeserializerEnabled = <T = TPlateEditor>(
+export const isDeserializerEnabled = <T = {}>(
   editor: PlateEditor<T>,
   plugins: PlatePlugin<T>[],
   deserializerId: string

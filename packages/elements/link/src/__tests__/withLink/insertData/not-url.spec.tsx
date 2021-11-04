@@ -15,7 +15,7 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'test' };
+const data: any = { getData: () => 'test' };
 
 const output = (
   <editor>

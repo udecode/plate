@@ -1,5 +1,5 @@
 import { getNode, unsetNodes } from '@udecode/plate-common';
-import { PlateEditor, WithOverride } from '@udecode/plate-core';
+import { WithOverride } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { defaults } from 'lodash';
 import { Node } from 'slate';
@@ -11,7 +11,7 @@ import { IndentListPluginOptions } from './types';
 
 export const withIndentList = (
   options?: IndentListPluginOptions
-): WithOverride<PlateEditor> => (editor) => {
+): WithOverride => (editor) => {
   const { apply, normalizeNode } = editor;
 
   // TODO: extend plate-core to register options

@@ -9,8 +9,8 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHTMLNode = <T = TPlateEditor>(
-  editor: T,
+export const deserializeHTMLNode = <T = {}>(
+  editor: PlateEditor<T>,
   plugins: PlatePlugin<T>[]
 ) => (node: HTMLElement | ChildNode): DeserializeHTMLReturn => {
   // text node

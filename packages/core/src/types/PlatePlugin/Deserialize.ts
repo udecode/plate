@@ -1,4 +1,4 @@
-import { PlateEditor, TPlateEditor } from '../SPEditor';
+import { PlateEditor } from '../SPEditor';
 import { TDescendant } from '../TDescendant';
 import { HandlerReturnType } from './DOMHandlers';
 
@@ -17,8 +17,8 @@ export type DeserializeNode = {
 /**
  * HTML Deserializer for element and leaf.
  */
-export type Deserialize<T = TPlateEditor> = (
-  editor: T
+export type Deserialize<T = {}> = (
+  editor: PlateEditor<T>
 ) => {
   element?: DeserializeNode[];
   leaf?: DeserializeNode[];

@@ -1,9 +1,9 @@
 import { OnChange } from '../types/PlatePlugin/OnChange';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { PlateEditor, TPlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/SPEditor';
 
 export const pipeOnChange = (
-  editor: SPEditor,
+  editor: PlateEditor,
   plugins: PlatePlugin[] = []
 ): ReturnType<OnChange> => {
   const onChanges = plugins.flatMap(

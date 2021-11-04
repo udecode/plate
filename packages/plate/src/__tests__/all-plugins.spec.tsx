@@ -5,8 +5,8 @@ import {
   createHistoryPlugin,
   createReactPlugin,
   Plate,
+  PlateEditor,
   PlatePlugin,
-  SPEditor,
 } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
 import {
@@ -56,7 +56,7 @@ const options = createPlateOptions();
 const PlateContainer = () => {
   const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
 
-  const plugins: PlatePlugin<SPEditor & ReactEditor>[] = [
+  const plugins: PlatePlugin[] = [
     createReactPlugin(),
     createHistoryPlugin(),
     createBlockquotePlugin(),

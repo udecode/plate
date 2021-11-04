@@ -1,11 +1,11 @@
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 /**
  * Does the node match the type provided.
  */
 
 export const isType = (
-  editor: SPEditor,
+  editor: PlateEditor,
   node: any,
   pluginKey?: string | string[]
 ) => {

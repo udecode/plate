@@ -1,7 +1,7 @@
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Editor, Node, Path, Transforms } from 'slate';
 
-export const removeMentionInput = (editor: SPEditor, path: Path) =>
+export const removeMentionInput = (editor: PlateEditor, path: Path) =>
   Editor.withoutNormalizing(editor, () => {
     const { trigger } = Node.get(editor, path) as TDescendant;
 

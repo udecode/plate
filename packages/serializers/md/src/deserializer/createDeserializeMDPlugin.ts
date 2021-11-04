@@ -1,7 +1,6 @@
 import { isUrl } from '@udecode/plate-common';
 import {
   getPlatePluginWithOverrides,
-  PlateEditor,
   PlatePlugin,
   WithOverride,
 } from '@udecode/plate-core';
@@ -9,11 +8,10 @@ import {
   insertDeserializedFragment,
   isDeserializerEnabled,
 } from '@udecode/plate-serializer';
-import { ReactEditor } from 'slate-react';
 import { deserializeMD } from './utils';
 
-export interface WithDeserializeMarkdownOptions<T = TPlateEditor> {
-  plugins?: PlatePlugin<T>[];
+export interface WithDeserializeMarkdownOptions {
+  plugins?: PlatePlugin[];
 }
 
 export const mdDeserializerId = 'MD Deserializer';
@@ -22,9 +20,9 @@ export const mdDeserializerId = 'MD Deserializer';
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMD = <T extends PlateEditor = PlateEditor>({
+export const withDeserializeMD = ({
   plugins = [],
-}: WithDeserializeMarkdownOptions<T> = {}): WithOverride<T> => (editor) => {
+}: WithDeserializeMarkdownOptions = {}): WithOverride => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {

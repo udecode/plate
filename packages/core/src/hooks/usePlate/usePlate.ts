@@ -7,7 +7,7 @@ import { useSlateProps } from './useSlateProps';
  * Run `usePlateEffects` and props getter for `Slate` and `Editable` components.
  * Use `usePlateStore` to select store state.
  */
-export const usePlate = <T = TPlateEditor>({
+export const usePlate = <T = {}>({
   id,
   components,
   editor,

@@ -29,8 +29,8 @@ const isValidCsv = (
   );
 };
 
-export const deserializeCSV = <T = TPlateEditor>(
-  editor: T,
+export const deserializeCSV = <T = {}>(
+  editor: PlateEditor<T>,
   content: string,
   header = false,
   errorTolerance: number

@@ -3,6 +3,6 @@
  */
 
 export * from './indentList';
+export * from './normalizeListStart';
 export * from './outdentList';
 export * from './toggleIndentList';
-export { normalizeListStart } from './normalizeListStart';

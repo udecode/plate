@@ -1,9 +1,7 @@
 /** @jsx jsx */
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
@@ -31,7 +29,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = (
         <editor>
@@ -42,9 +40,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
-        createHeadingPlugin(),
-      ];
+      const plugins: PlatePlugin[] = [createHeadingPlugin()];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
@@ -65,7 +61,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = (
         <editor>
@@ -76,9 +72,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
-        createHeadingPlugin(),
-      ];
+      const plugins: PlatePlugin[] = [createHeadingPlugin()];
       plugins.push(createDeserializeHTMLPlugin({ plugins }));
       const editor = createEditorPlugins({
         editor: input,
@@ -98,7 +92,7 @@ describe('when inserting html', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any) as Editor;
+    ) as any) as PlateEditor;
 
     const expected = (
       <editor>
@@ -111,9 +105,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
-      createParagraphPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [createParagraphPlugin()];
 
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
 

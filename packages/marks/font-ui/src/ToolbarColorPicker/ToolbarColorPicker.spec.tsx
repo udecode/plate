@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
-import { Plate, SPEditor, TDescendant } from '@udecode/plate-core';
+import { Plate, PlateEditor, TDescendant } from '@udecode/plate-core';
 import {
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
@@ -36,7 +36,7 @@ function renderWithPlate(
     initialValue = DEFAULT_INITIAL_VALUE,
     ...options
   }: {
-    editor: SPEditor;
+    editor: PlateEditor;
     initialValue?: TDescendant[];
   } & RenderOptions
 ) {
@@ -60,7 +60,7 @@ describe('ToolbarColorPicker', () => {
 
     describe(`${target}`, () => {
       let Component: () => JSX.Element;
-      let editor: SPEditor;
+      let editor: PlateEditor;
 
       const openToolbar = () =>
         userEvents.click(screen.getByTestId('ToolbarButton'));
@@ -72,7 +72,7 @@ describe('ToolbarColorPicker', () => {
         userEvents.click(screen.getByTestId('ColorPickerClear'));
 
       beforeEach(() => {
-        editor = createEditor() as SPEditor;
+        editor = createEditor() as PlateEditor;
 
         Component = () => (
           <ToolbarColorPicker

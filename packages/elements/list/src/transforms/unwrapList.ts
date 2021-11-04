@@ -4,12 +4,12 @@ import {
   setNodes,
   unwrapNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../defaults';
 import { getListTypes } from '../queries';
 
-export const unwrapList = (editor: SPEditor, { at }: { at?: Path } = {}) => {
+export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
   Editor.withoutNormalizing(editor, () => {
     do {
       setNodes(editor, {

@@ -1,8 +1,8 @@
 import { mergeDeepToNodes } from '@udecode/plate-common';
 import {
   isElement,
+  PlateEditor,
   PlatePlugin,
-  SPEditor,
   TDescendant,
 } from '@udecode/plate-core';
 import { Text } from 'slate';
@@ -11,7 +11,7 @@ import { DeserializeHTMLChildren } from '../types';
 
 jsx;
 
-export interface DeserializeMarksProps<T = TPlateEditor> {
+export interface DeserializeMarksProps<T = {}> {
   plugins: PlatePlugin<T>[];
   element: HTMLElement;
   children: DeserializeHTMLChildren[];
@@ -21,8 +21,8 @@ export interface DeserializeMarksProps<T = TPlateEditor> {
  * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
-export const deserializeHTMLToMarks = <T = TPlateEditor>(
-  editor: T,
+export const deserializeHTMLToMarks = <T = {}>(
+  editor: PlateEditor<T>,
   { plugins, element, children }: DeserializeMarksProps<T>
 ) => {
   let leaf = {};

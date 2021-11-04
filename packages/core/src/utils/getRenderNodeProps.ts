@@ -11,14 +11,14 @@ export const getRenderNodeProps = ({
   overrideProps,
   type,
   getNodeProps,
-  props,
+  props: _props,
 }: Omit<RenderNodeOptions, 'component'> & {
   props: SPRenderNodeProps;
   attributes?: any;
 }) => {
-  let nodeProps = {
-    ...props,
-    ...(getNodeProps?.(props as any) ?? attributes ?? {}),
+  let props = {
+    ..._props,
+    nodeProps: getNodeProps?.(_props as any) ?? attributes ?? {},
   };
 
   if (overrideProps) {
@@ -28,14 +28,14 @@ export const getRenderNodeProps = ({
         : overrideProps;
 
     if (newProps) {
-      nodeProps = {
-        ...nodeProps,
+      props = {
+        ...props,
         ...newProps,
       };
     }
   }
 
-  const { className } = nodeProps;
+  const { className } = props;
 
-  return { ...nodeProps, className: clsx(getSlateClass(type), className) };
+  return { ...props, className: clsx(getSlateClass(type), className) };
 };

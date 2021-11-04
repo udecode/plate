@@ -4,7 +4,7 @@ import {
   moveChildren,
   MoveChildrenOptions,
 } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
@@ -45,7 +45,7 @@ export interface MergeListItemIntoListOptions {
  * Move the list items of `fromList` to `toList` (if `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     fromList,
     fromListItem,

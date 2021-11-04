@@ -1,4 +1,4 @@
-import { PlateEditor, TPlateEditor } from '../SPEditor';
+import { PlateEditor } from '../SPEditor';
 import { SPRenderLeafProps } from '../SPRenderLeafProps';
 
 /**
@@ -10,6 +10,6 @@ import { SPRenderLeafProps } from '../SPRenderLeafProps';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf<T = TPlateEditor> = (
-  editor: T
+export type RenderLeaf<T = {}> = (
+  editor: PlateEditor<T>
 ) => (props: SPRenderLeafProps) => JSX.Element;

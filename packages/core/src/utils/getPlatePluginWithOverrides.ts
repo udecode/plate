@@ -1,17 +1,17 @@
 import { WithOverride } from '../types';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { PlateEditor, TPlateEditor } from '../types/SPEditor';
 
 /**
  * Helper to get a plate plugin returning `withOverrides`
  */
 export const getPlatePluginWithOverrides = <
-  T = TPlateEditor,
-  V extends (...args: any) => WithOverride<T> = (
+  T = {},
+  O = {},
+  V extends (...args: any) => WithOverride<T, O> = (
     ...args: any
-  ) => WithOverride<T>
+  ) => WithOverride<T, O>
 >(
   withOverrides: V
-) => (...options: Parameters<V>): PlatePlugin<T> => ({
-  withOverrides: withOverrides(...(options as any)),
+) => (...options: Parameters<V>): PlatePlugin<T & O> => ({
+  withOverrides: withOverrides(...(options as any)) as any,
 });

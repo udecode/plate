@@ -8,7 +8,7 @@ import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../defaults';
  * return table, tr, and td or th node entries.
  */
 export const getTableCellEntry = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

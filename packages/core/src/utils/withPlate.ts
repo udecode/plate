@@ -8,14 +8,12 @@ import {
   PlatePluginOptions,
   PluginKey,
 } from '../types/PlatePluginOptions/PlateOptions';
-import { PlateEditor, TPlateEditor } from '../types/SPEditor';
-import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
-export interface WithPlateOptions<T = TPlateEditor> {
+export interface WithPlateOptions {
   id?: string | null;
-  plugins?: PlatePlugin<T>[];
+  plugins?: PlatePlugin[];
   options?: Record<PluginKey, Partial<PlatePluginOptions>>;
   components?: Record<string, PlatePluginComponent>;
 }
@@ -27,13 +25,12 @@ export interface WithPlateOptions<T = TPlateEditor> {
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: Plate options
  */
-export const withPlate = <T = TPlateEditor>({
+export const withPlate = ({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options: _options = {},
   components = {},
-}: WithPlateOptions<T> = {}): WithOverride<TEditor, T> => (e) => {
-  let editor = e as typeof e & T;
+}: WithPlateOptions = {}): WithOverride => (editor) => {
   editor.id = id as string;
 
   const options = { ..._options };
@@ -58,7 +55,7 @@ export const withPlate = <T = TPlateEditor>({
     editor.key = Math.random();
   }
 
-  const _plugins: PlatePlugin<T>[] = [
+  const _plugins: PlatePlugin[] = [
     ...plugins,
     {
       withOverrides: withInlineVoid({ plugins }),

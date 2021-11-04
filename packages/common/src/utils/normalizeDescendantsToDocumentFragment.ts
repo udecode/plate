@@ -3,7 +3,6 @@ import {
   isElement,
   PlateEditor,
   TElement,
-  TPlateEditor,
 } from '@udecode/plate-core';
 import { Descendant, Editor, Element, Text } from 'slate';
 import { ELEMENT_DEFAULT } from '../types';
@@ -103,8 +102,8 @@ const normalize = (
 /**
  * Normalize the descendants to a valid document fragment.
  */
-export const normalizeDescendantsToDocumentFragment = <T = TPlateEditor>(
-  editor: T,
+export const normalizeDescendantsToDocumentFragment = <T = {}>(
+  editor: PlateEditor<T>,
   { descendants }: { descendants: Descendant[] }
 ) => {
   const isInline = isInlineNode(editor);

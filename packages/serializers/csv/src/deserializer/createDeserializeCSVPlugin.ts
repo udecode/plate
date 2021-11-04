@@ -1,6 +1,5 @@
 import {
   getPlatePluginWithOverrides,
-  PlateEditor,
   PlatePlugin,
   WithOverride,
 } from '@udecode/plate-core';
@@ -8,11 +7,10 @@ import {
   insertDeserializedFragment,
   isDeserializerEnabled,
 } from '@udecode/plate-serializer';
-import { ReactEditor } from 'slate-react';
 import { deserializeCSV } from './utils';
 
-export interface WithDeserializeCSVOptions<T = TPlateEditor> {
-  plugins?: PlatePlugin<T>[];
+export interface WithDeserializeCSVOptions {
+  plugins?: PlatePlugin[];
   // Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed,
   // Default is 0.25
   // Percentage based on number of errors compared to number of rows
@@ -25,10 +23,10 @@ export const csvDeserializerId = 'CSV Deserializer';
  * Enables support for deserializing content
  * from CSV format to Slate format.
  */
-export const withDeserializeCSV = <T extends PlateEditor>({
+export const withDeserializeCSV = ({
   plugins = [],
   errorTolerance = 0.25,
-}: WithDeserializeCSVOptions<T> = {}): WithOverride<T> => (editor) => {
+}: WithDeserializeCSVOptions = {}): WithOverride => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { getListItemEntry } from './getListItemEntry';
 
@@ -18,7 +18,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   const listNode = (
     <hul>
@@ -67,7 +67,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   const listNode = (
     <hul>
@@ -121,7 +121,7 @@ describe('when the selection range includes root list item', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   const listNode = (
     <hul>
@@ -177,7 +177,7 @@ describe('when the cursor is not in a list item', () => {
         2<cursor />
       </hp>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   it('should be', () => {
     const res = getListItemEntry(input);

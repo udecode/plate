@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createListPlugin } from './createListPlugin';
@@ -40,7 +40,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -71,7 +71,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -96,7 +96,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -137,7 +137,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -152,7 +152,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -176,7 +176,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -191,7 +191,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -231,7 +231,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });

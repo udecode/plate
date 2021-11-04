@@ -4,12 +4,7 @@ import {
   getParent,
   isCollapsed,
 } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
-  TElement,
-  TPlateEditor,
-} from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Location, NodeEntry, Path, Range } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 
@@ -17,7 +12,7 @@ import { ELEMENT_LI } from '../defaults';
  * Returns the nearest li and ul / ol wrapping node entries for a given path (default = selection)
  */
 export const getListItemEntry = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> } | undefined => {
   const liType = getPlatePluginType(editor, ELEMENT_LI);

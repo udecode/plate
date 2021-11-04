@@ -7,7 +7,5 @@ export * from './defaults';
 export * from './getIndentListInjectComponent';
 export * from './types';
 export * from './withIndentList';
+export * from './queries/index';
 export * from './transforms/index';
-export { getPreviousIndentList } from './queries/getPreviousIndentList';
-export { getNextIndentList } from './queries/getNextIndentList';
-export { normalizeListStart } from './transforms/normalizeListStart';

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor, withInlineVoid } from '@udecode/plate-core';
+import { PlateEditor, withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
@@ -14,7 +14,7 @@ const input = ((
       <ha>test</ha>
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 const output = false;
 

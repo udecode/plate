@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../elements/heading/src/defaults';
 import { withTrailingBlock } from './createTrailingBlockPlugin';
 
@@ -30,7 +30,7 @@ describe('when last node is invalid', () => {
     const editor = withTrailingBlock({
       type: ELEMENT_DEFAULT,
       level: 0,
-    })(input as Editor);
+    })(input as PlateEditor);
 
     editor.normalizeNode([input, []]);
 
@@ -64,7 +64,7 @@ describe('when level = 1', () => {
     const editor = withTrailingBlock({
       type: ELEMENT_DEFAULT,
       level: 1,
-    })(input as Editor);
+    })(input as PlateEditor);
 
     editor.normalizeNode([input, []]);
 
@@ -92,7 +92,7 @@ describe('when using query', () => {
       type: ELEMENT_DEFAULT,
       level: 0,
       exclude: [ELEMENT_H1],
-    })(input as Editor);
+    })(input as PlateEditor);
 
     editor.normalizeNode([input, []]);
 
@@ -118,7 +118,7 @@ describe('when the last node is valid', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock()(input as Editor);
+    const editor = withTrailingBlock()(input as PlateEditor);
 
     editor.normalizeNode([input, []]);
 
@@ -138,7 +138,7 @@ describe('when editor has no children', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock()(input as Editor);
+    const editor = withTrailingBlock()(input as PlateEditor);
 
     editor.normalizeNode([input, []]);
 

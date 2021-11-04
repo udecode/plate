@@ -4,7 +4,7 @@ import {
   insertNodes,
   isLastChild,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -20,7 +20,7 @@ export interface MoveListItemUpOptions {
  * Move a list item up.
  */
 export const moveListItemUp = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {

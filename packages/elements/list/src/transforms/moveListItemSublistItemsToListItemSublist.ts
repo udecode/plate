@@ -5,7 +5,7 @@ import {
   insertNodes,
   moveChildren,
 } from '@udecode/plate-common';
-import { PlateEditor, TElement, TPlateEditor } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

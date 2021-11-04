@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { ELEMENT_H1 } from '../../../../../../elements/heading/src/defaults';
 import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';
 
@@ -26,7 +26,7 @@ const output = (
 it('should be', () => {
   const editor = withNormalizeTypes({
     rules: [{ path: [0], strictType: ELEMENT_H1 }],
-  })(input as Editor);
+  })(input as PlateEditor);
 
   editor.normalizeNode([input, []]);
 

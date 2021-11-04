@@ -10,7 +10,6 @@ import {
   PlateEditor,
   TDescendant,
   TElement,
-  TPlateEditor,
 } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';

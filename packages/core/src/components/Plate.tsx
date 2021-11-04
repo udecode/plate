@@ -3,12 +3,11 @@ import { Editable, Slate } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { usePlate } from '../hooks/usePlate/usePlate';
 import { SlateProps } from '../types/SlateProps';
-import { TPlateEditor } from '../types/SPEditor';
 import { UsePlateEffectsOptions } from '../types/UsePlateEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
 import { EditorStateEffect } from './EditorStateEffect';
 
-export interface PlateProps<T = TPlateEditor>
+export interface PlateProps<T = {}>
   extends UsePlateEffectsOptions<T>,
     UseSlatePropsOptions {
   /**
@@ -27,7 +26,7 @@ export interface PlateProps<T = TPlateEditor>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const Plate = <T=TPlateEditor,>({
+export const Plate = <T,>({
   children,
   renderEditable,
   ...options

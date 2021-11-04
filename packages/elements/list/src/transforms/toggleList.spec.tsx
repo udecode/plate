@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createEditorPlugins } from '@udecode/plate/src';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin } from '../createListPlugin';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
@@ -17,7 +17,7 @@ describe('toggle on', () => {
           1<cursor />
         </hp>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -27,7 +27,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -48,7 +48,7 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -62,7 +62,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -85,7 +85,7 @@ describe('toggle on', () => {
           3<focus />
         </hp>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -101,7 +101,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -133,7 +133,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -149,7 +149,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -184,7 +184,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -205,7 +205,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -236,7 +236,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -244,7 +244,7 @@ describe('toggle off', () => {
         <hp>2</hp>
         <hp>3</hp>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -269,7 +269,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -279,7 +279,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -308,7 +308,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -323,7 +323,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -354,7 +354,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const output = ((
       <editor>
@@ -369,7 +369,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,

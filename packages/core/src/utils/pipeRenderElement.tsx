@@ -3,7 +3,7 @@ import castArray from 'lodash/castArray';
 import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/SPEditor';
 import { SPRenderElementProps } from '../types/SPRenderElementProps';
 import { TRenderElementProps } from '../types/TRenderElementProps';
 import { pipeOverrideProps } from './pipeOverrideProps';
@@ -12,7 +12,7 @@ import { pipeOverrideProps } from './pipeOverrideProps';
  * @see {@link RenderElement}
  */
 export const pipeRenderElement = (
-  editor: SPEditor,
+  editor: PlateEditor,
   plugins: PlatePlugin[] = []
 ): EditableProps['renderElement'] => {
   const renderElements = plugins.flatMap(

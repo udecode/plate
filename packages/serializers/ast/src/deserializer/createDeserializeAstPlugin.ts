@@ -1,17 +1,15 @@
 import {
   getPlatePluginWithOverrides,
   PlatePlugin,
-  SPEditor,
   WithOverride,
 } from '@udecode/plate-core';
 import {
   insertDeserializedFragment,
   isDeserializerEnabled,
 } from '@udecode/plate-serializer';
-import { ReactEditor } from 'slate-react';
 
-export interface WithDeserializeAstOptions<T = TPlateEditor> {
-  plugins?: PlatePlugin<T>[];
+export interface WithDeserializeAstOptions {
+  plugins?: PlatePlugin[];
 }
 
 export const astDeserializerId = 'AST Deserializer';
@@ -20,11 +18,9 @@ export const astDeserializerId = 'AST Deserializer';
  * Enables support for deserializing inserted content from Slate Ast format to Slate format
  * while apply a small bug fix.
  */
-export const withDeserializeAst = <
-  T extends ReactEditor & SPEditor = ReactEditor & SPEditor
->({ plugins = [] }: WithDeserializeAstOptions<T> = {}): WithOverride<T> => (
-  editor
-) => {
+export const withDeserializeAst = ({
+  plugins = [],
+}: WithDeserializeAstOptions = {}): WithOverride => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createListPlugin } from './createListPlugin';
@@ -20,7 +20,7 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -30,7 +30,7 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -57,13 +57,13 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
         <hp>onetwo</hp>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -91,7 +91,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -102,7 +102,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -138,7 +138,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -157,7 +157,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -194,7 +194,7 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -213,7 +213,7 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,

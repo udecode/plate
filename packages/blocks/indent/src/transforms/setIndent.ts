@@ -7,7 +7,7 @@ import {
 import {
   AnyObject,
   getPlatePluginOptions,
-  SPEditor,
+  PlateEditor,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { KEY_INDENT } from '../defaults';
@@ -42,7 +42,7 @@ export interface SetIndentOptions {
  * Add offset to the indentation of the selected blocks.
  */
 export const setIndent = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     offset = 1,
     getNodesOptions,

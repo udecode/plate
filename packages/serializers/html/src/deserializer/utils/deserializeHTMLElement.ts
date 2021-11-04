@@ -1,12 +1,12 @@
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLNode } from './deserializeHTMLNode';
 
 /**
  * Deserialize HTML element.
  */
-export const deserializeHTMLElement = <T = TPlateEditor>(
-  editor: T,
+export const deserializeHTMLElement = <T = {}>(
+  editor: PlateEditor<T>,
   {
     plugins,
     element,

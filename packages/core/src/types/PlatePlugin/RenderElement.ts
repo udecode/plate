@@ -1,4 +1,4 @@
-import { PlateEditor, TPlateEditor } from '../SPEditor';
+import { PlateEditor } from '../SPEditor';
 import { SPRenderElementProps } from '../SPRenderElementProps';
 
 /**
@@ -6,6 +6,6 @@ import { SPRenderElementProps } from '../SPRenderElementProps';
  * If the function returns undefined then the next RenderElement function is called.
  * If the function renders a JSX element then that JSX element is rendered.
  */
-export type RenderElement<T = TPlateEditor> = (
-  editor: T
+export type RenderElement<T = {}> = (
+  editor: PlateEditor<T>
 ) => (props: SPRenderElementProps) => JSX.Element | undefined;

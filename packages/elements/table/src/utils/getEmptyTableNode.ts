@@ -1,10 +1,10 @@
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../defaults';
 import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from './getEmptyRowNode';
 
 export const getEmptyTableNode = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { header }: TablePluginOptions
 ) => {
   return {

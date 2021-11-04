@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { AnyObject, SPEditor } from '@udecode/plate-core';
+import { AnyObject, PlateEditor } from '@udecode/plate-core';
 import { GetOverridePropsOptions } from '../utils/getOverrideProps';
 
 export interface TransformOptions extends GetOverridePropsOptions {
@@ -33,20 +33,23 @@ export interface OverridePropsOptions<TValue = any> {
    * Transforms the className.
    * @default clsx(className, classNames[value])
    */
-  transformClassName?: (editor: SPEditor, options: TransformOptions) => any;
+  transformClassName?: (editor: PlateEditor, options: TransformOptions) => any;
 
   /**
    * Transforms the node value for the style or className.
    * @default nodeValue
    */
-  transformNodeValue?: (editor: SPEditor, options: TransformOptions) => TValue;
+  transformNodeValue?: (
+    editor: PlateEditor,
+    options: TransformOptions
+  ) => TValue;
 
   /**
    * Transforms the style.
    * @default { ...style, [styleKey]: value }
    */
   transformStyle?: (
-    editor: SPEditor,
+    editor: PlateEditor,
     options: TransformOptions
   ) => CSSProperties;
 

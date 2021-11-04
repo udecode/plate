@@ -1,10 +1,5 @@
 import React, { ChangeEvent, useRef } from 'react';
-import { getColorInputStyles } from './ColorInput.styles';
-
-export type ColorInputProps = {
-  value?: string;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-};
+import { ColorInputProps, getColorInputStyles } from './ColorInput.styles';
 
 export function ColorInput({
   value = '#000000',

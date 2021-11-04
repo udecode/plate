@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { PlateEditor, TPlateEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

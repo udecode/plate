@@ -3,7 +3,7 @@ import castArray from 'lodash/castArray';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/SPEditor';
 import { SPRenderLeafProps } from '../types/SPRenderLeafProps';
 import { TRenderLeafProps } from '../types/TRenderLeafProps';
 import { pipeOverrideProps } from './pipeOverrideProps';
@@ -12,7 +12,7 @@ import { pipeOverrideProps } from './pipeOverrideProps';
  * @see {@link RenderLeaf}
  */
 export const pipeRenderLeaf = (
-  editor: SPEditor,
+  editor: PlateEditor,
   plugins: PlatePlugin[] = []
 ): EditableProps['renderLeaf'] => {
   const renderLeafs = plugins.flatMap(

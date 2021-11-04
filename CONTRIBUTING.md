@@ -265,13 +265,13 @@ const input = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 it("should be", () => {
   expect(input).toEqual(output);

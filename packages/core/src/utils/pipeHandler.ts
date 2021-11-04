@@ -5,7 +5,7 @@ import {
   HandlerReturnType,
 } from '../types/PlatePlugin/DOMHandlers';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/SPEditor';
 
 /**
  * Check if an event is overrided by a handler.
@@ -38,7 +38,7 @@ export const isEventHandled = <
  * - Any handler returning true will stop the next handlers to be called, including slate internal handler.
  */
 export const pipeHandler = <K extends keyof DOMHandlers>(
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     editableProps,
     handlerKey,

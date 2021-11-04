@@ -1,4 +1,3 @@
-import { Editor } from 'slate';
 import { HistoryEditor, withHistory } from 'slate-history';
 import { WithOverride } from '../types/PlatePlugin/WithOverride';
 import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
@@ -6,9 +5,7 @@ import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverride
 /**
  * {@link withHistory} that can be called multiple times without losing its history.
  */
-export const withHistoryPersist: WithOverride<Editor, HistoryEditor> = (
-  editor
-) => {
+export const withHistoryPersist: WithOverride = (editor) => {
   if (HistoryEditor.isHistoryEditor(editor)) {
     const { history } = editor;
 
@@ -24,5 +21,5 @@ export const withHistoryPersist: WithOverride<Editor, HistoryEditor> = (
  * @see {@link withHistoryPersist}
  */
 export const createHistoryPlugin = getPlatePluginWithOverrides(
-  () => withHistory
+  () => withHistory as WithOverride
 );

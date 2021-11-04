@@ -1,10 +1,5 @@
 import { getParent } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
-  TElement,
-  TPlateEditor,
-} from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 

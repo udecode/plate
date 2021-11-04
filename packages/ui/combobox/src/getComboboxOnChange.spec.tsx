@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createEditorPlugins } from '@udecode/plate';
-import { HandlerReturnType, SPEditor } from '@udecode/plate-core';
+import { HandlerReturnType, PlateEditor } from '@udecode/plate-core';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -12,9 +12,7 @@ import { getComboboxOnChange } from './getComboboxOnChange';
 jsx;
 
 describe('getComboboxOnChange', () => {
-  const createEditor = <TEditor extends SPEditor = SPEditor>(
-    state: JSX.Element
-  ) => {
+  const createEditor = (state: JSX.Element) => {
     const plugins = [createParagraphPlugin(), createComboboxPlugin()];
 
     return createEditorPlugins({

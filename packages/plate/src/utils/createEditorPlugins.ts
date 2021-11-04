@@ -2,15 +2,13 @@
 import {
   createHistoryPlugin,
   createReactPlugin,
+  PlateEditor,
   PlatePlugin,
   PlatePluginComponent,
   PlatePluginOptions,
-  SPEditor,
-  TEditor,
   withPlate,
 } from '@udecode/plate-core';
 import { createEditor } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { createPlateComponents } from './createPlateComponents';
 import {
   createPlateOptions,
@@ -26,23 +24,20 @@ import {
  * - options
  * - components
  */
-export const createEditorPlugins = <
-  E extends SPEditor & ReactEditor = SPEditor & ReactEditor,
-  T extends string = string
->({
-  editor = createEditor(),
+export const createEditorPlugins = <T extends string = string>({
+  editor = createEditor() as any,
   plugins = [],
   options,
   components,
 }: {
-  editor?: TEditor;
-  plugins?: PlatePlugin<E>[];
+  editor?: PlateEditor;
+  plugins?: PlatePlugin[];
   options?: Partial<
     Record<DefaultPlatePluginKey | T, Partial<PlatePluginOptions>>
   >;
   components?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>;
 } = {}) => {
-  return withPlate<E>({
+  return withPlate({
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
     options: createPlateOptions(options),
     components: createPlateComponents(components),

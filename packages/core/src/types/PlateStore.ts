@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { PlatePlugin } from './PlatePlugin/PlatePlugin';
-import { PlateEditor, TPlateEditor } from './SPEditor';
+import { PlateEditor } from './SPEditor';
 import { TDescendant } from './TDescendant';
 
 /**
@@ -11,12 +11,12 @@ import { TDescendant } from './TDescendant';
  */
 export type EditorId = string | null | undefined;
 
-export type PlateState<T = TPlateEditor> = {
+export type PlateState<T = {}> = {
   /**
    * Slate editor reference.
    * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
    */
-  editor?: T;
+  editor?: PlateEditor<T>;
 
   /**
    * A key that is incremented on each editor change.
@@ -53,9 +53,9 @@ export type PlateState<T = TPlateEditor> = {
 /**
  * @see {@link EditorId}
  */
-export type PlateStates<T = TPlateEditor> = Record<string, PlateState<T>>;
+export type PlateStates<T = {}> = Record<string, PlateState<T>>;
 
-export type PlateActions<T = TPlateEditor> = {
+export type PlateActions<T = {}> = {
   /**
    * Remove state by id. Called by `Plate` on unmount.
    */

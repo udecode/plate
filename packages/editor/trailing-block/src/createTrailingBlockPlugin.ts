@@ -8,7 +8,7 @@ import {
 import {
   getPlatePluginType,
   getPlatePluginWithOverrides,
-  SPEditor,
+  PlateEditor,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
@@ -36,7 +36,8 @@ export const withTrailingBlock = ({
   const { normalizeNode } = editor;
 
   const type =
-    _type ?? getPlatePluginType((editor as any) as SPEditor, ELEMENT_DEFAULT);
+    _type ??
+    getPlatePluginType((editor as any) as PlateEditor, ELEMENT_DEFAULT);
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {

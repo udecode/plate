@@ -4,13 +4,13 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../defaults';
 import { Alignment, AlignPluginOptions } from '../types';
 
 export const setAlign = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { value }: { value: Alignment },
   options?: SetNodesOptions
 ) => {

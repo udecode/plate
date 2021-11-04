@@ -2,7 +2,6 @@ import { ELEMENT_DEFAULT, setNodes } from '@udecode/plate-common';
 import {
   getPlatePluginOptions,
   getPlatePluginType,
-  SPEditor,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
@@ -15,9 +14,9 @@ import { IndentPluginOptions } from './types';
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (
-  options?: IndentPluginOptions
-): WithOverride<SPEditor> => (editor) => {
+export const withIndent = (options?: IndentPluginOptions): WithOverride => (
+  editor
+) => {
   const { normalizeNode } = editor;
 
   // TODO: extend plate-core to register options

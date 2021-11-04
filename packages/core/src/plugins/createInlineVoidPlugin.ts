@@ -1,12 +1,11 @@
 import castArray from 'lodash/castArray';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { WithOverride } from '../types/PlatePlugin/WithOverride';
-import { SPEditor } from '../types/SPEditor';
 import { TElement } from '../types/TElement';
 import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
 
-export interface WithInlineVoidOptions<T = TPlateEditor> {
-  plugins?: PlatePlugin<T>[];
+export interface WithInlineVoidOptions {
+  plugins?: PlatePlugin[];
   inlineTypes?: string[];
   voidTypes?: string[];
 }
@@ -15,11 +14,11 @@ export interface WithInlineVoidOptions<T = TPlateEditor> {
  * Merge and register all the inline types and void types from the plugins and options,
  * using `editor.isInline` and `editor.isVoid`
  */
-export const withInlineVoid = <T = TPlateEditor>({
+export const withInlineVoid = ({
   plugins = [],
   inlineTypes = [],
   voidTypes = [],
-}: WithInlineVoidOptions<T>): WithOverride<T> => (editor) => {
+}: WithInlineVoidOptions): WithOverride => (editor) => {
   const { isInline } = editor;
   const { isVoid } = editor;
 

@@ -1,5 +1,5 @@
 import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { isElement, PlateEditor, TPlateEditor } from '@udecode/plate-core';
+import { isElement, PlateEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { getCodeLineType } from '../options';
 

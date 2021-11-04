@@ -4,12 +4,7 @@ import {
   insertNodes,
   isExpanded,
 } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
-  TElement,
-  TPlateEditor,
-} from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';

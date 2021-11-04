@@ -4,13 +4,13 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_LINE_HEIGHT } from '../defaults';
 import { LineHeightPluginOptions } from '../types';
 
 export const setLineHeight = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     value,
     setNodesOptions,

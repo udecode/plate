@@ -3,3 +3,4 @@
  */
 
 export * from './ToolbarColorPicker';
+export * from './defaults';

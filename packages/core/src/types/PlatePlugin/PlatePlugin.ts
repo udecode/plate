@@ -1,4 +1,4 @@
-import { PlateEditor, TPlateEditor } from '../SPEditor';
+import { PlateEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { DOMHandlers } from './DOMHandlers';
@@ -21,13 +21,12 @@ export interface PlatePluginKey {
 /**
  * Plate plugin interface built on top of Slate and Editable.
  */
-export interface PlatePlugin<T = TPlateEditor>
+export interface PlatePlugin<T = {}>
   extends PlatePluginSerialize<T>,
     PlatePluginElement<T>,
     PlatePluginLeaf<T> {}
 
-export interface PlatePluginEditor<T = TPlateEditor>
-  extends Partial<DOMHandlers<T>> {
+export interface PlatePluginEditor<T = {}> extends Partial<DOMHandlers<T>> {
   /**
    * @see {@link Decorate}
    */
@@ -64,7 +63,7 @@ export interface PlatePluginEditor<T = TPlateEditor>
   withOverrides?: WithOverride<T> | WithOverride<T>[];
 }
 
-export interface PlatePluginSerialize<T = TPlateEditor> {
+export interface PlatePluginSerialize<T = {}> {
   /**
    * @see {@link DeserializeHtml}
    */
@@ -76,21 +75,20 @@ export interface PlatePluginSerialize<T = TPlateEditor> {
   serialize?: Serialize;
 }
 
-export interface PlatePluginNode<T = TPlateEditor>
+export interface PlatePluginNode<T = {}>
   extends PlatePluginSerialize<T>,
     PlatePluginEditor<T> {
   /**
    * Void element types.
    */
-  voidTypes?: (editor: T) => string[];
+  voidTypes?: (editor: PlateEditor<T>) => string[];
 }
 
-export interface PlatePluginElement<T = TPlateEditor>
-  extends PlatePluginNode<T> {
+export interface PlatePluginElement<T = {}> extends PlatePluginNode<T> {
   /**
    * Inline element types.
    */
-  inlineTypes?: (editor: T) => string[];
+  inlineTypes?: (editor: PlateEditor<T>) => string[];
 
   /**
    * @see {@link RenderElement}
@@ -98,7 +96,7 @@ export interface PlatePluginElement<T = TPlateEditor>
   renderElement?: RenderElement<T>;
 }
 
-export interface PlatePluginLeaf<T = TPlateEditor> extends PlatePluginNode<T> {
+export interface PlatePluginLeaf<T = {}> extends PlatePluginNode<T> {
   /**
    * @see {@link RenderLeaf}
    */

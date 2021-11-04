@@ -1,6 +1,5 @@
 import {
   getPlatePluginWithOverrides,
-  PlateEditor,
   PlatePlugin,
   WithOverride,
 } from '@udecode/plate-core';
@@ -8,11 +7,10 @@ import {
   insertDeserializedFragment,
   isDeserializerEnabled,
 } from '@udecode/plate-serializer';
-import { ReactEditor } from 'slate-react';
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 
-export interface WithDeserializeHTMLOptions<T = TPlateEditor> {
-  plugins?: PlatePlugin<T>[];
+export interface WithDeserializeHTMLOptions {
+  plugins?: PlatePlugin[];
 }
 
 export const htmlDeserializerId = 'HTML Deserializer';
@@ -20,9 +18,9 @@ export const htmlDeserializerId = 'HTML Deserializer';
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHTML = <T extends PlateEditor = PlateEditor>({
+export const withDeserializeHTML = ({
   plugins = [],
-}: WithDeserializeHTMLOptions<T> = {}): WithOverride<T> => (editor) => {
+}: WithDeserializeHTMLOptions = {}): WithOverride => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

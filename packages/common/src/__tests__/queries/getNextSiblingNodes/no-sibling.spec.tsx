@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor, TDescendant, withInlineVoid } from '@udecode/plate-core';
+import { PlateEditor, TDescendant, withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
@@ -19,7 +19,7 @@ const input = ((
       </ha>
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 const output: TDescendant[] = [];
 

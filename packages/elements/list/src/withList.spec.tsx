@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
@@ -65,7 +65,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -78,7 +78,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -97,7 +97,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -107,7 +107,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -128,7 +128,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -138,7 +138,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -161,7 +161,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -171,7 +171,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -197,7 +197,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -207,7 +207,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected);
       });
@@ -231,7 +231,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -246,7 +246,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testInsertText(input, expected, {
           validLiChildrenTypes: ['p', 'blockquote'],
@@ -275,7 +275,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -287,7 +287,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -312,7 +312,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -323,7 +323,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -346,7 +346,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         const expected = ((
           <editor>
@@ -358,7 +358,7 @@ describe('withList', () => {
             </hul>
             <hp>world</hp>
           </editor>
-        ) as any) as Editor;
+        ) as any) as PlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -385,7 +385,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -403,7 +403,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteBackward(input, expected);
     });
@@ -424,7 +424,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -439,7 +439,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteBackward(input, expected);
     });
@@ -458,7 +458,7 @@ describe('withList', () => {
           </hul>
           <hp>level 2</hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -472,7 +472,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteForward(input, expected);
     });
@@ -491,7 +491,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -505,7 +505,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteForward(input, expected);
     });
@@ -534,7 +534,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -552,7 +552,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteForward(input, expected);
     });
@@ -589,7 +589,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const expected = ((
         <editor>
@@ -619,7 +619,7 @@ describe('withList', () => {
             </hli>
           </hul>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       testDeleteForward(input, expected);
     });

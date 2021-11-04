@@ -22,7 +22,7 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'docs' };
+const data: any = { getData: () => 'docs' };
 
 const output = (
   <editor>

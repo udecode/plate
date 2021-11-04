@@ -92,7 +92,7 @@ export const getOverrideProps = (pluginKey: string): OverrideProps => (
   if (classNames?.[nodeValue] || transformClassName) {
     res.className =
       transformClassName?.(editor, transformOptions) ??
-      clsx(res.className, classNames?.[value]);
+      clsx(className, classNames?.[value]);
   }
 
   if (styleKey) {

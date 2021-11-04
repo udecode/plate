@@ -2,7 +2,7 @@
 
 import { createEditorPlugins } from '@udecode/plate';
 import { ComboboxState, comboboxStore } from '@udecode/plate-combobox';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
@@ -21,7 +21,7 @@ describe('withMention', () => {
   const createEditor = (
     state: JSX.Element,
     { multipleMentionPlugins }: CreateEditorOptions = {}
-  ): SPEditor => {
+  ): PlateEditor => {
     const plugins = [
       createParagraphPlugin(),
       createMentionPlugin({ pluginKey, trigger }),
@@ -46,7 +46,7 @@ describe('withMention', () => {
       </hp>
     ),
     options?: CreateEditorOptions
-  ): SPEditor => {
+  ): PlateEditor => {
     const editor = createEditor(at, options);
 
     editor.insertText(trigger);
