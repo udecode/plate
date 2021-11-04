@@ -1,4 +1,4 @@
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 import { SPRenderElementProps } from '../SPRenderElementProps';
 
 /**

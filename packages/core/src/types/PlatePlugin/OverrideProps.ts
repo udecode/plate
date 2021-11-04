@@ -1,4 +1,4 @@
 import { GetNodeProps } from '../PlatePluginOptions/GetNodeProps';
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 
 export type OverrideProps<T = {}> = (editor: PlateEditor<T>) => GetNodeProps;

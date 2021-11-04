@@ -14,7 +14,7 @@ import {
   UIEvent,
   WheelEvent,
 } from 'react';
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 
 /**
  * If true, the next handlers will be skipped.

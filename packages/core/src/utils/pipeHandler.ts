@@ -5,7 +5,7 @@ import {
   HandlerReturnType,
 } from '../types/PlatePlugin/DOMHandlers';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { PlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 
 /**
  * Check if an event is overrided by a handler.

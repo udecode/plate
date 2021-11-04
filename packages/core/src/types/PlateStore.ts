@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { PlatePlugin } from './PlatePlugin/PlatePlugin';
-import { PlateEditor } from './SPEditor';
+import { PlateEditor } from './PlateEditor';
 import { TDescendant } from './TDescendant';
 
 /**

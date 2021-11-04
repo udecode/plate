@@ -1,5 +1,5 @@
 import { RenderElement } from '../types/PlatePlugin/RenderElement';
-import { PlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 import { getEditableRenderElement } from './getEditableRenderElement';
 import { mapPlatePluginKeysToOptions } from './mapPlatePluginKeysToOptions';
 

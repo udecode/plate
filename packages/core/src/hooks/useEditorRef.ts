@@ -1,5 +1,5 @@
 import { useSlateStatic } from 'slate-react';
-import { PlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 
 /**
  * Typed {@link useSlateStatic} & PlateEditor.

@@ -4,7 +4,7 @@
 
 export * from './EventEditorStore';
 export * from './PlateStore';
-export * from './SPEditor';
+export * from './PlateEditor';
 export * from './SPRenderElementProps';
 export * from './SPRenderLeafProps';
 export * from './SPRenderNodeProps';

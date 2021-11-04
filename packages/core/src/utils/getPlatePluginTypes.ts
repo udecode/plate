@@ -1,5 +1,5 @@
 import { castArray } from 'lodash';
-import { PlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 import { getPlatePluginType } from './getPlatePluginType';
 
 export const getPlatePluginTypes = (pluginKey: string | string[]) => (

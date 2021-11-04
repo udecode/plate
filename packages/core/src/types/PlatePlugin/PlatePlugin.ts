@@ -1,4 +1,4 @@
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { DOMHandlers } from './DOMHandlers';

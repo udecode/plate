@@ -1,4 +1,4 @@
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 import { TNode } from '../TNode';
 import { HandlerReturnType } from './DOMHandlers';
 

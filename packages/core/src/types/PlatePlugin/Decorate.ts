@@ -1,5 +1,5 @@
 import { NodeEntry, Range } from 'slate';
-import { PlateEditor } from '../SPEditor';
+import { PlateEditor } from '../PlateEditor';
 
 /**
  * Function used to decorate ranges.

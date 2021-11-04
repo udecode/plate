@@ -1,5 +1,5 @@
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { PlateEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 
 /**
  * Get void types from the plugins
