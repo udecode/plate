@@ -4,7 +4,12 @@ import {
   insertNodes,
   isExpanded,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import {
+  getPlatePluginType,
+  PlateEditor,
+  TElement,
+  TPlateEditor,
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -21,7 +26,7 @@ export interface RemoveListItemOptions {
  * Remove list item and move its sublist to list if any.
  */
 export const removeListItem = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;

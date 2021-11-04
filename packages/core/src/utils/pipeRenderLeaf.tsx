@@ -4,6 +4,8 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { SPEditor } from '../types/SPEditor';
+import { SPRenderLeafProps } from '../types/SPRenderLeafProps';
+import { TRenderLeafProps } from '../types/TRenderLeafProps';
 import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
@@ -22,7 +24,14 @@ export const pipeRenderLeaf = (
   );
 
   return (renderLeafProps) => {
-    const props = pipeOverrideProps(renderLeafProps, propsOverriders);
+    const props: SPRenderLeafProps = {
+      ...pipeOverrideProps(
+        renderLeafProps as TRenderLeafProps,
+        propsOverriders
+      ),
+      editor,
+      plugins,
+    };
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props);

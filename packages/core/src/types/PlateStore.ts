@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { PlatePlugin } from './PlatePlugin/PlatePlugin';
-import { SPEditor } from './SPEditor';
+import { PlateEditor, TPlateEditor } from './SPEditor';
 import { TDescendant } from './TDescendant';
 
 /**
@@ -11,7 +11,7 @@ import { TDescendant } from './TDescendant';
  */
 export type EditorId = string | null | undefined;
 
-export type PlateState<T extends SPEditor = SPEditor> = {
+export type PlateState<T = TPlateEditor> = {
   /**
    * Slate editor reference.
    * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
@@ -53,12 +53,9 @@ export type PlateState<T extends SPEditor = SPEditor> = {
 /**
  * @see {@link EditorId}
  */
-export type PlateStates<T extends SPEditor = SPEditor> = Record<
-  string,
-  PlateState<T>
->;
+export type PlateStates<T = TPlateEditor> = Record<string, PlateState<T>>;
 
-export type PlateActions<T extends SPEditor = SPEditor> = {
+export type PlateActions<T = TPlateEditor> = {
   /**
    * Remove state by id. Called by `Plate` on unmount.
    */

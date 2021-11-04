@@ -1,10 +1,10 @@
 import { PlatePlugin } from './PlatePlugin/PlatePlugin';
 import { NodeProps } from './PlatePluginOptions/GetNodeProps';
 import { AnyObject } from './utility/AnyObject';
-import { SPEditor } from './SPEditor';
+import { PlateEditor } from './SPEditor';
 
 export interface SPRenderNodeProps extends AnyObject {
-  editor: SPEditor;
+  editor: PlateEditor;
 
   plugins: PlatePlugin[];
 

@@ -1,10 +1,14 @@
 import { getAbove, isCollapsed, unwrapNodes } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import {
+  getPlatePluginType,
+  PlateEditor,
+  TPlateEditor,
+} from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../defaults';
 import { WithLinkOptions } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
-export const getAndUpsertLink = async <T extends SPEditor>(
+export const getAndUpsertLink = async <T = TPlateEditor>(
   editor: T,
   getLinkUrl?: WithLinkOptions['getLinkUrl']
 ) => {

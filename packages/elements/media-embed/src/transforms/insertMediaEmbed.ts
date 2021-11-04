@@ -1,10 +1,15 @@
 import { getParent, insertNodes } from '@udecode/plate-common';
-import { PlatePluginKey, SPEditor, TElement } from '@udecode/plate-core';
+import {
+  PlateEditor,
+  PlatePluginKey,
+  TElement,
+  TPlateEditor,
+} from '@udecode/plate-core';
 import { ELEMENT_MEDIA_EMBED } from '../defaults';
 import { MediaEmbedNodeData } from '../types';
 
 export const insertMediaEmbed = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     url = '',
     pluginKey = ELEMENT_MEDIA_EMBED,

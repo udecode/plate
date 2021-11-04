@@ -1,10 +1,5 @@
-import {
-  findNode,
-  setNodes,
-  someNode,
-  unsetNodes,
-} from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { findNode, setNodes, unsetNodes } from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../defaults';
 import { indentList, IndentListOptions } from './indentList';
 import { outdentList } from './outdentList';
@@ -13,7 +8,7 @@ import { outdentList } from './outdentList';
  * Increase the indentation of the selected blocks.
  */
 export const toggleIndentList = (
-  editor: SPEditor,
+  editor: PlateEditor,
   options?: IndentListOptions
 ) => {
   const nodeEntry = findNode(editor, {

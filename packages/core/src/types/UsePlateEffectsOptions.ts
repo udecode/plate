@@ -3,12 +3,12 @@ import {
   PlatePluginComponent,
 } from './PlatePluginOptions/PlateOptions';
 import { EditorId, PlateState } from './PlateStore';
-import { SPEditor } from './SPEditor';
+import { PlateEditor, TPlateEditor } from './SPEditor';
 
 /**
  * `usePlateEffects` options
  */
-export interface UsePlateEffectsOptions<T extends SPEditor = SPEditor>
+export interface UsePlateEffectsOptions<T = TPlateEditor>
   extends Partial<
     Pick<PlateState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
   > {

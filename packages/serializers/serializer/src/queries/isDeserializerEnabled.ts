@@ -1,8 +1,8 @@
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin, TPlateEditor } from '@udecode/plate-core';
 
-export const isDeserializerEnabled = <TEditor extends SPEditor = SPEditor>(
-  editor: TEditor,
-  plugins: PlatePlugin<TEditor>[],
+export const isDeserializerEnabled = <T = TPlateEditor>(
+  editor: PlateEditor<T>,
+  plugins: PlatePlugin<T>[],
   deserializerId: string
 ) =>
   plugins.every(

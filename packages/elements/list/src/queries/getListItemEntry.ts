@@ -4,7 +4,12 @@ import {
   getParent,
   isCollapsed,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import {
+  getPlatePluginType,
+  PlateEditor,
+  TElement,
+  TPlateEditor,
+} from '@udecode/plate-core';
 import { Location, NodeEntry, Path, Range } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 

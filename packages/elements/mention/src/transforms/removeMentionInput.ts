@@ -1,4 +1,4 @@
-import { SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Editor, Node, Path, Transforms } from 'slate';
 
 export const removeMentionInput = (editor: SPEditor, path: Path) =>

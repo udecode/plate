@@ -5,7 +5,7 @@ import { SPEditor } from '../types/SPEditor';
 import { TElement } from '../types/TElement';
 import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
 
-export interface WithInlineVoidOptions<T extends SPEditor = SPEditor> {
+export interface WithInlineVoidOptions<T = TPlateEditor> {
   plugins?: PlatePlugin<T>[];
   inlineTypes?: string[];
   voidTypes?: string[];
@@ -15,7 +15,7 @@ export interface WithInlineVoidOptions<T extends SPEditor = SPEditor> {
  * Merge and register all the inline types and void types from the plugins and options,
  * using `editor.isInline` and `editor.isVoid`
  */
-export const withInlineVoid = <T extends SPEditor = SPEditor>({
+export const withInlineVoid = <T = TPlateEditor>({
   plugins = [],
   inlineTypes = [],
   voidTypes = [],

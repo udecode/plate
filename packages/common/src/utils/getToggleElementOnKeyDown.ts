@@ -9,7 +9,7 @@ import { castArray } from 'lodash';
 import { toggleNodeType } from '../transforms/toggleNodeType';
 import { ELEMENT_DEFAULT } from '../types/node.types';
 
-export const getToggleElementOnKeyDown = <T extends SPEditor = SPEditor>(
+export const getToggleElementOnKeyDown = <T = TPlateEditor>(
   pluginKeys: string | string[]
 ): KeyboardHandler<T> => (editor) => (e) => {
   const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);

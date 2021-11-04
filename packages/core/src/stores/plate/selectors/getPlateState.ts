@@ -1,11 +1,11 @@
 import { PlateState, PlateStates } from '../../../types/PlateStore';
-import { SPEditor } from '../../../types/SPEditor';
+import { PlateEditor, TPlateEditor } from '../../../types/SPEditor';
 
 /**
  * If id is defined, get the state by id.
  * Else, get the first state.
  */
-export const getPlateState = <T extends SPEditor = SPEditor>(
+export const getPlateState = <T = TPlateEditor>(
   state: PlateStates<T>,
   id?: string | null
 ): PlateState<T> | undefined => {

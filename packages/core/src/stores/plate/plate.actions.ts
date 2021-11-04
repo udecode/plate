@@ -10,7 +10,7 @@ import { plateStore, usePlateStore } from './plate.store';
 
 const { getState: get, setState: set } = plateStore;
 
-export const usePlateActions = <T extends SPEditor = SPEditor>(
+export const usePlateActions = <T = TPlateEditor>(
   storeId?: string | null
 ): PlateActions<T> => {
   const storeKeys = usePlateStore((s) => Object.keys(s), shallow);

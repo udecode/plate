@@ -59,7 +59,7 @@ export const exitBreakAtEdges = (
   };
 };
 
-export const getExitBreakOnKeyDown = <T extends SPEditor = SPEditor>({
+export const getExitBreakOnKeyDown = <T = TPlateEditor>({
   rules = [
     { hotkey: 'mod+enter' },
     { hotkey: 'mod+shift+enter', before: true },

@@ -1,4 +1,4 @@
-import { SPEditor } from '../SPEditor';
+import { PlateEditor, TPlateEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { DOMHandlers } from './DOMHandlers';
@@ -21,12 +21,12 @@ export interface PlatePluginKey {
 /**
  * Plate plugin interface built on top of Slate and Editable.
  */
-export interface PlatePlugin<T extends SPEditor = SPEditor>
+export interface PlatePlugin<T = TPlateEditor>
   extends PlatePluginSerialize<T>,
     PlatePluginElement<T>,
     PlatePluginLeaf<T> {}
 
-export interface PlatePluginEditor<T extends SPEditor = SPEditor>
+export interface PlatePluginEditor<T = TPlateEditor>
   extends Partial<DOMHandlers<T>> {
   /**
    * @see {@link Decorate}
@@ -64,7 +64,7 @@ export interface PlatePluginEditor<T extends SPEditor = SPEditor>
   withOverrides?: WithOverride<T> | WithOverride<T>[];
 }
 
-export interface PlatePluginSerialize<T extends SPEditor = SPEditor> {
+export interface PlatePluginSerialize<T = TPlateEditor> {
   /**
    * @see {@link DeserializeHtml}
    */
@@ -76,7 +76,7 @@ export interface PlatePluginSerialize<T extends SPEditor = SPEditor> {
   serialize?: Serialize;
 }
 
-export interface PlatePluginNode<T extends SPEditor = SPEditor>
+export interface PlatePluginNode<T = TPlateEditor>
   extends PlatePluginSerialize<T>,
     PlatePluginEditor<T> {
   /**
@@ -85,7 +85,7 @@ export interface PlatePluginNode<T extends SPEditor = SPEditor>
   voidTypes?: (editor: T) => string[];
 }
 
-export interface PlatePluginElement<T extends SPEditor = SPEditor>
+export interface PlatePluginElement<T = TPlateEditor>
   extends PlatePluginNode<T> {
   /**
    * Inline element types.
@@ -98,8 +98,7 @@ export interface PlatePluginElement<T extends SPEditor = SPEditor>
   renderElement?: RenderElement<T>;
 }
 
-export interface PlatePluginLeaf<T extends SPEditor = SPEditor>
-  extends PlatePluginNode<T> {
+export interface PlatePluginLeaf<T = TPlateEditor> extends PlatePluginNode<T> {
   /**
    * @see {@link RenderLeaf}
    */

@@ -1,4 +1,4 @@
-import { SPEditor } from './SPEditor';
+import { PlateEditor, TPlateEditor } from './SPEditor';
 import { UseEditablePropsOptions } from './UseEditablePropsOptions';
 import { UsePlateEffectsOptions } from './UsePlateEffectsOptions';
 import { UseSlatePropsOptions } from './UseSlatePropsOptions';
@@ -6,6 +6,6 @@ import { UseSlatePropsOptions } from './UseSlatePropsOptions';
 /**
  * `usePlate` options
  */
-export type UsePlateOptions<
-  T extends SPEditor = SPEditor
-> = UseSlatePropsOptions & UseEditablePropsOptions & UsePlateEffectsOptions<T>;
+export type UsePlateOptions<T = TPlateEditor> = UseSlatePropsOptions &
+  UseEditablePropsOptions &
+  UsePlateEffectsOptions<T>;

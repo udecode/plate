@@ -10,9 +10,7 @@ import {
 } from '@udecode/plate-serializer';
 import { ReactEditor } from 'slate-react';
 
-export interface WithDeserializeAstOptions<
-  T extends SPEditor = SPEditor & ReactEditor
-> {
+export interface WithDeserializeAstOptions<T = TPlateEditor> {
   plugins?: PlatePlugin<T>[];
 }
 

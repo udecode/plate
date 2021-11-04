@@ -9,7 +9,7 @@ import {
 import {
   getPlatePluginType,
   isElement,
-  SPEditor,
+  PlateEditor,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';

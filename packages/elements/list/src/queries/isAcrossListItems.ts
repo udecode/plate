@@ -3,7 +3,11 @@ import {
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import {
+  getPlatePluginType,
+  PlateEditor,
+  TPlateEditor,
+} from '@udecode/plate-core';
 import { ELEMENT_LI } from '../defaults';
 
 /**

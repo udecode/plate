@@ -1,93 +1,17 @@
-import { comboboxStore } from '@udecode/plate-combobox';
-import {
-  ELEMENT_DEFAULT,
-  getNode,
-  getPreviousPath,
-  setNodes,
-  unsetNodes,
-} from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  SPEditor,
-  TElement,
-  WithOverride,
-} from '@udecode/plate-core';
+import { getNode, unsetNodes } from '@udecode/plate-common';
+import { PlateEditor, WithOverride } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { defaults } from 'lodash';
-import { Node, NodeEntry, Path, Transforms } from 'slate';
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './defaults';
+import { Node } from 'slate';
+import { getNextIndentList } from './queries/getNextIndentList';
+import { getPreviousIndentList } from './queries/getPreviousIndentList';
+import { normalizeListStart } from './transforms/normalizeListStart';
+import { KEY_LIST_STYLE_TYPE } from './defaults';
 import { IndentListPluginOptions } from './types';
-
-const getPreviousIndentList = (
-  editor: SPEditor,
-  [node, path]: NodeEntry,
-  {
-    sameIndent = true,
-    sameStyleType = true,
-  }: { sameIndent?: boolean; sameStyleType?: boolean } = {}
-): NodeEntry | undefined => {
-  const indent = node[KEY_INDENT];
-  const listStyleType = node[KEY_LIST_STYLE_TYPE];
-
-  let prevPath = getPreviousPath(path);
-
-  while (true) {
-    if (!prevPath) return;
-
-    const prevNode = getNode(editor, prevPath);
-
-    if (!prevNode || !prevNode[KEY_INDENT] || prevNode[KEY_INDENT] < indent) {
-      return;
-    }
-
-    if (prevNode[KEY_INDENT] === indent) {
-      if (sameStyleType && prevNode[KEY_LIST_STYLE_TYPE] !== listStyleType) {
-        return;
-      }
-
-      return [prevNode, prevPath];
-    }
-
-    prevPath = getPreviousPath(prevPath);
-  }
-};
-
-const getNextIndentList = (
-  editor: SPEditor,
-  [node, path]: NodeEntry,
-  {
-    sameIndent = true,
-    sameStyleType = true,
-  }: { sameIndent?: boolean; sameStyleType?: boolean } = {}
-): NodeEntry | undefined => {
-  const indent = node[KEY_INDENT];
-  const listStyleType = node[KEY_LIST_STYLE_TYPE];
-
-  let nextPath = Path.next(path);
-
-  while (true) {
-    const nextNode = getNode(editor, nextPath);
-
-    // todo indent smaller
-    if (!nextNode || !nextNode[KEY_INDENT] || nextNode[KEY_INDENT] < indent) {
-      return;
-    }
-
-    if (nextNode[KEY_INDENT] === indent) {
-      if (sameStyleType && nextNode[KEY_LIST_STYLE_TYPE] !== listStyleType) {
-        return;
-      }
-
-      return [nextNode, nextPath];
-    }
-
-    nextPath = Path.next(nextPath);
-  }
-};
 
 export const withIndentList = (
   options?: IndentListPluginOptions
-): WithOverride<SPEditor> => (editor) => {
+): WithOverride<PlateEditor> => (editor) => {
   const { apply, normalizeNode } = editor;
 
   // TODO: extend plate-core to register options
@@ -96,37 +20,12 @@ export const withIndentList = (
     {} as IndentListPluginOptions
   );
 
-  const normalizeListStart = (nodeEntry: NodeEntry) => {
-    const [node, path] = nodeEntry;
-    const listStyleType = node[KEY_LIST_STYLE_TYPE];
-
-    if (listStyleType) {
-      const prevNodeEntry = getPreviousIndentList(editor, nodeEntry);
-      if (!prevNodeEntry && node[KEY_LIST_START] > 1) {
-        setNodes(editor, { [KEY_LIST_START]: 1 }, { at: path });
-      }
-
-      const nextNodeEntry = getNextIndentList(editor, nodeEntry);
-      if (!nextNodeEntry) return;
-
-      const [nextNode, nextPath] = nextNodeEntry;
-
-      const listStart = node[KEY_LIST_START] ?? 1;
-      const nextListStart = nextNode[KEY_LIST_START] ?? 1;
-
-      if (nextListStart !== listStart + 1) {
-        setNodes(editor, { [KEY_LIST_START]: listStart + 1 }, { at: nextPath });
-        normalizeListStart([nextNode, nextPath]);
-      }
-    }
-  };
-
   editor.normalizeNode = ([node, path]) => {
     if (node[KEY_LIST_STYLE_TYPE] && !node[KEY_INDENT]) {
       unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
     }
 
-    normalizeListStart([node, path]);
+    normalizeListStart(editor, [node, path]);
 
     return normalizeNode([node, path]);
   };
@@ -164,14 +63,14 @@ export const withIndentList = (
           path,
         ]);
         if (!prevNodeEntry) {
-          normalizeListStart([node as any, path]);
+          normalizeListStart(editor, [node as any, path]);
           return;
         }
 
-        normalizeListStart(prevNodeEntry);
+        normalizeListStart(editor, prevNodeEntry);
         // FIXME: delete first list
         // if (nextNodeEntryBefore) {
-        //   normalizeListStart(nextNodeEntryBefore);
+        //   normalizeListStart(editor,nextNodeEntryBefore);
         // }
       }
     }
@@ -188,7 +87,7 @@ export const withIndentList = (
         const nextNodeEntry = getNextIndentList(editor, [node, path]);
         if (!nextNodeEntry) return;
 
-        normalizeListStart(nextNodeEntry);
+        normalizeListStart(editor, nextNodeEntry);
       }
 
       // Update list style type
@@ -207,7 +106,7 @@ export const withIndentList = (
          */
         const prevNodeEntry = getPreviousIndentList(editor, [node, path]);
         if (prevNodeEntry) {
-          normalizeListStart(prevNodeEntry);
+          normalizeListStart(editor, prevNodeEntry);
         }
 
         /**
@@ -218,7 +117,7 @@ export const withIndentList = (
          */
         const nextNodeEntry = getNextIndentList(editor, [nodeBefore, path]);
         if (nextNodeEntry) {
-          normalizeListStart(nextNodeEntry);
+          normalizeListStart(editor, nextNodeEntry);
         }
       }
 
@@ -240,7 +139,7 @@ export const withIndentList = (
           sameStyleType: false,
         });
         if (prevNodeEntry) {
-          normalizeListStart(prevNodeEntry);
+          normalizeListStart(editor, prevNodeEntry);
         }
 
         /**
@@ -253,7 +152,7 @@ export const withIndentList = (
           sameStyleType: false,
         });
         if (prevNodeEntry) {
-          normalizeListStart(prevNodeEntry);
+          normalizeListStart(editor, prevNodeEntry);
         }
 
         /**
@@ -266,7 +165,7 @@ export const withIndentList = (
           sameStyleType: false,
         });
         if (nextNodeEntry) {
-          normalizeListStart(nextNodeEntry);
+          normalizeListStart(editor, nextNodeEntry);
         }
 
         /**
@@ -279,7 +178,7 @@ export const withIndentList = (
           sameStyleType: false,
         });
         if (nextNodeEntry) {
-          normalizeListStart(nextNodeEntry);
+          normalizeListStart(editor, nextNodeEntry);
         }
       }
     }

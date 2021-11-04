@@ -1,7 +1,7 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import {
   getPlatePluginType,
-  SPEditor,
+  PlateEditor,
   TDescendant,
   TElement,
   TNode,
@@ -29,7 +29,7 @@ const isValidCsv = (
   );
 };
 
-export const deserializeCSV = <T extends SPEditor = SPEditor>(
+export const deserializeCSV = <T = TPlateEditor>(
   editor: T,
   content: string,
   header = false,

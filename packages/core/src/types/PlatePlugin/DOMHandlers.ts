@@ -14,7 +14,7 @@ import {
   UIEvent,
   WheelEvent,
 } from 'react';
-import { SPEditor } from '../SPEditor';
+import { PlateEditor, TPlateEditor } from '../SPEditor';
 
 /**
  * If true, the next handlers will be skipped.
@@ -25,15 +25,12 @@ type ReturnType = HandlerReturnType;
 
 export type DOMHandler<
   K extends keyof DOMHandlers,
-  T extends SPEditor = SPEditor
+  T = TPlateEditor
 > = NonNullable<DOMHandlers<T>[K]>;
 
-export type KeyboardHandler<T extends SPEditor = SPEditor> = DOMHandler<
-  'onKeyDown',
-  T
->;
+export type KeyboardHandler<T = TPlateEditor> = DOMHandler<'onKeyDown', T>;
 
-export interface DOMHandlers<T extends SPEditor = SPEditor> {
+export interface DOMHandlers<T = TPlateEditor> {
   // Clipboard Events
   onCopy?: (editor: T) => (event: ClipboardEvent) => ReturnType;
   onCopyCapture?: (editor: T) => (event: ClipboardEvent) => ReturnType;

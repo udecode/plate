@@ -1,5 +1,5 @@
 import { match } from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor, TPlateEditor } from '@udecode/plate-core';
 import { Ancestor } from 'slate';
 import { getListTypes } from './getListTypes';
 

@@ -1,5 +1,5 @@
 import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../defaults';
 

@@ -1,5 +1,5 @@
 import { unwrapNodes } from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { getCodeBlockType, getCodeLineType } from '../options';
 
 export const unwrapCodeBlock = (editor: SPEditor) => {

@@ -8,12 +8,12 @@ import {
   PlatePluginOptions,
   PluginKey,
 } from '../types/PlatePluginOptions/PlateOptions';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor, TPlateEditor } from '../types/SPEditor';
 import { TEditor } from '../types/TEditor';
 import { flatMapByKey } from './flatMapByKey';
 import { pipe } from './pipe';
 
-export interface WithPlateOptions<T extends SPEditor = SPEditor> {
+export interface WithPlateOptions<T = TPlateEditor> {
   id?: string | null;
   plugins?: PlatePlugin<T>[];
   options?: Record<PluginKey, Partial<PlatePluginOptions>>;
@@ -27,7 +27,7 @@ export interface WithPlateOptions<T extends SPEditor = SPEditor> {
  * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
  * - `options`: Plate options
  */
-export const withPlate = <T extends SPEditor = SPEditor>({
+export const withPlate = <T = TPlateEditor>({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
   options: _options = {},

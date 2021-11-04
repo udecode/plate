@@ -6,7 +6,7 @@ import { usePlateActions } from '../../stores/plate/plate.actions';
 import { useStoreEditorEnabled } from '../../stores/plate/selectors/useStoreEditorEnabled';
 import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
 import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
-import { SPEditor } from '../../types/SPEditor';
+import { TPlateEditor } from '../../types/SPEditor';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -16,7 +16,7 @@ import { withPlate } from '../../utils/withPlate';
  * Effects to update the plate store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const usePlateEffects = <T extends SPEditor = SPEditor>({
+export const usePlateEffects = <T = TPlateEditor>({
   id = 'main',
   value,
   editor,

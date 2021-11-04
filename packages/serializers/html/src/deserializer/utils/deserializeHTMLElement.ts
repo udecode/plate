@@ -5,7 +5,7 @@ import { deserializeHTMLNode } from './deserializeHTMLNode';
 /**
  * Deserialize HTML element.
  */
-export const deserializeHTMLElement = <T extends SPEditor = SPEditor>(
+export const deserializeHTMLElement = <T = TPlateEditor>(
   editor: T,
   {
     plugins,

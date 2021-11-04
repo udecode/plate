@@ -12,7 +12,7 @@ jsx;
 /**
  * Deserialize HTML to Element.
  */
-export const deserializeHTMLToElement = <T extends SPEditor = SPEditor>(
+export const deserializeHTMLToElement = <T = TPlateEditor>(
   editor: T,
   {
     plugins,

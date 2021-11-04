@@ -6,7 +6,7 @@ import {
   someNode,
   wrapNodes,
 } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { getCodeBlockType, getCodeLineType } from '../options';
 
 /**
@@ -14,7 +14,7 @@ import { getCodeBlockType, getCodeLineType } from '../options';
  * If the cursor is not at the block start, insert break before.
  */
 export const insertCodeBlock = (
-  editor: SPEditor,
+  editor: PlateEditor,
   insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;

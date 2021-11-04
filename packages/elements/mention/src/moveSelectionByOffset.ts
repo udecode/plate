@@ -1,11 +1,11 @@
 import { KeyboardEvent } from 'react';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { HandlerReturnType } from '@udecode/plate-core/src';
 import { Range, Transforms } from 'slate';
 
 export const moveSelectionByOffset = (
-  editor: SPEditor,
-  { query = () => true }: { query: (editor: SPEditor) => boolean }
+  editor: PlateEditor,
+  { query = () => true }: { query: (editor: PlateEditor) => boolean }
 ) => (event: KeyboardEvent): HandlerReturnType => {
   const { selection } = editor;
   if (!selection || Range.isExpanded(selection) || !query(editor)) {

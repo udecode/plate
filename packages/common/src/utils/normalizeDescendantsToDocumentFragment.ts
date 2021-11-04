@@ -1,8 +1,9 @@
 import {
   getPlatePluginType,
   isElement,
-  SPEditor,
+  PlateEditor,
   TElement,
+  TPlateEditor,
 } from '@udecode/plate-core';
 import { Descendant, Editor, Element, Text } from 'slate';
 import { ELEMENT_DEFAULT } from '../types';
@@ -102,9 +103,7 @@ const normalize = (
 /**
  * Normalize the descendants to a valid document fragment.
  */
-export const normalizeDescendantsToDocumentFragment = <
-  T extends SPEditor = SPEditor
->(
+export const normalizeDescendantsToDocumentFragment = <T = TPlateEditor>(
   editor: T,
   { descendants }: { descendants: Descendant[] }
 ) => {

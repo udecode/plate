@@ -1,6 +1,6 @@
 import {
   getPlatePluginType,
-  SPEditor,
+  PlateEditor,
   TEditor,
   TElement,
 } from '@udecode/plate-core';

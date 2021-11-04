@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import React from 'react';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor, TPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

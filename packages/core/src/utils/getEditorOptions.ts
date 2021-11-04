@@ -1,5 +1,5 @@
 import { PlateOptions } from '../types/PlatePluginOptions/PlateOptions';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor, TPlateEditor } from '../types/SPEditor';
 import { AnyObject } from '../types/utility/AnyObject';
 
 /**

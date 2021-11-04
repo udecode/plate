@@ -8,7 +8,7 @@ import { getPlateState } from './getPlateState';
  * Get editor ref which is never updated.
  */
 export const useStoreEditorRef = <
-  T extends SPEditor = SPEditor & ReactEditor & HistoryEditor
+  T = TPlateEditor & ReactEditor & HistoryEditor
 >(
   id?: string | null
 ) => usePlateStore((state) => getPlateState<T>(state as any, id)?.editor);

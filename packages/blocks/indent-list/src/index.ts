@@ -8,3 +8,6 @@ export * from './getIndentListInjectComponent';
 export * from './types';
 export * from './withIndentList';
 export * from './transforms/index';
+export { getPreviousIndentList } from './queries/getPreviousIndentList';
+export { getNextIndentList } from './queries/getNextIndentList';
+export { normalizeListStart } from './transforms/normalizeListStart';

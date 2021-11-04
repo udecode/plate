@@ -1,6 +1,6 @@
 import { OnChange } from '../types/PlatePlugin/OnChange';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor, TPlateEditor } from '../types/SPEditor';
 
 export const pipeOnChange = (
   editor: SPEditor,

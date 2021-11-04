@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -29,7 +29,7 @@ import unified from 'unified';
  * Deserialize content from Markdown format to Slate format.
  * `editor` needs
  */
-export const deserializeMD = (editor: SPEditor, content: string) => {
+export const deserializeMD = (editor: PlateEditor, content: string) => {
   const tree: any = unified()
     .use(markdown)
     .use(slate, {
