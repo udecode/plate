@@ -52,14 +52,64 @@ const indent: any = (
 
 const indentList: any = (
   <fragment>
-    <hh1>Changing block indentation</hh1>
-    <hp indentList={1}>
-      Use the toolbar buttons to control the indentation of specific blocks. You
-      can use these tools to highlight an important piece of information,
-      communicate a hierarchy or just give your content some room.
+    <hh1>Modern manned spacecraft</hh1>
+    <hp>List:</hp>
+    <hp indent={1} listStyleType="upper-roman">
+      Soyuz (Soviet/Russian)
     </hp>
-    <hp indentList={2}>
-      For instance, this paragraph looks like it belongs to the previous one.
+    <hp indent={2} listStyleType="decimal" listStart={1}>
+      Early stage (all retired)
+    </hp>
+    <hp indent={3} listStyleType="decimal" listStart={1}>
+      7K-OK
+    </hp>
+    <hp indent={3} listStyleType="decimal" listStart={1}>
+      7KT-OK
+    </hp>
+    {/* <hp indent={3} listStyleType="lower-latin" listStart={1}> */}
+    {/*  7K-T */}
+    {/* </hp> */}
+    {/* <hp indent={3} listStyleType="lower-latin" listStart={1}> */}
+    {/*  7K-TM */}
+    {/* </hp> */}
+    <hp indent={2} listStyleType="decimal" listStart={1}>
+      Soyuz T (retired)
+    </hp>
+    <hp indent={2} listStyleType="decimal" listStart={1}>
+      Soyuz TM (retired)
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Soyuz TMA (retired) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Soyuz TMA-M (retired) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Soyuz MS */}
+    {/* </hp> */}
+    <hp indent={1} listStyleType="upper-roman" listStart={1}>
+      STS orbiter (American; all retired)
+    </hp>
+    <hp indent={2} listStyleType="decimal" listStart={1}>
+      Columbia
+    </hp>
+    <hp indent={2} listStyleType="decimal" listStart={1}>
+      Challenger
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Discovery */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Atlantis */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal" listStart={1}> */}
+    {/*  Endeavour */}
+    {/* </hp> */}
+    <hp indent={1} listStyleType="upper-roman" listStart={1}>
+      SpaceX Crew Dragon (American)
+    </hp>
+    <hp indent={1} listStyleType="upper-roman" listStart={1}>
+      Shenzhou (Chinese)
     </hp>
   </fragment>
 );

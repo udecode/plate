@@ -59,7 +59,7 @@ export const CONFIG: {
   trailingBlock: TrailingBlockPluginOptions;
 } = {
   editableProps: {
-    autoFocus: false,
+    autoFocus: process.env.NODE_ENV !== 'production',
     spellCheck: false,
     placeholder: 'Type…',
     style: {

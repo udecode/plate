@@ -28,14 +28,21 @@ npm install @udecode/plate-indent-list
 
 ```ts live
 () => {
+  const components = {
+    ...CONFIG.components,
+    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
+      as: 'div',
+      styles: {
+        root: {
+          margin: 0,
+          padding: '4px 0',
+        }
+      }
+    })
+  }
+
   const plugins = [
     ...PLUGINS.basicNodes,
-    createIndentListPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
-    }),
     createIndentListPlugin({
       validTypes: [
         ELEMENT_PARAGRAPH,
@@ -58,7 +65,9 @@ npm install @udecode/plate-indent-list
         <ToolbarButton
           onMouseDown={(e) => {
             e.preventDefault();
-            toggleIndentList(editor);
+            toggleIndentList(editor, {
+              listStyleType: 'disc',
+            });
           }}
           icon={<FormatListBulleted />}
         />
@@ -97,10 +106,11 @@ npm install @udecode/plate-indent-list
       <Plate
         id="indent-list"
         plugins={plugins}
-        components={CONFIG.components}
+        components={components}
         options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.indentList}
+        normalizeInitialValue
       />
     </>
   );

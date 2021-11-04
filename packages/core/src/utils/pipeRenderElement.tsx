@@ -1,4 +1,5 @@
 import React from 'react';
+import castArray from 'lodash/castArray';
 import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
@@ -16,12 +17,16 @@ export const pipeRenderElement = (
     (plugin) => plugin.renderElement?.(editor) ?? []
   );
 
-  const propsOverriders = plugins.flatMap(
-    (plugin) => plugin.overrideProps?.(editor) ?? []
+  const propsOverriders = plugins.flatMap((plugin) =>
+    castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
   );
 
   return (renderElementProps) => {
-    const props = pipeOverrideProps(renderElementProps, propsOverriders);
+    const props = {
+      ...pipeOverrideProps(renderElementProps, propsOverriders),
+      editor,
+      plugins,
+    };
 
     let element;
 

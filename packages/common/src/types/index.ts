@@ -7,6 +7,5 @@ export * from './ErrorHandler';
 export * from './OverridePropsOptions';
 export * from './QueryEditorOptions';
 export * from './QueryNodeOptions';
-export * from './RenderFunction';
 export * from './Transforms.types';
 export * from './node.types';

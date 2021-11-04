@@ -2,6 +2,7 @@ import { SPEditor } from '../SPEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { DOMHandlers } from './DOMHandlers';
+import { InjectComponent } from './InjectComponent';
 import { OnChange } from './OnChange';
 import { OverrideProps } from './OverrideProps';
 import { RenderElement } from './RenderElement';
@@ -33,9 +34,14 @@ export interface PlatePluginEditor<T extends SPEditor = SPEditor>
   decorate?: Decorate<T>;
 
   /**
-   * Plugin keys to support configuration.
+   * Inject child component around any node children.
    */
-  pluginKeys?: string | string[];
+  injectChildComponent?: InjectComponent | InjectComponent[];
+
+  /**
+   * Inject parent component around any node `component`.
+   */
+  injectParentComponent?: InjectComponent | InjectComponent[];
 
   /**
    * @see {@link OnChange}
@@ -45,7 +51,12 @@ export interface PlatePluginEditor<T extends SPEditor = SPEditor>
   /**
    * Overrides rendered node props (shallow merge).
    */
-  overrideProps?: OverrideProps<T>;
+  overrideProps?: OverrideProps<T> | OverrideProps<T>[];
+
+  /**
+   * Plugin keys to support configuration.
+   */
+  pluginKeys?: string | string[];
 
   /**
    * Editor method overriders.

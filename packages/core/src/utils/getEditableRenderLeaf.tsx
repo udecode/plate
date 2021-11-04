@@ -27,11 +27,7 @@ export const getEditableRenderLeaf = ({
       type,
     });
 
-    return (
-      <Leaf {...props} {...nodeProps}>
-        {children}
-      </Leaf>
-    );
+    return <Leaf {...nodeProps}>{children}</Leaf>;
   }
 
   return children;

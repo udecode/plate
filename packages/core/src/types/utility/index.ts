@@ -4,4 +4,5 @@
 
 export * from './AnyObject';
 export * from './FunctionProperties';
+export * from './RenderFunction';
 export * from './WithOptional';

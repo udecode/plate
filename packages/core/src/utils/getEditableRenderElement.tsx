@@ -14,7 +14,16 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
   props: SPRenderElementProps
 ) => {
+  const { plugins } = props;
+
   const _options = castArray<RenderNodeOptions>(options);
+
+  const injectParentComponents = plugins.flatMap(
+    (o) => o.injectParentComponent ?? []
+  );
+  const injectChildComponents = plugins.flatMap(
+    (o) => o.injectChildComponent ?? []
+  );
 
   for (const option of _options) {
     const {
@@ -24,7 +33,7 @@ export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
       overrideProps,
     } = option;
 
-    const { element, children } = props;
+    const { element, children: _children } = props;
 
     if (element.type === type) {
       const nodeProps = getRenderNodeProps({
@@ -35,11 +44,29 @@ export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
         type,
       });
 
-      return (
-        <Element {...props} {...nodeProps}>
-          {children}
-        </Element>
+      let children = _children;
+
+      injectChildComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, ...option });
+
+        if (hoc) {
+          children = hoc({ ...nodeProps, children });
+        }
+      });
+
+      let component: JSX.Element | null = (
+        <Element {...nodeProps}>{children}</Element>
       );
+
+      injectParentComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, ...option });
+
+        if (hoc) {
+          component = hoc({ ...nodeProps, children: component });
+        }
+      });
+
+      return component;
     }
   }
 };

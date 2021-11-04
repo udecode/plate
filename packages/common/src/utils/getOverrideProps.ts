@@ -85,10 +85,14 @@ export const getOverrideProps = (pluginKey: string): OverrideProps => (
 
   const value = transformNodeValue?.(editor, transformOptions) ?? nodeValue;
 
-  if (classNames?.[nodeValue]) {
+  if (element) {
+    res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
+  }
+
+  if (classNames?.[nodeValue] || transformClassName) {
     res.className =
       transformClassName?.(editor, transformOptions) ??
-      clsx(className, classNames[value]);
+      clsx(res.className, classNames?.[value]);
   }
 
   if (styleKey) {

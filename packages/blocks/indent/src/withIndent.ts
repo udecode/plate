@@ -6,6 +6,7 @@ import {
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
+import clsx from 'clsx';
 import { defaults } from 'lodash';
 import { Transforms } from 'slate';
 import { KEY_INDENT } from './defaults';

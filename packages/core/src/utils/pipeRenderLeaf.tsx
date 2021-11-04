@@ -1,4 +1,5 @@
 import React from 'react';
+import castArray from 'lodash/castArray';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
@@ -16,8 +17,8 @@ export const pipeRenderLeaf = (
     (plugin) => plugin.renderLeaf?.(editor) ?? []
   );
 
-  const propsOverriders = plugins.flatMap(
-    (plugin) => plugin.overrideProps?.(editor) ?? []
+  const propsOverriders = plugins.flatMap((plugin) =>
+    castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
   );
 
   return (renderLeafProps) => {

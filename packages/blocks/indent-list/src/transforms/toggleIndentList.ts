@@ -1,4 +1,9 @@
-import { someNode, unsetNodes } from '@udecode/plate-common';
+import {
+  findNode,
+  setNodes,
+  someNode,
+  unsetNodes,
+} from '@udecode/plate-common';
 import { SPEditor } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../defaults';
 import { indentList, IndentListOptions } from './indentList';
@@ -11,10 +16,28 @@ export const toggleIndentList = (
   editor: SPEditor,
   options?: IndentListOptions
 ) => {
-  if (someNode(editor, { match: (n) => !!n[KEY_LIST_STYLE_TYPE] })) {
-    outdentList(editor, options);
-    unsetNodes(editor, KEY_LIST_STYLE_TYPE);
-  } else {
+  const nodeEntry = findNode(editor, {
+    match: (n) => !!n[KEY_LIST_STYLE_TYPE],
+  });
+
+  if (!nodeEntry) {
     indentList(editor, options);
+    return;
+  }
+
+  const [node, path] = nodeEntry;
+
+  if (node[KEY_LIST_STYLE_TYPE] && options?.listStyleType) {
+    if (node[KEY_LIST_STYLE_TYPE] === options?.listStyleType) {
+      outdentList(editor, options);
+      unsetNodes(editor, KEY_LIST_STYLE_TYPE);
+      return;
+    }
+
+    setNodes(
+      editor,
+      { [KEY_LIST_STYLE_TYPE]: options?.listStyleType },
+      { at: path }
+    );
   }
 };

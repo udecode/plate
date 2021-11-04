@@ -1,6 +1,6 @@
-import { IndentPluginOptions } from '@udecode/plate-indent';
+import { OverridePropsOptions } from '@udecode/plate-common';
 
-export interface IndentListPluginOptions extends IndentPluginOptions {}
+export interface IndentListPluginOptions extends OverridePropsOptions<string> {}
 
 export enum ListStyleType {
   // The marker is traditional Armenian numbering
