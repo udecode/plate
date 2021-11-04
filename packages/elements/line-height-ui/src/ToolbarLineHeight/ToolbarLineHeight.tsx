@@ -19,11 +19,16 @@ import {
 import { ReactEditor } from 'slate-react';
 
 export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
+  const [open, setOpen] = React.useState(false);
   const editor = useStoreEditorState(useEventEditorId('focus'));
 
   const { validNodeValues } = getPlatePluginOptions<
     Required<LineHeightPluginOptions>
   >(editor, KEY_LINE_HEIGHT);
+
+  const onToggle = useCallback(() => {
+    setOpen(!open);
+  }, [open, setOpen]);
 
   const selectHandler = useCallback(
     (lineHeight) => {
@@ -36,6 +41,7 @@ export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
     },
     [editor]
   );
+
   return (
     <ToolbarDropdown
       control={
@@ -47,6 +53,9 @@ export const ToolbarLineHeight = (props: ToolbarButtonProps) => {
           {...props}
         />
       }
+      open={open}
+      onOpen={onToggle}
+      onClose={onToggle}
     >
       {validNodeValues &&
         validNodeValues.map((lineHeight) => (

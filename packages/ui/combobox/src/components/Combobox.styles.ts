@@ -1,9 +1,11 @@
 import { createStyles } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { ComboboxStyleProps } from './Combobox.types';
+import { ComboboxStyleProps, Data } from './Combobox.types';
 
-export const getComboboxStyles = (props: ComboboxStyleProps) => {
+export const getComboboxStyles = <TData extends Data>(
+  props: ComboboxStyleProps<TData>
+) => {
   const item = [
     tw`flex items-center px-2 cursor-pointer`,
     css`

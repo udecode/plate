@@ -115,9 +115,9 @@
     - `mentionables`: moved to `items` in `comboboxStore`
     - `mentionableFilter`: moved to `filter` in `comboboxStore`
   - removed `matchesTriggerAndPattern` in favor of `getTextFromTrigger`
-  - removed `MentionNodeData` in favor of `ComboboxItemData`
+  - removed `MentionNodeData` in favor of `TComboboxItem`
   ```ts
-  export interface ComboboxItemData {
+  export interface TComboboxItem {
     /**
      * Unique key.
      */

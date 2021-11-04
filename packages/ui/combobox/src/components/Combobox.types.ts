@@ -7,7 +7,7 @@ import {
   ComboboxStoreById,
 } from '../combobox.store';
 
-export interface ComboboxStyleProps extends ComboboxProps {
+export interface ComboboxStyleProps<TData> extends ComboboxProps<TData> {
   highlighted?: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface ComboboxStyles {
   highlightedItem: CSSProp;
 }
 
-export interface ComboboxItemData {
+export interface TComboboxItemBase {
   /**
    * Unique key.
    */
@@ -32,20 +32,31 @@ export interface ComboboxItemData {
    * @default false
    */
   disabled?: boolean;
+}
 
+export interface TComboboxItemWithData<TData extends Data>
+  extends TComboboxItemBase {
   /**
    * Data available to `onRenderItem`.
    */
-  data?: unknown;
+  data: TData;
 }
 
-export interface ComboboxItemProps {
-  item: ComboboxItemData;
+export type NoData = undefined;
+
+export type Data = unknown;
+
+export type TComboboxItem<TData = NoData> = TData extends NoData
+  ? TComboboxItemBase
+  : TComboboxItemWithData<TData>;
+
+export interface ComboboxItemProps<TData> {
+  item: TComboboxItem<TData>;
 }
 
-export interface ComboboxProps
-  extends Partial<Pick<ComboboxState, 'items'>>,
-    ComboboxStateById,
+export interface ComboboxProps<TData = NoData>
+  extends Partial<Pick<ComboboxState<TData>, 'items'>>,
+    ComboboxStateById<TData>,
     StyledProps<ComboboxStyles> {
   /**
    * Render this component when the combobox is open (useful to inject hooks).
@@ -56,5 +67,5 @@ export interface ComboboxProps
    * Render combobox item.
    * @default text
    */
-  onRenderItem?: RenderFunction<ComboboxItemProps>;
+  onRenderItem?: RenderFunction<ComboboxItemProps<TData>>;
 }

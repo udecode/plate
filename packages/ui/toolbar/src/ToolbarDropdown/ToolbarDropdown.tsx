@@ -2,15 +2,21 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
 
+type ToolbarDropdownProps = {
+  control: ReactNode;
+  open: boolean;
+  children: ReactNode;
+  onOpen?: () => void;
+  onClose?: (ev: MouseEvent) => void;
+};
+
 export const ToolbarDropdown = ({
   control,
   children,
+  open,
+  onOpen,
   onClose,
-}: {
-  control: ReactNode;
-  children: ReactNode;
-  onClose?: (ev: MouseEvent) => void;
-}) => {
+}: ToolbarDropdownProps) => {
   const [
     referenceElement,
     setReferenceElement,
@@ -18,8 +24,6 @@ export const ToolbarDropdown = ({
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null
   );
-
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const listener = (ev: MouseEvent) => {
@@ -31,7 +35,6 @@ export const ToolbarDropdown = ({
           return;
         }
 
-        setOpen(false);
         onClose?.(ev);
       }
     };
@@ -39,11 +42,11 @@ export const ToolbarDropdown = ({
     return () => {
       document.body.removeEventListener('mousedown', listener);
     };
-  }, [onClose, open, popperElement, referenceElement, setOpen]);
+  }, [onClose, open, popperElement, referenceElement]);
 
   return (
     <>
-      <div ref={setReferenceElement} onMouseDown={() => setOpen(true)}>
+      <div ref={setReferenceElement} onMouseDown={onOpen}>
         {control}
       </div>
 
