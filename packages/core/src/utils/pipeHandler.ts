@@ -1,11 +1,11 @@
 import { SyntheticEvent } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { PlateEditor } from '../types/PlateEditor';
 import {
   DOMHandlers,
   HandlerReturnType,
 } from '../types/PlatePlugin/DOMHandlers';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { PlateEditor } from '../types/PlateEditor';
 
 /**
  * Check if an event is overrided by a handler.

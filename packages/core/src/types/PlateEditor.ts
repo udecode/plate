@@ -6,9 +6,9 @@ import {
 } from './PlatePluginOptions/PlateOptions';
 import { TEditor } from './TEditor';
 
-export type PlateEditor<T = {}> = PlateEditor & HistoryEditor & ReactEditor & T;
+export type PlateEditor<T = {}> = SPEditor & HistoryEditor & ReactEditor & T;
 
-export interface PlateEditor extends TEditor {
+export interface SPEditor extends TEditor {
   key: any;
   id: string;
   options: Record<PluginKey, Partial<PlatePluginOptions>>;

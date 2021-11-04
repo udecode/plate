@@ -1,5 +1,5 @@
-import { PlateOptions } from '../types/PlatePluginOptions/PlateOptions';
 import { PlateEditor } from '../types/PlateEditor';
+import { PlateOptions } from '../types/PlatePluginOptions/PlateOptions';
 import { AnyObject } from '../types/utility/AnyObject';
 
 /**
