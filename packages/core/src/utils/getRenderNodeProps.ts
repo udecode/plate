@@ -6,14 +6,14 @@ import { getSlateClass } from './getSlateClass';
 /**
  * Computes `className` and `nodeProps`
  */
-export const getRenderNodeProps = ({
+export const getRenderNodeProps = <T extends SPRenderNodeProps>({
   attributes,
   overrideProps,
   type,
   getNodeProps,
   props: _props,
 }: Omit<RenderNodeOptions, 'component'> & {
-  props: SPRenderNodeProps;
+  props: T;
   attributes?: any;
 }) => {
   let props = {
