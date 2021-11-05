@@ -1,5 +1,11 @@
 # @udecode/plate-mention-ui
 
+## 7.0.0
+
+### Patch Changes
+
+- [#1149](https://github.com/udecode/plate/pull/1149) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Parametrize ComboboxProps to allow for tweaking of item data type.
+
 ## 6.5.0
 
 ### Minor Changes

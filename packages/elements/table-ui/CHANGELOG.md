@@ -1,5 +1,11 @@
 # @udecode/plate-table-ui
 
+## 7.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) – renamed `ToolbarTable` to `TableToolbarButton`
+
 ## 6.4.2
 
 ### Patch Changes

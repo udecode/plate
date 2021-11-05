@@ -1,5 +1,11 @@
 # @udecode/plate-link-ui
 
+## 7.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) – renamed `ToolbarLink` to `LinkToolbarButton`
+
 ## 6.4.1
 
 ## 6.4.0
