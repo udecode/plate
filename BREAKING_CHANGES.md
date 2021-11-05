@@ -1,5 +1,65 @@
 # Breaking Changes
 
+## 7.0.0
+
+### `@udecode/plate-core`
+
+- renamed:
+  - `SPEditor` to `PEditor` (note that `PlateEditor` is the new default)
+  - `SPRenderNodeProps` to `PlateRenderNodeProps`
+  - `SPRenderElementProps` to `PlateRenderElementProps`
+  - `SPRenderLeafProps` to `PlateRenderLeafProps`
+  - `useEventEditorId` to `usePlateEventId`
+  - `useStoreEditorOptions` to `usePlateOptions` 
+  - `useStoreEditorRef` to `usePlateEditorRef` 
+  - `useStoreEditorSelection` to `usePlateSelection` 
+  - `useStoreEditorState` to `usePlateEditorState` 
+  - `useStoreEditorValue` to `usePlateValue` 
+  - `useStoreEnabled` to `usePlateEnabled` 
+  - `useStorePlate` to `usePlatePlugins` 
+  - `useStorePlatePluginKeys` to `usePlateKeys` 
+  - `useStoreState` to `usePlateState` 
+- `getPlateId`: Get the last focused editor id, else get the last blurred editor id, else get the first editor id, else `null`
+- `getPlateState`:
+  - removed first parameter `state`
+  - previously when giving no parameter, it was returning the first editor. Now it's returning the editor with id = `getPlateId()`. It means `useEventEditorId('focus')` is no longer needed for
+    - `usePlateEditorRef`
+    - `usePlateEditorState`
+    - `usePlateX`...
+
+### `@udecode/plate-alignment`
+
+- `setAlign`: option `align` renamed to `value`
+- removed `getAlignOverrideProps()` in favor of `getOverrideProps(KEY_ALIGN)`
+
+### `@udecode/plate-indent`
+
+- removed `getIndentOverrideProps()` in favor of `getOverrideProps(KEY_INDENT)`
+- rename `onKeyDownHandler` to `getIndentOnKeyDown()`
+- `IndentPluginOptions`
+  - rename `types` to `validTypes`
+  - rename `cssPropName` to `styleKey`
+  - rename `transformCssValue` to `transformNodeValue`
+
+### `@udecode/plate-line-height`
+
+- `setLineHeight`: option `lineHeight` renamed to `value`
+- removed `getLineHeightOverrideProps` in favor of `getOverrideProps(KEY_LINE_HEIGHT)`
+
+### `@udecode/plate-x-ui`
+
+- renamed `ToolbarAlign` to `AlignToolbarButton`
+- renamed `ToolbarCodeBlock` to `CodeBlockToolbarButton`
+- renamed `ToolbarElement` to `BlockToolbarButton`
+- renamed `ToolbarImage` to `ImageToolbarButton`
+- renamed `ToolbarLink` to `LinkToolbarButton`
+- renamed `ToolbarList` to `ListToolbarButton`
+- renamed `ToolbarLineHeight` to `LineHeightToolbarDropdown`
+- renamed `ToolbarMark` to `MarkToolbarButton`
+- renamed `ToolbarMediaEmbed` to `MediaEmbedToolbarButton`
+- renamed `ToolbarSearchHighlight` to `SearchHighlightToolbar`
+- renamed `ToolbarTable` to `TableToolbarButton`
+
 ## 6.0.0
 
 ### `@udecode/plate-alignment`
