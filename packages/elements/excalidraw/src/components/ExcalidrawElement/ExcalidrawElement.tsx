@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw-next/types/types';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { TExcalidrawProps } from '../../types';
 import { getExcalidrawElementStyles } from './ExcalidrawElement.styles';
 import { ExcalidrawElementProps } from './ExcalidrawElement.types';
@@ -10,14 +11,12 @@ export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
     children,
     nodeProps,
     element,
-    styles: _styles,
-    classNames,
-    prefixClassNames,
     scrollToContent = true,
     libraryItems = [],
     excalidrawProps: _excalidrawProps,
-    ...rootProps
   } = props;
+
+  const rootProps = getRootProps(props);
 
   const [Excalidraw, setExcalidraw] = useState<any>(null);
   useEffect(() => {

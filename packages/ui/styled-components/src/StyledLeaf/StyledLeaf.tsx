@@ -1,5 +1,6 @@
 import React from 'react';
 import castArray from 'lodash/castArray';
+import { getRootProps } from '../utils/getRootProps';
 import { getStyledNodeStyles } from '../utils/getStyledNodeStyles';
 import { StyledLeafProps } from './StyledLeaf.types';
 
@@ -7,18 +8,9 @@ import { StyledLeafProps } from './StyledLeaf.types';
  * StyledLeaf with no default styles.
  */
 export const StyledLeaf = (props: StyledLeafProps) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    styles,
-    classNames,
-    prefixClassNames,
-    leaf,
-    text,
-    ...rootProps
-  } = props;
+  const { attributes, children, nodeProps, styles } = props;
 
+  const rootProps = getRootProps(props);
   const rootStyles = castArray(styles?.root ?? []);
   const nodePropsStyles = nodeProps?.styles?.root?.css ?? [];
 

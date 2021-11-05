@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useEditorRef } from '@udecode/plate-core';
+import { getRootProps } from '@udecode/plate-styled-components';
 import {
   ELEMENT_TABLE,
   getTableColumnIndex,
@@ -18,15 +18,13 @@ export const TableCellElement = (props: TableCellElementProps) => {
     attributes,
     children,
     nodeProps,
-    styles,
     element,
-    classNames,
-    prefixClassNames,
     resizableProps,
-    ...rootProps
+    editor,
   } = props;
 
-  const editor = useEditorRef();
+  const rootProps = getRootProps(props);
+
   const [hoveredColIndex, setHoveredColIndex] = useAtom(
     hoveredColIndexAtom,
     ELEMENT_TABLE

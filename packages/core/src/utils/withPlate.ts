@@ -28,32 +28,16 @@ export interface WithPlateOptions {
 export const withPlate = ({
   id = 'main',
   plugins = [createReactPlugin(), createHistoryPlugin()],
-  options: _options = {},
+  options = {},
   components = {},
 }: WithPlateOptions = {}): WithOverride => (editor) => {
   editor.id = id as string;
 
-  const options = { ..._options };
-
-  if (components) {
-    // Merge components into options
-    Object.keys(components).forEach((key) => {
-      options[key] = {
-        component: components[key],
-        ...(options[key] as any),
-      };
-    });
-  }
-
-  // Default option type is the plugin key
-  Object.keys(options).forEach((key) => {
-    if (options[key]!.type === undefined) options[key]!.type = key;
-  });
-  editor.options = options;
-
   if (!editor.key) {
     editor.key = Math.random();
   }
+
+  editor.options = { ...options };
 
   const _plugins: PlatePlugin[] = [
     ...plugins,
@@ -65,6 +49,20 @@ export const withPlate = ({
   // Plugins withOverrides
   const withOverrides = flatMapByKey(_plugins, 'withOverrides');
   editor = pipe(editor, ...withOverrides);
+
+  // Default option type is the plugin key
+  Object.keys(editor.options).forEach((key) => {
+    if (editor.options[key]!.type === undefined)
+      editor.options[key]!.type = key;
+  });
+
+  // Merge components into options
+  Object.keys(components).forEach((key) => {
+    editor.options[key] = {
+      component: components[key],
+      ...(editor.options[key] as any),
+    };
+  });
 
   return editor;
 };

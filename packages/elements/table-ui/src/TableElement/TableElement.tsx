@@ -1,5 +1,6 @@
 import React from 'react';
 import { withProviders } from '@udecode/plate-common';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';
 import { useTableColSizes } from '../hooks/useTableColSizes';
@@ -12,14 +13,12 @@ export const TableElementBase = (props: TableElementProps) => {
     attributes,
     children,
     nodeProps,
-    styles,
     element,
-    classNames,
-    prefixClassNames,
     transformColSizes,
     onRenderContainer: Popover = TablePopover,
-    ...rootProps
   } = props;
+
+  const rootProps = getRootProps(props);
 
   const { root, tbody } = getTableElementStyles(props);
 

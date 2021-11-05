@@ -1,5 +1,6 @@
 import React from 'react';
 import { getHandler } from '@udecode/plate-common';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionElementStyles } from './MentionElement.styles';
 import { MentionElementProps } from './MentionElement.types';
@@ -9,16 +10,14 @@ export const MentionElement = (props: MentionElementProps) => {
     attributes,
     children,
     nodeProps,
-    styles: _styles,
     element,
-    classNames,
-    prefixClassNames,
     prefix,
     as,
     onClick,
     renderLabel,
-    ...rootProps
   } = props;
+
+  const rootProps = getRootProps(props);
 
   const selected = useSelected();
   const focused = useFocused();

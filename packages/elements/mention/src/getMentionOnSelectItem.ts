@@ -6,32 +6,27 @@ import {
   TComboboxItem,
 } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlatePluginKey,
-  TElement,
-} from '@udecode/plate-core';
+import { getPlatePluginOptions, PlatePluginKey } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './defaults';
-// FIXME: Cannot figure out the TS for this to work with insertNodes
-// import { MentionNodeData } from './types';
+import { MentionNode, MentionNodeData, MentionPluginOptions } from './types';
 
 export interface CreateMentionNode<TData extends Data> {
-  (item: TComboboxItem<TData>): Record<string, unknown>;
+  (item: TComboboxItem<TData>): MentionNodeData;
 }
 
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
   pluginKey = ELEMENT_MENTION,
-  createMentionNode = (item) => ({ value: item.text }),
-  insertSpaceAfterMention,
-}: {
-  createMentionNode?: CreateMentionNode<TData>;
-  insertSpaceAfterMention?: boolean;
-} & PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
+}: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
-  const type = getPlatePluginType(editor, pluginKey);
+  const {
+    type,
+    insertSpaceAfterMention,
+    createMentionNode,
+  } = getPlatePluginOptions<Required<MentionPluginOptions>>(editor, pluginKey);
+
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
     editor.selection &&
@@ -51,7 +46,8 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
       // TODO: replace any
       match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
     });
-    insertNodes<TElement>(editor, {
+
+    insertNodes<MentionNode>(editor, {
       type,
       children: [{ text: '' }],
       ...createMentionNode(item),
@@ -61,7 +57,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
     // delete the inserted space
     if (isBlockEnd && !insertSpaceAfterMention) {
-      Transforms.delete(editor);
+      // Transforms.delete(editor);
     }
   });
   return comboboxStore.set.reset();

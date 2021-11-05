@@ -1,24 +1,14 @@
 import React from 'react';
 import { getHandler } from '@udecode/plate-common';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { useFocused, useSelected } from 'slate-react';
 import { getMentionInputElementStyles } from './MentionInputElement.styles';
 import { MentionInputElementProps } from './MentionInputElement.types';
 
 export const MentionInputElement = (props: MentionInputElementProps) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    styles: _styles,
-    element,
-    classNames,
-    prefixClassNames,
-    prefix,
-    as,
-    onClick,
-    renderLabel,
-    ...rootProps
-  } = props;
+  const { attributes, children, nodeProps, element, as, onClick } = props;
+
+  const rootProps = getRootProps(props);
 
   const selected = useSelected();
   const focused = useFocused();

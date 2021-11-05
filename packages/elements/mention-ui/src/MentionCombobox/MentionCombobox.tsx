@@ -1,11 +1,14 @@
 import React from 'react';
 import { Combobox, ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
-import { PlatePluginKey } from '@udecode/plate-core';
 import {
-  COMBOBOX_TRIGGER_MENTION,
-  CreateMentionNode,
+  getPlatePluginOptions,
+  PlatePluginKey,
+  usePlateEditorRef,
+} from '@udecode/plate-core';
+import {
   ELEMENT_MENTION,
   getMentionOnSelectItem,
+  MentionPluginOptions,
 } from '@udecode/plate-mention';
 
 export const MentionCombobox = <TData extends Data = NoData>({
@@ -14,26 +17,26 @@ export const MentionCombobox = <TData extends Data = NoData>({
   onRenderItem,
   pluginKey = ELEMENT_MENTION,
   id = pluginKey,
-  trigger = COMBOBOX_TRIGGER_MENTION,
-  insertSpaceAfterMention,
-  createMentionNode,
-}: Pick<ComboboxProps<TData>, 'items' | 'component' | 'onRenderItem'> & {
-  id?: string;
-  trigger?: string;
-  insertSpaceAfterMention?: boolean;
-  createMentionNode?: CreateMentionNode<TData>;
-} & PlatePluginKey) => (
-  <Combobox
-    id={id}
-    trigger={trigger}
-    controlled
-    items={items}
-    component={component}
-    onRenderItem={onRenderItem}
-    onSelectItem={getMentionOnSelectItem({
-      pluginKey: id,
-      insertSpaceAfterMention,
-      createMentionNode,
-    })}
-  />
-);
+}: Pick<ComboboxProps<TData>, 'id' | 'items' | 'component' | 'onRenderItem'> &
+  PlatePluginKey) => {
+  const editor = usePlateEditorRef();
+
+  const { trigger } = getPlatePluginOptions<Required<MentionPluginOptions>>(
+    editor,
+    pluginKey
+  );
+
+  return (
+    <Combobox
+      id={id}
+      trigger={trigger}
+      controlled
+      items={items}
+      component={component}
+      onRenderItem={onRenderItem}
+      onSelectItem={getMentionOnSelectItem({
+        pluginKey,
+      })}
+    />
+  );
+};

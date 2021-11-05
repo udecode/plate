@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { setNodes } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-core';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
 import { Node, Transforms } from 'slate';
 import { ReactEditor, useFocused, useSelected } from 'slate-react';
@@ -27,7 +27,6 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     element,
     nodeProps,
-    styles: _styles,
     classNames,
     prefixClassNames,
     caption = {},
@@ -36,8 +35,10 @@ export const ImageElement = (props: ImageElementProps) => {
     },
     align = 'center',
     draggable,
-    ...rootProps
+    editor,
   } = props;
+
+  const rootProps = getRootProps(props);
 
   const { placeholder = 'Write a caption...' } = caption;
 
@@ -48,7 +49,6 @@ export const ImageElement = (props: ImageElementProps) => {
   } = element;
   const focused = useFocused();
   const selected = useSelected();
-  const editor = useEditorRef();
   const [width, setWidth] = useState(nodeWidth);
 
   // const [captionId] = useState(nanoid());

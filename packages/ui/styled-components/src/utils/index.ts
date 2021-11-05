@@ -4,3 +4,4 @@
 
 export * from './createStyles';
 export * from './getStyledNodeStyles';
+export * from './getRootProps';

@@ -17,24 +17,31 @@ npm install @udecode/plate-mention-ui
 
 ```ts live
 () => {
+  const components = {
+    ...CONFIG.components,
+    mention2: MentionElement, 
+  };
+
   const plugins = [
     ...PLUGINS.basicNodes,
     createComboboxPlugin(),
     createMentionPlugin({ trigger: '@' }),
     createMentionPlugin({ trigger: '#', pluginKey: 'mention2' }),
+    createMentionPlugin({ trigger: '/', id: 'mention3' }),
   ];
 
   return (
     <Plate
       id="mention"
       plugins={plugins}
-      components={CONFIG.components}
+      components={components}
       options={CONFIG.options}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.mentions}
     >
-      <MentionCombobox items={CONFIG.mentionItems} trigger="@" />
-      <MentionCombobox items={CONFIG.mentionItems} trigger="#" pluginKey="mention2" />
+      <MentionCombobox items={CONFIG.mentionItems} />
+      <MentionCombobox items={CONFIG.mentionItems} pluginKey="mention2" />
+      <MentionCombobox items={[CONFIG.mentionItems[0], CONFIG.mentionItems[1]]} id="mention3" />
     </Plate>
   );
 }

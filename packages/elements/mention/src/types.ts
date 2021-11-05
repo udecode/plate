@@ -1,11 +1,22 @@
-import { AnyObject, PlatePluginKey, TElement } from '@udecode/plate-core';
+import { Data, NoData } from '@udecode/plate-combobox';
+import { PlatePluginKey, TElement } from '@udecode/plate-core';
+import { CreateMentionNode } from './getMentionOnSelectItem';
 
-export interface MentionNodeData extends AnyObject {
+export interface MentionNodeData {
   value: string;
 }
 
-export type MentionNode = TElement<MentionNodeData>;
+export interface MentionInputNodeData {
+  trigger: string;
+}
 
-export interface MentionPluginOptions extends PlatePluginKey {
+export type MentionNode = TElement<MentionNodeData>;
+export type MentionInputNode = TElement<MentionInputNodeData>;
+
+export interface MentionPluginOptions<TData extends Data = NoData>
+  extends PlatePluginKey {
+  id?: string;
   trigger?: string;
+  insertSpaceAfterMention?: boolean;
+  createMentionNode?: CreateMentionNode<TData>;
 }
