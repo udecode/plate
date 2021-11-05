@@ -1,26 +1,31 @@
 import React from 'react';
-import { Image, Link, Search } from '@styled-icons/material';
+import {
+  Image,
+  LineWeight,
+  Link,
+  OndemandVideo,
+  Search,
+} from '@styled-icons/material';
 import { render } from '@testing-library/react';
 import {
   createHistoryPlugin,
   createReactPlugin,
   Plate,
-  PlateEditor,
   PlatePlugin,
 } from '@udecode/plate-core';
-import { ReactEditor } from 'slate-react';
 import {
-  BallonToolbarMarks,
-  ToolbarButtonsAlign,
-  ToolbarButtonsBasicElements,
-  ToolbarButtonsBasicMarks,
-  ToolbarButtonsList,
-  ToolbarButtonsTable,
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  IndentToolbarButtons,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
 } from '../../../../docs/src/live/config/components/Toolbars';
 import { CONFIG } from '../../../../docs/src/live/config/config';
 import { VALUES } from '../../../../docs/src/live/config/values/values';
 import { useFindReplacePlugin } from '../../../decorators/find-replace/src/useFindReplacePlugin';
-import { ToolbarSearchHighlight } from '../../../decorators/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
+import { SearchHighlightToolbar } from '../../../decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
@@ -34,12 +39,14 @@ import { createBasicElementPlugins } from '../../../elements/basic-elements/src/
 import { createBlockquotePlugin } from '../../../elements/block-quote/src/createBlockquotePlugin';
 import { createHeadingPlugin } from '../../../elements/heading/src/createHeadingPlugin';
 import { createImagePlugin } from '../../../elements/image/src/createImagePlugin';
-import { ToolbarImage } from '../../../elements/image-ui/src/ToolbarImage/ToolbarImage';
+import { ImageToolbarButton } from '../../../elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
+import { LineHeightToolbarDropdown } from '../../../elements/line-height-ui/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
 import { createLinkPlugin } from '../../../elements/link/src/createLinkPlugin';
-import { ToolbarLink } from '../../../elements/link-ui/src/ToolbarLink/ToolbarLink';
+import { LinkToolbarButton } from '../../../elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
 import { createListPlugin } from '../../../elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
+import { MediaEmbedToolbarButton } from '../../../elements/media-embed-ui/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
 import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
@@ -93,18 +100,21 @@ const PlateContainer = () => {
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.playground}
     >
-      <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+      <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
       <HeadingToolbar>
-        <ToolbarButtonsBasicElements />
-        <ToolbarButtonsList />
-        <ToolbarButtonsBasicMarks />
-        <ToolbarButtonsAlign />
-        <ToolbarLink icon={<Link />} />
-        <ToolbarImage icon={<Image />} />
-        <ToolbarButtonsTable />
+        <BasicElementToolbarButtons />
+        <ListToolbarButtons />
+        <IndentToolbarButtons />
+        <BasicMarkToolbarButtons />
+        <AlignToolbarButtons />
+        <LineHeightToolbarDropdown icon={<LineWeight />} />
+        <LinkToolbarButton icon={<Link />} />
+        <ImageToolbarButton icon={<Image />} />
+        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+        <TableToolbarButtons />
       </HeadingToolbar>
 
-      <BallonToolbarMarks />
+      <MarkBallonToolbar />
 
       <MentionCombobox />
     </Plate>

@@ -1,5 +1,5 @@
 import { PlateEditor } from '../PlateEditor';
-import { SPRenderElementProps } from '../SPRenderElementProps';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
 
 /**
  * Function used to render an element.
@@ -8,4 +8,4 @@ import { SPRenderElementProps } from '../SPRenderElementProps';
  */
 export type RenderElement<T = {}> = (
   editor: PlateEditor<T>
-) => (props: SPRenderElementProps) => JSX.Element | undefined;
+) => (props: PlateRenderElementProps) => JSX.Element | undefined;

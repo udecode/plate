@@ -36,7 +36,10 @@ import { TippyProps } from '@tippyjs/react';
 import {
   addColumn,
   addRow,
+  AlignToolbarButton,
   BalloonToolbar,
+  BlockToolbarButton,
+  CodeBlockToolbarButton,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -54,6 +57,7 @@ import {
   getPreventDefaultHandler,
   indent,
   insertTable,
+  ListToolbarButton,
   MARK_BOLD,
   MARK_CODE,
   MARK_HIGHLIGHT,
@@ -63,52 +67,48 @@ import {
   MARK_SUBSCRIPT,
   MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
+  MarkToolbarButton,
   outdent,
-  ToolbarAlign,
+  TableToolbarButton,
   ToolbarButton,
-  ToolbarCodeBlock,
-  ToolbarElement,
-  ToolbarList,
-  ToolbarMark,
-  ToolbarTable,
-  useEventEditorId,
-  useStoreEditorRef,
+  usePlateEditorRef,
+  usePlateEventId,
 } from '@udecode/plate';
 
-export const ToolbarButtonsBasicElements = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const BasicElementToolbarButtons = () => {
+  const editor = usePlateEditorRef();
 
   return (
     <>
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H1)}
         icon={<LooksOne />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H2)}
         icon={<LooksTwo />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H3)}
         icon={<Looks3 />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H4)}
         icon={<Looks4 />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H5)}
         icon={<Looks5 />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_H6)}
         icon={<Looks6 />}
       />
-      <ToolbarElement
+      <BlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
       />
-      <ToolbarCodeBlock
+      <CodeBlockToolbarButton
         type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
         icon={<CodeBlock />}
       />
@@ -116,8 +116,8 @@ export const ToolbarButtonsBasicElements = () => {
   );
 };
 
-export const ToolbarButtonsIndent = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const IndentToolbarButtons = () => {
+  const editor = usePlateEditorRef();
 
   return (
     <>
@@ -133,16 +133,16 @@ export const ToolbarButtonsIndent = () => {
   );
 };
 
-export const ToolbarButtonsList = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const ListToolbarButtons = () => {
+  const editor = usePlateEditorRef();
 
   return (
     <>
-      <ToolbarList
+      <ListToolbarButton
         type={getPlatePluginType(editor, ELEMENT_UL)}
         icon={<FormatListBulleted />}
       />
-      <ToolbarList
+      <ListToolbarButton
         type={getPlatePluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
       />
@@ -150,48 +150,48 @@ export const ToolbarButtonsList = () => {
   );
 };
 
-export const ToolbarButtonsAlign = () => {
+export const AlignToolbarButtons = () => {
   return (
     <>
-      <ToolbarAlign value="left" icon={<FormatAlignLeft />} />
-      <ToolbarAlign value="center" icon={<FormatAlignCenter />} />
-      <ToolbarAlign value="right" icon={<FormatAlignRight />} />
-      <ToolbarAlign value="justify" icon={<FormatAlignJustify />} />
+      <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
+      <AlignToolbarButton value="center" icon={<FormatAlignCenter />} />
+      <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
+      <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
     </>
   );
 };
 
-export const ToolbarButtonsBasicMarks = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const BasicMarkToolbarButtons = () => {
+  const editor = usePlateEditorRef();
 
   return (
     <>
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPlatePluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_SUBSCRIPT)}
         clear={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}
@@ -200,41 +200,41 @@ export const ToolbarButtonsBasicMarks = () => {
   );
 };
 
-export const ToolbarKbd = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const KbdToolbarButton = () => {
+  const editor = usePlateEditorRef();
 
   return (
-    <ToolbarMark
+    <MarkToolbarButton
       type={getPlatePluginType(editor, MARK_KBD)}
       icon={<Keyboard />}
     />
   );
 };
 
-export const ToolbarHighlight = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const HighlightToolbarButton = () => {
+  const editor = usePlateEditorRef();
 
   return (
-    <ToolbarMark
+    <MarkToolbarButton
       type={getPlatePluginType(editor, MARK_HIGHLIGHT)}
       icon={<Highlight />}
     />
   );
 };
 
-export const ToolbarButtonsTable = () => (
+export const TableToolbarButtons = () => (
   <>
-    <ToolbarTable icon={<BorderAll />} transform={insertTable} />
-    <ToolbarTable icon={<BorderClear />} transform={deleteTable} />
-    <ToolbarTable icon={<BorderBottom />} transform={addRow} />
-    <ToolbarTable icon={<BorderTop />} transform={deleteRow} />
-    <ToolbarTable icon={<BorderLeft />} transform={addColumn} />
-    <ToolbarTable icon={<BorderRight />} transform={deleteColumn} />
+    <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
+    <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
+    <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+    <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
+    <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
+    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
   </>
 );
 
-export const BallonToolbarMarks = () => {
-  const editor = useStoreEditorRef(useEventEditorId('focus'));
+export const MarkBallonToolbar = () => {
+  const editor = usePlateEditorRef();
 
   const arrow = false;
   const theme = 'dark';
@@ -255,17 +255,17 @@ export const BallonToolbarMarks = () => {
       theme={theme}
       arrow={arrow}
     >
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
         tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
       />
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}

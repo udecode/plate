@@ -4,7 +4,7 @@ import { AnyObject } from '../types/utility/AnyObject';
 import { getEditorOptions } from './getEditorOptions';
 
 /**
- * Get SP options by plugin key.
+ * Get plugin options by plugin key.
  */
 export const getPlatePluginOptions = <T = AnyObject, E = {}>(
   editor?: PlateEditor<E>,

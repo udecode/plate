@@ -2,7 +2,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { getPlatePluginOptions } from './getPlatePluginOptions';
 
 /**
- * Get SP type option by plugin key.
+ * Get plugin type option by plugin key.
  */
 export const getPlatePluginType = <T = {}>(
   editor?: PlateEditor<T>,

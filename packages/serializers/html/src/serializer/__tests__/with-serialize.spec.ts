@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { PlatePlugin } from '@udecode/plate-core';
 import { RenderLeafProps } from 'slate-react';
 import {

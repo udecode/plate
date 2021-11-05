@@ -4,7 +4,7 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPRenderLeafProps } from '../types/SPRenderLeafProps';
+import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { TRenderLeafProps } from '../types/TRenderLeafProps';
 import { pipeOverrideProps } from './pipeOverrideProps';
 
@@ -24,7 +24,7 @@ export const pipeRenderLeaf = (
   );
 
   return (renderLeafProps) => {
-    const props: SPRenderLeafProps = {
+    const props: PlateRenderLeafProps = {
       ...pipeOverrideProps(
         renderLeafProps as TRenderLeafProps,
         propsOverriders

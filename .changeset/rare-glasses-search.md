@@ -8,4 +8,5 @@ The color picker is now showing
   - `ColorInput`
   - `Colors` - grid of color buttons
   - `CustomColors`
+  - `ColorPickerToolbarButton`
 - `ColorPicker` is now using `CustomColors`, `Colors` and a button to clear

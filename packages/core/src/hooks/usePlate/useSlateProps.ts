@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { usePlateActions } from '../../stores/plate/plate.actions';
-import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
-import { useStoreEditorValue } from '../../stores/plate/selectors/useStoreEditorValue';
-import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
+import { usePlateValue } from '../../stores/plate/selectors/usePlateValue';
 import { SlateProps } from '../../types/SlateProps';
 import { TNode } from '../../types/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
@@ -16,9 +16,9 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = usePlateActions(id);
-  const editor = useStoreEditorRef(id);
-  const value = useStoreEditorValue(id);
-  const plugins = useStorePlate(id);
+  const editor = usePlateEditorRef(id);
+  const value = usePlateValue(id);
+  const plugins = usePlatePlugins(id);
 
   const onChange = useCallback(
     (newValue: TNode[]) => {

@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import omit from 'lodash/omit';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { setEventEditorId } from '../../stores/event-editor/actions/setEventEditorId';
-import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
-import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -15,8 +15,8 @@ export const useEditableProps = ({
   id = 'main',
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
-  const editor = useStoreEditorRef(id);
-  const _plugins = useStorePlate(id);
+  const editor = usePlateEditorRef(id);
+  const _plugins = usePlatePlugins(id);
 
   const plugins: typeof _plugins = useMemo(
     () => [

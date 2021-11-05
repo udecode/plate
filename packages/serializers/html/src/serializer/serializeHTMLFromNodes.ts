@@ -4,9 +4,9 @@ import {
   pipeOverrideProps,
   PlateEditor,
   PlatePlugin,
+  PlateRenderElementProps,
+  PlateRenderLeafProps,
   SlateProps,
-  SPRenderElementProps,
-  SPRenderLeafProps,
   TDescendant,
 } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
@@ -58,7 +58,7 @@ const getNode = (
     preserveClassNames,
   }: {
     plugins: PlatePlugin[];
-    elementProps: SPRenderElementProps;
+    elementProps: PlateRenderElementProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }
@@ -118,7 +118,7 @@ const getLeaf = (
     preserveClassNames,
   }: {
     plugins: PlatePlugin[];
-    leafProps: SPRenderLeafProps;
+    leafProps: PlateRenderLeafProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }

@@ -3,7 +3,7 @@ import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { SPRenderElementProps } from '../types/SPRenderElementProps';
+import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -12,7 +12,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
 export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
-  props: SPRenderElementProps
+  props: PlateRenderElementProps
 ) => {
   const { plugins } = props;
 

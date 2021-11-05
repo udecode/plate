@@ -57,8 +57,8 @@ npm install @udecode/plate-indent-list
     }),
   ];
   
-  const ToolbarButtonsIndent = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const IndentToolbarButtons = () => {
+    const editor = usePlateEditorRef();
   
     return (
       <>
@@ -101,7 +101,7 @@ npm install @udecode/plate-indent-list
   return (
     <>
       <HeadingToolbar>
-        <ToolbarButtonsIndent />
+        <IndentToolbarButtons />
       </HeadingToolbar>
       <Plate
         id="indent-list"

@@ -1,5 +1,5 @@
 import { PlateEditor } from '../PlateEditor';
-import { SPRenderLeafProps } from '../SPRenderLeafProps';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /**
  * Function used to render the children of a leaf.
@@ -12,4 +12,4 @@ import { SPRenderLeafProps } from '../SPRenderLeafProps';
  */
 export type RenderLeaf<T = {}> = (
   editor: PlateEditor<T>
-) => (props: SPRenderLeafProps) => JSX.Element;
+) => (props: PlateRenderLeafProps) => JSX.Element;

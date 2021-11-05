@@ -3,4 +3,4 @@
  */
 
 export * from './CodeBlockElement/index';
-export * from './ToolbarCodeBlock/index';
+export * from './CodeBlockToolbarButton/index';

@@ -3,7 +3,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { getPlatePluginOptions } from './getPlatePluginOptions';
 
 /**
- * Map plugins keys to SP options
+ * Map plugins keys to plugin options
  */
 export const mapPlatePluginKeysToOptions = <T = {}>(
   editor: PlateEditor<T>,

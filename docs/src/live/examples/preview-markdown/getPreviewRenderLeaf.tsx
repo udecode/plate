@@ -1,7 +1,7 @@
 import React from 'react';
-import { RenderLeaf, SPRenderLeafProps } from '@udecode/plate-core';
+import { RenderLeaf, PlateRenderLeafProps } from '@udecode/plate-core';
 import { PreviewLeaf } from './PreviewLeaf/PreviewLeaf';
 
 export const getPreviewRenderLeaf = (): RenderLeaf => () => (
-  props: SPRenderLeafProps
+  props: PlateRenderLeafProps
 ) => <PreviewLeaf {...props} />;

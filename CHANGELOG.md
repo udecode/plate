@@ -627,7 +627,7 @@ TODO: it's not working when the url is at the start of the block.
 - renamed most of utils in `deserialize-html`, including
   `htmlDeserialize` to `deserializeHTMLToDocumentFragment`
 - renamed `htmlSerialize` to `serializeHTMLFromNodes`.
-- removed `ToolbarCodeBlock` in favor of `ToolbarElement` instead.
+- removed `ToolbarCodeBlock` in favor of `BlockToolbarButton` instead.
 - `withBreakEmptyReset` and `withDeleteStartReset` – renamed option
   `p.type` to `defaultType`.
 - `withToggleType` – renamed option `p.type` to `defaultType`
@@ -703,7 +703,7 @@ TODO: it's not working when the url is at the start of the block.
 - renamed `MarkdownPreviewPlugin` to `PreviewPlugin` as it will be
   configurable to support other languages.
 - removed `height` props in `Toolbar`, use `styles` instead.
-- renamed `ToolbarBlock` to `ToolbarElement`.
+- renamed `ToolbarBlock` to `BlockToolbarButton`.
 - renamed `ToolbarTableProps.action` to `ToolbarTableProps.transform`.
 
 ### Features

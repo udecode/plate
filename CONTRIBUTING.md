@@ -149,7 +149,7 @@ Build:
         - create `/components/XElement`
             
             ```tsx
-            export const XElement = (props: SPRenderElementProps) => {
+            export const XElement = (props: PlateRenderElementProps) => {
               const { attributes, children } = props;
             
               return (

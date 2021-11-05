@@ -1,6 +1,6 @@
 import React, { forwardRef, useMemo } from 'react';
 import { createNodesWithHOC } from '@udecode/plate-common';
-import { SPRenderElementProps, TEditor } from '@udecode/plate-core';
+import { PlateRenderElementProps, TEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
@@ -23,7 +23,7 @@ export const withDraggable = (
     onRenderDragHandle,
   }: WithDraggableOptions = {}
 ) => {
-  return forwardRef((props: SPRenderElementProps, ref) => {
+  return forwardRef((props: PlateRenderElementProps, ref) => {
     const { attributes, element, plugins, editor } = props;
     const readOnly = useReadOnly();
     const path = useMemo(() => ReactEditor.findPath(editor, element), [

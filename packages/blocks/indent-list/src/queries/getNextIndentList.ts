@@ -19,7 +19,6 @@ export const getNextIndentList = (
   while (true) {
     const nextNode = getNode(editor, nextPath);
 
-    // todo indent smaller
     if (!nextNode || !nextNode[KEY_INDENT] || nextNode[KEY_INDENT] < indent) {
       return;
     }

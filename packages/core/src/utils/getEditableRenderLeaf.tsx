@@ -2,7 +2,7 @@ import React from 'react';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { SPRenderLeafProps } from '../types/SPRenderLeafProps';
+import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -15,7 +15,7 @@ export const getEditableRenderLeaf = ({
   component: Leaf = DefaultLeaf as PlatePluginComponent,
   getNodeProps,
   overrideProps,
-}: RenderNodeOptions) => (props: SPRenderLeafProps) => {
+}: RenderNodeOptions) => (props: PlateRenderLeafProps) => {
   const { leaf, children } = props;
 
   if (leaf[type] && !!leaf.text) {

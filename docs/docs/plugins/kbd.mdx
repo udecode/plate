@@ -13,11 +13,11 @@ npm install @udecode/plate-kbd
 
 ```ts live
 () => {
-  const ToolbarKbd = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const KbdToolbarButton = () => {
+    const editor = usePlateEditorRef();
 
     return (
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_KBD)}
         icon={<Keyboard />}
       />
@@ -32,7 +32,7 @@ npm install @udecode/plate-kbd
   return (
     <>
       <HeadingToolbar>
-        <ToolbarKbd />
+        <KbdToolbarButton />
       </HeadingToolbar>
       <Plate
         id="kbd"

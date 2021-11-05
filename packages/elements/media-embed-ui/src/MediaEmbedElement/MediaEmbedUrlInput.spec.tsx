@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 

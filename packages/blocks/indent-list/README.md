@@ -1,3 +1,4 @@
+
 # Plate indent list plugin
 
 This package implements the indent list plugin for Plate.
@@ -6,7 +7,7 @@ because the list structure has no children.
 
 ## Documentation
 
-Check out [List](https://plate.udecode.io/docs/plugins/list).
+Check out [Indent List](https://plate.udecode.io/docs/plugins/indent-list).
 
 ## API
 

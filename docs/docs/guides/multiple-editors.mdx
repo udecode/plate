@@ -30,8 +30,8 @@ Let's render 3 editors with common heading and balloon toolbars.
   return (
     <div>
       <HeadingToolbar>
-        <ToolbarButtonsBasicElements />
-        <ToolbarButtonsBasicMarks />
+        <BasicElementToolbarButtons />
+        <BasicMarkToolbarButtons />
       </HeadingToolbar>
 
       <BallonToolbarMarks />
@@ -70,6 +70,6 @@ to get the [editor](store#editor) from [plateStore](store#plate-store).
 Usage:
 
 ```ts
-const id = useEventEditorId('focus');
-const editor = useStoreEditorState(id);
+const id = usePlateEventId('focus');
+const editor = usePlateEditorState(id);
 ```

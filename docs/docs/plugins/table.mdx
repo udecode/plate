@@ -14,14 +14,14 @@ npm install @udecode/plate-table-ui
 
 ```ts live
 () => {
-  const ToolbarButtonsTable = () => (
+  const TableToolbarButtons = () => (
     <>
-      <ToolbarTable icon={<BorderAll />} transform={insertTable} />
-      <ToolbarTable icon={<BorderClear />} transform={deleteTable} />
-      <ToolbarTable icon={<BorderBottom />} transform={addRow} />
-      <ToolbarTable icon={<BorderTop />} transform={deleteRow} />
-      <ToolbarTable icon={<BorderLeft />} transform={addColumn} />
-      <ToolbarTable icon={<BorderRight />} transform={deleteColumn} />
+      <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
+      <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
+      <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+      <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
+      <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
+      <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
     </>
   );
 
@@ -35,7 +35,7 @@ npm install @udecode/plate-table-ui
   return (
     <>
       <HeadingToolbar>
-        <ToolbarButtonsTable />
+        <TableToolbarButtons />
       </HeadingToolbar>
       <Plate
         id="table"

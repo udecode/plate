@@ -14,7 +14,7 @@ npm install @udecode/plate-toolbar
 ```ts live
 () => {
   const BallonToolbarMarks = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+    const editor = usePlateEditorRef();
 
     const arrow = false;
     const theme = 'dark';
@@ -36,17 +36,17 @@ npm install @udecode/plate-toolbar
         theme={theme}
         arrow={arrow}
       >
-        <ToolbarMark
+        <MarkToolbarButton
           type={getPlatePluginType(editor, MARK_BOLD)}
           icon={<FormatBold />}
           tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
         />
-        <ToolbarMark
+        <MarkToolbarButton
           type={getPlatePluginType(editor, MARK_ITALIC)}
           icon={<FormatItalic />}
           tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
         />
-        <ToolbarMark
+        <MarkToolbarButton
           type={getPlatePluginType(editor, MARK_UNDERLINE)}
           icon={<FormatUnderlined />}
           tooltip={{ content: 'Underline (⌘U)', ...tooltip }}

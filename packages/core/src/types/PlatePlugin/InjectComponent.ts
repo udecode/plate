@@ -1,7 +1,7 @@
-import { SPRenderElementProps } from '../SPRenderElementProps';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
 import { AnyObject } from '../utility/AnyObject';
 import { RenderFunction } from '../utility/RenderFunction';
 
 export type InjectComponent = <T = AnyObject>(
-  props: SPRenderElementProps & T
-) => RenderFunction<SPRenderElementProps> | undefined;
+  props: PlateRenderElementProps & T
+) => RenderFunction<PlateRenderElementProps> | undefined;

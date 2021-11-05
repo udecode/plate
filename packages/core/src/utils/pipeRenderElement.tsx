@@ -4,7 +4,7 @@ import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPRenderElementProps } from '../types/SPRenderElementProps';
+import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { TRenderElementProps } from '../types/TRenderElementProps';
 import { pipeOverrideProps } from './pipeOverrideProps';
 
@@ -24,7 +24,7 @@ export const pipeRenderElement = (
   );
 
   return (renderElementProps) => {
-    const props: SPRenderElementProps = {
+    const props: PlateRenderElementProps = {
       ...pipeOverrideProps(
         renderElementProps as TRenderElementProps,
         propsOverriders

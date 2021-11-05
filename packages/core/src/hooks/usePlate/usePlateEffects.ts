@@ -3,9 +3,9 @@ import { createEditor, Editor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { usePlateActions } from '../../stores/plate/plate.actions';
-import { useStoreEditorEnabled } from '../../stores/plate/selectors/useStoreEditorEnabled';
-import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
-import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
+import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -35,9 +35,9 @@ export const usePlateEffects = <T = {}>({
     setEnabled,
     clearState,
   } = usePlateActions(id);
-  const storeEditor = useStoreEditorRef<T>(id);
-  const storeEnabled = useStoreEditorEnabled(id);
-  const storePlugins = useStorePlate(id);
+  const storeEditor = usePlateEditorRef<T>(id);
+  const storeEnabled = usePlateEnabled(id);
+  const storePlugins = usePlatePlugins(id);
 
   // Clear the state on unmount.
   useEffect(
