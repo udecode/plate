@@ -1,5 +1,18 @@
 # @udecode/plate-common
 
+## 7.0.0
+
+### Minor Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
+  - new utils:
+    - `getOverrideProps`
+  - new types:
+    - `TransformOptions`
+    - `OverridePropsOptions`
+    - `GetOverridePropsOptions`
+  - moved `RenderFunction` to `core`
+
 ## 6.4.1
 
 ## 6.4.0

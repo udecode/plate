@@ -1,5 +1,22 @@
 # @udecode/plate-indent
 
+## 7.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
+  - removed `getIndentOverrideProps()` in favor of `getOverrideProps(KEY_INDENT)`
+  - rename `onKeyDownHandler` to `getIndentOnKeyDown()`
+  - `IndentPluginOptions`
+    - rename `types` to `validTypes`
+    - rename `cssPropName` to `styleKey`
+    - rename `transformCssValue` to `transformNodeValue`
+
+### Minor Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
+  - `setIndent` new options: `SetIndentOptions`
+
 ## 6.4.1
 
 ## 6.4.0

@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 7.0.0
+
 ## 6.5.0
 
 ### Minor Changes
