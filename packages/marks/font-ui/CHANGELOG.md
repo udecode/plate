@@ -1,5 +1,18 @@
 # @udecode/plate-font-ui
 
+## 7.0.0
+
+### Minor Changes
+
+- [#1174](https://github.com/udecode/plate/pull/1174) by [@alex-vladut](https://github.com/alex-vladut) – The color picker is now showing
+  - new components:
+    - `ColorButton`
+    - `ColorInput`
+    - `Colors` - grid of color buttons
+    - `CustomColors`
+    - `ColorPickerToolbarButton`
+  - `ColorPicker` is now using `CustomColors`, `Colors` and a button to clear
+
 ## 6.4.1
 
 ## 6.4.0

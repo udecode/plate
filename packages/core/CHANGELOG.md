@@ -1,5 +1,67 @@
 # @udecode/plate-core
 
+## 7.0.0
+
+### Major Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
+  - renamed:
+    - `SPEditor` to `PEditor` (note that `PlateEditor` is the new default)
+    - `SPRenderNodeProps` to `PlateRenderNodeProps`
+    - `SPRenderElementProps` to `PlateRenderElementProps`
+    - `SPRenderLeafProps` to `PlateRenderLeafProps`
+    - `useEventEditorId` to `usePlateEventId`
+    - `useStoreEditorOptions` to `usePlateOptions`
+    - `useStoreEditorRef` to `usePlateEditorRef`
+    - `useStoreEditorSelection` to `usePlateSelection`
+    - `useStoreEditorState` to `usePlateEditorState`
+    - `useStoreEditorValue` to `usePlateValue`
+    - `useStoreEnabled` to `usePlateEnabled`
+    - `useStorePlate` to `usePlatePlugins`
+    - `useStorePlatePluginKeys` to `usePlateKeys`
+    - `useStoreState` to `usePlateState`
+  - `getPlateId`: Get the last focused editor id, else get the last blurred editor id, else get the first editor id, else `null`
+  - `getPlateState`:
+    - removed first parameter `state`
+    - previously when giving no parameter, it was returning the first editor. Now it's returning the editor with id = `getPlateId()`. It means `useEventEditorId('focus')` is no longer needed for
+      - `usePlateEditorRef`
+      - `usePlateEditorState`
+      - `usePlateX`...
+
+### Minor Changes
+
+- [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `getEditableRenderElement`: now uses plugins `injectChildComponent` to wrap `children` (lowest)
+  - `getEditableRenderElement`: now uses plugins `injectParentComponent` to wrap `component` (highest)
+  - new store selectors:
+    - `getPlateEditorRef`
+    - `getPlateEnabled`
+    - `getPlateKeys`
+    - `getPlatePlugins`
+    - `getPlateSelection`
+    - `getPlateValue`
+    - `getPlateEventId`
+
+  Types:
+
+  - `PlatePlugin`, `PlatePluginEditor` new fields:
+    - `injectChildComponent`: Inject child component around any node children.
+    - `injectParentComponent`: Inject parent component around any node `component`.
+    - `overrideProps` supports arrays.
+  - `SPRenderNodeProps` new fields:
+    - `editor: PlateEditor`
+    - `plugins: PlatePlugin`
+  - new types:
+    - `PlateEditor<T = {}>`: default editor type used in Plate, assuming we all use history and react editors.
+    - `InjectComponent`
+
+  ```ts
+  type InjectComponent = <T = AnyObject>(
+    props: PlateRenderElementProps & T
+  ) => RenderFunction<PlateRenderElementProps> | undefined;
+  ```
+
 ## 6.4.1
 
 ### Patch Changes
