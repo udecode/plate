@@ -57,7 +57,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
     // delete the inserted space
     if (isBlockEnd && !insertSpaceAfterMention) {
-      // Transforms.delete(editor);
+      Transforms.delete(editor);
     }
   });
   return comboboxStore.set.reset();

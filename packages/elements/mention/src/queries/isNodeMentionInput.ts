@@ -1,4 +1,4 @@
-import { PlateEditor, TDescendant, TElement } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { getMentionInputType } from '../options';
 import { MentionInputNode } from '../types';
 

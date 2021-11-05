@@ -27,8 +27,6 @@ export const ImageElement = (props: ImageElementProps) => {
     children,
     element,
     nodeProps,
-    classNames,
-    prefixClassNames,
     caption = {},
     resizableProps = {
       minWidth: 92,
