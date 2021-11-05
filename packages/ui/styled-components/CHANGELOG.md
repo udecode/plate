@@ -1,5 +1,11 @@
 # @udecode/plate-styled-components
 
+## 7.0.1
+
+### Patch Changes
+
+- [#1201](https://github.com/udecode/plate/pull/1201) by [@zbeyens](https://github.com/zbeyens) – fix: all styled nodes now use `getRootProps` to spread the rest of the props
+
 ## 7.0.0
 
 ## 6.4.1

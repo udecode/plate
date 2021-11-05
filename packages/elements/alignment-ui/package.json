@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-alignment-ui",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Text alignment UI for Plate",
   "keywords": [
     "slate",
@@ -32,11 +32,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-alignment": "7.0.0",
-    "@udecode/plate-common": "7.0.0",
-    "@udecode/plate-core": "7.0.0",
-    "@udecode/plate-styled-components": "7.0.0",
-    "@udecode/plate-toolbar": "7.0.0"
+    "@udecode/plate-alignment": "7.0.1",
+    "@udecode/plate-common": "7.0.1",
+    "@udecode/plate-core": "7.0.1",
+    "@udecode/plate-styled-components": "7.0.1",
+    "@udecode/plate-toolbar": "7.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

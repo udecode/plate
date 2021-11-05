@@ -1,5 +1,23 @@
 # @udecode/plate-mention
 
+## 7.0.1
+
+### Patch Changes
+
+- [#1201](https://github.com/udecode/plate/pull/1201) by [@zbeyens](https://github.com/zbeyens) – breaking changes (v7):
+
+  - `getMentionOnSelectItem`:
+    - is now using plugin options
+    - removed `createMentionNode` in favor of plugin options
+    - removed `insertSpaceAfterMention` in favor of plugin options
+
+  feat:
+
+  - `MentionPluginOptions` new fields:
+    - `id`
+    - `insertSpaceAfterMention`
+    - `createMentionNode`
+
 ## 7.0.0
 
 ## 6.5.0

@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 7.0.1
+
+### Patch Changes
+
+- [#1201](https://github.com/udecode/plate/pull/1201) by [@zbeyens](https://github.com/zbeyens) – fix: plugin `options.type` default value was not set
+
 ## 7.0.0
 
 ### Major Changes
