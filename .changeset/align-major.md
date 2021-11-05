@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-align': major
+'@udecode/plate-alignment': major
 ---
 
 - `setAlign`: option `align` renamed to `value`
