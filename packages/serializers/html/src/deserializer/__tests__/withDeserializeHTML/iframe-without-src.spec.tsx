@@ -1,8 +1,6 @@
 /** @jsx jsx */
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
@@ -16,7 +14,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -34,9 +32,7 @@ const output = (
 
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
-    const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
-      createMediaEmbedPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
     const editor = createEditorPlugins({

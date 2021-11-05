@@ -3,4 +3,4 @@
  */
 
 export * from './LinkElement/index';
-export * from './ToolbarLink/index';
+export * from './LinkToolbarButton/index';

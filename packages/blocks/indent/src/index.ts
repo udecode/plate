@@ -4,8 +4,7 @@
 
 export * from './createIndentPlugin';
 export * from './defaults';
-export * from './getIndentOverrideProps';
+export * from './getIndentOnKeyDown';
 export * from './types';
 export * from './withIndent';
 export * from './transforms/index';
-export * from './onKeyDownHandler';

@@ -1,14 +1,14 @@
 import { findNode } from '@udecode/plate-common';
 import {
   getPlatePluginOptions,
+  PlateEditor,
   PlatePluginOptions,
-  SPEditor,
   TDescendant,
 } from '@udecode/plate-core';
 import { Node, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
 
-export const getListInsertFragment = (editor: SPEditor) => {
+export const getListInsertFragment = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
   const li = getPlatePluginOptions(editor, ELEMENT_LI);

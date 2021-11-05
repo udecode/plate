@@ -1,11 +1,8 @@
-import { PlatePlugin, SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin, TDescendant } from '@udecode/plate-core';
 import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
 
-export const insertDeserializedFragment = <
-  T extends SPEditor = SPEditor & ReactEditor
->(
-  editor: T,
+export const insertDeserializedFragment = <T = {}>(
+  editor: PlateEditor<T>,
   {
     fragment,
     plugins,

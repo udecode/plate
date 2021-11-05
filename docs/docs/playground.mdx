@@ -91,26 +91,26 @@ See [Installation](/docs/installation)
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.playground}
       >
-        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+        <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
         <HeadingToolbar>
-          <ToolbarButtonsBasicElements />
-          <ToolbarButtonsList />
-          <ToolbarButtonsIndent />
-          <ToolbarButtonsBasicMarks />
-          <ToolbarColorPicker
+          <BasicElementToolbarButtons />
+          <ListToolbarButtons />
+          <IndentToolbarButtons />
+          <BasicMarkToolbarButtons />
+          <ColorPickerToolbarDropdown
             pluginKey={MARK_COLOR}
             icon={<FormatColorText />}
           />
-          <ToolbarColorPicker
+          <ColorPickerToolbarDropdown
             pluginKey={MARK_BG_COLOR}
             icon={<FontDownload />}
           />
-          <ToolbarButtonsAlign />
-          <ToolbarLineHeight icon={<LineWeight />} />
-          <ToolbarLink icon={<Link />} />
-          <ToolbarImage icon={<Image />} />
-          <ToolbarMediaEmbed icon={<OndemandVideo />} />
-          <ToolbarButtonsTable />
+          <AlignToolbarButtons />
+          <LineHeightToolbarDropdown icon={<LineWeight />} />
+          <LinkToolbarButton icon={<Link />} />
+          <ImageToolbarButton icon={<Image />} />
+          <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+          <TableToolbarButtons />
         </HeadingToolbar>
 
         <BallonToolbarMarks />

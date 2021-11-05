@@ -22,15 +22,11 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
   const plugins = [
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
-      ...CONFIG.lineHeight,
-      types: [
+      defaultNodeValue: 1.5,
+      validNodeValues: [1, 1.2, 1.5, 2, 3],
+      validTypes: [
         ELEMENT_PARAGRAPH,
         ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
       ],
     })
   ];
@@ -38,7 +34,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
   return (
     <>
       <HeadingToolbar>
-        <ToolbarLineHeight icon={<LineWeight />} />
+        <LineHeightToolbarDropdown icon={<LineWeight />} />
       </HeadingToolbar>
       <Plate
         id="alignment"
@@ -55,27 +51,17 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ### Options
 
-#### `types`
+- See [getOverrideProps](plugin-utils#getoverrideprops)
+- Default options:
 
-- List of block types supporting line height.
-- Default is the paragraph type.
-
-#### `lineHeights`
-
-- List of supported `line-height` values.
-- Default is `[1,1.2,1.5,2]`
-
-#### `defaultLineHeight`
-
-- Default line height will not be set to the node
-- Default is `1.2`
-
-#### `classNames`
-
-- By default, the plugin is setting an inline style with `line-height` CSS property.
-- If you want more semantic content that uses classes instead,
-you can specify class names and style them by using a style sheet.
-
+```ts
+{
+  nodeKey: KEY_LINE_HEIGHT,
+  defaultNodeValue: DEFAULT_LINE_HEIGHT,
+  validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+  validNodeValues: DEFAULT_LINE_HEIGHTS,
+}
+```
 
 ### Source Code
 

@@ -11,7 +11,6 @@ import {
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeEntry } from 'slate';
-import { HistoryEditor } from 'slate-history';
 
 export interface WithNodeIdProps extends QueryNodeOptions {
   /**
@@ -51,7 +50,7 @@ export const withNodeId = ({
   reuseId,
   allow,
   exclude,
-}: WithNodeIdProps = {}): WithOverride<HistoryEditor> => (e) => {
+}: WithNodeIdProps = {}): WithOverride => (e) => {
   const editor = e;
 
   const { apply } = editor;

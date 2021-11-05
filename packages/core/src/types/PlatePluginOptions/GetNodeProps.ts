@@ -1,11 +1,11 @@
-import { SPRenderElementProps } from '../SPRenderElementProps';
-import { SPRenderLeafProps } from '../SPRenderLeafProps';
+import { PlateRenderElementProps } from '../PlateRenderElementProps';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /**
  * Map slate node properties to component props.
  */
 export type GetNodeProps = (
-  props: SPRenderElementProps | SPRenderLeafProps
+  props: PlateRenderElementProps | PlateRenderLeafProps
 ) => NodeProps | undefined;
 
 /**

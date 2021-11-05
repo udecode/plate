@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { findNode } from '../queries/findNode';
 import { moveChildren } from './moveChildren';
 
@@ -26,7 +27,7 @@ const input = ((
       </hli>
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = ((
   <editor>
@@ -48,7 +49,7 @@ const output = ((
       <htext />
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 it('should be', () => {
   const atPath = findNode(input, { match: { id: '2' } })?.[1];

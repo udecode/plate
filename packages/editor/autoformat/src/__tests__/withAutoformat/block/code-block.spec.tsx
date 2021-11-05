@@ -9,7 +9,7 @@ import {
   getRangeFromBlockStart,
   getText,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
@@ -79,9 +79,9 @@ describe('when ``` at block start, but customising with query we get the most re
           triggerAtBlockStart: false,
           preFormat: clearBlockFormat,
           format: (editor) => {
-            insertEmptyCodeBlock(editor as SPEditor, {
+            insertEmptyCodeBlock(editor as PlateEditor, {
               defaultType: getPlatePluginType(
-                editor as SPEditor,
+                editor as PlateEditor,
                 ELEMENT_DEFAULT
               ),
               insertNodesOptions: { select: true },

@@ -4,35 +4,37 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_LINE_HEIGHT } from '../defaults';
 import { LineHeightPluginOptions } from '../types';
 
 export const setLineHeight = (
-  editor: SPEditor,
-  { lineHeight }: LineHeightPluginOptions & { lineHeight: number },
-  options?: SetNodesOptions
+  editor: PlateEditor,
+  {
+    value,
+    setNodesOptions,
+  }: { value: number; setNodesOptions?: SetNodesOptions }
 ): void => {
-  const { types, defaultLineHeight } = getPlatePluginOptions<
+  const { validTypes, defaultNodeValue, nodeKey } = getPlatePluginOptions<
     Required<LineHeightPluginOptions>
   >(editor, KEY_LINE_HEIGHT);
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && types.includes(n.type);
+    Editor.isBlock(editor, n) && validTypes.includes(n.type);
 
-  if (lineHeight === defaultLineHeight) {
-    unsetNodes(editor, 'lineHeight', {
+  if (value === defaultNodeValue) {
+    unsetNodes(editor, nodeKey, {
       match,
-      ...options,
+      ...setNodesOptions,
     });
   } else {
     setNodes(
       editor,
-      { lineHeight },
+      { [nodeKey]: value },
       {
         match,
-        ...options,
+        ...setNodesOptions,
       }
     );
   }

@@ -12,15 +12,16 @@ import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
+import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
 import {
-  BallonToolbarMarks,
-  ToolbarButtonsAlign,
-  ToolbarButtonsBasicElements,
-  ToolbarButtonsBasicMarks,
-  ToolbarButtonsList,
-  ToolbarButtonsTable,
+  AlignToolbarButtons,
+  BasicElementToolbarButtons,
+  BasicMarkToolbarButtons,
+  ListToolbarButtons,
+  MarkBallonToolbar,
+  TableToolbarButtons,
 } from '../docs/src/live/config/components/Toolbars';
 import { withStyledDraggables } from '../docs/src/live/config/components/withStyledDraggables';
 import { withStyledPlaceHolders } from '../docs/src/live/config/components/withStyledPlaceHolders';
@@ -28,7 +29,7 @@ import { CONFIG } from '../docs/src/live/config/config';
 import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
 import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
-import { ToolbarSearchHighlight } from '../packages/decorators/find-replace-ui/src/ToolbarSearchHighlight/ToolbarSearchHighlight';
+import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../packages/editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../packages/editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../packages/editor/break/src/soft-break/createSoftBreakPlugin';
@@ -38,13 +39,12 @@ import { createResetNodePlugin } from '../packages/editor/reset-node/src/createR
 import { createSelectOnBackspacePlugin } from '../packages/editor/select/src/createSelectOnBackspacePlugin';
 import { createTrailingBlockPlugin } from '../packages/editor/trailing-block/src/createTrailingBlockPlugin';
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
-import { ToolbarImage } from '../packages/elements/image-ui/src/ToolbarImage/ToolbarImage';
-import { ToolbarLink } from '../packages/elements/link-ui/src/ToolbarLink/ToolbarLink';
+import { ImageToolbarButton } from '../packages/elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
+import { LinkToolbarButton } from '../packages/elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
 import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
-import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
@@ -124,18 +124,18 @@ export const Example = () => {
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.playground}
       >
-        <ToolbarSearchHighlight icon={Search} setSearch={setSearch} />
+        <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
         <HeadingToolbar>
-          <ToolbarButtonsBasicElements />
-          <ToolbarButtonsList />
-          <ToolbarButtonsBasicMarks />
-          <ToolbarButtonsAlign />
-          <ToolbarLink icon={<Link />} />
-          <ToolbarImage icon={<Image />} />
-          <ToolbarButtonsTable />
+          <BasicElementToolbarButtons />
+          <ListToolbarButtons />
+          <BasicMarkToolbarButtons />
+          <AlignToolbarButtons />
+          <LinkToolbarButton icon={<Link />} />
+          <ImageToolbarButton icon={<Image />} />
+          <TableToolbarButtons />
         </HeadingToolbar>
 
-        <BallonToolbarMarks />
+        <MarkBallonToolbar />
 
         <MentionCombobox items={CONFIG.mentionItems} />
       </Plate>

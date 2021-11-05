@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor, Element } from 'slate';
+import { Element } from 'slate';
 import { isAncestorEmpty } from '../../../queries/index';
 
 jsx;
@@ -11,7 +12,7 @@ const input = ((
     test
     <cursor />
   </hp>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = false;
 

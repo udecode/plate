@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { getPointBefore } from '../../../queries/getPointBefore';
 
 jsx;
@@ -16,7 +16,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = { offset: 4, path: [0, 0] };
 
@@ -38,7 +38,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = {
         offset: 5,
@@ -63,7 +63,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = undefined;
 
@@ -87,7 +87,7 @@ describe('when skipInvalid is false', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = {
         offset: 5,
@@ -111,7 +111,7 @@ describe('when skipInvalid is false', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = {
         offset: 5,

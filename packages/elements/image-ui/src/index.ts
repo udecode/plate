@@ -3,4 +3,4 @@
  */
 
 export * from './ImageElement/index';
-export * from './ToolbarImage/index';
+export * from './ImageToolbarButton/index';

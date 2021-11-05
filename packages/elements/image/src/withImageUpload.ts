@@ -1,5 +1,4 @@
-import { SPEditor, WithOverride } from '@udecode/plate-core';
-import { ReactEditor } from 'slate-react';
+import { WithOverride } from '@udecode/plate-core';
 import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 import { WithImageUploadOptions } from './types';
@@ -12,9 +11,7 @@ import { WithImageUploadOptions } from './types';
  */
 export const withImageUpload = ({
   uploadImage,
-}: WithImageUploadOptions = {}): WithOverride<ReactEditor & SPEditor> => (
-  editor
-) => {
+}: WithImageUploadOptions = {}): WithOverride => (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

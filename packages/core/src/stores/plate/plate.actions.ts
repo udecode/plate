@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import shallow from 'zustand/shallow';
 import { PlateActions, PlateState, PlateStates } from '../../types/PlateStore';
-import { SPEditor } from '../../types/SPEditor';
 import { pipe } from '../../utils/pipe';
 import { withPlate } from '../../utils/withPlate';
 import { getSetStateByKey, getStateById } from '../zustand.utils';
@@ -10,7 +9,7 @@ import { plateStore, usePlateStore } from './plate.store';
 
 const { getState: get, setState: set } = plateStore;
 
-export const usePlateActions = <T extends SPEditor = SPEditor>(
+export const usePlateActions = <T = {}>(
   storeId?: string | null
 ): PlateActions<T> => {
   const storeKeys = usePlateStore((s) => Object.keys(s), shallow);
@@ -18,9 +17,7 @@ export const usePlateActions = <T extends SPEditor = SPEditor>(
   const stateId: string | undefined = storeId ?? storeKeys[0];
 
   return useMemo(() => {
-    const setEditor: PlateActions<T>['setEditor'] = getSetStateByKey<
-      PlateState<T>['editor']
-    >('editor', stateId);
+    const setEditor = getSetStateByKey('editor', stateId);
 
     const setValue = getSetStateByKey<PlateState<T>['value']>('value', stateId);
 
@@ -61,8 +58,8 @@ export const usePlateActions = <T extends SPEditor = SPEditor>(
 
         setEditor(
           pipe(
-            createEditor(),
-            withPlate<T>({
+            createEditor() as any,
+            withPlate({
               id,
               plugins,
               options: editor?.options,

@@ -1,9 +1,9 @@
 import { castArray } from 'lodash';
-import { SPEditor } from '../types/SPEditor';
+import { PlateEditor } from '../types/PlateEditor';
 import { getPlatePluginType } from './getPlatePluginType';
 
 export const getPlatePluginTypes = (pluginKey: string | string[]) => (
-  editor: SPEditor
+  editor: PlateEditor
 ): string[] => {
   const pluginKeys = castArray<string>(pluginKey);
 

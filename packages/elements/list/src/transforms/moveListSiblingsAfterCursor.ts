@@ -1,10 +1,10 @@
 import { match, moveChildren } from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     at,
     to,

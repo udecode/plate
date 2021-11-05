@@ -1,9 +1,9 @@
 import { findNode } from '@udecode/plate-common';
-import { SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Node, Transforms } from 'slate';
 import { getCodeBlockType, getCodeLineType } from './options';
 
-export function getCodeBlockInsertFragment(editor: SPEditor) {
+export function getCodeBlockInsertFragment(editor: PlateEditor) {
   const { insertFragment } = editor;
   const codeBlockType = getCodeBlockType(editor);
   const codeLineType = getCodeLineType(editor);

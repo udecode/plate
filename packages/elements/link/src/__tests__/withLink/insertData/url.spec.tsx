@@ -17,7 +17,7 @@ const input = (
   </editor>
 ) as any;
 
-const data = { getData: () => 'http://google.com' };
+const data: any = { getData: () => 'http://google.com' };
 
 const output = (
   <editor>

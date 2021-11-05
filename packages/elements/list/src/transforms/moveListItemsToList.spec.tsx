@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { findNode } from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
 import { moveListItemsToList } from './moveListItemsToList';
 
@@ -29,7 +29,7 @@ const input = ((
       </hli>
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = ((
   <editor>
@@ -50,7 +50,7 @@ const output = ((
       </hli>
     </hul>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 it('should', () => {
   const editor = createEditorPlugins({

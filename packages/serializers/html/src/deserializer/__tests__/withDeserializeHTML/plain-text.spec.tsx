@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createPlateOptions } from '../../../../../../plate/src/utils/createPlateOptions';
@@ -19,7 +19,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const data = {
   getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),

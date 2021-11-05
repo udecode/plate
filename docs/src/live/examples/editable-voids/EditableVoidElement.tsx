@@ -8,7 +8,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
-import { Plate, SPRenderElementProps } from '@udecode/plate-core';
+import { Plate, PlateRenderElementProps } from '@udecode/plate-core';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { CONFIG } from '../../config/config';
 import { VALUES } from '../../config/values/values';
@@ -25,7 +25,7 @@ const plugins = [
 export const EditableVoidElement = ({
   attributes,
   children,
-}: SPRenderElementProps) => {
+}: PlateRenderElementProps) => {
   const [inputValue, setInputValue] = useState('');
 
   return (

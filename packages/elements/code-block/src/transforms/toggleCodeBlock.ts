@@ -1,9 +1,9 @@
 import { getNodes, setNodes, someNode, wrapNodes } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { getCodeBlockType, getCodeLineType } from '../options';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (editor: SPEditor) => {
+export const toggleCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
   const isActive = someNode(editor, {

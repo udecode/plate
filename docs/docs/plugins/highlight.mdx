@@ -13,11 +13,11 @@ npm install @udecode/plate-highlight
 
 ```ts live
 () => {
-  const ToolbarHighlight = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const HighlightToolbarButton = () => {
+    const editor = usePlateEditorRef();
 
     return (
-      <ToolbarMark
+      <MarkToolbarButton
         type={getPlatePluginType(editor, MARK_HIGHLIGHT)}
         icon={<Highlight />}
       />
@@ -32,7 +32,7 @@ npm install @udecode/plate-highlight
   return (
     <>
       <HeadingToolbar>
-        <ToolbarHighlight />
+        <HighlightToolbarButton />
       </HeadingToolbar>
       <Plate
         id="highlight"

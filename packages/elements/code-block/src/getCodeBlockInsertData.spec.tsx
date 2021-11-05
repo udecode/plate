@@ -2,7 +2,7 @@
 
 import { createEditorPlugins } from '@udecode/plate/src/utils/createEditorPlugins';
 import { createDeserializeAstPlugin } from '@udecode/plate-ast-serializer';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { createDeserializeHTMLPlugin } from '@udecode/plate-html-serializer';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -46,7 +46,7 @@ describe('when pasting text into a code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const fragment = createDataTransfer(
       new Map([
@@ -65,7 +65,7 @@ describe('when pasting text into a code block', () => {
           <hcodeline>const c = "d";</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     editorTest(input, fragment, expected);
   });

@@ -1,10 +1,10 @@
 import {
   getPlatePluginOptions,
+  PlateEditor,
   PlatePluginOptions,
-  SPEditor,
 } from '@udecode/plate-core';
 import { ELEMENT_CODE_LINE } from '../defaults';
 
-export const getCodeLinePluginOptions = <T extends SPEditor = SPEditor>(
-  editor: T
+export const getCodeLinePluginOptions = <T = {}>(
+  editor: PlateEditor<T>
 ): PlatePluginOptions => getPlatePluginOptions(editor, ELEMENT_CODE_LINE);

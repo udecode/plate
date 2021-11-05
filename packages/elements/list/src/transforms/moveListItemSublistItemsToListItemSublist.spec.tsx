@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
 import { findNode } from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -36,7 +36,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as PlateEditor;
 
   const output = ((
     <editor>
@@ -63,7 +63,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as PlateEditor;
 
   it('should', () => {
     const editor = createEditorPlugins({
@@ -104,7 +104,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as PlateEditor;
 
   const output = ((
     <editor>
@@ -125,7 +125,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as Editor;
+  ) as any) as PlateEditor;
 
   it('should', () => {
     const editor = createEditorPlugins({

@@ -1,12 +1,9 @@
 import React from 'react';
 import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
-import {
-  PlatePluginComponent,
-  PlatePluginOptions,
-} from '../types/PlatePluginOptions/PlateOptions';
+import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { SPRenderElementProps } from '../types/SPRenderElementProps';
+import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -14,10 +11,19 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate element type, render `options.component`.
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
-export const getEditableRenderElement = (options: PlatePluginOptions[]) => (
-  props: SPRenderElementProps
+export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
+  props: PlateRenderElementProps
 ) => {
+  const { plugins } = props;
+
   const _options = castArray<RenderNodeOptions>(options);
+
+  const injectParentComponents = plugins.flatMap(
+    (o) => o.injectParentComponent ?? []
+  );
+  const injectChildComponents = plugins.flatMap(
+    (o) => o.injectChildComponent ?? []
+  );
 
   for (const option of _options) {
     const {
@@ -27,7 +33,7 @@ export const getEditableRenderElement = (options: PlatePluginOptions[]) => (
       overrideProps,
     } = option;
 
-    const { element, children } = props;
+    const { element, children: _children } = props;
 
     if (element.type === type) {
       const nodeProps = getRenderNodeProps({
@@ -38,11 +44,29 @@ export const getEditableRenderElement = (options: PlatePluginOptions[]) => (
         type,
       });
 
-      return (
-        <Element {...props} {...nodeProps}>
-          {children}
-        </Element>
+      let children = _children;
+
+      injectChildComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, ...option });
+
+        if (hoc) {
+          children = hoc({ ...nodeProps, children });
+        }
+      });
+
+      let component: JSX.Element | null = (
+        <Element {...nodeProps}>{children}</Element>
       );
+
+      injectParentComponents.forEach((withHOC) => {
+        const hoc = withHOC({ ...nodeProps, ...option });
+
+        if (hoc) {
+          component = hoc({ ...nodeProps, children: component });
+        }
+      });
+
+      return component;
     }
   }
 };

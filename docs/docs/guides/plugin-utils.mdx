@@ -1,0 +1,126 @@
+---
+slug: /plugin-utils
+title: Plugin Utils
+---
+
+Plate is providing many utils to create plugins.
+
+### `getOverrideProps`
+
+- Util for [overrideProps](creating-plugins#overrideprops)
+- Return if `element`, `text`, `nodeKey` is defined
+- Return if `node.type` is not in `validTypes` (if defined)
+- Return if `value = node[nodeKey]` is not in `validNodeValues` (if defined)
+- If `classNames[value]` is defined, override `className` with it
+- If `styleKey` is defined, override `style` with `[styleKey]: value`
+- Plugin options:
+
+```ts
+export interface OverridePropsOptions<TValue = any> {
+  /**
+   * Object whose keys are node values and values are classNames which will be extended.
+   */
+  classNames?: AnyObject;
+
+  /**
+   * Default node value.
+   * The node key would be unset if the node value = defaultNodeValue.
+   */
+  defaultNodeValue?: TValue;
+
+  /**
+   * Node key to map to the styles.
+   */
+  nodeKey?: string;
+
+  /**
+   * Style key to override.
+   * @default nodeKey
+   */
+  styleKey?: keyof CSSProperties;
+
+  /**
+   * Transforms the className.
+   * @default clsx(className, classNames[value])
+   */
+  transformClassName?: (editor: PlateEditor, options: TransformOptions) => any;
+
+  /**
+   * Transforms the node value for the style or className.
+   * @default nodeValue
+   */
+  transformNodeValue?: (editor: PlateEditor, options: TransformOptions) => TValue;
+
+  /**
+   * Transforms the style.
+   * @default { ...style, [styleKey]: value }
+   */
+  transformStyle?: (
+    editor: PlateEditor,
+    options: TransformOptions
+  ) => CSSProperties;
+
+  /**
+   * List of supported node values.
+   */
+  validNodeValues?: TValue[];
+
+  /**
+   * List of element types for which the overrides apply.
+   * @default [ELEMENT_DEFAULT]
+   */
+  validTypes?: string[];
+}
+```
+- Default `styleKey` is `nodeKey`
+
+#### `classNames`
+
+- If you want more semantics in your content, use CSS classes instead of inline styles.
+- You can then adjust the CSS in the style sheets of your application.
+- Example:
+
+```ts
+createIndentPlugin({
+  classNames: {
+    1: 'slate-indent-1',
+    2: 'slate-indent-2',
+    3: 'slate-indent-3',
+  },
+})
+```
+
+```css
+.slate-indent-1 {
+  margin-left: 10%;
+}
+
+.slate-indent-2 {
+  margin-left: 20%;
+}
+
+.slate-indent-3 {
+  margin-left: 30%;
+}
+```
+
+### `getRenderElement`
+
+- Util for [renderElement](creating-plugins#renderelement)
+- First param is [pluginKey](configuration#plugin-keys)
+- It will look up the plugin [type](configuration#type):
+  - If the type is equals to the slate element type, render `options.component`
+  - Else, return `undefined` so Plate pipeline can check the next plugin
+- Plugin options:
+  - [type](configuration#type)
+  - [component](configuration#component)
+  - [getNodeProps](configuration#getnodeprops)
+  - [overrideProps](configuration#overrideprops)
+- Default `component` is `DefaultElement`
+   
+### `getRenderLeaf`
+
+- Util for [renderLeaf](creating-plugins#renderleaf)
+- Same than [getRenderElement](plugin-utils#getrenderelement) but for slate leaves.
+- Default `component` is `DefaultLeaf`
+

@@ -1,6 +1,6 @@
 /** @jsx jsx */
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { isTextByPath } from '../../../queries/isTextByPath';
 
 jsx;
@@ -9,7 +9,7 @@ const editor = ((
   <editor>
     <hp>test</hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const path = [0, 0];
 

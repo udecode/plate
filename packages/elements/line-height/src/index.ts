@@ -4,6 +4,5 @@
 
 export * from './createLineHeightPlugin';
 export * from './defaults';
-export * from './getLineHeightOverrideProps';
 export * from './types';
 export * from './transforms/index';

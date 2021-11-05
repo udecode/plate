@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { findNode } from './findNode';
 
@@ -18,7 +18,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   const listNode = (
     <hul>
@@ -59,7 +59,7 @@ describe('when the cursor is not in a list item and a path is provided instead',
         2<cursor />
       </hp>
     </editor>
-  ) as any) as SPEditor;
+  ) as any) as PlateEditor;
 
   const listNode = (
     <hul>

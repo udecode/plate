@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
 import { withRemoveEmptyNodes } from '../../createRemoveEmptyNodesPlugin';
 
@@ -16,7 +16,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = (
   <editor>

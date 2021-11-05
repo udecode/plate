@@ -19,22 +19,22 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ```ts live
 () => {
-  const ToolbarButtonsAlign = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const AlignToolbarButtons = () => {
+    const editor = usePlateEditorRef();
 
     return (
       <>
-        <ToolbarAlign align="left" icon={<FormatAlignLeft />} />
-        <ToolbarAlign
-          align="center"
+        <AlignToolbarButton value="left" icon={<FormatAlignLeft />} />
+        <AlignToolbarButton
+          value="center"
           icon={<FormatAlignCenter />}
         />
-        <ToolbarAlign
-          align="right"
+        <AlignToolbarButton
+          value="right"
           icon={<FormatAlignRight />}
         />
-        <ToolbarAlign
-          align="justify"
+        <AlignToolbarButton
+          value="justify"
           icon={<FormatAlignJustify />}
         />
       </>
@@ -59,7 +59,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
   return (
     <>
       <HeadingToolbar>
-        <ToolbarButtonsAlign />
+        <AlignToolbarButtons />
       </HeadingToolbar>
       <Plate
         id="alignment"

@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import {
   getPlatePluginType,
-  SPEditor,
+  PlateEditor,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
@@ -23,7 +23,7 @@ import { ListNormalizerOptions } from '../types';
  * - inline children except those at excludeDepth
  */
 export const getDeepInlineChildren = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     children,
   }: {
@@ -52,7 +52,7 @@ export const getDeepInlineChildren = (
  * Else: move the children that are not valid to the list item container.
  */
 export const normalizeListItem = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     listItem,
     validLiChildrenTypes = [],

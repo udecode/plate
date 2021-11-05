@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { isBlockAboveEmpty } from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { CONFIG } from '../../../../../docs/src/live/config/config';
@@ -17,7 +17,7 @@ const input = ((
       <cursor />
     </hblockquote>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 const output = (
   <editor>

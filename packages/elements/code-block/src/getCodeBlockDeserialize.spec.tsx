@@ -5,7 +5,7 @@ import {
   astDeserializerId,
   createDeserializeAstPlugin,
 } from '@udecode/plate-ast-serializer';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import {
   createDeserializeHTMLPlugin,
   htmlDeserializerId,
@@ -17,9 +17,7 @@ import { getCodeBlockDeserialize } from './getCodeBlockDeserialize';
 
 jsx;
 
-const createCodeBlockDeserialize = <TEditor extends SPEditor = SPEditor>(
-  input: TEditor
-) => {
+const createCodeBlockDeserialize = (input: PlateEditor) => {
   const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
 
   plugins.push(
@@ -47,7 +45,7 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const { isDisabled } = createCodeBlockDeserialize(input);
 
@@ -64,7 +62,7 @@ describe('code block deserialization', () => {
             <htext />
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const { isDisabled } = createCodeBlockDeserialize(input);
 

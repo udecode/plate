@@ -1,22 +1,25 @@
 import clsx from 'clsx';
 import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { SPRenderNodeProps } from '../types/SPRenderNodeProps';
+import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
 import { getSlateClass } from './getSlateClass';
 
 /**
- * Computes `className` and `nodeProps`
+ * Get node props: `nodeProps`, `className`, `overrideProps`
  */
-export const getRenderNodeProps = ({
+export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
   attributes,
   overrideProps,
   type,
   getNodeProps,
-  props,
+  props: _props,
 }: Omit<RenderNodeOptions, 'component'> & {
-  props: SPRenderNodeProps;
+  props: T;
   attributes?: any;
 }) => {
-  const nodeProps = getNodeProps?.(props as any) ?? attributes ?? {};
+  let props = {
+    ..._props,
+    nodeProps: getNodeProps?.(_props as any) ?? attributes ?? {},
+  };
 
   if (overrideProps) {
     const newProps =
@@ -34,5 +37,5 @@ export const getRenderNodeProps = ({
 
   const { className } = props;
 
-  return { className: clsx(getSlateClass(type), className), nodeProps };
+  return { ...props, className: clsx(getSlateClass(type), className) };
 };

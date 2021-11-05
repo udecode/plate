@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { render } from '@testing-library/react';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { pipeRenderLeaf } from './pipeRenderLeaf';

@@ -1,9 +1,9 @@
 import { getAbove, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../defaults';
 
-export const deleteColumn = (editor: SPEditor) => {
+export const deleteColumn = (editor: PlateEditor) => {
   if (
     someNode(editor, {
       match: { type: getPlatePluginType(editor, ELEMENT_TABLE) },

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { insertNodes } from '@udecode/plate-common';
-import { TEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TEditor, TElement } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { withHistory } from 'slate-history';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ELEMENT_LI, ELEMENT_UL } from '../../../elements/list/src/defaults';
@@ -27,7 +27,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -69,7 +69,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -110,7 +110,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -156,7 +156,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -195,7 +195,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -234,7 +234,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -276,7 +276,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -315,7 +315,7 @@ describe('when inserting nodes', () => {
         <editor>
           <hp foo={10}>test</hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -359,7 +359,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -426,7 +426,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -460,7 +460,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -493,7 +493,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hli>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -527,7 +527,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -564,7 +564,7 @@ describe('when merging nodes', () => {
             <htext id={2}>t</htext>
           </hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>
@@ -595,7 +595,7 @@ describe('when merging nodes', () => {
           <hp id={1}>one</hp>
           <hp id={2}>two</hp>
         </editor>
-      ) as any) as Editor;
+      ) as any) as PlateEditor;
 
       const output = (
         <editor>

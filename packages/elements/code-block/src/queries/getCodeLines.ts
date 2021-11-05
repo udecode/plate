@@ -1,5 +1,5 @@
 import { getNodes } from '@udecode/plate-common';
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { getCodeLineType } from '../options';
 
@@ -7,7 +7,7 @@ import { getCodeLineType } from '../options';
  * Get code line entries
  */
 export const getCodeLines = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (!at) return;

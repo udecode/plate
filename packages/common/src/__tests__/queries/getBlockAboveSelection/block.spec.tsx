@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { getBlockAbove } from '../../../queries/index';
 
 jsx;
@@ -15,7 +15,7 @@ const input = ((
       </hp>
     </hh1>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 const output = <hp>test</hp>;
 

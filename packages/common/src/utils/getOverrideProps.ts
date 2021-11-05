@@ -1,52 +1,106 @@
 import { CSSProperties } from 'react';
 import {
-  AnyObject,
   getPlatePluginOptions,
-  SPEditor,
+  OverrideProps,
+  TElement,
+  TText,
 } from '@udecode/plate-core';
-import clsx, { ClassDictionary } from 'clsx';
-import { GetOverridePropsParams } from '../types';
+import clsx from 'clsx';
+import { OverridePropsOptions } from '../types';
 
-export function getOverrideProps(
-  editor: SPEditor,
-  {
-    defaultOption,
-    options,
+export interface GetOverridePropsOptions {
+  pluginKey?: string;
+
+  /**
+   * Existing className.
+   */
+  className?: string;
+
+  /**
+   * Style value or className key.
+   */
+  element?: TElement;
+
+  /**
+   * Style value or className key.
+   */
+  text?: TText;
+
+  /**
+   * Existing style.
+   */
+  style?: CSSProperties;
+}
+
+export interface OverridePropsReturnType {
+  className?: string;
+  style?: CSSProperties;
+}
+
+/**
+ * Util for `overrideProps`.
+ * Return if `element`, `text`, `nodeKey` is defined.
+ * Return if `node.type` is not in `validTypes` (if defined).
+ * Return if `value = node[nodeKey]` is not in `validNodeValues` (if defined).
+ * If `classNames[value]` is defined, override `className` with it.
+ * If `styleKey` is defined, override `style` with `[styleKey]: value`.
+ */
+export const getOverrideProps = (pluginKey: string): OverrideProps => (
+  editor
+) => (
+  options: GetOverridePropsOptions
+): OverridePropsReturnType | undefined => {
+  const { element, text, className, style } = options;
+
+  const node = element ?? text;
+  if (!node) return;
+
+  const {
+    nodeKey,
+    styleKey = nodeKey as any,
+    validTypes,
     classNames,
-    value,
-    className,
-    style,
-    type,
-  }: GetOverridePropsParams
-): { className?: string; styles?: CSSProperties } {
-  // early return if there is now reason to add styles
-  if (
-    // value not set
-    !(value ?? false) ||
-    // has a default option and value matches it
-    (defaultOption !== undefined && value === defaultOption) ||
-    // options are provided and value is not one of them
-    (options && !options.includes(value))
-  ) {
-    return {};
+    transformClassName,
+    transformNodeValue,
+    transformStyle,
+    validNodeValues,
+  } = getPlatePluginOptions<OverridePropsOptions>(editor, pluginKey);
+
+  if (!nodeKey) return;
+
+  if (validTypes && node.type && !validTypes.includes(node.type)) {
+    return;
   }
 
-  const pluginOptions = getPlatePluginOptions(editor, type);
-  const { cssPropName, transformCssValue } = pluginOptions;
+  const nodeValue = node[nodeKey];
 
-  const res: AnyObject = {};
+  // early return if there is now reason to add styles
+  if (!nodeValue || (validNodeValues && !validNodeValues.includes(nodeValue))) {
+    return;
+  }
 
-  if (classNames?.[value]) {
-    res.className = clsx(className, classNames[value] as ClassDictionary);
-  } else {
-    res.style = {
+  const res: OverridePropsReturnType = {};
+
+  const transformOptions = { ...options, nodeValue };
+
+  const value = transformNodeValue?.(editor, transformOptions) ?? nodeValue;
+
+  if (element) {
+    res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
+  }
+
+  if (classNames?.[nodeValue] || transformClassName) {
+    res.className =
+      transformClassName?.(editor, transformOptions) ??
+      clsx(className, classNames?.[value]);
+  }
+
+  if (styleKey) {
+    res.style = transformStyle?.(editor, transformOptions) ?? {
       ...style,
-      [cssPropName ?? type]:
-        transformCssValue && typeof transformCssValue === 'function'
-          ? transformCssValue({ options: pluginOptions, value })
-          : value,
+      [styleKey as string]: value,
     };
   }
 
   return res;
-}
+};

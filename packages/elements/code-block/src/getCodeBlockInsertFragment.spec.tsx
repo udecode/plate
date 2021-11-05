@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createEditorPlugins } from '@udecode/plate/src/utils/createEditorPlugins';
-import { SPEditor, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
@@ -33,7 +33,7 @@ describe('pasting a code block', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -58,7 +58,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -78,7 +78,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const fragment = ((
         <fragment>
@@ -99,7 +99,7 @@ describe('pasting a code block', () => {
             <hcodeline>!</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -120,7 +120,7 @@ describe('pasting non-code block elements', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const fragment = ((
       <fragment>
@@ -139,7 +139,7 @@ describe('pasting non-code block elements', () => {
           <hcodeline>!</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     editorTest(input, fragment, expected);
   });

@@ -1,5 +1,5 @@
 import { isFirstChild } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
@@ -8,7 +8,7 @@ import { moveListItemUp } from './moveListItemUp';
  * If list is not nested and if li is not the first child, move li up.
  */
 export const removeFirstListItem = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     list,
     listItem,

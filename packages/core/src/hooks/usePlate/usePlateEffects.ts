@@ -3,10 +3,9 @@ import { createEditor, Editor } from 'slate';
 import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../../plugins/createReactPlugin';
 import { usePlateActions } from '../../stores/plate/plate.actions';
-import { useStoreEditorEnabled } from '../../stores/plate/selectors/useStoreEditorEnabled';
-import { useStoreEditorRef } from '../../stores/plate/selectors/useStoreEditorRef';
-import { useStorePlate } from '../../stores/plate/selectors/useStorePlate';
-import { SPEditor } from '../../types/SPEditor';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
+import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
@@ -16,7 +15,7 @@ import { withPlate } from '../../utils/withPlate';
  * Effects to update the plate store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const usePlateEffects = <T extends SPEditor = SPEditor>({
+export const usePlateEffects = <T = {}>({
   id = 'main',
   value,
   editor,
@@ -35,10 +34,10 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
     setPluginKeys,
     setEnabled,
     clearState,
-  } = usePlateActions<T>(id);
-  const storeEditor = useStoreEditorRef<T>(id);
-  const storeEnabled = useStoreEditorEnabled(id);
-  const storePlugins = useStorePlate(id);
+  } = usePlateActions(id);
+  const storeEditor = usePlateEditorRef<T>(id);
+  const storeEnabled = usePlateEnabled(id);
+  const storePlugins = usePlatePlugins(id);
 
   // Clear the state on unmount.
   useEffect(
@@ -76,7 +75,9 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
 
   // Plate plugins
   useEffect(() => {
-    setPlugins(plugins ?? [createReactPlugin(), createHistoryPlugin()]);
+    setPlugins(
+      plugins ?? ([createReactPlugin(), createHistoryPlugin()] as any)
+    );
   }, [plugins, setPlugins]);
 
   useEffect(() => {
@@ -94,8 +95,8 @@ export const usePlateEffects = <T extends SPEditor = SPEditor>({
     if (!storeEditor && storeEnabled) {
       setEditor(
         pipe(
-          editor ?? createEditor(),
-          withPlate<T>({
+          editor ?? (createEditor() as any),
+          withPlate({
             id,
             plugins: storePlugins,
             options,

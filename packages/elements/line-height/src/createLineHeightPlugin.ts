@@ -1,4 +1,4 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
+import { ELEMENT_DEFAULT, getOverrideProps } from '@udecode/plate-common';
 import { getPlatePluginType, PlatePlugin } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import {
@@ -6,7 +6,6 @@ import {
   DEFAULT_LINE_HEIGHTS,
   KEY_LINE_HEIGHT,
 } from './defaults';
-import { getLineHeightOverrideProps } from './getLineHeightOverrideProps';
 import { LineHeightPluginOptions } from './types';
 
 /**
@@ -14,17 +13,17 @@ import { LineHeightPluginOptions } from './types';
  * to left, right and center it.
  */
 export const createLineHeightPlugin = (
-  options: LineHeightPluginOptions = {}
+  options?: LineHeightPluginOptions
 ): PlatePlugin => ({
-  overrideProps: getLineHeightOverrideProps(),
+  overrideProps: getOverrideProps(KEY_LINE_HEIGHT),
   withOverrides: (editor) => {
     // TODO: extend plate-core to register options
     editor.options[KEY_LINE_HEIGHT] = defaults(options, {
-      type: KEY_LINE_HEIGHT,
-      types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-      lineHeights: DEFAULT_LINE_HEIGHTS,
-      defaultLineHeight: DEFAULT_LINE_HEIGHT,
-    } as LineHeightPluginOptions) as any;
+      nodeKey: KEY_LINE_HEIGHT,
+      defaultNodeValue: DEFAULT_LINE_HEIGHT,
+      validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+      validNodeValues: DEFAULT_LINE_HEIGHTS,
+    } as LineHeightPluginOptions);
 
     return editor;
   },

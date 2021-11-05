@@ -21,40 +21,40 @@ npm install @udecode/plate-basic-elements
 
 ```ts live
 () => {
-  const ToolbarButtonsBasicElements = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const BasicElementToolbarButtons = () => {
+    const editor = usePlateEditorRef();
 
     return (
       <>
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H1)}
           icon={<LooksOne />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H2)}
           icon={<LooksTwo />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H3)}
           icon={<Looks3 />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H4)}
           icon={<Looks4 />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H5)}
           icon={<Looks5 />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_H6)}
           icon={<Looks6 />}
         />
-        <ToolbarElement
+        <BlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
           icon={<FormatQuote />}
         />
-        <ToolbarCodeBlock
+        <CodeBlockToolbarButton
           type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
           icon={<CodeBlock />}
         />
@@ -73,7 +73,7 @@ npm install @udecode/plate-basic-elements
   return (
     <>
       <HeadingToolbar>
-        <ToolbarButtonsBasicElements />
+        <BasicElementToolbarButtons />
       </HeadingToolbar>
       <Plate
         id="basic-elements"

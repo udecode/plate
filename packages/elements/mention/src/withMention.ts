@@ -1,9 +1,8 @@
 import { comboboxStore } from '@udecode/plate-combobox';
 import { insertNodes } from '@udecode/plate-common';
-import { SPEditor, WithOverride } from '@udecode/plate-core';
+import { WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
-import { ReactEditor } from 'slate-react';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { getMentionInputType } from './options';
 import {
@@ -18,7 +17,7 @@ export const withMention = ({
 }: {
   id: string;
   trigger: string;
-}): WithOverride<ReactEditor & SPEditor> => (editor) => {
+}): WithOverride => (editor) => {
   const { apply, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {

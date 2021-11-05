@@ -1,8 +1,6 @@
 /** @jsx jsx */
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
@@ -17,7 +15,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -35,10 +33,7 @@ const output = (
 ) as any;
 
 it('should do nothing', () => {
-  const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [
-    createParagraphPlugin(),
-    createLinkPlugin(),
-  ];
+  const plugins: PlatePlugin[] = [createParagraphPlugin(), createLinkPlugin()];
   plugins.push(createDeserializeHTMLPlugin({ plugins }));
 
   const editor = createEditorPlugins({

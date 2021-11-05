@@ -4,6 +4,5 @@
 
 export * from './createAlignPlugin';
 export * from './defaults';
-export * from './getAlignOverrideProps';
 export * from './types';
 export * from './transforms/index';

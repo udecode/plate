@@ -1,5 +1,5 @@
 import { getParent, match } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries';
 
@@ -7,7 +7,7 @@ import { getListTypes } from '../queries';
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
 export const normalizeNestedList = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { nestedListItem }: { nestedListItem: NodeEntry<TElement> }
 ) => {
   const [, path] = nestedListItem;

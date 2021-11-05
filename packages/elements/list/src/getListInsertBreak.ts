@@ -1,5 +1,5 @@
 import { ELEMENT_DEFAULT, isBlockAboveEmpty } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import {
   getResetNodeOnKeyDown,
   SIMULATE_BACKSPACE,
@@ -10,7 +10,7 @@ import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './defaults';
 
-export const getListInsertBreak = (editor: SPEditor) => {
+export const getListInsertBreak = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
   const res = getListItemEntry(editor, {});
@@ -37,7 +37,7 @@ export const getListInsertBreak = (editor: SPEditor) => {
         types: [getPlatePluginType(editor, ELEMENT_LI)],
         defaultType: getPlatePluginType(editor, ELEMENT_DEFAULT),
         predicate: () => !moved && isBlockAboveEmpty(editor),
-        onReset: (_editor) => unwrapList(_editor as SPEditor),
+        onReset: (_editor) => unwrapList(_editor as PlateEditor),
       },
     ],
   })(editor)(SIMULATE_BACKSPACE as any);

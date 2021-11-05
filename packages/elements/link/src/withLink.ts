@@ -9,19 +9,18 @@ import {
 } from '@udecode/plate-common';
 import {
   getPlatePluginType,
-  SPEditor,
+  PlateEditor,
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Range } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
 import { ELEMENT_LINK } from './defaults';
 import { WithLinkOptions } from './types';
 
 const upsertLink = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     url,
     at,
@@ -46,7 +45,7 @@ const upsertLink = (
   });
 };
 
-const upsertLinkIfValid = (editor: SPEditor, { isUrl }: { isUrl: any }) => {
+const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
 
@@ -73,7 +72,7 @@ export const withLink = ({
     afterMatch: true,
     multiPaths: true,
   },
-}: WithLinkOptions = {}): WithOverride<ReactEditor & SPEditor> => (editor) => {
+}: WithLinkOptions = {}): WithOverride => (editor) => {
   const { insertData, insertText } = editor;
 
   const type = getPlatePluginType(editor, ELEMENT_LINK);

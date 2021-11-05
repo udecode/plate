@@ -7,13 +7,13 @@ import {
   setNodes,
   wrapNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: SPEditor, { type }: { type: string }) =>
+export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
   Editor.withoutNormalizing(editor, () => {
     if (!editor.selection) {
       return;

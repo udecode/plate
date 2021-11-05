@@ -1,4 +1,4 @@
-import { RenderFunction } from '@udecode/plate-common';
+import { RenderFunction } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { CSSProp } from 'styled-components';
 import {

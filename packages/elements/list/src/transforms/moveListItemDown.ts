@@ -1,5 +1,5 @@
 import { match, wrapNodes } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries';
 
@@ -9,7 +9,7 @@ export interface MoveListItemDownOptions {
 }
 
 export const moveListItemDown = (
-  editor: SPEditor,
+  editor: PlateEditor,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   const [listNode] = list;

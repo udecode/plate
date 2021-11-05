@@ -30,6 +30,7 @@ export * from '@udecode/plate-html-serializer';
 export * from '@udecode/plate-image';
 export * from '@udecode/plate-image-ui';
 export * from '@udecode/plate-indent';
+export * from '@udecode/plate-indent-list';
 export * from '@udecode/plate-kbd';
 export * from '@udecode/plate-line-height';
 export * from '@udecode/plate-line-height-ui';

@@ -1,5 +1,5 @@
+import { PlateEditor } from '../types/PlateEditor';
 import { RenderElement } from '../types/PlatePlugin/RenderElement';
-import { SPEditor } from '../types/SPEditor';
 import { getEditableRenderElement } from './getEditableRenderElement';
 import { mapPlatePluginKeysToOptions } from './mapPlatePluginKeysToOptions';
 
@@ -9,5 +9,5 @@ import { mapPlatePluginKeysToOptions } from './mapPlatePluginKeysToOptions';
  */
 export const getRenderElement = (
   pluginKeys: string | string[]
-): RenderElement => (editor: SPEditor) =>
+): RenderElement => (editor: PlateEditor) =>
   getEditableRenderElement(mapPlatePluginKeysToOptions(editor, pluginKeys));

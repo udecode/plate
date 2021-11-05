@@ -4,7 +4,7 @@ import userEvents from '@testing-library/user-event';
 import {
   DEFAULT_COLORS,
   DEFAULT_CUSTOM_COLORS,
-} from '../ToolbarColorPicker/defaults';
+} from '../ColorPickerToolbarDropdown/defaults';
 import { ColorPicker } from './ColorPicker';
 
 describe('ColorPicker', () => {

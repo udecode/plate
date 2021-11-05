@@ -1,12 +1,12 @@
 import { deleteFragment, getAbove, getParent } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Editor, Range, Transforms } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 import { ELEMENT_LI } from './defaults';
 
-export const getListDeleteFragment = (editor: SPEditor) => {
+export const getListDeleteFragment = (editor: PlateEditor) => {
   let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {

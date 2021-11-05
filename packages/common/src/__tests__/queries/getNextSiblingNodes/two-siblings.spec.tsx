@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor, withInlineVoid } from '@udecode/plate-core';
+import { PlateEditor, withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
@@ -21,7 +21,7 @@ const input = ((
       <htext>last</htext>
     </hp>
   </editor>
-) as any) as SPEditor;
+) as any) as PlateEditor;
 
 const output = [<htext />, <htext>last</htext>];
 

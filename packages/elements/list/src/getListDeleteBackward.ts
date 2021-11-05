@@ -4,7 +4,7 @@ import {
   isFirstChild,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import {
   getResetNodeOnKeyDown,
   SIMULATE_BACKSPACE,
@@ -18,7 +18,7 @@ import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './defaults';
 
 export const getListDeleteBackward = (
-  editor: SPEditor,
+  editor: PlateEditor,
   unit: 'character' | 'word' | 'line' | 'block'
 ) => {
   const res = getListItemEntry(editor, {});
@@ -48,7 +48,7 @@ export const getListDeleteBackward = (
                 defaultType: getPlatePluginType(editor, ELEMENT_DEFAULT),
                 hotkey: 'backspace',
                 predicate: () => isSelectionAtBlockStart(editor),
-                onReset: (_editor) => unwrapList(_editor as SPEditor),
+                onReset: (_editor) => unwrapList(_editor as PlateEditor),
               },
             ],
           })(editor)(SIMULATE_BACKSPACE);

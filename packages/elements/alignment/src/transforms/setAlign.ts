@@ -4,32 +4,32 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginOptions, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../defaults';
 import { Alignment, AlignPluginOptions } from '../types';
 
 export const setAlign = (
-  editor: SPEditor,
-  { align }: AlignPluginOptions & { align: Alignment },
+  editor: PlateEditor,
+  { value }: { value: Alignment },
   options?: SetNodesOptions
 ) => {
-  const { types, defaultAlignment } = getPlatePluginOptions<
+  const { validTypes, defaultNodeValue, nodeKey } = getPlatePluginOptions<
     Required<AlignPluginOptions>
   >(editor, KEY_ALIGN);
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && types.includes(n.type);
+    Editor.isBlock(editor, n) && validTypes.includes(n.type);
 
-  if (align === defaultAlignment) {
-    unsetNodes(editor, 'align', {
+  if (value === defaultNodeValue) {
+    unsetNodes(editor, nodeKey, {
       match,
       ...options,
     });
   } else {
     setNodes(
       editor,
-      { align },
+      { [nodeKey]: value },
       {
         match,
         ...options,

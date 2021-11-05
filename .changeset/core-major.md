@@ -1,0 +1,26 @@
+---
+'@udecode/plate-core': major
+---
+
+- renamed:
+  - `SPEditor` to `PEditor` (note that `PlateEditor` is the new default)
+  - `SPRenderNodeProps` to `PlateRenderNodeProps`
+  - `SPRenderElementProps` to `PlateRenderElementProps`
+  - `SPRenderLeafProps` to `PlateRenderLeafProps`
+  - `useEventEditorId` to `usePlateEventId`
+  - `useStoreEditorOptions` to `usePlateOptions` 
+  - `useStoreEditorRef` to `usePlateEditorRef` 
+  - `useStoreEditorSelection` to `usePlateSelection` 
+  - `useStoreEditorState` to `usePlateEditorState` 
+  - `useStoreEditorValue` to `usePlateValue` 
+  - `useStoreEnabled` to `usePlateEnabled` 
+  - `useStorePlate` to `usePlatePlugins` 
+  - `useStorePlatePluginKeys` to `usePlateKeys` 
+  - `useStoreState` to `usePlateState` 
+- `getPlateId`: Get the last focused editor id, else get the last blurred editor id, else get the first editor id, else `null`
+- `getPlateState`:
+  - removed first parameter `state`
+  - previously when giving no parameter, it was returning the first editor. Now it's returning the editor with id = `getPlateId()`. It means `useEventEditorId('focus')` is no longer needed for
+    - `usePlateEditorRef`
+    - `usePlateEditorState`
+    - `usePlateX`...

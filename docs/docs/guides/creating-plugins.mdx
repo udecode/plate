@@ -181,12 +181,12 @@ const onDragStart = (event) => {
 type ReturnType = boolean | void;
 
 // Clipboard Events
-onCopy?: (editor: T) => (event: ClipboardEvent) => ReturnType;
-onCopyCapture?: (editor: T) => (event: ClipboardEvent) => ReturnType;
-onCut?: (editor: T) => (event: ClipboardEvent) => ReturnType;
-onCutCapture?: (editor: T) => (event: ClipboardEvent) => ReturnType;
-onPaste?: (editor: T) => (event: ClipboardEvent) => ReturnType;
-onPasteCapture?: (editor: T) => (event: ClipboardEvent) => ReturnType;
+onCopy?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
+onCopyCapture?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
+onCut?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
+onCutCapture?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
+onPaste?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
+onPasteCapture?: (editor: PlateEditor<T>) => (event: ClipboardEvent) => ReturnType;
 
 // Composition Events
 onCompositionEnd?: (editor: T) => (event: CompositionEvent) => ReturnType;

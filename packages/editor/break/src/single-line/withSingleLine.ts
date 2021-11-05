@@ -1,10 +1,7 @@
-import { SPEditor, WithOverride } from '@udecode/plate-core';
+import { WithOverride } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
 
-export const withSingleLine = (): WithOverride<ReactEditor & SPEditor> => (
-  editor
-) => {
+export const withSingleLine = (): WithOverride => (editor) => {
   const { normalizeNode } = editor;
 
   editor.insertBreak = () => null;

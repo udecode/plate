@@ -4,7 +4,7 @@ import {
   isBlockAboveEmpty,
   isExpanded,
 } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor, TElement } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -14,7 +14,7 @@ import { insertCodeBlock } from './insertCodeBlock';
  * rather than awkwardly splitting the current selection.
  */
 export const insertEmptyCodeBlock = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,

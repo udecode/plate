@@ -1,4 +1,4 @@
-import { RenderFunction } from '@udecode/plate-common';
+import { RenderFunction } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import { TableNodeData } from '@udecode/plate-table';
 import { PopoverProps } from '@udecode/plate-ui-popover';

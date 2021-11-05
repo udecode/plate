@@ -1,4 +1,4 @@
-import { SPEditor, WithOverride } from '@udecode/plate-core';
+import { WithOverride } from '@udecode/plate-core';
 import { getListDeleteBackward } from './getListDeleteBackward';
 import { getListDeleteForward } from './getListDeleteForward';
 import { getListDeleteFragment } from './getListDeleteFragment';
@@ -9,7 +9,7 @@ import { WithListOptions } from './types';
 
 export const withList = ({
   validLiChildrenTypes,
-}: WithListOptions = {}): WithOverride<SPEditor> => (editor) => {
+}: WithListOptions = {}): WithOverride => (editor) => {
   const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.insertBreak = () => {

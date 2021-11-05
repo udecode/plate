@@ -1,4 +1,4 @@
-import React, { SVGProps } from 'react';
+import React from 'react';
 import { StyledIcon, StyledIconProps } from './StyledIcon';
 
 export const ChevronDownIcon = (props: StyledIconProps) => (

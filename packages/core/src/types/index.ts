@@ -3,11 +3,11 @@
  */
 
 export * from './EventEditorStore';
+export * from './PlateEditor';
+export * from './PlateRenderElementProps';
+export * from './PlateRenderLeafProps';
+export * from './PlateRenderNodeProps';
 export * from './PlateStore';
-export * from './SPEditor';
-export * from './SPRenderElementProps';
-export * from './SPRenderLeafProps';
-export * from './SPRenderNodeProps';
 export * from './SlateProps';
 export * from './TAncestor';
 export * from './TDescendant';

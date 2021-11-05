@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createListPlugin } from './createListPlugin';
@@ -21,7 +21,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -31,7 +31,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,
@@ -60,7 +60,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const expected = ((
       <editor>
@@ -71,7 +71,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any) as SPEditor;
+    ) as any) as PlateEditor;
 
     const editor = createEditorPlugins({
       editor: input,

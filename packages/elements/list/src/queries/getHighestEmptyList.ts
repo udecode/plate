@@ -1,5 +1,5 @@
 import { getAbove } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI } from '../defaults';
 import { getListTypes } from './getListTypes';
@@ -13,7 +13,7 @@ import { getListTypes } from './getListTypes';
  * - its path is not equals to diffListPath.
  */
 export const getHighestEmptyList = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     diffListPath,
     liPath,

@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import {
   getPlatePluginType,
-  SPEditor,
+  PlateEditor,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
@@ -22,11 +22,11 @@ import {
 } from './transforms';
 
 const pathToEntry = <T extends Node>(
-  editor: SPEditor,
+  editor: PlateEditor,
   path: Path
 ): NodeEntry<T> => Editor.node(editor, path) as NodeEntry<T>;
 
-const selectionIsNotInAListHandler = (editor: SPEditor): boolean => {
+const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
   const pointAfterSelection = Editor.after(
     editor,
     editor.selection!.focus.path
@@ -67,7 +67,7 @@ const selectionIsNotInAListHandler = (editor: SPEditor): boolean => {
 };
 
 const selectionIsInAListHandler = (
-  editor: SPEditor,
+  editor: PlateEditor,
   res: { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> }
 ): boolean => {
   const { listItem } = res;
@@ -177,7 +177,7 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const getListDeleteForward = (editor: SPEditor) => {
+export const getListDeleteForward = (editor: PlateEditor) => {
   let skipDefaultDelete = false;
 
   if (!editor?.selection) {

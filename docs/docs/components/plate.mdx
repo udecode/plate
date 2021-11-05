@@ -15,7 +15,7 @@ npm install @udecode/plate-core
 () => {
   const id = 'plate';
   const { setEnabled, resetEditor } = usePlateActions(id);
-  const enabled = useStoreEditorEnabled(id);
+  const enabled = usePlateEnabled(id);
 
   return (
     <>

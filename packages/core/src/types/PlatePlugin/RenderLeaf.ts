@@ -1,5 +1,5 @@
-import { SPEditor } from '../SPEditor';
-import { TRenderLeafProps } from '../TRenderLeafProps';
+import { PlateEditor } from '../PlateEditor';
+import { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /**
  * Function used to render the children of a leaf.
@@ -10,6 +10,6 @@ import { TRenderLeafProps } from '../TRenderLeafProps';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf<T extends SPEditor = SPEditor> = (
-  editor: T
-) => (props: TRenderLeafProps) => JSX.Element;
+export type RenderLeaf<T = {}> = (
+  editor: PlateEditor<T>
+) => (props: PlateRenderLeafProps) => JSX.Element;

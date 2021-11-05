@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { isDefined } from '@udecode/plate-common';
-import { useEditorState, useEventEditorId } from '@udecode/plate-core';
+import { useEditorState, usePlateEventId } from '@udecode/plate-core';
 import {
   getRangeBoundingClientRect,
   usePopperPosition,
@@ -148,7 +148,7 @@ export const Combobox = <TData extends Data = NoData>({
   ...props
 }: ComboboxProps<TData>) => {
   const editor = useEditorState();
-  const focusedEditorId = useEventEditorId('focus');
+  const focusedEditorId = usePlateEventId('focus');
   const combobox = useComboboxControls();
   const activeId = comboboxStore.use.activeId();
 

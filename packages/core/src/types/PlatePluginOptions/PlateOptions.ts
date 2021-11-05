@@ -11,6 +11,12 @@ export type PlatePluginComponent = FunctionComponent;
 
 export type PlatePluginOptions<T = AnyObject> = T & {
   /**
+   * Element or mark type.
+   * @default pluginKey
+   */
+  type: string;
+
+  /**
    * Node properties to delete.
    */
   clear?: string | string[];
@@ -47,12 +53,6 @@ export type PlatePluginOptions<T = AnyObject> = T & {
    * If it's an object, it will override the component props.
    */
   overrideProps?: GetNodeProps | NodeProps;
-
-  /**
-   * Element or mark type.
-   * @default plugin key
-   */
-  type: string;
 };
 
 /**

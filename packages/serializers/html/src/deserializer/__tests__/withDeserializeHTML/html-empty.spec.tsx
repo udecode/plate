@@ -1,8 +1,6 @@
 /** @jsx jsx */
-import { PlatePlugin, SPEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
@@ -16,7 +14,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 // noinspection CheckTagEmptyBody
 const data = {
@@ -34,7 +32,7 @@ const output = (
 
 describe('when inserting empty html', () => {
   it('should do nothing', () => {
-    const plugins: PlatePlugin<ReactEditor & SPEditor>[] = [createBoldPlugin()];
+    const plugins: PlatePlugin[] = [createBoldPlugin()];
     plugins.push(createDeserializeHTMLPlugin({ plugins }));
     const editor = createEditorPlugins({
       editor: input,

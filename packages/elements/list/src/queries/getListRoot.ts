@@ -1,5 +1,5 @@
 import { getAbove } from '@udecode/plate-common';
-import { getPlatePluginType, SPEditor } from '@udecode/plate-core';
+import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
@@ -7,7 +7,7 @@ import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
  * Searches upward for the root list element
  */
 export const getListRoot = (
-  editor: SPEditor,
+  editor: PlateEditor,
   at: Path | Range | Point | null = editor.selection
 ): NodeEntry<Ancestor> | undefined => {
   if (!at) return;

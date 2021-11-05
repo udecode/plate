@@ -2,7 +2,6 @@ import { ELEMENT_DEFAULT, setNodes } from '@udecode/plate-common';
 import {
   getPlatePluginOptions,
   getPlatePluginType,
-  SPEditor,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
@@ -15,29 +14,28 @@ import { IndentPluginOptions } from './types';
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (
-  options?: IndentPluginOptions
-): WithOverride<SPEditor> => (editor) => {
+export const withIndent = (options?: IndentPluginOptions): WithOverride => (
+  editor
+) => {
   const { normalizeNode } = editor;
 
   // TODO: extend plate-core to register options
   editor.options[KEY_INDENT] = defaults(options, {
-    type: KEY_INDENT,
-    types: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+    nodeKey: KEY_INDENT,
+    validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
     offset: 24,
     unit: 'px',
+    styleKey: 'marginLeft',
+    transformNodeValue: (e, { nodeValue }) => {
+      const { offset, unit } = getPlatePluginOptions<
+        Required<IndentPluginOptions>
+      >(e, KEY_INDENT);
 
-    // The following props will be used by the getOverrideProps
-    cssPropName: 'marginLeft',
-    transformCssValue: (params: {
-      options: Required<IndentPluginOptions>;
-      value: number;
-    }) => {
-      return params.value * params.options.offset + params.options.unit;
+      return nodeValue * offset + unit;
     },
-  });
+  } as IndentPluginOptions);
 
-  const { types, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
+  const { validTypes, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
     editor,
     KEY_INDENT
   );
@@ -47,7 +45,7 @@ export const withIndent = (
     const { type } = element;
 
     if (type) {
-      if (types!.includes(type)) {
+      if (validTypes!.includes(type)) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setNodes(editor, { indent: indentMax }, { at: path });
           return;

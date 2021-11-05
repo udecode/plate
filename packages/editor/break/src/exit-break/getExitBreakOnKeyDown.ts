@@ -10,7 +10,6 @@ import {
 import {
   getPlatePluginType,
   KeyboardHandler,
-  SPEditor,
   TEditor,
   TElement,
 } from '@udecode/plate-core';
@@ -59,7 +58,7 @@ export const exitBreakAtEdges = (
   };
 };
 
-export const getExitBreakOnKeyDown = <T extends SPEditor = SPEditor>({
+export const getExitBreakOnKeyDown = <T = {}>({
   rules = [
     { hotkey: 'mod+enter' },
     { hotkey: 'mod+shift+enter', before: true },

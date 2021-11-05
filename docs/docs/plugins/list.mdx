@@ -14,16 +14,16 @@ npm install @udecode/plate-list-ui
 
 ```ts live
 () => {
-  const ToolbarButtonsList = () => {
-    const editor = useStoreEditorRef(useEventEditorId('focus'));
+  const ListToolbarButtons = () => {
+    const editor = usePlateEditorRef();
 
     return (
       <>
-        <ToolbarList
+        <ListToolbarButton
           type={getPlatePluginType(editor, ELEMENT_UL)}
           icon={<FormatListBulleted />}
         />
-        <ToolbarList
+        <ListToolbarButton
           type={getPlatePluginType(editor, ELEMENT_OL)}
           icon={<FormatListNumbered />}
         />
@@ -43,7 +43,7 @@ npm install @udecode/plate-list-ui
   return (
     <>
       <HeadingToolbar>
-        <ToolbarButtonsList />
+        <ListToolbarButtons />
       </HeadingToolbar>
       <Plate
         id="list"

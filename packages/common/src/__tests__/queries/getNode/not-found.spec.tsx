@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
+import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor } from 'slate';
 import { getNode } from '../../../queries/index';
 
 jsx;
@@ -13,7 +13,7 @@ const input = ((
       <cursor />
     </hp>
   </editor>
-) as any) as Editor;
+) as any) as PlateEditor;
 
 it('should be', () => {
   expect(getNode(input, [0, 0, 0])).toBeNull();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderLeafProps } from 'slate-react';
+import { TRenderLeafProps } from '../types/TRenderLeafProps';
 
 export const DefaultLeaf = ({
   attributes,
@@ -7,7 +7,7 @@ export const DefaultLeaf = ({
   text,
   leaf,
   ...props
-}: RenderLeafProps) => (
+}: TRenderLeafProps) => (
   <span {...attributes} {...props}>
     {children}
   </span>

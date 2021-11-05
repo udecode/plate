@@ -1,14 +1,14 @@
 import { NodeEntry, Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
+import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { SPEditor } from '../types/SPEditor';
 
 /**
  * @see {@link Decorate}.
  * Optimization: return undefined if empty list so Editable uses a memo.
  */
 export const pipeDecorate = (
-  editor: SPEditor,
+  editor: PlateEditor,
   plugins: PlatePlugin[] = []
 ): EditableProps['decorate'] => {
   const decorates = plugins.flatMap(

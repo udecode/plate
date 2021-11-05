@@ -1,13 +1,10 @@
-import { HistoryEditor } from 'slate-history/dist/history-editor';
-import { ReactEditor, useSlateStatic } from 'slate-react';
-import { SPEditor } from '../types/SPEditor';
-import { TEditor } from '../types/TEditor';
+import { useSlateStatic } from 'slate-react';
+import { PlateEditor } from '../types/PlateEditor';
 
 /**
- * Typed {@link useSlateStatic} & SPEditor.
+ * Typed {@link useSlateStatic} & PlateEditor.
  * Needs to be called in a child component of `Plate`.
- * Else, use `useStoreEditorRef`.
+ * Else, use `usePlateEditorRef`.
  */
-export const useEditorRef = <
-  T extends TEditor = ReactEditor & HistoryEditor
->() => (useSlateStatic() as unknown) as T & SPEditor;
+export const useEditorRef = <T = {}>() =>
+  (useSlateStatic() as unknown) as PlateEditor<T>;

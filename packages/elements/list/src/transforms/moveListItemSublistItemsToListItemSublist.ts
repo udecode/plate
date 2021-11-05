@@ -5,7 +5,7 @@ import {
   insertNodes,
   moveChildren,
 } from '@udecode/plate-common';
-import { SPEditor, TElement } from '@udecode/plate-core';
+import { PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
@@ -31,7 +31,7 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * If there is no `toListItem` sublist, insert one.
  */
 export const moveListItemSublistItemsToListItemSublist = (
-  editor: SPEditor,
+  editor: PlateEditor,
   {
     fromListItem,
     toListItem,

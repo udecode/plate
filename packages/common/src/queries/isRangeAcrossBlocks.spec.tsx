@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { SPEditor } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
@@ -19,7 +19,7 @@ describe('when selection is in the same block', () => {
             de noster , lotus acipenser.
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const editor = createEditorPlugins({
         editor: input,
@@ -43,7 +43,7 @@ describe('when selection is in the same block', () => {
             , lotus acipenser.
           </hp>
         </editor>
-      ) as any) as SPEditor;
+      ) as any) as PlateEditor;
 
       const editor = createEditorPlugins({
         editor: input,

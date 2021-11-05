@@ -1,7 +1,7 @@
 import {
   getPlatePluginType,
   isElement,
-  SPEditor,
+  PlateEditor,
   TElement,
 } from '@udecode/plate-core';
 import { Descendant, Editor, Element, Text } from 'slate';
@@ -102,10 +102,8 @@ const normalize = (
 /**
  * Normalize the descendants to a valid document fragment.
  */
-export const normalizeDescendantsToDocumentFragment = <
-  T extends SPEditor = SPEditor
->(
-  editor: T,
+export const normalizeDescendantsToDocumentFragment = <T = {}>(
+  editor: PlateEditor<T>,
   { descendants }: { descendants: Descendant[] }
 ) => {
   const isInline = isInlineNode(editor);
