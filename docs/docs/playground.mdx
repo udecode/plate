@@ -100,10 +100,14 @@ See [Installation](/docs/installation)
           <ColorPickerToolbarDropdown
             pluginKey={MARK_COLOR}
             icon={<FormatColorText />}
+            selectedIcon={<Check />}
+            tooltip={{ content: 'Text color' }}
           />
           <ColorPickerToolbarDropdown
             pluginKey={MARK_BG_COLOR}
             icon={<FontDownload />}
+            selectedIcon={<Check />}
+            tooltip={{ content: 'Highlight color' }}
           />
           <AlignToolbarButtons />
           <LineHeightToolbarDropdown icon={<LineWeight />} />
@@ -115,9 +119,9 @@ See [Installation](/docs/installation)
 
         <BallonToolbarMarks />
 
-        <MentionCombobox items={CONFIG.mentionItems} trigger="@" />
+        <MentionCombobox items={CONFIG.mentionItems} />
 
-        <MentionCombobox items={CONFIG.mentionItems} id="mention2" trigger="#" />
+        <MentionCombobox items={CONFIG.mentionItems} pluginKey="mention2" />
       </Plate>
     );
   }

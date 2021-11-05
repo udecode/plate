@@ -46,6 +46,19 @@
 - `setLineHeight`: option `lineHeight` renamed to `value`
 - removed `getLineHeightOverrideProps` in favor of `getOverrideProps(KEY_LINE_HEIGHT)`
 
+### `@udecode/plate-mention`
+
+- `getMentionOnSelectItem`:
+  - removed `createMentionNode` in favor of plugin options
+  - removed `insertSpaceAfterMention` in favor of plugin options
+
+### `@udecode/plate-mention-ui`
+
+- `MentionCombobox` props:
+  - removed `trigger` in favor of plugin options
+  - removed `insertSpaceAfterMention` in favor of plugin options
+  - removed `createMentionNode` in favor of plugin options
+
 ### `@udecode/plate-x-ui`
 
 - renamed `ToolbarAlign` to `AlignToolbarButton`

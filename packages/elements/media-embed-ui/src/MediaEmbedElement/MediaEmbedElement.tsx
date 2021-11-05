@@ -1,25 +1,18 @@
 import React from 'react';
 import { setNodes } from '@udecode/plate-common';
-import { TElement, useEditorRef } from '@udecode/plate-core';
+import { TElement } from '@udecode/plate-core';
 import { MediaEmbedNodeData } from '@udecode/plate-media-embed';
+import { getRootProps } from '@udecode/plate-styled-components';
 import { ReactEditor } from 'slate-react';
 import { getMediaEmbedElementStyles } from './MediaEmbedElement.styles';
 import { MediaEmbedElementProps } from './MediaEmbedElement.types';
 import { MediaEmbedUrlInput } from './MediaEmbedUrlInput';
 
 export const MediaEmbedElement = (props: MediaEmbedElementProps) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    styles: _styles,
-    element,
-    classNames,
-    prefixClassNames,
-    ...rootProps
-  } = props;
+  const { attributes, children, nodeProps, element, editor } = props;
 
-  const editor = useEditorRef();
+  const rootProps = getRootProps(props);
+
   const { url } = element;
   const querySeparator = url.includes('?') ? '' : '?';
 

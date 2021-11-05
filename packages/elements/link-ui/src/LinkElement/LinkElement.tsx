@@ -1,20 +1,15 @@
 import React from 'react';
 import { LinkNodeData } from '@udecode/plate-link';
-import { StyledElementProps } from '@udecode/plate-styled-components';
+import {
+  getRootProps,
+  StyledElementProps,
+} from '@udecode/plate-styled-components';
 import { getLinkElementStyles } from './LinkElement.styles';
 
 export const LinkElement = (props: StyledElementProps<LinkNodeData>) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    styles: _styles,
-    element,
-    classNames,
-    prefixClassNames,
-    ...rootProps
-  } = props;
+  const { attributes, children, nodeProps, element } = props;
 
+  const rootProps = getRootProps(props);
   const { root } = getLinkElementStyles(props);
 
   return (

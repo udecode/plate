@@ -72,7 +72,6 @@ import {
   TableToolbarButton,
   ToolbarButton,
   usePlateEditorRef,
-  usePlateEventId,
 } from '@udecode/plate';
 
 export const BasicElementToolbarButtons = () => {
