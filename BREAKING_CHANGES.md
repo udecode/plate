@@ -51,7 +51,7 @@
 - `getMentionOnSelectItem`:
   - removed `createMentionNode` in favor of plugin options
   - removed `insertSpaceAfterMention` in favor of plugin options
-  - 
+
 ### `@udecode/plate-mention-ui`
 
 - `MentionCombobox` props:

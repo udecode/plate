@@ -19,6 +19,18 @@ Plate
 
 ## Visit [plate.udecode.io](https://plate.udecode.io/) for docs, guides, API and more!
 
+### Hiring
+
+We're advertising Plate job opportunities. We're only asking that the job includes contributing to Plate, even partially.
+
+These people are hiring Plate developers:
+- [@dylans](https://github.com/dylans) – co-owner
+
+These people are open to job opportunities:
+- [@seloner](https://github.com/seloner)
+
+DM [@zbeyens](https://github.com/zbeyens) to be added to the list.
+
 ## Introduction
 
 [Slate](https://github.com/ianstormtaylor/slate) is a low-level editor
@@ -94,15 +106,6 @@ packages are implemented.
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute
 your code to the project.
-
-### Looking to hire?
-
-We're advertising Plate developers open to job opportunities. We're only asking that the job includes contributing to Plate, even partially.
-
-- [@seloner](https://github.com/seloner)
-- [@sanj44](https://github.com/sanj44)
-
-DM [@zbeyens](https://github.com/zbeyens) to be added to the list.
 
 ## Packages
 
