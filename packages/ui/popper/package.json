@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-popper",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Popper utilities for Plate",
   "keywords": [
     "slate",
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "@popperjs/core": "2.10.2",
-    "@udecode/plate-common": "7.0.0",
-    "@udecode/plate-core": "7.0.0",
+    "@udecode/plate-common": "7.0.1",
+    "@udecode/plate-core": "7.0.1",
     "react-popper": "2.2.5"
   },
   "peerDependencies": {
