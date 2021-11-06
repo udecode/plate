@@ -25,6 +25,7 @@ We're advertising Plate job opportunities. We're only asking that the job includ
 
 These people are hiring Plate developers:
 - [@dylans](https://github.com/dylans) – co-owner
+- [@nicholasareed](https://github.com/nicholasareed)
 
 These people are open to job opportunities:
 - [@seloner](https://github.com/seloner)
