@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 7.0.2
+
+### Patch Changes
+
+- [#1205](https://github.com/udecode/plate/pull/1205) by [@zbeyens](https://github.com/zbeyens) – fix: removed editor and plugins from DefaultLeaf span attributes
+
 ## 7.0.1
 
 ### Patch Changes

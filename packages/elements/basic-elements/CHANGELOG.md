@@ -1,5 +1,7 @@
 # @udecode/plate-basic-elements
 
+## 7.0.2
+
 ## 7.0.1
 
 ## 7.0.0
