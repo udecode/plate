@@ -1,13 +1,16 @@
 import React from 'react';
-import { TRenderLeafProps } from '../types/TRenderLeafProps';
+import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 
 export const DefaultLeaf = ({
   attributes,
   children,
   text,
   leaf,
+  editor,
+  plugins,
+  nodeProps,
   ...props
-}: TRenderLeafProps) => (
+}: PlateRenderLeafProps) => (
   <span {...attributes} {...props}>
     {children}
   </span>
