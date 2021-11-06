@@ -1,5 +1,7 @@
 # @udecode/plate-styled-components
 
+## 7.0.2
+
 ## 7.0.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-toolbar",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Toolbar UI for Plate",
   "keywords": [
     "slate",
@@ -33,11 +33,11 @@
   },
   "dependencies": {
     "@tippyjs/react": "^4.2.0",
-    "@udecode/plate-common": "7.0.1",
-    "@udecode/plate-core": "7.0.1",
+    "@udecode/plate-common": "7.0.2",
+    "@udecode/plate-core": "7.0.2",
     "react-popper": "^2.2.4",
-    "@udecode/plate-popper": "7.0.1",
-    "@udecode/plate-styled-components": "7.0.1",
+    "@udecode/plate-popper": "7.0.2",
+    "@udecode/plate-styled-components": "7.0.2",
     "react-use": "^17.1.1"
   },
   "peerDependencies": {

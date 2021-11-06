@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-font-ui",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Font UI for Plate",
   "keywords": [
     "slate",
@@ -32,12 +32,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "7.0.1",
-    "@udecode/plate-core": "7.0.1",
-    "@udecode/plate-font": "7.0.1",
-    "@udecode/plate-styled-components": "7.0.1",
-    "@udecode/plate-toolbar": "7.0.1",
-    "@udecode/plate-ui-button": "7.0.1"
+    "@udecode/plate-common": "7.0.2",
+    "@udecode/plate-core": "7.0.2",
+    "@udecode/plate-font": "7.0.2",
+    "@udecode/plate-styled-components": "7.0.2",
+    "@udecode/plate-toolbar": "7.0.2",
+    "@udecode/plate-ui-button": "7.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

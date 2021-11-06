@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ast-serializer",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Slate AST serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -33,14 +33,14 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "7.0.1",
-    "@udecode/plate-common": "7.0.1",
-    "@udecode/plate-core": "7.0.1",
-    "@udecode/plate-heading": "7.0.1",
-    "@udecode/plate-link": "7.0.1",
-    "@udecode/plate-list": "7.0.1",
-    "@udecode/plate-paragraph": "7.0.1",
-    "@udecode/plate-serializer": "7.0.1",
+    "@udecode/plate-block-quote": "7.0.2",
+    "@udecode/plate-common": "7.0.2",
+    "@udecode/plate-core": "7.0.2",
+    "@udecode/plate-heading": "7.0.2",
+    "@udecode/plate-link": "7.0.2",
+    "@udecode/plate-list": "7.0.2",
+    "@udecode/plate-paragraph": "7.0.2",
+    "@udecode/plate-serializer": "7.0.2",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"
