@@ -27,7 +27,7 @@ These people are hiring Plate developers:
 - [@dylans](https://github.com/dylans) – co-owner
 - [@nicholasareed](https://github.com/nicholasareed), [@david-ps](https://github.com/david-ps)
 
-These people are open to job opportunities:
+These people are open to Plate jobs:
 - [@seloner](https://github.com/seloner)
 
 DM [@zbeyens](https://github.com/zbeyens) to be added to the list.
