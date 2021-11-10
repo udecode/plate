@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "7.0.2",
+  "version": "7.0.3",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -56,7 +56,7 @@
     "@udecode/plate-find-replace": "7.0.2",
     "@udecode/plate-find-replace-ui": "7.0.2",
     "@udecode/plate-font": "7.0.2",
-    "@udecode/plate-font-ui": "7.0.2",
+    "@udecode/plate-font-ui": "7.0.3",
     "@udecode/plate-heading": "7.0.2",
     "@udecode/plate-highlight": "7.0.2",
     "@udecode/plate-horizontal-rule": "7.0.2",
@@ -87,10 +87,10 @@
     "@udecode/plate-serializer": "7.0.2",
     "@udecode/plate-styled-components": "7.0.2",
     "@udecode/plate-table": "7.0.2",
-    "@udecode/plate-table-ui": "7.0.2",
+    "@udecode/plate-table-ui": "7.0.3",
     "@udecode/plate-toolbar": "7.0.2",
     "@udecode/plate-trailing-block": "7.0.2",
-    "@udecode/plate-ui-button": "7.0.2",
+    "@udecode/plate-ui-button": "7.0.3",
     "@udecode/plate-ui-popover": "7.0.2"
   },
   "peerDependencies": {

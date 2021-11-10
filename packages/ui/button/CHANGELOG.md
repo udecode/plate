@@ -1,5 +1,11 @@
 # @udecode/plate-ui-button
 
+## 7.0.3
+
+### Patch Changes
+
+- [#1213](https://github.com/udecode/plate/pull/1213) by [@jeffsee55](https://github.com/jeffsee55) – Ensure styled-components is not bundled in the compiled package
+
 ## 7.0.2
 
 ## 7.0.1
