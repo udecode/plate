@@ -1,10 +1,11 @@
 import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { DeserializeHTMLChildren, DeserializeHTMLReturn } from '../types';
-import { deserializeHTMLToBreak } from './deserializeHTMLToBreak';
 import { deserializeHTMLToElement } from './deserializeHTMLToElement';
 import { deserializeHTMLToFragment } from './deserializeHTMLToFragment';
 import { deserializeHTMLToMarks } from './deserializeHTMLToMarks';
-import { deserializeHTMLToText } from './deserializeHTMLToText';
+import { htmlBrToNewLine } from './htmlBrToNewLine';
+import { htmlTextNodeToString } from './htmlTextNodeToString';
+import { isHtmlElement } from './isHtmlElement';
 
 /**
  * Deserialize HTML element or child node.
@@ -13,34 +14,34 @@ export const deserializeHTMLNode = <T = {}>(
   editor: PlateEditor<T>,
   plugins: PlatePlugin<T>[]
 ) => (node: HTMLElement | ChildNode): DeserializeHTMLReturn => {
-  // text node
-  const textNode = deserializeHTMLToText(node);
+  const textNode = htmlTextNodeToString(node);
   if (textNode) return textNode;
 
-  // if not an element node
-  if (node.nodeType !== Node.ELEMENT_NODE) return null;
-
-  const htmlElement = node as HTMLElement;
+  if (!isHtmlElement(node)) return null;
 
   // break line
-  const breakLine = deserializeHTMLToBreak(node);
+  const breakLine = htmlBrToNewLine(node);
   if (breakLine) return breakLine;
 
   const { nodeName } = node;
-  let parent = node;
+  const parent: HTMLElement | ChildNode = node;
 
-  // blockquote
-  if (nodeName === 'PRE' && node.childNodes[0]?.nodeName === 'CODE') {
-    [parent] = node.childNodes;
-  }
+  // codeblock
+  // if (nodeName === 'PRE' && node.childNodes[0]?.nodeName === 'CODE') {
+  //   [parent] = node.childNodes;
+  // }
+
+  console.log(node.parentElement?.nodeName);
 
   const children: DeserializeHTMLChildren[] = Array.from(parent.childNodes)
     .map(deserializeHTMLNode(editor, plugins))
     .flat();
 
+  // console.log(children);
+
   // body
   const fragment = deserializeHTMLToFragment({
-    element: htmlElement,
+    element: node,
     children,
   });
   if (fragment) return fragment;
@@ -48,7 +49,7 @@ export const deserializeHTMLNode = <T = {}>(
   // element
   const element = deserializeHTMLToElement(editor, {
     plugins,
-    element: htmlElement,
+    element: node,
     children,
   });
   if (element) return element;
@@ -56,7 +57,7 @@ export const deserializeHTMLNode = <T = {}>(
   // mark
   return deserializeHTMLToMarks(editor, {
     plugins,
-    element: htmlElement,
+    element: node,
     children,
   });
 };

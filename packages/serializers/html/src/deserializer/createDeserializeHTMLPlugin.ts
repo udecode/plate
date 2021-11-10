@@ -15,6 +15,8 @@ export interface WithDeserializeHTMLOptions {
 
 export const htmlDeserializerId = 'HTML Deserializer';
 
+const parser = new DOMParser();
+
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
@@ -33,7 +35,7 @@ export const withDeserializeHTML = ({
     );
 
     if (html && isEnabled) {
-      const { body } = new DOMParser().parseFromString(html, 'text/html');
+      const { body } = parser.parseFromString(html, 'text/html');
 
       const fragment = deserializeHTMLToDocumentFragment(editor, {
         plugins,

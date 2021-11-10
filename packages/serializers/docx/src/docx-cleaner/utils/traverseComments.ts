@@ -1,11 +1,11 @@
-import { isComment } from './isComment';
+import { isHtmlComment } from '@udecode/plate-html-serializer';
 import { traverse } from './traverse';
 
 type Callback = (node: Comment) => boolean;
 
 export const traverseComments = (rootNode: Node, callback: Callback): void => {
   traverse(rootNode, (node) => {
-    if (!isComment(node)) {
+    if (!isHtmlComment(node)) {
       return true;
     }
 

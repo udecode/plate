@@ -1,11 +1,11 @@
-import { isText } from './isText';
+import { isHtmlText } from '@udecode/plate-html-serializer';
 import { traverse } from './traverse';
 
 type Callback = (node: Text) => boolean;
 
 export const traverseTexts = (rootNode: Node, callback: Callback): void => {
   traverse(rootNode, (node) => {
-    if (!isText(node)) {
+    if (!isHtmlText(node)) {
       return true;
     }
 

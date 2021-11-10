@@ -18,6 +18,7 @@ export const deserializeHTMLToDocumentFragment = <T = {}>(
     stripWhitespace?: boolean;
   }
 ): TDescendant[] => {
+  // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element, stripWhitespace);
   }

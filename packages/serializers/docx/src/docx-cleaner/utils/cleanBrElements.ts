@@ -1,5 +1,5 @@
+import { isHtmlComment } from '@udecode/plate-html-serializer';
 import { LINE_FEED } from '../constants';
-import { isComment } from './isComment';
 import { removeNodesBetweenComments } from './removeNodesBetweenComments';
 import { traverseElements } from './traverseElements';
 
@@ -11,7 +11,7 @@ export const cleanBrElements = (rootNode: Node): void => {
 
     if (
       element.nextSibling &&
-      isComment(element.nextSibling) &&
+      isHtmlComment(element.nextSibling) &&
       element.nextSibling.data === '[if !supportLineBreakNewLine]'
     ) {
       removeNodesBetweenComments(
