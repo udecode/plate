@@ -1,23 +1,18 @@
 import { getAbove } from '@udecode/plate-common';
-import {
-  getPlatePluginTypes,
-  KeyboardHandler,
-  mapPlatePluginKeysToOptions,
-} from '@udecode/plate-core';
+import { getPlatePluginOptions, KeyboardHandler } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
-import { ELEMENT_OL, ELEMENT_UL } from './defaults';
 import { moveListItems, toggleList } from './transforms';
 
-export const getListOnKeyDown = (
-  pluginKeys?: string | string[]
-): KeyboardHandler => (editor) => (e) => {
-  const listTypes = getPlatePluginTypes([ELEMENT_UL, ELEMENT_OL])(editor);
+export const getListOnKeyDown = (pluginKey: string): KeyboardHandler => (
+  editor
+) => (e) => {
+  const { type, hotkey } = getPlatePluginOptions(editor, pluginKey);
 
   if (e.key === 'Tab' && editor.selection) {
     const listSelected = getAbove(editor, {
       at: editor.selection,
-      match: { type: listTypes },
+      match: { type },
     });
 
     if (listSelected) {
@@ -27,19 +22,13 @@ export const getListOnKeyDown = (
     }
   }
 
-  const options = pluginKeys
-    ? mapPlatePluginKeysToOptions(editor, pluginKeys)
-    : [];
+  if (!hotkey) return;
 
-  options.forEach(({ type, hotkey }) => {
-    if (!hotkey) return;
+  const hotkeys = castArray(hotkey);
 
-    const hotkeys = castArray(hotkey);
-
-    for (const key of hotkeys) {
-      if (isHotkey(key)(e as any) && listTypes.includes(type)) {
-        toggleList(editor, { type });
-      }
+  for (const key of hotkeys) {
+    if (isHotkey(key)(e as any)) {
+      toggleList(editor, { type });
     }
-  });
+  }
 };

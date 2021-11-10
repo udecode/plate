@@ -2,9 +2,9 @@ import {
   createBasicElementPlugins,
   createBlockquotePlugin,
   createBoldPlugin,
-  createCodeBlockPlugin,
+  createCodeBlockPlugins,
   createCodePlugin,
-  createHeadingPlugin,
+  createHeadingPlugins,
   createHistoryPlugin,
   createImagePlugin,
   createItalicPlugin,
@@ -21,8 +21,8 @@ const core = [createReactPlugin(), createHistoryPlugin()];
 const basicElements = [
   createParagraphPlugin(), // paragraph element
   createBlockquotePlugin(), // blockquote element
-  createCodeBlockPlugin(), // code block element
-  createHeadingPlugin(), // heading elements
+  ...createCodeBlockPlugins(), // code block element
+  ...createHeadingPlugins(), // heading elements
 ];
 
 const basicMarks = [

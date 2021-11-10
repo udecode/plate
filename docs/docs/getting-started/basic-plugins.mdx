@@ -27,8 +27,8 @@ const basicNodesPlugins = [
   // elements
   createParagraphPlugin(),      // paragraph element
   createBlockquotePlugin(),     // blockquote element
-  createCodeBlockPlugin(),      // code block element
-  createHeadingPlugin(),        // heading elements
+  ...createCodeBlockPlugins(),      // code block element
+  ...createHeadingPlugins(),        // heading elements
 
   // marks
   createBoldPlugin(),           // bold mark
@@ -182,8 +182,8 @@ const options = createPlateOptions();
     // elements
     createParagraphPlugin(),      // paragraph element
     createBlockquotePlugin(),     // blockquote element
-    createCodeBlockPlugin(),      // code block element
-    createHeadingPlugin(),        // heading elements
+    ...createCodeBlockPlugins(),      // code block element
+    ...createHeadingPlugins(),        // heading elements
 
     // marks
     createBoldPlugin(),           // bold mark

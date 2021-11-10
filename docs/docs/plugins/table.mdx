@@ -29,7 +29,7 @@ npm install @udecode/plate-table-ui
     ...PLUGINS.basicNodes,
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
-    createTablePlugin(),
+    ...createTablePlugins(),
   ];
 
   return (

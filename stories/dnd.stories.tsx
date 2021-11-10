@@ -7,9 +7,9 @@ import { Image } from '@styled-icons/material/Image';
 import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { createCodeBlockPlugins } from '@udecode/plate-code-block';
 import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
-import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createHeadingPlugins } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
@@ -41,11 +41,11 @@ import { createTrailingBlockPlugin } from '../packages/editor/trailing-block/src
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
 import { ImageToolbarButton } from '../packages/elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
 import { LinkToolbarButton } from '../packages/elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
-import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
+import { createListPlugins } from '../packages/elements/list/src/createListPlugins';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
-import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
+import { createTablePlugins } from '../packages/elements/table/src/createTablePlugins';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
 import { createItalicPlugin } from '../packages/marks/basic-marks/src/italic/createItalicPlugin';
@@ -80,13 +80,13 @@ export const Example = () => {
         createParagraphPlugin(),
         createBlockquotePlugin(),
         createTodoListPlugin(),
-        createHeadingPlugin(),
+        ...createHeadingPlugins(),
         createImagePlugin(),
         createLinkPlugin(),
-        createListPlugin(),
-        createTablePlugin(),
+        ...createListPlugins(),
+        ...createTablePlugins(),
         createMediaEmbedPlugin(),
-        createCodeBlockPlugin(),
+        ...createCodeBlockPlugins(),
         createAlignPlugin(),
         createBoldPlugin(),
         createCodePlugin(),

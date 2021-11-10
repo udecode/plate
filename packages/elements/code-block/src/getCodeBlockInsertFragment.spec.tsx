@@ -4,7 +4,7 @@ import { createEditorPlugins } from '@udecode/plate/src/utils/createEditorPlugin
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createCodeBlockPlugin } from './createCodeBlockPlugin';
+import { createCodeBlockPlugin } from './createCodeBlockPlugins';
 
 jsx;
 

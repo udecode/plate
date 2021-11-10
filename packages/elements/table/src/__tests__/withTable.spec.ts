@@ -1,5 +1,5 @@
 import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
-import { createTablePlugin } from '../createTablePlugin';
+import { createTablePlugin } from '../createTablePlugins';
 import { withTable } from '../withTable';
 import { content, out, output2 } from './fixtures';
 

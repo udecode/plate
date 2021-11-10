@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
+import { getHtmlDocument } from '@udecode/plate-test-utils';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 

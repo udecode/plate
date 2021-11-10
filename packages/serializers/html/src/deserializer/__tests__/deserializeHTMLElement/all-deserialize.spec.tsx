@@ -3,17 +3,17 @@
 
 import { renderHook } from '@testing-library/react-hooks';
 import { getSlateClass } from '@udecode/plate-core';
-import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { getHtmlDocument } from '@udecode/plate-test-utils';
 import { useFindReplacePlugin } from '../../../../../../decorators/find-replace/src/useFindReplacePlugin';
 import { createSoftBreakPlugin } from '../../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
 import { createBlockquotePlugin } from '../../../../../../elements/block-quote/src/createBlockquotePlugin';
-import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugin';
+import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugins';
 import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/defaults';
-import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
+import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugins';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
-import { createListPlugin } from '../../../../../../elements/list/src/createListPlugin';
+import { createListPlugin } from '../../../../../../elements/list/src/createListPlugins';
 import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/constants';
 import { createTodoListPlugin } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
@@ -21,7 +21,7 @@ import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/s
 import { createMentionPlugin } from '../../../../../../elements/mention/src/createMentionPlugin';
 import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';
 import { getBoldDeserialize } from '../../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
 import { getCodeDeserialize } from '../../../../../../marks/basic-marks/src/code/getCodeDeserialize';
 import { getItalicDeserialize } from '../../../../../../marks/basic-marks/src/italic/getItalicDeserialize';
@@ -141,7 +141,7 @@ it('should be', () => {
   const plugins = renderHook(() => [
     createBlockquotePlugin(),
     createTodoListPlugin(),
-    createHeadingPlugin({ levels: 1 }),
+    createHeadingPlugins({ levels: 1 }),
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
