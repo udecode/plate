@@ -43,6 +43,7 @@
     "@udecode/plate-core": "link:../packages/core",
     "@udecode/plate-csv-serializer": "link:../packages/serializers/csv",
     "@udecode/plate-dnd": "link:../packages/blocks/dnd",
+    "@udecode/plate-docx-serializer": "link:../packages/serializers/docx",
     "@udecode/plate-find-replace": "link:../packages/decorators/find-replace",
     "@udecode/plate-find-replace-ui": "link:../packages/decorators/find-replace-ui",
     "@udecode/plate-font": "link:../packages/marks/font",

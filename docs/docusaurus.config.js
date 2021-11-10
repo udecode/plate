@@ -38,6 +38,7 @@ const alias = {
   '@udecode/plate-core': 'core',
   '@udecode/plate-csv-serializer': 'serializers/csv',
   '@udecode/plate-dnd': 'blocks/dnd',
+  '@udecode/plate-docx-serializer': 'serializers/docx',
   '@udecode/plate-excalidraw': 'elements/excalidraw',
   '@udecode/plate-find-replace': 'decorators/find-replace',
   '@udecode/plate-find-replace-ui': 'decorators/find-replace-ui',

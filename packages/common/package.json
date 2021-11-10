@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "@udecode/plate-core": "7.0.2",
-    "is-hotkey": "^0.1.6"
+    "is-hotkey": "^0.1.6",
+    "validator": "^13.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

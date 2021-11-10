@@ -23,6 +23,8 @@ import {
   isSelectionAtBlockStart,
   KEYS_HEADING,
   LineHeightPluginOptions,
+  MARK_BOLD,
+  MARK_ITALIC,
   NormalizeTypesPluginOptions,
   PlatePluginOptions,
   ResetBlockTypePluginOptions,
@@ -33,6 +35,7 @@ import {
 } from '@udecode/plate';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { css } from 'styled-components';
+import { ELEMENT_CODE_LINE } from '../../../../packages/elements/code-block/src/defaults';
 import { autoformatRules } from './autoformat/autoformatRules';
 import { MENTIONABLES } from './mentionables';
 
@@ -43,6 +46,7 @@ const resetBlockTypesCommonRule = {
 
 export const CONFIG: {
   options: Record<string, PlatePluginOptions>;
+  docxOptions: Record<string, PlatePluginOptions>;
   components: Record<string, any>;
   editableProps: EditableProps;
 
@@ -172,4 +176,60 @@ export const CONFIG: {
   forceLayout: {
     rules: [{ path: [0], strictType: ELEMENT_H1 }],
   },
+  docxOptions: createPlateOptions({
+    [ELEMENT_CODE_BLOCK]: {
+      deserialize: {
+        rules: [
+          {
+            className: 'SourceCode',
+          },
+        ],
+      },
+    },
+    [ELEMENT_CODE_LINE]: {
+      deserialize: {
+        rules: [
+          {
+            className: 'VerbatimChar',
+          },
+        ],
+      },
+    },
+    [MARK_BOLD]: {
+      deserialize: {
+        rules: [
+          { nodeNames: ['STRONG', 'B'] },
+          {
+            style: {
+              fontWeight: ['600', '700', 'bold'],
+            },
+          },
+        ],
+        getNode: (el) => {
+          if (
+            ['STRONG', 'B'].includes(el.nodeName) &&
+            (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
+          ) {
+            return undefined;
+          }
+
+          return { [MARK_BOLD]: true };
+        },
+      },
+    },
+    [MARK_ITALIC]: {
+      deserialize: {
+        getNode: (el) => {
+          if (
+            el.nodeName === 'EM' &&
+            (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
+          ) {
+            return undefined;
+          }
+
+          return { [MARK_ITALIC]: true };
+        },
+      },
+    },
+  }),
 };
