@@ -16,7 +16,10 @@ title: Preview Markdown
       plugins={plugins}
       components={CONFIG.components}
       options={CONFIG.options}
-      editableProps={CONFIG.editableProps}
+      editableProps={{
+        ...CONFIG.editableProps,
+        renderLeaf: PreviewLeaf,  
+      }}
       initialValue={VALUES.previewMd}
     />
   );

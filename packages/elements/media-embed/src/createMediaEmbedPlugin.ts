@@ -1,8 +1,4 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
 
@@ -11,12 +7,12 @@ import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
  * or Vimeo videos, Instagram posts and tweets or Google Maps.
  */
 export const createMediaEmbedPlugin = ({
-  pluginKey = ELEMENT_MEDIA_EMBED,
+  key = ELEMENT_MEDIA_EMBED,
 }: {
-  pluginKey?: string;
+  key?: string;
 } = {}): PlatePlugin => ({
-  pluginKeys: pluginKey,
-  renderElement: getRenderElement(pluginKey),
-  deserialize: getMediaEmbedDeserialize(pluginKey),
-  voidTypes: getPlatePluginTypes(pluginKey),
+  key,
+  isElement: true,
+  deserialize: getMediaEmbedDeserialize(key),
+  isVoid: true,
 });

@@ -18,7 +18,7 @@ import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/tod
 import { createTodoListPlugin } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugin } from '../../../../../../elements/mention/src/createMentionPlugin';
+import { createMentionPlugin } from '../../../../../../elements/mention/src/createMentionPlugins';
 import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';

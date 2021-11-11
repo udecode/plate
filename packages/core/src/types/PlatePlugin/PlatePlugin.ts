@@ -1,12 +1,9 @@
-import { PlateEditor } from '../PlateEditor';
 import { Decorate } from './Decorate';
 import { Deserialize } from './Deserialize';
 import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
 import { OnChange } from './OnChange';
 import { OverrideProps } from './OverrideProps';
-import { RenderElement } from './RenderElement';
-import { RenderLeaf } from './RenderLeaf';
 import { Serialize } from './Serialize';
 import { WithOverride } from './WithOverride';
 
@@ -15,7 +12,7 @@ export interface PlatePluginKey {
    * Custom plugin key to be used when creating multiple same plugins with different options.
    * @default options.type
    */
-  pluginKey?: string;
+  key?: string;
 }
 
 /**
@@ -55,7 +52,7 @@ export interface PlatePluginEditor<T = {}> extends Partial<DOMHandlers<T>> {
   /**
    * Plugin keys to support configuration.
    */
-  pluginKeys?: string | string[];
+  key?: string;
 
   /**
    * Editor method overriders.
@@ -77,28 +74,28 @@ export interface PlatePluginSerialize<T = {}> {
 
 export interface PlatePluginNode<T = {}>
   extends PlatePluginSerialize<T>,
-    PlatePluginEditor<T> {
-  /**
-   * Void element types.
-   */
-  voidTypes?: (editor: PlateEditor<T>) => string[];
-}
+    PlatePluginEditor<T> {}
 
 export interface PlatePluginElement<T = {}> extends PlatePluginNode<T> {
   /**
-   * Inline element types.
+   * Whether the element is inline.
    */
-  inlineTypes?: (editor: PlateEditor<T>) => string[];
+  isInline?: boolean;
 
   /**
-   * @see {@link RenderElement}
+   * Whether it's an element plugin (`renderElement`).
    */
-  renderElement?: RenderElement<T>;
+  isElement?: boolean;
+
+  /**
+   * Whether the element is void.
+   */
+  isVoid?: boolean;
 }
 
 export interface PlatePluginLeaf<T = {}> extends PlatePluginNode<T> {
   /**
-   * @see {@link RenderLeaf}
+   * Whether it's a leaf plugin (`renderLeaf`).
    */
-  renderLeaf?: RenderLeaf<T>;
+  isLeaf?: boolean;
 }

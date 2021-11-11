@@ -44,7 +44,7 @@ import { LinkToolbarButton } from '../packages/elements/link-ui/src/LinkToolbarB
 import { createListPlugins } from '../packages/elements/list/src/createListPlugins';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
+import { createMentionPlugins } from '../packages/elements/mention/src/createMentionPlugins';
 import { createTablePlugins } from '../packages/elements/table/src/createTablePlugins';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
@@ -105,7 +105,7 @@ export const Example = () => {
         createNormalizeTypesPlugin(CONFIG.forceLayout),
         createTrailingBlockPlugin(CONFIG.trailingBlock),
         createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-        createMentionPlugin(),
+        ...createMentionPlugins(),
         searchHighlightPlugin,
         createDndPlugin(),
       ];

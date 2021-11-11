@@ -1,4 +1,4 @@
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from './defaults';
 import {
   getLicDeserialize,
@@ -15,26 +15,26 @@ import { withList } from './withList';
  */
 export const createListPlugins = (options?: WithListOptions): PlatePlugin[] => [
   {
-    pluginKeys: ELEMENT_UL,
-    renderElement: getRenderElement(ELEMENT_UL),
+    key: ELEMENT_UL,
+    isElement: true,
     deserialize: getUlDeserialize(),
     onKeyDown: getListOnKeyDown(ELEMENT_UL),
     withOverrides: withList(options),
   },
   {
-    pluginKeys: ELEMENT_OL,
-    renderElement: getRenderElement(ELEMENT_OL),
+    key: ELEMENT_OL,
+    isElement: true,
     onKeyDown: getListOnKeyDown(ELEMENT_OL),
     deserialize: getOlDeserialize(),
   },
   {
-    pluginKeys: ELEMENT_LI,
-    renderElement: getRenderElement(ELEMENT_LI),
+    key: ELEMENT_LI,
+    isElement: true,
     deserialize: getLiDeserialize(),
   },
   {
-    pluginKeys: ELEMENT_LIC,
-    renderElement: getRenderElement(ELEMENT_LIC),
+    key: ELEMENT_LIC,
+    isElement: true,
     deserialize: getLicDeserialize(),
   },
 ];

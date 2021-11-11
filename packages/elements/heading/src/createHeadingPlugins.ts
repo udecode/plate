@@ -1,5 +1,5 @@
 import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { DEFAULT_HEADING_LEVEL, KEYS_HEADING } from './defaults';
 import { getHeadingDeserialize } from './getHeadingDeserialize';
 import { HeadingPluginOptions } from './types';
@@ -17,8 +17,8 @@ export const createHeadingPlugins = ({
     const key = KEYS_HEADING[level - 1];
 
     plugins.push({
-      pluginKeys: key,
-      renderElement: getRenderElement(key),
+      key,
+      isElement: true,
       deserialize: getHeadingDeserialize(key),
       onKeyDown: getToggleElementOnKeyDown(key),
     });

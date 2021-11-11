@@ -1,4 +1,3 @@
-import castArray from 'lodash/castArray';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { WithOverride } from '../types/PlatePlugin/WithOverride';
 import { TElement } from '../types/TElement';
@@ -16,35 +15,35 @@ export interface WithInlineVoidOptions {
  */
 export const withInlineVoid = ({
   plugins = [],
-  inlineTypes = [],
-  voidTypes = [],
+  inlineTypes: _inlineTypes = [],
+  voidTypes: _voidTypes = [],
 }: WithInlineVoidOptions): WithOverride => (editor) => {
   const { isInline } = editor;
   const { isVoid } = editor;
 
-  let allInlineTypes = [...inlineTypes];
-  let allVoidTypes = [...voidTypes];
+  const inlineTypes = [..._inlineTypes];
+  const voidTypes = [..._voidTypes];
 
   plugins.forEach((plugin) => {
-    if (plugin.inlineTypes) {
-      allInlineTypes = allInlineTypes.concat(
-        castArray(plugin.inlineTypes(editor))
-      );
+    if (!plugin.key) return;
+
+    if (plugin.isInline) {
+      inlineTypes.push(plugin.key);
     }
 
-    if (plugin.voidTypes) {
-      allVoidTypes = allVoidTypes.concat(castArray(plugin.voidTypes(editor)));
+    if (plugin.isVoid) {
+      voidTypes.push(plugin.key);
     }
   });
 
   editor.isInline = (element) => {
-    return allInlineTypes.includes((element as TElement).type)
+    return inlineTypes.includes((element as TElement).type)
       ? true
       : isInline(element);
   };
 
   editor.isVoid = (element) =>
-    allVoidTypes.includes((element as TElement).type) ? true : isVoid(element);
+    voidTypes.includes((element as TElement).type) ? true : isVoid(element);
 
   return editor;
 };

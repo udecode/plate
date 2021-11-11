@@ -1,4 +1,4 @@
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from './defaults';
 import {
   getTableDeserialize,
@@ -14,25 +14,25 @@ import { withTable } from './withTable';
  */
 export const createTablePlugins = (): PlatePlugin[] => [
   {
-    pluginKeys: ELEMENT_TABLE,
-    renderElement: getRenderElement(ELEMENT_TABLE),
+    key: ELEMENT_TABLE,
+    isElement: true,
     deserialize: getTableDeserialize(),
     onKeyDown: getTableOnKeyDown(),
     withOverrides: withTable(),
   },
   {
-    pluginKeys: ELEMENT_TR,
-    renderElement: getRenderElement(ELEMENT_TR),
+    key: ELEMENT_TR,
+    isElement: true,
     deserialize: getTrDeserialize(),
   },
   {
-    pluginKeys: ELEMENT_TD,
-    renderElement: getRenderElement(ELEMENT_TD),
+    key: ELEMENT_TD,
+    isElement: true,
     deserialize: getTdDeserialize(),
   },
   {
-    pluginKeys: ELEMENT_TH,
-    renderElement: getRenderElement(ELEMENT_TH),
+    key: ELEMENT_TH,
+    isElement: true,
     deserialize: getThDeserialize(),
   },
 ];

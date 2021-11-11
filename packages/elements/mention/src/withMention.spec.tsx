@@ -6,7 +6,7 @@ import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
-import { createMentionPlugin } from './createMentionPlugin';
+import { createMentionPlugin } from './createMentionPlugins';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
 

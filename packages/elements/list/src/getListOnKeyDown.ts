@@ -4,10 +4,10 @@ import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { moveListItems, toggleList } from './transforms';
 
-export const getListOnKeyDown = (pluginKey: string): KeyboardHandler => (
-  editor
-) => (e) => {
-  const { type, hotkey } = getPlatePluginOptions(editor, pluginKey);
+export const getListOnKeyDown = (key: string): KeyboardHandler => (editor) => (
+  e
+) => {
+  const { type, hotkey } = getPlatePluginOptions(editor, key);
 
   if (e.key === 'Tab' && editor.selection) {
     const listSelected = getAbove(editor, {
@@ -26,8 +26,8 @@ export const getListOnKeyDown = (pluginKey: string): KeyboardHandler => (
 
   const hotkeys = castArray(hotkey);
 
-  for (const key of hotkeys) {
-    if (isHotkey(key)(e as any)) {
+  for (const _hotkey of hotkeys) {
+    if (isHotkey(_hotkey)(e as any)) {
       toggleList(editor, { type });
     }
   }

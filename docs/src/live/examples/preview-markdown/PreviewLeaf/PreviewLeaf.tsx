@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyledLeafProps } from '@udecode/plate';
+import { RenderLeaf } from '@udecode/plate-core';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
 
-export const PreviewLeaf = (props: StyledLeafProps) => {
+export const PreviewLeaf: RenderLeaf = (props) => {
   const { children, attributes, leaf } = props;
 
   const { root } = getPreviewLeafStyles(leaf as any);

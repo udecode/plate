@@ -3,9 +3,9 @@ import isHotkey from 'is-hotkey';
 import { toggleMark } from '../transforms/toggleMark';
 
 export const getToggleMarkOnKeyDown = <T = {}>(
-  pluginKey: string
+  key: string
 ): KeyboardHandler<T> => (editor) => (e) => {
-  const { hotkey, type, clear } = getPlatePluginOptions(editor, pluginKey);
+  const { hotkey, type, clear } = getPlatePluginOptions(editor, key);
 
   if (!hotkey) return;
 

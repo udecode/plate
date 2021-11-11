@@ -1,5 +1,5 @@
 import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_BLOCKQUOTE } from './defaults';
 import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
 
@@ -8,8 +8,8 @@ import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
  * quotations and passages.
  */
 export const createBlockquotePlugin = (): PlatePlugin => ({
-  pluginKeys: ELEMENT_BLOCKQUOTE,
-  renderElement: getRenderElement(ELEMENT_BLOCKQUOTE),
+  key: ELEMENT_BLOCKQUOTE,
+  isElement: true,
   deserialize: getBlockquoteDeserialize(),
   onKeyDown: getToggleElementOnKeyDown(ELEMENT_BLOCKQUOTE),
 });

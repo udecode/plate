@@ -8,9 +8,9 @@ import { getEditorOptions } from './getEditorOptions';
  */
 export const getPlatePluginOptions = <T = AnyObject, E = {}>(
   editor?: PlateEditor<E>,
-  pluginKey = ''
+  key = ''
 ) =>
   ({
-    type: pluginKey,
-    ...(getEditorOptions(editor)[pluginKey] as any),
+    type: key,
+    ...(getEditorOptions(editor)[key] as any),
   } as PlatePluginOptions<T>);

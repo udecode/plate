@@ -7,9 +7,9 @@ import {
 import { ELEMENT_MEDIA_EMBED } from './defaults';
 
 export const getMediaEmbedDeserialize = (
-  pluginKey = ELEMENT_MEDIA_EMBED
+  key = ELEMENT_MEDIA_EMBED
 ): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, pluginKey);
+  const options = getPlatePluginOptions(editor, key);
 
   return {
     element: getNodeDeserializer({

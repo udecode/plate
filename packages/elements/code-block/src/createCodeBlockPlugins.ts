@@ -1,11 +1,10 @@
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './defaults';
 import {
   getCodeBlockDeserialize,
   getCodeLineDeserialize,
 } from './getCodeBlockDeserialize';
 import { getCodeBlockOnKeyDown } from './getCodeBlockOnKeyDown';
-import { getCodeBlockRenderLeaf } from './getCodeBlockRenderLeaf';
 import { getCodeLineDecorate } from './getCodeLineDecorate';
 import { withCodeBlock } from './withCodeBlock';
 
@@ -14,16 +13,15 @@ import { withCodeBlock } from './withCodeBlock';
  */
 export const createCodeBlockPlugins = (): PlatePlugin[] => [
   {
-    pluginKeys: ELEMENT_CODE_BLOCK,
-    renderElement: getRenderElement(ELEMENT_CODE_BLOCK),
-    renderLeaf: getCodeBlockRenderLeaf(),
+    key: ELEMENT_CODE_BLOCK,
+    isElement: true,
     deserialize: getCodeBlockDeserialize(),
     onKeyDown: getCodeBlockOnKeyDown(),
     withOverrides: withCodeBlock(),
   },
   {
-    pluginKeys: ELEMENT_CODE_LINE,
-    renderElement: getRenderElement(ELEMENT_CODE_LINE),
+    key: ELEMENT_CODE_LINE,
+    isElement: true,
     deserialize: getCodeLineDeserialize(),
     decorate: getCodeLineDecorate(),
   },

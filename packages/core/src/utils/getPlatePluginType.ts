@@ -6,5 +6,5 @@ import { getPlatePluginOptions } from './getPlatePluginOptions';
  */
 export const getPlatePluginType = <T = {}>(
   editor?: PlateEditor<T>,
-  pluginKey?: string
-): string => getPlatePluginOptions(editor, pluginKey).type ?? pluginKey ?? '';
+  key?: string
+): string => getPlatePluginOptions(editor, key).type ?? key ?? '';

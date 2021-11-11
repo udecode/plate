@@ -7,9 +7,9 @@ import {
 import { ELEMENT_EXCALIDRAW } from './defaults';
 
 export const getExcalidrawDeserialize = (
-  pluginKey = ELEMENT_EXCALIDRAW
+  key = ELEMENT_EXCALIDRAW
 ): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, pluginKey);
+  const options = getPlatePluginOptions(editor, key);
 
   return {
     element: getNodeDeserializer({

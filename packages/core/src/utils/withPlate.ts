@@ -48,9 +48,11 @@ export const withPlate = ({
 
   // Plugins withOverrides
   const withOverrides = flatMapByKey(_plugins, 'withOverrides');
+  console.log(withOverrides);
   editor = pipe(editor, ...withOverrides);
 
   // Default option type is the plugin key
+  console.log(options);
   Object.keys(editor.options).forEach((key) => {
     if (editor.options[key]!.type === undefined)
       editor.options[key]!.type = key;

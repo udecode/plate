@@ -1,9 +1,9 @@
 import React from 'react';
-import { castArray } from 'lodash';
 import { DefaultElement } from 'slate-react';
+import { PlateEditor } from '../types/PlateEditor';
+import { RenderElement } from '../types/PlatePlugin/RenderElement';
 import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
-import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
-import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
+import { getPlatePluginOptions } from './getPlatePluginOptions';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -11,27 +11,26 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate element type, render `options.component`.
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
-export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
-  props: PlateRenderElementProps
-) => {
-  const { plugins } = props;
+export const getRenderElement = (
+  editor: PlateEditor,
+  key: string
+): RenderElement => {
+  const {
+    type,
+    component: Element = DefaultElement as PlatePluginComponent,
+    getNodeProps,
+    overrideProps,
+  } = getPlatePluginOptions(editor, key);
 
-  const _options = castArray<RenderNodeOptions>(options);
+  return (props) => {
+    const { plugins } = props;
 
-  const injectParentComponents = plugins.flatMap(
-    (o) => o.injectParentComponent ?? []
-  );
-  const injectChildComponents = plugins.flatMap(
-    (o) => o.injectChildComponent ?? []
-  );
-
-  for (const option of _options) {
-    const {
-      type,
-      component: Element = DefaultElement as PlatePluginComponent,
-      getNodeProps,
-      overrideProps,
-    } = option;
+    const injectParentComponents = plugins.flatMap(
+      (o) => o.injectParentComponent ?? []
+    );
+    const injectChildComponents = plugins.flatMap(
+      (o) => o.injectChildComponent ?? []
+    );
 
     const { element, children: _children } = props;
 
@@ -47,7 +46,7 @@ export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
       let children = _children;
 
       injectChildComponents.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, ...option });
+        const hoc = withHOC({ ...nodeProps, key });
 
         if (hoc) {
           children = hoc({ ...nodeProps, children });
@@ -59,7 +58,7 @@ export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
       );
 
       injectParentComponents.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, ...option });
+        const hoc = withHOC({ ...nodeProps, key });
 
         if (hoc) {
           component = hoc({ ...nodeProps, children: component });
@@ -68,5 +67,5 @@ export const getEditableRenderElement = (options: RenderNodeOptions[]) => (
 
       return component;
     }
-  }
+  };
 };

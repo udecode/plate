@@ -7,11 +7,11 @@ import castArray from 'lodash/castArray';
 export const isType = (
   editor: PlateEditor,
   node: any,
-  pluginKey?: string | string[]
+  key?: string | string[]
 ) => {
-  const keys = castArray(pluginKey);
-  keys.forEach((key) => {
-    if (node?.type === getPlatePluginType(editor, key)) return true;
+  const keys = castArray(key);
+  keys.forEach((_key) => {
+    if (node?.type === getPlatePluginType(editor, _key)) return true;
   });
   return false;
 };

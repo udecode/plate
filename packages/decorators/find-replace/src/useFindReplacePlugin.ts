@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
-import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { MARK_SEARCH_HIGHLIGHT } from './defaults';
 import { getSearchHighlightDecorate } from './getSearchHighlightDecorate';
 
@@ -16,7 +16,8 @@ export const useFindReplacePlugin = (): {
   return {
     plugin: useMemo(
       () => ({
-        renderLeaf: getRenderLeaf(MARK_SEARCH_HIGHLIGHT),
+        key: MARK_SEARCH_HIGHLIGHT,
+        isLeaf: true,
         decorate: getSearchHighlightDecorate({ search }),
       }),
       [search]

@@ -21,21 +21,21 @@ A plugin to add an element: a paragraph as a block controlled by slate:
 
 ```ts
 export const createParagraphPlugin = (): PlatePlugin => ({
+  key: ELEMENT_PARAGRAPH,
+  isElement: true,
   deserialize: getParagraphDeserialize(),
   onKeyDown: getToggleElementOnKeyDown(ELEMENT_PARAGRAPH),
-  pluginKeys: ELEMENT_PARAGRAPH,
-  renderElement: getRenderElement(ELEMENT_PARAGRAPH),
 });
 ```
 
+- [key](#key)
+  - set the plugin key.
 - [deserialize](#deserialize)
   - to enable HTML deserialization, set a deserializer.
-- [renderElement](#renderelement)
-  - to enable element rendering, use [getRenderElement](https://plate-api.udecode.io/globals.html#getrenderelement)
+- [isElement](#iselement)
+  - to enable element rendering, set true.
 - [onKeyDown](#onkeydown)
   - to enable block toggling with a hotkey, use `getToggleElementOnKeyDown`
-- [pluginKeys](#pluginkeys)
-  - set the paragraph key.
 
 ### Inline & Void Element Plugin
 
@@ -43,17 +43,18 @@ A plugin to add an inline and void element: a tag uncontrolled by slate:
 
 ```ts
 export const createTagPlugin = (): PlatePlugin => ({
+  key: ELEMENT_TAG,
+  isElement: true,
+  isInline: true,
+  isVoid: true,
   deserialize: getTagDeserialize(),
-  renderElement: getRenderElement(ELEMENT_TAG),
-  inlineTypes: getPlatePluginTypes(ELEMENT_TAG),
-  voidTypes: getPlatePluginTypes(ELEMENT_TAG),
 });
 ```
 
-- [inlineTypes](#inlinetypes)
-  - set the tag key to make it inline.
-- [voidTypes](#voidtypes)
-  - set the tag key to make it void.
+- [isInline](#isinline)
+  - set true if the element is inline.
+- [isVoid](#isvoid)
+  - set true if the element is void.
 
 ### Leaf Plugin
 
@@ -61,15 +62,15 @@ Finally, a plugin to add a leaf: a highlight mark.
 
 ```ts
 export const createHighlightPlugin = (): PlatePlugin => ({
-  pluginKeys: MARK_HIGHLIGHT,
-  renderLeaf: getRenderLeaf(MARK_HIGHLIGHT),
+  key: MARK_HIGHLIGHT,
+  isLeaf: true,
   deserialize: getHighlightDeserialize(),
   onKeyDown: getToggleMarkOnKeyDown(MARK_HIGHLIGHT),
 });
 ```
 
-- [renderLeaf](#renderleaf)
-  - to enable leaf rendering, use [getRenderLeaf](https://plate-api.udecode.io/globals.html#getrenderleaf)
+- [isLeaf](#isleaf)
+  - to enable leaf rendering, set true.
 - [onKeyDown](#onkeydown)
   - to enable mark toggling with a hotkey, use `getToggleMarkOnKeyDown`
 
@@ -96,18 +97,22 @@ export const createReactPlugin = {
 
 - HTML Deserializer for element and leaf.
 
-### `inlineTypes`
+### `isInline`
 
-- Inline element types
+- Whether the element is inline.
+
+### `isVoid`
+
+- Whether the element is void.
 
 ### `overrideProps`
 
 - Overrides rendered node props (shallow merge).
 - This enables controlling the props of any node component (use cases: indent, align,...).
 
-### `pluginKeys`
+### `key`
 
-- Plugin keys to support configuration.
+- Plugin key in the `plugins` set.
 
 ### `renderElement`
 
@@ -130,10 +135,6 @@ export const createReactPlugin = {
 ### `serialize`
 
 - HTML Serializer for element and leaf.
-
-### `voidTypes`
-
-- Void element types.
 
 ### `withOverrides`
 

@@ -82,7 +82,7 @@ import {
   createLinkPlugin,
   createListPlugins,
   createMediaEmbedPlugin,
-  createMentionPlugin,
+  createMentionPlugins,
   createNodeIdPlugin,
   createNormalizeTypesPlugin,
   createParagraphPlugin,
@@ -218,6 +218,7 @@ import { EDITABLE_VOID } from './examples/editable-voids/defaults';
 import { EditableVoidElement } from './examples/editable-voids/EditableVoidElement';
 import { IFrame } from './examples/iframe/IFrame';
 import { createPreviewPlugin } from './examples/preview-markdown/createPreviewPlugin';
+import { PreviewLeaf } from './examples/preview-markdown/PreviewLeaf/PreviewLeaf';
 import { HighlightHTML } from './utils/HighlightHTML';
 
 // Add react-live imports you need here
@@ -279,12 +280,13 @@ const ReactLiveScope = {
   createLinkPlugin,
   createListPlugins,
   createMediaEmbedPlugin,
-  createMentionPlugin,
+  createMentionPlugins,
   createNodeIdPlugin,
   createNormalizeTypesPlugin,
   createParagraphPlugin,
   createPlateComponents,
   createPlateOptions,
+  PreviewLeaf,
   createPreviewPlugin,
   createReactPlugin,
   createResetNodePlugin,

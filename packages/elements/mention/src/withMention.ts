@@ -15,23 +15,29 @@ import {
 import { MentionInputNode, MentionPluginOptions } from './types';
 
 export const withMention = ({
-  pluginKey = ELEMENT_MENTION,
+  key = ELEMENT_MENTION,
   ...options
 }: MentionPluginOptions = {}): WithOverride => (editor) => {
-  const { apply, insertText, deleteBackward } = editor;
-
   // TODO: extend plate-core to register options
-  editor.options[pluginKey] = defaults(options, {
-    pluginKey,
-    type: pluginKey,
-    id: pluginKey,
+  editor.options[key] = defaults(options, {
+    key,
+    type: key,
+    id: key,
     trigger: COMBOBOX_TRIGGER_MENTION,
     createMentionNode: (item) => ({ value: item.text }),
   } as MentionPluginOptions);
 
+  return editor;
+};
+
+export const withMentionInput = ({
+  key = ELEMENT_MENTION,
+}: MentionPluginOptions = {}): WithOverride => (editor) => {
+  const { apply, insertText, deleteBackward } = editor;
+
   const { trigger, id } = getPlatePluginOptions<MentionPluginOptions>(
     editor,
-    pluginKey
+    key
   );
 
   editor.deleteBackward = (unit) => {

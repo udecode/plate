@@ -2,15 +2,14 @@ import { CSSProperties } from 'react';
 import {
   getPlatePluginOptions,
   OverrideProps,
+  PlatePluginKey,
   TElement,
   TText,
 } from '@udecode/plate-core';
 import clsx from 'clsx';
 import { OverridePropsOptions } from '../types';
 
-export interface GetOverridePropsOptions {
-  pluginKey?: string;
-
+export interface GetOverridePropsOptions extends PlatePluginKey {
   /**
    * Existing className.
    */
@@ -45,9 +44,7 @@ export interface OverridePropsReturnType {
  * If `classNames[value]` is defined, override `className` with it.
  * If `styleKey` is defined, override `style` with `[styleKey]: value`.
  */
-export const getOverrideProps = (pluginKey: string): OverrideProps => (
-  editor
-) => (
+export const getOverrideProps = (key: string): OverrideProps => (editor) => (
   options: GetOverridePropsOptions
 ): OverridePropsReturnType | undefined => {
   const { element, text, className, style } = options;
@@ -64,7 +61,7 @@ export const getOverrideProps = (pluginKey: string): OverrideProps => (
     transformNodeValue,
     transformStyle,
     validNodeValues,
-  } = getPlatePluginOptions<OverridePropsOptions>(editor, pluginKey);
+  } = getPlatePluginOptions<OverridePropsOptions>(editor, key);
 
   if (!nodeKey) return;
 

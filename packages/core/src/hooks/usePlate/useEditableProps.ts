@@ -38,8 +38,14 @@ export const useEditableProps = ({
 
     const _props: EditableProps = {
       decorate: pipeDecorate(editor, plugins),
-      renderElement: pipeRenderElement(editor, plugins),
-      renderLeaf: pipeRenderLeaf(editor, plugins),
+      renderElement: pipeRenderElement(editor, {
+        plugins,
+        editableProps,
+      }),
+      renderLeaf: pipeRenderLeaf(editor, {
+        plugins,
+        editableProps,
+      }),
     };
 
     DOM_HANDLERS.forEach((handlerKey) => {
@@ -59,8 +65,8 @@ export const useEditableProps = ({
 
   return useMemo(
     () => ({
+      ...omit(editableProps, [...DOM_HANDLERS, 'renderElement', 'renderLeaf']),
       ...props,
-      ...omit(editableProps, DOM_HANDLERS),
     }),
     [editableProps, props]
   );

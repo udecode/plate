@@ -4,8 +4,10 @@ import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { RenderElement } from '../types/PlatePlugin/RenderElement';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { TRenderElementProps } from '../types/TRenderElementProps';
+import { getRenderElement } from './getRenderElement';
 import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
@@ -13,11 +15,18 @@ import { pipeOverrideProps } from './pipeOverrideProps';
  */
 export const pipeRenderElement = (
   editor: PlateEditor,
-  plugins: PlatePlugin[] = []
+  {
+    plugins = [],
+    editableProps,
+  }: { plugins: PlatePlugin[]; editableProps?: EditableProps }
 ): EditableProps['renderElement'] => {
-  const renderElements = plugins.flatMap(
-    (plugin) => plugin.renderElement?.(editor) ?? []
-  );
+  const renderElements: RenderElement[] = [];
+
+  plugins.forEach((plugin) => {
+    if (plugin.isElement && plugin.key) {
+      renderElements.push(getRenderElement(editor, plugin.key));
+    }
+  });
 
   const propsOverriders = plugins.flatMap((plugin) =>
     castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
@@ -41,6 +50,10 @@ export const pipeRenderElement = (
     });
 
     if (element) return element;
+
+    if (editableProps?.renderElement) {
+      return editableProps.renderElement(props);
+    }
 
     return <DefaultElement {...props} />;
   };

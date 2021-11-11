@@ -7,7 +7,7 @@ export const insertMediaEmbed = (
   editor: PlateEditor,
   {
     url = '',
-    pluginKey = ELEMENT_MEDIA_EMBED,
+    key = ELEMENT_MEDIA_EMBED,
   }: Partial<MediaEmbedNodeData> & PlatePluginKey
 ): void => {
   if (!editor.selection) return;
@@ -17,7 +17,7 @@ export const insertMediaEmbed = (
   insertNodes<TElement>(
     editor,
     {
-      type: pluginKey,
+      type: key,
       url,
       children: [{ text: '' }],
     },

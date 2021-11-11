@@ -88,16 +88,12 @@ export const createPlateOptions = (
 
 ## Plugin keys
 
-- Each plugin can define one or more `pluginKey` to support configuration.
-  - e.g. the bold plugin defines one `pluginKey`: `MARK_BOLD = 'bold'`
-  - e.g. the list plugin defines multiple `pluginKeys`:
-    - `ELEMENT_UL = 'ul'`
-    - `ELEMENT_OL = 'ol'`
-    - `ELEMENT_LI = 'li'`
-- Each node should have its own `pluginKey`. If a plugin features multiple nodes, it will define multiple `pluginKeys`.
+- Each plugin can define one `key` to support configuration.
+  - e.g. the bold plugin `key` is `MARK_BOLD = 'bold'`
+- Each node should have its own plugin `key`.
 - ⚠️ This is not necessarily equal to `type`:
-  - `type` is used as a slate node type,
-  - `pluginKey` is used for plate plugins configuration.
+  - `type` is the slate node type (default value is `key`),
+  - `key` is the key in the `plugins` set.
 
 ## Options
 

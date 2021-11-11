@@ -5,6 +5,6 @@ import { RenderLeaf } from './RenderLeaf';
  * HTML Serializer for element and leaf.
  */
 export interface Serialize {
-  element?: ReturnType<RenderElement>;
-  leaf?: ReturnType<RenderLeaf>;
+  element?: RenderElement;
+  leaf?: RenderLeaf;
 }

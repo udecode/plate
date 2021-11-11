@@ -1,5 +1,5 @@
 import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
+import { PlatePlugin } from '@udecode/plate-core';
 import { MARK_UNDERLINE } from './defaults';
 import { getUnderlineDeserialize } from './getUnderlineDeserialize';
 
@@ -7,8 +7,8 @@ import { getUnderlineDeserialize } from './getUnderlineDeserialize';
  * Enables support for underline formatting.
  */
 export const createUnderlinePlugin = (): PlatePlugin => ({
-  pluginKeys: MARK_UNDERLINE,
-  renderLeaf: getRenderLeaf(MARK_UNDERLINE),
+  key: MARK_UNDERLINE,
+  isLeaf: true,
   deserialize: getUnderlineDeserialize(),
   onKeyDown: getToggleMarkOnKeyDown(MARK_UNDERLINE),
 });

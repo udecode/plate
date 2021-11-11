@@ -107,7 +107,7 @@ createIndentPlugin({
 ### `getRenderElement`
 
 - Util for [renderElement](creating-plugins#renderelement)
-- First param is [pluginKey](configuration#plugin-keys)
+- First param is the plugin [key](configuration#plugin-keys)
 - It will look up the plugin [type](configuration#type):
   - If the type is equals to the slate element type, render `options.component`
   - Else, return `undefined` so Plate pipeline can check the next plugin

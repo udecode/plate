@@ -6,10 +6,10 @@ import {
 } from '@udecode/plate-core';
 import { ELEMENT_MENTION } from './defaults';
 
-export const getMentionDeserialize = (
-  pluginKey = ELEMENT_MENTION
-): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, pluginKey);
+export const getMentionDeserialize = (key = ELEMENT_MENTION): Deserialize => (
+  editor
+) => {
+  const options = getPlatePluginOptions(editor, key);
 
   return {
     element: getNodeDeserializer({

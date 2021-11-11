@@ -4,8 +4,10 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { RenderLeaf } from '../types/PlatePlugin/RenderLeaf';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { TRenderLeafProps } from '../types/TRenderLeafProps';
+import { getRenderLeaf } from './getRenderLeaf';
 import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
@@ -13,11 +15,18 @@ import { pipeOverrideProps } from './pipeOverrideProps';
  */
 export const pipeRenderLeaf = (
   editor: PlateEditor,
-  plugins: PlatePlugin[] = []
+  {
+    plugins = [],
+    editableProps,
+  }: { plugins: PlatePlugin[]; editableProps?: EditableProps }
 ): EditableProps['renderLeaf'] => {
-  const renderLeafs = plugins.flatMap(
-    (plugin) => plugin.renderLeaf?.(editor) ?? []
-  );
+  const renderLeafs: RenderLeaf[] = [];
+
+  plugins.forEach((plugin) => {
+    if (plugin.isLeaf && plugin.key) {
+      renderLeafs.push(getRenderLeaf(editor, plugin.key));
+    }
+  });
 
   const propsOverriders = plugins.flatMap((plugin) =>
     castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
@@ -39,6 +48,10 @@ export const pipeRenderLeaf = (
         props.children = newChildren;
       }
     });
+
+    if (editableProps?.renderLeaf) {
+      return editableProps.renderLeaf(props);
+    }
 
     return <DefaultLeaf {...props} />;
   };

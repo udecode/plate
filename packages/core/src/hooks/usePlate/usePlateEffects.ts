@@ -81,7 +81,7 @@ export const usePlateEffects = <T = {}>({
   }, [plugins, setPlugins]);
 
   useEffect(() => {
-    plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
+    plugins && setPluginKeys(flatMapByKey(plugins, 'key'));
   }, [plugins, setPluginKeys]);
 
   useEffect(() => {

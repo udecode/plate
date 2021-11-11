@@ -12,7 +12,7 @@ export type PlatePluginComponent = FunctionComponent;
 export type PlatePluginOptions<T = AnyObject> = T & {
   /**
    * Element or mark type.
-   * @default pluginKey
+   * @default key
    */
   type: string;
 

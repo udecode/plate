@@ -16,7 +16,7 @@ export interface CreateMentionNode<TData extends Data> {
 }
 
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
-  pluginKey = ELEMENT_MENTION,
+  key = ELEMENT_MENTION,
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
@@ -25,7 +25,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     type,
     insertSpaceAfterMention,
     createMentionNode,
-  } = getPlatePluginOptions<Required<MentionPluginOptions>>(editor, pluginKey);
+  } = getPlatePluginOptions<Required<MentionPluginOptions>>(editor, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =
