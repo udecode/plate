@@ -3,7 +3,6 @@
  */
 
 export * from './createLinkPlugin';
-export * from './defaults';
 export * from './getLinkDeserialize';
 export * from './getLinkOnKeyDown';
 export * from './types';

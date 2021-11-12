@@ -27,8 +27,8 @@ const basicNodesPlugins = [
   // elements
   createParagraphPlugin(),      // paragraph element
   createBlockquotePlugin(),     // blockquote element
-  ...createCodeBlockPlugins(),      // code block element
-  ...createHeadingPlugin(),        // heading elements
+  createCodeBlockPlugin(),      // code block element
+  createHeadingPlugin(),        // heading elements
 
   // marks
   createBoldPlugin(),           // bold mark
@@ -165,13 +165,11 @@ Let's pass the `components` and `options` provided by the library.
 
 ```tsx
 const components = createPlateComponents();
-const options = createPlateOptions();
 ```
 
 ```tsx live
 () => {
   const components = createPlateComponents();
-  const options = createPlateOptions();
 
   // try to remove some plugins!
   const basicNodesPlugins = [
@@ -182,8 +180,8 @@ const options = createPlateOptions();
     // elements
     createParagraphPlugin(),      // paragraph element
     createBlockquotePlugin(),     // blockquote element
-    ...createCodeBlockPlugins(),      // code block element
-    ...createHeadingPlugin(),        // heading elements
+    createCodeBlockPlugin(),      // code block element
+    createHeadingPlugin(),        // heading elements
 
     // marks
     createBoldPlugin(),           // bold mark

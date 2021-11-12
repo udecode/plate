@@ -2,7 +2,7 @@
 /** @jsx jsx */
 
 import { getHtmlDocument } from '@udecode/plate-test-utils';
-import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 

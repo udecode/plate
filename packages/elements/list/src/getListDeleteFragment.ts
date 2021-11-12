@@ -4,7 +4,7 @@ import { Editor, Range, Transforms } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
-import { ELEMENT_LI } from './defaults';
+import { ELEMENT_LI } from './createListPlugin';
 
 export const getListDeleteFragment = (editor: PlateEditor) => {
   let deleted = false;

@@ -1,8 +1,8 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin, getSlateClass } from '@udecode/plate-core';
-import { ELEMENT_MENTION } from './defaults';
+import { Deserialize, getSlateClass } from '@udecode/plate-core';
+import { MentionPlugin } from './types';
 
-export const getMentionDeserialize = (key = ELEMENT_MENTION): Deserialize => (
+export const getMentionDeserialize = (): Deserialize<{}, MentionPlugin> => (
   editor,
   { type }
 ) => {
@@ -13,7 +13,7 @@ export const getMentionDeserialize = (key = ELEMENT_MENTION): Deserialize => (
         type,
         value: el.getAttribute('data-slate-value'),
       }),
-      rules: [{ className: getSlateClass(type) }],
+      rules: [{ className: getSlateClass(type!) }],
     }),
   };
 };

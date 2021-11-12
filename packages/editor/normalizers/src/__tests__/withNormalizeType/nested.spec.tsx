@@ -2,9 +2,9 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_H1 } from '../../../../../elements/heading/src/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
-import { withNormalizeTypes } from '../../createNormalizeTypesPlugin';
+import { ELEMENT_H1 } from '../../../../../elements/heading/src/constants';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { withNormalizeTypes } from '../../withNormalizeTypes';
 
 jsx;
 

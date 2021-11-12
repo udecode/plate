@@ -1,7 +1,7 @@
 import { getAbove, someNode } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { ELEMENT_TABLE, ELEMENT_TR } from '../defaults';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 
 export const deleteRow = (editor: PlateEditor) => {
   if (

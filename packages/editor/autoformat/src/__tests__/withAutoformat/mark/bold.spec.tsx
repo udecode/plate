@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { withAutoformat } from '../../../createAutoformatPlugin';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 

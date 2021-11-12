@@ -14,10 +14,8 @@ import {
   ELEMENT_TR,
 } from '@udecode/plate-table';
 import { parse } from 'papaparse';
-import {
-  DeserializeCsvPlugin,
-  KEY_DESERIALIZE_CSV,
-} from '../createDeserializeCsvPlugin';
+import { KEY_DESERIALIZE_CSV } from '../createDeserializeCsvPlugin';
+import { DeserializeCsvPlugin } from '../types';
 
 const isValidCsv = (
   data: Record<string, string>[][],
@@ -44,7 +42,7 @@ export const deserializeCsv = <T = {}>(
     header?: boolean;
   }
 ): TDescendant[] | undefined => {
-  const { errorTolerance } = getPlugin<Required<DeserializeCsvPlugin>, T>(
+  const { errorTolerance } = getPlugin<DeserializeCsvPlugin, T>(
     editor,
     KEY_DESERIALIZE_CSV
   );
@@ -59,7 +57,7 @@ export const deserializeCsv = <T = {}>(
       !isValidCsv(
         csv.data as Record<string, string>[][],
         (csv.errors as unknown) as Record<string, string>[][],
-        errorTolerance
+        errorTolerance!
       )
     )
       return;

@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Path, Range, Transforms } from 'slate';
-import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
 /**
  * Insert list item if selection in li>p.

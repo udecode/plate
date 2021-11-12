@@ -1,5 +1,6 @@
 import { createPlugin } from '@udecode/plate-core';
-import { EDITABLE_VOID } from './defaults';
+
+export const EDITABLE_VOID = 'editable-void';
 
 export const createEditableVoidPlugin = createPlugin({
   key: EDITABLE_VOID,

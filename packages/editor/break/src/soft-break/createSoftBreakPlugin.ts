@@ -1,7 +1,8 @@
 import { createPlugin } from '@udecode/plate-core';
-import { KEY_SOFT_BREAK } from './defaults';
 import { getSoftBreakOnKeyDown } from './getSoftBreakOnKeyDown';
 import { SoftBreakPlugin } from './types';
+
+export const KEY_SOFT_BREAK = 'softBreak';
 
 /**
  * Insert soft break following configurable rules.

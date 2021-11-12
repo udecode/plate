@@ -1,4 +1,5 @@
-import { HotkeyPlugin, PlateEditor } from '@udecode/plate-core';
+import { HotkeyPlugin } from '@udecode/plate-common';
+import { PlateEditor } from '@udecode/plate-core';
 
 export interface ResetNodePluginRule extends HotkeyPlugin {
   defaultType?: string;
@@ -20,5 +21,5 @@ export interface ResetNodePluginRule extends HotkeyPlugin {
 }
 
 export interface ResetNodePlugin {
-  rules: ResetNodePluginRule[];
+  rules?: ResetNodePluginRule[];
 }

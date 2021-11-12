@@ -7,7 +7,7 @@ title: Basic Elements
 
 Returns a list of the following plugins:
 - `createBlockquotePlugin()` for the `blockquote` element
-- `createCodeBlockPlugins()` for the `code_block` element
+- `createCodeBlockPlugin()` for the `code_block` element
 - `createHeadingPlugin()` for the `h1`, `h2`,... elements
 - `createParagraphPlugin()` for the `p` element
 
@@ -64,7 +64,7 @@ npm install @udecode/plate-basic-elements
 
   const plugins = [
     ...PLUGINS.core,
-    ...createBasicElementsPlugin(),
+    createBasicElementsPlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),

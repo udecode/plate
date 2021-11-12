@@ -1,7 +1,8 @@
 import { createPlugin } from '@udecode/plate-core';
-import { KEY_SINGLE_LINE } from './defaults';
 import { getSingleLineKeyDown } from './getSingleLineKeyDown';
 import { withSingleLine } from './withSingleLine';
+
+export const KEY_SINGLE_LINE = 'singleLine';
 
 /**
  * Forces editor to only have one line.

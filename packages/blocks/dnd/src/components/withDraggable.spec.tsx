@@ -3,8 +3,10 @@ import { DndProvider } from 'react-dnd';
 import { TestBackend } from 'react-dnd-test-backend';
 import { render } from '@testing-library/react';
 import { Plate } from '@udecode/plate-core';
-import { createParagraphPlugin } from '../../../../elements/paragraph/src/createParagraphPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../elements/paragraph/src/defaults';
+import {
+  createParagraphPlugin,
+  ELEMENT_PARAGRAPH,
+} from '../../../../elements/paragraph/src/createParagraphPlugin';
 import { createPlateComponents } from '../../../../plate/src/utils/createPlateComponents';
 import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
 import { withDraggable } from './withDraggable';

@@ -3,7 +3,7 @@
 import { PlateEditor, withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
 

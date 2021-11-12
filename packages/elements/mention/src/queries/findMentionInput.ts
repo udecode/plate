@@ -1,6 +1,6 @@
 import { findNode, FindNodeOptions } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
-import { getMentionInputType } from '../options';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { ELEMENT_MENTION_INPUT } from '../createMentionPlugin';
 
 export const findMentionInput = (
   editor: PlateEditor,
@@ -8,5 +8,5 @@ export const findMentionInput = (
 ) =>
   findNode(editor, {
     ...options,
-    match: { type: getMentionInputType(editor) },
+    match: { type: getPluginType(editor, ELEMENT_MENTION_INPUT) },
   });

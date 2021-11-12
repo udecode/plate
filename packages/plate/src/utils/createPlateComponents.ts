@@ -62,7 +62,7 @@ import {
 } from '@udecode/plate-table-ui';
 import { css } from 'styled-components';
 import tw from 'twin.macro';
-import { DefaultPlatePluginKey } from './createPlateOptions';
+import { DefaultPlatePluginKey } from '../types/DefaultPlatePluginKey';
 
 export const createPlateComponents = <T extends string = string>(
   overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>

@@ -3,8 +3,8 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_H1 } from '../../../elements/heading/src/defaults';
-import { withTrailingBlock } from './createTrailingBlockPlugin';
+import { ELEMENT_H1 } from '../../../elements/heading/src/constants';
+import { withTrailingBlock } from './withTrailingBlock';
 
 jsx;
 

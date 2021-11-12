@@ -1,10 +1,10 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin, getSlateClass } from '@udecode/plate-core';
-import { ELEMENT_MEDIA_EMBED } from './defaults';
+import { Deserialize, getSlateClass } from '@udecode/plate-core';
 
-export const getMediaEmbedDeserialize = (
-  key = ELEMENT_MEDIA_EMBED
-): Deserialize => (editor, { type }) => {
+export const getMediaEmbedDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     element: getNodeDeserializer({
       type,
@@ -17,7 +17,7 @@ export const getMediaEmbedDeserialize = (
           };
         }
       },
-      rules: [{ nodeNames: 'IFRAME' }, { className: getSlateClass(type) }],
+      rules: [{ nodeNames: 'IFRAME' }, { className: getSlateClass(type!) }],
     }),
   };
 };

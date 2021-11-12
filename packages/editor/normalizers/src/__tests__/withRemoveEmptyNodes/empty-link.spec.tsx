@@ -2,8 +2,8 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
-import { withRemoveEmptyNodes } from '../../createRemoveEmptyNodesPlugin';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
+import { withRemoveEmptyNodes } from '../../withRemoveEmptyNodes';
 
 jsx;
 

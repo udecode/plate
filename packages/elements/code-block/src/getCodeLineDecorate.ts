@@ -52,7 +52,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
 import { Node, NodeEntry } from 'slate';
-import { ELEMENT_CODE_BLOCK } from './defaults';
+import { ELEMENT_CODE_BLOCK } from './constants';
 
 export const getCodeLineDecorate = (): Decorate => (editor, { type }) => {
   const code_block = getPlugin(editor, ELEMENT_CODE_BLOCK);

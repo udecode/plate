@@ -1,6 +1,5 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin } from '@udecode/plate-core';
-import { MARK_SUPERSCRIPT } from './defaults';
+import { Deserialize } from '@udecode/plate-core';
 
 export const getSuperscriptDeserialize = (): Deserialize => (
   editor,

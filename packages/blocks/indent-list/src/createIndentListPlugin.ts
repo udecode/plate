@@ -1,10 +1,12 @@
 import { createPlugin } from '@udecode/plate-core';
-import { KEY_INDENT } from '@udecode/plate-indent';
 import { getIndentListInjectComponent } from './getIndentListInjectComponent';
 import { withIndentList } from './withIndentList';
 
+export const KEY_LIST_STYLE_TYPE = 'listStyleType';
+export const KEY_LIST_START = 'listStart';
+
 export const createIndentListPlugin = createPlugin({
-  key: KEY_INDENT,
+  key: KEY_LIST_STYLE_TYPE,
   injectChildComponent: getIndentListInjectComponent(),
   withOverrides: withIndentList(),
 });

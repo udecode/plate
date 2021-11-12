@@ -1,5 +1,7 @@
-import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import {
+  createParagraphPlugin,
+  ELEMENT_PARAGRAPH,
+} from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';

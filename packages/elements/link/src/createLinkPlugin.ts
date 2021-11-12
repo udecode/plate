@@ -1,18 +1,29 @@
-import { PlatePlugin } from '@udecode/plate-core';
-import { ELEMENT_LINK } from './defaults';
+import { isUrl as isUrlProtocol } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-core';
 import { getLinkDeserialize } from './getLinkDeserialize';
 import { getLinkOnKeyDown } from './getLinkOnKeyDown';
-import { WithLinkOptions } from './types';
+import { LinkPlugin } from './types';
 import { withLink } from './withLink';
+
+export const ELEMENT_LINK = 'a';
 
 /**
  * Enables support for hyperlinks.
  */
-export const createLinkPlugin = (options?: WithLinkOptions): PlatePlugin => ({
+export const createLinkPlugin = createPlugin<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
   deserialize: getLinkDeserialize(),
-  onKeyDown: getLinkOnKeyDown(options),
-  withOverrides: withLink(options),
+  onKeyDown: getLinkOnKeyDown(),
+  withOverrides: withLink(),
+  isUrl: isUrlProtocol,
+  rangeBeforeOptions: {
+    matchString: ' ',
+    skipInvalid: true,
+    afterMatch: true,
+    multiPaths: true,
+  },
+  getNodeProps: ({ element }) => ({ url: element?.url }),
+  hotkey: 'mod+k',
 });

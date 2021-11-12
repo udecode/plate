@@ -3,5 +3,6 @@
  */
 
 export * from './Deserialize';
+export * from './DeserializePlugin';
 export * from './Serialize';
-export * from './SerializePlugin';
+export * from './SerializerPlugin';

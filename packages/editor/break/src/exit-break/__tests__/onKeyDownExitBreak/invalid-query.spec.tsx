@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_H1 } from '../../../../../../elements/heading/src/defaults';
+import { ELEMENT_H1 } from '../../../../../../elements/heading/src/constants';
 import { getExitBreakOnKeyDown } from '../../getExitBreakOnKeyDown';
 
 jsx;

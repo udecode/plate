@@ -2,7 +2,7 @@
 
 import { withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../defaults';
+import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { getAndUpsertLink } from '../../transforms/getAndUpsertLink';
 import { withLink } from '../../withLink';
 

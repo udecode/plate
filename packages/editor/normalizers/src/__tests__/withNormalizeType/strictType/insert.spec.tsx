@@ -3,7 +3,7 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';
+import { withNormalizeTypes } from '../../../withNormalizeTypes';
 
 jsx;
 

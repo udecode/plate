@@ -9,4 +9,4 @@ import { PlateRenderLeafProps } from '../../PlateRenderLeafProps';
  * The attributes are added by default.
  * RenderLeaf always returns a JSX element (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf<T = {}> = (props: PlateRenderLeafProps) => JSX.Element;
+export type RenderLeaf = (props: PlateRenderLeafProps) => JSX.Element;

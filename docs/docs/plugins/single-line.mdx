@@ -19,8 +19,8 @@ npm install @udecode/plate-break
 () => {
   const plugins = [
     ...PLUGINS.basicNodes,
-    ...createListPlugins(),
-    ...createTablePlugins(),
+    createListPlugin(),
+    createTablePlugin(),
     createSingleLinePlugin(),
   ];
 

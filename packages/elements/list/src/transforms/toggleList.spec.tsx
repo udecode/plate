@@ -3,8 +3,7 @@
 import { createEditorPlugins } from '@udecode/plate/src';
 import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createListPlugin } from '../createListPlugins';
-import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { toggleList } from './toggleList';
 
 jsx;

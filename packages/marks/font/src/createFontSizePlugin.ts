@@ -1,6 +1,7 @@
 import { createPlugin } from '@udecode/plate-core';
-import { MARK_FONT_SIZE } from './defaults';
 import { getFontSizeDeserialize } from './getFontDeserialize';
+
+export const MARK_FONT_SIZE = 'fontSize';
 
 export const createFontSizePlugin = createPlugin({
   key: MARK_FONT_SIZE,

@@ -1,14 +1,19 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
+import {
+  getToggleMarkOnKeyDown,
+  ToggleMarkPlugin,
+} from '@udecode/plate-common';
 import { createPlugin } from '@udecode/plate-core';
-import { MARK_CODE } from './defaults';
 import { getCodeDeserialize } from './getCodeDeserialize';
+
+export const MARK_CODE = 'code';
 
 /**
  * Enables support for code formatting
  */
-export const createCodePlugin = createPlugin({
+export const createCodePlugin = createPlugin<ToggleMarkPlugin>({
   key: MARK_CODE,
   isLeaf: true,
   deserialize: getCodeDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_CODE),
+  onKeyDown: getToggleMarkOnKeyDown(),
+  hotkey: 'mod+e',
 });

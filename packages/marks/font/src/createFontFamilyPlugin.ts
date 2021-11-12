@@ -1,6 +1,7 @@
 import { createPlugin } from '@udecode/plate-core';
-import { MARK_FONT_FAMILY } from './defaults';
 import { getFontFamilyDeserialize } from './getFontDeserialize';
+
+export const MARK_FONT_FAMILY = 'fontFamily';
 
 export const createFontFamilyPlugin = createPlugin({
   key: MARK_FONT_FAMILY,

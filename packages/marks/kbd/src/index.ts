@@ -3,5 +3,4 @@
  */
 
 export * from './createKbdPlugin';
-export * from './defaults';
 export * from './getKbdDeserialize';

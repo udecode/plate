@@ -3,5 +3,4 @@
  */
 
 export * from './createSuperscriptPlugin';
-export * from './defaults';
 export * from './getSuperscriptDeserialize';

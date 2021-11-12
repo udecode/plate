@@ -2,7 +2,7 @@ import {
   createBasicElementsPlugin,
   createBlockquotePlugin,
   createBoldPlugin,
-  createCodeBlockPlugins,
+  createCodeBlockPlugin,
   createCodePlugin,
   createHeadingPlugin,
   createHistoryPlugin,
@@ -21,8 +21,8 @@ const core = [createReactPlugin(), createHistoryPlugin()];
 const basicElements = [
   createParagraphPlugin(), // paragraph element
   createBlockquotePlugin(), // blockquote element
-  ...createCodeBlockPlugins(), // code block element
-  ...createHeadingPlugin(), // heading elements
+  createCodeBlockPlugin(), // code block element
+  createHeadingPlugin(), // heading elements
 ];
 
 const basicMarks = [
@@ -40,7 +40,7 @@ export const PLUGINS = {
   basicNodes: [...core, ...basicElements, ...basicMarks],
   image: [
     ...core,
-    ...createBasicElementsPlugin(),
+    createBasicElementsPlugin(),
     ...basicMarks,
     createImagePlugin(),
     createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),

@@ -1,12 +1,18 @@
 import { findNode, getElementDeserializer } from '@udecode/plate-common';
-import { Deserialize, getSlateClass, PlateEditor } from '@udecode/plate-core';
-import { getCodeBlockPluginOptions, getCodeLinePluginOptions } from './options';
+import {
+  Deserialize,
+  getPlugin,
+  getSlateClass,
+  PlateEditor,
+} from '@udecode/plate-core';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
+import { CodeBlockPlugin } from './types';
 
 const isDisabled = (
   editor: PlateEditor
 ): ReturnType<Deserialize>['isDisabled'] => (deserializerId) => {
-  const code_block = getCodeBlockPluginOptions(editor);
-  const code_line = getCodeLinePluginOptions(editor);
+  const code_block = getPlugin(editor, ELEMENT_CODE_BLOCK);
+  const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 
   const isSelectionInCodeLine =
     findNode(editor, { match: { type: code_line.type } }) !== undefined;
@@ -16,7 +22,7 @@ const isDisabled = (
   );
 };
 
-export const getCodeBlockDeserialize = (): Deserialize => (
+export const getCodeBlockDeserialize = (): Deserialize<{}, CodeBlockPlugin> => (
   editor,
   { type }
 ) => {

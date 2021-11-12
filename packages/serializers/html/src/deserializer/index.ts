@@ -4,4 +4,5 @@
 
 export * from './createDeserializeHtmlPlugin';
 export * from './types';
+export * from './withDeserializeHtml';
 export * from './utils/index';

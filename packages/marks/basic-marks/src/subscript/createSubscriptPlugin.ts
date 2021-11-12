@@ -1,14 +1,20 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { MARK_SUBSCRIPT } from './defaults';
+import {
+  getToggleMarkOnKeyDown,
+  ToggleMarkPlugin,
+} from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-core';
 import { getSubscriptDeserialize } from './getSubscriptDeserialize';
+
+export const MARK_SUBSCRIPT = 'subscript';
 
 /**
  * Enables support for subscript formatting.
  */
-export const createSubscriptPlugin = (): PlatePlugin => ({
+export const createSubscriptPlugin = createPlugin<ToggleMarkPlugin>({
   key: MARK_SUBSCRIPT,
   isLeaf: true,
   deserialize: getSubscriptDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_SUBSCRIPT),
+  onKeyDown: getToggleMarkOnKeyDown(),
+  hotkey: 'mod+.',
+  clear: MARK_SUBSCRIPT,
 });

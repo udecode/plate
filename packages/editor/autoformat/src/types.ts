@@ -123,5 +123,5 @@ export interface AutoformatPlugin {
   /**
    * A list of triggering rules.
    */
-  rules: AutoformatRule[];
+  rules?: AutoformatRule[];
 }

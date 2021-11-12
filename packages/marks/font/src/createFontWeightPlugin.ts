@@ -1,6 +1,7 @@
 import { createPlugin } from '@udecode/plate-core';
-import { MARK_FONT_WEIGHT } from './defaults';
 import { getFontWeightDeserialize } from './getFontDeserialize';
+
+export const MARK_FONT_WEIGHT = 'fontWeight';
 
 export const createFontWeightPlugin = createPlugin({
   key: MARK_FONT_WEIGHT,

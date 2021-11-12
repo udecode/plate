@@ -1,14 +1,20 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { MARK_SUPERSCRIPT } from './defaults';
+import {
+  getToggleMarkOnKeyDown,
+  ToggleMarkPlugin,
+} from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-core';
 import { getSuperscriptDeserialize } from './getSuperscriptDeserialize';
+
+export const MARK_SUPERSCRIPT = 'superscript';
 
 /**
  * Enables support for superscript formatting.
  */
-export const createSuperscriptPlugin = (): PlatePlugin => ({
+export const createSuperscriptPlugin = createPlugin<ToggleMarkPlugin>({
   key: MARK_SUPERSCRIPT,
   isLeaf: true,
   deserialize: getSuperscriptDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_SUPERSCRIPT),
+  onKeyDown: getToggleMarkOnKeyDown(),
+  hotkey: 'mod+,',
+  clear: MARK_SUPERSCRIPT,
 });

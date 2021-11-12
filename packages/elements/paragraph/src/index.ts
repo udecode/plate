@@ -3,5 +3,4 @@
  */
 
 export * from './createParagraphPlugin';
-export * from './defaults';
 export * from './getParagraphDeserialize';

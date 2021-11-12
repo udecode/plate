@@ -1,14 +1,19 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { MARK_STRIKETHROUGH } from './defaults';
+import {
+  getToggleMarkOnKeyDown,
+  ToggleMarkPlugin,
+} from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-core';
 import { getStrikethroughDeserialize } from './getStrikethroughDeserialize';
+
+export const MARK_STRIKETHROUGH = 'strikethrough';
 
 /**
  * Enables support for strikethrough formatting.
  */
-export const createStrikethroughPlugin = (): PlatePlugin => ({
+export const createStrikethroughPlugin = createPlugin<ToggleMarkPlugin>({
   key: MARK_STRIKETHROUGH,
   isLeaf: true,
   deserialize: getStrikethroughDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_STRIKETHROUGH),
+  onKeyDown: getToggleMarkOnKeyDown(),
+  hotkey: 'mod+shift+s',
 });

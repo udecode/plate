@@ -3,3 +3,4 @@
  */
 
 export * from './createDeserializeAstPlugin';
+export * from './withDeserializeAst';

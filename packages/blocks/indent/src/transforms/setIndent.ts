@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 import { AnyObject, getPlugin, PlateEditor } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { KEY_INDENT } from '../defaults';
+import { KEY_INDENT } from '../createIndentPlugin';
 import { IndentPlugin } from '../types';
 
 export interface SetIndentOptions {
@@ -46,7 +46,8 @@ export const setIndent = (
     unsetNodesProps = [],
   }: SetIndentOptions
 ) => {
-  const { nodeKey } = getPlugin<Required<IndentPlugin>>(editor, KEY_INDENT);
+  const { overrideProps } = getPlugin<IndentPlugin>(editor, KEY_INDENT);
+  const { nodeKey } = overrideProps ?? {};
 
   const nodes = Array.from(
     getNodes(editor, {
@@ -56,17 +57,17 @@ export const setIndent = (
   );
 
   nodes.forEach(([node, path]) => {
-    const blockIndent = node[nodeKey] ?? 0;
+    const blockIndent = node[nodeKey!] ?? 0;
     const newIndent = blockIndent + offset;
 
     const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
     if (newIndent <= 0) {
-      Transforms.unsetNodes(editor, [nodeKey, ...unsetNodesProps], {
+      Transforms.unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
         at: path,
       });
     } else {
-      setNodes(editor, { [nodeKey]: newIndent, ...props }, { at: path });
+      setNodes(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
     }
   });
 };

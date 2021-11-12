@@ -1,5 +1,5 @@
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 

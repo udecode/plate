@@ -6,7 +6,7 @@ import {
   WithOverride,
 } from '@udecode/plate-core';
 import { Editor, Node, Point, Transforms } from 'slate';
-import { ELEMENT_TD, ELEMENT_TH } from './defaults';
+import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
 
 export const withTable = (): WithOverride => (editor) => {
   const matchCells = (node: Node) => {

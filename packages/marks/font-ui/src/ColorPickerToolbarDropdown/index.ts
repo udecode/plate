@@ -3,4 +3,4 @@
  */
 
 export * from './ColorPickerToolbarDropdown';
-export * from './defaults';
+export * from './constants';

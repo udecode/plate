@@ -8,20 +8,24 @@ import { useFindReplacePlugin } from '../../../../../../decorators/find-replace/
 import { createSoftBreakPlugin } from '../../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
 import { createBlockquotePlugin } from '../../../../../../elements/block-quote/src/createBlockquotePlugin';
-import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugins';
-import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/defaults';
-import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugins';
+import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/constants';
+import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugin';
+import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
-import { createListPlugin } from '../../../../../../elements/list/src/createListPlugins';
+import { createListPlugin } from '../../../../../../elements/list/src/createListPlugin';
 import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/constants';
-import { createTodoListPlugin } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
-import { ELEMENT_TODO_LI } from '../../../../../../elements/list/src/todo-list/defaults';
+import {
+  createTodoListPlugin,
+  ELEMENT_TODO_LI,
+} from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugin } from '../../../../../../elements/mention/src/createMentionPlugins';
-import { ELEMENT_MENTION } from '../../../../../../elements/mention/src/defaults';
+import {
+  createMentionPlugin,
+  ELEMENT_MENTION,
+} from '../../../../../../elements/mention/src/createMentionPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { getBoldDeserialize } from '../../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
 import { getCodeDeserialize } from '../../../../../../marks/basic-marks/src/code/getCodeDeserialize';
 import { getItalicDeserialize } from '../../../../../../marks/basic-marks/src/italic/getItalicDeserialize';

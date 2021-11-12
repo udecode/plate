@@ -5,12 +5,16 @@ import { getCodeLineEntry } from './queries/getCodeLineEntry';
 import { getCodeLines } from './queries/getCodeLines';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
+import { CodeBlockPlugin } from './types';
 
 /**
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const getCodeBlockOnKeyDown = (): KeyboardHandler => (editor) => (e) => {
+export const getCodeBlockOnKeyDown = (): KeyboardHandler<
+  {},
+  CodeBlockPlugin
+> => (editor) => (e) => {
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
     const res = getCodeLineEntry(editor, {});

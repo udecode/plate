@@ -15,7 +15,7 @@ import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
-import { ELEMENT_LI } from './defaults';
+import { ELEMENT_LI } from './createListPlugin';
 
 export const getListDeleteBackward = (
   editor: PlateEditor,
@@ -41,7 +41,8 @@ export const getListDeleteBackward = (
         if (moved) return true;
 
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
-          getResetNodeOnKeyDown({
+          getResetNodeOnKeyDown()(editor, {
+            key: '',
             rules: [
               {
                 types: [getPluginType(editor, ELEMENT_LI)],
@@ -51,7 +52,7 @@ export const getListDeleteBackward = (
                 onReset: (_editor) => unwrapList(_editor as PlateEditor),
               },
             ],
-          })(editor)(SIMULATE_BACKSPACE);
+          })(SIMULATE_BACKSPACE);
           moved = true;
           return;
         }

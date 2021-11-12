@@ -2,7 +2,7 @@
 
 import { PlateEditor, withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
 
 jsx;

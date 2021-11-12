@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 
 export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {

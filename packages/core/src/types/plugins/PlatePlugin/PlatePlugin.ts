@@ -1,6 +1,7 @@
 import { PlateEditor } from '../../PlateEditor';
 import { GetNodeProps } from '../../PlatePluginOptions/GetNodeProps';
 import { PlatePluginKey } from '../PlatePluginKey';
+import { SerializerPlugin } from '../SerializePlugin/SerializerPlugin';
 import { Decorate } from './Decorate';
 import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
@@ -13,8 +14,9 @@ import { WithOverride } from './WithOverride';
  * Plate plugin interface built on top of Slate and Editable.
  */
 export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> &
-  Partial<DOMHandlers<T>> &
+  Partial<DOMHandlers<T, P>> &
   OverridePropsPlugin &
+  SerializerPlugin<T, P> &
   P & {
     /**
      * React component rendering a slate element or leaf.
@@ -69,24 +71,27 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> &
     onChange?: OnChange<T, P>;
 
     /**
-     * Nested plugins supported.
-     * Plate flats all the plugins into `editor.plugins`.
+     * Recursive plugin support.
+     * Can be used to pack multiple plugins.
+     * Plate eventually flats all the plugins into `editor.plugins`.
      */
-    plugins?: PlatePlugin<T, P>[];
+    plugins?: PlatePlugin<T>[];
+
+    /**
+     * Recursive plugin merging.
+     * Can be used to derive plugin fields from `editor`, `plugin`.
+     * The returned value will be deeply merged to the plugin.
+     */
+    then?: (
+      editor: PlateEditor<T>,
+      plugin: PlatePlugin<T, P>
+    ) => Partial<PlatePlugin<T, P>>;
 
     /**
      * Element or mark type.
      * @default key
      */
     type?: string;
-
-    /**
-     * The returned value will be merged to the plugin.
-     */
-    withEditor?: (
-      editor: PlateEditor<T>,
-      plugin: PlatePlugin<T, P>
-    ) => Partial<PlatePlugin<T, P>>;
 
     /**
      * Editor method overriders.

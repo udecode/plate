@@ -1,7 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { InjectComponent } from '@udecode/plate-core';
 import clsx from 'clsx';
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './defaults';
+import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 import { ListStyleType } from './types';
 
 export const getIndentListInjectComponent = (): InjectComponent => (props) => {

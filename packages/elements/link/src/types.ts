@@ -1,10 +1,10 @@
-import { RangeBeforeOptions } from '@udecode/plate-common';
+import { HotkeyPlugin, RangeBeforeOptions } from '@udecode/plate-common';
 
 export interface LinkNodeData {
   url: string;
 }
 
-export interface WithLinkOptions {
+export interface LinkPlugin extends HotkeyPlugin {
   /**
    * Allow custom config for rangeBeforeOptions.
    */

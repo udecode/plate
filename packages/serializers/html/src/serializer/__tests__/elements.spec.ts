@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import {
   createAlignPlugin,
   createBlockquotePlugin,

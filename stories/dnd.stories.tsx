@@ -7,7 +7,7 @@ import { Image } from '@styled-icons/material/Image';
 import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugins } from '@udecode/plate-code-block';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
@@ -41,11 +41,11 @@ import { createTrailingBlockPlugin } from '../packages/editor/trailing-block/src
 import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
 import { ImageToolbarButton } from '../packages/elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
 import { LinkToolbarButton } from '../packages/elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
-import { createListPlugins } from '../packages/elements/list/src/createListPlugins';
+import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugins } from '../packages/elements/mention/src/createMentionPlugins';
-import { createTablePlugins } from '../packages/elements/table/src/createTablePlugins';
+import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
+import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
 import { createItalicPlugin } from '../packages/marks/basic-marks/src/italic/createItalicPlugin';
@@ -56,7 +56,6 @@ import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/underli
 import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
 import { createPlateComponents } from '../packages/plate/src/utils/createPlateComponents';
-import { createPlateOptions } from '../packages/plate/src/utils/createPlateOptions';
 import { createDeserializeHtmlPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 
 export default {
@@ -68,8 +67,6 @@ export const Example = () => {
   styledComponents = withStyledPlaceHolders(styledComponents);
   styledComponents = withStyledDraggables(styledComponents);
 
-  const defaultOptions = createPlateOptions();
-
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
@@ -80,13 +77,13 @@ export const Example = () => {
         createParagraphPlugin(),
         createBlockquotePlugin(),
         createTodoListPlugin(),
-        ...createHeadingPlugin(),
+        createHeadingPlugin(),
         createImagePlugin(),
         createLinkPlugin(),
-        ...createListPlugins(),
-        ...createTablePlugins(),
+        createListPlugin(),
+        createTablePlugin(),
         createMediaEmbedPlugin(),
-        ...createCodeBlockPlugins(),
+        createCodeBlockPlugin(),
         createAlignPlugin(),
         createBoldPlugin(),
         createCodePlugin(),
@@ -105,7 +102,7 @@ export const Example = () => {
         createNormalizeTypesPlugin(CONFIG.forceLayout),
         createTrailingBlockPlugin(CONFIG.trailingBlock),
         createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-        ...createMentionPlugins(),
+        createMentionPlugin(),
         searchHighlightPlugin,
         createDndPlugin(),
       ];
@@ -120,7 +117,6 @@ export const Example = () => {
         id="playground"
         plugins={pluginsMemo}
         components={styledComponents}
-        options={defaultOptions}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.playground}
       >

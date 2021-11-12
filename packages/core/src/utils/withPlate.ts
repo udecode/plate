@@ -33,25 +33,32 @@ export const withPlate = ({
   editor.plugins = [];
   editor.pluginsByKey = {};
 
+  // recursive plugin.then
+  const mergePlugin = (plugin: PlatePlugin): PlatePlugin => {
+    if (plugin.then) {
+      return mergePlugin(defaultsDeep(plugin.then(editor, plugin), plugin));
+    }
+
+    return plugin;
+  };
+
+  // recursive plugin.plugins
   const addEditorPlugins = (plugins?: PlatePlugin[]) => {
     if (!plugins) return;
 
     plugins.forEach((plugin) => {
       if (plugin.type === undefined) plugin.type = plugin.key;
 
-      const newPlugin = defaultsDeep(
-        plugin,
-        plugin.withEditor?.(editor, plugin)
-      );
+      plugin = mergePlugin(plugin);
 
-      editor.plugins.push(newPlugin);
-      editor.pluginsByKey[plugin.key] = newPlugin;
+      editor.plugins.push(plugin);
+      editor.pluginsByKey[plugin.key] = plugin;
 
       addEditorPlugins(plugin.plugins);
     });
   };
 
-  // withEditor
+  // then
   addEditorPlugins([createInlineVoidPlugin(), ..._plugins]);
 
   // withOverrides

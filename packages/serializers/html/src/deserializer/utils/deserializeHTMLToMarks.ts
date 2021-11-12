@@ -27,8 +27,8 @@ export const deserializeHTMLToMarks = <T = {}>(
 ) => {
   let leaf = {};
 
-  plugins.forEach(({ deserialize: pluginDeserializers }) => {
-    const leafDeserializers = pluginDeserializers?.(editor).leaf;
+  plugins.forEach((plugin) => {
+    const leafDeserializers = plugin.deserialize?.(editor, plugin).leaf;
     if (!leafDeserializers) return;
 
     leafDeserializers.forEach((deserializer) => {

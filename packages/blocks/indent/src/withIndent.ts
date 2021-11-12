@@ -1,17 +1,19 @@
 import { setNodes } from '@udecode/plate-common';
-import { getPlugin, TElement, WithOverride } from '@udecode/plate-core';
+import { TElement, WithOverride } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { KEY_INDENT } from './defaults';
 import { IndentPlugin } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (): WithOverride => (editor) => {
+export const withIndent = (): WithOverride<{}, IndentPlugin> => (
+  editor,
+  { overrideProps = {}, indentMax }
+) => {
   const { normalizeNode } = editor;
 
-  const { validTypes, indentMax } = getPlugin<IndentPlugin>(editor, KEY_INDENT);
+  const { validTypes } = overrideProps;
 
   editor.normalizeNode = ([node, path]) => {
     const element = node as TElement;

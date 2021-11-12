@@ -1,14 +1,19 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { MARK_ITALIC } from './defaults';
+import {
+  getToggleMarkOnKeyDown,
+  ToggleMarkPlugin,
+} from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-core';
 import { getItalicDeserialize } from './getItalicDeserialize';
+
+export const MARK_ITALIC = 'italic';
 
 /**
  * Enables support for italic formatting.
  */
-export const createItalicPlugin = (): PlatePlugin => ({
+export const createItalicPlugin = createPlugin<ToggleMarkPlugin>({
   key: MARK_ITALIC,
   isLeaf: true,
   deserialize: getItalicDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_ITALIC),
+  onKeyDown: getToggleMarkOnKeyDown(),
+  hotkey: 'mod+i',
 });

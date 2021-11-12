@@ -2,8 +2,8 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_H2 } from '../../../../../../elements/heading/src/defaults';
-import { withNormalizeTypes } from '../../../createNormalizeTypesPlugin';
+import { ELEMENT_H2 } from '../../../../../../elements/heading/src/constants';
+import { withNormalizeTypes } from '../../../withNormalizeTypes';
 
 jsx;
 

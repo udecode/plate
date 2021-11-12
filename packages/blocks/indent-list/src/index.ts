@@ -3,7 +3,6 @@
  */
 
 export * from './createIndentListPlugin';
-export * from './defaults';
 export * from './getIndentListInjectComponent';
 export * from './types';
 export * from './withIndentList';

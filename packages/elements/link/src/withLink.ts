@@ -3,7 +3,6 @@ import {
   getRangeFromBlockStart,
   getText,
   isCollapsed,
-  isUrl as isUrlProtocol,
   someNode,
   unwrapNodes,
 } from '@udecode/plate-common';
@@ -12,8 +11,8 @@ import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Range } from 'slate';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
-import { ELEMENT_LINK } from './defaults';
-import { WithLinkOptions } from './types';
+import { ELEMENT_LINK } from './createLinkPlugin';
+import { LinkPlugin } from './types';
 
 const upsertLink = (
   editor: PlateEditor,
@@ -60,18 +59,11 @@ const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = ({
-  isUrl = isUrlProtocol,
-  rangeBeforeOptions = {
-    matchString: ' ',
-    skipInvalid: true,
-    afterMatch: true,
-    multiPaths: true,
-  },
-}: WithLinkOptions = {}): WithOverride => (editor) => {
+export const withLink = (): WithOverride<{}, LinkPlugin> => (
+  editor,
+  { isUrl, rangeBeforeOptions, type }
+) => {
   const { insertData, insertText } = editor;
-
-  const type = getPluginType(editor, ELEMENT_LINK);
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
@@ -90,7 +82,7 @@ export const withLink = ({
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
 
-        if (isUrl(beforeWordText)) {
+        if (isUrl!(beforeWordText)) {
           upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
         }
       }
@@ -103,7 +95,7 @@ export const withLink = ({
     const text = data.getData('text/plain');
 
     if (text) {
-      if (isUrl(text)) {
+      if (isUrl!(text)) {
         return upsertLinkAtSelection(editor, { url: text });
       }
 
@@ -123,7 +115,7 @@ export const withLink = ({
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes({ type })(editor);
+  editor = withRemoveEmptyNodes()(editor, { key: '', types: type });
 
   return editor;
 };

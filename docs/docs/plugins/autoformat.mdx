@@ -18,7 +18,7 @@ npm install @udecode/plate-autoformat
 () => {
   const plugins = [
     ...PLUGINS.basicNodes,
-    ...createListPlugins(),
+    createListPlugin(),
     createHorizontalRulePlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),

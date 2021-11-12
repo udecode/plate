@@ -8,7 +8,7 @@ import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
-import { ELEMENT_LI } from './defaults';
+import { ELEMENT_LI } from './createListPlugin';
 
 export const getListInsertBreak = (editor: PlateEditor) => {
   if (!editor.selection) return;
@@ -31,7 +31,8 @@ export const getListInsertBreak = (editor: PlateEditor) => {
     }
   }
 
-  const didReset = getResetNodeOnKeyDown({
+  const didReset = getResetNodeOnKeyDown()(editor, {
+    key: '',
     rules: [
       {
         types: [getPluginType(editor, ELEMENT_LI)],
@@ -40,7 +41,7 @@ export const getListInsertBreak = (editor: PlateEditor) => {
         onReset: (_editor) => unwrapList(_editor as PlateEditor),
       },
     ],
-  })(editor)(SIMULATE_BACKSPACE as any);
+  })(SIMULATE_BACKSPACE as any);
   if (didReset) return true;
 
   /**

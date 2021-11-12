@@ -1,9 +1,9 @@
 import { getElementDeserializer } from '@udecode/plate-common';
 import { Deserialize } from '@udecode/plate-core';
 
-export const getHeadingDeserialize = (key: string): Deserialize => (
+export const getHeadingDeserialize = (): Deserialize => (
   editor,
-  { type }
+  { key, type }
 ) => {
   return {
     element: getElementDeserializer({

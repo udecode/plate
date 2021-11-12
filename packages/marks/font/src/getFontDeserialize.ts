@@ -1,12 +1,5 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin } from '@udecode/plate-core';
-import {
-  MARK_BG_COLOR,
-  MARK_COLOR,
-  MARK_FONT_FAMILY,
-  MARK_FONT_SIZE,
-  MARK_FONT_WEIGHT,
-} from './defaults';
+import { Deserialize } from '@udecode/plate-core';
 
 export const getFontColorDeserialize = (): Deserialize => (
   editor,
@@ -15,7 +8,7 @@ export const getFontColorDeserialize = (): Deserialize => (
   return {
     leaf: getNodeDeserializer({
       type,
-      getNode: (element) => ({ [type]: element.style.color }),
+      getNode: (element) => ({ [type!]: element.style.color }),
       rules: [
         {
           style: {
@@ -34,7 +27,7 @@ export const getFontBackgroundColorDeserialize = (): Deserialize => (
   return {
     leaf: getNodeDeserializer({
       type,
-      getNode: (element) => ({ [type]: element.style.backgroundColor }),
+      getNode: (element) => ({ [type!]: element.style.backgroundColor }),
       rules: [
         {
           style: {
@@ -50,7 +43,7 @@ export const getFontSizeDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     leaf: getNodeDeserializer({
       type,
-      getNode: (element) => ({ [type]: element.style.fontSize }),
+      getNode: (element) => ({ [type!]: element.style.fontSize }),
       rules: [
         {
           style: {
@@ -69,7 +62,7 @@ export const getFontWeightDeserialize = (): Deserialize => (
   return {
     leaf: getNodeDeserializer({
       type,
-      getNode: (element) => ({ [type]: element.style.fontWeight }),
+      getNode: (element) => ({ [type!]: element.style.fontWeight }),
       rules: [
         {
           style: {
@@ -88,7 +81,7 @@ export const getFontFamilyDeserialize = (): Deserialize => (
   return {
     leaf: getNodeDeserializer({
       type,
-      getNode: (element) => ({ [type]: element.style.fontFamily }),
+      getNode: (element) => ({ [type!]: element.style.fontFamily }),
       rules: [
         {
           style: {

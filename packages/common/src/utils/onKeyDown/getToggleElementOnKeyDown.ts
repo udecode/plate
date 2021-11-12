@@ -8,7 +8,7 @@ import { HotkeyPlugin } from '../../types/plugins/HotkeyPlugin';
 export const getToggleElementOnKeyDown = (): KeyboardHandler<
   {},
   HotkeyPlugin
-> => (editor, { key, type = key, hotkey }) => (e) => {
+> => (editor, { type, hotkey }) => (e) => {
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
   if (!hotkey) return;
@@ -19,7 +19,7 @@ export const getToggleElementOnKeyDown = (): KeyboardHandler<
     if (isHotkey(_hotkey, e as any)) {
       e.preventDefault();
       toggleNodeType(editor, {
-        activeType: type,
+        activeType: type!,
         inactiveType: defaultType,
       });
       return;

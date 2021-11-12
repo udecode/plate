@@ -37,20 +37,20 @@ import { createTrailingBlockPlugin } from '../../../editor/trailing-block/src/cr
 import { createAlignPlugin } from '../../../elements/alignment/src/createAlignPlugin';
 import { createBasicElementPlugins } from '../../../elements/basic-elements/src/createBasicElementPlugins';
 import { createBlockquotePlugin } from '../../../elements/block-quote/src/createBlockquotePlugin';
-import { createHeadingPlugins } from '../../../elements/heading/src/createHeadingPlugins';
+import { createHeadingPlugins } from '../../../elements/heading/src/createHeadingPlugin';
 import { createImagePlugin } from '../../../elements/image/src/createImagePlugin';
 import { ImageToolbarButton } from '../../../elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
 import { LineHeightToolbarDropdown } from '../../../elements/line-height-ui/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
 import { createLinkPlugin } from '../../../elements/link/src/createLinkPlugin';
 import { LinkToolbarButton } from '../../../elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
-import { createListPlugin } from '../../../elements/list/src/createListPlugins';
+import { createListPlugin } from '../../../elements/list/src/createListPlugin';
 import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { MediaEmbedToolbarButton } from '../../../elements/media-embed-ui/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
-import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugins';
+import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
 import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
-import { createTablePlugin } from '../../../elements/table/src/createTablePlugins';
-import { createBasicMarkPlugins } from '../../../marks/basic-marks/src/createBasicMarkPlugins';
+import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
+import { createBasicMarksPlugin } from '../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { createHighlightPlugin } from '../../../marks/highlight/src/createHighlightPlugin';
 import { createDeserializeHtmlPlugin } from '../../../serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
@@ -70,7 +70,7 @@ const PlateContainer = () => {
     createTodoListPlugin(),
     createHeadingPlugins({ levels: 5 }),
     ...createBasicElementPlugins(),
-    ...createBasicMarkPlugins(),
+    ...createBasicMarksPlugin(),
     createTodoListPlugin(),
     createImagePlugin(),
     createLinkPlugin(),

@@ -1,7 +1,7 @@
 import { getAbove } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI } from '../createListPlugin';
 import { getListTypes } from './getListTypes';
 
 /**

@@ -3,3 +3,4 @@
  */
 
 export * from './createNodeIdPlugin';
+export * from './withNodeId';

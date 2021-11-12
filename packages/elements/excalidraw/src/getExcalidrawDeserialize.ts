@@ -1,10 +1,10 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin, getSlateClass } from '@udecode/plate-core';
-import { ELEMENT_EXCALIDRAW } from './defaults';
+import { Deserialize, getSlateClass } from '@udecode/plate-core';
 
-export const getExcalidrawDeserialize = (
-  key = ELEMENT_EXCALIDRAW
-): Deserialize => (editor, { type }) => {
+export const getExcalidrawDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     element: getNodeDeserializer({
       type,
@@ -19,7 +19,7 @@ export const getExcalidrawDeserialize = (
         };
         // }
       },
-      rules: [{ className: getSlateClass(type) }],
+      rules: [{ className: getSlateClass(type!) }],
     }),
   };
 };

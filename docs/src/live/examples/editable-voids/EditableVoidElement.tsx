@@ -16,7 +16,7 @@ import { VALUES } from '../../config/values/values';
 const plugins = [
   createReactPlugin(),
   createHistoryPlugin(),
-  ...createBasicElementsPlugin(),
+  createBasicElementsPlugin(),
   createResetNodePlugin(CONFIG.resetBlockType),
   createSoftBreakPlugin(CONFIG.softBreak),
   createExitBreakPlugin(CONFIG.exitBreak),

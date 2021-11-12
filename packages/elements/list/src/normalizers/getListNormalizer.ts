@@ -14,10 +14,10 @@ import {
   TElement,
 } from '@udecode/plate-core';
 import { Descendant, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes } from '../queries/getListTypes';
 import { moveListItemsToList } from '../transforms';
-import { ListNormalizerOptions } from '../types';
+import { ListPlugin } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
 
@@ -26,7 +26,7 @@ import { normalizeNestedList } from './normalizeNestedList';
  */
 export const getListNormalizer = (
   editor: PlateEditor,
-  { validLiChildrenTypes }: ListNormalizerOptions
+  { validLiChildrenTypes }: ListPlugin
 ) => {
   const { normalizeNode } = editor;
   const liType = getPluginType(editor, ELEMENT_LI);

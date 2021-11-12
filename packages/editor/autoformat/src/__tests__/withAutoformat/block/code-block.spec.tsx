@@ -15,7 +15,7 @@ import { Range } from 'slate';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { withAutoformat } from '../../../createAutoformatPlugin';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 

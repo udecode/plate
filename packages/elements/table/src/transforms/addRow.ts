@@ -1,7 +1,7 @@
 import { getAbove, insertNodes, someNode } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_TABLE, ELEMENT_TR } from '../defaults';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from '../utils/getEmptyRowNode';
 

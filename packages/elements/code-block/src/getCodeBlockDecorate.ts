@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import Prism, { languages, Token, tokenize } from 'prismjs';
+import { Decorate, isElement } from '@udecode/plate-core';
+import { languages, Token, tokenize } from 'prismjs';
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-c';
@@ -47,47 +48,44 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
-import { Decorate, isElement } from '@udecode/plate-core';
 import { Node, NodeEntry } from 'slate';
-import { CodeBlockNodeData } from './types';
-import { getCodeBlockPluginOptions } from './options';
+import { CodeBlockNodeData, CodeBlockPlugin } from './types';
 
-export const getCodeBlockDecorate = (): Decorate => (editor) => {
-  const code_block = getCodeBlockPluginOptions(editor);
+export const getCodeBlockDecorate = (): Decorate<{}, CodeBlockPlugin> => (
+  editor,
+  { syntax, type }
+) => (entry: NodeEntry) => {
+  const ranges: any = [];
+  const [node, path] = entry;
+  let langName = (node as Node & CodeBlockNodeData)?.lang;
+  if (!syntax || !langName || langName === 'plain') {
+    langName = '';
+  }
+  const lang = languages[langName];
 
-  return (entry: NodeEntry) => {
-    const ranges: any = [];
-    const [node, path] = entry;
-    let langName = (node as Node & CodeBlockNodeData)?.lang;
-    if (!code_block?.syntax || !langName || langName === 'plain') {
-      langName = '';
-    }
-    const lang = languages[langName];
+  if (!lang) {
+    return ranges;
+  }
 
-    if (!lang) {
-      return ranges;
-    }
+  if (isElement(node) && node.type === type) {
+    const text = Node.string(node);
+    const tokens = tokenize(text, lang);
+    let offset = 0;
 
-    if (isElement(node) && node.type === code_block.type) {
-      const text = Node.string(node);
-      const tokens = tokenize(text, lang);
-      let offset = 0;
-
-      for (const element of tokens) {
-        if (typeof element === 'string') {
-          offset += element.length;
-        } else {
-          const token: Token = element;
-          ranges.push({
-            anchor: { path, offset },
-            focus: { path, offset: offset + token.length },
-            className: `prism-token token ${token.type} `,
-            prism: true,
-          });
-          offset += token.length;
-        }
+    for (const element of tokens) {
+      if (typeof element === 'string') {
+        offset += element.length;
+      } else {
+        const token: Token = element;
+        ranges.push({
+          anchor: { path, offset },
+          focus: { path, offset: offset + token.length },
+          className: `prism-token token ${token.type} `,
+          prism: true,
+        });
+        offset += token.length;
       }
     }
-    return ranges;
-  };
+  }
+  return ranges;
 };

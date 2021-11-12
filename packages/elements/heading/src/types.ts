@@ -1,6 +1,6 @@
-import { HotkeyPlugin } from '@udecode/plate-core';
+import { HotkeyPlugin } from '@udecode/plate-common';
 
-export interface HeadingPlugin extends SerializePlugin, HotkeyPlugin {}
+export interface HeadingPlugin extends HotkeyPlugin {}
 
 export interface HeadingsPlugin {
   /**

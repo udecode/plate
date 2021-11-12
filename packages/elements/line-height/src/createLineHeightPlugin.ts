@@ -1,10 +1,7 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import { createPlugin, getPluginType } from '@udecode/plate-core';
-import {
-  DEFAULT_LINE_HEIGHT,
-  DEFAULT_LINE_HEIGHTS,
-  KEY_LINE_HEIGHT,
-} from './defaults';
+
+export const KEY_LINE_HEIGHT = 'lineHeight';
 
 /**
  * Enables support for text alignment, useful to align your content
@@ -13,12 +10,10 @@ import {
 export const createLineHeightPlugin = createPlugin({
   key: KEY_LINE_HEIGHT,
   overrideProps: {
-    nodeKey: KEY_LINE_HEIGHT,
-    defaultNodeValue: DEFAULT_LINE_HEIGHT,
-    validNodeValues: DEFAULT_LINE_HEIGHTS,
-    validTypes: [],
+    defaultNodeValue: 1.5,
+    validNodeValues: [1, 1.2, 1.5, 2, 3],
   },
-  withEditor: (editor) => ({
+  then: (editor) => ({
     overrideProps: {
       validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
     },

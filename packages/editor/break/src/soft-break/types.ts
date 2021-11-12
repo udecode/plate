@@ -10,5 +10,5 @@ export interface SoftBreakRule {
 }
 
 export interface SoftBreakPlugin {
-  rules: SoftBreakRule[];
+  rules?: SoftBreakRule[];
 }

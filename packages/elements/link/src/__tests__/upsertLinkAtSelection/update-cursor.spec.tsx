@@ -3,7 +3,7 @@
 import { withInlineVoid } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Transforms } from 'slate';
-import { ELEMENT_LINK } from '../../defaults';
+import { ELEMENT_LINK } from '../../createLinkPlugin';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 import { withLink } from '../../withLink';
 

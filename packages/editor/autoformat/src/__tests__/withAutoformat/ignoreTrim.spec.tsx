@@ -4,7 +4,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
-import { withAutoformat } from '../../createAutoformatPlugin';
+import { withAutoformat } from '../../withAutoformat';
 
 jsx;
 

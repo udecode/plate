@@ -12,7 +12,7 @@ import {
   TElement,
 } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI } from './defaults';
+import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
 import {
   moveListItemsToList,

@@ -35,5 +35,5 @@ export interface ExitBreakRule {
 }
 
 export interface ExitBreakPlugin {
-  rules: ExitBreakRule[];
+  rules?: ExitBreakRule[];
 }

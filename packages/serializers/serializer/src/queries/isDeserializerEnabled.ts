@@ -5,6 +5,6 @@ export const isDeserializerEnabled = <T = {}>(
   plugins: PlatePlugin<T>[],
   deserializerId: string
 ) =>
-  plugins.every(
-    ({ deserialize }) => !deserialize?.(editor).isDisabled?.(deserializerId)
-  );
+  plugins.every((plugin) => {
+    return !plugin.deserialize?.(editor, plugin).isDisabled?.(deserializerId);
+  });

@@ -5,11 +5,12 @@ import { getListDeleteFragment } from './getListDeleteFragment';
 import { getListInsertBreak } from './getListInsertBreak';
 import { getListInsertFragment } from './getListInsertFragment';
 import { getListNormalizer } from './normalizers';
-import { WithListOptions } from './types';
+import { ListPlugin } from './types';
 
-export const withList = ({
-  validLiChildrenTypes,
-}: WithListOptions = {}): WithOverride => (editor) => {
+export const withList = (): WithOverride<{}, ListPlugin> => (
+  editor,
+  { validLiChildrenTypes }
+) => {
   const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.insertBreak = () => {

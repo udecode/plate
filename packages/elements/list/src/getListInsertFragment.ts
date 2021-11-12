@@ -2,11 +2,11 @@ import { findNode } from '@udecode/plate-common';
 import {
   getPlugin,
   PlateEditor,
-  PlatePluginOptions,
+  PlatePlugin,
   TDescendant,
 } from '@udecode/plate-core';
 import { Node, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
+import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './createListPlugin';
 
 export const getListInsertFragment = (editor: PlateEditor) => {
   const { insertFragment } = editor;
@@ -21,7 +21,7 @@ export const getListInsertFragment = (editor: PlateEditor) => {
   const getFirstAncestorOfType = (
     root: TDescendant,
     entry: NodeEntry,
-    { type }: PlatePluginOptions
+    { type }: PlatePlugin
   ): NodeEntry<TDescendant> => {
     let ancestor: Path = Path.parent(entry[1]);
     while ((Node.get(root, ancestor) as TDescendant).type !== type) {

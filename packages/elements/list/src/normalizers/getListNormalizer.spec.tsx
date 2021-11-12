@@ -4,7 +4,7 @@ import { createEditorPlugins } from '@udecode/plate/src';
 import { getNode } from '@udecode/plate-common';
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createListPlugin } from '../createListPlugins';
+import { createListPlugin } from '../createListPlugin';
 
 jsx;
 

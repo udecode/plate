@@ -3,7 +3,6 @@ import {
   AutoformatPluginOptions,
   CodeBlockElement,
   createPlateComponents,
-  createPlateOptions,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
@@ -23,7 +22,6 @@ import {
   isSelectionAtBlockStart,
   KEYS_HEADING,
   NormalizeTypesPluginOptions,
-  PlatePluginOptions,
   ResetBlockTypePluginOptions,
   SelectOnBackspacePluginOptions,
   SoftBreakPluginOptions,
@@ -41,7 +39,6 @@ const resetBlockTypesCommonRule = {
 };
 
 export const CONFIG: {
-  options: Record<string, PlatePluginOptions>;
   components: Record<string, any>;
   editableProps: EditableProps;
 
@@ -65,7 +62,6 @@ export const CONFIG: {
       padding: '15px',
     },
   },
-  options: createPlateOptions(),
   components: createPlateComponents({
     [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
       styles: {

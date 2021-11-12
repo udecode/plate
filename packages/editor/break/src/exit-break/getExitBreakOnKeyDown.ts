@@ -8,7 +8,6 @@ import {
   queryNode,
 } from '@udecode/plate-common';
 import {
-  getPlugin,
   getPluginType,
   KeyboardHandler,
   TEditor,
@@ -59,16 +58,14 @@ export const exitBreakAtEdges = (
   };
 };
 
-export const getExitBreakOnKeyDown = <T = {}>(): KeyboardHandler<T> => (
-  editor,
-  key
-) => (event) => {
+export const getExitBreakOnKeyDown = (): KeyboardHandler<
+  {},
+  ExitBreakPlugin
+> => (editor, { rules }) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 
-  const { rules } = getPlugin<ExitBreakPlugin, T>(editor, key);
-
-  rules.forEach(
+  rules!.forEach(
     ({
       hotkey,
       query = {},

@@ -1,18 +1,16 @@
 import { getBlockAbove, queryNode } from '@udecode/plate-common';
-import { getPlugin, KeyboardHandler } from '@udecode/plate-core';
+import { KeyboardHandler } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
-import { KEY_SOFT_BREAK } from './defaults';
 import { SoftBreakPlugin } from './types';
 
-export const getSoftBreakOnKeyDown = (): KeyboardHandler => (editor) => (
-  event
-) => {
+export const getSoftBreakOnKeyDown = (): KeyboardHandler<
+  {},
+  SoftBreakPlugin
+> => (editor, { rules }) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 
-  const { rules } = getPlugin<SoftBreakPlugin>(editor, KEY_SOFT_BREAK);
-
-  rules.forEach(({ hotkey, query }) => {
+  rules!.forEach(({ hotkey, query }) => {
     if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
       event.preventDefault();
 

@@ -1,5 +1,5 @@
-import { HeadingPluginOptions } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading';
 
-export interface BasicElementPluginsOptions {
-  heading?: HeadingPluginOptions;
+export interface BasicElementsPlugin {
+  heading?: HeadingPlugin;
 }

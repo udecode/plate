@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';

@@ -3,7 +3,7 @@
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
-import { createListPlugin } from './createListPlugins';
+import { createListPlugin } from './createListPlugin';
 
 jsx;
 

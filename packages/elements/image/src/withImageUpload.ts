@@ -1,7 +1,7 @@
 import { WithOverride } from '@udecode/plate-core';
 import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
-import { WithImageUploadOptions } from './types';
+import { ImagePlugin } from './types';
 
 /**
  * Allows for pasting images from clipboard.
@@ -9,9 +9,10 @@ import { WithImageUploadOptions } from './types';
  * @param options.type
  * @param options.uploadImage
  */
-export const withImageUpload = ({
-  uploadImage,
-}: WithImageUploadOptions = {}): WithOverride => (editor) => {
+export const withImageUpload = (): WithOverride<{}, ImagePlugin> => (
+  editor,
+  { uploadImage }
+) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

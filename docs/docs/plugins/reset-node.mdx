@@ -26,8 +26,8 @@ npm install @udecode/plate-reset-node
 
   const plugins = [
     ...PLUGINS.basicNodes,
-    ...createListPlugins(),
-    ...createTablePlugins(),
+    createListPlugin(),
+    createTablePlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
     createTrailingBlockPlugin(CONFIG.trailingBlock),

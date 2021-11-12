@@ -1,4 +1,4 @@
-import { createListPlugin } from '../../../../../elements/list/src/createListPlugins';
+import { createListPlugin } from '../../../../../elements/list/src/createListPlugin';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createItalicPlugin } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';

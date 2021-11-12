@@ -1,7 +1,7 @@
 import { getAbove } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
-import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 
 /**
  * Searches upward for the root list element

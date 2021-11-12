@@ -1,7 +1,7 @@
 import { getParent } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI } from '../createListPlugin';
 
 /**
  * Is the list nested, i.e. its parent is a list item.

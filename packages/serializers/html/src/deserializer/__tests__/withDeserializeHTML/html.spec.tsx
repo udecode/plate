@@ -2,7 +2,7 @@
 import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugins';
+import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
 

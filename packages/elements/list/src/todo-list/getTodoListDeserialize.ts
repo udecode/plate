@@ -1,7 +1,7 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin, getSlateClass } from '@udecode/plate-core';
-import { CLASS_TODO_LIST_CHECKED } from './constants';
-import { ELEMENT_TODO_LI } from './defaults';
+import { Deserialize, getSlateClass } from '@udecode/plate-core';
+
+export const CLASS_TODO_LIST_CHECKED = 'slate-TodoListElement-rootChecked';
 
 export const getTodoListDeserialize = (): Deserialize => (editor, { type }) => {
   return {
@@ -11,7 +11,7 @@ export const getTodoListDeserialize = (): Deserialize => (editor, { type }) => {
         type,
         checked: el.classList.contains(CLASS_TODO_LIST_CHECKED),
       }),
-      rules: [{ className: getSlateClass(type) }],
+      rules: [{ className: getSlateClass(type!) }],
     }),
   };
 };

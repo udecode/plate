@@ -1,4 +1,4 @@
-import { createBasicMarkPlugins } from '../../../../../marks/basic-marks/src/createBasicMarkPlugins';
+import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
 import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
@@ -6,7 +6,7 @@ import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
-  ...createBasicMarkPlugins(),
+  ...createBasicMarksPlugin(),
   createHighlightPlugin(),
   createKbdPlugin(),
 ];

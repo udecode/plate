@@ -3,6 +3,5 @@
  */
 
 export * from './createAlignPlugin';
-export * from './defaults';
 export * from './types';
 export * from './transforms/index';

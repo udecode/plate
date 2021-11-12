@@ -20,12 +20,12 @@ Let's create a few plugins to cover the plugin properties.
 A plugin to add an element: a paragraph as a block controlled by slate:
 
 ```ts
-export const createParagraphPlugin = (): PlatePlugin => ({
+export const createParagraphPlugin = createPlugin({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
   deserialize: getParagraphDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(ELEMENT_PARAGRAPH),
-});
+  onKeyDown: getToggleElementOnKeyDown(),
+})
 ```
 
 - [key](#key)
@@ -42,13 +42,13 @@ export const createParagraphPlugin = (): PlatePlugin => ({
 A plugin to add an inline and void element: a tag uncontrolled by slate:
 
 ```ts
-export const createTagPlugin = (): PlatePlugin => ({
+export const createTagPlugin = createPlugin({
   key: ELEMENT_TAG,
   isElement: true,
   isInline: true,
   isVoid: true,
   deserialize: getTagDeserialize(),
-});
+})
 ```
 
 - [isInline](#isinline)
@@ -61,12 +61,12 @@ export const createTagPlugin = (): PlatePlugin => ({
 Finally, a plugin to add a leaf: a highlight mark.
 
 ```ts
-export const createHighlightPlugin = (): PlatePlugin => ({
+export const createHighlightPlugin = createPlugin({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
   deserialize: getHighlightDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_HIGHLIGHT),
-});
+  onKeyDown: getToggleMarkOnKeyDown(),
+})
 ```
 
 - [isLeaf](#isleaf)

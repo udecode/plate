@@ -1,6 +1,6 @@
 import { insertNodes } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
-import { ELEMENT_IMAGE } from '../defaults';
+import { ELEMENT_IMAGE } from '../createImagePlugin';
 
 export const insertImage = (editor: PlateEditor, url: string | ArrayBuffer) => {
   const text = { text: '' };

@@ -1,3 +1,9 @@
+import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { createPlugin } from '@udecode/plate-core';
+import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createParagraphPlugin } from '@udecode/plate-paragraph';
+
 /**
  * Enables support for basic elements:
  * - Block quote
@@ -5,21 +11,12 @@
  * - Heading
  * - Paragraph
  */
-import {createBlockquotePlugin} from '@udecode/plate-block-quote';
-import {createCodeBlockPlugins} from '@udecode/plate-code-block';
-import {createPlugin} from '@udecode/plate-core';
-import {createHeadingPlugin, HeadingsPlugin} from '@udecode/plate-heading';
-import {createParagraphPlugin} from '@udecode/plate-paragraph';
-import {BasicElementPluginsOptions} from './types';
-
-export const createBasicElementsPlugin = createPlugin<HeadingsPlugin>({
+export const createBasicElementsPlugin = createPlugin({
   key: 'basicElements',
-  
-}) ({
-  heading,
-}: BasicElementPluginsOptions = {}): PlatePlugin => [
-  createBlockquotePlugin(),
-  ...createCodeBlockPlugins(),
-  ...createHeadingPlugin(heading),
-  createParagraphPlugin(),
-];
+  plugins: [
+    createBlockquotePlugin(),
+    createCodeBlockPlugin(),
+    createHeadingPlugin(),
+    createParagraphPlugin(),
+  ],
+});

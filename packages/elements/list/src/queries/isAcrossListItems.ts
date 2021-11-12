@@ -4,7 +4,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI } from '../createListPlugin';
 
 /**
  * Is selection across blocks with list items

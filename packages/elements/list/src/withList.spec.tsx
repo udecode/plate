@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
-import { createListPlugin } from './createListPlugins';
+import { createListPlugin } from './createListPlugin';
 import { WithListOptions } from './types';
 
 jsx;

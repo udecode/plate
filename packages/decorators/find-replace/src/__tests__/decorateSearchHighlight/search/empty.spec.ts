@@ -1,6 +1,6 @@
 import { Range } from 'slate';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
-import { getSearchHighlightDecorate } from '../../../getSearchHighlightDecorate';
+import { getFindReplaceDecorate } from '../../../getFindReplaceDecorate';
 
 const input = { search: '' };
 
@@ -8,9 +8,6 @@ const output: Range[] = [];
 
 it('should be', () => {
   expect(
-    getSearchHighlightDecorate(input)(createEditorPlugins())([
-      { text: '' },
-      [0, 0],
-    ])
+    getFindReplaceDecorate(input)(createEditorPlugins())([{ text: '' }, [0, 0]])
   ).toEqual(output);
 });

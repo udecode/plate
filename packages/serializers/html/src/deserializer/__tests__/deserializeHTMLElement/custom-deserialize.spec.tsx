@@ -6,7 +6,7 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugins';
+import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';

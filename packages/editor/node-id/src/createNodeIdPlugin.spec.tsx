@@ -6,9 +6,12 @@ import { jsx } from '@udecode/plate-test-utils';
 import { Transforms } from 'slate';
 import { withHistory } from 'slate-history';
 import { HistoryEditor } from 'slate-history/dist/history-editor';
-import { ELEMENT_LI, ELEMENT_UL } from '../../../elements/list/src/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/defaults';
-import { withNodeId } from './createNodeIdPlugin';
+import {
+  ELEMENT_LI,
+  ELEMENT_UL,
+} from '../../../elements/list/src/createListPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/createParagraphPlugin';
+import { withNodeId } from './withNodeId';
 
 jsx;
 

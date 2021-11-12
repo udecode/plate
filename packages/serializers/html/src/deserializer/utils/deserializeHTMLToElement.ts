@@ -27,8 +27,8 @@ export const deserializeHTMLToElement = <T = {}>(
   let slateElement: any;
   let withoutChildren: boolean | undefined;
 
-  plugins.some(({ deserialize: pluginDeserializers }) => {
-    const elementDeserializers = pluginDeserializers?.(editor).element;
+  plugins.some((plugin) => {
+    const elementDeserializers = plugin.deserialize?.(editor, plugin).element;
     if (!elementDeserializers) return;
 
     return elementDeserializers.some((deserializer) => {

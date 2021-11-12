@@ -40,7 +40,10 @@ export interface OverridePropsReturnType {
  * If `classNames[value]` is defined, override `className` with it.
  * If `styleKey` is defined, override `style` with `[styleKey]: value`.
  */
-export const getOverrideProps: OverrideProps = (editor, { overrideProps }) => (
+export const getOverrideProps: OverrideProps = (
+  editor,
+  { key, overrideProps }
+) => (
   options: GetOverridePropsOptions
 ): OverridePropsReturnType | undefined => {
   const { element, text, className, style } = options;
@@ -50,7 +53,7 @@ export const getOverrideProps: OverrideProps = (editor, { overrideProps }) => (
 
   if (!overrideProps) return;
   const {
-    nodeKey,
+    nodeKey = key,
     styleKey = nodeKey as any,
     validTypes,
     classNames,
@@ -59,8 +62,6 @@ export const getOverrideProps: OverrideProps = (editor, { overrideProps }) => (
     transformStyle,
     validNodeValues,
   } = overrideProps;
-
-  if (!nodeKey) return;
 
   if (validTypes && node.type && !validTypes.includes(node.type)) {
     return;

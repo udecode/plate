@@ -19,7 +19,7 @@ import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 import { ColorType } from '../ColorPicker/ColorType';
-import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './defaults';
+import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
 
 type ColorPickerToolbarDropdownProps = {
   pluginKey?: string;

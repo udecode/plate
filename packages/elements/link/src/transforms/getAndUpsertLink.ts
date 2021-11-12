@@ -1,12 +1,12 @@
 import { getAbove, isCollapsed, unwrapNodes } from '@udecode/plate-common';
 import { getPluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_LINK } from '../defaults';
-import { WithLinkOptions } from '../types';
+import { ELEMENT_LINK } from '../createLinkPlugin';
+import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
 export const getAndUpsertLink = async <T = {}>(
   editor: PlateEditor<T>,
-  getLinkUrl?: WithLinkOptions['getLinkUrl']
+  getLinkUrl?: LinkPlugin['getLinkUrl']
 ) => {
   const type = getPluginType(editor, ELEMENT_LINK);
   let prevUrl = '';

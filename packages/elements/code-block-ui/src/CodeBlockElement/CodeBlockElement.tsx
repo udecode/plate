@@ -1,10 +1,10 @@
 import React from 'react';
 import {
   CodeBlockNodeData,
-  getCodeBlockPluginOptions,
+  ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
 import { setNodes } from '@udecode/plate-common';
-import { TElement } from '@udecode/plate-core';
+import { getPlugin, TElement } from '@udecode/plate-core';
 import {
   getRootProps,
   StyledElementProps,
@@ -20,7 +20,7 @@ export const CodeBlockElement = (props: StyledElementProps) => {
 
   const { lang } = element;
   const { root } = getCodeBlockElementStyles(props);
-  const code_block = getCodeBlockPluginOptions(editor);
+  const code_block = getPlugin(editor, ELEMENT_CODE_BLOCK);
   const codeClassName = lang ? `${lang} language-${lang}` : '';
 
   return (

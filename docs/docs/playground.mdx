@@ -19,8 +19,6 @@ See [Installation](/docs/installation)
   });
   components = withStyledPlaceHolders(components);
 
-  const options = createPlateOptions();
-
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
@@ -31,16 +29,16 @@ See [Installation](/docs/installation)
         createParagraphPlugin(),
         createBlockquotePlugin(),
         createTodoListPlugin(),
-        ...createHeadingPlugin(),
+        createHeadingPlugin(),
         createImagePlugin(),
         createHorizontalRulePlugin(),
         createLineHeightPlugin(CONFIG.lineHeight),
         createLinkPlugin(),
-        ...createListPlugins(),
-        ...createTablePlugins(),
+        createListPlugin(),
+        createTablePlugin(),
         createMediaEmbedPlugin(),
         createExcalidrawPlugin(),
-        ...createCodeBlockPlugins(),
+        createCodeBlockPlugin(),
         createAlignPlugin(CONFIG.align),
         createBoldPlugin(),
         createCodePlugin(),
@@ -66,7 +64,7 @@ See [Installation](/docs/installation)
         createTrailingBlockPlugin(CONFIG.trailingBlock),
         createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
         createComboboxPlugin(),
-        ...createMentionPlugins(),
+        createMentionPlugin(),
         searchHighlightPlugin,
       ];
 

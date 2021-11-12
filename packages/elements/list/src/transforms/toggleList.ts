@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Range } from 'slate';
-import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
 

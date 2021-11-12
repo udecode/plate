@@ -1,6 +1,5 @@
 import { findNode, getElementDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlugin } from '@udecode/plate-core';
-import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from './defaults';
+import { Deserialize } from '@udecode/plate-core';
 
 export const getUlDeserialize = (): Deserialize => (editor, { type }) => {
   return {
@@ -27,7 +26,7 @@ export const getLiDeserialize = (): Deserialize => (editor, { type }) => {
       rules: [{ nodeNames: 'LI' }],
     }),
     preInsert: () => {
-      const liEntry = findNode(editor, { match: { type: li.type } });
+      const liEntry = findNode(editor, { match: { type } });
 
       if (liEntry) {
         return true;

@@ -2,8 +2,11 @@ import { WithOverride } from '@udecode/plate-core';
 import { getCodeBlockInsertFragment } from './getCodeBlockInsertFragment';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { insertCodeLine } from './transforms';
+import { CodeBlockPlugin } from './types';
 
-export const withCodeBlock = (): WithOverride => (editor) => {
+export const withCodeBlock = (): WithOverride<{}, CodeBlockPlugin> => (
+  editor
+) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {

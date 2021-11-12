@@ -15,7 +15,7 @@ export const getResetNodeOnKeyDown = (): KeyboardHandler<
   let reset;
 
   if (editor.selection && isCollapsed(editor.selection)) {
-    rules.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
+    rules!.forEach(({ types, defaultType, hotkey, predicate, onReset }) => {
       if (hotkey && isHotkey(hotkey, event as any)) {
         if (predicate(editor) && someNode(editor, { match: { type: types } })) {
           event.preventDefault?.();

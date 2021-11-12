@@ -6,7 +6,7 @@ import { PlateEditor } from '@udecode/plate-core';
 import { createDeserializeHTMLPlugin } from '@udecode/plate-html-serializer';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createCodeBlockPlugin } from './createCodeBlockPlugins';
+import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 
 jsx;
 

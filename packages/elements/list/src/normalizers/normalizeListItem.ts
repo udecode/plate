@@ -12,10 +12,10 @@ import {
   TElement,
 } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
-import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 import { moveListItemUp } from '../transforms';
-import { ListNormalizerOptions } from '../types';
+import { ListPlugin } from '../types';
 
 /**
  * Recursively get all the:
@@ -56,7 +56,7 @@ export const normalizeListItem = (
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: NodeEntry<TElement> } & ListNormalizerOptions
+  }: { listItem: NodeEntry<TElement> } & ListPlugin
 ) => {
   let changed = false;
 

@@ -2,8 +2,8 @@
 
 import { isDescendant } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LI } from '../../../../../elements/list/src/defaults';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { ELEMENT_LI } from '../../../../../elements/list/src/createListPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { mergeDeepToNodes } from '../../../transforms/mergeDeepToNodes';
 
 jsx;

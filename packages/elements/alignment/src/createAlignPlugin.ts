@@ -1,6 +1,7 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import { createPlugin, getPluginType } from '@udecode/plate-core';
-import { DEFAULT_ALIGNMENT, DEFAULT_ALIGNMENTS, KEY_ALIGN } from './defaults';
+
+export const KEY_ALIGN = 'align';
 
 /**
  * Enables support for text alignment, useful to align your content
@@ -10,12 +11,11 @@ export const createAlignPlugin = createPlugin({
   key: KEY_ALIGN,
   overrideProps: {
     nodeKey: KEY_ALIGN,
-    defaultNodeValue: DEFAULT_ALIGNMENT,
+    defaultNodeValue: 'left',
     styleKey: 'textAlign',
-    validNodeValues: DEFAULT_ALIGNMENTS,
-    validTypes: [],
+    validNodeValues: ['left', 'center', 'right', 'justify'],
   },
-  withEditor: (editor) => ({
+  then: (editor) => ({
     overrideProps: {
       validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
     },
