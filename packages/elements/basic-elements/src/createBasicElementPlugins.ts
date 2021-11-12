@@ -5,18 +5,21 @@
  * - Heading
  * - Paragraph
  */
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugins } from '@udecode/plate-code-block';
-import { PlatePlugin } from '@udecode/plate-core';
-import { createHeadingPlugins } from '@udecode/plate-heading';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { BasicElementPluginsOptions } from './types';
+import {createBlockquotePlugin} from '@udecode/plate-block-quote';
+import {createCodeBlockPlugins} from '@udecode/plate-code-block';
+import {createPlugin} from '@udecode/plate-core';
+import {createHeadingPlugin, HeadingsPlugin} from '@udecode/plate-heading';
+import {createParagraphPlugin} from '@udecode/plate-paragraph';
+import {BasicElementPluginsOptions} from './types';
 
-export const createBasicElementPlugins = ({
+export const createBasicElementsPlugin = createPlugin<HeadingsPlugin>({
+  key: 'basicElements',
+  
+}) ({
   heading,
-}: BasicElementPluginsOptions = {}): PlatePlugin[] => [
+}: BasicElementPluginsOptions = {}): PlatePlugin => [
   createBlockquotePlugin(),
   ...createCodeBlockPlugins(),
-  ...createHeadingPlugins(heading),
+  ...createHeadingPlugin(heading),
   createParagraphPlugin(),
 ];

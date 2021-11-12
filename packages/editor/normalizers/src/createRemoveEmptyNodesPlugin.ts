@@ -1,18 +1,19 @@
-import {
-  getPlatePluginWithOverrides,
-  isElement,
-  WithOverride,
-} from '@udecode/plate-core';
+import { createPlugin, isElement, WithOverride } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Node, NodeEntry, Transforms } from 'slate';
+
+export interface RemoveEmptyNodesPlugin {
+  types?: string | string[];
+}
 
 /**
  * Remove nodes with empty text.
  */
-export const withRemoveEmptyNodes = (options: {
-  type: string | string[];
-}): WithOverride => (editor) => {
-  const types = castArray(options.type);
+export const withRemoveEmptyNodes = (): WithOverride<
+  {},
+  RemoveEmptyNodesPlugin
+> => (editor, { types: _types }) => {
+  const types = castArray(_types);
 
   const { normalizeNode } = editor;
 
@@ -36,6 +37,9 @@ export const withRemoveEmptyNodes = (options: {
 /**
  * @see {@link withRemoveEmptyNodes}
  */
-export const createRemoveEmptyNodesPlugin = getPlatePluginWithOverrides(
-  withRemoveEmptyNodes
+export const createRemoveEmptyNodesPlugin = createPlugin<RemoveEmptyNodesPlugin>(
+  {
+    key: 'removeEmptyNodes',
+    withOverrides: withRemoveEmptyNodes(),
+  }
 );

@@ -1,13 +1,14 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_UNDERLINE } from './defaults';
 
-export const getUnderlineDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_UNDERLINE);
-
+export const getUnderlineDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['U'] },
         {
@@ -16,7 +17,6 @@ export const getUnderlineDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

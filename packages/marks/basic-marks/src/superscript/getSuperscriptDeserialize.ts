@@ -1,13 +1,14 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_SUPERSCRIPT } from './defaults';
 
-export const getSuperscriptDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_SUPERSCRIPT);
-
+export const getSuperscriptDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['SUP'] },
         {
@@ -16,7 +17,6 @@ export const getSuperscriptDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

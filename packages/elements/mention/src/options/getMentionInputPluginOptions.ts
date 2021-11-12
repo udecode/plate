@@ -1,5 +1,5 @@
 import {
-  getPlatePluginOptions,
+  getPlugin,
   PlateEditor,
   PlatePluginOptions,
 } from '@udecode/plate-core';
@@ -9,4 +9,4 @@ import { MentionPluginOptions } from '../types';
 export const getMentionInputPluginOptions = <T = {}>(
   editor: PlateEditor<T>
 ): PlatePluginOptions<MentionPluginOptions> =>
-  getPlatePluginOptions<MentionPluginOptions>(editor, ELEMENT_MENTION_INPUT);
+  getPlugin<MentionPluginOptions>(editor, ELEMENT_MENTION_INPUT);

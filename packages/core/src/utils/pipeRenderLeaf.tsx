@@ -1,14 +1,12 @@
 import React from 'react';
-import castArray from 'lodash/castArray';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { RenderLeaf } from '../types/PlatePlugin/RenderLeaf';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
-import { TRenderLeafProps } from '../types/TRenderLeafProps';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { RenderLeaf } from '../types/plugins/PlatePlugin/RenderLeaf';
 import { getRenderLeaf } from './getRenderLeaf';
-import { pipeOverrideProps } from './pipeOverrideProps';
+import { injectOverrideProps } from './injectOverrideProps';
 
 /**
  * @see {@link RenderLeaf}
@@ -24,26 +22,18 @@ export const pipeRenderLeaf = (
 
   plugins.forEach((plugin) => {
     if (plugin.isLeaf && plugin.key) {
-      renderLeafs.push(getRenderLeaf(editor, plugin.key));
+      renderLeafs.push(getRenderLeaf(editor, plugin));
     }
   });
 
-  const propsOverriders = plugins.flatMap((plugin) =>
-    castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
-  );
-
-  return (renderLeafProps) => {
-    const props: PlateRenderLeafProps = {
-      ...pipeOverrideProps(
-        renderLeafProps as TRenderLeafProps,
-        propsOverriders
-      ),
-      editor,
+  return (_props) => {
+    const props = injectOverrideProps<PlateRenderLeafProps>(editor, {
+      props: _props,
       plugins,
-    };
+    });
 
     renderLeafs.forEach((renderLeaf) => {
-      const newChildren = renderLeaf(props);
+      const newChildren = renderLeaf(props as any);
       if (newChildren !== undefined) {
         props.children = newChildren;
       }

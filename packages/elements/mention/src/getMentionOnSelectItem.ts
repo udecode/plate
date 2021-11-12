@@ -6,7 +6,7 @@ import {
   TComboboxItem,
 } from '@udecode/plate-combobox';
 import { getBlockAbove, insertNodes } from '@udecode/plate-common';
-import { getPlatePluginOptions, PlatePluginKey } from '@udecode/plate-core';
+import { getPlugin, PlatePluginKey } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './defaults';
 import { MentionNode, MentionNodeData, MentionPluginOptions } from './types';
@@ -21,11 +21,9 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
   const targetRange = comboboxStore.get.targetRange();
   if (!targetRange) return;
 
-  const {
-    type,
-    insertSpaceAfterMention,
-    createMentionNode,
-  } = getPlatePluginOptions<Required<MentionPluginOptions>>(editor, key);
+  const { type, insertSpaceAfterMention, createMentionNode } = getPlugin<
+    Required<MentionPluginOptions>
+  >(editor, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];
   const isBlockEnd =

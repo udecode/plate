@@ -4,8 +4,8 @@ import { PlateEditor } from '../types/PlateEditor';
 import {
   DOMHandlers,
   HandlerReturnType,
-} from '../types/PlatePlugin/DOMHandlers';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+} from '../types/plugins/PlatePlugin/DOMHandlers';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 
 /**
  * Check if an event is overrided by a handler.
@@ -48,7 +48,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
   if (plugins) {
     pluginsHandlers = plugins.flatMap(
-      (plugin) => plugin[handlerKey]?.(editor) ?? []
+      (plugin) => plugin[handlerKey]?.(editor, plugin) ?? []
     );
   }
 

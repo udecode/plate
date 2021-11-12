@@ -4,7 +4,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
-import { createDeserializeHTMLPlugin } from '../../createDeserializeHTMLPlugin';
+import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
 
 jsx;
 
@@ -34,7 +34,7 @@ const output = (
 
 it('should do nothing', () => {
   const plugins: PlatePlugin[] = [createParagraphPlugin(), createLinkPlugin()];
-  plugins.push(createDeserializeHTMLPlugin({ plugins }));
+  plugins.push(createDeserializeHtmlPlugin({ plugins }));
 
   const editor = createEditorPlugins({
     editor: input,

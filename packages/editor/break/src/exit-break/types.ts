@@ -1,7 +1,6 @@
 import { QueryNodeOptions } from '@udecode/plate-common';
-import { PlatePluginOptions } from '@udecode/plate-core';
 
-export interface ExitBreakRule extends Pick<PlatePluginOptions, 'defaultType'> {
+export interface ExitBreakRule {
   /**
    * Hotkey to trigger exit break.
    */
@@ -31,10 +30,10 @@ export interface ExitBreakRule extends Pick<PlatePluginOptions, 'defaultType'> {
    * Exit before the selected block if true.
    */
   before?: boolean;
+
+  defaultType?: string;
 }
 
-export interface ExitBreakOnKeyDownOptions {
-  rules?: ExitBreakRule[];
+export interface ExitBreakPlugin {
+  rules: ExitBreakRule[];
 }
-
-export interface ExitBreakPluginOptions extends ExitBreakOnKeyDownOptions {}

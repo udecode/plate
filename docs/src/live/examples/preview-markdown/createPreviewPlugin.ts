@@ -1,6 +1,6 @@
-import { PlatePlugin } from '@udecode/plate-core';
+import { createPlugin } from '@udecode/plate-core';
 import { getPreviewDecorate } from './getPreviewDecorate';
 
-export const createPreviewPlugin = (): PlatePlugin => ({
+export const createPreviewPlugin = createPlugin({
   decorate: getPreviewDecorate(),
 });

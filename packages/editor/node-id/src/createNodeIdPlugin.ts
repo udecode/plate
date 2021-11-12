@@ -5,31 +5,33 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginWithOverrides,
+  createPlugin,
+  getPlugin,
   TNode,
   WithOverride,
+  WithRequired,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeEntry } from 'slate';
 
-export interface WithNodeIdProps extends QueryNodeOptions {
+export interface NodeIdPlugin extends WithRequired<QueryNodeOptions, 'filter'> {
   /**
    * Node key to store the id.
    * @default 'id'
    */
-  idKey?: string;
+  idKey: string;
 
   /**
    * ID factory, e.g. `uuid`
    * @default () => Date.now()
    */
-  idCreator?: Function;
+  idCreator: Function;
 
   /**
    * Filter `Text` nodes.
    * @default true
    */
-  filterText?: boolean;
+  filterText: boolean;
 
   /**
    * Reuse ids on undo/redo and copy/pasting if not existing in the document.
@@ -39,21 +41,23 @@ export interface WithNodeIdProps extends QueryNodeOptions {
   reuseId?: boolean;
 }
 
+export const KEY_NODE_ID = 'nodeId';
+
 /**
  * Enables support for inserting nodes with an id key.
  */
-export const withNodeId = ({
-  idKey = 'id',
-  idCreator = () => Date.now(),
-  filterText = true,
-  filter = () => true,
-  reuseId,
-  allow,
-  exclude,
-}: WithNodeIdProps = {}): WithOverride => (e) => {
-  const editor = e;
-
+export const withNodeId = (): WithOverride => (editor) => {
   const { apply } = editor;
+
+  const {
+    idKey,
+    idCreator,
+    filterText,
+    filter,
+    reuseId,
+    allow,
+    exclude,
+  } = getPlugin<NodeIdPlugin>(editor, KEY_NODE_ID);
 
   const idPropsCreator = () => ({ [idKey]: idCreator() });
 
@@ -136,4 +140,11 @@ export const withNodeId = ({
 /**
  * @see {@link withNodeId}
  */
-export const createNodeIdPlugin = getPlatePluginWithOverrides(withNodeId);
+export const createNodeIdPlugin = createPlugin<NodeIdPlugin>({
+  key: KEY_NODE_ID,
+  withOverrides: withNodeId(),
+  idKey: 'id',
+  idCreator: () => Date.now(),
+  filterText: true,
+  filter: () => true,
+});

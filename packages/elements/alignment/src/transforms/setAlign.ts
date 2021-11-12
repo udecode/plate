@@ -4,7 +4,7 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
+import { getPlugin, PlateEditor } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../defaults';
 import { Alignment, AlignPluginOptions } from '../types';
@@ -14,7 +14,7 @@ export const setAlign = (
   { value }: { value: Alignment },
   options?: SetNodesOptions
 ) => {
-  const { validTypes, defaultNodeValue, nodeKey } = getPlatePluginOptions<
+  const { validTypes, defaultNodeValue, nodeKey } = getPlugin<
     Required<AlignPluginOptions>
   >(editor, KEY_ALIGN);
 

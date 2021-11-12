@@ -31,7 +31,7 @@ See [Installation](/docs/installation)
         createParagraphPlugin(),
         createBlockquotePlugin(),
         createTodoListPlugin(),
-        ...createHeadingPlugins(),
+        ...createHeadingPlugin(),
         createImagePlugin(),
         createHorizontalRulePlugin(),
         createLineHeightPlugin(CONFIG.lineHeight),
@@ -72,8 +72,8 @@ See [Installation](/docs/installation)
 
       plugins.push(
         ...[
-          createDeserializeMDPlugin({ plugins }),
-          createDeserializeCSVPlugin({ plugins }),
+          createDeserializeMdPlugin({ plugins }),
+          createDeserializeCsvPlugin({ plugins }),
           createDeserializeHTMLPlugin({ plugins }),
           createDeserializeAstPlugin({ plugins }),
         ]

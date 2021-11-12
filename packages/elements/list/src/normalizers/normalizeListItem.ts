@@ -6,7 +6,7 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
@@ -61,9 +61,9 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = [
-    getPlatePluginType(editor, ELEMENT_UL),
-    getPlatePluginType(editor, ELEMENT_OL),
-    getPlatePluginType(editor, ELEMENT_LIC),
+    getPluginType(editor, ELEMENT_UL),
+    getPluginType(editor, ELEMENT_OL),
+    getPluginType(editor, ELEMENT_LIC),
     ...validLiChildrenTypes,
   ];
 
@@ -81,7 +81,7 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
-    insertEmptyElement(editor, getPlatePluginType(editor, ELEMENT_LIC), {
+    insertEmptyElement(editor, getPluginType(editor, ELEMENT_LIC), {
       at: liPath.concat([0]),
     });
     return true;
@@ -91,7 +91,7 @@ export const normalizeListItem = (
   if (
     Editor.isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode as any, {
-      type: getPlatePluginType(editor, ELEMENT_LIC),
+      type: getPluginType(editor, ELEMENT_LIC),
     })
   ) {
     if (
@@ -120,7 +120,7 @@ export const normalizeListItem = (
     setNodes<TElement>(
       editor,
       {
-        type: getPlatePluginType(editor, ELEMENT_LIC),
+        type: getPluginType(editor, ELEMENT_LIC),
       },
       {
         at: firstLiChildPath,

@@ -1,5 +1,5 @@
-import { PlatePlugin } from './PlatePlugin/PlatePlugin';
 import { NodeProps } from './PlatePluginOptions/GetNodeProps';
+import { PlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
 import { AnyObject } from './utility/AnyObject';
 import { PlateEditor } from './PlateEditor';
 

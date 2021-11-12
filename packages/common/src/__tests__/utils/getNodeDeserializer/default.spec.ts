@@ -1,5 +1,5 @@
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
-import { getNodeDeserializer } from '../../../utils/getNodeDeserializer';
+import { getNodeDeserializer } from '../../../utils/deserializer/getNodeDeserializer';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });
 

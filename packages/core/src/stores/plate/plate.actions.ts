@@ -54,7 +54,7 @@ export const usePlateActions = <T = {}>(
       resetEditor: (id = stateId) => {
         const state = !!id && get()[id];
         if (!state) return;
-        const { editor, plugins } = state;
+        const { plugins } = state;
 
         setEditor(
           pipe(
@@ -62,7 +62,6 @@ export const usePlateActions = <T = {}>(
             withPlate({
               id,
               plugins,
-              options: editor?.options,
             })
           ),
           id

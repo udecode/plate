@@ -1,6 +1,6 @@
 import { comboboxStore } from '@udecode/plate-combobox';
 import { insertNodes } from '@udecode/plate-common';
-import { getPlatePluginOptions, WithOverride } from '@udecode/plate-core';
+import { getPlugin, WithOverride } from '@udecode/plate-core';
 import { defaults } from 'lodash';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
@@ -19,7 +19,7 @@ export const withMention = ({
   ...options
 }: MentionPluginOptions = {}): WithOverride => (editor) => {
   // TODO: extend plate-core to register options
-  editor.options[key] = defaults(options, {
+  editor.pluginsByKey[key] = defaults(options, {
     key,
     type: key,
     id: key,
@@ -35,10 +35,7 @@ export const withMentionInput = ({
 }: MentionPluginOptions = {}): WithOverride => (editor) => {
   const { apply, insertText, deleteBackward } = editor;
 
-  const { trigger, id } = getPlatePluginOptions<MentionPluginOptions>(
-    editor,
-    key
-  );
+  const { trigger, id } = getPlugin<MentionPluginOptions>(editor, key);
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);

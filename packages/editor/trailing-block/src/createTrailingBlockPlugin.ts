@@ -6,38 +6,38 @@ import {
   QueryNodeOptions,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
-  getPlatePluginWithOverrides,
-  PlateEditor,
+  createPlugin,
+  getPlugin,
+  getPluginType,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 
-export interface TrailingBlockPluginOptions extends QueryNodeOptions {
-  /**
-   * Type of the trailing block
-   */
-  type?: string;
+export interface TrailingBlockPlugin extends QueryNodeOptions {
   /**
    * Level where the trailing node should be, the first level being 0.
    */
-  level?: number;
+  level: number;
+
+  /**
+   * Type of the trailing block
+   */
+  type: string;
 }
+
+export const KEY_TRAILING_BLOCK = 'trailingBlock';
 
 /**
  * Add a trailing block when the last node type is not `type` and when the editor has .
  */
-export const withTrailingBlock = ({
-  type: _type,
-  level = 0,
-  ...query
-}: TrailingBlockPluginOptions = {}): WithOverride => (editor) => {
+export const withTrailingBlock = (): WithOverride => (editor) => {
   const { normalizeNode } = editor;
 
-  const type =
-    _type ??
-    getPlatePluginType((editor as any) as PlateEditor, ELEMENT_DEFAULT);
+  const { type, level, ...query } = getPlugin<TrailingBlockPlugin>(
+    editor,
+    KEY_TRAILING_BLOCK
+  );
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
@@ -72,6 +72,11 @@ export const withTrailingBlock = ({
 /**
  * @see {@link withTrailingNode}
  */
-export const createTrailingBlockPlugin = getPlatePluginWithOverrides(
-  withTrailingBlock
-);
+export const createTrailingBlockPlugin = createPlugin<TrailingBlockPlugin>({
+  key: KEY_TRAILING_BLOCK,
+  withOverrides: withTrailingBlock(),
+  level: 0,
+  withEditor: (editor) => ({
+    type: getPluginType(editor, ELEMENT_DEFAULT),
+  }),
+});

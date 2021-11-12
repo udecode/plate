@@ -1,16 +1,17 @@
 import { isCollapsed, setNodes, someNode } from '@udecode/plate-common';
 import { KeyboardHandler, TElement } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
-import { ResetBlockTypePluginOptions } from './types';
+import { ResetNodePlugin } from './types';
 
 export const SIMULATE_BACKSPACE: any = {
   key: '',
   which: 8,
 };
 
-export const getResetNodeOnKeyDown = ({
-  rules,
-}: ResetBlockTypePluginOptions): KeyboardHandler => (editor) => (event) => {
+export const getResetNodeOnKeyDown = (): KeyboardHandler<
+  {},
+  ResetNodePlugin
+> => (editor, { rules }) => (event) => {
   let reset;
 
   if (editor.selection && isCollapsed(editor.selection)) {

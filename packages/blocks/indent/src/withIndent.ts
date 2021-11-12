@@ -1,44 +1,17 @@
-import { ELEMENT_DEFAULT, setNodes } from '@udecode/plate-common';
-import {
-  getPlatePluginOptions,
-  getPlatePluginType,
-  TElement,
-  WithOverride,
-} from '@udecode/plate-core';
-import { defaults } from 'lodash';
+import { setNodes } from '@udecode/plate-common';
+import { getPlugin, TElement, WithOverride } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { KEY_INDENT } from './defaults';
-import { IndentPluginOptions } from './types';
+import { IndentPlugin } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (options?: IndentPluginOptions): WithOverride => (
-  editor
-) => {
+export const withIndent = (): WithOverride => (editor) => {
   const { normalizeNode } = editor;
 
-  // TODO: extend plate-core to register options
-  editor.options[KEY_INDENT] = defaults(options, {
-    nodeKey: KEY_INDENT,
-    validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-    offset: 24,
-    unit: 'px',
-    styleKey: 'marginLeft',
-    transformNodeValue: (e, { nodeValue }) => {
-      const { offset, unit } = getPlatePluginOptions<
-        Required<IndentPluginOptions>
-      >(e, KEY_INDENT);
-
-      return nodeValue * offset + unit;
-    },
-  } as IndentPluginOptions);
-
-  const { validTypes, indentMax } = getPlatePluginOptions<IndentPluginOptions>(
-    editor,
-    KEY_INDENT
-  );
+  const { validTypes, indentMax } = getPlugin<IndentPlugin>(editor, KEY_INDENT);
 
   editor.normalizeNode = ([node, path]) => {
     const element = node as TElement;

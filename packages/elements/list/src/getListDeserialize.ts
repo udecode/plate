@@ -1,39 +1,30 @@
 import { findNode, getElementDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from './defaults';
 
-export const getUlDeserialize = (): Deserialize => (editor) => {
-  const ul = getPlatePluginOptions(editor, ELEMENT_UL);
-
+export const getUlDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getElementDeserializer({
-      type: ul.type,
+      type,
       rules: [{ nodeNames: 'UL' }],
-      ...ul.deserialize,
     }),
   };
 };
 
-export const getOlDeserialize = (): Deserialize => (editor) => {
-  const ol = getPlatePluginOptions(editor, ELEMENT_OL);
-
+export const getOlDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getElementDeserializer({
-      type: ol.type,
+      type,
       rules: [{ nodeNames: 'OL' }],
-      ...ol.deserialize,
     }),
   };
 };
 
-export const getLiDeserialize = (): Deserialize => (editor) => {
-  const li = getPlatePluginOptions(editor, ELEMENT_LI);
-
+export const getLiDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getElementDeserializer({
-      type: li.type,
+      type,
       rules: [{ nodeNames: 'LI' }],
-      ...li.deserialize,
     }),
     preInsert: () => {
       const liEntry = findNode(editor, { match: { type: li.type } });
@@ -45,14 +36,11 @@ export const getLiDeserialize = (): Deserialize => (editor) => {
   };
 };
 
-export const getLicDeserialize = (): Deserialize => (editor) => {
-  const lic = getPlatePluginOptions(editor, ELEMENT_LIC);
-
+export const getLicDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getElementDeserializer({
-      type: lic.type,
+      type,
       rules: [{ nodeNames: 'LIC' }],
-      ...lic.deserialize,
     }),
   };
 };

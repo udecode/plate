@@ -4,22 +4,29 @@ import {
   QueryNodeOptions,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginWithOverrides,
+  createPlugin,
+  getPlugin,
   TNode,
   WithOverride,
 } from '@udecode/plate-core';
 import Slate, { Editor, Transforms } from 'slate';
 
-export type SelectOnBackspacePluginOptions = QueryNodeOptions;
-export type WithSelectOnBackspaceOptions = SelectOnBackspacePluginOptions;
+export type SelectOnBackspacePlugin = {
+  query?: QueryNodeOptions;
+};
+
+export const KEY_SELECT_ON_BACKSPACE = 'selectOnBackspace';
 
 /**
  * Set a list of element types to select on backspace
  */
-export const withSelectOnBackspace = (
-  query: WithSelectOnBackspaceOptions
-): WithOverride => (editor) => {
+export const withSelectOnBackspace = (): WithOverride => (editor) => {
   const { deleteBackward } = editor;
+
+  const { query } = getPlugin<SelectOnBackspacePlugin>(
+    editor,
+    KEY_SELECT_ON_BACKSPACE
+  );
 
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {
     const { selection } = editor;
@@ -53,6 +60,9 @@ export const withSelectOnBackspace = (
 /**
  * @see {@link withSelectOnBackspace}
  */
-export const createSelectOnBackspacePlugin = getPlatePluginWithOverrides(
-  withSelectOnBackspace
+export const createSelectOnBackspacePlugin = createPlugin<SelectOnBackspacePlugin>(
+  {
+    key: KEY_SELECT_ON_BACKSPACE,
+    withOverrides: withSelectOnBackspace(),
+  }
 );

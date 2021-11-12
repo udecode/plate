@@ -1,7 +1,8 @@
-import { PlatePluginOptions, TEditor } from '@udecode/plate-core';
+import { HotkeyPlugin, PlateEditor } from '@udecode/plate-core';
 
-export interface ResetBlockTypePluginRule
-  extends Pick<PlatePluginOptions, 'defaultType' | 'hotkey'> {
+export interface ResetNodePluginRule extends HotkeyPlugin {
+  defaultType?: string;
+
   /**
    * Node types where the rule applies.
    */
@@ -10,14 +11,14 @@ export interface ResetBlockTypePluginRule
   /**
    * Additional condition to the rule.
    */
-  predicate: (editor: TEditor) => boolean;
+  predicate: (editor: PlateEditor) => boolean;
 
   /**
    * Callback called when resetting.
    */
-  onReset?: (editor: TEditor) => void;
+  onReset?: (editor: PlateEditor) => void;
 }
 
-export interface ResetBlockTypePluginOptions {
-  rules: ResetBlockTypePluginRule[];
+export interface ResetNodePlugin {
+  rules: ResetNodePluginRule[];
 }

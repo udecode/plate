@@ -1,5 +1,5 @@
 import {
-  getPlatePluginType,
+  getPluginType,
   isElement,
   PlateEditor,
   TElement,
@@ -107,7 +107,7 @@ export const normalizeDescendantsToDocumentFragment = <T = {}>(
   { descendants }: { descendants: Descendant[] }
 ) => {
   const isInline = isInlineNode(editor);
-  const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock);

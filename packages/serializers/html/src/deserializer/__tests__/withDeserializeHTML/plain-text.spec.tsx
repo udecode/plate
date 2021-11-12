@@ -2,13 +2,8 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
-import { createPlateOptions } from '../../../../../../plate/src/utils/createPlateOptions';
-import {
-  createDeserializeHTMLPlugin,
-  withDeserializeHTML,
-} from '../../createDeserializeHTMLPlugin';
+import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
 
 jsx;
 
@@ -39,7 +34,7 @@ it('should do nothing', () => {
 
   const editor = createEditorPlugins({
     editor: input,
-    plugins: [createDeserializeHTMLPlugin()],
+    plugins: [createDeserializeHtmlPlugin()],
   });
 
   editor.insertData(data as any);

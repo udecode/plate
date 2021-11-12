@@ -1,6 +1,6 @@
 import { isCollapsed } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
   isElement,
   TElement,
   WithOverride,
@@ -12,8 +12,8 @@ export const withTable = (): WithOverride => (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&
-      (node.type === getPlatePluginType(editor, ELEMENT_TD) ||
-        node.type === getPlatePluginType(editor, ELEMENT_TH))
+      (node.type === getPluginType(editor, ELEMENT_TD) ||
+        node.type === getPluginType(editor, ELEMENT_TH))
     );
   };
 

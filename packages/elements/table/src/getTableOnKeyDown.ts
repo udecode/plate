@@ -1,9 +1,5 @@
 import { getAbove } from '@udecode/plate-common';
-import {
-  getPlatePluginOptions,
-  KeyboardHandler,
-  TElement,
-} from '@udecode/plate-core';
+import { getPlugin, KeyboardHandler, TElement } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';
@@ -50,7 +46,7 @@ export const getTableOnKeyDown = <T = {}>(): KeyboardHandler<T> => (editor) => (
 
   // FIXME: would prefer this as mod+a, but doesn't work
   if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
-    const options = getPlatePluginOptions(editor, ELEMENT_TABLE);
+    const options = getPlugin(editor, ELEMENT_TABLE);
 
     const res = getAbove<TElement>(editor, { match: { type: options.type } });
     if (!res) return;

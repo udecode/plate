@@ -5,7 +5,7 @@ import {
   isBlockTextEmptyAfterSelection,
   wrapNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Path, Range, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 
@@ -14,8 +14,8 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
  * TODO: test
  */
 export const insertListItem = (editor: PlateEditor): boolean => {
-  const liType = getPlatePluginType(editor, ELEMENT_LI);
-  const licType = getPlatePluginType(editor, ELEMENT_LIC);
+  const liType = getPluginType(editor, ELEMENT_LI);
+  const licType = getPluginType(editor, ELEMENT_LIC);
 
   if (!editor.selection) {
     return false;

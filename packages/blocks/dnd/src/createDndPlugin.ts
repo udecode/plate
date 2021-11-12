@@ -1,5 +1,8 @@
-import { PlatePlugin } from '@udecode/plate-core';
+import { createPlugin } from '@udecode/plate-core';
 
-export const createDndPlugin = (): PlatePlugin => ({
+export const KEY_DND = 'dnd';
+
+export const createDndPlugin = createPlugin({
+  key: KEY_DND,
   onDrop: (editor) => () => editor.isDragging,
 });

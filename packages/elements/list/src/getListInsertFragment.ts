@@ -1,6 +1,6 @@
 import { findNode } from '@udecode/plate-common';
 import {
-  getPlatePluginOptions,
+  getPlugin,
   PlateEditor,
   PlatePluginOptions,
   TDescendant,
@@ -11,9 +11,9 @@ import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './defaults';
 export const getListInsertFragment = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
-  const li = getPlatePluginOptions(editor, ELEMENT_LI);
-  const ul = getPlatePluginOptions(editor, ELEMENT_UL);
-  const ol = getPlatePluginOptions(editor, ELEMENT_OL);
+  const li = getPlugin(editor, ELEMENT_LI);
+  const ul = getPlugin(editor, ELEMENT_UL);
+  const ol = getPlugin(editor, ELEMENT_OL);
 
   const isListRoot = (node: TDescendant): boolean =>
     [ul.type, ol.type].includes(node.type);

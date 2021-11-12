@@ -1,7 +1,3 @@
-import {
-  PlateOptions,
-  PlatePluginComponent,
-} from './PlatePluginOptions/PlateOptions';
 import { EditorId, PlateState } from './PlateStore';
 
 /**
@@ -18,15 +14,6 @@ export interface UsePlateEffectsOptions<T = {}>
    * @default [{ children: [{ text: '' }]}]
    */
   initialValue?: PlateState['value'];
-
-  options?: PlateOptions;
-
-  /**
-   * Components stored by plugin key.
-   * These will be merged into `options`.
-   * @see {@link EditorId}
-   */
-  components?: Record<string, PlatePluginComponent>;
 
   /**
    * When `true`, it will normalize the initial value passed to the `editor` once it gets created.

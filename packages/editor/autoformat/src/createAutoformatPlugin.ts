@@ -1,18 +1,20 @@
 import { isCollapsed } from '@udecode/plate-common';
-import { getPlatePluginWithOverrides, WithOverride } from '@udecode/plate-core';
+import { createPlugin, getPlugin, WithOverride } from '@udecode/plate-core';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
 import { autoformatText } from './transforms/autoformatText';
-import { WithAutoformatOptions } from './types';
+import { AutoformatPlugin } from './types';
+
+export const KEY_AUTOFORMAT = 'autoformat';
 
 /**
  * Enables support for autoformatting actions.
  * Once a match rule is validated, it does not check the following rules.
  */
-export const withAutoformat = ({
-  rules,
-}: WithAutoformatOptions): WithOverride => (editor) => {
+export const withAutoformat = (): WithOverride => (editor) => {
   const { insertText } = editor;
+
+  const { rules } = getPlugin<AutoformatPlugin>(editor, KEY_AUTOFORMAT);
 
   editor.insertText = (text) => {
     if (!isCollapsed(editor.selection)) return insertText(text);
@@ -47,6 +49,7 @@ export const withAutoformat = ({
 /**
  * @see {@link withAutoformat}
  */
-export const createAutoformatPlugin = getPlatePluginWithOverrides(
-  withAutoformat
-);
+export const createAutoformatPlugin = createPlugin<AutoformatPlugin>({
+  key: KEY_AUTOFORMAT,
+  withOverrides: withAutoformat(),
+});

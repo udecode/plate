@@ -1,30 +1,21 @@
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { WithOverride } from '../types/PlatePlugin/WithOverride';
-import { TElement } from '../types/TElement';
-import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
+import { WithOverride } from '../types/plugins/PlatePlugin/WithOverride';
+import { TElement } from '../types/slate/TElement';
+import { createPlugin } from '../utils/createPlugin';
 
-export interface WithInlineVoidOptions {
-  plugins?: PlatePlugin[];
-  inlineTypes?: string[];
-  voidTypes?: string[];
-}
+export const KEY_INLINE_VOID = 'inline-void';
 
 /**
  * Merge and register all the inline types and void types from the plugins and options,
  * using `editor.isInline` and `editor.isVoid`
  */
-export const withInlineVoid = ({
-  plugins = [],
-  inlineTypes: _inlineTypes = [],
-  voidTypes: _voidTypes = [],
-}: WithInlineVoidOptions): WithOverride => (editor) => {
+export const withInlineVoid = (): WithOverride => (editor) => {
   const { isInline } = editor;
   const { isVoid } = editor;
 
-  const inlineTypes = [..._inlineTypes];
-  const voidTypes = [..._voidTypes];
+  const inlineTypes: string[] = [];
+  const voidTypes: string[] = [];
 
-  plugins.forEach((plugin) => {
+  editor.plugins.forEach((plugin) => {
     if (!plugin.key) return;
 
     if (plugin.isInline) {
@@ -51,6 +42,7 @@ export const withInlineVoid = ({
 /**
  * @see {@link withInlineVoid}
  */
-export const createInlineVoidPlugin = getPlatePluginWithOverrides(
-  withInlineVoid
-);
+export const createInlineVoidPlugin = createPlugin({
+  key: KEY_INLINE_VOID,
+  withOverrides: withInlineVoid(),
+});

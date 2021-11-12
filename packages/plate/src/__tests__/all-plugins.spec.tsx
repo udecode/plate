@@ -52,7 +52,7 @@ import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobo
 import { createTablePlugin } from '../../../elements/table/src/createTablePlugins';
 import { createBasicMarkPlugins } from '../../../marks/basic-marks/src/createBasicMarkPlugins';
 import { createHighlightPlugin } from '../../../marks/highlight/src/createHighlightPlugin';
-import { createDeserializeHTMLPlugin } from '../../../serializers/html/src/deserializer/createDeserializeHTMLPlugin';
+import { createDeserializeHtmlPlugin } from '../../../serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
 import { createPlateComponents } from '../utils/createPlateComponents';
 import { createPlateOptions } from '../utils/createPlateOptions';
@@ -90,7 +90,7 @@ const PlateContainer = () => {
     createTrailingBlockPlugin(CONFIG.trailingBlock),
     createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
   ];
-  plugins.push(createDeserializeHTMLPlugin({ plugins }));
+  plugins.push(createDeserializeHtmlPlugin({ plugins }));
 
   return (
     <Plate

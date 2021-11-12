@@ -1,13 +1,11 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_ITALIC } from './defaults';
 
-export const getItalicDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_ITALIC);
-
+export const getItalicDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['EM', 'I'] },
         {
@@ -16,7 +14,6 @@ export const getItalicDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

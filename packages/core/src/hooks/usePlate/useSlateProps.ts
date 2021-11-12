@@ -3,8 +3,8 @@ import { usePlateActions } from '../../stores/plate/plate.actions';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
 import { usePlateValue } from '../../stores/plate/selectors/usePlateValue';
-import { SlateProps } from '../../types/SlateProps';
-import { TNode } from '../../types/TNode';
+import { SlateProps } from '../../types/slate/SlateProps';
+import { TNode } from '../../types/slate/TNode';
 import { UseSlatePropsOptions } from '../../types/UseSlatePropsOptions';
 import { pipeOnChange } from '../../utils/pipeOnChange';
 

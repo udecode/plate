@@ -53,7 +53,7 @@ import {
   ELEMENT_H6,
   ELEMENT_OL,
   ELEMENT_UL,
-  getPlatePluginType,
+  getPluginType,
   getPreventDefaultHandler,
   indent,
   insertTable,
@@ -80,35 +80,35 @@ export const BasicElementToolbarButtons = () => {
   return (
     <>
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H1)}
+        type={getPluginType(editor, ELEMENT_H1)}
         icon={<LooksOne />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H2)}
+        type={getPluginType(editor, ELEMENT_H2)}
         icon={<LooksTwo />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H3)}
+        type={getPluginType(editor, ELEMENT_H3)}
         icon={<Looks3 />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H4)}
+        type={getPluginType(editor, ELEMENT_H4)}
         icon={<Looks4 />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H5)}
+        type={getPluginType(editor, ELEMENT_H5)}
         icon={<Looks5 />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_H6)}
+        type={getPluginType(editor, ELEMENT_H6)}
         icon={<Looks6 />}
       />
       <BlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+        type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
       />
       <CodeBlockToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
+        type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
         icon={<CodeBlock />}
       />
     </>
@@ -138,11 +138,11 @@ export const ListToolbarButtons = () => {
   return (
     <>
       <ListToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_UL)}
+        type={getPluginType(editor, ELEMENT_UL)}
         icon={<FormatListBulleted />}
       />
       <ListToolbarButton
-        type={getPlatePluginType(editor, ELEMENT_OL)}
+        type={getPluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
       />
     </>
@@ -166,33 +166,33 @@ export const BasicMarkToolbarButtons = () => {
   return (
     <>
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_BOLD)}
+        type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_ITALIC)}
+        type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_UNDERLINE)}
+        type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_STRIKETHROUGH)}
+        type={getPluginType(editor, MARK_STRIKETHROUGH)}
         icon={<FormatStrikethrough />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_CODE)}
+        type={getPluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
-        clear={getPlatePluginType(editor, MARK_SUBSCRIPT)}
+        type={getPluginType(editor, MARK_SUPERSCRIPT)}
+        clear={getPluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_SUBSCRIPT)}
-        clear={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
+        type={getPluginType(editor, MARK_SUBSCRIPT)}
+        clear={getPluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}
       />
     </>
@@ -204,7 +204,7 @@ export const KbdToolbarButton = () => {
 
   return (
     <MarkToolbarButton
-      type={getPlatePluginType(editor, MARK_KBD)}
+      type={getPluginType(editor, MARK_KBD)}
       icon={<Keyboard />}
     />
   );
@@ -215,7 +215,7 @@ export const HighlightToolbarButton = () => {
 
   return (
     <MarkToolbarButton
-      type={getPlatePluginType(editor, MARK_HIGHLIGHT)}
+      type={getPluginType(editor, MARK_HIGHLIGHT)}
       icon={<Highlight />}
     />
   );
@@ -255,17 +255,17 @@ export const MarkBallonToolbar = () => {
       arrow={arrow}
     >
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_BOLD)}
+        type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_ITALIC)}
+        type={getPluginType(editor, MARK_ITALIC)}
         icon={<FormatItalic />}
         tooltip={{ content: 'Italic (⌘I)', ...tooltip }}
       />
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_UNDERLINE)}
+        type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
       />

@@ -6,7 +6,7 @@ import {
   setMarks,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-core';
@@ -42,7 +42,7 @@ export const ColorPickerToolbarDropdown = ({
   const [open, setOpen] = useState(false);
   const editor = usePlateEditorState();
   const editorRef = usePlateEditorRef();
-  const type = getPlatePluginType(editorRef, pluginKey);
+  const type = getPluginType(editorRef, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 

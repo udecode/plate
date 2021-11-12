@@ -1,19 +1,16 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { ELEMENT_LINK } from './defaults';
 
-export const getLinkDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, ELEMENT_LINK);
-
+export const getLinkDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getNodeDeserializer({
-      type: options.type,
+      type,
       getNode: (el) => ({
-        type: options.type,
+        type,
         url: el.getAttribute('href'),
       }),
       rules: [{ nodeNames: 'A' }],
-      ...options.deserialize,
     }),
   };
 };

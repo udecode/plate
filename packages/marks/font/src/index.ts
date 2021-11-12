@@ -9,4 +9,3 @@ export * from './createFontSizePlugin';
 export * from './createFontWeightPlugin';
 export * from './defaults';
 export * from './getFontDeserialize';
-export * from './types';

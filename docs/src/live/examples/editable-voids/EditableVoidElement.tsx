@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  createBasicElementPlugins,
+  createBasicElementsPlugin,
   createHistoryPlugin,
   createReactPlugin,
 } from '@udecode/plate';
@@ -16,7 +16,7 @@ import { VALUES } from '../../config/values/values';
 const plugins = [
   createReactPlugin(),
   createHistoryPlugin(),
-  ...createBasicElementPlugins(),
+  ...createBasicElementsPlugin(),
   createResetNodePlugin(CONFIG.resetBlockType),
   createSoftBreakPlugin(CONFIG.softBreak),
   createExitBreakPlugin(CONFIG.exitBreak),

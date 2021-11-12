@@ -1,10 +1,10 @@
 import {
-  createBasicElementPlugins,
+  createBasicElementsPlugin,
   createBlockquotePlugin,
   createBoldPlugin,
   createCodeBlockPlugins,
   createCodePlugin,
-  createHeadingPlugins,
+  createHeadingPlugin,
   createHistoryPlugin,
   createImagePlugin,
   createItalicPlugin,
@@ -22,7 +22,7 @@ const basicElements = [
   createParagraphPlugin(), // paragraph element
   createBlockquotePlugin(), // blockquote element
   ...createCodeBlockPlugins(), // code block element
-  ...createHeadingPlugins(), // heading elements
+  ...createHeadingPlugin(), // heading elements
 ];
 
 const basicMarks = [
@@ -40,7 +40,7 @@ export const PLUGINS = {
   basicNodes: [...core, ...basicElements, ...basicMarks],
   image: [
     ...core,
-    ...createBasicElementPlugins(),
+    ...createBasicElementsPlugin(),
     ...basicMarks,
     createImagePlugin(),
     createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),

@@ -1,19 +1,15 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
-import { ELEMENT_IMAGE } from './defaults';
+import { Deserialize } from '@udecode/plate-core';
 
-export const getImageDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, ELEMENT_IMAGE);
-
+export const getImageDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     element: getNodeDeserializer({
-      type: options.type,
+      type,
       getNode: (el) => ({
-        type: options.type,
+        type,
         url: el.getAttribute('src'),
       }),
       rules: [{ nodeNames: 'IMG' }],
-      ...options.deserialize,
     }),
   };
 };

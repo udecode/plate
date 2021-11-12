@@ -1,4 +1,4 @@
-import { getLeafDeserializer } from '../../../utils/getLeafDeserializer';
+import { getLeafDeserializer } from '../../../utils/deserializer/getLeafDeserializer';
 
 it('should be', () => {
   const el = document.createElement('strong');

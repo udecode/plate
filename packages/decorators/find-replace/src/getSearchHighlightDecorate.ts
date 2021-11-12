@@ -1,4 +1,4 @@
-import { Decorate, getPlatePluginOptions } from '@udecode/plate-core';
+import { Decorate, getPlugin } from '@udecode/plate-core';
 import { NodeEntry, Range, Text } from 'slate';
 import { MARK_SEARCH_HIGHLIGHT } from './defaults';
 import { DecorateSearchHighlightOptions } from './types';
@@ -6,7 +6,7 @@ import { DecorateSearchHighlightOptions } from './types';
 export const getSearchHighlightDecorate = ({
   search,
 }: DecorateSearchHighlightOptions): Decorate => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_SEARCH_HIGHLIGHT);
+  const options = getPlugin(editor, MARK_SEARCH_HIGHLIGHT);
 
   return ([node, path]: NodeEntry) => {
     const ranges: Range[] = [];

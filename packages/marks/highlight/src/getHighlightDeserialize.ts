@@ -1,15 +1,15 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_HIGHLIGHT } from './defaults';
 
-export const getHighlightDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_HIGHLIGHT);
-
+export const getHighlightDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [{ nodeNames: ['MARK'] }],
-      ...options.deserialize,
     }),
   };
 };

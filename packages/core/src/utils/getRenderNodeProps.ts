@@ -8,7 +8,6 @@ import { getSlateClass } from './getSlateClass';
  */
 export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
   attributes,
-  overrideProps,
   type,
   getNodeProps,
   props: _props,
@@ -16,24 +15,24 @@ export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
   props: T;
   attributes?: any;
 }) => {
-  let props = {
+  const props = {
     ..._props,
     nodeProps: getNodeProps?.(_props as any) ?? attributes ?? {},
   };
 
-  if (overrideProps) {
-    const newProps =
-      typeof overrideProps === 'function'
-        ? overrideProps(props as any)
-        : overrideProps;
-
-    if (newProps) {
-      props = {
-        ...props,
-        ...newProps,
-      };
-    }
-  }
+  // if (overrideProps) {
+  //   const newProps =
+  //     typeof overrideProps === 'function'
+  //       ? overrideProps(props as any)
+  //       : overrideProps;
+  //
+  //   if (newProps) {
+  //     props = {
+  //       ...props,
+  //       ...newProps,
+  //     };
+  //   }
+  // }
 
   const { className } = props;
 

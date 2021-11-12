@@ -1,21 +1,24 @@
-import { OverridePropsOptions } from '@udecode/plate-common';
+import { OverridePropsPlugin } from '@udecode/plate-common';
+import { PlatePlugin } from '@udecode/plate-core';
 
-export interface IndentPluginOptions
-  extends OverridePropsOptions<string | number> {
-  /**
-   * Indentation offset used in `(offset * element.indent) + unit`.
-   * @default 40
-   */
-  offset?: number;
+export type IndentPlugin<T = {}> = PlatePlugin<
+  T,
+  OverridePropsPlugin<string | number> & {
+    /**
+     * Indentation offset used in `(offset * element.indent) + unit`.
+     * @default 40
+     */
+    offset?: number;
 
-  /**
-   * Indentation unit used in `(offset * element.indent) + unit`.
-   * @default 'px'
-   */
-  unit?: string;
+    /**
+     * Indentation unit used in `(offset * element.indent) + unit`.
+     * @default 'px'
+     */
+    unit?: string;
 
-  /**
-   * Maximum number of indentation.
-   */
-  indentMax?: number;
-}
+    /**
+     * Maximum number of indentation.
+     */
+    indentMax?: number;
+  }
+>;

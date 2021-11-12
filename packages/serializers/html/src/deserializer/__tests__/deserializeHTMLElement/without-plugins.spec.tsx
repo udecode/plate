@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { PlatePlugin } from '../../../../../../core/src/types/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../../../../../../core/src/types/plugins/PlatePlugin/PlatePlugin';
 import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 

@@ -1,5 +1,5 @@
 import { deleteFragment, getAbove, getParent } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Editor, Range, Transforms } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
@@ -20,7 +20,7 @@ export const getListDeleteFragment = (editor: PlateEditor) => {
     const end = Editor.end(editor, editor.selection as Range);
     const liEnd = getAbove(editor, {
       at: end,
-      match: { type: getPlatePluginType(editor, ELEMENT_LI) },
+      match: { type: getPluginType(editor, ELEMENT_LI) },
     });
     const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
     const liEndPathRef = liEndCanBeDeleted
@@ -35,7 +35,7 @@ export const getListDeleteFragment = (editor: PlateEditor) => {
     const start = Editor.start(editor, editor.selection as Range);
     const liStart = getAbove(editor, {
       at: start,
-      match: { type: getPlatePluginType(editor, ELEMENT_LI) },
+      match: { type: getPluginType(editor, ELEMENT_LI) },
     });
 
     if (liEndPathRef) {

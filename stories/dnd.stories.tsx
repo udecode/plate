@@ -9,7 +9,7 @@ import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugins } from '@udecode/plate-code-block';
 import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
-import { createHeadingPlugins } from '@udecode/plate-heading';
+import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
@@ -57,7 +57,7 @@ import { createHighlightPlugin } from '../packages/marks/highlight/src/createHig
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
 import { createPlateComponents } from '../packages/plate/src/utils/createPlateComponents';
 import { createPlateOptions } from '../packages/plate/src/utils/createPlateOptions';
-import { createDeserializeHTMLPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHTMLPlugin';
+import { createDeserializeHtmlPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 
 export default {
   title: 'Drag & Drop',
@@ -80,7 +80,7 @@ export const Example = () => {
         createParagraphPlugin(),
         createBlockquotePlugin(),
         createTodoListPlugin(),
-        ...createHeadingPlugins(),
+        ...createHeadingPlugin(),
         createImagePlugin(),
         createLinkPlugin(),
         ...createListPlugins(),
@@ -110,7 +110,7 @@ export const Example = () => {
         createDndPlugin(),
       ];
 
-      plugins.push(createDeserializeHTMLPlugin({ plugins }));
+      plugins.push(createDeserializeHtmlPlugin({ plugins }));
 
       return plugins;
     }, [searchHighlightPlugin]);

@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
-import { PlatePlugin } from './PlatePlugin/PlatePlugin';
+import { PlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
+import { TDescendant } from './slate/TDescendant';
 import { PlateEditor } from './PlateEditor';
-import { TDescendant } from './TDescendant';
 
 /**
  * A unique id used to store the editor state by id.

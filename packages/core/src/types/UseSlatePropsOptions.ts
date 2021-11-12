@@ -1,4 +1,4 @@
-import { TNode } from './TNode';
+import { TNode } from './slate/TNode';
 import { UsePlateEffectsOptions } from './UsePlateEffectsOptions';
 
 /**

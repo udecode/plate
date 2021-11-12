@@ -1,21 +1,14 @@
+import defaultsDeep from 'lodash/defaultsDeep';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
-import { withInlineVoid } from '../plugins/createInlineVoidPlugin';
+import { createInlineVoidPlugin } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { WithOverride } from '../types/PlatePlugin/WithOverride';
-import {
-  PlatePluginComponent,
-  PlatePluginOptions,
-  PluginKey,
-} from '../types/PlatePluginOptions/PlateOptions';
-import { flatMapByKey } from './flatMapByKey';
-import { pipe } from './pipe';
+import { PlateEditor } from '../types/PlateEditor';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { TEditor } from '../types/slate/TEditor';
 
 export interface WithPlateOptions {
   id?: string | null;
   plugins?: PlatePlugin[];
-  options?: Record<PluginKey, Partial<PlatePluginOptions>>;
-  components?: Record<string, PlatePluginComponent>;
 }
 
 /**
@@ -27,43 +20,45 @@ export interface WithPlateOptions {
  */
 export const withPlate = ({
   id = 'main',
-  plugins = [createReactPlugin(), createHistoryPlugin()],
-  options = {},
-  components = {},
-}: WithPlateOptions = {}): WithOverride => (editor) => {
+  plugins: _plugins = [createReactPlugin(), createHistoryPlugin()],
+}: WithPlateOptions = {}) => <T extends TEditor>(e: T) => {
+  let editor = (e as any) as PlateEditor;
+
   editor.id = id as string;
 
   if (!editor.key) {
     editor.key = Math.random();
   }
 
-  editor.options = { ...options };
+  editor.plugins = [];
+  editor.pluginsByKey = {};
 
-  const _plugins: PlatePlugin[] = [
-    ...plugins,
-    {
-      withOverrides: withInlineVoid({ plugins }),
-    },
-  ];
+  const addEditorPlugins = (plugins?: PlatePlugin[]) => {
+    if (!plugins) return;
 
-  // Plugins withOverrides
-  const withOverrides = flatMapByKey(_plugins, 'withOverrides');
-  console.log(withOverrides);
-  editor = pipe(editor, ...withOverrides);
+    plugins.forEach((plugin) => {
+      if (plugin.type === undefined) plugin.type = plugin.key;
 
-  // Default option type is the plugin key
-  console.log(options);
-  Object.keys(editor.options).forEach((key) => {
-    if (editor.options[key]!.type === undefined)
-      editor.options[key]!.type = key;
-  });
+      const newPlugin = defaultsDeep(
+        plugin,
+        plugin.withEditor?.(editor, plugin)
+      );
 
-  // Merge components into options
-  Object.keys(components).forEach((key) => {
-    editor.options[key] = {
-      component: components[key],
-      ...(editor.options[key] as any),
-    };
+      editor.plugins.push(newPlugin);
+      editor.pluginsByKey[plugin.key] = newPlugin;
+
+      addEditorPlugins(plugin.plugins);
+    });
+  };
+
+  // withEditor
+  addEditorPlugins([createInlineVoidPlugin(), ..._plugins]);
+
+  // withOverrides
+  editor.plugins.forEach((plugin) => {
+    if (plugin.withOverrides) {
+      editor = plugin.withOverrides(editor, plugin);
+    }
   });
 
   return editor;

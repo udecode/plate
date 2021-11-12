@@ -1,7 +1,7 @@
 import { NodeEntry, Range } from 'slate';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 
 /**
  * @see {@link Decorate}.
@@ -12,7 +12,7 @@ export const pipeDecorate = (
   plugins: PlatePlugin[] = []
 ): EditableProps['decorate'] => {
   const decorates = plugins.flatMap(
-    (plugin) => plugin.decorate?.(editor) ?? []
+    (plugin) => plugin.decorate?.(editor, plugin) ?? []
   );
   if (!decorates.length) return;
 

@@ -1,13 +1,11 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_KBD } from './defaults';
 
-export const getKbdDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_KBD);
-
+export const getKbdDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['KBD'] },
         {
@@ -16,7 +14,6 @@ export const getKbdDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

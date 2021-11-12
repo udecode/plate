@@ -1,15 +1,15 @@
 import { getElementDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { ELEMENT_PARAGRAPH } from './defaults';
 
-export const getParagraphDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, ELEMENT_PARAGRAPH);
-
+export const getParagraphDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     element: getElementDeserializer({
-      type: options.type,
+      type,
       rules: [{ nodeNames: 'P' }],
-      ...options.deserialize,
     }),
   };
 };

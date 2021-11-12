@@ -6,7 +6,7 @@ import {
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,
@@ -74,7 +74,7 @@ const selectionIsInAListHandler = (
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
-    const liType = getPlatePluginType(editor, ELEMENT_LI);
+    const liType = getPluginType(editor, ELEMENT_LI);
     const liWithSiblings = Array.from(
       Editor.nodes(editor, {
         at: listItem[1],

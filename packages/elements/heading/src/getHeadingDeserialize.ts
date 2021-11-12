@@ -1,14 +1,14 @@
 import { getElementDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize } from '@udecode/plate-core';
 
-export const getHeadingDeserialize = (key: string): Deserialize => (editor) => {
-  const { type, deserialize } = getPlatePluginOptions(editor, key);
-
+export const getHeadingDeserialize = (key: string): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     element: getElementDeserializer({
       type,
       rules: [{ nodeNames: key.toUpperCase() }],
-      ...deserialize,
     }),
   };
 };

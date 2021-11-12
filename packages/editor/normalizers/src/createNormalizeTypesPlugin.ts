@@ -5,7 +5,8 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginWithOverrides,
+  createPlugin,
+  getPlugin,
   isElement,
   TElement,
   WithOverride,
@@ -27,7 +28,7 @@ interface Rule {
   path: Path;
 }
 
-export interface NormalizeTypesPluginOptions extends ErrorHandler {
+export interface NormalizeTypesPlugin extends ErrorHandler {
   /**
    * Set of rules for the types.
    * For each rule, provide a `path` and either `strictType` or `type`.
@@ -39,11 +40,15 @@ export interface NormalizeTypesPluginOptions extends ErrorHandler {
   rules: Rule[];
 }
 
-export const withNormalizeTypes = ({
-  rules,
-  onError,
-}: NormalizeTypesPluginOptions): WithOverride => (editor) => {
+export const KEY_NORMALIZE_TYPES = 'normalizeTypes';
+
+export const withNormalizeTypes = (): WithOverride => (editor) => {
   const { normalizeNode } = editor;
+
+  const { rules, onError } = getPlugin<NormalizeTypesPlugin>(
+    editor,
+    KEY_NORMALIZE_TYPES
+  );
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (!currentPath.length) {
@@ -96,6 +101,8 @@ export const withNormalizeTypes = ({
 /**
  * @see {@link withNormalizeTypes}
  */
-export const createNormalizeTypesPlugin = getPlatePluginWithOverrides(
-  withNormalizeTypes
-);
+export const createNormalizeTypesPlugin = createPlugin<NormalizeTypesPlugin>({
+  key: KEY_NORMALIZE_TYPES,
+  withOverrides: withNormalizeTypes(),
+  rules: [],
+});

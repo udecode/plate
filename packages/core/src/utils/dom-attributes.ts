@@ -1,4 +1,4 @@
-import { DOMHandlers } from '../types/PlatePlugin/DOMHandlers';
+import { DOMHandlers } from '../types/plugins/PlatePlugin/DOMHandlers';
 
 export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Clipboard Events

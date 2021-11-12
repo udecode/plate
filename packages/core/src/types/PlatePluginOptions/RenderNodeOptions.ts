@@ -1,10 +1,10 @@
-import { PlatePluginOptions } from './PlateOptions';
-
 /**
  * Plugin options to get `renderElement` for elements and `renderLeaf` for marks.
  */
+import { PlatePlugin } from '../plugins/PlatePlugin/PlatePlugin';
+
 export type RenderNodeOptions = Pick<
-  PlatePluginOptions,
+  PlatePlugin,
   'component' | 'getNodeProps' | 'overrideProps'
 > &
-  Pick<Required<PlatePluginOptions>, 'type'>;
+  Pick<Required<PlatePlugin>, 'type'>;

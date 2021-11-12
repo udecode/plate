@@ -3,7 +3,7 @@ import {
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { ELEMENT_LI } from '../defaults';
 
 /**
@@ -20,6 +20,6 @@ export const isAcrossListItems = (editor: PlateEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getPlatePluginType(editor, ELEMENT_LI) },
+    match: { type: getPluginType(editor, ELEMENT_LI) },
   });
 };

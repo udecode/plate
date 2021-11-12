@@ -1,5 +1,5 @@
 import {
-  getPlatePluginType,
+  getPluginType,
   PlateEditor,
   TEditor,
   TElement,
@@ -32,7 +32,7 @@ export const toggleNodeType = (
 ) => {
   const {
     activeType,
-    inactiveType = getPlatePluginType(editor as PlateEditor, ELEMENT_DEFAULT),
+    inactiveType = getPluginType(editor as PlateEditor, ELEMENT_DEFAULT),
   } = options;
 
   if (!activeType || !editor.selection) return;

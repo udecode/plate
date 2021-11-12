@@ -1,5 +1,5 @@
 import { getNodeDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import {
   MARK_BG_COLOR,
   MARK_COLOR,
@@ -8,13 +8,14 @@ import {
   MARK_FONT_WEIGHT,
 } from './defaults';
 
-export const getFontColorDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_COLOR);
-
+export const getFontColorDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getNodeDeserializer({
-      type: options.type,
-      getNode: (element) => ({ [options.type]: element.style.color }),
+      type,
+      getNode: (element) => ({ [type]: element.style.color }),
       rules: [
         {
           style: {
@@ -22,20 +23,18 @@ export const getFontColorDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };
 
 export const getFontBackgroundColorDeserialize = (): Deserialize => (
-  editor
+  editor,
+  { type }
 ) => {
-  const options = getPlatePluginOptions(editor, MARK_BG_COLOR);
-
   return {
     leaf: getNodeDeserializer({
-      type: options.type,
-      getNode: (element) => ({ [options.type]: element.style.backgroundColor }),
+      type,
+      getNode: (element) => ({ [type]: element.style.backgroundColor }),
       rules: [
         {
           style: {
@@ -43,18 +42,15 @@ export const getFontBackgroundColorDeserialize = (): Deserialize => (
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };
 
-export const getFontSizeDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_FONT_SIZE);
-
+export const getFontSizeDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     leaf: getNodeDeserializer({
-      type: options.type,
-      getNode: (element) => ({ [options.type]: element.style.fontSize }),
+      type,
+      getNode: (element) => ({ [type]: element.style.fontSize }),
       rules: [
         {
           style: {
@@ -62,18 +58,18 @@ export const getFontSizeDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };
 
-export const getFontWeightDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_FONT_WEIGHT);
-
+export const getFontWeightDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getNodeDeserializer({
-      type: options.type,
-      getNode: (element) => ({ [options.type]: element.style.fontWeight }),
+      type,
+      getNode: (element) => ({ [type]: element.style.fontWeight }),
       rules: [
         {
           style: {
@@ -81,18 +77,18 @@ export const getFontWeightDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };
 
-export const getFontFamilyDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_FONT_FAMILY);
-
+export const getFontFamilyDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getNodeDeserializer({
-      type: options.type,
-      getNode: (element) => ({ [options.type]: element.style.fontFamily }),
+      type,
+      getNode: (element) => ({ [type]: element.style.fontFamily }),
       rules: [
         {
           style: {
@@ -100,7 +96,6 @@ export const getFontFamilyDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

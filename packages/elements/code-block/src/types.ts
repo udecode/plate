@@ -18,8 +18,8 @@ export interface WithCodeBlockOptions {
   // validCodeBlockChildrenTypes?: string[];
 }
 
-export interface CodeBlockInsertOptions
-  extends Pick<PlatePluginOptions, 'defaultType'> {
+export interface CodeBlockInsertOptions {
+  defaultType?: string;
   level?: number;
   insertNodesOptions?: Omit<InsertNodesOptions, 'match'>;
 }

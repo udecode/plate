@@ -7,11 +7,7 @@ import {
   someNode,
   unwrapNodes,
 } from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
-  WithOverride,
-} from '@udecode/plate-core';
+import { getPluginType, PlateEditor, WithOverride } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Range } from 'slate';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
@@ -31,7 +27,7 @@ const upsertLink = (
 ) => {
   unwrapNodes(editor, {
     at,
-    match: { type: getPlatePluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, ELEMENT_LINK) },
   });
 
   const newSelection = editor.selection as Range;
@@ -75,7 +71,7 @@ export const withLink = ({
 }: WithLinkOptions = {}): WithOverride => (editor) => {
   const { insertData, insertText } = editor;
 
-  const type = getPlatePluginType(editor, ELEMENT_LINK);
+  const type = getPluginType(editor, ELEMENT_LINK);
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {

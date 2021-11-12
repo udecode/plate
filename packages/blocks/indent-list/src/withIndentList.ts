@@ -15,7 +15,7 @@ export const withIndentList = (
   const { apply, normalizeNode } = editor;
 
   // TODO: extend plate-core to register options
-  editor.options[KEY_LIST_STYLE_TYPE] = defaults(
+  editor.pluginsByKey[KEY_LIST_STYLE_TYPE] = defaults(
     options,
     {} as IndentListPluginOptions
   );

@@ -1,14 +1,12 @@
 import React from 'react';
-import castArray from 'lodash/castArray';
 import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { RenderElement } from '../types/PlatePlugin/RenderElement';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
-import { TRenderElementProps } from '../types/TRenderElementProps';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
 import { getRenderElement } from './getRenderElement';
-import { pipeOverrideProps } from './pipeOverrideProps';
+import { injectOverrideProps } from './injectOverrideProps';
 
 /**
  * @see {@link RenderElement}
@@ -23,24 +21,16 @@ export const pipeRenderElement = (
   const renderElements: RenderElement[] = [];
 
   plugins.forEach((plugin) => {
-    if (plugin.isElement && plugin.key) {
-      renderElements.push(getRenderElement(editor, plugin.key));
+    if (plugin.isElement) {
+      renderElements.push(getRenderElement(editor, plugin));
     }
   });
 
-  const propsOverriders = plugins.flatMap((plugin) =>
-    castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
-  );
-
-  return (renderElementProps) => {
-    const props: PlateRenderElementProps = {
-      ...pipeOverrideProps(
-        renderElementProps as TRenderElementProps,
-        propsOverriders
-      ),
-      editor,
+  return (_props) => {
+    const props = injectOverrideProps<PlateRenderElementProps>(editor, {
+      props: _props,
       plugins,
-    };
+    });
 
     let element;
 

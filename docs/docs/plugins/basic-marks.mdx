@@ -30,33 +30,33 @@ npm install @udecode/plate-basic-marks
     return (
       <>
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_BOLD)}
+          type={getPluginType(editor, MARK_BOLD)}
           icon={<FormatBold />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_ITALIC)}
+          type={getPluginType(editor, MARK_ITALIC)}
           icon={<FormatItalic />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_UNDERLINE)}
+          type={getPluginType(editor, MARK_UNDERLINE)}
           icon={<FormatUnderlined />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_STRIKETHROUGH)}
+          type={getPluginType(editor, MARK_STRIKETHROUGH)}
           icon={<FormatStrikethrough />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_CODE)}
+          type={getPluginType(editor, MARK_CODE)}
           icon={<CodeAlt />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
-          clear={getPlatePluginType(editor, MARK_SUBSCRIPT)}
+          type={getPluginType(editor, MARK_SUPERSCRIPT)}
+          clear={getPluginType(editor, MARK_SUBSCRIPT)}
           icon={<Superscript />}
         />
         <MarkToolbarButton
-          type={getPlatePluginType(editor, MARK_SUBSCRIPT)}
-          clear={getPlatePluginType(editor, MARK_SUPERSCRIPT)}
+          type={getPluginType(editor, MARK_SUBSCRIPT)}
+          clear={getPluginType(editor, MARK_SUPERSCRIPT)}
           icon={<Subscript />}
         />
       </>

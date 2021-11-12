@@ -1,13 +1,11 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_CODE } from './defaults';
 
-export const getCodeDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_CODE);
-
+export const getCodeDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['CODE'] },
         {
@@ -16,7 +14,6 @@ export const getCodeDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

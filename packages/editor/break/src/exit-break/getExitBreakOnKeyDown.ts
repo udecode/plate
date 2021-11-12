@@ -8,14 +8,15 @@ import {
   queryNode,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPlugin,
+  getPluginType,
   KeyboardHandler,
   TEditor,
   TElement,
 } from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { Editor, Path } from 'slate';
-import { ExitBreakOnKeyDownOptions } from './types';
+import { ExitBreakPlugin } from './types';
 
 /**
  * Check if the selection is at the edge of its parent block.
@@ -58,16 +59,14 @@ export const exitBreakAtEdges = (
   };
 };
 
-export const getExitBreakOnKeyDown = <T = {}>({
-  rules = [
-    { hotkey: 'mod+enter' },
-    { hotkey: 'mod+shift+enter', before: true },
-  ],
-}: ExitBreakOnKeyDownOptions = {}): KeyboardHandler<T> => (editor) => (
-  event
-) => {
+export const getExitBreakOnKeyDown = <T = {}>(): KeyboardHandler<T> => (
+  editor,
+  key
+) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
+
+  const { rules } = getPlugin<ExitBreakPlugin, T>(editor, key);
 
   rules.forEach(
     ({
@@ -75,7 +74,7 @@ export const getExitBreakOnKeyDown = <T = {}>({
       query = {},
       level = 0,
       before,
-      defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT),
+      defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     }) => {
       if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
         if (!editor.selection) return;

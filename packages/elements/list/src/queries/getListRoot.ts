@@ -1,5 +1,5 @@
 import { getAbove } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
 
@@ -16,8 +16,8 @@ export const getListRoot = (
     at,
     match: {
       type: [
-        getPlatePluginType(editor, ELEMENT_UL),
-        getPlatePluginType(editor, ELEMENT_OL),
+        getPluginType(editor, ELEMENT_UL),
+        getPluginType(editor, ELEMENT_OL),
       ],
     },
   });

@@ -4,7 +4,7 @@ import {
   insertNodes,
   isExpanded,
 } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { hasListChild } from '../queries/hasListChild';
@@ -56,10 +56,10 @@ export const removeListItem = (
       insertNodes<TElement>(
         editor,
         {
-          type: getPlatePluginType(editor, ELEMENT_LI),
+          type: getPluginType(editor, ELEMENT_LI),
           children: [
             {
-              type: getPlatePluginType(editor, ELEMENT_LIC),
+              type: getPluginType(editor, ELEMENT_LIC),
               children: [{ text: '' }],
             },
           ],

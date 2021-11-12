@@ -7,7 +7,6 @@ import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRe
 import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
 import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
-import { flatMapByKey } from '../../utils/flatMapByKey';
 import { pipe } from '../../utils/pipe';
 import { withPlate } from '../../utils/withPlate';
 
@@ -20,8 +19,6 @@ export const usePlateEffects = <T = {}>({
   value,
   editor,
   enabled = true,
-  components,
-  options,
   initialValue,
   normalizeInitialValue,
   plugins,
@@ -81,7 +78,7 @@ export const usePlateEffects = <T = {}>({
   }, [plugins, setPlugins]);
 
   useEffect(() => {
-    plugins && setPluginKeys(flatMapByKey(plugins, 'key'));
+    plugins && setPluginKeys(plugins.map((plugin) => plugin.key));
   }, [plugins, setPluginKeys]);
 
   useEffect(() => {
@@ -99,23 +96,11 @@ export const usePlateEffects = <T = {}>({
           withPlate({
             id,
             plugins: storePlugins,
-            options,
-            components,
           })
         )
       );
     }
-  }, [
-    storeEditor,
-    components,
-    editor,
-    id,
-    options,
-    plugins,
-    storeEnabled,
-    storePlugins,
-    setEditor,
-  ]);
+  }, [storeEditor, editor, id, plugins, storeEnabled, storePlugins, setEditor]);
 
   useEffect(() => {
     if (storeEditor && normalizeInitialValue) {

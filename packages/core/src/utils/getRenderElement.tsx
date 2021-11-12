@@ -1,9 +1,9 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
 import { PlateEditor } from '../types/PlateEditor';
-import { RenderElement } from '../types/PlatePlugin/RenderElement';
-import { PlatePluginComponent } from '../types/PlatePluginOptions/PlateOptions';
-import { getPlatePluginOptions } from './getPlatePluginOptions';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
+import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
@@ -13,59 +13,54 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export const getRenderElement = (
   editor: PlateEditor,
-  key: string
-): RenderElement => {
-  const {
+  {
+    key,
     type,
     component: Element = DefaultElement as PlatePluginComponent,
     getNodeProps,
-    overrideProps,
-  } = getPlatePluginOptions(editor, key);
+  }: PlatePlugin
+): RenderElement => (props) => {
+  const { plugins } = props;
 
-  return (props) => {
-    const { plugins } = props;
+  const injectParentComponents = plugins.flatMap(
+    (o) => o.injectParentComponent ?? []
+  );
+  const injectChildComponents = plugins.flatMap(
+    (o) => o.injectChildComponent ?? []
+  );
 
-    const injectParentComponents = plugins.flatMap(
-      (o) => o.injectParentComponent ?? []
+  const { element, children: _children } = props;
+
+  if (element.type === type) {
+    const nodeProps = getRenderNodeProps({
+      attributes: element.attributes,
+      getNodeProps,
+      props,
+      type,
+    });
+
+    let children = _children;
+
+    injectChildComponents.forEach((withHOC) => {
+      const hoc = withHOC({ ...nodeProps, key });
+
+      if (hoc) {
+        children = hoc({ ...nodeProps, children });
+      }
+    });
+
+    let component: JSX.Element | null = (
+      <Element {...nodeProps}>{children}</Element>
     );
-    const injectChildComponents = plugins.flatMap(
-      (o) => o.injectChildComponent ?? []
-    );
 
-    const { element, children: _children } = props;
+    injectParentComponents.forEach((withHOC) => {
+      const hoc = withHOC({ ...nodeProps, key });
 
-    if (element.type === type) {
-      const nodeProps = getRenderNodeProps({
-        attributes: element.attributes,
-        getNodeProps,
-        overrideProps,
-        props,
-        type,
-      });
+      if (hoc) {
+        component = hoc({ ...nodeProps, children: component });
+      }
+    });
 
-      let children = _children;
-
-      injectChildComponents.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key });
-
-        if (hoc) {
-          children = hoc({ ...nodeProps, children });
-        }
-      });
-
-      let component: JSX.Element | null = (
-        <Element {...nodeProps}>{children}</Element>
-      );
-
-      injectParentComponents.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key });
-
-        if (hoc) {
-          component = hoc({ ...nodeProps, children: component });
-        }
-      });
-
-      return component;
-    }
-  };
+    return component;
+  }
 };

@@ -16,41 +16,25 @@ const isDisabled = (
   );
 };
 
-export const getCodeBlockDeserialize = (): Deserialize => (editor) => {
-  const code_block = getCodeBlockPluginOptions(editor);
-  const code_line = getCodeLinePluginOptions(editor);
-
+export const getCodeBlockDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     isDisabled: isDisabled(editor),
-    element: [
-      ...getElementDeserializer({
-        type: code_block.type,
-        rules: [
-          { nodeNames: 'PRE' },
-          { className: getSlateClass(code_block.type) },
-        ],
-        ...code_block.deserialize,
-      }),
-      ...getElementDeserializer({
-        type: code_line.type,
-        rules: [{ className: getSlateClass(code_line.type) }],
-        ...code_line.deserialize,
-      }),
-    ],
+    element: getElementDeserializer({
+      type,
+      rules: [{ nodeNames: 'PRE' }, { className: getSlateClass(type!) }],
+    }),
   };
 };
 
-export const getCodeLineDeserialize = (): Deserialize => (editor) => {
-  const code_line = getCodeLinePluginOptions(editor);
-
+export const getCodeLineDeserialize = (): Deserialize => (editor, { type }) => {
   return {
     isDisabled: isDisabled(editor),
-    element: [
-      ...getElementDeserializer({
-        type: code_line.type,
-        rules: [{ className: getSlateClass(code_line.type) }],
-        ...code_line.deserialize,
-      }),
-    ],
+    element: getElementDeserializer({
+      type,
+      rules: [{ className: getSlateClass(type!) }],
+    }),
   };
 };

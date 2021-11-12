@@ -1,5 +1,5 @@
 import { getAbove, insertNodes, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH } from '../defaults';
 import { TablePluginOptions } from '../types';
@@ -11,20 +11,20 @@ export const addColumn = (
 ) => {
   if (
     someNode(editor, {
-      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
     const currentCellItem = getAbove(editor, {
       match: {
         type: [
-          getPlatePluginType(editor, ELEMENT_TH),
-          getPlatePluginType(editor, ELEMENT_TD),
+          getPluginType(editor, ELEMENT_TH),
+          getPluginType(editor, ELEMENT_TD),
         ],
       },
     });
 
     const currentTableItem = getAbove(editor, {
-      match: { type: getPlatePluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
 
     if (currentCellItem && currentTableItem) {

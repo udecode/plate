@@ -1,13 +1,14 @@
 import { getLeafDeserializer } from '@udecode/plate-common';
-import { Deserialize, getPlatePluginOptions } from '@udecode/plate-core';
+import { Deserialize, getPlugin } from '@udecode/plate-core';
 import { MARK_SUBSCRIPT } from './defaults';
 
-export const getSubscriptDeserialize = (): Deserialize => (editor) => {
-  const options = getPlatePluginOptions(editor, MARK_SUBSCRIPT);
-
+export const getSubscriptDeserialize = (): Deserialize => (
+  editor,
+  { type }
+) => {
   return {
     leaf: getLeafDeserializer({
-      type: options.type,
+      type,
       rules: [
         { nodeNames: ['SUB'] },
         {
@@ -16,7 +17,6 @@ export const getSubscriptDeserialize = (): Deserialize => (editor) => {
           },
         },
       ],
-      ...options.deserialize,
     }),
   };
 };

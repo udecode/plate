@@ -1,4 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// noinspection ES6UnusedImports
+
+import { getParent } from '@udecode/plate-common';
+import { Decorate, getPlugin, isElement } from '@udecode/plate-core';
 import Prism, { languages, Token, tokenize } from 'prismjs';
 import 'prismjs/components/prism-antlr4';
 import 'prismjs/components/prism-bash';
@@ -47,14 +51,11 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
-import { Decorate, isElement } from '@udecode/plate-core';
 import { Node, NodeEntry } from 'slate';
-import { getParent } from '@udecode/plate-common';
-import { getCodeLinePluginOptions, getCodeBlockPluginOptions } from './options';
+import { ELEMENT_CODE_BLOCK } from './defaults';
 
-export const getCodeLineDecorate = (): Decorate => (editor) => {
-  const code_line = getCodeLinePluginOptions(editor);
-  const code_block = getCodeBlockPluginOptions(editor);
+export const getCodeLineDecorate = (): Decorate => (editor, { type }) => {
+  const code_block = getPlugin(editor, ELEMENT_CODE_BLOCK);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
@@ -78,7 +79,7 @@ export const getCodeLineDecorate = (): Decorate => (editor) => {
       return ranges;
     }
 
-    if (isElement(node) && node.type === code_line.type) {
+    if (isElement(node) && node.type === type) {
       const text = Node.string(node);
       const tokens = tokenize(text, lang);
       let offset = 0;

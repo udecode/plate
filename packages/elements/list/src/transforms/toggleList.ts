@@ -7,7 +7,7 @@ import {
   setNodes,
   wrapNodes,
 } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
 import { getListItemEntry, getListTypes } from '../queries';
@@ -44,13 +44,13 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
 
         const nodes = [
           ...getNodes(editor, {
-            match: { type: getPlatePluginType(editor, ELEMENT_DEFAULT) },
+            match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
           }),
         ];
-        setNodes(editor, { type: getPlatePluginType(editor, ELEMENT_LIC) });
+        setNodes(editor, { type: getPluginType(editor, ELEMENT_LIC) });
 
         const listItem = {
-          type: getPlatePluginType(editor, ELEMENT_LI),
+          type: getPluginType(editor, ELEMENT_LI),
           children: [],
         };
 
@@ -68,8 +68,7 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
 
       if (
         getListTypes(editor).includes((commonEntry[0] as TElement).type) ||
-        (commonEntry[0] as TElement).type ===
-          getPlatePluginType(editor, ELEMENT_LI)
+        (commonEntry[0] as TElement).type === getPluginType(editor, ELEMENT_LI)
       ) {
         if ((commonEntry[0] as TElement).type !== type) {
           const startList = findNode(editor, {
@@ -116,12 +115,12 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
           } else {
             setNodes(
               editor,
-              { type: getPlatePluginType(editor, ELEMENT_LIC) },
+              { type: getPluginType(editor, ELEMENT_LIC) },
               { at: n[1] }
             );
 
             const listItem = {
-              type: getPlatePluginType(editor, ELEMENT_LI),
+              type: getPluginType(editor, ELEMENT_LI),
               children: [],
             };
             wrapNodes(editor, listItem, {

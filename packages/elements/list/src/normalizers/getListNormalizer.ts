@@ -7,7 +7,7 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
   isElement,
   PlateEditor,
   TDescendant,
@@ -29,9 +29,9 @@ export const getListNormalizer = (
   { validLiChildrenTypes }: ListNormalizerOptions
 ) => {
   const { normalizeNode } = editor;
-  const liType = getPlatePluginType(editor, ELEMENT_LI);
-  const licType = getPlatePluginType(editor, ELEMENT_LIC);
-  const defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT);
+  const liType = getPluginType(editor, ELEMENT_LI);
+  const licType = getPluginType(editor, ELEMENT_LIC);
+  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
   return ([node, path]: NodeEntry) => {
     if (!isElement(node)) return;
@@ -75,7 +75,7 @@ export const getListNormalizer = (
       }
     }
 
-    if (node.type === getPlatePluginType(editor, ELEMENT_LI)) {
+    if (node.type === getPluginType(editor, ELEMENT_LI)) {
       if (
         normalizeListItem(editor, {
           listItem: [node, path],

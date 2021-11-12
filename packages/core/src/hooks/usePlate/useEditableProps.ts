@@ -4,6 +4,7 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { setEventEditorId } from '../../stores/event-editor/actions/setEventEditorId';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
+import { PlatePlugin } from '../../types/plugins/PlatePlugin/PlatePlugin';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -18,10 +19,11 @@ export const useEditableProps = ({
   const editor = usePlateEditorRef(id);
   const _plugins = usePlatePlugins(id);
 
-  const plugins: typeof _plugins = useMemo(
+  const plugins: PlatePlugin[] = useMemo(
     () => [
       ...(_plugins ?? []),
       {
+        key: 'event-editor',
         onFocus: () => () => {
           setEventEditorId('focus', id);
         },
