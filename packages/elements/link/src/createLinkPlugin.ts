@@ -1,5 +1,5 @@
 import { isUrl as isUrlProtocol } from '@udecode/plate-common';
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { getLinkDeserialize } from './getLinkDeserialize';
 import { getLinkOnKeyDown } from './getLinkOnKeyDown';
 import { LinkPlugin } from './types';
@@ -10,7 +10,7 @@ export const ELEMENT_LINK = 'a';
 /**
  * Enables support for hyperlinks.
  */
-export const createLinkPlugin = createPlugin<LinkPlugin>({
+export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,

@@ -1,11 +1,11 @@
 import { withReact } from 'slate-react';
 import { WithOverride } from '../types/plugins/PlatePlugin/WithOverride';
-import { createPlugin } from '../utils/createPlugin';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 /**
  * @see {@link withReact}
  */
-export const createReactPlugin = createPlugin({
+export const createReactPlugin = createPluginFactory({
   key: 'react',
   withOverrides: withReact as WithOverride,
 });

@@ -20,7 +20,7 @@ Let's create a few plugins to cover the plugin properties.
 A plugin to add an element: a paragraph as a block controlled by slate:
 
 ```ts
-export const createParagraphPlugin = createPlugin({
+export const createParagraphPlugin = createPluginFactory({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
   deserialize: getParagraphDeserialize(),
@@ -42,7 +42,7 @@ export const createParagraphPlugin = createPlugin({
 A plugin to add an inline and void element: a tag uncontrolled by slate:
 
 ```ts
-export const createTagPlugin = createPlugin({
+export const createTagPlugin = createPluginFactory({
   key: ELEMENT_TAG,
   isElement: true,
   isInline: true,
@@ -61,7 +61,7 @@ export const createTagPlugin = createPlugin({
 Finally, a plugin to add a leaf: a highlight mark.
 
 ```ts
-export const createHighlightPlugin = createPlugin({
+export const createHighlightPlugin = createPluginFactory({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
   deserialize: getHighlightDeserialize(),

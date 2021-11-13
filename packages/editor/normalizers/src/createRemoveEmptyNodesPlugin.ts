@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from './withRemoveEmptyNodes';
 
 export interface RemoveEmptyNodesPlugin {
@@ -8,7 +8,7 @@ export interface RemoveEmptyNodesPlugin {
 /**
  * @see {@link withRemoveEmptyNodes}
  */
-export const createRemoveEmptyNodesPlugin = createPlugin<RemoveEmptyNodesPlugin>(
+export const createRemoveEmptyNodesPlugin = createPluginFactory<RemoveEmptyNodesPlugin>(
   {
     key: 'removeEmptyNodes',
     withOverrides: withRemoveEmptyNodes(),

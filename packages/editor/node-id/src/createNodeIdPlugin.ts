@@ -1,5 +1,5 @@
 import { QueryNodeOptions } from '@udecode/plate-common';
-import { createPlugin, WithRequired } from '@udecode/plate-core';
+import { createPluginFactory, WithRequired } from '@udecode/plate-core';
 import { withNodeId } from './withNodeId';
 
 export interface NodeIdPlugin extends WithRequired<QueryNodeOptions, 'filter'> {
@@ -34,7 +34,7 @@ export const KEY_NODE_ID = 'nodeId';
 /**
  * @see {@link withNodeId}
  */
-export const createNodeIdPlugin = createPlugin<NodeIdPlugin>({
+export const createNodeIdPlugin = createPluginFactory<NodeIdPlugin>({
   key: KEY_NODE_ID,
   withOverrides: withNodeId(),
   idKey: 'id',

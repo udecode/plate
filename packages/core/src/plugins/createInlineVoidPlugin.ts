@@ -1,6 +1,6 @@
 import { WithOverride } from '../types/plugins/PlatePlugin/WithOverride';
 import { TElement } from '../types/slate/TElement';
-import { createPlugin } from '../utils/createPlugin';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
 
@@ -42,7 +42,7 @@ export const withInlineVoid = (): WithOverride => (editor) => {
 /**
  * @see {@link withInlineVoid}
  */
-export const createInlineVoidPlugin = createPlugin({
+export const createInlineVoidPlugin = createPluginFactory({
   key: KEY_INLINE_VOID,
   withOverrides: withInlineVoid(),
 });

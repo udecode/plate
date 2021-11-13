@@ -1,4 +1,7 @@
 import defaultsDeep from 'lodash/defaultsDeep';
+import keyBy from 'lodash/keyBy';
+import merge from 'lodash/merge';
+import values from 'lodash/values';
 import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { createInlineVoidPlugin } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
@@ -35,8 +38,27 @@ export const withPlate = ({
 
   // recursive plugin.then
   const mergePlugin = (plugin: PlatePlugin): PlatePlugin => {
-    if (plugin.then) {
-      return mergePlugin(defaultsDeep(plugin.then(editor, plugin), plugin));
+    const { then } = plugin;
+    if (then) {
+      delete plugin.then;
+
+      const { plugins } = plugin;
+
+      const pluginThen = mergePlugin(
+        defaultsDeep(then(editor, plugin), plugin)
+      );
+
+      // merge plugins by key
+      if (plugins && pluginThen.plugins) {
+        const merged = merge(
+          keyBy(plugins, 'key'),
+          keyBy(pluginThen.plugins, 'key')
+        );
+
+        pluginThen.plugins = values(merged);
+      }
+
+      return pluginThen;
     }
 
     return plugin;

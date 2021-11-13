@@ -1,12 +1,12 @@
 import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { createPlugin, getPluginType } from '@udecode/plate-core';
+import { createPluginFactory, getPluginType } from '@udecode/plate-core';
 import { getIndentOnKeyDown } from './getIndentOnKeyDown';
 import { IndentPlugin } from './types';
 import { withIndent } from './withIndent';
 
 export const KEY_INDENT = 'indent';
 
-export const createIndentPlugin = createPlugin<IndentPlugin>({
+export const createIndentPlugin = createPluginFactory<IndentPlugin>({
   key: KEY_INDENT,
   withOverrides: withIndent(),
   onKeyDown: getIndentOnKeyDown(),

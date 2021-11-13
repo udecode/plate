@@ -1,5 +1,5 @@
 import { ErrorHandler } from '@udecode/plate-common';
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { withNormalizeTypes } from './withNormalizeTypes';
 
@@ -35,8 +35,10 @@ export const KEY_NORMALIZE_TYPES = 'normalizeTypes';
 /**
  * @see {@link withNormalizeTypes}
  */
-export const createNormalizeTypesPlugin = createPlugin<NormalizeTypesPlugin>({
-  key: KEY_NORMALIZE_TYPES,
-  withOverrides: withNormalizeTypes(),
-  rules: [],
-});
+export const createNormalizeTypesPlugin = createPluginFactory<NormalizeTypesPlugin>(
+  {
+    key: KEY_NORMALIZE_TYPES,
+    withOverrides: withNormalizeTypes(),
+    rules: [],
+  }
+);

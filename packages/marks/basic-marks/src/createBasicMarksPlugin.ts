@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { createBoldPlugin } from './bold/createBoldPlugin';
 import { createCodePlugin } from './code/createCodePlugin';
 import { createItalicPlugin } from './italic/createItalicPlugin';
@@ -17,7 +17,7 @@ import { createUnderlinePlugin } from './underline/createUnderlinePlugin';
  * - Superscript
  * - Underline
  */
-export const createBasicMarksPlugin = createPlugin({
+export const createBasicMarksPlugin = createPluginFactory({
   key: 'basicMarks',
   plugins: [
     createBoldPlugin(),

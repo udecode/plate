@@ -1,5 +1,6 @@
 import { PlateEditor } from '../../PlateEditor';
 import { GetNodeProps } from '../../PlatePluginOptions/GetNodeProps';
+import { AnyObject } from '../../utility/AnyObject';
 import { PlatePluginKey } from '../PlatePluginKey';
 import { SerializerPlugin } from '../SerializePlugin/SerializerPlugin';
 import { Decorate } from './Decorate';
@@ -17,7 +18,8 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> &
   Partial<DOMHandlers<T, P>> &
   OverridePropsPlugin &
   SerializerPlugin<T, P> &
-  P & {
+  P &
+  AnyObject & {
     /**
      * React component rendering a slate element or leaf.
      * @default DefaultElement | DefaultLeaf

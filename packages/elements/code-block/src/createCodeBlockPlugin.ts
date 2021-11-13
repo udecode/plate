@@ -1,5 +1,5 @@
 import { KEY_DESERIALIZE_AST } from '@udecode/plate-ast-serializer';
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 import {
   getCodeBlockDeserialize,
@@ -13,7 +13,7 @@ import { withCodeBlock } from './withCodeBlock';
 /**
  * Enables support for pre-formatted code blocks.
  */
-export const createCodeBlockPlugin = createPlugin<CodeBlockPlugin>({
+export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
   deserialize: getCodeBlockDeserialize(),

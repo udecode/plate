@@ -116,7 +116,6 @@ export const Example = () => {
       <Plate
         id="playground"
         plugins={pluginsMemo}
-        components={styledComponents}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.playground}
       >

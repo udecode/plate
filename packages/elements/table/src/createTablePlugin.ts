@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import {
   getTableDeserialize,
   getTdDeserialize,
@@ -16,7 +16,7 @@ export const ELEMENT_TD = 'td';
 /**
  * Enables support for tables.
  */
-export const createTablePlugin = createPlugin({
+export const createTablePlugin = createPluginFactory({
   key: ELEMENT_TABLE,
   isElement: true,
   deserialize: getTableDeserialize(),

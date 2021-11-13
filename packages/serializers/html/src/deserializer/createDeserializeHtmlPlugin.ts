@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { withDeserializeHtml } from './withDeserializeHtml';
 
 export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
@@ -6,7 +6,7 @@ export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
 /**
  * @see {@link withDeserializeHTML}
  */
-export const createDeserializeHtmlPlugin = createPlugin({
+export const createDeserializeHtmlPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_HTML,
   withOverrides: withDeserializeHtml(),
 });

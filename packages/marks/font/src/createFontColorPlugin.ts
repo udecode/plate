@@ -1,9 +1,9 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { getFontColorDeserialize } from './getFontDeserialize';
 
 export const MARK_COLOR = 'color';
 
-export const createFontColorPlugin = createPlugin({
+export const createFontColorPlugin = createPluginFactory({
   key: MARK_COLOR,
   deserialize: getFontColorDeserialize(),
   overrideProps: {

@@ -1,4 +1,4 @@
-import { createPlugin, PlatePlugin } from '@udecode/plate-core';
+import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
 import {
   getLicDeserialize,
   getLiDeserialize,
@@ -17,7 +17,7 @@ export const ELEMENT_LIC = 'lic';
 /**
  * Enables support for bulleted, numbered and to-do lists.
  */
-export const createListPlugin = createPlugin({
+export const createListPlugin = createPluginFactory({
   key: 'list',
   plugins: [
     {

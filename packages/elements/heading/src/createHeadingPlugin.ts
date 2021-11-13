@@ -1,5 +1,5 @@
 import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { createPlugin, PlatePlugin } from '@udecode/plate-core';
+import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
 import { KEYS_HEADING } from './constants';
 import { getHeadingDeserialize } from './getHeadingDeserialize';
 import { HeadingPlugin, HeadingsPlugin } from './types';
@@ -8,7 +8,7 @@ import { HeadingPlugin, HeadingsPlugin } from './types';
  * Enables support for headings with configurable levels
  * (from 1 to 6).
  */
-export const createHeadingPlugin = createPlugin<HeadingsPlugin>({
+export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
   key: 'heading',
   levels: 6,
   then: (editor, { levels }) => {

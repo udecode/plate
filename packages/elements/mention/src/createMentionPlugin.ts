@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { getMentionDeserialize } from './getMentionDeserialize';
 import { moveSelectionByOffset } from './moveSelectionByOffset';
 import { isSelectionInMentionInput } from './queries';
@@ -11,7 +11,7 @@ export const ELEMENT_MENTION_INPUT = 'mention_input';
 /**
  * Enables support for autocompleting @mentions.
  */
-export const createMentionPlugin = createPlugin<MentionPlugin>({
+export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   key: ELEMENT_MENTION,
   isElement: true,
   isInline: true,

@@ -2,7 +2,7 @@ import {
   getToggleMarkOnKeyDown,
   ToggleMarkPlugin,
 } from '@udecode/plate-common';
-import { createPlugin } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { getUnderlineDeserialize } from './getUnderlineDeserialize';
 
 export const MARK_UNDERLINE = 'underline';
@@ -10,7 +10,7 @@ export const MARK_UNDERLINE = 'underline';
 /**
  * Enables support for underline formatting.
  */
-export const createUnderlinePlugin = createPlugin<ToggleMarkPlugin>({
+export const createUnderlinePlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_UNDERLINE,
   isLeaf: true,
   deserialize: getUnderlineDeserialize(),

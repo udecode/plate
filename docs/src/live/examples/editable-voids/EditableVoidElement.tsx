@@ -62,8 +62,6 @@ export const EditableVoidElement = ({
           <Plate
             id="editable-void-basic-elements"
             plugins={plugins}
-            components={CONFIG.components}
-            options={CONFIG.options}
             editableProps={CONFIG.editableProps}
             initialValue={VALUES.basicElements}
           />
