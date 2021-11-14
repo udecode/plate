@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../plate/src/utils/createPlateEditor';
 import { createListPlugin } from './createListPlugin';
 
 jsx;
@@ -32,7 +32,7 @@ describe('p (empty) + list when selection not in list', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -65,7 +65,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -104,7 +104,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -159,7 +159,7 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -215,7 +215,7 @@ describe('list + list when selection is at the end of the first list', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

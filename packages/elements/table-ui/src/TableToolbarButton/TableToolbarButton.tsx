@@ -10,7 +10,7 @@ export const TableToolbarButton = ({
   header,
   ...props
 }: TableToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
   const type = getPluginType(editor, ELEMENT_TABLE);
 
   return (

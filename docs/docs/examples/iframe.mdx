@@ -11,12 +11,14 @@ title: IFrame
     ...CONFIG.components,
     [EDITABLE_VOID]: EditableVoidElement,
   };
+  
+  const plugins = createPlugins(PLUGINS.basicNodes, { components });
 
   return (
     <IFrame>
       <Plate
         id="iframe"
-        plugins={PLUGINS.basicNodes}
+        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.iframe}
       />

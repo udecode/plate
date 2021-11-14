@@ -19,13 +19,15 @@ npm install @udecode/plate-trailing-block
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createTrailingBlockPlugin(CONFIG.trailingBlock),
     createNormalizeTypesPlugin({
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

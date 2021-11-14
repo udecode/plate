@@ -3,34 +3,27 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 import { RenderLeaf } from '../types/plugins/PlatePlugin/RenderLeaf';
 import { getRenderLeaf } from './getRenderLeaf';
-import { injectOverrideProps } from './injectOverrideProps';
+import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
  * @see {@link RenderLeaf}
  */
 export const pipeRenderLeaf = (
   editor: PlateEditor,
-  {
-    plugins = [],
-    editableProps,
-  }: { plugins: PlatePlugin[]; editableProps?: EditableProps }
+  editableProps?: EditableProps
 ): EditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
 
-  plugins.forEach((plugin) => {
+  editor.plugins.forEach((plugin) => {
     if (plugin.isLeaf && plugin.key) {
       renderLeafs.push(getRenderLeaf(editor, plugin));
     }
   });
 
   return (_props) => {
-    const props = injectOverrideProps<PlateRenderLeafProps>(editor, {
-      props: _props,
-      plugins,
-    });
+    const props = pipeOverrideProps<PlateRenderLeafProps>(editor, _props);
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);

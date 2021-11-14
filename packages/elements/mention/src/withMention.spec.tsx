@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createEditorPlugins } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate';
 import { ComboboxState, comboboxStore } from '@udecode/plate-combobox';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
@@ -32,7 +32,7 @@ describe('withMention', () => {
       );
     }
 
-    return createEditorPlugins({
+    return createPlateEditor({
       editor: (<editor>{state}</editor>) as any,
       plugins,
     });

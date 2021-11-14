@@ -14,8 +14,8 @@ export type MentionNode = TElement<MentionNodeData>;
 export type MentionInputNode = TElement<MentionInputNodeData>;
 
 export interface MentionPlugin<TData extends Data = NoData> {
-  createMentionNode: CreateMentionNode<TData>;
+  createMentionNode?: CreateMentionNode<TData>;
   id?: string;
   insertSpaceAfterMention?: boolean;
-  trigger: string;
+  trigger?: string;
 }

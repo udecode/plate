@@ -2,7 +2,7 @@ import {
   createImagePlugin,
   createLinkPlugin,
 } from '../../../../../plate/src/index';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -11,7 +11,7 @@ it('serialize link to html with attributes', () => {
 
   expect(
     serializeHTMLFromNodes(
-      createEditorPlugins({
+      createPlateEditor({
         plugins,
         options: {
           a: {
@@ -46,7 +46,7 @@ it('serialize image with alt to html', () => {
 
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
+      serializeHTMLFromNodes(createPlateEditor({ plugins }), {
         plugins,
         nodes: [
           {

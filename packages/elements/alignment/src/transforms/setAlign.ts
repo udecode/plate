@@ -4,36 +4,38 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlugin, PlateEditor } from '@udecode/plate-core';
+import { getPlugin, PlateEditor, PlatePluginKey } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../createAlignPlugin';
 import { Alignment } from '../types';
 
 export const setAlign = (
   editor: PlateEditor,
-  { value }: { value: Alignment },
-  options?: SetNodesOptions
+  {
+    key = KEY_ALIGN,
+    value,
+    setNodesOptions,
+  }: { value: Alignment; setNodesOptions?: SetNodesOptions } & PlatePluginKey
 ) => {
-  const { validTypes, defaultNodeValue, nodeKey } = getPlugin(
-    editor,
-    KEY_ALIGN
-  );
+  const { overrideProps = {} } = getPlugin(editor, key);
+
+  const { validTypes, defaultNodeValue, nodeKey } = overrideProps;
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && validTypes.includes(n.type);
+    Editor.isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
 
   if (value === defaultNodeValue) {
-    unsetNodes(editor, nodeKey, {
+    unsetNodes(editor, nodeKey!, {
       match,
-      ...options,
+      ...setNodesOptions,
     });
   } else {
     setNodes(
       editor,
-      { [nodeKey]: value },
+      { [nodeKey!]: value },
       {
         match,
-        ...options,
+        ...setNodesOptions,
       }
     );
   }

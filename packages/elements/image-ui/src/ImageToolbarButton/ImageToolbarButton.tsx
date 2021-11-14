@@ -14,7 +14,7 @@ export const ImageToolbarButton = ({
   getImageUrl,
   ...props
 }: ImageToolbarButtonProps) => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <ToolbarButton

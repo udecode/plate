@@ -41,20 +41,24 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createAlignPlugin({
-      types: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
-      ],
+      overrideProps: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
+      }
     })
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

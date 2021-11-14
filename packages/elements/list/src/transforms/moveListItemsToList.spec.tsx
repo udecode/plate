@@ -3,7 +3,7 @@
 import { findNode } from '@udecode/plate-common';
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../plate/src/utils/createPlateEditor';
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsx;
@@ -53,7 +53,7 @@ const output = ((
 ) as any) as PlateEditor;
 
 it('should', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     editor: input,
   });
 

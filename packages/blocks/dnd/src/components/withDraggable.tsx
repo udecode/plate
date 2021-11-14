@@ -24,7 +24,7 @@ export const withDraggable = (
   }: WithDraggableOptions = {}
 ) => {
   return forwardRef((props: PlateRenderElementProps, ref) => {
-    const { attributes, element, plugins, editor } = props;
+    const { attributes, element, editor } = props;
     const readOnly = useReadOnly();
     const path = useMemo(() => ReactEditor.findPath(editor, element), [
       editor,
@@ -45,7 +45,6 @@ export const withDraggable = (
     return (
       <Draggable
         editor={editor}
-        plugins={plugins}
         attributes={attributes}
         element={element}
         componentRef={ref}

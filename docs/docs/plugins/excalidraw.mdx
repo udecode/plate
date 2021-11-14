@@ -13,17 +13,17 @@ npm install @udecode/plate-excalidraw
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createExcalidrawPlugin(),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_EXCALIDRAW] }),
-  ];
-
-  const components = {
-    ...CONFIG.components,
-    [ELEMENT_EXCALIDRAW]: ExcalidrawElement
-  };
-
+  ], {
+    components: {
+      ...CONFIG.components,
+      [ELEMENT_EXCALIDRAW]: ExcalidrawElement
+    },
+  });
+     
   return (
     <Plate
       id="excalidraw"

@@ -24,10 +24,12 @@ npm install @udecode/plate-kbd
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createKbdPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

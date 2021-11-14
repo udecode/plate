@@ -20,12 +20,10 @@ export const getRenderElement = (
     getNodeProps,
   }: PlatePlugin
 ): RenderElement => (props) => {
-  const { plugins } = props;
-
-  const injectParentComponents = plugins.flatMap(
+  const injectParentComponents = editor.plugins.flatMap(
     (o) => o.injectParentComponent ?? []
   );
-  const injectChildComponents = plugins.flatMap(
+  const injectChildComponents = editor.plugins.flatMap(
     (o) => o.injectChildComponent ?? []
   );
 

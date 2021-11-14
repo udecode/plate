@@ -1,13 +1,15 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElementWithSlate } from '@udecode/plate-common';
 import {
+  getPlugins,
   getRenderElement,
   getRenderLeaf,
-  injectOverrideProps,
+  pipeOverrideProps,
   PlateEditor,
   PlatePlugin,
   PlateRenderElementProps,
   PlateRenderLeafProps,
+  setPlatePlugins,
   SlateProps,
   TDescendant,
 } from '@udecode/plate-core';
@@ -53,12 +55,10 @@ const stripClassNames = (
 const getNode = (
   editor: PlateEditor,
   {
-    plugins,
     elementProps,
     slateProps,
     preserveClassNames,
   }: {
-    plugins: PlatePlugin[];
     elementProps: PlateRenderElementProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
@@ -71,13 +71,13 @@ const getNode = (
 
   let html: string | undefined;
 
-  elementProps = injectOverrideProps<PlateRenderElementProps>(editor, {
-    props: elementProps,
-    plugins,
-  });
+  elementProps = pipeOverrideProps<PlateRenderElementProps>(
+    editor,
+    elementProps
+  );
 
   // Search for matching plugin based on element type
-  plugins.some((plugin) => {
+  editor.plugins.some((plugin) => {
     if (!plugin.serialize?.element && !plugin.isElement) return false;
 
     if (
@@ -101,6 +101,8 @@ const getNode = (
       })
     );
 
+    console.log(getRenderElement(editor, plugin)(elementProps));
+
     html = stripClassNames(html, { preserveClassNames });
 
     return true;
@@ -112,12 +114,10 @@ const getNode = (
 const getLeaf = (
   editor: PlateEditor,
   {
-    plugins,
     leafProps,
     slateProps,
     preserveClassNames,
   }: {
-    plugins: PlatePlugin[];
     leafProps: PlateRenderLeafProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
@@ -125,7 +125,7 @@ const getLeaf = (
 ) => {
   const { children } = leafProps;
 
-  return plugins.reduce((result, plugin) => {
+  return editor.plugins.reduce((result, plugin) => {
     if (!plugin.serialize?.leaf && !plugin.isLeaf) return result;
     if (
       (plugin.serialize?.leaf?.(leafProps) ??
@@ -134,10 +134,7 @@ const getLeaf = (
       return result;
 
     leafProps = {
-      ...injectOverrideProps<PlateRenderLeafProps>(editor, {
-        props: leafProps,
-        plugins,
-      }),
+      ...pipeOverrideProps<PlateRenderLeafProps>(editor, leafProps),
       children: encodeURIComponent(result),
     };
 
@@ -211,11 +208,14 @@ export const serializeHTMLFromNodes = (
     stripWhitespace?: boolean;
   }
 ): string => {
+  setPlatePlugins(editor, plugins);
+
+  plugins = getPlugins(editor);
+
   let result = nodes
     .map((node) => {
       if (Text.isText(node)) {
         return getLeaf(editor, {
-          plugins,
           leafProps: {
             leaf: node,
             text: node,
@@ -224,7 +224,6 @@ export const serializeHTMLFromNodes = (
               : encodeURIComponent(node.text),
             attributes: { 'data-slate-leaf': true },
             editor,
-            plugins,
           },
           slateProps,
           preserveClassNames,
@@ -232,7 +231,6 @@ export const serializeHTMLFromNodes = (
       }
 
       return getNode(editor, {
-        plugins,
         elementProps: {
           element: node,
           children: encodeURIComponent(
@@ -245,7 +243,6 @@ export const serializeHTMLFromNodes = (
           ) as any,
           attributes: { 'data-slate-node': 'element', ref: null },
           editor,
-          plugins,
         },
         slateProps,
         preserveClassNames,

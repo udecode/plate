@@ -21,7 +21,7 @@ export const withNodeId = (): WithOverride<{}, NodeIdPlugin> => (
 
   const filterNode = (nodeEntry: NodeEntry<TNode>) => {
     return (
-      filter(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
+      filter!(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
     );
   };
 

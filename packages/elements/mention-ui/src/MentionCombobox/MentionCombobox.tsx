@@ -17,7 +17,7 @@ export const MentionCombobox = <TData extends Data = NoData>({
   Partial<ComboboxProps<TData>>,
   'id' | 'items' | 'component' | 'onRenderItem'
 > & { pluginKey?: string }) => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   const { trigger } = getPlugin<MentionPlugin>(editor, pluginKey);
 

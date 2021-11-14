@@ -17,15 +17,12 @@ Use `serializeHTMLFromNodes`:
 
 ```ts live
 () => {
-  const nodes = [
-    ...VALUES.basicNodes
-  ];
-  
-  const editor = createEditorPlugins();
+  const editor = createPlateEditor({
+    plugins: createPlugins(PLUGINS.basicNodes, { components: CONFIG.components })
+  });
 
   const html = serializeHTMLFromNodes(editor, {
-    plugins: PLUGINS.basicNodes,
-    nodes,
+    nodes: VALUES.basicNodes,
   })
 
   return (
@@ -38,7 +35,7 @@ Use `serializeHTMLFromNodes`:
 
 ```ts live
 () => {
-  const plugins = [
+  let plugins = [
     ...PLUGINS.basicNodes,
     createImagePlugin(),
     createLinkPlugin(),
@@ -50,9 +47,12 @@ Use `serializeHTMLFromNodes`:
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
-  ];
-    
-  plugins.push(createDeserializeHTMLPlugin({ plugins }));
+  ]
+  // plugins.push(createDeserializeHtmlPlugin({ plugins }));
+
+  plugins = createPlugins(plugins, {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

@@ -19,7 +19,7 @@ export const setLineHeight = (
   const { validTypes, defaultNodeValue, nodeKey } = overrideProps;
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && validTypes!.includes(n.type);
+    Editor.isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {

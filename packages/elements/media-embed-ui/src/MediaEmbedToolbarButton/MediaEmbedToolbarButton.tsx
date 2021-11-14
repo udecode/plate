@@ -14,7 +14,7 @@ export const MediaEmbedToolbarButton = ({
   getEmbedUrl,
   ...props
 }: MediaEmbedToolbarButtonProps) => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <ToolbarButton

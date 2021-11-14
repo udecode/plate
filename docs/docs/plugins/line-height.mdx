@@ -19,7 +19,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
       defaultNodeValue: 1.5,
@@ -29,7 +29,9 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
         ELEMENT_H1,
       ],
     })
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

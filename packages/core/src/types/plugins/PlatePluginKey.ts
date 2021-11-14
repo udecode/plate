@@ -1,11 +1,11 @@
 /**
- * A unique key to store the plugin options by key.
+ * Unique key to store the plugins by key.
  */
 export type PluginKey = string;
 
 export interface PlatePluginKey {
   /**
-   * A unique key to store the plugin options by key.
+   * Unique key to store the plugins by key.
    */
   key?: PluginKey;
 }

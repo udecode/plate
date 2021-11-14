@@ -35,7 +35,7 @@ import { getSuperscriptDeserialize } from '../../../../../../marks/basic-marks/s
 import { getUnderlineDeserialize } from '../../../../../../marks/basic-marks/src/underline/getUnderlineDeserialize';
 import { getHighlightDeserialize } from '../../../../../../marks/highlight/src/getHighlightDeserialize';
 import { getKbdDeserialize } from '../../../../../../marks/kbd/src/getKbdDeserialize';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const textTags = [
@@ -170,7 +170,7 @@ it('should be', () => {
 
   expect(
     deserializeHTMLElement(
-      createEditorPlugins({
+      createPlateEditor({
         plugins,
       }),
       {

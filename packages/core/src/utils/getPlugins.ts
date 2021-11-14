@@ -5,7 +5,7 @@ import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
  * Get `editor.plugins`
  */
 export const getPlugins = <T = {}>(
-  editor?: PlateEditor<T>
+  editor: PlateEditor<T>
 ): PlatePlugin<T>[] => {
   return editor?.plugins ?? [];
 };

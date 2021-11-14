@@ -63,12 +63,14 @@ npm install @udecode/plate-basic-marks
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.core,
     ...PLUGINS.basicElements,
     createBasicMarksPlugin(),
-  ];
-
+  ], {
+    components: CONFIG.components,
+  });
+  
   return (
     <>
       <HeadingToolbar>

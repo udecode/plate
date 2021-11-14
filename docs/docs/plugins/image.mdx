@@ -14,11 +14,13 @@ npm install @udecode/plate-image-ui
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_IMAGE] }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

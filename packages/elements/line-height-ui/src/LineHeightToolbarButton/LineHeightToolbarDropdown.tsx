@@ -11,7 +11,7 @@ import { ReactEditor } from 'slate-react';
 
 export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
   const [open, setOpen] = React.useState(false);
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   const { overrideProps = {} } = getPlugin(editor, KEY_LINE_HEIGHT);
   const { validNodeValues } = overrideProps;

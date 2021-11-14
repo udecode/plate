@@ -22,7 +22,7 @@ import { ColorType } from '../ColorPicker/ColorType';
 import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
 
 type ColorPickerToolbarDropdownProps = {
-  pluginKey?: string;
+  pluginKey: string;
   icon: ReactNode;
   selectedIcon: ReactNode;
   colors?: ColorType[];
@@ -40,8 +40,8 @@ export const ColorPickerToolbarDropdown = ({
   ...rest
 }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
   const [open, setOpen] = useState(false);
-  const editor = usePlateEditorState();
-  const editorRef = usePlateEditorRef();
+  const editor = usePlateEditorState()!;
+  const editorRef = usePlateEditorRef()!;
   const type = getPluginType(editorRef, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);

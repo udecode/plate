@@ -17,14 +17,14 @@ import { createEditor } from 'slate';
  * - options
  * - components
  */
-export const createEditorPlugins = <T extends string = string>({
+export const createPlateEditor = <T extends string = string>({
   editor = createEditor() as any,
   plugins = [],
 }: {
   editor?: PlateEditor;
   plugins?: PlatePlugin[];
 } = {}) => {
-  return withPlate({
+  return withPlate(editor, {
     plugins: [createReactPlugin(), createHistoryPlugin(), ...plugins],
-  })(editor);
+  });
 };

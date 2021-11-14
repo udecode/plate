@@ -7,7 +7,6 @@ export const getRootProps = (
 ) => {
   const {
     editor,
-    plugins,
     attributes,
     children,
     nodeProps,

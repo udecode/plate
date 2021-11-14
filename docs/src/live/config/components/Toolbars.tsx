@@ -75,7 +75,7 @@ import {
 } from '@udecode/plate';
 
 export const BasicElementToolbarButtons = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <>
@@ -116,7 +116,7 @@ export const BasicElementToolbarButtons = () => {
 };
 
 export const IndentToolbarButtons = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <>
@@ -133,7 +133,7 @@ export const IndentToolbarButtons = () => {
 };
 
 export const ListToolbarButtons = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <>
@@ -161,7 +161,7 @@ export const AlignToolbarButtons = () => {
 };
 
 export const BasicMarkToolbarButtons = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <>
@@ -200,7 +200,7 @@ export const BasicMarkToolbarButtons = () => {
 };
 
 export const KbdToolbarButton = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <MarkToolbarButton
@@ -211,7 +211,7 @@ export const KbdToolbarButton = () => {
 };
 
 export const HighlightToolbarButton = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   return (
     <MarkToolbarButton
@@ -233,7 +233,7 @@ export const TableToolbarButtons = () => (
 );
 
 export const MarkBallonToolbar = () => {
-  const editor = usePlateEditorRef();
+  const editor = usePlateEditorRef()!;
 
   const arrow = false;
   const theme = 'dark';

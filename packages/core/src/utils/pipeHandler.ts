@@ -5,7 +5,6 @@ import {
   DOMHandlers,
   HandlerReturnType,
 } from '../types/plugins/PlatePlugin/DOMHandlers';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 
 /**
  * Check if an event is overrided by a handler.
@@ -42,15 +41,12 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-    plugins,
-  }: { editableProps?: EditableProps; handlerKey: K; plugins?: PlatePlugin[] }
+  }: { editableProps?: EditableProps; handlerKey: K }
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
-  if (plugins) {
-    pluginsHandlers = plugins.flatMap(
-      (plugin) => plugin[handlerKey]?.(editor, plugin) ?? []
-    );
-  }
+  pluginsHandlers = editor.plugins.flatMap(
+    (plugin) => plugin[handlerKey]?.(editor, plugin) ?? []
+  );
 
   const propsHandler = editableProps?.[handlerKey] as (
     event: any

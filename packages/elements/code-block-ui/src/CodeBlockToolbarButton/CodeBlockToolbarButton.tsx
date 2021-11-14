@@ -14,7 +14,7 @@ export const CodeBlockToolbarButton = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
   if (!editor) {
     return null;
   }

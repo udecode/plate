@@ -8,19 +8,28 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
-import { Plate, PlateRenderElementProps } from '@udecode/plate-core';
+import {
+  createPlugins,
+  Plate,
+  PlateRenderElementProps,
+} from '@udecode/plate-core';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import { CONFIG } from '../../config/config';
 import { VALUES } from '../../config/values/values';
 
-const plugins = [
-  createReactPlugin(),
-  createHistoryPlugin(),
-  createBasicElementsPlugin(),
-  createResetNodePlugin(CONFIG.resetBlockType),
-  createSoftBreakPlugin(CONFIG.softBreak),
-  createExitBreakPlugin(CONFIG.exitBreak),
-];
+const plugins = createPlugins(
+  [
+    createReactPlugin(),
+    createHistoryPlugin(),
+    createBasicElementsPlugin(),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+  ],
+  {
+    components: CONFIG.components,
+  }
+);
 
 export const EditableVoidElement = ({
   attributes,

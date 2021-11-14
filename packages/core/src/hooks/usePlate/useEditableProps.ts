@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 import omit from 'lodash/omit';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { setEventEditorId } from '../../stores/event-editor/actions/setEventEditorId';
-import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
-import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
-import { PlatePlugin } from '../../types/plugins/PlatePlugin/PlatePlugin';
+import { usePlateEditorWithPlugins } from '../../stores/plate/selectors/usePlateEditorRef';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -16,45 +13,19 @@ export const useEditableProps = ({
   id = 'main',
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
-  const editor = usePlateEditorRef(id);
-  const _plugins = usePlatePlugins(id);
-
-  const plugins: PlatePlugin[] = useMemo(
-    () => [
-      ...(_plugins ?? []),
-      {
-        key: 'event-editor',
-        onFocus: () => () => {
-          setEventEditorId('focus', id);
-        },
-        onBlur: () => () => {
-          setEventEditorId('blur', id);
-        },
-      },
-    ],
-    [_plugins, id]
-  );
+  const editor = usePlateEditorWithPlugins(id)!;
 
   const props: EditableProps = useMemo(() => {
-    if (!editor) return {};
-
     const _props: EditableProps = {
-      decorate: pipeDecorate(editor, plugins),
-      renderElement: pipeRenderElement(editor, {
-        plugins,
-        editableProps,
-      }),
-      renderLeaf: pipeRenderLeaf(editor, {
-        plugins,
-        editableProps,
-      }),
+      decorate: pipeDecorate(editor),
+      renderElement: pipeRenderElement(editor, editableProps),
+      renderLeaf: pipeRenderLeaf(editor, editableProps),
     };
 
     DOM_HANDLERS.forEach((handlerKey) => {
       const handler = pipeHandler(editor, {
         editableProps,
         handlerKey,
-        plugins,
       }) as any;
 
       if (handler) {
@@ -63,7 +34,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [editableProps, editor, plugins]);
+  }, [editableProps, editor]);
 
   return useMemo(
     () => ({

@@ -2,7 +2,7 @@
 
 import { findNode } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../plate/src/utils/createPlateEditor';
 import { hasListChild } from './hasListChild';
 
 jsx;
@@ -30,7 +30,7 @@ describe('when there is a sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
     });
 
@@ -52,7 +52,7 @@ describe('when there is no sublist', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
     });
 

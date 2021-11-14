@@ -5,7 +5,7 @@ import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 
 jsx;
 
@@ -35,7 +35,7 @@ const output = (
   </editor>
 ) as any;
 
-const editor = createEditorPlugins({
+const editor = createPlateEditor({
   editor: input,
   plugins: [createBoldPlugin()],
   options: { bold: { hotkey: 'ctrl+b', clear: MARK_ITALIC } },

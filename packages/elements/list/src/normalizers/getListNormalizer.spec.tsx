@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createEditorPlugins } from '@udecode/plate/src';
+import { createPlateEditor } from '@udecode/plate/src';
 import { getNode } from '@udecode/plate-common';
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -40,7 +40,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -82,7 +82,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -124,7 +124,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -148,7 +148,7 @@ describe('clean up lists', () => {
 
     const output = ((<editor />) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

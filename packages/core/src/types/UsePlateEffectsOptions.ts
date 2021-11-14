@@ -1,12 +1,11 @@
+import { PlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
 import { EditorId, PlateState } from './PlateStore';
 
 /**
  * `usePlateEffects` options
  */
 export interface UsePlateEffectsOptions<T = {}>
-  extends Partial<
-    Pick<PlateState<T>, 'editor' | 'value' | 'enabled' | 'plugins'>
-  > {
+  extends Partial<Pick<PlateState<T>, 'editor' | 'value' | 'enabled'>> {
   id?: EditorId;
 
   /**
@@ -21,4 +20,6 @@ export interface UsePlateEffectsOptions<T = {}>
    * @default false
    */
   normalizeInitialValue?: boolean;
+
+  plugins?: PlatePlugin<T>[];
 }

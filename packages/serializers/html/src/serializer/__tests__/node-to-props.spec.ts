@@ -2,12 +2,12 @@ import {
   createImagePlugin,
   createLinkPlugin,
 } from '../../../../../plate/src/index';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [createLinkPlugin(), createImagePlugin()];
-const editor = createEditorPlugins({
+const editor = createPlateEditor({
   plugins,
   options: {
     a: {

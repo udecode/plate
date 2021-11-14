@@ -1,8 +1,8 @@
 import { QueryNodeOptions } from '@udecode/plate-common';
-import { createPluginFactory, WithRequired } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate-core';
 import { withNodeId } from './withNodeId';
 
-export interface NodeIdPlugin extends WithRequired<QueryNodeOptions, 'filter'> {
+export interface NodeIdPlugin extends QueryNodeOptions {
   /**
    * Node key to store the id.
    * @default 'id'

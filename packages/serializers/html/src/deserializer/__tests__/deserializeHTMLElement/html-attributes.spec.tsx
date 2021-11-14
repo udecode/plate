@@ -3,7 +3,7 @@
 
 import { getHtmlDocument } from '@udecode/plate-test-utils';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const html =
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should include named attributes', () => {
-  expect(deserializeHTMLElement(createEditorPlugins(), input)).toEqual(
+  expect(deserializeHTMLElement(createPlateEditor(), input)).toEqual(
     output.children
   );
 });

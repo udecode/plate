@@ -1,11 +1,12 @@
 import { CSSProperties } from 'react';
 import clsx from 'clsx';
-import { OverrideProps } from '../types/plugins/PlatePlugin/OverrideProps';
-import { PlatePluginKey } from '../types/plugins/PlatePluginKey';
+import { PlateEditor } from '../types/PlateEditor';
+import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 import { TElement } from '../types/slate/TElement';
 import { TText } from '../types/slate/TText';
+import { AnyObject } from '../types/utility/AnyObject';
 
-export interface GetOverridePropsOptions extends PlatePluginKey {
+export interface GetOverridePropsOptions {
   /**
    * Existing className.
    */
@@ -27,7 +28,7 @@ export interface GetOverridePropsOptions extends PlatePluginKey {
   style?: CSSProperties;
 }
 
-export interface OverridePropsReturnType {
+export interface GetOverridePropsReturnType extends AnyObject {
   className?: string;
   style?: CSSProperties;
 }
@@ -40,13 +41,18 @@ export interface OverridePropsReturnType {
  * If `classNames[value]` is defined, override `className` with it.
  * If `styleKey` is defined, override `style` with `[styleKey]: value`.
  */
-export const getOverrideProps: OverrideProps = (
-  editor,
-  { key, overrideProps }
-) => (
-  options: GetOverridePropsOptions
-): OverridePropsReturnType | undefined => {
-  const { element, text, className, style } = options;
+export const getOverrideProps = (
+  editor: PlateEditor,
+  {
+    plugin,
+    props,
+  }: {
+    plugin: PlatePlugin;
+    props: GetOverridePropsOptions;
+  }
+): GetOverridePropsReturnType | undefined => {
+  const { key, overrideProps } = plugin;
+  const { element, text, className, style } = props;
 
   const node = element ?? text;
   if (!node) return;
@@ -74,9 +80,9 @@ export const getOverrideProps: OverrideProps = (
     return;
   }
 
-  const res: OverridePropsReturnType = {};
+  const res: GetOverridePropsReturnType = {};
 
-  const transformOptions = { ...options, nodeValue };
+  const transformOptions = { ...props, nodeValue };
 
   const value = transformNodeValue?.(editor, transformOptions) ?? nodeValue;
 

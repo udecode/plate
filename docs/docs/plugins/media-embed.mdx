@@ -14,11 +14,13 @@ npm install @udecode/plate-media-embed-ui
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createMediaEmbedPlugin(),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_MEDIA_EMBED] }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

@@ -1,10 +1,10 @@
 import { createTodoListPlugin } from '../../../../../elements/list/src/todo-list/createTodoListPlugin';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize elements using useSlateStatic', () => {
   const plugins = [createTodoListPlugin()];
-  const editor = createEditorPlugins({ plugins });
+  const editor = createPlateEditor({ plugins });
   const render = serializeHTMLFromNodes(editor, {
     plugins,
     nodes: [

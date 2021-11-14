@@ -16,7 +16,7 @@ export const MarkToolbarButton = ({
   clear,
   ...props
 }: MarkToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   return (
     <ToolbarButton

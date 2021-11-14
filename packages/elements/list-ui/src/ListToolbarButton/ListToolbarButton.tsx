@@ -8,7 +8,7 @@ export const ListToolbarButton = ({
   type = ELEMENT_UL,
   ...props
 }: ToolbarButtonProps & { type?: string }) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   const res = !!editor?.selection && getListItemEntry(editor);
 

@@ -20,7 +20,7 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createIndentPlugin({
       validTypes: [
@@ -28,7 +28,9 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
         ELEMENT_H1
       ],
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>
@@ -74,7 +76,7 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createIndentPlugin({
       offset: 3,
@@ -84,7 +86,9 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
         ELEMENT_H1
       ],
     })
-  ];
+  ], {
+    components: CONFIG.components,
+  });
   
   return (
     <>

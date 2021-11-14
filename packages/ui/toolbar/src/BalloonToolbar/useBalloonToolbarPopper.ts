@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-popper';
 
 export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   const [isHidden, setIsHidden] = useState(true);
 

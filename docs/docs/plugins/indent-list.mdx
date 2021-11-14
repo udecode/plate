@@ -41,7 +41,7 @@ npm install @udecode/plate-indent-list
     })
   }
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createIndentListPlugin({
       validTypes: [
@@ -55,7 +55,9 @@ npm install @udecode/plate-indent-list
         ELEMENT_H1,
       ],
     }),
-  ];
+  ], {
+    components,
+  });
   
   const IndentToolbarButtons = () => {
     const editor = usePlateEditorRef();

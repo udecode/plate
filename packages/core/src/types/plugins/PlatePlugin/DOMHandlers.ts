@@ -154,14 +154,6 @@ export interface DOMHandlers<T = {}, P = {}> {
     editor: PlateEditor<T>,
     plugin: PlatePlugin<T, P>
   ) => (event: SyntheticEvent) => ReturnType;
-  onError?: (
-    editor: PlateEditor<T>,
-    plugin: PlatePlugin<T, P>
-  ) => (event: SyntheticEvent) => ReturnType;
-  onErrorCapture?: (
-    editor: PlateEditor<T>,
-    plugin: PlatePlugin<T, P>
-  ) => (event: SyntheticEvent) => ReturnType;
 
   // Keyboard Events
   onKeyDown?: (

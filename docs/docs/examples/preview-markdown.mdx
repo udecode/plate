@@ -5,10 +5,12 @@ title: Preview Markdown
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createPreviewPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

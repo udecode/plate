@@ -39,8 +39,6 @@ export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Image Events
   'onLoad',
   'onLoadCapture',
-  'onError',
-  'onErrorCapture',
 
   // Keyboard Events
   'onKeyDown',

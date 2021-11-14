@@ -1,6 +1,5 @@
 import {
-  AlignPluginOptions,
-  AutoformatPluginOptions,
+  AutoformatPlugin,
   CodeBlockElement,
   createPlateComponents,
   ELEMENT_BLOCKQUOTE,
@@ -16,16 +15,17 @@ import {
   ELEMENT_PARAGRAPH,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
-  ExitBreakPluginOptions,
-  IndentPluginOptions,
+  ExitBreakPlugin,
+  IndentPlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
-  NormalizeTypesPluginOptions,
-  ResetBlockTypePluginOptions,
-  SelectOnBackspacePluginOptions,
-  SoftBreakPluginOptions,
-  TrailingBlockPluginOptions,
+  NormalizeTypesPlugin,
+  PlatePlugin,
+  ResetNodePlugin,
+  SelectOnBackspacePlugin,
+  SoftBreakPlugin,
+  TrailingBlockPlugin,
   withProps,
 } from '@udecode/plate';
 import { EditableProps } from 'slate-react/dist/components/editable';
@@ -38,22 +38,24 @@ const resetBlockTypesCommonRule = {
   defaultType: ELEMENT_PARAGRAPH,
 };
 
-export const CONFIG: {
+interface Config {
   components: Record<string, any>;
   editableProps: EditableProps;
 
-  align: AlignPluginOptions;
-  autoformat: AutoformatPluginOptions;
-  exitBreak: ExitBreakPluginOptions;
-  forceLayout: NormalizeTypesPluginOptions;
-  indent: IndentPluginOptions;
-  lineHeight: PlatePlugin;
+  align: Partial<PlatePlugin>;
+  autoformat: AutoformatPlugin;
+  exitBreak: ExitBreakPlugin;
+  forceLayout: NormalizeTypesPlugin;
+  indent: Partial<PlatePlugin<{}, IndentPlugin>>;
+  lineHeight: Partial<PlatePlugin>;
   mentionItems: any;
-  resetBlockType: ResetBlockTypePluginOptions;
-  selectOnBackspace: SelectOnBackspacePluginOptions;
-  softBreak: SoftBreakPluginOptions;
-  trailingBlock: TrailingBlockPluginOptions;
-} = {
+  resetBlockType: ResetNodePlugin;
+  selectOnBackspace: SelectOnBackspacePlugin;
+  softBreak: SoftBreakPlugin;
+  trailingBlock: TrailingBlockPlugin;
+}
+
+export const CONFIG: Config = {
   editableProps: {
     autoFocus: process.env.NODE_ENV !== 'production',
     spellCheck: false,
@@ -78,41 +80,47 @@ export const CONFIG: {
   }),
 
   align: {
-    validTypes: [
-      ELEMENT_PARAGRAPH,
-      ELEMENT_H1,
-      ELEMENT_H2,
-      ELEMENT_H3,
-      ELEMENT_H4,
-      ELEMENT_H5,
-      ELEMENT_H6,
-    ],
+    overrideProps: {
+      validTypes: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+      ],
+    },
   },
   indent: {
-    validTypes: [
-      ELEMENT_PARAGRAPH,
-      ELEMENT_H1,
-      ELEMENT_H2,
-      ELEMENT_H3,
-      ELEMENT_H4,
-      ELEMENT_H5,
-      ELEMENT_H6,
-      ELEMENT_BLOCKQUOTE,
-      ELEMENT_CODE_BLOCK,
-    ],
+    overrideProps: {
+      validTypes: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+        ELEMENT_BLOCKQUOTE,
+        ELEMENT_CODE_BLOCK,
+      ],
+    },
   },
   lineHeight: {
-    defaultNodeValue: 1.5,
-    validNodeValues: [1, 1.2, 1.5, 2, 3],
-    validTypes: [
-      ELEMENT_PARAGRAPH,
-      ELEMENT_H1,
-      ELEMENT_H2,
-      ELEMENT_H3,
-      ELEMENT_H4,
-      ELEMENT_H5,
-      ELEMENT_H6,
-    ],
+    overrideProps: {
+      defaultNodeValue: 1.5,
+      validNodeValues: [1, 1.2, 1.5, 2, 3],
+      validTypes: [
+        ELEMENT_PARAGRAPH,
+        ELEMENT_H1,
+        ELEMENT_H2,
+        ELEMENT_H3,
+        ELEMENT_H4,
+        ELEMENT_H5,
+        ELEMENT_H6,
+      ],
+    },
   },
   resetBlockType: {
     rules: [
@@ -159,7 +167,11 @@ export const CONFIG: {
       },
     ],
   },
-  selectOnBackspace: { allow: [ELEMENT_IMAGE, ELEMENT_HR] },
+  selectOnBackspace: {
+    query: {
+      allow: [ELEMENT_IMAGE, ELEMENT_HR],
+    },
+  },
   autoformat: {
     rules: autoformatRules,
   },

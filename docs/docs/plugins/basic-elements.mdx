@@ -62,13 +62,15 @@ npm install @udecode/plate-basic-elements
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.core,
     createBasicElementsPlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

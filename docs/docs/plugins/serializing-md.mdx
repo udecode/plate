@@ -19,14 +19,16 @@ Use [remark-slate](https://github.com/hanford/remark-slate).
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
     createTablePlugin(),
     createDeserializeMdPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

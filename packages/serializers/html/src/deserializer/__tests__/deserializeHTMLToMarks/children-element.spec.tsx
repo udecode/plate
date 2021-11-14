@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createItalicPlugin } from '../../../../../../marks/basic-marks/src/italic/createItalicPlugin';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 jsx;
@@ -33,7 +33,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createEditorPlugins(), input as any)).toEqual(
+  expect(deserializeHTMLToMarks(createPlateEditor(), input as any)).toEqual(
     output
   );
 });

@@ -17,7 +17,7 @@ npm install @udecode/plate-break
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
@@ -35,7 +35,9 @@ npm install @udecode/plate-break
         },
       ],
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

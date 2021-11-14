@@ -2,13 +2,13 @@
 
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../plate/src/utils/createPlateEditor';
 import { createListPlugin } from './createListPlugin';
 
 jsx;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createListPlugin()],
   });

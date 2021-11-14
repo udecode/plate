@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
 
 jsx;
@@ -32,7 +32,7 @@ const output = (
 it('should do nothing', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [createDeserializeHtmlPlugin()],
   });

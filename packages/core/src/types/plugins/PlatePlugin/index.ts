@@ -7,7 +7,6 @@ export * from './Decorate';
 export * from './InjectComponent';
 export * from './KeyboardHandler';
 export * from './OnChange';
-export * from './OverrideProps';
 export * from './OverridePropsPlugin';
 export * from './PlatePlugin';
 export * from './PlatePluginComponent';

@@ -24,10 +24,12 @@ npm install @udecode/plate-highlight
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createHighlightPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

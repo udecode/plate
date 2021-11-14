@@ -9,7 +9,7 @@ import { withPlate } from './withPlate';
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('should be', () => {
-      const editor = withPlate({ id: '1' })(createEditor());
+      const editor = withPlate(createEditor(), { id: '1' });
 
       const keys = [KEY_INLINE_VOID, 'react', 'history'];
 
@@ -35,10 +35,10 @@ describe('withPlate', () => {
         }
       );
 
-      const editor = withPlate({
+      const editor = withPlate(createEditor(), {
         id: '1',
         plugins: [pluginP, pluginA, pluginB],
-      })(createEditor());
+      });
 
       const keys = ['inline-void', 'p', 'a', 'heading', 'hh1', 'h2'];
 
@@ -70,7 +70,7 @@ describe('withPlate', () => {
 
       const plugins = [pluginInput];
 
-      const editor = withPlate({ id: '1', plugins })(createEditor());
+      const editor = withPlate(createEditor(), { id: '1', plugins });
 
       const { type, overrideProps } = getPlugin(editor, 'a');
 
@@ -119,7 +119,7 @@ describe('withPlate', () => {
         }),
       };
 
-      const editor = withPlate({ id: '1', plugins: [pluginA] })(createEditor());
+      const editor = withPlate(createEditor(), { id: '1', plugins: [pluginA] });
 
       const outputPluginAA = getPlugin(editor, 'aa');
       const outputPluginAB = getPlugin(editor, 'ab');

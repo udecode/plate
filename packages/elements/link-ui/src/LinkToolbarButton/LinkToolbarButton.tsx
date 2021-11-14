@@ -15,7 +15,7 @@ export const LinkToolbarButton = ({
   getLinkUrl,
   ...props
 }: LinkToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   const type = getPluginType(editor, ELEMENT_LINK);
   const isLink = !!editor?.selection && someNode(editor, { match: { type } });

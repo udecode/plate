@@ -2,7 +2,7 @@
 
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { PlatePlugin } from '../../../../../../core/src/types/plugins/PlatePlugin/PlatePlugin';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const html = `<html><body><h1>test</h1></body></html>`;
@@ -17,7 +17,7 @@ const output = (
 
 it('should not deserialize the tags without plugins', () => {
   expect(
-    deserializeHTMLElement(createEditorPlugins(), {
+    deserializeHTMLElement(createPlateEditor(), {
       plugins: input1,
       element: input2,
     })

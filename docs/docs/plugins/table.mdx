@@ -25,12 +25,14 @@ npm install @udecode/plate-table-ui
     </>
   );
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
     createTablePlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

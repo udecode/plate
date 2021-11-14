@@ -3,34 +3,27 @@ import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
 import { getRenderElement } from './getRenderElement';
-import { injectOverrideProps } from './injectOverrideProps';
+import { pipeOverrideProps } from './pipeOverrideProps';
 
 /**
  * @see {@link RenderElement}
  */
 export const pipeRenderElement = (
   editor: PlateEditor,
-  {
-    plugins = [],
-    editableProps,
-  }: { plugins: PlatePlugin[]; editableProps?: EditableProps }
+  editableProps?: EditableProps
 ): EditableProps['renderElement'] => {
   const renderElements: RenderElement[] = [];
 
-  plugins.forEach((plugin) => {
+  editor.plugins.forEach((plugin) => {
     if (plugin.isElement) {
       renderElements.push(getRenderElement(editor, plugin));
     }
   });
 
   return (_props) => {
-    const props = injectOverrideProps<PlateRenderElementProps>(editor, {
-      props: _props,
-      plugins,
-    });
+    const props = pipeOverrideProps<PlateRenderElementProps>(editor, _props);
 
     let element;
 

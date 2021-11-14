@@ -9,11 +9,11 @@ import {
   createParagraphPlugin,
   createTablePlugin,
 } from '../../../../../plate/src/index';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
-const editor = createEditorPlugins({});
+const editor = createPlateEditor({});
 
 it('serialize list to html', () => {
   const render = htmlStringToDOMNode(
@@ -187,7 +187,7 @@ it('serialize align style to html', () => {
   const plugins = [createParagraphPlugin(), createAlignPlugin()];
 
   expect(
-    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+    serializeHTMLFromNodes(createPlateEditor({ editor, plugins }), {
       plugins,
       nodes: [
         {
@@ -209,7 +209,7 @@ it('serialize align className to html', () => {
   ];
 
   expect(
-    serializeHTMLFromNodes(createEditorPlugins({ editor, plugins }), {
+    serializeHTMLFromNodes(createPlateEditor({ editor, plugins }), {
       plugins,
       nodes: [
         {

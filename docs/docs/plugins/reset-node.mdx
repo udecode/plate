@@ -24,7 +24,7 @@ npm install @udecode/plate-reset-node
     defaultType: ELEMENT_PARAGRAPH,
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
@@ -45,7 +45,9 @@ npm install @udecode/plate-reset-node
         },
       ],
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

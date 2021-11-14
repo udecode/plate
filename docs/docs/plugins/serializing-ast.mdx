@@ -13,7 +13,7 @@ npm install @udecode/plate-ast-serializer
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
     createLinkPlugin(),
@@ -25,7 +25,9 @@ npm install @udecode/plate-ast-serializer
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
                       
   plugins.push(createDeserializeAstPlugin({ plugins }));
 

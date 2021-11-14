@@ -15,11 +15,12 @@ If you don't provide any plugins to `Plate` as done in the previous section, `cr
 
 ### Plugins
 
-Let's add basic elements and marks using the `plugins` props.
+We first create the basic plugins using `createPlugins`.
+Then, we plug them in the `plugins` prop.
 
 ```tsx
 // Stored in PLUGINS.basicNodes
-const basicNodesPlugins = [
+const plugins = createPlugins([
   // editor
   createReactPlugin(),          // withReact
   createHistoryPlugin(),        // withHistory
@@ -36,7 +37,9 @@ const basicNodesPlugins = [
   createUnderlinePlugin(),      // underline mark
   createStrikethroughPlugin(),  // strikethrough mark
   createCodePlugin(),           // code mark
-];
+]), {
+  components: CONFIG.components,
+});
 
 // Quick helper to create a block element with (marked) text
 export const createElement = (
@@ -61,7 +64,7 @@ export const createElement = (
 };
 
 // Stored in VALUES.basicNodes
-const basicNodesInitialValue = [
+const initialValue = [
   createElement('🧱 Elements', { type: ELEMENT_H1 }),
   createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
   createElement('These are the most common elements, known as blocks:'),
@@ -125,7 +128,7 @@ const basicNodesInitialValue = [
 ```
 
 :::note
-The `type` property is needed on elements as `Plate` will map a React component to each type.
+`Plate` is using the `type` property to render the nodes with the plugins.
 :::
 
 ```tsx live
@@ -150,29 +153,24 @@ The `type` property is needed on elements as `Plate` will map a React component 
 }
 ```
 
-Everything actually works, but we didn't provide any `components` to render.
+Everything actually works, but we didn't provide any `components` to render, so it's using the default ones.
 The default element component is a `div` and the default leaf component is a `span`.
 
 :::info
-Plate are bundled without any default component or options,
+Plate are bundled without any default component,
 meaning that you're in full control over markup and styling
-so you can plug-in your design system or the provided one.
+so you can plug-in your own design system or the provided one.
 :::
 
-### Components & Options
+### Components
 
-Let's pass the `components` and `options` provided by the library.
-
-```tsx
-const components = createPlateComponents();
-```
+`createPlugins` has a second parameter to plug your components.
+In the following example we'll use `createPlateComponents()` which is Plate design system.
 
 ```tsx live
 () => {
-  const components = createPlateComponents();
-
   // try to remove some plugins!
-  const basicNodesPlugins = [
+  let plugins = createPlugins([
     // editor
     createReactPlugin(),          // withReact
     createHistoryPlugin(),        // withHistory
@@ -189,14 +187,19 @@ const components = createPlateComponents();
     createUnderlinePlugin(),      // underline mark
     createStrikethroughPlugin(),  // strikethrough mark
     createCodePlugin(),           // code mark
-  ];
-
+  ], {
+    // Plate components
+    components: createPlateComponents(),
+  });
+  
+  const [_plugins, setPlugins] = useState(plugins)
+  
   return (
     <Plate
       id="2"
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.basicNodes}
-      plugins={basicNodesPlugins}
+      plugins={_plugins}
     />
   );
 }
@@ -204,5 +207,5 @@ const components = createPlateComponents();
 
 Voilà!
 
-`Plate` hides a lot of complexity but what if we want to have more control on its state?
-See the [store section](store).
+`Plate` hides a lot of complexity. What if we want to have more control on its state?
+See the [store API](store).

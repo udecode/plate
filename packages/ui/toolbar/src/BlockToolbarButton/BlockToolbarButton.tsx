@@ -17,7 +17,7 @@ export const BlockToolbarButton = ({
   active,
   ...props
 }: BlockToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   return (
     <ToolbarButton

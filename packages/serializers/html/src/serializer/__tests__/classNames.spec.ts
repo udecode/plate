@@ -3,11 +3,11 @@ import {
   ELEMENT_PARAGRAPH,
 } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 
 it('serialize with slate className', () => {
-  const editor = createEditorPlugins();
+  const editor = createPlateEditor();
 
   expect(
     serializeHTMLFromNodes(editor, {
@@ -23,7 +23,7 @@ it('serialize with slate className', () => {
 });
 
 it('serialize with slate classNames: a+slate', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -47,7 +47,7 @@ it('serialize with slate classNames: a+slate', () => {
 });
 
 it('serialize with slate classNames: slate+b', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -71,7 +71,7 @@ it('serialize with slate classNames: slate+b', () => {
 });
 
 it('serialize with classNames: a+slate+b', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -95,7 +95,7 @@ it('serialize with classNames: a+slate+b', () => {
 });
 
 it('serialize with classNames: a+slate+b+slate', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -119,7 +119,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
 });
 
 it('serialize with slate classNames: multiple tags', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -149,7 +149,7 @@ it('serialize with slate classNames: multiple tags', () => {
 });
 
 it('serialize with custom preserved classname: a+custom', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -174,7 +174,7 @@ it('serialize with custom preserved classname: a+custom', () => {
 });
 
 it('serialize nested with custom preserved classname: a+custom', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({
@@ -210,7 +210,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
 });
 
 it('serialize with multiple custom classname: a+custom+slate', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     options: {
       p: {
         getNodeProps: () => ({

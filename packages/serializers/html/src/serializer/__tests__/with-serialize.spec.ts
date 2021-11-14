@@ -7,7 +7,7 @@ import {
   MARK_BOLD,
   TRenderElementProps,
 } from '../../../../../plate/src/index';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -24,7 +24,7 @@ const plugins = [
 it('custom serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
+      serializeHTMLFromNodes(createPlateEditor({ plugins }), {
         plugins,
         nodes: [
           {
@@ -43,7 +43,7 @@ it('custom serialize image to html', () => {
 
 it('custom serialize bold to html', () => {
   expect(
-    serializeHTMLFromNodes(createEditorPlugins({ plugins }), {
+    serializeHTMLFromNodes(createPlateEditor({ plugins }), {
       plugins: [
         {
           ...createBoldPlugin(),
@@ -74,10 +74,10 @@ describe('multiple custom leaf serializers', () => {
   const normalizeHTML = (html: string): string =>
     new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
 
-  let editor = createEditorPlugins();
+  let editor = createPlateEditor();
 
   beforeEach(() => {
-    editor = createEditorPlugins();
+    editor = createPlateEditor();
   });
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {

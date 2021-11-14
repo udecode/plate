@@ -10,10 +10,12 @@ title: Editable Voids
     [EDITABLE_VOID]: EditableVoidElement,
   }
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createEditableVoidPlugin(),
-  ];
+  ], {
+    components,
+  });
 
   return (
     <Plate

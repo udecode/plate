@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react';
 import * as core from '@udecode/plate-core';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { createLinkPlugin } from '@udecode/plate-link';
-import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../plate/src/utils/createPlateEditor';
 import { LinkToolbarButton } from './LinkToolbarButton';
 import {
   input1,
@@ -17,7 +17,7 @@ import {
 describe('LinkToolbarButton', () => {
   describe('when default', () => {
     it('should render', () => {
-      const editor = createEditorPlugins({
+      const editor = createPlateEditor({
         editor: input1,
         plugins: [createLinkPlugin()],
       });
@@ -37,7 +37,7 @@ describe('LinkToolbarButton', () => {
 
   describe('when with url', () => {
     it('should render', () => {
-      const editor = createEditorPlugins({
+      const editor = createPlateEditor({
         editor: input2,
         plugins: [createLinkPlugin()],
       });

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createEditorPlugins } from '@udecode/plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '@udecode/plate/src/utils/createPlateEditor';
 import { createDeserializeAstPlugin } from '@udecode/plate-ast-serializer';
 import { PlateEditor } from '@udecode/plate-core';
 import { createDeserializeHTMLPlugin } from '@udecode/plate-html-serializer';
@@ -25,7 +25,7 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
     createDeserializeAstPlugin({ plugins })
   );
 
-  const editor = createEditorPlugins({
+  const editor = createPlateEditor({
     editor: input,
     plugins,
   });

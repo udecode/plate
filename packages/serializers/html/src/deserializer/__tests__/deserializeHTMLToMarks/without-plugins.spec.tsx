@@ -1,4 +1,4 @@
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
@@ -10,5 +10,5 @@ const input = {
 const output = [{ text: 'test' }];
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createEditorPlugins(), input)).toEqual(output);
+  expect(deserializeHTMLToMarks(createPlateEditor(), input)).toEqual(output);
 });

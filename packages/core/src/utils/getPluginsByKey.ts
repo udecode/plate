@@ -5,13 +5,13 @@ import { PluginKey } from '../types/plugins/PlatePluginKey';
 /**
  * Get `editor.pluginsByKey`
  */
-export const getPluginsByKey = <T = {}>(
+export const getPluginsByKey = <T = {}, P = {}>(
   editor?: PlateEditor<T>
-): Record<PluginKey, PlatePlugin<T>> => {
+): Record<PluginKey, PlatePlugin<T, P>> => {
   const plugins = {};
 
   if (editor?.pluginsByKey) {
-    return editor.pluginsByKey;
+    return editor.pluginsByKey as Record<PluginKey, PlatePlugin<T, P>>;
   }
 
   return plugins;

@@ -12,7 +12,6 @@ import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
-import { MentionCombobox } from '@udecode/plate-mention-ui/src/MentionElement/MentionCombobox';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { HeadingToolbar } from '@udecode/plate-toolbar';
 import {
@@ -26,8 +25,10 @@ import {
 import { withStyledDraggables } from '../docs/src/live/config/components/withStyledDraggables';
 import { withStyledPlaceHolders } from '../docs/src/live/config/components/withStyledPlaceHolders';
 import { CONFIG } from '../docs/src/live/config/config';
+import { VALUES } from '../docs/src/live/config/values/values';
 import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
+import { createPlugins } from '../packages/core/src/utils/createPlugins';
 import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
 import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../packages/editor/autoformat/src/createAutoformatPlugin';
@@ -45,6 +46,7 @@ import { createListPlugin } from '../packages/elements/list/src/createListPlugin
 import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
 import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
 import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
+import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox/MentionCombobox';
 import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../packages/marks/basic-marks/src/bold/createBoldPlugin';
 import { createCodePlugin } from '../packages/marks/basic-marks/src/code/createCodePlugin';
@@ -63,49 +65,54 @@ export default {
 } as Meta;
 
 export const Example = () => {
-  let styledComponents = createPlateComponents();
-  styledComponents = withStyledPlaceHolders(styledComponents);
-  styledComponents = withStyledDraggables(styledComponents);
+  let components = createPlateComponents();
+  components = withStyledPlaceHolders(components);
+  components = withStyledDraggables(components);
 
   const Editor = () => {
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
     const pluginsMemo = useMemo(() => {
-      const plugins = [
-        createReactPlugin(),
-        createHistoryPlugin(),
-        createParagraphPlugin(),
-        createBlockquotePlugin(),
-        createTodoListPlugin(),
-        createHeadingPlugin(),
-        createImagePlugin(),
-        createLinkPlugin(),
-        createListPlugin(),
-        createTablePlugin(),
-        createMediaEmbedPlugin(),
-        createCodeBlockPlugin(),
-        createAlignPlugin(),
-        createBoldPlugin(),
-        createCodePlugin(),
-        createItalicPlugin(),
-        createHighlightPlugin(),
-        createUnderlinePlugin(),
-        createStrikethroughPlugin(),
-        createSubscriptPlugin(),
-        createSuperscriptPlugin(),
-        createKbdPlugin(),
-        createNodeIdPlugin(),
-        createAutoformatPlugin(CONFIG.autoformat),
-        createResetNodePlugin(CONFIG.resetBlockType),
-        createSoftBreakPlugin(CONFIG.softBreak),
-        createExitBreakPlugin(CONFIG.exitBreak),
-        createNormalizeTypesPlugin(CONFIG.forceLayout),
-        createTrailingBlockPlugin(CONFIG.trailingBlock),
-        createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-        createMentionPlugin(),
-        searchHighlightPlugin,
-        createDndPlugin(),
-      ];
+      const plugins = createPlugins(
+        [
+          createReactPlugin(),
+          createHistoryPlugin(),
+          createParagraphPlugin(),
+          createBlockquotePlugin(),
+          createTodoListPlugin(),
+          createHeadingPlugin(),
+          createImagePlugin(),
+          createLinkPlugin(),
+          createListPlugin(),
+          createTablePlugin(),
+          createMediaEmbedPlugin(),
+          createCodeBlockPlugin(),
+          createAlignPlugin(),
+          createBoldPlugin(),
+          createCodePlugin(),
+          createItalicPlugin(),
+          createHighlightPlugin(),
+          createUnderlinePlugin(),
+          createStrikethroughPlugin(),
+          createSubscriptPlugin(),
+          createSuperscriptPlugin(),
+          createKbdPlugin(),
+          createNodeIdPlugin(),
+          createAutoformatPlugin(CONFIG.autoformat),
+          createResetNodePlugin(CONFIG.resetBlockType),
+          createSoftBreakPlugin(CONFIG.softBreak),
+          createExitBreakPlugin(CONFIG.exitBreak),
+          createNormalizeTypesPlugin(CONFIG.forceLayout),
+          createTrailingBlockPlugin(CONFIG.trailingBlock),
+          createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+          createMentionPlugin(),
+          searchHighlightPlugin,
+          createDndPlugin(),
+        ],
+        {
+          components,
+        }
+      );
 
       plugins.push(createDeserializeHtmlPlugin({ plugins }));
 

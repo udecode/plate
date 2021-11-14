@@ -19,7 +19,7 @@ npm install @udecode/plate-autoformat
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createHorizontalRulePlugin(),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_HR] }),
@@ -38,7 +38,9 @@ npm install @udecode/plate-autoformat
         },
       }],
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate

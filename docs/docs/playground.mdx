@@ -23,7 +23,7 @@ See [Installation](/docs/installation)
     const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
 
     const pluginsMemo = useMemo(() => {
-      const plugins = [
+      const plugins = createPlugins([
         createReactPlugin(),
         createHistoryPlugin(),
         createParagraphPlugin(),
@@ -66,13 +66,15 @@ See [Installation](/docs/installation)
         createComboboxPlugin(),
         createMentionPlugin(),
         searchHighlightPlugin,
-      ];
+      ], {
+        components,
+      });
 
       plugins.push(
         ...[
           createDeserializeMdPlugin({ plugins }),
           createDeserializeCsvPlugin({ plugins }),
-          createDeserializeHTMLPlugin({ plugins }),
+          createDeserializeHtmlPlugin({ plugins }),
           createDeserializeAstPlugin({ plugins }),
         ]
       );

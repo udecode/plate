@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createEditorPlugins } from '@udecode/plate/src';
+import { createPlateEditor } from '@udecode/plate/src';
 import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
@@ -28,7 +28,7 @@ describe('toggle on', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -63,7 +63,7 @@ describe('toggle on', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -102,7 +102,7 @@ describe('toggle on', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -150,7 +150,7 @@ describe('toggle off', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -206,7 +206,7 @@ describe('toggle off', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -245,7 +245,7 @@ describe('toggle off', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -280,7 +280,7 @@ describe('toggle over', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -324,7 +324,7 @@ describe('toggle over', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });
@@ -370,7 +370,7 @@ describe('toggle over', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createEditorPlugins({
+    const editor = createPlateEditor({
       editor: input,
       plugins: [createListPlugin()],
     });

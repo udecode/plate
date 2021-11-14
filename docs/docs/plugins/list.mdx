@@ -31,14 +31,16 @@ npm install @udecode/plate-list-ui
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
     createListPlugin(),
     createTodoListPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>

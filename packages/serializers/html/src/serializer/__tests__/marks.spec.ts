@@ -1,7 +1,7 @@
 import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -10,7 +10,7 @@ const plugins = [
   createHighlightPlugin(),
   createKbdPlugin(),
 ];
-const editor = createEditorPlugins({ plugins });
+const editor = createPlateEditor({ plugins });
 
 it('serialize bold to html', () => {
   expect(
