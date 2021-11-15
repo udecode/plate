@@ -2,7 +2,6 @@ import React from 'react';
 import { DefaultElement } from 'slate-react';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
 import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -13,33 +12,30 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export const getRenderElement = (
   editor: PlateEditor,
-  {
-    key,
-    type,
-    component: Element = DefaultElement as PlatePluginComponent,
-    getNodeProps,
-  }: PlatePlugin
-): RenderElement => (props) => {
-  const injectParentComponents = editor.plugins.flatMap(
-    (o) => o.injectParentComponent ?? []
+  { key, type, component: _component, props }: PlatePlugin
+): RenderElement => (nodeProps) => {
+  const Element = _component ?? DefaultElement;
+
+  const injectAboveComponents = editor.plugins.flatMap(
+    (o) => o.inject?.aboveComponent ?? []
   );
-  const injectChildComponents = editor.plugins.flatMap(
-    (o) => o.injectChildComponent ?? []
+  const injectBelowComponents = editor.plugins.flatMap(
+    (o) => o.inject?.belowComponent ?? []
   );
 
-  const { element, children: _children } = props;
+  const { element, children: _children } = nodeProps;
 
   if (element.type === type) {
-    const nodeProps = getRenderNodeProps({
+    nodeProps = getRenderNodeProps({
       attributes: element.attributes,
-      getNodeProps,
+      nodeProps,
       props,
       type,
     });
 
     let children = _children;
 
-    injectChildComponents.forEach((withHOC) => {
+    injectBelowComponents.forEach((withHOC) => {
       const hoc = withHOC({ ...nodeProps, key });
 
       if (hoc) {
@@ -51,7 +47,7 @@ export const getRenderElement = (
       <Element {...nodeProps}>{children}</Element>
     );
 
-    injectParentComponents.forEach((withHOC) => {
+    injectAboveComponents.forEach((withHOC) => {
       const hoc = withHOC({ ...nodeProps, key });
 
       if (hoc) {

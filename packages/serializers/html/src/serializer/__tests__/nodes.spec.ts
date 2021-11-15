@@ -2,7 +2,7 @@ import { createListPlugin } from '../../../../../elements/list/src/createListPlu
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createItalicPlugin } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
-import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
@@ -13,11 +13,10 @@ it('serialize complex example list with paragraphs to html', () => {
     createParagraphPlugin(),
     createListPlugin(),
   ];
-  const editor = createPlateEditor({ plugins });
+  const editor = createPlateUIEditor({ plugins });
 
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins,
       nodes: [
         {
           type: 'p',
@@ -93,10 +92,9 @@ it('serialize complex example with no type on top level node to html', () => {
     createParagraphPlugin(),
     createListPlugin(),
   ];
-  const editor = createPlateEditor({ plugins });
+  const editor = createPlateUIEditor({ plugins });
 
   const render = serializeHTMLFromNodes(editor, {
-    plugins,
     nodes: [
       {
         children: [
@@ -138,10 +136,9 @@ it('serialize complex example with multiple no types on top level node to html',
     createParagraphPlugin(),
     createListPlugin(),
   ];
-  const editor = createPlateEditor({ plugins });
+  const editor = createPlateUIEditor({ plugins });
 
   const render = serializeHTMLFromNodes(editor, {
-    plugins,
     nodes: [
       {
         children: [
@@ -181,10 +178,9 @@ it('serialize complex example with multiple no types on top level node to html',
 
 it('serialize string with %', () => {
   const plugins = [createParagraphPlugin()];
-  const editor = createPlateEditor({ plugins });
+  const editor = createPlateUIEditor({ plugins });
 
   const render = serializeHTMLFromNodes(editor, {
-    plugins,
     nodes: [
       {
         children: [

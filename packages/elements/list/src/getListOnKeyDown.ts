@@ -6,7 +6,7 @@ import { moveListItems, toggleList } from './transforms';
 
 export const getListOnKeyDown = (): KeyboardHandler<{}, HotkeyPlugin> => (
   editor,
-  { type, hotkey }
+  { type, options: { hotkey } }
 ) => (e) => {
   if (e.key === 'Tab' && editor.selection) {
     const listSelected = getAbove(editor, {

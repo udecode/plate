@@ -13,7 +13,7 @@ See [Installation](/docs/installation)
 
 ```ts live
 () => {
-  let components = createPlateComponents({
+  let components = createPlateUI({
     ...CONFIG.components,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
   });
@@ -74,7 +74,7 @@ See [Installation](/docs/installation)
         ...[
           createDeserializeMdPlugin({ plugins }),
           createDeserializeCsvPlugin({ plugins }),
-          createDeserializeHtmlPlugin({ plugins }),
+          createDeserializeHTMLPlugin(),
           createDeserializeAstPlugin({ plugins }),
         ]
       );

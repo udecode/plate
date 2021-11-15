@@ -3,7 +3,7 @@
 import { PlateEditor } from '@udecode/plate-core';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../plate/src/utils/createPlateUIEditor';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 jsx;
@@ -21,7 +21,7 @@ describe('when selection is in the same block', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createPlateUIEditor({
         editor: input,
       });
 
@@ -45,7 +45,7 @@ describe('when selection is in the same block', () => {
         </editor>
       ) as any) as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createPlateUIEditor({
         editor: input,
         plugins: [createLinkPlugin()],
       });

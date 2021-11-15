@@ -1,102 +1,119 @@
 import { PlateEditor } from '../../PlateEditor';
-import { GetNodeProps } from '../../PlatePluginOptions/GetNodeProps';
-import { AnyObject } from '../../utility/AnyObject';
+import { Nullable } from '../../utility/Nullable';
+import { WithRequired } from '../../utility/types';
 import { PlatePluginKey } from '../PlatePluginKey';
 import { SerializerPlugin } from '../SerializePlugin/SerializerPlugin';
 import { Decorate } from './Decorate';
 import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
+import { InjectPropsPlugin } from './InjectPropsPlugin';
 import { OnChange } from './OnChange';
-import { OverridePropsPlugin } from './OverridePropsPlugin';
 import { PlatePluginComponent } from './PlatePluginComponent';
+import { PlatePluginProps } from './PlatePluginProps';
 import { WithOverride } from './WithOverride';
 
 /**
  * Plate plugin interface built on top of Slate and Editable.
  */
-export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> &
-  Partial<DOMHandlers<T, P>> &
-  OverridePropsPlugin &
-  SerializerPlugin<T, P> &
-  P &
-  AnyObject & {
+export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
+  /**
+   * DOM handler props.
+   */
+  handlers?: Nullable<
+    DOMHandlers<T, P> & {
+      /**
+       * @see {@link OnChange}
+       */
+      onChange?: OnChange<T, P>;
+    }
+  >;
+
+  /**
+   * Inject into other plugins.
+   */
+  inject?: Nullable<{
     /**
-     * React component rendering a slate element or leaf.
-     * @default DefaultElement | DefaultLeaf
+     * Inject component above any node `component`.
      */
-    component?: PlatePluginComponent;
+    aboveComponent?: InjectComponent;
 
     /**
-     * @see {@link Decorate}
+     * Inject component above any node `component`, i.e. above its `children`.
      */
-    decorate?: Decorate<T, P>;
+    belowComponent?: InjectComponent;
+  }>;
 
-    /**
-     * `Plate` will pass its return value as a component prop `nodeProps`.
-     * @see {@link GetNodeProps}
-     */
-    getNodeProps?: GetNodeProps;
+  /**
+   * Whether it's an element plugin (`renderElement`).
+   */
+  isElement?: boolean;
 
-    /**
-     * Inject child component around any node children.
-     */
-    injectChildComponent?: InjectComponent;
+  /**
+   * Whether the element is inline.
+   */
+  isInline?: boolean;
 
-    /**
-     * Inject parent component around any node `component`.
-     */
-    injectParentComponent?: InjectComponent;
+  /**
+   * Whether it's a leaf plugin (`renderLeaf`).
+   */
+  isLeaf?: boolean;
 
-    /**
-     * Whether it's an element plugin (`renderElement`).
-     */
-    isElement?: boolean;
+  /**
+   * Whether the element is void.
+   */
+  isVoid?: boolean;
 
-    /**
-     * Whether the element is inline.
-     */
-    isInline?: boolean;
+  options?: P;
 
-    /**
-     * Whether it's a leaf plugin (`renderLeaf`).
-     */
-    isLeaf?: boolean;
+  /**
+   * Element or mark type.
+   * @default key
+   */
+  type?: string;
+} & InjectPropsPlugin<T> &
+  Nullable<
+    SerializerPlugin<T, P> & {
+      /**
+       * React component rendering a slate element or leaf.
+       * @default DefaultElement | DefaultLeaf
+       */
+      component?: PlatePluginComponent;
 
-    /**
-     * Whether the element is void.
-     */
-    isVoid?: boolean;
+      /**
+       * @see {@link Decorate}
+       */
+      decorate?: Decorate<T, P>;
 
-    /**
-     * @see {@link OnChange}
-     */
-    onChange?: OnChange<T, P>;
+      /**
+       * Recursive plugin support.
+       * Can be used to pack multiple plugins.
+       * Plate eventually flats all the plugins into `editor.plugins`.
+       */
+      plugins?: PlatePlugin<T>[];
 
-    /**
-     * Recursive plugin support.
-     * Can be used to pack multiple plugins.
-     * Plate eventually flats all the plugins into `editor.plugins`.
-     */
-    plugins?: PlatePlugin<T>[];
+      /**
+       * Override node `component` props. Props object or function with props parameters returning the new props.
+       */
+      props?: PlatePluginProps;
 
-    /**
-     * Recursive plugin merging.
-     * Can be used to derive plugin fields from `editor`, `plugin`.
-     * The returned value will be deeply merged to the plugin.
-     */
-    then?: (
-      editor: PlateEditor<T>,
-      plugin: PlatePlugin<T, P>
-    ) => Partial<PlatePlugin<T, P>>;
+      /**
+       * Recursive plugin merging.
+       * Can be used to derive plugin fields from `editor`, `plugin`.
+       * The returned value will be deeply merged to the plugin.
+       */
+      then?: (
+        editor: PlateEditor<T>,
+        plugin: PlatePlugin<T, P>
+      ) => Partial<PlatePlugin<T, P>>;
 
-    /**
-     * Element or mark type.
-     * @default key
-     */
-    type?: string;
+      /**
+       * Editor method overriders.
+       */
+      withOverrides?: WithOverride<T, P>;
+    }
+  >;
 
-    /**
-     * Editor method overriders.
-     */
-    withOverrides?: WithOverride<T, P>;
-  };
+export type WithPlatePlugin<T = {}, P = {}> = WithRequired<
+  PlatePlugin<T, P>,
+  'type' | 'options' | 'inject'
+>;

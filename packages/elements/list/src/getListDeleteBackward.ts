@@ -43,15 +43,19 @@ export const getListDeleteBackward = (
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           getResetNodeOnKeyDown()(editor, {
             key: '',
-            rules: [
-              {
-                types: [getPluginType(editor, ELEMENT_LI)],
-                defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-                hotkey: 'backspace',
-                predicate: () => isSelectionAtBlockStart(editor),
-                onReset: (_editor) => unwrapList(_editor as PlateEditor),
-              },
-            ],
+            type: '',
+            inject: {},
+            options: {
+              rules: [
+                {
+                  types: [getPluginType(editor, ELEMENT_LI)],
+                  defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+                  hotkey: 'backspace',
+                  predicate: () => isSelectionAtBlockStart(editor),
+                  onReset: (_editor) => unwrapList(_editor as PlateEditor),
+                },
+              ],
+            },
           })(SIMULATE_BACKSPACE);
           moved = true;
           return;

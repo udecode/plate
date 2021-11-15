@@ -39,6 +39,8 @@ export const createNormalizeTypesPlugin = createPluginFactory<NormalizeTypesPlug
   {
     key: KEY_NORMALIZE_TYPES,
     withOverrides: withNormalizeTypes(),
-    rules: [],
+    options: {
+      rules: [],
+    },
   }
 );

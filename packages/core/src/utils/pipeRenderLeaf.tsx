@@ -5,7 +5,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { RenderLeaf } from '../types/plugins/PlatePlugin/RenderLeaf';
 import { getRenderLeaf } from './getRenderLeaf';
-import { pipeOverrideProps } from './pipeOverrideProps';
+import { pipeInjectProps } from './pipeInjectProps';
 
 /**
  * @see {@link RenderLeaf}
@@ -22,8 +22,8 @@ export const pipeRenderLeaf = (
     }
   });
 
-  return (_props) => {
-    const props = pipeOverrideProps<PlateRenderLeafProps>(editor, _props);
+  return (nodeProps) => {
+    const props = pipeInjectProps<PlateRenderLeafProps>(editor, nodeProps);
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);

@@ -37,8 +37,10 @@ export const KEY_NODE_ID = 'nodeId';
 export const createNodeIdPlugin = createPluginFactory<NodeIdPlugin>({
   key: KEY_NODE_ID,
   withOverrides: withNodeId(),
-  idKey: 'id',
-  idCreator: () => Date.now(),
-  filterText: true,
-  filter: () => true,
+  options: {
+    idKey: 'id',
+    idCreator: () => Date.now(),
+    filterText: true,
+    filter: () => true,
+  },
 });

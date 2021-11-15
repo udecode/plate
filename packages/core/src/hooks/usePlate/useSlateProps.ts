@@ -15,11 +15,13 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = usePlateActions(id);
-  const editor = usePlateEditorWithPlugins(id)!;
+  const editor = usePlateEditorWithPlugins(id);
   const value = usePlateValue(id);
 
   const onChange = useCallback(
     (newValue: TNode[]) => {
+      if (!editor) return;
+
       const eventIsHandled = pipeOnChange(editor)(newValue);
 
       if (!eventIsHandled) {
@@ -33,7 +35,7 @@ export const useSlateProps = ({
 
   return useMemo(
     () => ({
-      key: editor.key,
+      key: editor?.key,
       editor,
       onChange,
       value,

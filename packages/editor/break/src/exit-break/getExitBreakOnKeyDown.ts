@@ -61,7 +61,7 @@ export const exitBreakAtEdges = (
 export const getExitBreakOnKeyDown = (): KeyboardHandler<
   {},
   ExitBreakPlugin
-> => (editor, { rules }) => (event) => {
+> => (editor, { options: { rules } }) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

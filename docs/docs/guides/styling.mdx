@@ -18,12 +18,12 @@ Plate provides a kit of components for all the plugins.
 
 You can either:
 
-- import and use `createPlateComponents` to create all the components.
+- import and use `createPlateUI` to create all the components.
 The first parameter can be used to override default components by plugin key.
 
 ```ts
 // this will override the paragraph markup
-const components = createPlateComponents({
+const components = createPlateUI({
   [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
     as: 'div',
   }),
@@ -33,7 +33,7 @@ const components = createPlateComponents({
 - or create your own factory:
 
 ```ts
-export const createPlateComponents = (
+export const createPlateUI = (
   overrides?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
 ) => {
   const components = {

@@ -13,7 +13,7 @@ const plugins = [createImagePlugin()];
 describe('ImageToolbarButton', () => {
   describe('when with url', () => {
     // it('should render', () => {
-    //   const editor = createPlateEditor({
+    //   const editor = createPlateUIEditor({
     //     editor: input1,
     //     plugins: [createParagraphPlugin(), createImagePlugin()],
     //   });

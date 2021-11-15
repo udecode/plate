@@ -4,15 +4,17 @@ import merge from 'lodash/merge';
 import values from 'lodash/values';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { NoInfer } from '../types/utility/NoInfer';
 
 /**
  * Recursively merge nested plugins into the the root plugins
  */
-export const mergeDeepPlugins = <T = {}, P = {}>(
+export const mergeDeepPlugins = <
+  T = {},
+  P extends PlatePlugin<T> = PlatePlugin<T>
+>(
   editor: PlateEditor<T>,
-  _plugin: PlatePlugin<T, NoInfer<P>>
-): PlatePlugin<T, NoInfer<P>> => {
+  _plugin: P
+): P => {
   const plugin = { ..._plugin };
 
   const { then } = plugin;

@@ -9,18 +9,26 @@ export const KEY_INDENT = 'indent';
 export const createIndentPlugin = createPluginFactory<IndentPlugin>({
   key: KEY_INDENT,
   withOverrides: withIndent(),
-  onKeyDown: getIndentOnKeyDown(),
-  overrideProps: {
-    nodeKey: KEY_INDENT,
-    styleKey: 'marginLeft',
+  handlers: {
+    onKeyDown: getIndentOnKeyDown(),
   },
-  offset: 24,
-  unit: 'px',
-  then: (editor, { offset, unit }) => ({
-    overrideProps: {
-      validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-      transformNodeValue: (e, { nodeValue }) => {
-        return nodeValue * offset! + unit!;
+  inject: {
+    props: {
+      nodeKey: KEY_INDENT,
+      styleKey: 'marginLeft',
+    },
+  },
+  options: {
+    offset: 24,
+    unit: 'px',
+  },
+  then: (editor, { options: { offset, unit } = {} }) => ({
+    inject: {
+      props: {
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+        transformNodeValue: (e, { nodeValue }) => {
+          return nodeValue * offset! + unit!;
+        },
       },
     },
   }),

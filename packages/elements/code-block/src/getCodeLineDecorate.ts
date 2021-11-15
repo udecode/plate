@@ -53,9 +53,10 @@ import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
 import { Node, NodeEntry } from 'slate';
 import { ELEMENT_CODE_BLOCK } from './constants';
+import { CodeBlockPlugin } from './types';
 
 export const getCodeLineDecorate = (): Decorate => (editor, { type }) => {
-  const code_block = getPlugin(editor, ELEMENT_CODE_BLOCK);
+  const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
 
   return (entry: NodeEntry) => {
     const ranges: any = [];
@@ -70,7 +71,7 @@ export const getCodeLineDecorate = (): Decorate => (editor, { type }) => {
       langName = codeBlockNode?.lang;
     }
 
-    if (!code_block?.syntax || langName === 'plain') {
+    if (!code_block.options.syntax || langName === 'plain') {
       langName = '';
     }
     const lang = languages[langName];

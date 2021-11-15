@@ -10,6 +10,10 @@ export const KEY_SOFT_BREAK = 'softBreak';
  */
 export const createSoftBreakPlugin = createPluginFactory<SoftBreakPlugin>({
   key: KEY_SOFT_BREAK,
-  onKeyDown: getSoftBreakOnKeyDown(),
-  rules: [{ hotkey: 'shift+enter' }],
+  handlers: {
+    onKeyDown: getSoftBreakOnKeyDown(),
+  },
+  options: {
+    rules: [{ hotkey: 'shift+enter' }],
+  },
 });

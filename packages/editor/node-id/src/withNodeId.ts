@@ -13,7 +13,17 @@ import { NodeIdPlugin } from './createNodeIdPlugin';
  */
 export const withNodeId = (): WithOverride<{}, NodeIdPlugin> => (
   editor,
-  { idKey = '', idCreator, filterText, filter, reuseId, allow, exclude }
+  {
+    options: {
+      idKey = '',
+      idCreator,
+      filterText,
+      filter,
+      reuseId,
+      allow,
+      exclude,
+    },
+  }
 ) => {
   const { apply } = editor;
 

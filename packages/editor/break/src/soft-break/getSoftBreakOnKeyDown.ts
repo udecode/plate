@@ -6,7 +6,7 @@ import { SoftBreakPlugin } from './types';
 export const getSoftBreakOnKeyDown = (): KeyboardHandler<
   {},
   SoftBreakPlugin
-> => (editor, { rules }) => (event) => {
+> => (editor, { options: { rules } }) => (event) => {
   const entry = getBlockAbove(editor);
   if (!entry) return;
 

@@ -65,7 +65,9 @@ export const createHighlightPlugin = createPluginFactory({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
   deserialize: getHighlightDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
 })
 ```
 
@@ -105,7 +107,7 @@ export const createReactPlugin = {
 
 - Whether the element is void.
 
-### `overrideProps`
+### `inject.props`
 
 - Overrides rendered node props (shallow merge).
 - This enables controlling the props of any node component (use cases: indent, align,...).

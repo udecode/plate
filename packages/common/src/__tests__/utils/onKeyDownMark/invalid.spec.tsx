@@ -4,7 +4,7 @@ import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 
 jsx;
 
@@ -30,7 +30,7 @@ const output = (
   </editor>
 ) as any;
 
-const editor = createPlateEditor({
+const editor = createPlateUIEditor({
   editor: input,
   plugins: [createBoldPlugin()],
   options: { bold: { hotkey: 'enter' } },

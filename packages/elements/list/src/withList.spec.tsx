@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../plate/src/utils/createPlateUIEditor';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
 import { createListPlugin } from './createListPlugin';
@@ -15,7 +15,7 @@ const testInsertText = (
   expected: any,
   listPluginOptions?: WithListOptions
 ) => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins: [
       createParagraphPlugin(),
@@ -30,7 +30,7 @@ const testInsertText = (
 };
 
 const testDeleteBackward = (input: any, expected: any) => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins: [createParagraphPlugin(), createListPlugin()],
   });
@@ -41,7 +41,7 @@ const testDeleteBackward = (input: any, expected: any) => {
 };
 
 const testDeleteForward = (input: any, expected: any) => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins: [createParagraphPlugin(), createListPlugin()],
   });

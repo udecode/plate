@@ -11,5 +11,7 @@ export const createKbdPlugin = createPluginFactory({
   key: MARK_KBD,
   isLeaf: true,
   deserialize: getKbdDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
 });

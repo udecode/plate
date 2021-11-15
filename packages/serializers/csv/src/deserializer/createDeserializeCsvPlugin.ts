@@ -12,6 +12,8 @@ export const createDeserializeCsvPlugin = createPluginFactory<DeserializeCsvPlug
   {
     key: KEY_DESERIALIZE_CSV,
     withOverrides: withDeserializeCsv(),
-    errorTolerance: 0.25,
+    options: {
+      errorTolerance: 0.25,
+    },
   }
 );

@@ -165,7 +165,7 @@ so you can plug-in your own design system or the provided one.
 ### Components
 
 `createPlugins` has a second parameter to plug your components.
-In the following example we'll use `createPlateComponents()` which is Plate design system.
+In the following example we'll use `createPlateUI()` which is Plate design system.
 
 ```tsx live
 () => {
@@ -189,7 +189,7 @@ In the following example we'll use `createPlateComponents()` which is Plate desi
     createCodePlugin(),           // code mark
   ], {
     // Plate components
-    components: createPlateComponents(),
+    components: createPlateUI(),
   });
   
   const [_plugins, setPlugins] = useState(plugins)

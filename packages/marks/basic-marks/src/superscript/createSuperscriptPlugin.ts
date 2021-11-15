@@ -14,7 +14,11 @@ export const createSuperscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_SUPERSCRIPT,
   isLeaf: true,
   deserialize: getSuperscriptDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+,',
-  clear: MARK_SUPERSCRIPT,
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+,',
+    clear: MARK_SUPERSCRIPT,
+  },
 });

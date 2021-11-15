@@ -3,8 +3,7 @@ import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugin';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
-import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 
 jsx;
 
@@ -41,8 +40,8 @@ describe('when inserting html', () => {
       ) as any;
 
       const plugins: PlatePlugin[] = [createHeadingPlugins()];
-      plugins.push(createDeserializeHtmlPlugin({ plugins }));
-      const editor = createPlateEditor({
+      plugins.push(createDeserializeHTMLPlugin());
+      const editor = createPlateUIEditor({
         editor: input,
         plugins,
       });
@@ -73,8 +72,8 @@ describe('when inserting html', () => {
       ) as any;
 
       const plugins: PlatePlugin[] = [createHeadingPlugins()];
-      plugins.push(createDeserializeHtmlPlugin({ plugins }));
-      const editor = createPlateEditor({
+      plugins.push(createDeserializeHTMLPlugin());
+      const editor = createPlateUIEditor({
         editor: input,
         plugins,
       });
@@ -107,9 +106,9 @@ describe('when inserting html', () => {
 
     const plugins: PlatePlugin[] = [createParagraphPlugin()];
 
-    plugins.push(createDeserializeHtmlPlugin({ plugins }));
+    plugins.push(createDeserializeHTMLPlugin());
 
-    const editor = createPlateEditor({
+    const editor = createPlateUIEditor({
       editor: input,
       plugins,
     });

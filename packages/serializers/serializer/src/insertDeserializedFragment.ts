@@ -1,18 +1,16 @@
-import { PlateEditor, PlatePlugin, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Editor } from 'slate';
 
-export const insertDeserializedFragment = <T = {}, P = {}>(
+export const insertDeserializedFragment = <T = {}>(
   editor: PlateEditor<T>,
   {
     fragment,
-    plugins,
   }: {
     fragment: TDescendant[];
-    plugins: PlatePlugin<T, P>[];
   }
 ) => {
   Editor.withoutNormalizing(editor, () => {
-    plugins.forEach((plugin) => {
+    editor.plugins.forEach((plugin) => {
       const getFragment = plugin.deserialize?.(editor, plugin).getFragment;
       if (!getFragment) return;
 
@@ -21,7 +19,7 @@ export const insertDeserializedFragment = <T = {}, P = {}>(
 
     if (!fragment.length) return;
 
-    plugins.some((plugin) => {
+    editor.plugins.some((plugin) => {
       return (
         plugin.deserialize?.(editor, plugin).preInsert?.(fragment) === true
       );

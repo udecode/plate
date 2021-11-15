@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate';
+import { createPlateUIEditor } from '@udecode/plate';
 import {
   astDeserializerId,
   createDeserializeAstPlugin,
@@ -21,12 +21,12 @@ const createCodeBlockDeserialize = (input: PlateEditor) => {
   const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
 
   plugins.push(
-    createDeserializeHTMLPlugin({ plugins }),
+    createDeserializeHTMLPlugin(),
     createDeserializeAstPlugin({ plugins })
   );
 
   return getCodeBlockDeserialize()(
-    createPlateEditor({
+    createPlateUIEditor({
       editor: input,
       plugins,
     })

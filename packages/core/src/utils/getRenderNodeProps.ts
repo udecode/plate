@@ -1,40 +1,32 @@
 import clsx from 'clsx';
-import { RenderNodeOptions } from '../types/PlatePluginOptions/RenderNodeOptions';
 import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
+import { WithPlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { AnyObject } from '../types/utility/AnyObject';
 import { getSlateClass } from './getSlateClass';
 
 /**
- * Get node props: `nodeProps`, `className`, `overrideProps`
+ * Override node props with plugin props.
+ * `props.element.attributes` are passed as `nodeProps`.
+ * Extend the class name with the node type.
  */
 export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
   attributes,
+  nodeProps,
+  props,
   type,
-  getNodeProps,
-  props: _props,
-}: Omit<RenderNodeOptions, 'component'> & {
-  props: T;
-  attributes?: any;
+}: Pick<WithPlatePlugin, 'type' | 'props'> & {
+  attributes?: AnyObject;
+  nodeProps: T;
 }) => {
-  const props = {
-    ..._props,
-    nodeProps: getNodeProps?.(_props as any) ?? attributes ?? {},
-  };
+  if (props) {
+    nodeProps = typeof props === 'function' ? props(nodeProps as any) : props;
 
-  // if (overrideProps) {
-  //   const newProps =
-  //     typeof overrideProps === 'function'
-  //       ? overrideProps(props as any)
-  //       : overrideProps;
-  //
-  //   if (newProps) {
-  //     props = {
-  //       ...props,
-  //       ...newProps,
-  //     };
-  //   }
-  // }
+    if (!nodeProps.nodeProps && attributes) {
+      nodeProps.nodeProps = attributes;
+    }
+  }
 
-  const { className } = props;
+  const { className } = nodeProps;
 
-  return { ...props, className: clsx(getSlateClass(type), className) };
+  return { ...nodeProps, className: clsx(getSlateClass(type), className) };
 };

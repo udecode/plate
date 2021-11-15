@@ -1,5 +1,5 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { WithPlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 import { PluginKey } from '../types/plugins/PlatePluginKey';
 
 /**
@@ -7,11 +7,11 @@ import { PluginKey } from '../types/plugins/PlatePluginKey';
  */
 export const getPluginsByKey = <T = {}, P = {}>(
   editor?: PlateEditor<T>
-): Record<PluginKey, PlatePlugin<T, P>> => {
+): Record<PluginKey, WithPlatePlugin<T, P>> => {
   const plugins = {};
 
   if (editor?.pluginsByKey) {
-    return editor.pluginsByKey as Record<PluginKey, PlatePlugin<T, P>>;
+    return editor.pluginsByKey as Record<PluginKey, WithPlatePlugin<T, P>>;
   }
 
   return plugins;

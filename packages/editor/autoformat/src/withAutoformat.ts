@@ -11,7 +11,7 @@ import { AutoformatPlugin } from './types';
  */
 export const withAutoformat = (): WithOverride<{}, AutoformatPlugin> => (
   editor,
-  { rules }
+  { options: { rules } }
 ) => {
   const { insertText } = editor;
 

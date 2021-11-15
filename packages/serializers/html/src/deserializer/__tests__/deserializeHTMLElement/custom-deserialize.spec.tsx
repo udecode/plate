@@ -8,7 +8,7 @@ import { createLinkPlugin } from '../../../../../../elements/link/src/createLink
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 jsx;
@@ -26,7 +26,7 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
   ''
 )}</p>${elementTags.join('')}</body></html>`;
 
-const editor = createPlateEditor({
+const editor = createPlateUIEditor({
   options: {
     img: {
       deserialize: {

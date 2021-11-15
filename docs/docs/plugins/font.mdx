@@ -18,15 +18,14 @@ npm install @udecode/plate-font-ui
 () => {
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
-    //createFontColorPlugin(),
-    //createFontBackgroundColorPlugin(),
-    //createFontSizePlugin(),
+    createFontColorPlugin(),
+    createFontBackgroundColorPlugin(),
+    createFontSizePlugin(),
+    createDeserializeHtmlPlugin(),
+    createDeserializeAstPlugin()
   ], {
     components: CONFIG.components,
   });
-
-  plugins.push(createDeserializeHtmlPlugin({ plugins }));
-  plugins.push(createDeserializeAstPlugin({ plugins }));
 
   const CopyContent = () => (
     <div

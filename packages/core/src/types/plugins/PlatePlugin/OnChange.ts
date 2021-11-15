@@ -1,7 +1,7 @@
 import { PlateEditor } from '../../PlateEditor';
 import { TNode } from '../../slate/TNode';
 import { HandlerReturnType } from './DOMHandlers';
-import { PlatePlugin } from './PlatePlugin';
+import { WithPlatePlugin } from './PlatePlugin';
 
 /**
  * Function called whenever a change occurs in the editor.
@@ -10,5 +10,5 @@ import { PlatePlugin } from './PlatePlugin';
  */
 export type OnChange<T = {}, P = {}> = (
   editor: PlateEditor<T>,
-  plugin: PlatePlugin<T, P>
+  plugin: WithPlatePlugin<T, P>
 ) => (value: TNode[]) => HandlerReturnType;

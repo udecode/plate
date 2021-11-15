@@ -9,13 +9,17 @@ export const KEY_LINE_HEIGHT = 'lineHeight';
  */
 export const createLineHeightPlugin = createPluginFactory({
   key: KEY_LINE_HEIGHT,
-  overrideProps: {
-    defaultNodeValue: 1.5,
-    validNodeValues: [1, 1.2, 1.5, 2, 3],
+  inject: {
+    props: {
+      defaultNodeValue: 1.5,
+      validNodeValues: [1, 1.2, 1.5, 2, 3],
+    },
   },
   then: (editor) => ({
-    overrideProps: {
-      validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+    inject: {
+      props: {
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+      },
     },
   }),
 });

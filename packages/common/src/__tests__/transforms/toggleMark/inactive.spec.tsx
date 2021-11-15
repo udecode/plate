@@ -27,6 +27,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleMark(input, MARK_BOLD);
+  toggleMark(input, { key: MARK_BOLD });
   expect(input.children).toEqual(output.children);
 });

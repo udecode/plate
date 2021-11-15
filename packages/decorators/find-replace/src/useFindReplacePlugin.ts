@@ -13,7 +13,9 @@ export const useFindReplacePlugin = (): {
   const [search, setSearch] = useState('');
 
   return {
-    plugin: useMemo(() => createFindReplacePlugin({ search }), [search]),
+    plugin: useMemo(() => createFindReplacePlugin({ options: { search } }), [
+      search,
+    ]),
     setSearch,
   };
 };

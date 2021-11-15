@@ -6,7 +6,9 @@ export const MARK_COLOR = 'color';
 export const createFontColorPlugin = createPluginFactory({
   key: MARK_COLOR,
   deserialize: getFontColorDeserialize(),
-  overrideProps: {
-    nodeKey: MARK_COLOR,
+  inject: {
+    props: {
+      nodeKey: MARK_COLOR,
+    },
   },
 });

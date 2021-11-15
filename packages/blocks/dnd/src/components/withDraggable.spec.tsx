@@ -7,12 +7,12 @@ import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '../../../../elements/paragraph/src/createParagraphPlugin';
-import { createPlateComponents } from '../../../../plate/src/utils/createPlateComponents';
 import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
+import { createPlateUI } from '../../../../plate/src/utils/createPlateUI';
 import { withDraggable } from './withDraggable';
 
 const options = createPlateOptions();
-const components = createPlateComponents();
+const components = createPlateUI();
 const initialValue = [
   {
     children: [
@@ -25,7 +25,7 @@ const initialValue = [
 ];
 
 it('should render draggable component', () => {
-  const _components = createPlateComponents({
+  const _components = createPlateUI({
     p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
@@ -44,7 +44,7 @@ it('should render draggable component', () => {
 
 // eslint-disable-next-line jest/no-commented-out-tests
 // it('should filter based on level', () => {
-//   const _components = createPlateComponents({
+//   const _components = createPlateUI({
 //     p: getDraggableElement({
 //       component: components[ELEMENT_PARAGRAPH],
 //       level: 0,
@@ -65,7 +65,7 @@ it('should render draggable component', () => {
 // });
 
 it('should not be draggable if readOnly', () => {
-  const _components = createPlateComponents({
+  const _components = createPlateUI({
     p: withDraggable(components[ELEMENT_PARAGRAPH]),
   });
 
@@ -84,7 +84,7 @@ it('should not be draggable if readOnly', () => {
 });
 
 it('should be draggable in readOnly if allowReadOnly', () => {
-  const _components = createPlateComponents({
+  const _components = createPlateUI({
     p: withDraggable(components[ELEMENT_PARAGRAPH], {
       allowReadOnly: true,
     }),

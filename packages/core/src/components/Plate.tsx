@@ -26,7 +26,7 @@ export interface PlateProps<T = {}>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const Plate = <T,>({
+export const Plate = <T extends {} = {}>({
   children,
   renderEditable,
   ...options

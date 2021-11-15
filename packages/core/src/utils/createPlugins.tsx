@@ -2,8 +2,8 @@ import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
-export const createPlugins = (
-  plugins: PlatePlugin[],
+export const createPlugins = <T extends {} = {}>(
+  plugins: PlatePlugin<T>[],
   {
     components,
   }: {
@@ -14,7 +14,7 @@ export const createPlugins = (
      */
     components?: Record<string, PlatePluginComponent>;
   } = {}
-) => {
+): PlatePlugin<T>[] => {
   if (components) {
     const componentPluginsByKey = {};
     Object.keys(components).forEach((key) => {
@@ -24,7 +24,7 @@ export const createPlugins = (
     });
 
     return plugins.map((plugin) => {
-      return overridePluginsByKey(plugin, componentPluginsByKey);
+      return overridePluginsByKey<T>(plugin, componentPluginsByKey);
     });
   }
 

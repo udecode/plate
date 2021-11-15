@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { createPlateEditor } from '../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../plate/src/utils/createPlateUIEditor';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 
 const attributes = {
@@ -11,7 +11,7 @@ const attributes = {
 const text = { text: 'test' };
 
 it('should render the default leaf', () => {
-  const Leaf = pipeRenderLeaf(createPlateEditor(), [])!;
+  const Leaf = pipeRenderLeaf(createPlateUIEditor(), [])!;
 
   const { getByTestId } = render(
     <Leaf attributes={attributes} leaf={text} text={text}>

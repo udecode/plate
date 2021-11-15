@@ -2,33 +2,32 @@ import {
   createImagePlugin,
   createLinkPlugin,
 } from '../../../../../plate/src/index';
-import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
-const plugins = [createLinkPlugin(), createImagePlugin()];
-const editor = createPlateEditor({
+const plugins = [
+  createLinkPlugin({
+    props: ({ element }) =>
+      /^https?:\/\/slatejs.org\/?/.test((element as any).url)
+        ? {}
+        : { target: '_blank' },
+  }),
+  createImagePlugin({
+    props: ({ element }) => ({
+      width: (element as any).url.split('/').pop(),
+      alt: (element as any).attributes?.alt,
+    }),
+  }),
+];
+
+const editor = createPlateUIEditor({
   plugins,
-  options: {
-    a: {
-      getNodeProps: ({ element }) =>
-        /^https?:\/\/slatejs.org\/?/.test((element as any).url)
-          ? {}
-          : { target: '_blank' },
-    },
-    img: {
-      getNodeProps: ({ element }) => ({
-        width: (element as any).url.split('/').pop(),
-        alt: (element as any).attributes?.alt,
-      }),
-    },
-  },
 });
 
 it('serialize link to html with attributes', () => {
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins,
       nodes: [
         { text: 'An external ' },
         {
@@ -54,7 +53,6 @@ it('serialize image with alt to html', () => {
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins,
         nodes: [
           {
             type: 'img',

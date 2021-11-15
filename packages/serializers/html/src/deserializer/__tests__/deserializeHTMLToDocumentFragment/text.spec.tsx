@@ -2,7 +2,7 @@
 
 import { PlatePlugin } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = 'test';
@@ -17,7 +17,7 @@ const output = (
 
 it('should have the break line', () => {
   expect(
-    deserializeHTMLToDocumentFragment(createPlateEditor(), {
+    deserializeHTMLToDocumentFragment(createPlateUIEditor(), {
       plugins: input1,
       element: input2,
     })

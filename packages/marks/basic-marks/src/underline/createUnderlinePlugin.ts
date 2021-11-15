@@ -14,6 +14,10 @@ export const createUnderlinePlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_UNDERLINE,
   isLeaf: true,
   deserialize: getUnderlineDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+u',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+u',
+  },
 });

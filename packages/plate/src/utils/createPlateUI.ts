@@ -64,7 +64,7 @@ import { css } from 'styled-components';
 import tw from 'twin.macro';
 import { DefaultPlatePluginKey } from '../types/DefaultPlatePluginKey';
 
-export const createPlateComponents = <T extends string = string>(
+export const createPlateUI = <T extends string = string>(
   overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>
 ) => {
   const components = {

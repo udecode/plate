@@ -13,9 +13,11 @@ export const useEditableProps = ({
   id = 'main',
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
-  const editor = usePlateEditorWithPlugins(id)!;
+  const editor = usePlateEditorWithPlugins(id);
 
   const props: EditableProps = useMemo(() => {
+    if (!editor) return {};
+
     const _props: EditableProps = {
       decorate: pipeDecorate(editor),
       renderElement: pipeRenderElement(editor, editableProps),

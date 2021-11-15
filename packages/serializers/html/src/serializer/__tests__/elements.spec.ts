@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import {ELEMENT_PARAGRAPH} from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import {
   createAlignPlugin,
   createBlockquotePlugin,
@@ -9,16 +9,17 @@ import {
   createParagraphPlugin,
   createTablePlugin,
 } from '../../../../../plate/src/index';
-import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
-import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
-
-const editor = createPlateEditor({});
+import {createPlateUIEditor} from '../../../../../plate/src/utils/createPlateUIEditor';
+import {serializeHTMLFromNodes} from '../serializeHTMLFromNodes';
+import {htmlStringToDOMNode} from '../utils/htmlStringToDOMNode';
 
 it('serialize list to html', () => {
+  const editor = createPlateUIEditor({
+    plugins: [createListPlugin()],
+  });
+
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [createListPlugin()],
       nodes: [
         {
           type: 'ul',
@@ -40,9 +41,13 @@ it('serialize list to html', () => {
 });
 
 it('serialize link to html', () => {
+  const editor = createPlateUIEditor({
+      plugins: [createLinkPlugin()],
+      
+    });
+  
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [createLinkPlugin()],
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -59,10 +64,13 @@ it('serialize link to html', () => {
 });
 
 it('serialize blockquote to html', () => {
+  const editor = createPlateUIEditor({
+        plugins: [createBlockquotePlugin()],
+    });
+  
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [createBlockquotePlugin()],
         nodes: [
           {
             type: 'blockquote',
@@ -75,8 +83,12 @@ it('serialize blockquote to html', () => {
 });
 
 it('serialize blockquote to html, without trimming whitespace', () => {
-  const html = serializeHTMLFromNodes(editor, {
+  const editor = createPlateUIEditor({
     plugins: [createBlockquotePlugin()],
+      
+    });
+  
+  const html = serializeHTMLFromNodes(editor, {
     nodes: [
       {
         type: 'blockquote',
@@ -93,9 +105,12 @@ it('serialize blockquote to html, without trimming whitespace', () => {
 });
 
 it('serialize headings to html', () => {
+  const editor = createPlateUIEditor({
+      plugins: [createHeadingPlugin()],
+    });
+  
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [createHeadingPlugin()],
       nodes: [
         {
           type: 'h1',
@@ -118,9 +133,12 @@ it('serialize headings to html', () => {
 });
 
 it('serialize paragraph to html', () => {
+  const editor = createPlateUIEditor({
+      plugins: [createParagraphPlugin()],
+    });
+  
   expect(
     serializeHTMLFromNodes(editor, {
-      plugins: [createParagraphPlugin()],
       nodes: [
         {
           type: 'p',
@@ -132,10 +150,13 @@ it('serialize paragraph to html', () => {
 });
 
 it('serialize image to html', () => {
+  const editor = createPlateUIEditor({
+        plugins: [createImagePlugin()],
+    });
+  
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
-        plugins: [createImagePlugin()],
         nodes: [
           {
             type: 'img',
@@ -150,9 +171,13 @@ it('serialize image to html', () => {
 });
 
 it('serialize table to html', () => {
+  const editor = createPlateUIEditor({
+      plugins: [createTablePlugin()],
+      
+    });
+  
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
-      plugins: [createTablePlugin()],
       nodes: [
         {
           type: 'table',
@@ -184,11 +209,14 @@ it('serialize table to html', () => {
 });
 
 it('serialize align style to html', () => {
-  const plugins = [createParagraphPlugin(), createAlignPlugin()];
+  const editor = createPlateUIEditor({
+  plugins : [createParagraphPlugin(), createAlignPlugin()];
+      
+    });
+  
 
   expect(
-    serializeHTMLFromNodes(createPlateEditor({ editor, plugins }), {
-      plugins,
+    serializeHTMLFromNodes(createPlateUIEditor({ editor, plugins }), {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -207,10 +235,14 @@ it('serialize align className to html', () => {
     createParagraphPlugin(),
     createAlignPlugin({ classNames: { center: 'slate-align-center' } }),
   ];
+  
+  const editor = createPlateUIEditor({
+      plugins
+    });
+  
 
   expect(
-    serializeHTMLFromNodes(createPlateEditor({ editor, plugins }), {
-      plugins,
+    serializeHTMLFromNodes(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,

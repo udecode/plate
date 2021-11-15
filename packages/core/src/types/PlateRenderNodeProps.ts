@@ -1,4 +1,3 @@
-import { NodeProps } from './PlatePluginOptions/GetNodeProps';
 import { AnyObject } from './utility/AnyObject';
 import { PlateEditor } from './PlateEditor';
 
@@ -13,5 +12,5 @@ export interface PlateRenderNodeProps extends AnyObject {
   /**
    * @see {@link NodeProps}
    */
-  nodeProps?: NodeProps;
+  nodeProps?: AnyObject;
 }

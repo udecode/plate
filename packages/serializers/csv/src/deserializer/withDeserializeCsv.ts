@@ -20,11 +20,7 @@ export const withDeserializeCsv = (): WithOverride<
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    const isEnabled = isDeserializerEnabled(
-      editor,
-      editor.plugins,
-      KEY_DESERIALIZE_CSV
-    );
+    const isEnabled = isDeserializerEnabled(editor, KEY_DESERIALIZE_CSV);
 
     if (content && isEnabled) {
       const fragment = deserializeCsv(editor, { content, header: true });
@@ -32,7 +28,6 @@ export const withDeserializeCsv = (): WithOverride<
       if (fragment?.length) {
         return insertDeserializedFragment(editor, {
           fragment,
-          plugins: editor.plugins,
         });
       }
     }

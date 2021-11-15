@@ -2,7 +2,12 @@ import { TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Editor } from 'slate';
 import { isMarkActive } from '../queries/isMarkActive';
+import { ToggleMarkPlugin } from '../types/plugins/ToggleMarkPlugin';
 import { removeMark } from './removeMark';
+
+export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
+  key: string;
+}
 
 /**
  * Add/remove marks in the selection.
@@ -12,8 +17,7 @@ import { removeMark } from './removeMark';
  */
 export const toggleMark = (
   editor: TEditor,
-  key: string,
-  clear: string | string[] = []
+  { key, clear }: ToggleMarkOptions
 ) => {
   if (!editor.selection) return;
 

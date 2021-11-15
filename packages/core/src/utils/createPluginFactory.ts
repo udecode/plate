@@ -10,16 +10,13 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  * - first param can be used to (deeply) override the default plugin.
  * - second param can be used to (deeply) override a nested plugin (plugin.plugins) by key.
  */
-export const createPluginFactory = <TPlugin = {}>(
-  defaultPlugin: PlatePlugin<{}, NoInfer<TPlugin>>
-) => <TEditor = {}>(
-  overrides?: Partial<PlatePlugin<TEditor, NoInfer<TPlugin>>>,
-  overridesByKey?: Record<PluginKey, Partial<PlatePlugin<TEditor>>>
-): PlatePlugin<TEditor, NoInfer<TPlugin>> => {
-  let plugin: PlatePlugin<TEditor, TPlugin> = defaultsDeep(
-    overrides,
-    defaultPlugin
-  );
+export const createPluginFactory = <P = {}>(
+  defaultPlugin: PlatePlugin<{}, NoInfer<P>>
+) => <T = {}>(
+  overrides?: Partial<PlatePlugin<T, NoInfer<P>>>,
+  overridesByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>
+): PlatePlugin<T, NoInfer<P>> => {
+  let plugin: PlatePlugin<T, P> = defaultsDeep(overrides, defaultPlugin);
 
   if (overridesByKey) {
     plugin = overridePluginsByKey(plugin, overridesByKey);

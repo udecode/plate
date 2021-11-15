@@ -2,12 +2,12 @@
 
 import { PlatePlugin } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 jsx;
 
-const editor = createPlateEditor();
+const editor = createPlateUIEditor();
 
 const html = `<html><body>test<br /></body></html>`;
 const input1: PlatePlugin[] = [];

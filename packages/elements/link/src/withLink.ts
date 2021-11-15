@@ -61,7 +61,7 @@ const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
  */
 export const withLink = (): WithOverride<{}, LinkPlugin> => (
   editor,
-  { isUrl, rangeBeforeOptions, type }
+  { type, options: { isUrl, rangeBeforeOptions } }
 ) => {
   const { insertData, insertText } = editor;
 
@@ -115,7 +115,12 @@ export const withLink = (): WithOverride<{}, LinkPlugin> => (
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes()(editor, { key: '', types: type });
+  editor = withRemoveEmptyNodes()(editor, {
+    key: '',
+    type: '',
+    inject: {},
+    options: { types: type },
+  });
 
   return editor;
 };

@@ -1,5 +1,5 @@
 import { PlateEditor } from '../../PlateEditor';
-import { PlatePlugin } from './PlatePlugin';
+import { WithPlatePlugin } from './PlatePlugin';
 
 /**
  * Plate plugin overriding the `editor` methods.
@@ -7,5 +7,5 @@ import { PlatePlugin } from './PlatePlugin';
  */
 export type WithOverride<T = {}, P = {}> = (
   editor: PlateEditor<T>,
-  plugin: PlatePlugin<T, P>
+  plugin: WithPlatePlugin<T, P>
 ) => PlateEditor<T>;

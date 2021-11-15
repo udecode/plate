@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import {
   deserializeHTMLToMarks,
   DeserializeMarksProps,
@@ -23,7 +23,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createPlateEditor(), input as any)).toEqual(
+  expect(deserializeHTMLToMarks(createPlateUIEditor(), input as any)).toEqual(
     output
   );
 });

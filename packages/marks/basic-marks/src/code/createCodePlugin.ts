@@ -14,6 +14,10 @@ export const createCodePlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_CODE,
   isLeaf: true,
   deserialize: getCodeDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+e',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+e',
+  },
 });

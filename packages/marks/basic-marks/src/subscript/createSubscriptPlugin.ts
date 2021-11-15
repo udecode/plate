@@ -14,7 +14,11 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_SUBSCRIPT,
   isLeaf: true,
   deserialize: getSubscriptDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+.',
-  clear: MARK_SUBSCRIPT,
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+.',
+    clear: MARK_SUBSCRIPT,
+  },
 });

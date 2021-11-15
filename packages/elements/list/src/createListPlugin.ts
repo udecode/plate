@@ -24,13 +24,17 @@ export const createListPlugin = createPluginFactory({
       key: ELEMENT_UL,
       isElement: true,
       deserialize: getUlDeserialize(),
-      onKeyDown: getListOnKeyDown(),
+      handlers: {
+        onKeyDown: getListOnKeyDown(),
+      },
       withOverrides: withList(),
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_OL,
       isElement: true,
-      onKeyDown: getListOnKeyDown(),
+      handlers: {
+        onKeyDown: getListOnKeyDown(),
+      },
       deserialize: getOlDeserialize(),
     } as PlatePlugin<{}, ListPlugin>,
     {

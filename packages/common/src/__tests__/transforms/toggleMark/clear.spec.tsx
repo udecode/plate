@@ -29,6 +29,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleMark(input, MARK_ITALIC, MARK_BOLD);
+  toggleMark(input, { key: MARK_ITALIC, clear: MARK_BOLD });
   expect(input.children).toEqual(output.children);
 });

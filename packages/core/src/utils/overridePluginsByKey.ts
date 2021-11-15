@@ -8,7 +8,7 @@ import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
 export const overridePluginsByKey = <T = {}, P = {}>(
   plugin: PlatePlugin<T, P>,
   overridesByKey: Record<string, Partial<PlatePlugin<T>>> = {}
-) => {
+): PlatePlugin<T, P> => {
   // override plugin
   if (overridesByKey[plugin.key]) {
     plugin = defaultsDeep(overridesByKey[plugin.key], plugin);

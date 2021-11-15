@@ -15,15 +15,19 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   isElement: true,
   isInline: true,
   deserialize: getLinkDeserialize(),
-  onKeyDown: getLinkOnKeyDown(),
-  withOverrides: withLink(),
-  isUrl: isUrlProtocol,
-  rangeBeforeOptions: {
-    matchString: ' ',
-    skipInvalid: true,
-    afterMatch: true,
-    multiPaths: true,
+  props: ({ element }) => ({ nodeProps: { url: element?.url } }),
+  handlers: {
+    onKeyDown: getLinkOnKeyDown(),
   },
-  getNodeProps: ({ element }) => ({ url: element?.url }),
-  hotkey: 'mod+k',
+  withOverrides: withLink(),
+  options: {
+    isUrl: isUrlProtocol,
+    rangeBeforeOptions: {
+      matchString: ' ',
+      skipInvalid: true,
+      afterMatch: true,
+      multiPaths: true,
+    },
+    hotkey: 'mod+k',
+  },
 });

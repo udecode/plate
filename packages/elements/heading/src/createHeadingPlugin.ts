@@ -10,8 +10,10 @@ import { HeadingPlugin, HeadingsPlugin } from './types';
  */
 export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
   key: 'heading',
-  levels: 6,
-  then: (editor, { levels }) => {
+  options: {
+    levels: 6,
+  },
+  then: (editor, { options: { levels } = {} }) => {
     const plugins: PlatePlugin<{}, HeadingPlugin>[] = [];
 
     for (let level = 1; level <= levels!; level++) {
@@ -21,11 +23,14 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
         key,
         isElement: true,
         deserialize: getHeadingDeserialize(),
-        onKeyDown: getToggleElementOnKeyDown(),
+        handlers: {
+          onKeyDown: getToggleElementOnKeyDown(),
+        },
+        options: {},
       };
 
       if (level < 4) {
-        plugin.hotkey = ['mod+opt+1', 'mod+shift+1'];
+        plugin.options!.hotkey = [`mod+opt+${level}`, `mod+shift+${level}`];
       }
 
       plugins.push(plugin);

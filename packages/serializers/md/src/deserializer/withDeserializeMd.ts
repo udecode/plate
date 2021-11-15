@@ -17,11 +17,7 @@ export const withDeserializeMd = (): WithOverride => (editor) => {
   editor.insertData = (data) => {
     const content = data.getData('text/plain');
 
-    const isEnabled = isDeserializerEnabled(
-      editor,
-      editor.plugins,
-      KEY_DESERIALIZE_MD
-    );
+    const isEnabled = isDeserializerEnabled(editor, KEY_DESERIALIZE_MD);
 
     const { files } = data;
     if (content && isEnabled && !files?.length) {
@@ -34,7 +30,6 @@ export const withDeserializeMd = (): WithOverride => (editor) => {
 
       if (fragment.length) {
         return insertDeserializedFragment(editor, {
-          plugins: editor.plugins,
           fragment,
         });
       }

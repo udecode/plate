@@ -9,6 +9,10 @@ export const KEY_RESET_NODE = 'resetNode';
  */
 export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
   key: KEY_RESET_NODE,
-  onKeyDown: getResetNodeOnKeyDown(),
-  rules: [],
+  handlers: {
+    onKeyDown: getResetNodeOnKeyDown(),
+  },
+  options: {
+    rules: [],
+  },
 });

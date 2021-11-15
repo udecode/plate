@@ -7,6 +7,8 @@ export const KEY_LIST_START = 'listStart';
 
 export const createIndentListPlugin = createPluginFactory({
   key: KEY_LIST_STYLE_TYPE,
-  injectChildComponent: getIndentListInjectComponent(),
+  inject: {
+    belowComponent: getIndentListInjectComponent(),
+  },
   withOverrides: withIndentList(),
 });

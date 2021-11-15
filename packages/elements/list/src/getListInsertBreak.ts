@@ -33,14 +33,18 @@ export const getListInsertBreak = (editor: PlateEditor) => {
 
   const didReset = getResetNodeOnKeyDown()(editor, {
     key: '',
-    rules: [
-      {
-        types: [getPluginType(editor, ELEMENT_LI)],
-        defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-        predicate: () => !moved && isBlockAboveEmpty(editor),
-        onReset: (_editor) => unwrapList(_editor as PlateEditor),
-      },
-    ],
+    type: '',
+    inject: {},
+    options: {
+      rules: [
+        {
+          types: [getPluginType(editor, ELEMENT_LI)],
+          defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+          predicate: () => !moved && isBlockAboveEmpty(editor),
+          onReset: (_editor) => unwrapList(_editor as PlateEditor),
+        },
+      ],
+    },
   })(SIMULATE_BACKSPACE as any);
   if (didReset) return true;
 

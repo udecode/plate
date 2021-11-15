@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { isCollapsed, someNode } from '@udecode/plate-common';
-import { getPlugin, usePlateEditorState } from '@udecode/plate-core';
+import { getPluginInjectProps, usePlateEditorState } from '@udecode/plate-core';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,
@@ -13,8 +13,7 @@ export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
   const [open, setOpen] = React.useState(false);
   const editor = usePlateEditorState()!;
 
-  const { overrideProps = {} } = getPlugin(editor, KEY_LINE_HEIGHT);
-  const { validNodeValues } = overrideProps;
+  const { validNodeValues } = getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
   const onToggle = useCallback(() => {
     setOpen(!open);

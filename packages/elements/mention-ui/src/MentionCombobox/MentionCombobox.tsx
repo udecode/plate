@@ -1,6 +1,6 @@
 import React from 'react';
 import { Combobox, ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
-import { getPlugin, usePlateEditorRef } from '@udecode/plate-core';
+import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-core';
 import {
   ELEMENT_MENTION,
   getMentionOnSelectItem,
@@ -19,7 +19,7 @@ export const MentionCombobox = <TData extends Data = NoData>({
 > & { pluginKey?: string }) => {
   const editor = usePlateEditorRef()!;
 
-  const { trigger } = getPlugin<MentionPlugin>(editor, pluginKey);
+  const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
 
   return (
     <Combobox

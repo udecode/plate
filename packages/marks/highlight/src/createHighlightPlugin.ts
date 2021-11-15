@@ -15,6 +15,10 @@ export const createHighlightPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
   deserialize: getHighlightDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+shift+h',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+shift+h',
+  },
 });

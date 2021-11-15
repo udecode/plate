@@ -42,10 +42,9 @@ export const deserializeCsv = <T = {}>(
     header?: boolean;
   }
 ): TDescendant[] | undefined => {
-  const { errorTolerance } = getPlugin<DeserializeCsvPlugin, T>(
-    editor,
-    KEY_DESERIALIZE_CSV
-  );
+  const {
+    options: { errorTolerance },
+  } = getPlugin<DeserializeCsvPlugin, T>(editor, KEY_DESERIALIZE_CSV);
 
   // Verify it's a csv string
   const testCsv = parse(content, { preview: 2 });

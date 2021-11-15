@@ -9,7 +9,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { unwrapList } from '../../../../elements/list/src/transforms/unwrapList';
-import { createPlateEditor } from '../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
 import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
 
 jsx;
@@ -37,7 +37,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
   });
 

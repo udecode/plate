@@ -1,4 +1,4 @@
-import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLNode } from './deserializeHTMLNode';
 
@@ -8,12 +8,10 @@ import { deserializeHTMLNode } from './deserializeHTMLNode';
 export const deserializeHTMLElement = <T = {}>(
   editor: PlateEditor<T>,
   {
-    plugins,
     element,
   }: {
-    plugins: PlatePlugin<T>[];
     element: HTMLElement;
   }
 ): DeserializeHTMLReturn => {
-  return deserializeHTMLNode(editor, plugins)(element);
+  return deserializeHTMLNode(editor)(element);
 };

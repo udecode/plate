@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '@udecode/plate/src/utils/createPlateUIEditor';
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -9,7 +9,7 @@ import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 jsx;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
   });

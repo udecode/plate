@@ -17,13 +17,14 @@ Use `serializeHTMLFromNodes`:
 
 ```ts live
 () => {
-  const editor = createPlateEditor({
-    plugins: createPlugins(PLUGINS.basicNodes, { components: CONFIG.components })
+  const editor = createPlateUIEditor({
+    plugins: PLUGINS.basicNodes,
+    components: CONFIG.components
   });
 
   const html = serializeHTMLFromNodes(editor, {
     nodes: VALUES.basicNodes,
-  })
+  });
 
   return (
     <HighlightHTML code={html} />
@@ -48,7 +49,7 @@ Use `serializeHTMLFromNodes`:
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
   ]
-  // plugins.push(createDeserializeHtmlPlugin({ plugins }));
+  // plugins.push(createDeserializeHTMLPlugin());
 
   plugins = createPlugins(plugins, {
     components: CONFIG.components,

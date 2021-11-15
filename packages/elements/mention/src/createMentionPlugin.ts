@@ -17,11 +17,15 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   isInline: true,
   isVoid: true,
   deserialize: getMentionDeserialize(),
-  onKeyDown: (editor) =>
-    moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
+  handlers: {
+    onKeyDown: (editor) =>
+      moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
+  },
   withOverrides: withMention(),
-  trigger: '@',
-  createMentionNode: (item) => ({ value: item.text }),
+  options: {
+    trigger: '@',
+    createMentionNode: (item) => ({ value: item.text }),
+  },
   plugins: [
     {
       key: ELEMENT_MENTION_INPUT,

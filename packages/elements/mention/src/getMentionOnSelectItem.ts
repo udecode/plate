@@ -23,8 +23,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
 
   const {
     type,
-    insertSpaceAfterMention,
-    createMentionNode,
+    options: { insertSpaceAfterMention, createMentionNode },
   } = getPlugin<MentionPlugin>(editor, key);
 
   const pathAbove = getBlockAbove(editor)?.[1];

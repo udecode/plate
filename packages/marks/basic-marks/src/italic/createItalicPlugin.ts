@@ -14,6 +14,10 @@ export const createItalicPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_ITALIC,
   isLeaf: true,
   deserialize: getItalicDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+i',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+i',
+  },
 });

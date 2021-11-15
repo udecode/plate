@@ -1,10 +1,5 @@
 import { mergeDeepToNodes } from '@udecode/plate-common';
-import {
-  isElement,
-  PlateEditor,
-  PlatePlugin,
-  TDescendant,
-} from '@udecode/plate-core';
+import { isElement, PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHTMLChildren } from '../types';
@@ -12,7 +7,6 @@ import { DeserializeHTMLChildren } from '../types';
 jsx;
 
 export interface DeserializeMarksProps<T = {}> {
-  plugins: PlatePlugin<T>[];
   element: HTMLElement;
   children: DeserializeHTMLChildren[];
 }
@@ -23,11 +17,11 @@ export interface DeserializeMarksProps<T = {}> {
  */
 export const deserializeHTMLToMarks = <T = {}>(
   editor: PlateEditor<T>,
-  { plugins, element, children }: DeserializeMarksProps<T>
+  { element, children }: DeserializeMarksProps<T>
 ) => {
   let leaf = {};
 
-  plugins.forEach((plugin) => {
+  editor.plugins.forEach((plugin) => {
     const leafDeserializers = plugin.deserialize?.(editor, plugin).leaf;
     if (!leafDeserializers) return;
 

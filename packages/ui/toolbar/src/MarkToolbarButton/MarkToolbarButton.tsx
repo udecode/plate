@@ -23,7 +23,7 @@ export const MarkToolbarButton = ({
       active={!!editor?.selection && isMarkActive(editor, type!)}
       onMouseDown={
         editor
-          ? getPreventDefaultHandler(toggleMark, editor, type!, clear)
+          ? getPreventDefaultHandler(toggleMark, editor, { key: type, clear })
           : undefined
       }
       {...props}

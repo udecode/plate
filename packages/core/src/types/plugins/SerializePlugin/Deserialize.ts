@@ -1,7 +1,7 @@
 import { PlateEditor } from '../../PlateEditor';
 import { TDescendant } from '../../slate/TDescendant';
 import { HandlerReturnType } from '../PlatePlugin/DOMHandlers';
-import { PlatePlugin } from '../PlatePlugin/PlatePlugin';
+import { WithPlatePlugin } from '../PlatePlugin/PlatePlugin';
 
 export type DeserializeNode = {
   type: string;
@@ -20,7 +20,7 @@ export type DeserializeNode = {
  */
 export type Deserialize<T = {}, P = {}> = (
   editor: PlateEditor<T>,
-  plugin: PlatePlugin<T, P>
+  plugin: WithPlatePlugin<T, P>
 ) => {
   element?: DeserializeNode[];
   leaf?: DeserializeNode[];

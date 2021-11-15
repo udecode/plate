@@ -1,6 +1,6 @@
 import { NodeEntry, Range } from 'slate';
 import { PlateEditor } from '../../PlateEditor';
-import { PlatePlugin } from './PlatePlugin';
+import { WithPlatePlugin } from './PlatePlugin';
 
 /**
  * Function used to decorate ranges.
@@ -9,5 +9,5 @@ import { PlatePlugin } from './PlatePlugin';
  */
 export type Decorate<T = {}, P = {}> = (
   editor: PlateEditor<T>,
-  plugin: PlatePlugin<T, P>
+  plugin: WithPlatePlugin<T, P>
 ) => (entry: NodeEntry) => Range[] | undefined;

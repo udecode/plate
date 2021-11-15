@@ -12,6 +12,10 @@ export const createBlockquotePlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_BLOCKQUOTE,
   isElement: true,
   deserialize: getBlockquoteDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(),
-  hotkey: 'mod+shift+.',
+  handlers: {
+    onKeyDown: getToggleElementOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+shift+.',
+  },
 });

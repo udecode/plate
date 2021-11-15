@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '@udecode/plate/src/utils/createPlateUIEditor';
 import { createDeserializeAstPlugin } from '@udecode/plate-ast-serializer';
 import { PlateEditor } from '@udecode/plate-core';
 import { createDeserializeHTMLPlugin } from '@udecode/plate-html-serializer';
@@ -21,11 +21,11 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
 
   plugins.push(
-    createDeserializeHTMLPlugin({ plugins }),
+    createDeserializeHTMLPlugin(),
     createDeserializeAstPlugin({ plugins })
   );
 
-  const editor = createPlateEditor({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins,
   });

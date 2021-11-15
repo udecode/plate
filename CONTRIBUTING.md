@@ -194,7 +194,7 @@ Build:
         deserialize: getXDeserialize(),
         ```
         
-    - `createPlateComponents`
+    - `createPlateUI`
         - add the plugin component to `components` object
             
             ```tsx

@@ -9,7 +9,7 @@ import { ListPlugin } from './types';
 
 export const withList = (): WithOverride<{}, ListPlugin> => (
   editor,
-  { validLiChildrenTypes }
+  { options: { validLiChildrenTypes } }
 ) => {
   const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 

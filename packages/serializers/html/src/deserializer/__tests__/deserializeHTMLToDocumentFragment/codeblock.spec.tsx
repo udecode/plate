@@ -2,7 +2,7 @@
 
 import { PlatePlugin } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
 const html = `<blockquote>test \n code</blockquote>`;
@@ -13,7 +13,7 @@ const expectedOutput = [{ text: 'test \n code' }];
 
 it('should have the break line', () => {
   const convertedDocumentFragment = deserializeHTMLToDocumentFragment(
-    createPlateEditor(),
+    createPlateUIEditor(),
     {
       plugins: input1,
       element: input2,

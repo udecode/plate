@@ -1,6 +1,6 @@
 import { getSearchHighlightDecorate } from '@udecode/plate-find-replace';
 import { Range } from 'slate';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 
 const input = { search: 'test' };
 
@@ -20,7 +20,7 @@ const output: Range[] = [
 
 it('should be', () => {
   expect(
-    getSearchHighlightDecorate(input)(createPlateEditor())([
+    getSearchHighlightDecorate(input)(createPlateUIEditor())([
       { text: 'test' },
       [0, 0],
     ] as any)

@@ -4,10 +4,13 @@ import {
   setNodes,
   UnhangRangeOptions,
 } from '@udecode/plate-common';
-import { AnyObject, getPlugin, PlateEditor } from '@udecode/plate-core';
+import {
+  AnyObject,
+  getPluginInjectProps,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { KEY_INDENT } from '../createIndentPlugin';
-import { IndentPlugin } from '../types';
 
 export interface SetIndentOptions {
   /**
@@ -46,8 +49,7 @@ export const setIndent = (
     unsetNodesProps = [],
   }: SetIndentOptions
 ) => {
-  const { overrideProps } = getPlugin<IndentPlugin>(editor, KEY_INDENT);
-  const { nodeKey } = overrideProps ?? {};
+  const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 
   const nodes = Array.from(
     getNodes(editor, {

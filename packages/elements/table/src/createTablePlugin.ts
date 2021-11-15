@@ -20,7 +20,9 @@ export const createTablePlugin = createPluginFactory({
   key: ELEMENT_TABLE,
   isElement: true,
   deserialize: getTableDeserialize(),
-  onKeyDown: getTableOnKeyDown(),
+  handlers: {
+    onKeyDown: getTableOnKeyDown(),
+  },
   withOverrides: withTable(),
   plugins: [
     {
@@ -32,18 +34,22 @@ export const createTablePlugin = createPluginFactory({
       key: ELEMENT_TD,
       isElement: true,
       deserialize: getTdDeserialize(),
-      getNodeProps: ({ element }) => ({
-        colSpan: element?.attributes?.colspan,
-        rowSpan: element?.attributes?.rowspan,
+      props: ({ element }) => ({
+        nodeProps: {
+          colSpan: element?.attributes?.colspan,
+          rowSpan: element?.attributes?.rowspan,
+        },
       }),
     },
     {
       key: ELEMENT_TH,
       isElement: true,
       deserialize: getThDeserialize(),
-      getNodeProps: ({ element }) => ({
-        colSpan: element?.attributes?.colspan,
-        rowSpan: element?.attributes?.rowspan,
+      props: ({ element }) => ({
+        nodeProps: {
+          colSpan: element?.attributes?.colspan,
+          rowSpan: element?.attributes?.rowspan,
+        },
       }),
     },
   ],

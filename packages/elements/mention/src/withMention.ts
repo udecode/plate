@@ -13,7 +13,7 @@ import { MentionInputNode, MentionPlugin } from './types';
 
 export const withMention = (): WithOverride<{}, MentionPlugin> => (
   editor,
-  { id, trigger, type }
+  { type, options: { id, trigger } }
 ) => {
   const { apply, insertText, deleteBackward } = editor;
 

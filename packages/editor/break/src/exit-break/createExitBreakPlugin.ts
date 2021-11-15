@@ -10,6 +10,13 @@ export const KEY_EXIT_BREAK = 'exitBreak';
  */
 export const createExitBreakPlugin = createPluginFactory<ExitBreakPlugin>({
   key: KEY_EXIT_BREAK,
-  onKeyDown: getExitBreakOnKeyDown(),
-  rules: [{ hotkey: 'mod+enter' }, { hotkey: 'mod+shift+enter', before: true }],
+  handlers: {
+    onKeyDown: getExitBreakOnKeyDown(),
+  },
+  options: {
+    rules: [
+      { hotkey: 'mod+enter' },
+      { hotkey: 'mod+shift+enter', before: true },
+    ],
+  },
 });

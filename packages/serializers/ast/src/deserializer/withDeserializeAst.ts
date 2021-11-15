@@ -15,11 +15,7 @@ export const withDeserializeAst = (): WithOverride => (editor) => {
   editor.insertData = (data: DataTransfer) => {
     const ast = data.getData('application/x-slate-fragment');
 
-    const isEnabled = isDeserializerEnabled(
-      editor,
-      editor.plugins,
-      KEY_DESERIALIZE_AST
-    );
+    const isEnabled = isDeserializerEnabled(editor, KEY_DESERIALIZE_AST);
 
     if (ast && isEnabled) {
       const decoded = decodeURIComponent(window.atob(ast));
@@ -28,7 +24,6 @@ export const withDeserializeAst = (): WithOverride => (editor) => {
       if (fragment.length) {
         return insertDeserializedFragment(editor, {
           fragment,
-          plugins: editor.plugins,
         });
       }
     }

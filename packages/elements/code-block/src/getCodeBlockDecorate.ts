@@ -53,7 +53,7 @@ import { CodeBlockNodeData, CodeBlockPlugin } from './types';
 
 export const getCodeBlockDecorate = (): Decorate<{}, CodeBlockPlugin> => (
   editor,
-  { syntax, type }
+  { type, options: { syntax } }
 ) => (entry: NodeEntry) => {
   const ranges: any = [];
   const [node, path] = entry;

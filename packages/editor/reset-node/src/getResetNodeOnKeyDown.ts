@@ -11,7 +11,7 @@ export const SIMULATE_BACKSPACE: any = {
 export const getResetNodeOnKeyDown = (): KeyboardHandler<
   {},
   ResetNodePlugin
-> => (editor, { rules }) => (event) => {
+> => (editor, { options: { rules } }) => (event) => {
   let reset;
 
   if (editor.selection && isCollapsed(editor.selection)) {

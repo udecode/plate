@@ -12,7 +12,6 @@ export * from './UseEditablePropsOptions';
 export * from './UsePlateEffectsOptions';
 export * from './UsePlateOptions';
 export * from './UseSlatePropsOptions';
-export * from './PlatePluginOptions/index';
 export * from './plugins/index';
 export * from './slate/index';
 export * from './utility/index';

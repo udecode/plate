@@ -5,7 +5,7 @@ import { LinkPlugin } from './types';
 
 export const getLinkOnKeyDown = (): KeyboardHandler<{}, LinkPlugin> => (
   editor,
-  { getLinkUrl, hotkey }
+  { options: { getLinkUrl, hotkey } }
 ) => (e) => {
   if (!hotkey) return;
 

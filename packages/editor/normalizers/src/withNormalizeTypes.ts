@@ -5,7 +5,7 @@ import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 export const withNormalizeTypes = (): WithOverride<
   {},
   NormalizeTypesPlugin
-> => (editor, { rules, onError }) => {
+> => (editor, { options: { rules, onError } }) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {

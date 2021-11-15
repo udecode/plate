@@ -9,15 +9,19 @@ export const KEY_ALIGN = 'align';
  */
 export const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,
-  overrideProps: {
-    nodeKey: KEY_ALIGN,
-    defaultNodeValue: 'left',
-    styleKey: 'textAlign',
-    validNodeValues: ['left', 'center', 'right', 'justify'],
+  inject: {
+    props: {
+      nodeKey: KEY_ALIGN,
+      defaultNodeValue: 'left',
+      styleKey: 'textAlign',
+      validNodeValues: ['left', 'center', 'right', 'justify'],
+    },
   },
   then: (editor) => ({
-    overrideProps: {
-      validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+    inject: {
+      props: {
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+      },
     },
   }),
 });

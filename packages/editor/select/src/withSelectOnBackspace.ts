@@ -9,7 +9,7 @@ import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 export const withSelectOnBackspace = (): WithOverride<
   {},
   SelectOnBackspacePlugin
-> => (editor, { query }) => {
+> => (editor, { options: { query } }) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {

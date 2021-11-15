@@ -6,6 +6,8 @@ export const KEY_COMBOBOX = 'combobox';
 
 export const createComboboxPlugin = createPluginFactory({
   key: KEY_COMBOBOX,
-  onChange: getComboboxOnChange(),
-  onKeyDown: getComboboxOnKeyDown(),
+  handlers: {
+    onChange: getComboboxOnChange(),
+    onKeyDown: getComboboxOnKeyDown(),
+  },
 });

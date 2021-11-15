@@ -11,6 +11,10 @@ export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
   deserialize: getParagraphDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(),
-  hotkey: ['mod+opt+0', 'mod+shift+0'],
+  handlers: {
+    onKeyDown: getToggleElementOnKeyDown(),
+  },
+  options: {
+    hotkey: ['mod+opt+0', 'mod+shift+0'],
+  },
 });

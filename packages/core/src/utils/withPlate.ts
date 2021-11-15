@@ -38,11 +38,13 @@ export const withPlate = <T = {}>(
     createInlineVoidPlugin(),
     {
       key: 'event-editor',
-      onFocus: () => () => {
-        setEventEditorId('focus', id);
-      },
-      onBlur: () => () => {
-        setEventEditorId('blur', id);
+      handlers: {
+        onFocus: () => () => {
+          setEventEditorId('focus', id);
+        },
+        onBlur: () => () => {
+          setEventEditorId('blur', id);
+        },
       },
     },
     ...plugins,

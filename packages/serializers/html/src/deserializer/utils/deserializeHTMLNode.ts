@@ -1,4 +1,4 @@
-import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
+import { PlateEditor } from '@udecode/plate-core';
 import { DeserializeHTMLChildren, DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLToBreak } from './deserializeHTMLToBreak';
 import { deserializeHTMLToElement } from './deserializeHTMLToElement';
@@ -9,10 +9,9 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHTMLNode = <T = {}>(
-  editor: PlateEditor<T>,
-  plugins: PlatePlugin<T>[]
-) => (node: HTMLElement | ChildNode): DeserializeHTMLReturn => {
+export const deserializeHTMLNode = <T = {}>(editor: PlateEditor<T>) => (
+  node: HTMLElement | ChildNode
+): DeserializeHTMLReturn => {
   // text node
   const textNode = deserializeHTMLToText(node);
   if (textNode) return textNode;
@@ -35,7 +34,7 @@ export const deserializeHTMLNode = <T = {}>(
   }
 
   const children: DeserializeHTMLChildren[] = Array.from(parent.childNodes)
-    .map(deserializeHTMLNode(editor, plugins))
+    .map(deserializeHTMLNode(editor))
     .flat();
 
   // body
@@ -47,7 +46,6 @@ export const deserializeHTMLNode = <T = {}>(
 
   // element
   const element = deserializeHTMLToElement(editor, {
-    plugins,
     element: htmlElement,
     children,
   });
@@ -55,7 +53,6 @@ export const deserializeHTMLNode = <T = {}>(
 
   // mark
   return deserializeHTMLToMarks(editor, {
-    plugins,
     element: htmlElement,
     children,
   });

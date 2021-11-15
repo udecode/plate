@@ -2,7 +2,7 @@
 
 import { getElementDeserializer } from '@udecode/plate-common';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
 const html1 = '<html><body><div data-poll-id="456"/></body></html>';
@@ -34,7 +34,7 @@ const output = (
 ) as any;
 
 it('should match with the attribute name', () => {
-  expect(deserializeHTMLElement(createPlateEditor(), input1)).toEqual(
+  expect(deserializeHTMLElement(createPlateUIEditor(), input1)).toEqual(
     output.children
   );
 });
@@ -60,7 +60,7 @@ const input2 = {
 };
 
 it('should match with the attribute name and value', () => {
-  expect(deserializeHTMLElement(createPlateEditor(), input2)).toEqual(
+  expect(deserializeHTMLElement(createPlateUIEditor(), input2)).toEqual(
     output.children
   );
 });

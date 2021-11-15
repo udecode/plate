@@ -2,28 +2,26 @@ import {
   createImagePlugin,
   createLinkPlugin,
 } from '../../../../../plate/src/index';
-import { createPlateEditor } from '../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize link to html with attributes', () => {
-  const plugins = [createLinkPlugin()];
+  const plugins = [
+    createLinkPlugin({
+      props: {
+        target: '_blank',
+        rel: 'noopener nofollow',
+      },
+    }),
+  ];
 
   expect(
     serializeHTMLFromNodes(
-      createPlateEditor({
+      createPlateUIEditor({
         plugins,
-        options: {
-          a: {
-            getNodeProps: () => ({
-              target: '_blank',
-              rel: 'noopener nofollow',
-            }),
-          },
-        },
       }),
       {
-        plugins,
         nodes: [
           { text: 'Some paragraph of text with ' },
           {
@@ -46,8 +44,7 @@ it('serialize image with alt to html', () => {
 
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(createPlateEditor({ plugins }), {
-        plugins,
+      serializeHTMLFromNodes(createPlateUIEditor({ plugins }), {
         nodes: [
           {
             type: 'img',

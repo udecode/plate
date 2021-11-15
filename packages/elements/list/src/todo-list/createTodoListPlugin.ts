@@ -8,6 +8,10 @@ export const createTodoListPlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_TODO_LI,
   isElement: true,
   deserialize: getTodoListDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(),
-  hotkey: ['mod+opt+4', 'mod+shift+4'],
+  handlers: {
+    onKeyDown: getToggleElementOnKeyDown(),
+  },
+  options: {
+    hotkey: ['mod+opt+4', 'mod+shift+4'],
+  },
 });

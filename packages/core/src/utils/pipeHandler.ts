@@ -45,7 +45,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
   pluginsHandlers = editor.plugins.flatMap(
-    (plugin) => plugin[handlerKey]?.(editor, plugin) ?? []
+    (plugin) => plugin.handlers?.[handlerKey]?.(editor, plugin) ?? []
   );
 
   const propsHandler = editableProps?.[handlerKey] as (

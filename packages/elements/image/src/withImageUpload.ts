@@ -11,7 +11,7 @@ import { ImagePlugin } from './types';
  */
 export const withImageUpload = (): WithOverride<{}, ImagePlugin> => (
   editor,
-  { uploadImage }
+  { options: { uploadImage } }
 ) => {
   const { insertData } = editor;
 

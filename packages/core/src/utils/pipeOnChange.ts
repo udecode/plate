@@ -3,7 +3,7 @@ import { OnChange } from '../types/plugins/PlatePlugin/OnChange';
 
 export const pipeOnChange = (editor: PlateEditor): ReturnType<OnChange> => {
   const onChanges = editor.plugins.flatMap(
-    (plugin) => plugin.onChange?.(editor, plugin) ?? []
+    (plugin) => plugin.handlers?.onChange?.(editor, plugin) ?? []
   );
 
   return (nodes) => {

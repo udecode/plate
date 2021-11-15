@@ -4,7 +4,11 @@ import {
   TNodeMatch,
   unsetNodes,
 } from '@udecode/plate-common';
-import { getPlugin, PlateEditor, PlatePluginKey } from '@udecode/plate-core';
+import {
+  getPluginInjectProps,
+  PlateEditor,
+  PlatePluginKey,
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../createAlignPlugin';
 import { Alignment } from '../types';
@@ -17,9 +21,10 @@ export const setAlign = (
     setNodesOptions,
   }: { value: Alignment; setNodesOptions?: SetNodesOptions } & PlatePluginKey
 ) => {
-  const { overrideProps = {} } = getPlugin(editor, key);
-
-  const { validTypes, defaultNodeValue, nodeKey } = overrideProps;
+  const { validTypes, defaultNodeValue, nodeKey } = getPluginInjectProps(
+    editor,
+    key
+  );
 
   const match: TNodeMatch = (n) =>
     Editor.isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);

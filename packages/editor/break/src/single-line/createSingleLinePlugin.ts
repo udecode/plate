@@ -9,6 +9,8 @@ export const KEY_SINGLE_LINE = 'singleLine';
  */
 export const createSingleLinePlugin = createPluginFactory({
   key: KEY_SINGLE_LINE,
-  onKeyDown: getSingleLineKeyDown(),
+  handlers: {
+    onKeyDown: getSingleLineKeyDown(),
+  },
   withOverrides: withSingleLine(),
 });

@@ -57,15 +57,14 @@ import { createSuperscriptPlugin } from '../packages/marks/basic-marks/src/super
 import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/underline/createUnderlinePlugin';
 import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
-import { createPlateComponents } from '../packages/plate/src/utils/createPlateComponents';
-import { createDeserializeHtmlPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHtmlPlugin';
+import { createPlateUI } from '../packages/plate/src/utils/createPlateUI';
 
 export default {
   title: 'Drag & Drop',
 } as Meta;
 
 export const Example = () => {
-  let components = createPlateComponents();
+  let components = createPlateUI();
   components = withStyledPlaceHolders(components);
   components = withStyledDraggables(components);
 
@@ -114,7 +113,7 @@ export const Example = () => {
         }
       );
 
-      plugins.push(createDeserializeHtmlPlugin({ plugins }));
+      plugins.push(createDeserializeHTMLPlugin());
 
       return plugins;
     }, [searchHighlightPlugin]);

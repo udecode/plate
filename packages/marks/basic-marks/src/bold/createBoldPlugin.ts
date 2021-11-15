@@ -14,6 +14,10 @@ export const createBoldPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_BOLD,
   isLeaf: true,
   deserialize: getBoldDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+b',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+b',
+  },
 });

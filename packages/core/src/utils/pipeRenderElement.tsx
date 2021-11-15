@@ -5,7 +5,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
 import { getRenderElement } from './getRenderElement';
-import { pipeOverrideProps } from './pipeOverrideProps';
+import { pipeInjectProps } from './pipeInjectProps';
 
 /**
  * @see {@link RenderElement}
@@ -22,8 +22,8 @@ export const pipeRenderElement = (
     }
   });
 
-  return (_props) => {
-    const props = pipeOverrideProps<PlateRenderElementProps>(editor, _props);
+  return (nodeProps) => {
+    const props = pipeInjectProps<PlateRenderElementProps>(editor, nodeProps);
 
     let element;
 

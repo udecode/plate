@@ -3,7 +3,6 @@ import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
 import { RenderLeaf } from '../types/plugins/PlatePlugin/RenderLeaf';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -14,22 +13,17 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export const getRenderLeaf = (
   editor: PlateEditor,
-  {
-    key,
-    type = key,
-    component: Leaf = DefaultLeaf as PlatePluginComponent,
-    getNodeProps,
-    overrideProps,
-  }: PlatePlugin
-): RenderLeaf => (props: PlateRenderLeafProps) => {
-  const { leaf, children } = props;
+  { key, type = key, component, props }: PlatePlugin
+): RenderLeaf => (nodeProps: PlateRenderLeafProps) => {
+  const { leaf, children } = nodeProps;
+
+  const Leaf = component ?? DefaultLeaf;
 
   if (leaf[type] && !!leaf.text) {
-    const nodeProps = getRenderNodeProps({
+    nodeProps = getRenderNodeProps({
       attributes: leaf.attributes,
-      getNodeProps,
-      overrideProps,
       props,
+      nodeProps,
       type,
     });
 

@@ -1,7 +1,7 @@
 import {
   AutoformatPlugin,
   CodeBlockElement,
-  createPlateComponents,
+  createPlateUI,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_H1,
@@ -43,16 +43,16 @@ interface Config {
   editableProps: EditableProps;
 
   align: Partial<PlatePlugin>;
-  autoformat: AutoformatPlugin;
-  exitBreak: ExitBreakPlugin;
-  forceLayout: NormalizeTypesPlugin;
+  autoformat: Partial<PlatePlugin<{}, AutoformatPlugin>>;
+  exitBreak: Partial<PlatePlugin<{}, ExitBreakPlugin>>;
+  forceLayout: Partial<PlatePlugin<{}, NormalizeTypesPlugin>>;
   indent: Partial<PlatePlugin<{}, IndentPlugin>>;
   lineHeight: Partial<PlatePlugin>;
   mentionItems: any;
-  resetBlockType: ResetNodePlugin;
-  selectOnBackspace: SelectOnBackspacePlugin;
-  softBreak: SoftBreakPlugin;
-  trailingBlock: TrailingBlockPlugin;
+  resetBlockType: Partial<PlatePlugin<{}, ResetNodePlugin>>;
+  selectOnBackspace: Partial<PlatePlugin<{}, SelectOnBackspacePlugin>>;
+  softBreak: Partial<PlatePlugin<{}, SoftBreakPlugin>>;
+  trailingBlock: Partial<PlatePlugin<{}, TrailingBlockPlugin>>;
 }
 
 export const CONFIG: Config = {
@@ -64,7 +64,7 @@ export const CONFIG: Config = {
       padding: '15px',
     },
   },
-  components: createPlateComponents({
+  components: createPlateUI({
     [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
       styles: {
         root: [
@@ -80,103 +80,121 @@ export const CONFIG: Config = {
   }),
 
   align: {
-    overrideProps: {
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
-      ],
+    inject: {
+      props: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
+      },
     },
   },
   indent: {
-    overrideProps: {
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
-        ELEMENT_BLOCKQUOTE,
-        ELEMENT_CODE_BLOCK,
-      ],
+    inject: {
+      props: {
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+          ELEMENT_BLOCKQUOTE,
+          ELEMENT_CODE_BLOCK,
+        ],
+      },
     },
   },
   lineHeight: {
-    overrideProps: {
-      defaultNodeValue: 1.5,
-      validNodeValues: [1, 1.2, 1.5, 2, 3],
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-        ELEMENT_H2,
-        ELEMENT_H3,
-        ELEMENT_H4,
-        ELEMENT_H5,
-        ELEMENT_H6,
-      ],
+    inject: {
+      props: {
+        defaultNodeValue: 1.5,
+        validNodeValues: [1, 1.2, 1.5, 2, 3],
+        validTypes: [
+          ELEMENT_PARAGRAPH,
+          ELEMENT_H1,
+          ELEMENT_H2,
+          ELEMENT_H3,
+          ELEMENT_H4,
+          ELEMENT_H5,
+          ELEMENT_H6,
+        ],
+      },
     },
   },
   resetBlockType: {
-    rules: [
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Enter',
-        predicate: isBlockAboveEmpty,
-      },
-      {
-        ...resetBlockTypesCommonRule,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtBlockStart,
-      },
-    ],
+    options: {
+      rules: [
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Enter',
+          predicate: isBlockAboveEmpty,
+        },
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtBlockStart,
+        },
+      ],
+    },
   },
   trailingBlock: { type: ELEMENT_PARAGRAPH },
   softBreak: {
-    rules: [
-      { hotkey: 'shift+enter' },
-      {
-        hotkey: 'enter',
-        query: {
-          allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+    options: {
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          },
         },
-      },
-    ],
+      ],
+    },
   },
   exitBreak: {
-    rules: [
-      {
-        hotkey: 'mod+enter',
-      },
-      {
-        hotkey: 'mod+shift+enter',
-        before: true,
-      },
-      {
-        hotkey: 'enter',
-        query: {
-          start: true,
-          end: true,
-          allow: KEYS_HEADING,
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
         },
-      },
-    ],
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: KEYS_HEADING,
+          },
+        },
+      ],
+    },
   },
   selectOnBackspace: {
-    query: {
-      allow: [ELEMENT_IMAGE, ELEMENT_HR],
+    options: {
+      query: {
+        allow: [ELEMENT_IMAGE, ELEMENT_HR],
+      },
     },
   },
   autoformat: {
-    rules: autoformatRules,
+    options: {
+      rules: autoformatRules,
+    },
   },
   mentionItems: MENTIONABLES,
   forceLayout: {
-    rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    options: {
+      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+    },
   },
 };

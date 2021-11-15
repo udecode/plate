@@ -3,7 +3,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 
 jsx;
@@ -21,5 +21,7 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToElement(createPlateEditor(), input)).toEqual(output);
+  expect(deserializeHTMLToElement(createPlateUIEditor(), input)).toEqual(
+    output
+  );
 });

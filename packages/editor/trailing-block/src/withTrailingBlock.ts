@@ -8,7 +8,7 @@ import { TrailingBlockPlugin } from './createTrailingBlockPlugin';
  */
 export const withTrailingBlock = (): WithOverride<{}, TrailingBlockPlugin> => (
   editor,
-  { type, level, ...query }
+  { type, options: { level, ...query } }
 ) => {
   const { normalizeNode } = editor;
 

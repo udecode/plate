@@ -1,5 +1,5 @@
 import { normalizeDescendantsToDocumentFragment } from '@udecode/plate-common';
-import { PlateEditor, PlatePlugin, TDescendant } from '@udecode/plate-core';
+import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { htmlStringToDOMNode } from '../../serializer/utils/htmlStringToDOMNode';
 import { deserializeHTMLElement } from './deserializeHTMLElement';
 
@@ -9,11 +9,9 @@ import { deserializeHTMLElement } from './deserializeHTMLElement';
 export const deserializeHTMLToDocumentFragment = <T = {}>(
   editor: PlateEditor<T>,
   {
-    plugins,
     element,
     stripWhitespace = true,
   }: {
-    plugins: PlatePlugin<T>[];
     element: HTMLElement | string;
     stripWhitespace?: boolean;
   }
@@ -23,7 +21,6 @@ export const deserializeHTMLToDocumentFragment = <T = {}>(
   }
 
   const fragment = deserializeHTMLElement(editor, {
-    plugins,
     element,
   }) as TDescendant[];
 

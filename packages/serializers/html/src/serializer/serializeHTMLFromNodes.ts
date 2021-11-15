@@ -1,15 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElementWithSlate } from '@udecode/plate-common';
 import {
-  getPlugins,
   getRenderElement,
   getRenderLeaf,
-  pipeOverrideProps,
+  pipeInjectProps,
   PlateEditor,
-  PlatePlugin,
   PlateRenderElementProps,
   PlateRenderLeafProps,
-  setPlatePlugins,
   SlateProps,
   TDescendant,
 } from '@udecode/plate-core';
@@ -55,26 +52,23 @@ const stripClassNames = (
 const getNode = (
   editor: PlateEditor,
   {
-    elementProps,
+    props,
     slateProps,
     preserveClassNames,
   }: {
-    elementProps: PlateRenderElementProps;
+    props: PlateRenderElementProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }
 ) => {
   // If no type provided we wrap children with div tag
-  if (!elementProps.element.type) {
-    return `<div>${elementProps.children}</div>`;
+  if (!props.element.type) {
+    return `<div>${props.children}</div>`;
   }
 
   let html: string | undefined;
 
-  elementProps = pipeOverrideProps<PlateRenderElementProps>(
-    editor,
-    elementProps
-  );
+  props = pipeInjectProps<PlateRenderElementProps>(editor, props);
 
   // Search for matching plugin based on element type
   editor.plugins.some((plugin) => {
@@ -83,11 +77,9 @@ const getNode = (
     if (
       !plugin
         .deserialize?.(editor, plugin)
-        .element?.some(
-          (item) => item.type === String(elementProps.element.type)
-        )
+        .element?.some((item) => item.type === String(props.element.type))
     ) {
-      html = `<div>${elementProps.children}</div>`;
+      html = `<div>${props.children}</div>`;
       return false;
     }
 
@@ -96,12 +88,10 @@ const getNode = (
       createElementWithSlate({
         ...slateProps,
         children:
-          plugin.serialize?.element?.(elementProps) ??
-          getRenderElement(editor, plugin)(elementProps),
+          plugin.serialize?.element?.(props) ??
+          getRenderElement(editor, plugin)(props),
       })
     );
-
-    console.log(getRenderElement(editor, plugin)(elementProps));
 
     html = stripClassNames(html, { preserveClassNames });
 
@@ -114,27 +104,27 @@ const getNode = (
 const getLeaf = (
   editor: PlateEditor,
   {
-    leafProps,
+    props,
     slateProps,
     preserveClassNames,
   }: {
-    leafProps: PlateRenderLeafProps;
+    props: PlateRenderLeafProps;
     slateProps?: Partial<SlateProps>;
     preserveClassNames?: string[];
   }
 ) => {
-  const { children } = leafProps;
+  const { children } = props;
 
   return editor.plugins.reduce((result, plugin) => {
     if (!plugin.serialize?.leaf && !plugin.isLeaf) return result;
     if (
-      (plugin.serialize?.leaf?.(leafProps) ??
-        getRenderLeaf(editor, plugin)(leafProps)) === children
+      (plugin.serialize?.leaf?.(props) ??
+        getRenderLeaf(editor, plugin)(props)) === children
     )
       return result;
 
-    leafProps = {
-      ...pipeOverrideProps<PlateRenderLeafProps>(editor, leafProps),
+    props = {
+      ...pipeInjectProps<PlateRenderLeafProps>(editor, props),
       children: encodeURIComponent(result),
     };
 
@@ -143,8 +133,8 @@ const getLeaf = (
         createElementWithSlate({
           ...slateProps,
           children:
-            plugin.serialize?.leaf?.(leafProps) ??
-            getRenderLeaf(editor, plugin)(leafProps),
+            plugin.serialize?.leaf?.(props) ??
+            getRenderLeaf(editor, plugin)(props),
         })
       )
     );
@@ -169,18 +159,12 @@ const isEncoded = (str = '') => {
 export const serializeHTMLFromNodes = (
   editor: PlateEditor,
   {
-    plugins,
     nodes,
     slateProps,
     stripDataAttributes = true,
     preserveClassNames,
     stripWhitespace = true,
   }: {
-    /**
-     * Plugins with renderElement or renderLeaf.
-     */
-    plugins: PlatePlugin[];
-
     /**
      * Slate nodes to convert to HTML.
      */
@@ -208,15 +192,11 @@ export const serializeHTMLFromNodes = (
     stripWhitespace?: boolean;
   }
 ): string => {
-  setPlatePlugins(editor, plugins);
-
-  plugins = getPlugins(editor);
-
   let result = nodes
     .map((node) => {
       if (Text.isText(node)) {
         return getLeaf(editor, {
-          leafProps: {
+          props: {
             leaf: node,
             text: node,
             children: isEncoded(node.text)
@@ -231,11 +211,10 @@ export const serializeHTMLFromNodes = (
       }
 
       return getNode(editor, {
-        elementProps: {
+        props: {
           element: node,
           children: encodeURIComponent(
             serializeHTMLFromNodes(editor, {
-              plugins,
               nodes: node.children,
               preserveClassNames,
               stripWhitespace,

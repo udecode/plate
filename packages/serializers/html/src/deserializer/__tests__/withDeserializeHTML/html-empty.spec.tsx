@@ -2,8 +2,7 @@
 import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createBoldPlugin } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createPlateEditor } from '../../../../../../plate/src/utils/createPlateEditor';
-import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
+import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 
 jsx;
 
@@ -33,8 +32,8 @@ const output = (
 describe('when inserting empty html', () => {
   it('should do nothing', () => {
     const plugins: PlatePlugin[] = [createBoldPlugin()];
-    plugins.push(createDeserializeHtmlPlugin({ plugins }));
-    const editor = createPlateEditor({
+    plugins.push(createDeserializeHTMLPlugin());
+    const editor = createPlateUIEditor({
       editor: input,
       plugins,
     });

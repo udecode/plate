@@ -6,12 +6,12 @@ import { ToggleMarkPlugin } from '../../types/plugins/ToggleMarkPlugin';
 export const getToggleMarkOnKeyDown = (): KeyboardHandler<
   {},
   ToggleMarkPlugin
-> => (editor, { hotkey, type, clear }) => (e) => {
+> => (editor, { type, options: { hotkey, clear } }) => (e) => {
   if (!hotkey) return;
 
   if (isHotkey(hotkey, e as any)) {
     e.preventDefault();
 
-    toggleMark(editor, type!, clear);
+    toggleMark(editor, { key: type, clear });
   }
 };

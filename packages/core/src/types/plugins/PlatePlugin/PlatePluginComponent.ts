@@ -1,3 +1,4 @@
-import { FunctionComponent } from 'react';
+import { AnyObject } from '../../utility/AnyObject';
+import { RenderFunction } from '../../utility/RenderFunction';
 
-export type PlatePluginComponent = FunctionComponent;
+export type PlatePluginComponent<T = AnyObject> = RenderFunction<T>;

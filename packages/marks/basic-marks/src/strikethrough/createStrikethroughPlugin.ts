@@ -14,6 +14,10 @@ export const createStrikethroughPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_STRIKETHROUGH,
   isLeaf: true,
   deserialize: getStrikethroughDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(),
-  hotkey: 'mod+shift+s',
+  handlers: {
+    onKeyDown: getToggleMarkOnKeyDown(),
+  },
+  options: {
+    hotkey: 'mod+shift+s',
+  },
 });

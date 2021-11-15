@@ -17,12 +17,16 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
   deserialize: getCodeBlockDeserialize(),
-  deserializers: [KEY_DESERIALIZE_AST],
-  onKeyDown: getCodeBlockOnKeyDown(),
+  handlers: {
+    onKeyDown: getCodeBlockOnKeyDown(),
+  },
   withOverrides: withCodeBlock(),
-  hotkey: ['mod+opt+8', 'mod+shift+8'],
-  syntax: true,
-  syntaxPopularFirst: false,
+  options: {
+    deserializers: [KEY_DESERIALIZE_AST],
+    hotkey: ['mod+opt+8', 'mod+shift+8'],
+    syntax: true,
+    syntaxPopularFirst: false,
+  },
   plugins: [
     {
       key: ELEMENT_CODE_LINE,

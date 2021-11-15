@@ -9,11 +9,9 @@ import { IndentPlugin } from './types';
  */
 export const withIndent = (): WithOverride<{}, IndentPlugin> => (
   editor,
-  { overrideProps = {}, indentMax }
+  { inject: { props: { validTypes } = {} }, options: { indentMax } }
 ) => {
   const { normalizeNode } = editor;
-
-  const { validTypes } = overrideProps;
 
   editor.normalizeNode = ([node, path]) => {
     const element = node as TElement;
