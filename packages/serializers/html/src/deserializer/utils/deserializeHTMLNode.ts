@@ -1,4 +1,4 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { DeserializeHTMLChildren, DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLToBreak } from './deserializeHTMLToBreak';
 import { deserializeHTMLToElement } from './deserializeHTMLToElement';
@@ -12,26 +12,24 @@ import { deserializeHTMLToText } from './deserializeHTMLToText';
 export const deserializeHTMLNode = <T = {}>(editor: PlateEditor<T>) => (
   node: HTMLElement | ChildNode
 ): DeserializeHTMLReturn => {
-  // text node
-  const textNode = deserializeHTMLToText(node);
+  const textNode = htmlTextNodeToString(node);
   if (textNode) return textNode;
 
-  // if not an element node
-  if (node.nodeType !== Node.ELEMENT_NODE) return null;
-
-  const htmlElement = node as HTMLElement;
-
+  if (!isHtmlElement(node)) return null;
+  
   // break line
-  const breakLine = deserializeHTMLToBreak(node);
+  const breakLine = htmlBrToNewLine(node);
   if (breakLine) return breakLine;
 
   const { nodeName } = node;
-  let parent = node;
+  const parent: HTMLElement | ChildNode = node;
 
-  // blockquote
-  if (nodeName === 'PRE' && node.childNodes[0]?.nodeName === 'CODE') {
-    [parent] = node.childNodes;
-  }
+  // codeblock
+  // if (nodeName === 'PRE' && node.childNodes[0]?.nodeName === 'CODE') {
+  //   [parent] = node.childNodes;
+  // }
+
+  console.log(node.parentElement?.nodeName);
 
   const children: DeserializeHTMLChildren[] = Array.from(parent.childNodes)
     .map(deserializeHTMLNode(editor))
@@ -39,21 +37,21 @@ export const deserializeHTMLNode = <T = {}>(editor: PlateEditor<T>) => (
 
   // body
   const fragment = deserializeHTMLToFragment({
-    element: htmlElement,
+    element: node,
     children,
   });
   if (fragment) return fragment;
 
   // element
   const element = deserializeHTMLToElement(editor, {
-    element: htmlElement,
+    element: node,
     children,
   });
   if (element) return element;
 
   // mark
   return deserializeHTMLToMarks(editor, {
-    element: htmlElement,
+    element: node,
     children,
   });
 };

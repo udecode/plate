@@ -18,6 +18,7 @@ export * from '@udecode/plate-common';
 export * from '@udecode/plate-core';
 export * from '@udecode/plate-csv-serializer';
 export * from '@udecode/plate-dnd';
+export * from '@udecode/plate-docx-serializer';
 export * from '@udecode/plate-find-replace';
 export * from '@udecode/plate-find-replace-ui';
 export * from '@udecode/plate-font';

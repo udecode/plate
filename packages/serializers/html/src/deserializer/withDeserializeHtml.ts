@@ -6,6 +6,8 @@ import {
 import { deserializeHTMLToDocumentFragment } from './utils/deserializeHTMLToDocumentFragment';
 import { KEY_DESERIALIZE_HTML } from './createDeserializeHtmlPlugin';
 
+const parser = new DOMParser();
+
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
@@ -18,7 +20,7 @@ export const withDeserializeHtml: WithOverride = (editor) => {
     const isEnabled = isDeserializerEnabled(editor, KEY_DESERIALIZE_HTML);
 
     if (html && isEnabled) {
-      const { body } = new DOMParser().parseFromString(html, 'text/html');
+      const { body } = parser.parseFromString(html, 'text/html');
 
       const fragment = deserializeHTMLToDocumentFragment(editor, {
         element: body,

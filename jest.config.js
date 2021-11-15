@@ -55,11 +55,11 @@ module.exports = {
     // '^@udecode/plate-highlight$': '<rootDir>/packages/marks/highlight/src',
     // '^@udecode/plate-kbd$': '<rootDir>/packages/marks/kbd/src',
     // '^@udecode/plate-html-serializer$':
-    //   '<rootDir>/packages/serializers/html-serializer/src',
+    //   '<rootDir>/packages/serializers/html/src',
     // '^@udecode/plate-md-serializer$':
-    //   '<rootDir>/packages/serializers/md-serializer/src',
+    //   '<rootDir>/packages/serializers/md/src',
     // '^@udecode/plate-ast-serializer$':
-    //   '<rootDir>/packages/serializers/ast-serializer/src',
+    //   '<rootDir>/packages/serializers/ast/src',
     // '^@udecode/plate-autoformat$': '<rootDir>/packages/autoformat/src',
     // '^@udecode/plate-break$': '<rootDir>/packages/break/src',
     // '^@udecode/plate-find-replace$': '<rootDir>/packages/find-replace/src',

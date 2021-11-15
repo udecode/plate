@@ -1,7 +1,7 @@
 /**
  * Deserialize HTML to break line.
  */
-export const deserializeHTMLToBreak = (node: HTMLElement | ChildNode) => {
+export const htmlBrToNewLine = (node: HTMLElement | ChildNode) => {
   if (node.nodeName === 'BR') {
     return '\n';
   }

@@ -41,6 +41,7 @@ const resetBlockTypesCommonRule = {
 interface Config {
   components: Record<string, any>;
   editableProps: EditableProps;
+  docxOptions: Record<string, Partial<PlatePlugin>>;
 
   align: Partial<PlatePlugin>;
   autoformat: Partial<PlatePlugin<{}, AutoformatPlugin>>;
@@ -197,4 +198,60 @@ export const CONFIG: Config = {
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     },
   },
+  docxOptions: createPlateOptions({
+    [ELEMENT_CODE_BLOCK]: {
+      deserialize: {
+        rules: [
+          {
+            className: 'SourceCode',
+          },
+        ],
+      },
+    },
+    [ELEMENT_CODE_LINE]: {
+      deserialize: {
+        rules: [
+          {
+            className: 'VerbatimChar',
+          },
+        ],
+      },
+    },
+    [MARK_BOLD]: {
+      deserialize: {
+        rules: [
+          { nodeNames: ['STRONG', 'B'] },
+          {
+            style: {
+              fontWeight: ['600', '700', 'bold'],
+            },
+          },
+        ],
+        getNode: (el) => {
+          if (
+            ['STRONG', 'B'].includes(el.nodeName) &&
+            (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
+          ) {
+            return undefined;
+          }
+
+          return { [MARK_BOLD]: true };
+        },
+      },
+    },
+    [MARK_ITALIC]: {
+      deserialize: {
+        getNode: (el) => {
+          if (
+            el.nodeName === 'EM' &&
+            (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
+          ) {
+            return undefined;
+          }
+
+          return { [MARK_ITALIC]: true };
+        },
+      },
+    },
+  }),
 };

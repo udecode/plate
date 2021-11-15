@@ -3,7 +3,7 @@ import { DeserializeHTMLReturn } from '../types';
 import { deserializeHTMLNode } from './deserializeHTMLNode';
 
 /**
- * Deserialize HTML element.
+ * Deserialize HTML element to fragment.
  */
 export const deserializeHTMLElement = <T = {}>(
   editor: PlateEditor<T>,

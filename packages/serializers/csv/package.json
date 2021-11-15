@@ -16,7 +16,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/serializers/csv-serializer"
+    "directory": "packages/serializers/csv"
   },
   "license": "MIT",
   "main": "dist/index.js",
