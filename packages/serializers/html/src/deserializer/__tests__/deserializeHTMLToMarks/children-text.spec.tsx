@@ -11,7 +11,6 @@ import {
 jsx;
 
 const input: DeserializeMarksProps = {
-  plugins: [createBoldPlugin()],
   element: document.createElement('strong'),
   children: <fragment>test</fragment>,
 } as any;
@@ -23,7 +22,12 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createPlateUIEditor(), input as any)).toEqual(
-    output
-  );
+  expect(
+    deserializeHTMLToMarks(
+      createPlateUIEditor({
+        plugins: [createBoldPlugin()],
+      }),
+      input as any
+    )
+  ).toEqual(output);
 });

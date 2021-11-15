@@ -11,7 +11,6 @@ import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 jsx;
 
 const input = {
-  plugins: [createParagraphPlugin(), createBoldPlugin(), createItalicPlugin()],
   element: document.createElement('strong'),
   children: [
     <hli>
@@ -33,7 +32,16 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createPlateUIEditor(), input as any)).toEqual(
-    output
-  );
+  expect(
+    deserializeHTMLToMarks(
+      createPlateUIEditor({
+        plugins: [
+          createParagraphPlugin(),
+          createBoldPlugin(),
+          createItalicPlugin(),
+        ],
+      }),
+      input as any
+    )
+  ).toEqual(output);
 });

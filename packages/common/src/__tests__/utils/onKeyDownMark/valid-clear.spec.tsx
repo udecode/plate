@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
 import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
+import { onKeyDownToggleMark } from '@udecode/plate-common';
+import { getPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
@@ -37,14 +38,17 @@ const output = (
 
 const editor = createPlateUIEditor({
   editor: input,
-  plugins: [createBoldPlugin()],
-  options: { bold: { hotkey: 'ctrl+b', clear: MARK_ITALIC } },
+  plugins: [
+    createBoldPlugin({
+      options: { hotkey: 'ctrl+b', clear: MARK_ITALIC },
+    }),
+  ],
 });
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  getToggleMarkOnKeyDown(MARK_BOLD)?.(editor)(event as any);
+  onKeyDownToggleMark(editor, getPlugin(editor, MARK_BOLD))(event as any);
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
 });

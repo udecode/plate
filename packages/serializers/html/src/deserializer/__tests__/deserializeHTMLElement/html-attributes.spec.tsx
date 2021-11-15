@@ -1,19 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { getHtmlDocument } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
 import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
 
+jsx;
+
 const html =
   '<html><body><table><tbody><tr><th colspan="2" bgcolor="#CCC">header</th></tr><tr><td>cell 1</td><td>cell 2</td></tr></tbody></table></body></html>';
 const element = getHtmlDocument(html).body;
-
-const input = {
-  plugins: [createTablePlugin()],
-  element,
-};
 
 const output = (
   <editor>
@@ -30,7 +27,12 @@ const output = (
 ) as any;
 
 it('should include named attributes', () => {
-  expect(deserializeHTMLElement(createPlateUIEditor(), input)).toEqual(
-    output.children
-  );
+  expect(
+    deserializeHTMLElement(
+      createPlateUIEditor({
+        plugins: [createTablePlugin()],
+      }),
+      { element }
+    )
+  ).toEqual(output.children);
 });

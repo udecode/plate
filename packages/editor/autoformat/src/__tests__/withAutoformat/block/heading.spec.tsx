@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
@@ -27,16 +28,21 @@ describe('when #space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat({
-      rules: [
-        {
-          mode: 'block',
-          type: ELEMENT_H1,
-          match: '# ',
-          preFormat: clearBlockFormat,
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin({
+        options: {
+          rules: [
+            {
+              mode: 'block',
+              type: ELEMENT_H1,
+              match: '# ',
+              preFormat: clearBlockFormat,
+            },
+          ],
         },
-      ],
-    })(withReact(input));
+      })
+    );
 
     editor.insertText(' ');
 
@@ -62,7 +68,10 @@ describe('when ##space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(' ');
 

@@ -1,7 +1,4 @@
-import {
-  getToggleMarkOnKeyDown,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getSuperscriptDeserialize } from './getSuperscriptDeserialize';
 
@@ -15,7 +12,7 @@ export const createSuperscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   isLeaf: true,
   deserialize: getSuperscriptDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
   options: {
     hotkey: 'mod+,',

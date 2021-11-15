@@ -2,7 +2,6 @@ import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPla
 import { deserializeHTMLToMarks } from '../../utils/deserializeHTMLToMarks';
 
 const input = {
-  plugins: [{}],
   element: document.createElement('strong'),
   children: [{ text: 'test' }],
 };
@@ -10,5 +9,12 @@ const input = {
 const output = [{ text: 'test' }];
 
 it('should be', () => {
-  expect(deserializeHTMLToMarks(createPlateUIEditor(), input)).toEqual(output);
+  expect(
+    deserializeHTMLToMarks(
+      createPlateUIEditor({
+        plugins: [{ key: 'a' }],
+      }),
+      input
+    )
+  ).toEqual(output);
 });

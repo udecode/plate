@@ -7,11 +7,9 @@ import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '../../../../elements/paragraph/src/createParagraphPlugin';
-import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
 import { createPlateUI } from '../../../../plate/src/utils/createPlateUI';
 import { withDraggable } from './withDraggable';
 
-const options = createPlateOptions();
 const components = createPlateUI();
 const initialValue = [
   {
@@ -25,16 +23,14 @@ const initialValue = [
 ];
 
 it('should render draggable component', () => {
-  const _components = createPlateUI({
-    p: withDraggable(components[ELEMENT_PARAGRAPH]),
-  });
-
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <Plate
-        plugins={[createParagraphPlugin()]}
-        options={options}
-        components={_components}
+        plugins={[
+          createParagraphPlugin({
+            component: withDraggable(components[ELEMENT_PARAGRAPH]),
+          }),
+        ]}
         initialValue={initialValue}
       />
     </DndProvider>
@@ -65,16 +61,14 @@ it('should render draggable component', () => {
 // });
 
 it('should not be draggable if readOnly', () => {
-  const _components = createPlateUI({
-    p: withDraggable(components[ELEMENT_PARAGRAPH]),
-  });
-
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <Plate
-        plugins={[createParagraphPlugin()]}
-        options={options}
-        components={_components}
+        plugins={[
+          createParagraphPlugin({
+            component: withDraggable(components[ELEMENT_PARAGRAPH]),
+          }),
+        ]}
         initialValue={initialValue}
         editableProps={{ readOnly: true }}
       />
@@ -84,18 +78,16 @@ it('should not be draggable if readOnly', () => {
 });
 
 it('should be draggable in readOnly if allowReadOnly', () => {
-  const _components = createPlateUI({
-    p: withDraggable(components[ELEMENT_PARAGRAPH], {
-      allowReadOnly: true,
-    }),
-  });
-
   const { container } = render(
     <DndProvider backend={TestBackend}>
       <Plate
-        plugins={[createParagraphPlugin()]}
-        options={options}
-        components={_components}
+        plugins={[
+          createParagraphPlugin({
+            component: withDraggable(components[ELEMENT_PARAGRAPH], {
+              allowReadOnly: true,
+            }),
+          }),
+        ]}
         initialValue={initialValue}
       />
     </DndProvider>

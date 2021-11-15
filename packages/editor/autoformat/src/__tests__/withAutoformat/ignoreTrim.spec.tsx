@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../docs/src/live/config/config';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
 import { withAutoformat } from '../../withAutoformat';
 
 jsx;
@@ -27,16 +28,21 @@ describe('when ignoreTrim is true', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat({
-      rules: [
-        {
-          mode: 'mark',
-          type: MARK_ITALIC,
-          match: '*',
-          ignoreTrim: true,
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin({
+        options: {
+          rules: [
+            {
+              mode: 'mark',
+              type: MARK_ITALIC,
+              match: '*',
+              ignoreTrim: true,
+            },
+          ],
         },
-      ],
-    })(withReact(input));
+      })
+    );
 
     editor.insertText('*');
 
@@ -62,7 +68,10 @@ describe('when ignoreTrim is false', () => {
         </editor>
       ) as any;
 
-      const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+      const editor = withAutoformat(
+        withReact(input),
+        mockPlugin(CONFIG.autoformat)
+      );
 
       editor.insertText(' ');
 

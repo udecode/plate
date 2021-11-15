@@ -5,7 +5,7 @@ import {
   getThDeserialize,
   getTrDeserialize,
 } from './getTableDeserialize';
-import { getTableOnKeyDown } from './getTableOnKeyDown';
+import { onKeyDownTable } from './onKeyDownTable';
 import { withTable } from './withTable';
 
 export const ELEMENT_TABLE = 'table';
@@ -21,9 +21,9 @@ export const createTablePlugin = createPluginFactory({
   isElement: true,
   deserialize: getTableDeserialize(),
   handlers: {
-    onKeyDown: getTableOnKeyDown(),
+    onKeyDown: onKeyDownTable,
   },
-  withOverrides: withTable(),
+  withOverrides: withTable,
   plugins: [
     {
       key: ELEMENT_TR,

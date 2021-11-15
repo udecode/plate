@@ -11,7 +11,7 @@ describe('withPlate', () => {
     it('should be', () => {
       const editor = withPlate(createEditor(), { id: '1' });
 
-      const keys = [KEY_INLINE_VOID, 'react', 'history'];
+      const keys = [KEY_INLINE_VOID, 'event-editor', 'react', 'history'];
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
@@ -27,7 +27,7 @@ describe('withPlate', () => {
       const pluginP: PlatePlugin = createParagraphPlugin();
       const pluginA: PlatePlugin = createParagraphPlugin({ key: 'a' });
       const pluginB: PlatePlugin = createHeadingPlugin(
-        { levels: 2 },
+        { options: { levels: 2 } },
         {
           h1: {
             key: 'hh1',
@@ -40,7 +40,15 @@ describe('withPlate', () => {
         plugins: [pluginP, pluginA, pluginB],
       });
 
-      const keys = ['inline-void', 'p', 'a', 'heading', 'hh1', 'h2'];
+      const keys = [
+        'inline-void',
+        'event-editor',
+        'p',
+        'a',
+        'heading',
+        'hh1',
+        'h2',
+      ];
 
       expect(Object.keys(editor.pluginsByKey)).toEqual(keys);
     });
@@ -51,18 +59,24 @@ describe('withPlate', () => {
       const pluginInput: PlatePlugin = {
         key: 'a',
         type: 'a',
-        overrideProps: {
-          nodeKey: 'a',
+        inject: {
+          props: {
+            nodeKey: 'a',
+          },
         },
         then: (editor, { type }) => ({
           type: `${type}b`,
-          overrideProps: {
-            nodeKey: `${type}b`,
+          inject: {
+            props: {
+              nodeKey: `${type}b`,
+            },
           },
           then: (e, { type: _type }) => ({
             type: `${_type}c`,
-            overrideProps: {
-              nodeKey: `${_type}c`,
+            inject: {
+              props: {
+                nodeKey: `${_type}c`,
+              },
             },
           }),
         }),
@@ -72,12 +86,14 @@ describe('withPlate', () => {
 
       const editor = withPlate(createEditor(), { id: '1', plugins });
 
-      const { type, overrideProps } = getPlugin(editor, 'a');
+      const { type, inject } = getPlugin(editor, 'a');
 
-      expect({ type, overrideProps }).toEqual({
+      expect({ type, inject }).toEqual({
         type: 'abc',
-        overrideProps: {
-          nodeKey: 'abc',
+        inject: {
+          props: {
+            nodeKey: 'abc',
+          },
         },
       });
     });
@@ -143,7 +159,12 @@ describe('withPlate', () => {
           key: outputPluginAD.key,
           type: outputPluginAD.type,
         },
-      ]).toEqual([pluginAA, pluginAB2, pluginAC, pluginAD]);
+      ]).toEqual([
+        { key: pluginAA.key, type: pluginAA.type },
+        { key: pluginAB2.key, type: pluginAB2.type },
+        { key: pluginAC.key, type: pluginAC.type },
+        { key: pluginAD.key, type: pluginAD.type },
+      ]);
     });
   });
 });

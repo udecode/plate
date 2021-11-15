@@ -9,7 +9,7 @@ export const KEY_AUTOFORMAT = 'autoformat';
  */
 export const createAutoformatPlugin = createPluginFactory<AutoformatPlugin>({
   key: KEY_AUTOFORMAT,
-  withOverrides: withAutoformat(),
+  withOverrides: withAutoformat,
   options: {
     rules: [],
   },

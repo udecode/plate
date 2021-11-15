@@ -21,7 +21,7 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
     onKeyDown: (editor) =>
       moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
   },
-  withOverrides: withMention(),
+  withOverrides: withMention,
   options: {
     trigger: '@',
     createMentionNode: (item) => ({ value: item.text }),
@@ -33,4 +33,9 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
       isInline: true,
     },
   ],
+  then: (editor, { key }) => ({
+    options: {
+      id: key,
+    },
+  }),
 });

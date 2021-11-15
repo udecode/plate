@@ -1,9 +1,10 @@
 import { comboboxStore } from '@udecode/plate-combobox';
 import { insertNodes } from '@udecode/plate-common';
-import { WithOverride } from '@udecode/plate-core';
+import { getPlugin, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';
+import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
   findMentionInput,
   isNodeMentionInput,
@@ -11,10 +12,12 @@ import {
 } from './queries';
 import { MentionInputNode, MentionPlugin } from './types';
 
-export const withMention = (): WithOverride<{}, MentionPlugin> => (
+export const withMention: WithOverride<{}, MentionPlugin> = (
   editor,
-  { type, options: { id, trigger } }
+  { options: { id, trigger } }
 ) => {
+  const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
+
   const { apply, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
@@ -48,7 +51,7 @@ export const withMention = (): WithOverride<{}, MentionPlugin> => (
     }
 
     insertNodes<MentionInputNode>(editor, {
-      type: type!,
+      type,
       children: [{ text: '' }],
       trigger,
     });

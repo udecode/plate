@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { withImageUpload } from '../../withImageUpload';
+import { createImagePlugin } from '../../createImagePlugin';
 
 jsx;
 
@@ -19,7 +19,10 @@ const output = (
 ) as any;
 
 it('should insert image from the file(s)', () => {
-  const editor = withImageUpload()(withReact(input));
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createImagePlugin()],
+  });
 
   const data = {
     getData: () => 'test',

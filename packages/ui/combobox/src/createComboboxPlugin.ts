@@ -1,13 +1,13 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getComboboxOnChange } from './getComboboxOnChange';
-import { getComboboxOnKeyDown } from './getComboboxOnKeyDown';
+import { onChangeCombobox } from './onChangeCombobox';
+import { onKeyDownCombobox } from './onKeyDownCombobox';
 
 export const KEY_COMBOBOX = 'combobox';
 
 export const createComboboxPlugin = createPluginFactory({
   key: KEY_COMBOBOX,
   handlers: {
-    onChange: getComboboxOnChange(),
-    onKeyDown: getComboboxOnKeyDown(),
+    onChange: onChangeCombobox,
+    onKeyDown: onKeyDownCombobox,
   },
 });

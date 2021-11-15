@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getSingleLineKeyDown } from './getSingleLineKeyDown';
+import { onKeyDownSingleLine } from './onKeyDownSingleLine';
 import { withSingleLine } from './withSingleLine';
 
 export const KEY_SINGLE_LINE = 'singleLine';
@@ -10,7 +10,7 @@ export const KEY_SINGLE_LINE = 'singleLine';
 export const createSingleLinePlugin = createPluginFactory({
   key: KEY_SINGLE_LINE,
   handlers: {
-    onKeyDown: getSingleLineKeyDown(),
+    onKeyDown: onKeyDownSingleLine,
   },
-  withOverrides: withSingleLine(),
+  withOverrides: withSingleLine,
 });

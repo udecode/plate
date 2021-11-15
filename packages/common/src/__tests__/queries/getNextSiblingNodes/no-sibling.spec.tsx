@@ -1,9 +1,13 @@
 /** @jsx jsx */
 
-import { PlateEditor, TDescendant, withInlineVoid } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  PlateEditor,
+  TDescendant,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
+import { createLinkPlugin } from '../../../../../elements/link/src/createLinkPlugin';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
 
@@ -24,9 +28,12 @@ const input = ((
 const output: TDescendant[] = [];
 
 it('should be', () => {
-  const above = getBlockAbove(
-    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)
-  ) as any;
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
+
+  const above = getBlockAbove(editor) as any;
   expect(
     getNextSiblingNodes(above, (input.selection as Range).anchor.path)
   ).toEqual(output);

@@ -28,7 +28,7 @@ it('serialize with slate classNames: a+slate', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a slate-p',
+          className: 'a slate-test',
         },
       }),
     ],
@@ -43,7 +43,7 @@ it('serialize with slate classNames: a+slate', () => {
         },
       ],
     })
-  ).toBe('<p class="slate-p">I am centered text!</p>');
+  ).toBe('<p class="slate-p slate-test">I am centered text!</p>');
 });
 
 it('serialize with slate classNames: slate+b', () => {
@@ -51,7 +51,7 @@ it('serialize with slate classNames: slate+b', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'slate-p b',
+          className: 'slate-test b',
         },
       }),
     ],
@@ -66,7 +66,7 @@ it('serialize with slate classNames: slate+b', () => {
         },
       ],
     })
-  ).toBe('<p class="slate-p">I am centered text!</p>');
+  ).toBe('<p class="slate-p slate-test">I am centered text!</p>');
 });
 
 it('serialize with classNames: a+slate+b', () => {
@@ -74,7 +74,7 @@ it('serialize with classNames: a+slate+b', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a slate-p b',
+          className: 'a slate-test b',
         },
       }),
     ],
@@ -89,7 +89,7 @@ it('serialize with classNames: a+slate+b', () => {
         },
       ],
     })
-  ).toBe('<p class="slate-p">I am centered text!</p>');
+  ).toBe('<p class="slate-p slate-test">I am centered text!</p>');
 });
 
 it('serialize with classNames: a+slate+b+slate', () => {
@@ -97,7 +97,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a slate-p b slate-cool',
+          className: 'a slate-test b slate-cool',
         },
       }),
     ],
@@ -112,7 +112,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
         },
       ],
     })
-  ).toBe('<p class="slate-p slate-cool">I am centered text!</p>');
+  ).toBe('<p class="slate-p slate-test slate-cool">I am centered text!</p>');
 });
 
 it('serialize with slate classNames: multiple tags', () => {
@@ -120,7 +120,7 @@ it('serialize with slate classNames: multiple tags', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a slate-p b',
+          className: 'a slate-test b',
         },
       }),
     ],
@@ -140,7 +140,7 @@ it('serialize with slate classNames: multiple tags', () => {
       ],
     })
   ).toBe(
-    '<p class="slate-p">I am centered text!</p><p class="slate-p">I am centered text!</p>'
+    '<p class="slate-p slate-test">I am centered text!</p><p class="slate-p slate-test">I am centered text!</p>'
   );
 });
 
@@ -149,7 +149,7 @@ it('serialize with custom preserved classname: a+custom', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a custom-align-center slate-p',
+          className: 'a custom-align-center slate-test',
         },
       }),
     ],
@@ -173,7 +173,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a custom-align-center slate-p',
+          className: 'a custom-align-center slate-test',
         },
       }),
       createBoldPlugin({
@@ -208,7 +208,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
     plugins: [
       createParagraphPlugin({
         props: {
-          className: 'a custom-align-center slate-p',
+          className: 'a custom-align-center slate-test',
         },
       }),
     ],
@@ -224,5 +224,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
       ],
       preserveClassNames: ['custom-', 'slate-'],
     })
-  ).toBe('<p class="custom-align-center slate-p">I am centered text!</p>');
+  ).toBe(
+    '<p class="slate-p custom-align-center slate-test">I am centered text!</p>'
+  );
 });

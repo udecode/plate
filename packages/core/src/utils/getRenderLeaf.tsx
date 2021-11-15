@@ -3,7 +3,7 @@ import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { RenderLeaf } from '../types/plugins/PlatePlugin/RenderLeaf';
+import { RenderLeaf } from '../types/RenderLeaf';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**

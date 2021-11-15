@@ -4,8 +4,8 @@
 
 export * from './combobox.store';
 export * from './createComboboxPlugin';
-export * from './getComboboxOnChange';
-export * from './getComboboxOnKeyDown';
+export * from './onChangeCombobox';
+export * from './onKeyDownCombobox';
 export * from './components/index';
 export * from './hooks/index';
 export * from './types/index';

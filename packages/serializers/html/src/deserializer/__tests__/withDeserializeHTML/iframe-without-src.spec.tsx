@@ -3,6 +3,7 @@ import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
+import { createDeserializeHtmlPlugin } from '../../createDeserializeHtmlPlugin';
 
 jsx;
 
@@ -31,8 +32,10 @@ const output = (
 
 describe('when inserting an iframe', () => {
   it('should do nothing', () => {
-    const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
-    plugins.push(createDeserializeHTMLPlugin());
+    const plugins: PlatePlugin[] = [
+      createMediaEmbedPlugin(),
+      createDeserializeHtmlPlugin(),
+    ];
 
     const editor = createPlateUIEditor({
       editor: input,

@@ -11,10 +11,9 @@ import { DeserializeCsvPlugin } from './types';
  * Enables support for deserializing content
  * from CSV format to Slate format.
  */
-export const withDeserializeCsv = (): WithOverride<
-  {},
-  DeserializeCsvPlugin
-> => (editor) => {
+export const withDeserializeCsv: WithOverride<{}, DeserializeCsvPlugin> = (
+  editor
+) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {

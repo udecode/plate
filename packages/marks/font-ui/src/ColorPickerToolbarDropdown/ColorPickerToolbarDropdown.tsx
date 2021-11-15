@@ -42,6 +42,7 @@ export const ColorPickerToolbarDropdown = ({
   const [open, setOpen] = useState(false);
   const editor = usePlateEditorState()!;
   const editorRef = usePlateEditorRef()!;
+
   const type = getPluginType(editorRef, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);

@@ -14,18 +14,22 @@ describe('createPluginFactory', () => {
 
   describe('when overriding', () => {
     it('should be', () => {
-      const { key, type, overrideProps } = createPlugin({
+      const { key, type, inject } = createPlugin({
         type: 'b',
-        overrideProps: {
-          nodeKey: 'b',
+        inject: {
+          props: {
+            nodeKey: 'b',
+          },
         },
       });
 
-      expect({ key, type, overrideProps }).toEqual({
+      expect({ key, type, inject }).toEqual({
         key: 'a',
         type: 'b',
-        overrideProps: {
-          nodeKey: 'b',
+        inject: {
+          props: {
+            nodeKey: 'b',
+          },
         },
       });
     });
@@ -38,16 +42,20 @@ describe('createPluginFactory', () => {
         {
           heading: {
             key: 'h',
-            levels: 5,
+            options: {
+              levels: 5,
+            },
           },
         }
       );
 
-      const { key, levels } = plugin.plugins![2];
+      const { key, options } = plugin.plugins![2];
 
-      expect({ key, levels }).toEqual({
+      expect({ key, options }).toEqual({
         key: 'h',
-        levels: 5,
+        options: {
+          levels: 5,
+        },
       });
     });
   });

@@ -8,6 +8,7 @@ export * from './createPlugins';
 export * from './dom-attributes';
 export * from './flattenDeepPlugins';
 export * from './getInjectProps';
+export * from './mockPlugin';
 export * from './getPlugin';
 export * from './getPluginInjectProps';
 export * from './getPluginOptions';

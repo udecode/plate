@@ -9,7 +9,6 @@ import { deserializeHTMLToElement } from '../../utils/deserializeHTMLToElement';
 jsx;
 
 const input = {
-  plugins: [createParagraphPlugin()],
   element: document.createElement('p'),
   children: [{ text: 'test' }],
 };
@@ -21,7 +20,12 @@ const output = (
 );
 
 it('should be', () => {
-  expect(deserializeHTMLToElement(createPlateUIEditor(), input)).toEqual(
-    output
-  );
+  expect(
+    deserializeHTMLToElement(
+      createPlateUIEditor({
+        plugins: [createParagraphPlugin()],
+      }),
+      input
+    )
+  ).toEqual(output);
 });

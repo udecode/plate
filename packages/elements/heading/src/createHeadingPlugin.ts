@@ -1,4 +1,4 @@
-import { getToggleElementOnKeyDown } from '@udecode/plate-common';
+import { onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
 import { KEYS_HEADING } from './constants';
 import { getHeadingDeserialize } from './getHeadingDeserialize';
@@ -24,7 +24,7 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
         isElement: true,
         deserialize: getHeadingDeserialize(),
         handlers: {
-          onKeyDown: getToggleElementOnKeyDown(),
+          onKeyDown: onKeyDownToggleElement,
         },
         options: {},
       };

@@ -11,7 +11,7 @@ import { KEY_DESERIALIZE_MD } from './createDeserializeMdPlugin';
  * Enables support for deserializing content
  * from Markdown format to Slate format.
  */
-export const withDeserializeMd = (): WithOverride => (editor) => {
+export const withDeserializeMd: WithOverride = (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data) => {

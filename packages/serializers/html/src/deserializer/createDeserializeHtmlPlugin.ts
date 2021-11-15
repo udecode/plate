@@ -8,5 +8,5 @@ export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
  */
 export const createDeserializeHtmlPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_HTML,
-  withOverrides: withDeserializeHtml(),
+  withOverrides: withDeserializeHtml,
 });

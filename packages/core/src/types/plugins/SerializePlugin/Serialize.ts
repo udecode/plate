@@ -1,5 +1,5 @@
-import { RenderElement } from '../PlatePlugin/RenderElement';
-import { RenderLeaf } from '../PlatePlugin/RenderLeaf';
+import { RenderElement } from '../../RenderElement';
+import { RenderLeaf } from '../../RenderLeaf';
 
 /**
  * HTML Serializer for element and leaf.

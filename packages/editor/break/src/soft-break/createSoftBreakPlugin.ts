@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getSoftBreakOnKeyDown } from './getSoftBreakOnKeyDown';
+import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 import { SoftBreakPlugin } from './types';
 
 export const KEY_SOFT_BREAK = 'softBreak';
@@ -11,7 +11,7 @@ export const KEY_SOFT_BREAK = 'softBreak';
 export const createSoftBreakPlugin = createPluginFactory<SoftBreakPlugin>({
   key: KEY_SOFT_BREAK,
   handlers: {
-    onKeyDown: getSoftBreakOnKeyDown(),
+    onKeyDown: onKeyDownSoftBreak,
   },
   options: {
     rules: [{ hotkey: 'shift+enter' }],

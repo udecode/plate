@@ -48,8 +48,8 @@ Use `serializeHTMLFromNodes`:
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
+    createDeserializeHtmlPlugin()
   ]
-  // plugins.push(createDeserializeHTMLPlugin());
 
   plugins = createPlugins(plugins, {
     components: CONFIG.components,

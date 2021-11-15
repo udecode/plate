@@ -14,6 +14,6 @@ export const KEY_SELECT_ON_BACKSPACE = 'selectOnBackspace';
 export const createSelectOnBackspacePlugin = createPluginFactory<SelectOnBackspacePlugin>(
   {
     key: KEY_SELECT_ON_BACKSPACE,
-    withOverrides: withSelectOnBackspace(),
+    withOverrides: withSelectOnBackspace,
   }
 );

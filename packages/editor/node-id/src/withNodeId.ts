@@ -11,7 +11,7 @@ import { NodeIdPlugin } from './createNodeIdPlugin';
 /**
  * Enables support for inserting nodes with an id key.
  */
-export const withNodeId = (): WithOverride<{}, NodeIdPlugin> => (
+export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
   editor,
   {
     options: {

@@ -9,7 +9,7 @@ import { KEY_DESERIALIZE_HTML } from './createDeserializeHtmlPlugin';
 /**
  * Enables support for deserializing inserted content from HTML format to Slate format.
  */
-export const withDeserializeHtml = (): WithOverride => (editor) => {
+export const withDeserializeHtml: WithOverride = (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

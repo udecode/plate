@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { ELEMENT_LINK } from '../../../createLinkPlugin';
-import { withLink } from '../../../withLink';
+import { createLinkPlugin } from '../../../createLinkPlugin';
 
 jsx;
 
@@ -32,9 +30,10 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(
-    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
-  );
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
 
   editor.insertData(data);
 

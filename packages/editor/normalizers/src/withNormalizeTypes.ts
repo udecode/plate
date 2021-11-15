@@ -2,10 +2,10 @@ import { getNode, insertNodes, setNodes } from '@udecode/plate-common';
 import { isElement, TElement, WithOverride } from '@udecode/plate-core';
 import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
-export const withNormalizeTypes = (): WithOverride<
-  {},
-  NormalizeTypesPlugin
-> => (editor, { options: { rules, onError } }) => {
+export const withNormalizeTypes: WithOverride<{}, NormalizeTypesPlugin> = (
+  editor,
+  { options: { rules, onError } }
+) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {

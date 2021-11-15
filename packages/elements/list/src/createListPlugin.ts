@@ -5,7 +5,7 @@ import {
   getOlDeserialize,
   getUlDeserialize,
 } from './getListDeserialize';
-import { getListOnKeyDown } from './getListOnKeyDown';
+import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';
 
@@ -25,15 +25,15 @@ export const createListPlugin = createPluginFactory({
       isElement: true,
       deserialize: getUlDeserialize(),
       handlers: {
-        onKeyDown: getListOnKeyDown(),
+        onKeyDown: onKeyDownList,
       },
-      withOverrides: withList(),
+      withOverrides: withList,
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_OL,
       isElement: true,
       handlers: {
-        onKeyDown: getListOnKeyDown(),
+        onKeyDown: onKeyDownList,
       },
       deserialize: getOlDeserialize(),
     } as PlatePlugin<{}, ListPlugin>,

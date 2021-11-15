@@ -24,7 +24,7 @@ export const createParagraphPlugin = createPluginFactory({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
   deserialize: getParagraphDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(),
+  onKeyDown: onKeyDownToggleElement,
 })
 ```
 
@@ -35,7 +35,7 @@ export const createParagraphPlugin = createPluginFactory({
 - [isElement](#iselement)
   - to enable element rendering, set true.
 - [onKeyDown](#onkeydown)
-  - to enable block toggling with a hotkey, use `getToggleElementOnKeyDown`
+  - to enable block toggling with a hotkey, use `onKeyDownToggleElement`
 
 ### Inline & Void Element Plugin
 
@@ -66,7 +66,7 @@ export const createHighlightPlugin = createPluginFactory({
   isLeaf: true,
   deserialize: getHighlightDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
 })
 ```
@@ -74,7 +74,7 @@ export const createHighlightPlugin = createPluginFactory({
 - [isLeaf](#isleaf)
   - to enable leaf rendering, set true.
 - [onKeyDown](#onkeydown)
-  - to enable mark toggling with a hotkey, use `getToggleMarkOnKeyDown`
+  - to enable mark toggling with a hotkey, use `onKeyDownToggleMark`
 
 ### Overrider Plugin
 

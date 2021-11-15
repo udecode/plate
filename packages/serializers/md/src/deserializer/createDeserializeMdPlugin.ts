@@ -9,5 +9,5 @@ export const KEY_DESERIALIZE_MD = 'deserializeMd';
  */
 export const createDeserializeMdPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_MD,
-  withOverrides: withDeserializeMd(),
+  withOverrides: withDeserializeMd,
 });

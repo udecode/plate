@@ -1,4 +1,4 @@
-import {ELEMENT_PARAGRAPH} from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import {
   createAlignPlugin,
   createBlockquotePlugin,
@@ -9,9 +9,9 @@ import {
   createParagraphPlugin,
   createTablePlugin,
 } from '../../../../../plate/src/index';
-import {createPlateUIEditor} from '../../../../../plate/src/utils/createPlateUIEditor';
-import {serializeHTMLFromNodes} from '../serializeHTMLFromNodes';
-import {htmlStringToDOMNode} from '../utils/htmlStringToDOMNode';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize list to html', () => {
   const editor = createPlateUIEditor({
@@ -42,10 +42,9 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   const editor = createPlateUIEditor({
-      plugins: [createLinkPlugin()],
-      
-    });
-  
+    plugins: [createLinkPlugin()],
+  });
+
   expect(
     serializeHTMLFromNodes(editor, {
       nodes: [
@@ -65,9 +64,9 @@ it('serialize link to html', () => {
 
 it('serialize blockquote to html', () => {
   const editor = createPlateUIEditor({
-        plugins: [createBlockquotePlugin()],
-    });
-  
+    plugins: [createBlockquotePlugin()],
+  });
+
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
@@ -85,9 +84,8 @@ it('serialize blockquote to html', () => {
 it('serialize blockquote to html, without trimming whitespace', () => {
   const editor = createPlateUIEditor({
     plugins: [createBlockquotePlugin()],
-      
-    });
-  
+  });
+
   const html = serializeHTMLFromNodes(editor, {
     nodes: [
       {
@@ -106,9 +104,9 @@ it('serialize blockquote to html, without trimming whitespace', () => {
 
 it('serialize headings to html', () => {
   const editor = createPlateUIEditor({
-      plugins: [createHeadingPlugin()],
-    });
-  
+    plugins: [createHeadingPlugin()],
+  });
+
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
       nodes: [
@@ -134,9 +132,9 @@ it('serialize headings to html', () => {
 
 it('serialize paragraph to html', () => {
   const editor = createPlateUIEditor({
-      plugins: [createParagraphPlugin()],
-    });
-  
+    plugins: [createParagraphPlugin()],
+  });
+
   expect(
     serializeHTMLFromNodes(editor, {
       nodes: [
@@ -151,9 +149,9 @@ it('serialize paragraph to html', () => {
 
 it('serialize image to html', () => {
   const editor = createPlateUIEditor({
-        plugins: [createImagePlugin()],
-    });
-  
+    plugins: [createImagePlugin()],
+  });
+
   expect(
     htmlStringToDOMNode(
       serializeHTMLFromNodes(editor, {
@@ -172,10 +170,9 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const editor = createPlateUIEditor({
-      plugins: [createTablePlugin()],
-      
-    });
-  
+    plugins: [createTablePlugin()],
+  });
+
   const render = htmlStringToDOMNode(
     serializeHTMLFromNodes(editor, {
       nodes: [
@@ -210,13 +207,11 @@ it('serialize table to html', () => {
 
 it('serialize align style to html', () => {
   const editor = createPlateUIEditor({
-  plugins : [createParagraphPlugin(), createAlignPlugin()];
-      
-    });
-  
+    plugins: [createParagraphPlugin(), createAlignPlugin()],
+  });
 
   expect(
-    serializeHTMLFromNodes(createPlateUIEditor({ editor, plugins }), {
+    serializeHTMLFromNodes(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -233,13 +228,14 @@ it('serialize align style to html', () => {
 it('serialize align className to html', () => {
   const plugins = [
     createParagraphPlugin(),
-    createAlignPlugin({ classNames: { center: 'slate-align-center' } }),
+    createAlignPlugin({
+      props: { classNames: { center: 'slate-align-center' } },
+    }),
   ];
-  
+
   const editor = createPlateUIEditor({
-      plugins
-    });
-  
+    plugins,
+  });
 
   expect(
     serializeHTMLFromNodes(editor, {

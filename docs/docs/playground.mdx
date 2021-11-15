@@ -65,22 +65,17 @@ See [Installation](/docs/installation)
         createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
         createComboboxPlugin(),
         createMentionPlugin(),
+        createDeserializeMdPlugin(),
+        createDeserializeCsvPlugin(),
+        createDeserializeHtmlPlugin(),
+        createDeserializeAstPlugin(),
         searchHighlightPlugin,
       ], {
         components,
       });
 
-      plugins.push(
-        ...[
-          createDeserializeMdPlugin({ plugins }),
-          createDeserializeCsvPlugin({ plugins }),
-          createDeserializeHTMLPlugin(),
-          createDeserializeAstPlugin({ plugins }),
-        ]
-      );
-
       return plugins;
-    }, [options, searchHighlightPlugin]);
+    }, [searchHighlightPlugin]);
 
     return (
       <Plate

@@ -1,12 +1,12 @@
 import { KEY_DESERIALIZE_AST } from '@udecode/plate-ast-serializer';
 import { createPluginFactory } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
+import { decorateCodeLine } from './decorateCodeLine';
 import {
   getCodeBlockDeserialize,
   getCodeLineDeserialize,
 } from './getCodeBlockDeserialize';
-import { getCodeBlockOnKeyDown } from './getCodeBlockOnKeyDown';
-import { getCodeLineDecorate } from './getCodeLineDecorate';
+import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 import { CodeBlockPlugin } from './types';
 import { withCodeBlock } from './withCodeBlock';
 
@@ -18,9 +18,9 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   isElement: true,
   deserialize: getCodeBlockDeserialize(),
   handlers: {
-    onKeyDown: getCodeBlockOnKeyDown(),
+    onKeyDown: onKeyDownCodeBlock,
   },
-  withOverrides: withCodeBlock(),
+  withOverrides: withCodeBlock,
   options: {
     deserializers: [KEY_DESERIALIZE_AST],
     hotkey: ['mod+opt+8', 'mod+shift+8'],
@@ -32,7 +32,7 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
       key: ELEMENT_CODE_LINE,
       isElement: true,
       deserialize: getCodeLineDeserialize(),
-      decorate: getCodeLineDecorate(),
+      decorate: decorateCodeLine,
     },
   ],
 });

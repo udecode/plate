@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { PlatePlugin } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
@@ -27,13 +26,13 @@ const html = `<html><body><p>${textTags.join('')}</p><p>${inlineTags.join(
 )}</p>${elementTags.join('')}</body></html>`;
 
 const editor = createPlateUIEditor({
-  options: {
-    img: {
+  plugins: [
+    createImagePlugin({
       deserialize: {
         attributeNames: ['alt'],
       },
-    },
-    a: {
+    }),
+    createLinkPlugin({
       deserialize: {
         getNode: (el) => ({
           type: 'a',
@@ -41,23 +40,22 @@ const editor = createPlateUIEditor({
           opener: el.getAttribute('target') === '_blank',
         }),
       },
-    },
-    th: {
-      deserialize: {
-        getNode: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
-      },
-    },
-    bold: { deserialize: { rules: [{ nodeNames: ['B'] }] } },
-  },
+    }),
+    createParagraphPlugin(),
+    createTablePlugin(
+      {},
+      {
+        th: {
+          deserialize: {
+            getNode: (el) => ({ type: 'th', scope: el.getAttribute('scope') }),
+          },
+        },
+      }
+    ),
+    createBoldPlugin({ deserialize: { rules: [{ nodeNames: ['B'] }] } }),
+  ],
 });
 
-const plugins: PlatePlugin[] = [
-  createImagePlugin(),
-  createLinkPlugin(),
-  createParagraphPlugin(),
-  createTablePlugin(),
-  createBoldPlugin(),
-];
 const input2 = getHtmlDocument(html).body;
 
 const output = (
@@ -90,7 +88,6 @@ const output = (
 it('should be', () => {
   expect(
     deserializeHTMLElement(editor, {
-      plugins,
       element: input2,
     })
   ).toEqual(output.children);

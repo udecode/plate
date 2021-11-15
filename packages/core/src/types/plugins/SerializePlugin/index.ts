@@ -4,5 +4,5 @@
 
 export * from './Deserialize';
 export * from './DeserializePlugin';
+export * from './PlatePluginSerializer';
 export * from './Serialize';
-export * from './SerializerPlugin';

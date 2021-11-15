@@ -5,6 +5,8 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
+jsx;
+
 const html = '<div>test</div>';
 const input1: PlatePlugin[] = [];
 const input2 = getHtmlDocument(html).body;
@@ -17,9 +19,13 @@ const output = (
 
 it('should have the break line', () => {
   expect(
-    deserializeHTMLToDocumentFragment(createPlateUIEditor(), {
-      plugins: input1,
-      element: input2,
-    })
+    deserializeHTMLToDocumentFragment(
+      createPlateUIEditor({
+        plugins: input1,
+      }),
+      {
+        element: input2,
+      }
+    )
   ).toEqual(output);
 });

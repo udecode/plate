@@ -4,7 +4,6 @@ import * as core from '@udecode/plate-core';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { Plate } from '../../../../core/src/components/Plate';
-import { createPlateOptions } from '../../../../plate/src/utils/createPlateOptions';
 import { ImageToolbarButton } from './ImageToolbarButton';
 import { input1, input2, output2 } from './ImageToolbarButton.fixtures';
 
@@ -39,7 +38,7 @@ describe('ImageToolbarButton', () => {
     // });
 
     it('should invoke getUrlImage when provided', () => {
-      jest.spyOn(core, 'usePlateEditorRef').mockReturnValue(input1);
+      jest.spyOn(core, 'usePlateEditorRef').mockReturnValue(input1 as any);
       jest
         .spyOn(window, 'prompt')
         .mockReturnValue('https://i.imgur.com/removed.png');
@@ -47,7 +46,7 @@ describe('ImageToolbarButton', () => {
       const getImageUrlMock = jest.fn();
 
       const { getByTestId } = render(
-        <Plate editor={input1}>
+        <Plate initialValue={input1.children} plugins={[createImagePlugin()]}>
           <ImageToolbarButton
             type={ELEMENT_H1}
             getImageUrl={getImageUrlMock}
@@ -65,15 +64,11 @@ describe('ImageToolbarButton', () => {
 
   describe('when without url', () => {
     it('should render', () => {
-      jest.spyOn(core, 'usePlateEditorRef').mockReturnValue(input2);
+      jest.spyOn(core, 'usePlateEditorRef').mockReturnValue(input2 as any);
       jest.spyOn(window, 'prompt').mockReturnValue('');
 
       const { getByTestId } = render(
-        <Plate
-          initialValue={input2.children}
-          plugins={[createImagePlugin()]}
-          options={createPlateOptions()}
-        >
+        <Plate initialValue={input2.children} plugins={[createImagePlugin()]}>
           <ImageToolbarButton type={ELEMENT_H1} icon={null} />
         </Plate>
       );

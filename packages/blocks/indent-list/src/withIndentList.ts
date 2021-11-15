@@ -7,7 +7,7 @@ import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { normalizeListStart } from './transforms/normalizeListStart';
 import { KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 
-export const withIndentList = (): WithOverride => (editor) => {
+export const withIndentList: WithOverride = (editor) => {
   const { apply, normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {

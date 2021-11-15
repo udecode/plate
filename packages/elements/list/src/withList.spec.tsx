@@ -1,25 +1,30 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '../../../plate/src/utils/createPlateUIEditor';
 import { createLinkPlugin } from '../../link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../paragraph/src/createParagraphPlugin';
-import { createListPlugin } from './createListPlugin';
-import { WithListOptions } from './types';
+import { createListPlugin, ELEMENT_UL } from './createListPlugin';
+import { ListPlugin } from './types';
 
 jsx;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: WithListOptions
+  listPluginOptions?: Partial<PlatePlugin<{}, ListPlugin>>
 ) => {
   const editor = createPlateUIEditor({
     editor: input,
     plugins: [
       createParagraphPlugin(),
-      createListPlugin(listPluginOptions),
+      createListPlugin(
+        {},
+        {
+          [ELEMENT_UL]: listPluginOptions!,
+        }
+      ),
       createLinkPlugin(),
     ],
   });
@@ -249,7 +254,9 @@ describe('withList', () => {
         ) as any) as PlateEditor;
 
         testInsertText(input, expected, {
-          validLiChildrenTypes: ['p', 'blockquote'],
+          options: {
+            validLiChildrenTypes: ['p', 'blockquote'],
+          },
         });
       });
     });

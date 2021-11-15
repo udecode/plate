@@ -1,8 +1,9 @@
-import { getSearchHighlightDecorate } from '@udecode/plate-find-replace';
+import { createPlateEditor, getPlugin } from '@udecode/plate-core';
 import { Range } from 'slate';
-import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
-
-const input = { search: 'test' };
+import {
+  createFindReplacePlugin,
+  MARK_SEARCH_HIGHLIGHT,
+} from '../../../createFindReplacePlugin';
 
 const output: Range[] = [
   {
@@ -19,10 +20,19 @@ const output: Range[] = [
 ];
 
 it('should be', () => {
-  expect(
-    getSearchHighlightDecorate(input)(createPlateUIEditor())([
-      { text: 'test' },
-      [0, 0],
-    ] as any)
-  ).toEqual(output);
+  const editor = createPlateEditor({
+    plugins: [
+      createFindReplacePlugin({
+        options: {
+          search: 'test',
+        },
+      }),
+    ],
+  });
+
+  const plugin = getPlugin(editor, MARK_SEARCH_HIGHLIGHT);
+
+  expect(plugin.decorate?.(editor, plugin)([{ text: 'test' }, [0, 0]])).toEqual(
+    output
+  );
 });

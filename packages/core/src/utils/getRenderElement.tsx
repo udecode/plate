@@ -2,7 +2,7 @@ import React from 'react';
 import { DefaultElement } from 'slate-react';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
+import { RenderElement } from '../types/RenderElement';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**

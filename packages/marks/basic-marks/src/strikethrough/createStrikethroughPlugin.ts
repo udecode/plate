@@ -1,7 +1,4 @@
-import {
-  getToggleMarkOnKeyDown,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getStrikethroughDeserialize } from './getStrikethroughDeserialize';
 
@@ -15,7 +12,7 @@ export const createStrikethroughPlugin = createPluginFactory<ToggleMarkPlugin>({
   isLeaf: true,
   deserialize: getStrikethroughDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
   options: {
     hotkey: 'mod+shift+s',

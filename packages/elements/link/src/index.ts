@@ -4,7 +4,7 @@
 
 export * from './createLinkPlugin';
 export * from './getLinkDeserialize';
-export * from './getLinkOnKeyDown';
+export * from './onKeyDownLink';
 export * from './types';
 export * from './withLink';
 export * from './transforms/index';

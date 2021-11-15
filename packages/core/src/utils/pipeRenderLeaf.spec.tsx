@@ -11,7 +11,7 @@ const attributes = {
 const text = { text: 'test' };
 
 it('should render the default leaf', () => {
-  const Leaf = pipeRenderLeaf(createPlateUIEditor(), [])!;
+  const Leaf = pipeRenderLeaf(createPlateUIEditor({ plugins: [] }))!;
 
   const { getByTestId } = render(
     <Leaf attributes={attributes} leaf={text} text={text}>

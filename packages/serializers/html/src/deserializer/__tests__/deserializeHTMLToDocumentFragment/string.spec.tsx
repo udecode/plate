@@ -20,9 +20,13 @@ const output = (
 
 it('should have the break line', () => {
   expect(
-    deserializeHTMLToDocumentFragment(createPlateUIEditor(), {
-      plugins: input1,
-      element: '<p>first</p><p>second</p>',
-    })
+    deserializeHTMLToDocumentFragment(
+      createPlateUIEditor({
+        plugins: input1,
+      }),
+      {
+        element: '<p>first</p><p>second</p>',
+      }
+    )
   ).toEqual(output);
 });

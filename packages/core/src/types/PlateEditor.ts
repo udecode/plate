@@ -1,7 +1,7 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
 import { WithPlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
-import { PluginKey } from './plugins/PlatePluginKey';
+import { PluginKey } from './plugins/PlatePlugin/PlatePluginKey';
 import { TEditor } from './slate/TEditor';
 
 export type PlateEditor<T = {}> = PEditor<T> & HistoryEditor & ReactEditor & T;

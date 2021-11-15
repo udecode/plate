@@ -14,6 +14,7 @@ import {
   createReactPlugin,
 } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
+import { createDeserializeHtmlPlugin } from '@udecode/plate-html-serializer';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
@@ -64,7 +65,7 @@ const PlateContainer = () => {
       createHistoryPlugin(),
       createBlockquotePlugin(),
       createTodoListPlugin(),
-      createHeadingPlugin({ levels: 5 }),
+      createHeadingPlugin({ options: { levels: 5 } }),
       createBasicElementsPlugin(),
       createBasicMarksPlugin(),
       createTodoListPlugin(),
@@ -85,12 +86,12 @@ const PlateContainer = () => {
       createNormalizeTypesPlugin(CONFIG.forceLayout),
       createTrailingBlockPlugin(CONFIG.trailingBlock),
       createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+      createDeserializeHtmlPlugin(),
     ],
     {
       components: createPlateUI(),
     }
   );
-  // plugins.push(createDeserializeHTMLPlugin());
 
   return (
     <Plate

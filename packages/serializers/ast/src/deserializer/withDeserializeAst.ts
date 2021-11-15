@@ -9,7 +9,7 @@ import { KEY_DESERIALIZE_AST } from './createDeserializeAstPlugin';
  * Enables support for deserializing inserted content from Slate Ast format to Slate format
  * while apply a small bug fix.
  */
-export const withDeserializeAst = (): WithOverride => (editor) => {
+export const withDeserializeAst: WithOverride = (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (data: DataTransfer) => {

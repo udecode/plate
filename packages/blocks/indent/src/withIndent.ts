@@ -7,7 +7,7 @@ import { IndentPlugin } from './types';
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = (): WithOverride<{}, IndentPlugin> => (
+export const withIndent: WithOverride<{}, IndentPlugin> = (
   editor,
   { inject: { props: { validTypes } = {} }, options: { indentMax } }
 ) => {

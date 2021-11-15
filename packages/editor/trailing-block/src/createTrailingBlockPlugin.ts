@@ -22,7 +22,7 @@ export const KEY_TRAILING_BLOCK = 'trailingBlock';
 export const createTrailingBlockPlugin = createPluginFactory<TrailingBlockPlugin>(
   {
     key: KEY_TRAILING_BLOCK,
-    withOverrides: withTrailingBlock(),
+    withOverrides: withTrailingBlock,
     options: {
       level: 0,
     },

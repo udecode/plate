@@ -1,7 +1,7 @@
 import { isUrl as isUrlProtocol } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getLinkDeserialize } from './getLinkDeserialize';
-import { getLinkOnKeyDown } from './getLinkOnKeyDown';
+import { onKeyDownLink } from './onKeyDownLink';
 import { LinkPlugin } from './types';
 import { withLink } from './withLink';
 
@@ -17,9 +17,9 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   deserialize: getLinkDeserialize(),
   props: ({ element }) => ({ nodeProps: { url: element?.url } }),
   handlers: {
-    onKeyDown: getLinkOnKeyDown(),
+    onKeyDown: onKeyDownLink,
   },
-  withOverrides: withLink(),
+  withOverrides: withLink,
   options: {
     isUrl: isUrlProtocol,
     rangeBeforeOptions: {

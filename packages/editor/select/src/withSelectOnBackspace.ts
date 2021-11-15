@@ -6,10 +6,10 @@ import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 /**
  * Set a list of element types to select on backspace
  */
-export const withSelectOnBackspace = (): WithOverride<
+export const withSelectOnBackspace: WithOverride<
   {},
   SelectOnBackspacePlugin
-> => (editor, { options: { query } }) => {
+> = (editor, { options: { query } }) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {

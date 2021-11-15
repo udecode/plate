@@ -3,6 +3,6 @@
  */
 
 export * from './createFindReplacePlugin';
-export * from './getFindReplaceDecorate';
+export * from './decorateFindReplace';
 export * from './types';
 export * from './useFindReplacePlugin';

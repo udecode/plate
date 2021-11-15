@@ -11,9 +11,9 @@ export const setPlatePlugins = <T = {}>(
   plugins: PlatePlugin<T>[]
 ) => {
   editor.plugins = [];
-    editor.pluginsByKey = {};
-  
+  editor.pluginsByKey = {};
+
   flattenDeepPlugins(editor, plugins);
-  
+
   incrementKey('keyPlugins', editor.id);
 };

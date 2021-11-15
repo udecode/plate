@@ -25,11 +25,10 @@ npm install @udecode/plate-csv-serializer
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
+    createDeserializeCsvPlugin()
   ], {
     components: CONFIG.components,
   });
-
-  plugins.push(createDeserializeCsvPlugin({ plugins }));
 
   return (
     <Plate

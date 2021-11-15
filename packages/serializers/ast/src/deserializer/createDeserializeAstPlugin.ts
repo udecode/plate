@@ -8,5 +8,5 @@ export const KEY_DESERIALIZE_AST = 'deserializeAst';
  */
 export const createDeserializeAstPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_AST,
-  withOverrides: withDeserializeAst(),
+  withOverrides: withDeserializeAst,
 });

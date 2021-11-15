@@ -1,4 +1,4 @@
-import { getToggleElementOnKeyDown, HotkeyPlugin } from '@udecode/plate-common';
+import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
 
@@ -13,7 +13,7 @@ export const createBlockquotePlugin = createPluginFactory<HotkeyPlugin>({
   isElement: true,
   deserialize: getBlockquoteDeserialize(),
   handlers: {
-    onKeyDown: getToggleElementOnKeyDown(),
+    onKeyDown: onKeyDownToggleElement,
   },
   options: {
     hotkey: 'mod+shift+.',

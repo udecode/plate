@@ -1,4 +1,4 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
+import { onKeyDownToggleMark } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getKbdDeserialize } from './getKbdDeserialize';
 
@@ -12,6 +12,6 @@ export const createKbdPlugin = createPluginFactory({
   isLeaf: true,
   deserialize: getKbdDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
 });

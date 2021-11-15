@@ -1,17 +1,15 @@
 /** @jsx jsx */
 
 import { insertNodes } from '@udecode/plate-common';
-import { PlateEditor, TEditor, TElement } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor, TElement } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Transforms } from 'slate';
-import { withHistory } from 'slate-history';
-import { HistoryEditor } from 'slate-history/dist/history-editor';
 import {
   ELEMENT_LI,
   ELEMENT_UL,
 } from '../../../elements/list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/createParagraphPlugin';
-import { withNodeId } from './withNodeId';
+import { createNodeIdPlugin } from './createNodeIdPlugin';
 
 jsx;
 
@@ -41,10 +39,17 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        allow: [ELEMENT_PARAGRAPH],
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              allow: [ELEMENT_PARAGRAPH],
+            },
+          }),
+        ],
+      });
 
       editor.insertNode(
         (
@@ -83,11 +88,18 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        exclude: [ELEMENT_PARAGRAPH],
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              exclude: [ELEMENT_PARAGRAPH],
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       editor.insertNode(
         (
@@ -126,12 +138,19 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        reuseId: true,
-        allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
-        exclude: [ELEMENT_PARAGRAPH],
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+              allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
+              exclude: [ELEMENT_PARAGRAPH],
+            },
+          }),
+        ],
+      });
 
       editor.insertNode(
         (
@@ -170,9 +189,17 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({ idCreator: getIdFactory(), reuseId: true })(
-        withHistory(input)
-      );
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       editor.insertNode(
         (
@@ -211,10 +238,14 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        filterText: false,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: { idCreator: getIdFactory(), filterText: false },
+          }),
+        ],
+      });
 
       editor.insertNode(
         (
@@ -247,9 +278,17 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({ idCreator: getIdFactory(), reuseId: true })(
-        withHistory(input)
-      );
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       insertNodes(
         editor,
@@ -289,9 +328,16 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({ idCreator: getIdFactory() })(
-        withHistory(input)
-      );
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+            },
+          }),
+        ],
+      });
 
       insertNodes(
         editor,
@@ -328,11 +374,14 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        idKey: 'foo',
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: { idCreator: getIdFactory(), idKey: 'foo', reuseId: true },
+          }),
+        ],
+      });
 
       insertNodes(
         editor,
@@ -372,10 +421,14 @@ describe('when inserting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: { idCreator: getIdFactory(), reuseId: true },
+          }),
+        ],
+      });
 
       insertNodes<TElement>(
         editor,
@@ -412,7 +465,10 @@ describe('when splitting nodes', () => {
         </editor>
       ) as any;
 
-      const editor: TEditor = withNodeId()(input);
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [createNodeIdPlugin()],
+      });
 
       Transforms.splitNodes(editor);
 
@@ -438,10 +494,17 @@ describe('when splitting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       Transforms.splitNodes(editor);
 
@@ -472,9 +535,16 @@ describe('when splitting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+            },
+          }),
+        ],
+      });
 
       Transforms.splitNodes(editor);
 
@@ -505,10 +575,17 @@ describe('when splitting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        allow: [ELEMENT_PARAGRAPH],
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              allow: [ELEMENT_PARAGRAPH],
+            },
+          }),
+        ],
+      });
 
       Transforms.splitNodes(editor);
 
@@ -541,11 +618,18 @@ describe('when splitting nodes', () => {
         </editor>
       ) as any;
 
-      const editor = withNodeId({
-        idCreator: getIdFactory(),
-        filterText: false,
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              filterText: false,
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       Transforms.splitNodes(editor);
 
@@ -578,11 +662,18 @@ describe('when merging nodes', () => {
         </editor>
       ) as any;
 
-      const editor: HistoryEditor = withNodeId({
-        idCreator: getIdFactory(),
-        filterText: false,
-        reuseId: true,
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+              filterText: false,
+              reuseId: true,
+            },
+          }),
+        ],
+      });
 
       Transforms.mergeNodes(editor, { at: [0, 1] });
       editor.undo();
@@ -607,9 +698,16 @@ describe('when merging nodes', () => {
         </editor>
       ) as any;
 
-      const editor: HistoryEditor = withNodeId({
-        idCreator: getIdFactory(),
-      })(withHistory(input));
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [
+          createNodeIdPlugin({
+            options: {
+              idCreator: getIdFactory(),
+            },
+          }),
+        ],
+      });
 
       Transforms.mergeNodes(editor, { at: [1] });
       editor.undo();

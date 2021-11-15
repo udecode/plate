@@ -1,4 +1,4 @@
-import { getToggleElementOnKeyDown, HotkeyPlugin } from '@udecode/plate-common';
+import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getTodoListDeserialize } from './getTodoListDeserialize';
 
@@ -9,7 +9,7 @@ export const createTodoListPlugin = createPluginFactory<HotkeyPlugin>({
   isElement: true,
   deserialize: getTodoListDeserialize(),
   handlers: {
-    onKeyDown: getToggleElementOnKeyDown(),
+    onKeyDown: onKeyDownToggleElement,
   },
   options: {
     hotkey: ['mod+opt+4', 'mod+shift+4'],

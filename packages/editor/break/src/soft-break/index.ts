@@ -3,5 +3,5 @@
  */
 
 export * from './createSoftBreakPlugin';
-export * from './getSoftBreakOnKeyDown';
+export * from './onKeyDownSoftBreak';
 export * from './types';

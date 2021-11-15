@@ -58,6 +58,7 @@ import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/underli
 import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
 import { createPlateUI } from '../packages/plate/src/utils/createPlateUI';
+import { createDeserializeHtmlPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 
 export default {
   title: 'Drag & Drop',
@@ -107,13 +108,12 @@ export const Example = () => {
           createMentionPlugin(),
           searchHighlightPlugin,
           createDndPlugin(),
+          createDeserializeHtmlPlugin(),
         ],
         {
           components,
         }
       );
-
-      plugins.push(createDeserializeHTMLPlugin());
 
       return plugins;
     }, [searchHighlightPlugin]);

@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { getSoftBreakOnKeyDown } from '../../getSoftBreakOnKeyDown';
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsx;
 
@@ -28,6 +29,11 @@ const output = (
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
-  getSoftBreakOnKeyDown({ rules: [{ hotkey: 'shift+enter' }] })(input)(event);
+  onKeyDownSoftBreak(
+    input,
+    mockPlugin({
+      options: { rules: [{ hotkey: 'shift+enter' }] },
+    })
+  )(event as any);
   expect(input.children).toEqual(output.children);
 });

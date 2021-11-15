@@ -25,12 +25,11 @@ npm install @udecode/plate-ast-serializer
     createHighlightPlugin(),
     createMentionPlugin(),
     createSoftBreakPlugin(CONFIG.softBreak),
+    createDeserializeAstPlugin()
   ], {
     components: CONFIG.components,
   });
                       
-  plugins.push(createDeserializeAstPlugin({ plugins }));
-
   return (
     <Plate
       id="deserialize-ast"

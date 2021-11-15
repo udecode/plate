@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getExitBreakOnKeyDown } from '../../getExitBreakOnKeyDown';
+import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsx;
 
@@ -26,6 +27,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  getExitBreakOnKeyDown()(input)(event);
+  onKeyDownExitBreak(input, mockPlugin())(event);
   expect(input.children).toEqual(output.children);
 });

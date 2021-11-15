@@ -14,7 +14,7 @@ jsx;
 
 describe('withMention', () => {
   const trigger = '@';
-  const pluginKey = 'mention';
+  const key = 'mention';
 
   type CreateEditorOptions = { multipleMentionPlugins?: boolean };
 
@@ -24,11 +24,11 @@ describe('withMention', () => {
   ): PlateEditor => {
     const plugins = [
       createParagraphPlugin(),
-      createMentionPlugin({ pluginKey, trigger }),
+      createMentionPlugin({ key, options: { trigger } }),
     ];
     if (multipleMentionPlugins) {
       plugins.push(
-        createMentionPlugin({ pluginKey: 'mention2', trigger: '#' })
+        createMentionPlugin({ key: 'mention2', options: { trigger: '#' } })
       );
     }
 
@@ -287,7 +287,7 @@ describe('withMention', () => {
       );
 
       expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
-        activeId: pluginKey,
+        activeId: key,
       });
     });
 

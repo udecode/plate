@@ -1,14 +1,14 @@
 import { PlateEditor } from '../../PlateEditor';
 import { Nullable } from '../../utility/Nullable';
 import { WithRequired } from '../../utility/types';
-import { PlatePluginKey } from '../PlatePluginKey';
-import { SerializerPlugin } from '../SerializePlugin/SerializerPlugin';
+import { PlatePluginSerializer } from '../SerializePlugin/PlatePluginSerializer';
 import { Decorate } from './Decorate';
 import { DOMHandlers } from './DOMHandlers';
 import { InjectComponent } from './InjectComponent';
-import { InjectPropsPlugin } from './InjectPropsPlugin';
+import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
 import { PlatePluginComponent } from './PlatePluginComponent';
+import { PlatePluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
 import { WithOverride } from './WithOverride';
 
@@ -70,9 +70,9 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
    * @default key
    */
   type?: string;
-} & InjectPropsPlugin<T> &
+} & InjectProps<T> &
   Nullable<
-    SerializerPlugin<T, P> & {
+    PlatePluginSerializer<T, P> & {
       /**
        * React component rendering a slate element or leaf.
        * @default DefaultElement | DefaultLeaf

@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
+import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
 import { toggleMark } from '../../../transforms/toggleMark';
 
 jsx;

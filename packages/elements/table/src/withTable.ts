@@ -8,7 +8,7 @@ import {
 import { Editor, Node, Point, Transforms } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
 
-export const withTable = (): WithOverride => (editor) => {
+export const withTable: WithOverride = (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&

@@ -1,4 +1,4 @@
-import { getToggleElementOnKeyDown, HotkeyPlugin } from '@udecode/plate-common';
+import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getParagraphDeserialize } from './getParagraphDeserialize';
 
@@ -12,7 +12,7 @@ export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   isElement: true,
   deserialize: getParagraphDeserialize(),
   handlers: {
-    onKeyDown: getToggleElementOnKeyDown(),
+    onKeyDown: onKeyDownToggleElement,
   },
   options: {
     hotkey: ['mod+opt+0', 'mod+shift+0'],

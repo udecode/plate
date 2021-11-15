@@ -4,13 +4,14 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
+import { mockPlugin } from '@udecode/plate-core';
 import { ELEMENT_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 import { unwrapList } from '../../../../elements/list/src/transforms/unwrapList';
 import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
-import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
+import { onKeyDownResetNode } from '../onKeyDownResetNode';
 
 jsx;
 
@@ -49,20 +50,25 @@ it('should be', () => {
     onReset: unwrapList as any,
   };
 
-  getResetNodeOnKeyDown({
-    rules: [
-      {
-        ...resetBlockTypesListRule,
-        hotkey: 'Enter',
-        predicate: isBlockAboveEmpty,
+  onKeyDownResetNode(
+    input,
+    mockPlugin({
+      options: {
+        rules: [
+          {
+            ...resetBlockTypesListRule,
+            hotkey: 'Enter',
+            predicate: isBlockAboveEmpty,
+          },
+          {
+            ...resetBlockTypesListRule,
+            hotkey: 'Backspace',
+            predicate: isSelectionAtBlockStart,
+          },
+        ],
       },
-      {
-        ...resetBlockTypesListRule,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtBlockStart,
-      },
-    ],
-  })(editor)(new KeyboardEvent('keydown') as any);
+    })
+  )(new KeyboardEvent('keydown') as any);
 
   expect(editor.children).toEqual(output.children);
 });

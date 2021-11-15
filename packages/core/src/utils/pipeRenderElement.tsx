@@ -3,7 +3,7 @@ import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
-import { RenderElement } from '../types/plugins/PlatePlugin/RenderElement';
+import { RenderElement } from '../types/RenderElement';
 import { getRenderElement } from './getRenderElement';
 import { pipeInjectProps } from './pipeInjectProps';
 

@@ -11,6 +11,6 @@ export interface RemoveEmptyNodesPlugin {
 export const createRemoveEmptyNodesPlugin = createPluginFactory<RemoveEmptyNodesPlugin>(
   {
     key: 'removeEmptyNodes',
-    withOverrides: withRemoveEmptyNodes(),
+    withOverrides: withRemoveEmptyNodes,
   }
 );

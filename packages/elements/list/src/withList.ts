@@ -1,45 +1,45 @@
 import { WithOverride } from '@udecode/plate-core';
-import { getListDeleteBackward } from './getListDeleteBackward';
-import { getListDeleteForward } from './getListDeleteForward';
-import { getListDeleteFragment } from './getListDeleteFragment';
-import { getListInsertBreak } from './getListInsertBreak';
-import { getListInsertFragment } from './getListInsertFragment';
-import { getListNormalizer } from './normalizers';
+import { deleteBackwardList } from './deleteBackwardList';
+import { deleteForwardList } from './deleteForwardList';
+import { deleteFragmentList } from './deleteFragmentList';
+import { insertBreakList } from './insertBreakList';
+import { insertFragmentList } from './insertFragmentList';
+import { normalizeList } from './normalizers';
 import { ListPlugin } from './types';
 
-export const withList = (): WithOverride<{}, ListPlugin> => (
+export const withList: WithOverride<{}, ListPlugin> = (
   editor,
   { options: { validLiChildrenTypes } }
 ) => {
   const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.insertBreak = () => {
-    if (getListInsertBreak(editor)) return;
+    if (insertBreakList(editor)) return;
 
     insertBreak();
   };
 
   editor.deleteBackward = (unit) => {
-    if (getListDeleteBackward(editor, unit)) return;
+    if (deleteBackwardList(editor, unit)) return;
 
     deleteBackward(unit);
   };
 
   editor.deleteForward = (unit) => {
-    if (getListDeleteForward(editor)) return;
+    if (deleteForwardList(editor)) return;
 
     deleteForward(unit);
   };
 
   editor.deleteFragment = () => {
-    if (getListDeleteFragment(editor)) return;
+    if (deleteFragmentList(editor)) return;
 
     deleteFragment();
   };
 
-  editor.insertFragment = getListInsertFragment(editor);
+  editor.insertFragment = insertFragmentList(editor);
 
-  editor.normalizeNode = getListNormalizer(editor, { validLiChildrenTypes });
+  editor.normalizeNode = normalizeList(editor, { validLiChildrenTypes });
 
   return editor;
 };

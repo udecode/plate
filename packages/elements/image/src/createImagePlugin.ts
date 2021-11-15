@@ -13,5 +13,5 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   isElement: true,
   isVoid: true,
   deserialize: getImageDeserialize(),
-  withOverrides: withImageUpload(),
+  withOverrides: withImageUpload,
 });

@@ -4,7 +4,7 @@
 
 export * from './createTablePlugin';
 export * from './getTableDeserialize';
-export * from './getTableOnKeyDown';
+export * from './onKeyDownTable';
 export * from './types';
 export * from './withTable';
 export * from './queries/index';

@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getExitBreakOnKeyDown } from './getExitBreakOnKeyDown';
+import { onKeyDownExitBreak } from './onKeyDownExitBreak';
 import { ExitBreakPlugin } from './types';
 
 export const KEY_EXIT_BREAK = 'exitBreak';
@@ -11,7 +11,7 @@ export const KEY_EXIT_BREAK = 'exitBreak';
 export const createExitBreakPlugin = createPluginFactory<ExitBreakPlugin>({
   key: KEY_EXIT_BREAK,
   handlers: {
-    onKeyDown: getExitBreakOnKeyDown(),
+    onKeyDown: onKeyDownExitBreak,
   },
   options: {
     rules: [

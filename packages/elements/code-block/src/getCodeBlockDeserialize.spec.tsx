@@ -1,35 +1,38 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate';
 import {
-  astDeserializerId,
+  createDeserializeHtmlPlugin,
+  createPlateUIEditor,
+} from '@udecode/plate';
+import {
   createDeserializeAstPlugin,
+  KEY_DESERIALIZE_AST,
 } from '@udecode/plate-ast-serializer';
-import { PlateEditor } from '@udecode/plate-core';
-import {
-  createDeserializeHTMLPlugin,
-  htmlDeserializerId,
-} from '@udecode/plate-html-serializer';
+import { getPlugin, PlateEditor } from '@udecode/plate-core';
+import { KEY_DESERIALIZE_HTML } from '@udecode/plate-html-serializer';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
+import { ELEMENT_CODE_BLOCK } from './constants';
 import { createCodeBlockPlugin } from './createCodeBlockPlugin';
 import { getCodeBlockDeserialize } from './getCodeBlockDeserialize';
+import { CodeBlockPlugin } from './types';
 
 jsx;
 
 const createCodeBlockDeserialize = (input: PlateEditor) => {
-  const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
-
-  plugins.push(
-    createDeserializeHTMLPlugin(),
-    createDeserializeAstPlugin({ plugins })
-  );
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [
+      createParagraphPlugin(),
+      createCodeBlockPlugin(),
+      createDeserializeHtmlPlugin(),
+      createDeserializeAstPlugin(),
+    ],
+  });
 
   return getCodeBlockDeserialize()(
-    createPlateUIEditor({
-      editor: input,
-      plugins,
-    })
+    editor,
+    getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK)
   );
 };
 
@@ -49,8 +52,8 @@ describe('code block deserialization', () => {
 
       const { isDisabled } = createCodeBlockDeserialize(input);
 
-      expect(isDisabled?.(astDeserializerId)).toEqual(false);
-      expect(isDisabled?.(htmlDeserializerId)).toEqual(true);
+      expect(isDisabled?.(KEY_DESERIALIZE_AST)).toEqual(false);
+      expect(isDisabled?.(KEY_DESERIALIZE_HTML)).toEqual(true);
     });
   });
 
@@ -66,8 +69,8 @@ describe('code block deserialization', () => {
 
       const { isDisabled } = createCodeBlockDeserialize(input);
 
-      expect(isDisabled?.(astDeserializerId)).toEqual(false);
-      expect(isDisabled?.(htmlDeserializerId)).toEqual(false);
+      expect(isDisabled?.(KEY_DESERIALIZE_AST)).toEqual(false);
+      expect(isDisabled?.(KEY_DESERIALIZE_HTML)).toEqual(false);
     });
   });
 });

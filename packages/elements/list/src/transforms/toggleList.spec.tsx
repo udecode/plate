@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate/src';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createListPlugin, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { toggleList } from './toggleList';
@@ -33,7 +33,7 @@ describe('toggle on', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -68,7 +68,7 @@ describe('toggle on', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -107,7 +107,7 @@ describe('toggle on', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -155,7 +155,7 @@ describe('toggle off', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -211,7 +211,7 @@ describe('toggle off', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -250,7 +250,7 @@ describe('toggle off', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_UL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -285,7 +285,7 @@ describe('toggle over', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -329,7 +329,7 @@ describe('toggle over', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -375,7 +375,7 @@ describe('toggle over', () => {
       plugins: [createListPlugin()],
     });
 
-    toggleList(editor, { type: getPlatePluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
 
     expect(input.children).toEqual(output.children);
   });

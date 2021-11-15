@@ -1,7 +1,4 @@
-import {
-  getToggleMarkOnKeyDown,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getSubscriptDeserialize } from './getSubscriptDeserialize';
 
@@ -15,7 +12,7 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   isLeaf: true,
   deserialize: getSubscriptDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
   options: {
     hotkey: 'mod+.',

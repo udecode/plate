@@ -18,13 +18,18 @@ export const getRenderNodeProps = <T extends PlateRenderNodeProps>({
   attributes?: AnyObject;
   nodeProps: T;
 }) => {
-  if (props) {
-    nodeProps = typeof props === 'function' ? props(nodeProps as any) : props;
+  let newProps: AnyObject = {};
 
-    if (!nodeProps.nodeProps && attributes) {
-      nodeProps.nodeProps = attributes;
-    }
+  if (props) {
+    newProps =
+      (typeof props === 'function' ? props(nodeProps as any) : props) ?? {};
   }
+
+  if (!newProps.nodeProps && attributes) {
+    newProps.nodeProps = attributes;
+  }
+
+  nodeProps = { ...nodeProps, ...newProps };
 
   const { className } = nodeProps;
 

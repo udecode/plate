@@ -1,6 +1,6 @@
 import defaultsDeep from 'lodash/defaultsDeep';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PluginKey } from '../types/plugins/PlatePluginKey';
+import { PluginKey } from '../types/plugins/PlatePlugin/PlatePluginKey';
 import { NoInfer } from '../types/utility/NoInfer';
 import { overridePluginsByKey } from './overridePluginsByKey';
 

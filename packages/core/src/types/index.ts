@@ -8,6 +8,8 @@ export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';
 export * from './PlateStore';
+export * from './RenderElement';
+export * from './RenderLeaf';
 export * from './UseEditablePropsOptions';
 export * from './UsePlateEffectsOptions';
 export * from './UsePlateOptions';

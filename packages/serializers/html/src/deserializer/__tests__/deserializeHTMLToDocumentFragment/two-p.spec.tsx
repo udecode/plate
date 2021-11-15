@@ -6,6 +6,8 @@ import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/
 import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLToDocumentFragment } from '../../utils/deserializeHTMLToDocumentFragment';
 
+jsx;
+
 const html = '<p>first</p><p>second</p>';
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const input1: PlatePlugin[] = [createParagraphPlugin()];
@@ -20,9 +22,13 @@ const output = (
 
 it('should have the break line', () => {
   expect(
-    deserializeHTMLToDocumentFragment(createPlateUIEditor(), {
-      plugins: input1,
-      element: input2,
-    })
+    deserializeHTMLToDocumentFragment(
+      createPlateUIEditor({
+        plugins: input1,
+      }),
+      {
+        element: input2,
+      }
+    )
   ).toEqual(output);
 });

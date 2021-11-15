@@ -3,22 +3,22 @@
 
 import { renderHook } from '@testing-library/react-hooks';
 import { getSlateClass } from '@udecode/plate-core';
-import { getHtmlDocument } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { useFindReplacePlugin } from '../../../../../../decorators/find-replace/src/useFindReplacePlugin';
 import { createSoftBreakPlugin } from '../../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../../elements/alignment/src/createAlignPlugin';
 import { createBlockquotePlugin } from '../../../../../../elements/block-quote/src/createBlockquotePlugin';
 import { ELEMENT_CODE_LINE } from '../../../../../../elements/code-block/src/constants';
 import { createCodeBlockPlugin } from '../../../../../../elements/code-block/src/createCodeBlockPlugin';
-import { createHeadingPlugins } from '../../../../../../elements/heading/src/createHeadingPlugin';
+import { createHeadingPlugin } from '../../../../../../elements/heading/src/createHeadingPlugin';
 import { createImagePlugin } from '../../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
 import { createListPlugin } from '../../../../../../elements/list/src/createListPlugin';
-import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/constants';
 import {
   createTodoListPlugin,
   ELEMENT_TODO_LI,
 } from '../../../../../../elements/list/src/todo-list/createTodoListPlugin';
+import { CLASS_TODO_LIST_CHECKED } from '../../../../../../elements/list/src/todo-list/getTodoListDeserialize';
 import { createMediaEmbedPlugin } from '../../../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import {
   createMentionPlugin,
@@ -26,17 +26,28 @@ import {
 } from '../../../../../../elements/mention/src/createMentionPlugin';
 import { createParagraphPlugin } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../../elements/table/src/createTablePlugin';
+import { MARK_BOLD } from '../../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { getBoldDeserialize } from '../../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
+import { MARK_CODE } from '../../../../../../marks/basic-marks/src/code/createCodePlugin';
 import { getCodeDeserialize } from '../../../../../../marks/basic-marks/src/code/getCodeDeserialize';
+import { MARK_ITALIC } from '../../../../../../marks/basic-marks/src/italic/createItalicPlugin';
 import { getItalicDeserialize } from '../../../../../../marks/basic-marks/src/italic/getItalicDeserialize';
+import { MARK_STRIKETHROUGH } from '../../../../../../marks/basic-marks/src/strikethrough/createStrikethroughPlugin';
 import { getStrikethroughDeserialize } from '../../../../../../marks/basic-marks/src/strikethrough/getStrikethroughDeserialize';
+import { MARK_SUBSCRIPT } from '../../../../../../marks/basic-marks/src/subscript/createSubscriptPlugin';
 import { getSubscriptDeserialize } from '../../../../../../marks/basic-marks/src/subscript/getSubscriptDeserialize';
+import { MARK_SUPERSCRIPT } from '../../../../../../marks/basic-marks/src/superscript/createSuperscriptPlugin';
 import { getSuperscriptDeserialize } from '../../../../../../marks/basic-marks/src/superscript/getSuperscriptDeserialize';
+import { MARK_UNDERLINE } from '../../../../../../marks/basic-marks/src/underline/createUnderlinePlugin';
 import { getUnderlineDeserialize } from '../../../../../../marks/basic-marks/src/underline/getUnderlineDeserialize';
+import { MARK_HIGHLIGHT } from '../../../../../../marks/highlight/src/createHighlightPlugin';
 import { getHighlightDeserialize } from '../../../../../../marks/highlight/src/getHighlightDeserialize';
+import { MARK_KBD } from '../../../../../../marks/kbd/src/createKbdPlugin';
 import { getKbdDeserialize } from '../../../../../../marks/kbd/src/getKbdDeserialize';
 import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHTMLElement } from '../../utils/deserializeHTMLElement';
+
+jsx;
 
 const textTags = [
   '<span>span</span>',
@@ -145,7 +156,7 @@ it('should be', () => {
   const plugins = renderHook(() => [
     createBlockquotePlugin(),
     createTodoListPlugin(),
-    createHeadingPlugins({ levels: 1 }),
+    createHeadingPlugin({ options: { levels: 1 } }),
     createImagePlugin(),
     createLinkPlugin(),
     createListPlugin(),
@@ -157,15 +168,15 @@ it('should be', () => {
     useFindReplacePlugin().plugin,
     createSoftBreakPlugin(),
     createAlignPlugin(),
-    { deserialize: getBoldDeserialize() },
-    { deserialize: getHighlightDeserialize() },
-    { deserialize: getCodeDeserialize() },
-    { deserialize: getKbdDeserialize() },
-    { deserialize: getItalicDeserialize() },
-    { deserialize: getStrikethroughDeserialize() },
-    { deserialize: getSubscriptDeserialize() },
-    { deserialize: getSuperscriptDeserialize() },
-    { deserialize: getUnderlineDeserialize() },
+    { key: MARK_BOLD, deserialize: getBoldDeserialize() },
+    { key: MARK_HIGHLIGHT, deserialize: getHighlightDeserialize() },
+    { key: MARK_CODE, deserialize: getCodeDeserialize() },
+    { key: MARK_KBD, deserialize: getKbdDeserialize() },
+    { key: MARK_ITALIC, deserialize: getItalicDeserialize() },
+    { key: MARK_STRIKETHROUGH, deserialize: getStrikethroughDeserialize() },
+    { key: MARK_SUBSCRIPT, deserialize: getSubscriptDeserialize() },
+    { key: MARK_SUPERSCRIPT, deserialize: getSuperscriptDeserialize() },
+    { key: MARK_UNDERLINE, deserialize: getUnderlineDeserialize() },
   ]).result.current;
 
   expect(
@@ -174,7 +185,6 @@ it('should be', () => {
         plugins,
       }),
       {
-        plugins,
         element: input2,
       }
     )

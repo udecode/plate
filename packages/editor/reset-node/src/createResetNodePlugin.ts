@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getResetNodeOnKeyDown } from './getResetNodeOnKeyDown';
+import { onKeyDownResetNode } from './onKeyDownResetNode';
 import { ResetNodePlugin } from './types';
 
 export const KEY_RESET_NODE = 'resetNode';
@@ -10,7 +10,7 @@ export const KEY_RESET_NODE = 'resetNode';
 export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
   key: KEY_RESET_NODE,
   handlers: {
-    onKeyDown: getResetNodeOnKeyDown(),
+    onKeyDown: onKeyDownResetNode,
   },
   options: {
     rules: [],

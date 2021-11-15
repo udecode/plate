@@ -4,12 +4,10 @@
 
 export * from './constants';
 export * from './createCodeBlockPlugin';
-export * from './getCodeBlockDecorate';
+export * from './decorateCodeLine';
 export * from './getCodeBlockDeserialize';
-export * from './getCodeBlockInsertFragment';
-export * from './getCodeBlockOnKeyDown';
-export * from './getCodeBlockRenderLeaf';
-export * from './getCodeLineDecorate';
+export * from './insertFragmentCodeBlock';
+export * from './onKeyDownCodeBlock';
 export * from './types';
 export * from './withCodeBlock';
 export * from './options/index';

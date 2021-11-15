@@ -1,7 +1,4 @@
-import {
-  getToggleMarkOnKeyDown,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
 import { getItalicDeserialize } from './getItalicDeserialize';
 
@@ -15,7 +12,7 @@ export const createItalicPlugin = createPluginFactory<ToggleMarkPlugin>({
   isLeaf: true,
   deserialize: getItalicDeserialize(),
   handlers: {
-    onKeyDown: getToggleMarkOnKeyDown(),
+    onKeyDown: onKeyDownToggleMark,
   },
   options: {
     hotkey: 'mod+i',

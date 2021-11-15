@@ -3,5 +3,5 @@
  */
 
 export * from './createExitBreakPlugin';
-export * from './getExitBreakOnKeyDown';
+export * from './onKeyDownExitBreak';
 export * from './types';
