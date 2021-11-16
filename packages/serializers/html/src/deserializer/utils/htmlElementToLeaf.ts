@@ -1,36 +1,40 @@
 import { mergeDeepToNodes } from '@udecode/plate-common';
-import { isElement, PlateEditor, TDescendant } from '@udecode/plate-core';
+import {
+  AnyObject,
+  isElement,
+  PlateEditor,
+  TDescendant,
+} from '@udecode/plate-core';
 import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
-import { DeserializeHTMLChildren } from '../types';
+import { DeserializeHtmlChildren } from '../types';
 
 jsx;
 
-export interface DeserializeMarksProps<T = {}> {
+export interface HtmlElementToLeafOptions {
   element: HTMLElement;
-  children: DeserializeHTMLChildren[];
+  children: DeserializeHtmlChildren[];
 }
 
 /**
  * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
-export const deserializeHTMLToMarks = <T = {}>(
+export const htmlElementToLeaf = <T = {}>(
   editor: PlateEditor<T>,
-  { element, children }: DeserializeMarksProps<T>
+  { element, children }: HtmlElementToLeafOptions
 ) => {
-  let leaf = {};
+  let leaf: AnyObject = {};
 
   editor.plugins.forEach((plugin) => {
-    const leafDeserializers = plugin.deserialize?.(editor, plugin).leaf;
-    if (!leafDeserializers) return;
+    const deserializers = plugin.deserialize?.(editor, plugin).leaf;
+    if (!deserializers) return;
 
-    leafDeserializers.forEach((deserializer) => {
-      const leafPart = deserializer.deserialize(element);
+    deserializers.forEach((deserializer) => {
+      const deserialized = deserializer.deserialize(element);
+      if (!deserialized) return;
 
-      if (!leafPart) return;
-
-      leaf = { ...leaf, ...leafPart };
+      leaf = { ...leaf, ...deserialized };
     });
   });
 

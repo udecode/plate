@@ -17,7 +17,7 @@ export const getMediaEmbedDeserialize = (): Deserialize => (
           };
         }
       },
-      rules: [{ nodeNames: 'IFRAME' }, { className: getSlateClass(type!) }],
+      rules: [{ nodeNames: 'IFRAME' }, { className: getSlateClass(type) }],
     }),
   };
 };

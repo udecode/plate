@@ -1,12 +1,12 @@
 import { normalizeDescendantsToDocumentFragment } from '@udecode/plate-common';
 import { PlateEditor, TDescendant } from '@udecode/plate-core';
 import { htmlStringToDOMNode } from '../../serializer/utils/htmlStringToDOMNode';
-import { deserializeHTMLElement } from './deserializeHTMLElement';
+import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHTMLToDocumentFragment = <T = {}>(
+export const deserializeHtml = <T = {}>(
   editor: PlateEditor<T>,
   {
     element,
@@ -21,9 +21,7 @@ export const deserializeHTMLToDocumentFragment = <T = {}>(
     element = htmlStringToDOMNode(element, stripWhitespace);
   }
 
-  const fragment = deserializeHTMLElement(editor, {
-    element,
-  }) as TDescendant[];
+  const fragment = deserializeHtmlElement(editor, element) as TDescendant[];
 
   return normalizeDescendantsToDocumentFragment(editor, {
     descendants: fragment,

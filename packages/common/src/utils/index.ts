@@ -8,6 +8,7 @@ export * from './createNode';
 export * from './escapeRegexp';
 export * from './getHandler';
 export * from './getPreventDefaultHandler';
+export * from './findHtmlParentElement';
 export * from './isUrl';
 export * from './normalizeDescendantsToDocumentFragment';
 export * from './types.utils';

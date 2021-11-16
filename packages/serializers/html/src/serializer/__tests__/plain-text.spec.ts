@@ -1,6 +1,6 @@
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { deserializeHTMLToDocumentFragment } from '../../deserializer/utils/deserializeHTMLToDocumentFragment';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { deserializeHtml } from '../../deserializer/utils/deserializeHtml';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serializes with edge case where input is non-rich text', () => {
@@ -8,8 +8,8 @@ it('serializes with edge case where input is non-rich text', () => {
   const output = 'Some non-rich text here.';
   const editor = createPlateUIEditor({ plugins: [] });
   expect(
-    serializeHTMLFromNodes(editor, {
-      nodes: deserializeHTMLToDocumentFragment(editor, {
+    serializeHtml(editor, {
+      nodes: deserializeHtml(editor, {
         plugins: [],
         element: input,
       }),
@@ -22,7 +22,7 @@ it('serializes with edge case where input is text element', () => {
   const output = 'Test just text.';
   const editor = createPlateUIEditor({ plugins: [] });
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: input,
     })
   ).toEqual(output);

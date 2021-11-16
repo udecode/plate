@@ -1,9 +1,12 @@
 /** @jsx jsx */
-import { PlatePlugin, PlatePluginOptions } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  OverridesByKey,
+  PlatePlugin,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { readTestFile } from '../../readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
-import { readTestFile } from './readTestFile';
 
 jsx;
 
@@ -25,22 +28,26 @@ export const testDocxDeserializer = ({
   expected,
   plugins,
   filename,
-  options,
+  overrides,
 }: {
   input?: any;
   expected: any;
   plugins: PlatePlugin[];
   filename: string;
-  options?: Record<string, Partial<PlatePluginOptions>>;
+  overrides?: OverridesByKey;
 }) => {
   it('should deserialize', () => {
-    const actual = createEditorPlugins({
+    const actual = createPlateEditor({
       editor: input,
       plugins: [...plugins, createDeserializeDocxPlugin({ plugins })],
-      options,
+      overrides,
     });
 
-    actual.insertData(createClipboardData(readTestFile(`${filename}.html`)));
+    actual.insertData(
+      createClipboardData(
+        readTestFile(`deserializer/__tests__/${filename}.html`)
+      )
+    );
 
     expect(actual.children).toEqual(expected.children);
   });

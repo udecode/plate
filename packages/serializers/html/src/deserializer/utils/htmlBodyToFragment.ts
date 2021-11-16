@@ -1,18 +1,18 @@
 import { TDescendant } from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
-import { DeserializeHTMLChildren } from '../types';
+import { DeserializeHtmlChildren } from '../types';
 
 jsx;
 
 /**
  * Deserialize HTML body element to Fragment.
  */
-export const deserializeHTMLToFragment = ({
+export const htmlBodyToFragment = ({
   element,
   children,
 }: {
   element: HTMLElement;
-  children: DeserializeHTMLChildren[];
+  children: DeserializeHtmlChildren[];
 }): TDescendant[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx('fragment', {}, children);

@@ -17,3 +17,4 @@ export * from './UseSlatePropsOptions';
 export * from './plugins/index';
 export * from './slate/index';
 export * from './utility/index';
+export * from './OverridesByKey';

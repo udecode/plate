@@ -1,6 +1,6 @@
 import defaultsDeep from 'lodash/defaultsDeep';
+import { OverridesByKey } from '../types/OverridesByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PluginKey } from '../types/plugins/PlatePlugin/PlatePluginKey';
 import { NoInfer } from '../types/utility/NoInfer';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
@@ -14,7 +14,7 @@ export const createPluginFactory = <P = {}>(
   defaultPlugin: PlatePlugin<{}, NoInfer<P>>
 ) => <T = {}>(
   overrides?: Partial<PlatePlugin<T, NoInfer<P>>>,
-  overridesByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>
+  overridesByKey?: OverridesByKey<T, NoInfer<P>>
 ): PlatePlugin<T, NoInfer<P>> => {
   let plugin: PlatePlugin<T, P> = defaultsDeep(overrides, defaultPlugin);
 

@@ -198,7 +198,7 @@ export const CONFIG: Config = {
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     },
   },
-  docxOptions: createPlateOptions({
+  docxOptions: {
     [ELEMENT_CODE_BLOCK]: {
       deserialize: {
         rules: [
@@ -253,5 +253,5 @@ export const CONFIG: Config = {
         },
       },
     },
-  }),
+  },
 };

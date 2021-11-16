@@ -1,31 +1,36 @@
-import { PlateEditor, TDescendant, TElement } from '@udecode/plate-core';
+import {
+  AnyObject,
+  PlateEditor,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
-import { DeserializeHTMLChildren } from '../types';
+import { DeserializeHtmlChildren } from '../types';
 
 jsx;
 
 /**
  * Deserialize HTML to Element.
  */
-export const deserializeHTMLToElement = <T = {}>(
+export const htmlElementToElement = <T = {}>(
   editor: PlateEditor<T>,
   {
-    element,
+    element: htmlElement,
     children,
   }: {
     element: HTMLElement;
-    children: DeserializeHTMLChildren[];
+    children: DeserializeHtmlChildren[];
   }
 ): TElement | undefined => {
-  let slateElement: any;
+  let slateElement: AnyObject | null = null;
   let withoutChildren: boolean | undefined;
 
   editor.plugins.some((plugin) => {
-    const elementDeserializers = plugin.deserialize?.(editor, plugin).element;
-    if (!elementDeserializers) return;
+    const deserializers = plugin.deserialize?.(editor, plugin).element;
+    if (!deserializers) return;
 
-    return elementDeserializers.some((deserializer) => {
-      const deserialized = deserializer.deserialize(element);
+    return deserializers.some((deserializer) => {
+      const deserialized = deserializer.deserialize(htmlElement);
       if (!deserialized) return;
 
       slateElement = deserialized;

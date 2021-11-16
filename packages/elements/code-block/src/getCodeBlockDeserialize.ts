@@ -31,7 +31,7 @@ export const getCodeBlockDeserialize = (): Deserialize<{}, CodeBlockPlugin> => (
     isDisabled: isDisabled(editor),
     element: getElementDeserializer({
       type,
-      rules: [{ nodeNames: 'PRE' }, { className: getSlateClass(type!) }],
+      rules: [{ nodeNames: 'PRE' }, { className: getSlateClass(type) }],
     }),
   };
 };
@@ -41,7 +41,7 @@ export const getCodeLineDeserialize = (): Deserialize => (editor, { type }) => {
     isDisabled: isDisabled(editor),
     element: getElementDeserializer({
       type,
-      rules: [{ className: getSlateClass(type!) }],
+      rules: [{ className: getSlateClass(type) }],
     }),
   };
 };

@@ -3,7 +3,7 @@ import {
   createLinkPlugin,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
@@ -27,7 +27,7 @@ const editor = createPlateUIEditor({
 
 it('serialize link to html with attributes', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'An external ' },
         {
@@ -52,7 +52,7 @@ it('serialize link to html with attributes', () => {
 it('serialize image with alt to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           {
             type: 'img',

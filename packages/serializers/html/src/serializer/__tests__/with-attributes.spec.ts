@@ -3,7 +3,7 @@ import {
   createLinkPlugin,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize link to html with attributes', () => {
@@ -17,7 +17,7 @@ it('serialize link to html with attributes', () => {
   ];
 
   expect(
-    serializeHTMLFromNodes(
+    serializeHtml(
       createPlateUIEditor({
         plugins,
       }),
@@ -44,7 +44,7 @@ it('serialize image with alt to html', () => {
 
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(createPlateUIEditor({ plugins }), {
+      serializeHtml(createPlateUIEditor({ plugins }), {
         nodes: [
           {
             type: 'img',

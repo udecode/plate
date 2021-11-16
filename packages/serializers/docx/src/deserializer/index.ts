@@ -4,3 +4,5 @@
 
 export * from './createDeserializeDocxPlugin';
 export * from './__tests__/index';
+export { withDeserializeDocx } from './withDeserializeDocx';
+export { parser } from './withDeserializeDocx';

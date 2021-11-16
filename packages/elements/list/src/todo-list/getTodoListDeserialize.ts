@@ -11,7 +11,7 @@ export const getTodoListDeserialize = (): Deserialize => (editor, { type }) => {
         type,
         checked: el.classList.contains(CLASS_TODO_LIST_CHECKED),
       }),
-      rules: [{ className: getSlateClass(type!) }],
+      rules: [{ className: getSlateClass(type) }],
     }),
   };
 };

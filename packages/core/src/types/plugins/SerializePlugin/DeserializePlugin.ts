@@ -35,12 +35,12 @@ export interface NodeDeserializePlugin {
   /**
    * Map HTML element to slate node.
    */
-  getNode: (el: HTMLElement) => AnyObject | undefined;
+  getNode?: (el: HTMLElement) => AnyObject | undefined;
 
   /**
    * List of rules the element needs to follow to be deserialized to a slate node.
    */
-  rules: NodeDeserializePluginRule[];
+  rules?: NodeDeserializePluginRule[];
 
   /**
    * List of HTML attribute names to store their values in `node.attributes`.

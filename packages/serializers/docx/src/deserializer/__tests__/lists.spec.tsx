@@ -1,10 +1,9 @@
 /** @jsx jsx */
-import { getPlatePluginType } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
 import { createIndentListPlugin } from '../../../../../blocks/indent-list/src/createIndentListPlugin';
-import { createBasicElementPlugins } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/defaults';
+import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -47,11 +46,11 @@ describe(getDocxTestName(name), () => {
       </editor>
     ),
     plugins: [
-      ...createBasicElementPlugins(),
+      createBasicElementsPlugin(),
       createIndentListPlugin(),
       createIndentPlugin(),
     ],
-    options: {
+    overrides: {
       [ELEMENT_PARAGRAPH]: {
         deserialize: {
           rules: [{ nodeNames: 'P' }],

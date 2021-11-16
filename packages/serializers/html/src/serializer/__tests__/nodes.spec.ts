@@ -3,7 +3,7 @@ import { createParagraphPlugin } from '../../../../../elements/paragraph/src/cre
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createItalicPlugin } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize complex example list with paragraphs to html', () => {
@@ -16,7 +16,7 @@ it('serialize complex example list with paragraphs to html', () => {
   const editor = createPlateUIEditor({ plugins });
 
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: 'p',
@@ -94,7 +94,7 @@ it('serialize complex example with no type on top level node to html', () => {
   ];
   const editor = createPlateUIEditor({ plugins });
 
-  const render = serializeHTMLFromNodes(editor, {
+  const render = serializeHtml(editor, {
     nodes: [
       {
         children: [
@@ -138,7 +138,7 @@ it('serialize complex example with multiple no types on top level node to html',
   ];
   const editor = createPlateUIEditor({ plugins });
 
-  const render = serializeHTMLFromNodes(editor, {
+  const render = serializeHtml(editor, {
     nodes: [
       {
         children: [
@@ -180,7 +180,7 @@ it('serialize string with %', () => {
   const plugins = [createParagraphPlugin()];
   const editor = createPlateUIEditor({ plugins });
 
-  const render = serializeHTMLFromNodes(editor, {
+  const render = serializeHtml(editor, {
     nodes: [
       {
         children: [

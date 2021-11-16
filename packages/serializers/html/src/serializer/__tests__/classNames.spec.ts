@@ -4,7 +4,7 @@ import {
 } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 
 it('serialize with slate className', () => {
   const editor = createPlateUIEditor({
@@ -12,7 +12,7 @@ it('serialize with slate className', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -35,7 +35,7 @@ it('serialize with slate classNames: a+slate', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -58,7 +58,7 @@ it('serialize with slate classNames: slate+b', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -81,7 +81,7 @@ it('serialize with classNames: a+slate+b', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -104,7 +104,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -127,7 +127,7 @@ it('serialize with slate classNames: multiple tags', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -156,7 +156,7 @@ it('serialize with custom preserved classname: a+custom', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -185,7 +185,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -215,7 +215,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,

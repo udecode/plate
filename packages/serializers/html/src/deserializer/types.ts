@@ -1,12 +1,14 @@
 import { TDescendant, TElement } from '@udecode/plate-core';
 
-export type DeserializeHTMLChildren = ChildNode | TDescendant | string | null;
+export type DeserializeHtmlChildren = ChildNode | TDescendant | string | null;
 
-export type DeserializeHTMLReturn =
+/**
+ * De
+ *
+ */
+export type DeserializeHtmlNodeReturnType =
   | string
   | null
   | TDescendant[]
   | TElement
-  | DeserializeHTMLChildren[];
-
-export type DeserializedHTMLElement = TDescendant;
+  | DeserializeHtmlChildren[];

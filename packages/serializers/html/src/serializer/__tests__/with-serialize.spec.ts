@@ -8,7 +8,7 @@ import {
   TRenderElementProps,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
@@ -23,7 +23,7 @@ const plugins = [
 it('custom serialize image to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(createPlateUIEditor({ plugins }), {
+      serializeHtml(createPlateUIEditor({ plugins }), {
         nodes: [
           {
             type: 'img',
@@ -41,7 +41,7 @@ it('custom serialize image to html', () => {
 
 it('custom serialize bold to html', () => {
   expect(
-    serializeHTMLFromNodes(
+    serializeHtml(
       createPlateUIEditor({
         plugins: [
           createBoldPlugin({
@@ -86,7 +86,7 @@ describe('multiple custom leaf serializers', () => {
       },
     ];
 
-    const result1 = serializeHTMLFromNodes(
+    const result1 = serializeHtml(
       createPlateEditor({
         plugins: pluginsWithoutSerializers,
       }),
@@ -95,7 +95,7 @@ describe('multiple custom leaf serializers', () => {
       }
     );
 
-    const result2 = serializeHTMLFromNodes(
+    const result2 = serializeHtml(
       createPlateEditor({
         plugins: pluginsWithSerializers,
       }),

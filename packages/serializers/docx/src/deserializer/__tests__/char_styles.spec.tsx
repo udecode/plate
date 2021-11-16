@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
-import { createBasicMarkPlugins } from '../../../../../marks/basic-marks/src/createBasicMarkPlugins';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -52,8 +52,8 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
-    plugins: [createParagraphPlugin(), ...createBasicMarkPlugins()],
-    options: {
+    plugins: [createParagraphPlugin(), createBasicMarksPlugin()],
+    overrides: {
       [MARK_BOLD]: {
         deserialize: {
           rules: [

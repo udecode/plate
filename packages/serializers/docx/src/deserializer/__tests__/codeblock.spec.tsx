@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createBasicElementPlugins } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-} from '../../../../../elements/code-block/src/defaults';
+} from '../../../../../elements/code-block/src/constants';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -29,8 +29,8 @@ describe(getDocxTestName(name), () => {
         <hp>from the beginning of the docx reader.</hp>
       </editor>
     ),
-    plugins: [...createBasicElementPlugins()],
-    options: {
+    plugins: [createBasicElementsPlugin()],
+    overrides: {
       [ELEMENT_CODE_BLOCK]: {
         deserialize: {
           rules: [

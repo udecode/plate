@@ -19,7 +19,7 @@ export const getExcalidrawDeserialize = (): Deserialize => (
         };
         // }
       },
-      rules: [{ className: getSlateClass(type!) }],
+      rules: [{ className: getSlateClass(type) }],
     }),
   };
 };

@@ -8,7 +8,7 @@ export const getNodeDeserializer = ({
   type,
   getNode,
   attributeNames,
-  rules,
+  rules = [],
   withoutChildren,
 }: NodeDeserializePlugin) => {
   const deserializers: DeserializeNode[] = [];
@@ -73,7 +73,7 @@ export const getNodeDeserializer = ({
             }
           }
 
-          const slateNode = getNode(el);
+          const slateNode = getNode?.(el);
           if (slateNode && Object.keys(elementAttributes).length) {
             slateNode.attributes = elementAttributes;
           }

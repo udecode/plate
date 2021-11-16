@@ -1,7 +1,7 @@
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
@@ -10,7 +10,7 @@ describe('when there is no deserializer', () => {
     });
 
     expect(
-      serializeHTMLFromNodes(
+      serializeHtml(
         createPlateUIEditor({
           plugins: [plugin],
         }),

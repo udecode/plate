@@ -10,7 +10,7 @@ import {
   createTablePlugin,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 it('serialize list to html', () => {
@@ -19,7 +19,7 @@ it('serialize list to html', () => {
   });
 
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: 'ul',
@@ -46,7 +46,7 @@ it('serialize link to html', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
@@ -69,7 +69,7 @@ it('serialize blockquote to html', () => {
 
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           {
             type: 'blockquote',
@@ -86,7 +86,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
     plugins: [createBlockquotePlugin()],
   });
 
-  const html = serializeHTMLFromNodes(editor, {
+  const html = serializeHtml(editor, {
     nodes: [
       {
         type: 'blockquote',
@@ -108,7 +108,7 @@ it('serialize headings to html', () => {
   });
 
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: 'h1',
@@ -136,7 +136,7 @@ it('serialize paragraph to html', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: 'p',
@@ -154,7 +154,7 @@ it('serialize image to html', () => {
 
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           {
             type: 'img',
@@ -174,7 +174,7 @@ it('serialize table to html', () => {
   });
 
   const render = htmlStringToDOMNode(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: 'table',
@@ -211,7 +211,7 @@ it('serialize align style to html', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,
@@ -238,7 +238,7 @@ it('serialize align className to html', () => {
   });
 
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         {
           type: ELEMENT_PARAGRAPH,

@@ -2,7 +2,7 @@ import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/cre
 import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import { serializeHTMLFromNodes } from '../serializeHTMLFromNodes';
+import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
@@ -14,7 +14,7 @@ const editor = createPlateUIEditor({ plugins });
 
 it('serialize bold to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true },
@@ -28,7 +28,7 @@ it('serialize bold to html', () => {
 
 it('serialize italic to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'italic', italic: true },
@@ -43,7 +43,7 @@ it('serialize italic to html', () => {
 it('serialize highlight to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'highlighted', highlight: true },
@@ -57,7 +57,7 @@ it('serialize highlight to html', () => {
 it('serialize strikethrough to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'strikethrough', strikethrough: true },
@@ -71,7 +71,7 @@ it('serialize strikethrough to html', () => {
 it('serialize code to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'some code', code: true },
@@ -85,7 +85,7 @@ it('serialize code to html', () => {
 it('serialize kbd to html', () => {
   expect(
     htmlStringToDOMNode(
-      serializeHTMLFromNodes(editor, {
+      serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
           { text: 'keyboard shortcut', kbd: true },
@@ -98,7 +98,7 @@ it('serialize kbd to html', () => {
 
 it('serialize subscript to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'subscripted', subscript: true },
@@ -112,7 +112,7 @@ it('serialize subscript to html', () => {
 
 it('serialize superscript to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'superscripted', superscript: true },
@@ -126,7 +126,7 @@ it('serialize superscript to html', () => {
 
 it('serialize underline to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'underlined', underline: true },
@@ -140,7 +140,7 @@ it('serialize underline to html', () => {
 
 it('serialize bold and italic together to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, italic: true },
@@ -154,7 +154,7 @@ it('serialize bold and italic together to html', () => {
 
 it('serialize bold and superscript together to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, superscript: true },
@@ -168,7 +168,7 @@ it('serialize bold and superscript together to html', () => {
 
 it('serialize bold italic and underline together to html', () => {
   expect(
-    serializeHTMLFromNodes(editor, {
+    serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
         { text: 'bold', bold: true, italic: true, underline: true },

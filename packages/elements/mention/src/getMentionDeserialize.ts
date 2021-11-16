@@ -13,7 +13,7 @@ export const getMentionDeserialize = (): Deserialize<{}, MentionPlugin> => (
         type,
         value: el.getAttribute('data-slate-value'),
       }),
-      rules: [{ className: getSlateClass(type!) }],
+      rules: [{ className: getSlateClass(type) }],
     }),
   };
 };

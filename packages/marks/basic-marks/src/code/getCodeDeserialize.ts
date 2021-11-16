@@ -1,10 +1,12 @@
-import { getLeafDeserializer } from '@udecode/plate-common';
+import {
+  findHtmlParentElement,
+  getNodeDeserializer,
+} from '@udecode/plate-common';
 import { Deserialize } from '@udecode/plate-core';
 
 export const getCodeDeserialize = (): Deserialize => (editor, { type }) => {
   return {
-    leaf: getLeafDeserializer({
-      type,
+    leaf: getNodeDeserializer({
       rules: [
         { nodeNames: ['CODE'] },
         {
@@ -13,6 +15,11 @@ export const getCodeDeserialize = (): Deserialize => (editor, { type }) => {
           },
         },
       ],
+      getNode: (element) => {
+        if (!findHtmlParentElement(element, 'PRE')) {
+          return { [type]: true };
+        }
+      },
     }),
   };
 };
