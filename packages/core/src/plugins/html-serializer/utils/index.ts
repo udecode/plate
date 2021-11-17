@@ -7,3 +7,4 @@ export * from './isEncoded';
 export * from './stripClassNames';
 export * from './stripSlateDataAttributes';
 export * from './trimWhitespace';
+export { createElementWithSlate } from './createElementWithSlate';

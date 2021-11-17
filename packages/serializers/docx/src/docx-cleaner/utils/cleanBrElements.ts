@@ -1,4 +1,4 @@
-import { isHtmlComment } from '@udecode/plate-html-serializer';
+import { isHtmlComment } from '@udecode/plate-core';
 import { LINE_FEED } from '../constants';
 import { removeNodesBetweenComments } from './removeNodesBetweenComments';
 import { traverseElements } from './traverseElements';

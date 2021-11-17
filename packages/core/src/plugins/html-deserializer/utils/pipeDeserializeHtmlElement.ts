@@ -1,9 +1,7 @@
-import {
-  AnyObject,
-  DeserializeHtml,
-  Nullable,
-  PlateEditor,
-} from '@udecode/plate-core';
+import {PlateEditor} from "../../../types/PlateEditor";
+import {DeserializeHtml} from "../../../types/plugins/DeserializeHtml";
+import {AnyObject} from "../../../types/utility/AnyObject";
+import {Nullable} from "../../../types/utility/Nullable";
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlElement = <T = {}>(
@@ -13,7 +11,7 @@ export const pipeDeserializeHtmlElement = <T = {}>(
   let result: (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined;
 
   editor.plugins.reverse().some((plugin) => {
-    result = pluginDeserializeHtml(plugin, element);
+    result = pluginDeserializeHtml(plugin, { element });
 
     if (result) return true;
   });

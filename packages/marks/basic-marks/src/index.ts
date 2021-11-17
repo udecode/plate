@@ -10,3 +10,5 @@ export * from './createStrikethroughPlugin';
 export * from './createSubscriptPlugin';
 export * from './createSuperscriptPlugin';
 export * from './createUnderlinePlugin';
+export { deserializeHtmlBold } from './deserializeHtmlBold';
+export { deserializeHtmlItalic } from './deserializeHtmlItalic';

@@ -1,5 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
-import { KEY_DESERIALIZE_HTML } from '@udecode/plate-html-serializer';
+import { createPluginFactory, KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
 import cleanDocx from '../docx-cleaner/cleanDocx';
 
 export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';

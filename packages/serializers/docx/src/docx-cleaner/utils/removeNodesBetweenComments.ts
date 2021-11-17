@@ -1,4 +1,4 @@
-import { isHtmlComment } from '@udecode/plate-html-serializer';
+import { isHtmlComment } from '@udecode/plate-core';
 import { traverseComments } from './traverseComments';
 
 export const removeNodesBetweenComments = (

@@ -39,7 +39,6 @@
   "dependencies": {
     "@udecode/plate-alignment": "7.0.2",
     "@udecode/plate-alignment-ui": "7.0.2",
-    "@udecode/plate-ast-serializer": "7.0.2",
     "@udecode/plate-autoformat": "7.0.2",
     "@udecode/plate-basic-elements": "7.0.2",
     "@udecode/plate-basic-marks": "7.0.2",
@@ -61,7 +60,6 @@
     "@udecode/plate-heading": "7.0.2",
     "@udecode/plate-highlight": "7.0.2",
     "@udecode/plate-horizontal-rule": "7.0.2",
-    "@udecode/plate-html-serializer": "7.0.2",
     "@udecode/plate-image": "7.0.2",
     "@udecode/plate-image-ui": "7.0.2",
     "@udecode/plate-indent": "7.0.2",

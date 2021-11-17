@@ -157,9 +157,7 @@ your code to the project.
 
 | Name                                                                     | Version                                                                                                                                                                                            | Description                 |
 |:-------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------|
-| [`@udecode/plate-html-serializer`](packages/serializers/html) | [<img src="https://img.shields.io/npm/v/@udecode/plate-html-serializer.svg" alt="@udecode/plate-html-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-html-serializer) | HTML serializer plugin.     |
 | [`@udecode/plate-md-serializer`](packages/serializers/md)     | [<img src="https://img.shields.io/npm/v/@udecode/plate-md-serializer.svg" alt="@udecode/plate-md-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-md-serializer)       | Markdown serializer plugin. |
-| [`@udecode/plate-ast-serializer`](packages/serializers/ast)   | [<img src="https://img.shields.io/npm/v/@udecode/plate-ast-serializer.svg" alt="@udecode/plate-ast-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-ast-serializer)    | AST serializer plugin.      |
 | [`@udecode/plate-csv-serializer`](packages/serializers/csv)   | [<img src="https://img.shields.io/npm/v/@udecode/plate-csv-serializer.svg" alt="@udecode/plate-csv-serializer npm package badge">](https://www.npmjs.com/package/@udecode/plate-csv-serializer)    | CSV serializer plugin.      |
 
 ### Plugins

@@ -1,5 +1,6 @@
 import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
+import { deserializeHtmlBold } from './deserializeHtmlBold';
 
 export const MARK_BOLD = 'bold';
 
@@ -9,14 +10,7 @@ export const MARK_BOLD = 'bold';
 export const createBoldPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_BOLD,
   isLeaf: true,
-  deserializeHtml: [
-    { validNodeName: ['STRONG'] },
-    {
-      validStyle: {
-        fontWeight: ['600', '700', 'bold'],
-      },
-    },
-  ],
+  deserializeHtml: deserializeHtmlBold,
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },

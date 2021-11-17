@@ -47,7 +47,7 @@ export const createTablePlugin = createPluginFactory({
       isElement: true,
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
-        rules: [{ validNodeName: 'TH' }],
+        validNodeName: 'TH',
       },
       props: ({ element }) => ({
         nodeProps: {

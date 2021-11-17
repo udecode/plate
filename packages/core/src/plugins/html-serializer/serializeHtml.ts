@@ -1,5 +1,7 @@
-import { PlateEditor, SlateProps, TDescendant } from '@udecode/plate-core';
 import { Text } from 'slate';
+import { PlateEditor } from '../../types/PlateEditor';
+import { SlateProps } from '../../types/slate/SlateProps';
+import { TDescendant } from '../../types/slate/TDescendant';
 import { isEncoded } from './utils/isEncoded';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';

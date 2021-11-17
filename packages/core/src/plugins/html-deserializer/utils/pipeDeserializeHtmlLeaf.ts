@@ -1,4 +1,5 @@
-import { AnyObject, PlateEditor } from '@udecode/plate-core';
+import {PlateEditor} from "../../../types/PlateEditor";
+import {AnyObject} from "../../../types/utility/AnyObject";
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlLeaf = <T = {}>(
@@ -8,9 +9,10 @@ export const pipeDeserializeHtmlLeaf = <T = {}>(
   let node: AnyObject = {};
 
   editor.plugins.reverse().forEach((plugin) => {
-    if (!plugin.isLeaf) return false;
-
-    const deserialized = pluginDeserializeHtml(plugin, element);
+    const deserialized = pluginDeserializeHtml(plugin, {
+      element,
+      isLeaf: true,
+    });
     if (!deserialized) return;
 
     node = { ...node, ...deserialized.node };

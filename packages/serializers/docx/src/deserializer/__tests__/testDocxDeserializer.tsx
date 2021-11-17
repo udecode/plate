@@ -4,7 +4,7 @@ import {
   OverridesByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
-import { createDeserializeHtmlPlugin } from '@udecode/plate-html-serializer';
+import { createDeserializeHtmlPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';

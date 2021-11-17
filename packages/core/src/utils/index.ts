@@ -35,5 +35,5 @@ export * from './pluginRenderElement';
 export * from './pluginRenderLeaf';
 export * from './setDefaultPlugin';
 export * from './setPlatePlugins';
-export * from './withInsertData';
+export * from '../plugins/withInsertData';
 export * from './withPlate';

@@ -1,22 +1,20 @@
-import {
-  AnyObject,
-  DeserializeHtml,
-  Nullable,
-  WithPlatePlugin,
-} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
+import {DeserializeHtml} from "../../../types/plugins/DeserializeHtml";
+import {WithPlatePlugin} from "../../../types/plugins/PlatePlugin";
+import {AnyObject} from "../../../types/utility/AnyObject";
+import {Nullable} from "../../../types/utility/Nullable";
 
 /**
  * Get a deserializer by type, node names, class names and styles.
  */
 export const pluginDeserializeHtml = <T = {}, P = {}>(
   plugin: WithPlatePlugin<T, P>,
-  el: HTMLElement
+  { element: el, isLeaf }: { element: HTMLElement; isLeaf?: boolean }
 ): (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined => {
   const {
     deserializeHtml: _deserializeHtml,
-    isLeaf: isLeafRoot,
     isElement: isElementRoot,
+    isLeaf: isLeafRoot,
     type,
   } = plugin;
 
@@ -35,20 +33,20 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
       attributeNames,
       query,
       isLeaf: _isLeaf,
-      isElement: _isElement,
+      isElement,
     } = deserializeHtml;
     let { getNode } = deserializeHtml;
 
-    const isElement = _isElement ?? isElementRoot;
-    const isLeaf = _isLeaf ?? isLeafRoot;
-    if (!isElement && !isLeaf) return;
+    if (isLeaf && !_isLeaf && !isLeafRoot) {
+      return;
+    }
 
     if (query && !query(el)) {
       return;
     }
 
     if (!getNode) {
-      if (isElement) {
+      if (isElement || isElementRoot) {
         getNode = () => ({ type });
       } else if (isLeaf) {
         getNode = () => ({ [type]: true });
@@ -69,16 +67,8 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
         return false;
     }
 
-    if (el.className === 'SourceCode' && validClassName === 'SourceCode') {
-      console.log(isElement, getNode, isElement);
-    }
-
     // Ignore if the rule className is not in el class list.
     if (validClassName && !el.className.includes(validClassName)) return false;
-
-    if (el.className === 'SourceCode' && validClassName === 'SourceCode') {
-      console.log(isElement, node);
-    }
 
     if (validStyle) {
       for (const [key, value] of Object.entries(validStyle)) {

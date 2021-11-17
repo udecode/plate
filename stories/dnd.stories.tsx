@@ -28,6 +28,7 @@ import { CONFIG } from '../docs/src/live/config/config';
 import { VALUES } from '../docs/src/live/config/values/values';
 import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
+import { createDeserializeHtmlPlugin } from '../packages/core/src/plugins/html-deserializer/createDeserializeHtmlPlugin';
 import { createPlugins } from '../packages/core/src/utils/createPlugins';
 import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
 import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
@@ -58,7 +59,6 @@ import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/createU
 import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
 import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
 import { createPlateUI } from '../packages/plate/src/utils/createPlateUI';
-import { createDeserializeHtmlPlugin } from '../packages/serializers/html/src/deserializer/createDeserializeHtmlPlugin';
 
 export default {
   title: 'Drag & Drop',

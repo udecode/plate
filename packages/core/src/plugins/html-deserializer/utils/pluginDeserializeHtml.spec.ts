@@ -1,6 +1,6 @@
-import { mockPlugin } from '../../../../../core/src/utils/mockPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { mockPlugin } from '../../../utils/mockPlugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });
@@ -17,7 +17,7 @@ describe('when element is p and validNodeName is P', () => {
             validNodeName: 'P',
           },
         }),
-        document.createElement('p')
+        { element: document.createElement('p') }
       )?.node
     ).toEqual(node());
   });
@@ -40,7 +40,7 @@ describe('when element is p with color and rule style is different', () => {
             },
           },
         }),
-        element
+        { element }
       )?.node
     ).not.toEqual(node());
   });
@@ -63,7 +63,7 @@ describe('when element is p with same style color than rule', () => {
             },
           },
         }),
-        element
+        { element }
       )?.node
     ).toEqual(node());
   });
@@ -86,7 +86,7 @@ describe('when element has style color and rule style color is *', () => {
             },
           },
         }),
-        element
+        { element }
       )?.node
     ).toEqual(node());
   });
@@ -106,7 +106,7 @@ describe('when element is strong and validNodeName is strong', () => {
             validNodeName: 'STRONG',
           },
         }),
-        el
+        { element: el, isLeaf: true }
       )?.node
     ).toEqual({ [MARK_BOLD]: true });
   });

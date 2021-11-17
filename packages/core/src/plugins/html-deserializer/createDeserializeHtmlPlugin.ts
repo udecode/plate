@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import {createPluginFactory} from "../../utils/createPluginFactory";
 import { deserializeHtml } from './utils/deserializeHtml';
 
 export const KEY_DESERIALIZE_HTML = 'deserializeHtml';

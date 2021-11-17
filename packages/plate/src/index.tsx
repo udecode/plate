@@ -4,7 +4,6 @@
 
 export * from '@udecode/plate-alignment';
 export * from '@udecode/plate-alignment-ui';
-export * from '@udecode/plate-ast-serializer';
 export * from '@udecode/plate-autoformat';
 export * from '@udecode/plate-basic-elements';
 export * from '@udecode/plate-basic-marks';
@@ -27,7 +26,6 @@ export * from '@udecode/plate-heading';
 export * from '@udecode/plate-highlight';
 export * from '@udecode/plate-horizontal-rule';
 export * from '@udecode/plate-horizontal-rule-ui';
-export * from '@udecode/plate-html-serializer';
 export * from '@udecode/plate-image';
 export * from '@udecode/plate-image-ui';
 export * from '@udecode/plate-indent';

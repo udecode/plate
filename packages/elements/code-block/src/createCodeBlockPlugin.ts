@@ -2,6 +2,7 @@ import { someNode } from '@udecode/plate-common';
 import { createPluginFactory, getPlugin } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 import { decorateCodeLine } from './decorateCodeLine';
+import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlockPre';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 import { CodeBlockPlugin } from './types';
 import { withCodeBlock } from './withCodeBlock';
@@ -25,26 +26,7 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
       isDisabled: isSelectionInCodeLine,
     };
   },
-  deserializeHtml: {
-    validNodeName: 'PRE',
-    getNode: (el) => {
-      let lines = el.textContent?.split('\n');
-
-      if (!lines?.length) {
-        lines = [el.textContent ?? ''];
-      }
-
-      const codeLines = lines.map((line) => ({
-        type: ELEMENT_CODE_LINE,
-        children: [{ text: line }],
-      }));
-
-      return {
-        type: ELEMENT_CODE_BLOCK,
-        children: codeLines,
-      };
-    },
-  },
+  deserializeHtml: deserializeHtmlCodeBlock,
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },

@@ -1,13 +1,11 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { getSlateClass } from '@udecode/plate-core';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { useFindReplacePlugin } from '../../../../../decorators/find-replace/src/useFindReplacePlugin';
 import { createSoftBreakPlugin } from '../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../elements/alignment/src/createAlignPlugin';
 import { createBlockquotePlugin } from '../../../../../elements/block-quote/src/createBlockquotePlugin';
-import { ELEMENT_CODE_LINE } from '../../../../../elements/code-block/src/constants';
 import { createCodeBlockPlugin } from '../../../../../elements/code-block/src/createCodeBlockPlugin';
 import { createHeadingPlugin } from '../../../../../elements/heading/src/createHeadingPlugin';
 import { createImagePlugin } from '../../../../../elements/image/src/createImagePlugin';
@@ -129,11 +127,7 @@ describe('when deserializing all plugins', () => {
   const inlineTags = ['<a href="http://google.com">a</a>'];
 
   const elementTags = [
-    `<pre><code><div class="${getSlateClass(
-      ELEMENT_CODE_LINE
-    )}">code 1</div><div class="${getSlateClass(
-      ELEMENT_CODE_LINE
-    )}">code 2</div></code></pre>`,
+    `<pre><code><div>code 1</div><div>code 2</div></code></pre>`,
     '<ul><li><p>ul-li-p</p></li></ul>',
     '<ol><li><p>ol-li-p</p></li></ol>',
     '<img alt="" src="https://i.imgur.com/removed.png" />',
@@ -170,8 +164,7 @@ describe('when deserializing all plugins', () => {
         <ha url="http://google.com">a</ha>
       </hp>
       <hcodeblock>
-        <text>code 1</text>
-        <text>code 2</text>
+        <hcodeline>code 1code 2</hcodeline>
       </hcodeblock>
       <hul>
         <hli>

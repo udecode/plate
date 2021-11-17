@@ -29,7 +29,6 @@
   "resolutions": {
     "@udecode/plate-alignment": "link:../packages/elements/alignment",
     "@udecode/plate-alignment-ui": "link:../packages/elements/alignment-ui",
-    "@udecode/plate-ast-serializer": "link:../packages/serializers/ast",
     "@udecode/plate-autoformat": "link:../packages/editor/autoformat",
     "@udecode/plate-basic-elements": "link:../packages/elements/basic-elements",
     "@udecode/plate-basic-marks": "link:../packages/marks/basic-marks",
@@ -52,7 +51,6 @@
     "@udecode/plate-highlight": "link:../packages/marks/highlight",
     "@udecode/plate-horizontal-rule": "link:../packages/elements/horizontal-rule",
     "@udecode/plate-horizontal-rule-ui": "link:../packages/elements/horizontal-rule-ui",
-    "@udecode/plate-html-serializer": "link:../packages/serializers/html",
     "@udecode/plate-image": "link:../packages/elements/image",
     "@udecode/plate-image-ui": "link:../packages/elements/image-ui",
     "@udecode/plate-indent": "link:../packages/blocks/indent",

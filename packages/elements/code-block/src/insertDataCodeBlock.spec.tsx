@@ -2,7 +2,6 @@
 
 import { createDeserializeHtmlPlugin } from '@udecode/plate';
 import { createPlateUIEditor } from '@udecode/plate/src/utils/createPlateUIEditor';
-import { createDeserializeAstPlugin } from '@udecode/plate-ast-serializer';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

@@ -1,11 +1,15 @@
 /** @jsx jsx */
-import {createDeserializeHtmlPlugin} from '@udecode/plate-html-serializer';
-import {jsx} from '@udecode/plate-test-utils';
-import {createBasicElementsPlugin} from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
-import {ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE,} from '../../../../../elements/code-block/src/constants';
-import {ELEMENT_PARAGRAPH} from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import {createDeserializeDocxPlugin} from '../createDeserializeDocxPlugin';
-import {getDocxTestName, testDocxDeserializer} from './testDocxDeserializer';
+import { createDeserializeHtmlPlugin } from '@udecode/plate-core';
+import { jsx } from '@udecode/plate-test-utils';
+import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import {
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+} from '../../../../../elements/code-block/src/constants';
+import { deserializeHtmlCodeBlock } from '../../../../../elements/code-block/src/deserializeHtmlCodeBlockPre';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
+import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
 
@@ -44,6 +48,7 @@ describe(getDocxTestName(name), () => {
       },
       [ELEMENT_CODE_BLOCK]: {
         deserializeHtml: [
+          ...deserializeHtmlCodeBlock,
           {
             validClassName: 'SourceCode',
             getNode: null,

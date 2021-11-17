@@ -1,9 +1,9 @@
 import { WithOverride } from '../types/plugins/WithOverride';
-import { getInjectedPlugins } from './getInjectedPlugins';
-import { isPluginDisabled } from './isPluginDisabled';
-import { pipeInsertFragment } from './pipeInsertFragment';
-import { pipeTransformData } from './pipeTransformData';
-import { pipeTransformFragment } from './pipeTransformFragment';
+import { getInjectedPlugins } from '../utils/getInjectedPlugins';
+import { isPluginDisabled } from '../utils/isPluginDisabled';
+import { pipeInsertFragment } from '../utils/pipeInsertFragment';
+import { pipeTransformData } from '../utils/pipeTransformData';
+import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 
 export const withInsertData: WithOverride = (editor) => {
   const { insertData } = editor;

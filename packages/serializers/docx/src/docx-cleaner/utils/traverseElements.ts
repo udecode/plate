@@ -1,4 +1,4 @@
-import { isHtmlElement } from '@udecode/plate-html-serializer';
+import { isHtmlElement } from '@udecode/plate-core';
 import { traverse } from './traverse';
 
 type Callback = (node: Element) => boolean;

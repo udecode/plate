@@ -60,7 +60,6 @@ describe(getDocxTestName(name), () => {
             validNodeName: ['STRONG', 'B'],
             query: (el) => {
               return !(
-                ['STRONG', 'B'].includes(el.nodeName) &&
                 (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
               );
             },
@@ -74,6 +73,7 @@ describe(getDocxTestName(name), () => {
       },
       [MARK_ITALIC]: {
         deserializeHtml: {
+          validNodeName: ['EM', 'I'],
           query: (el) => {
             return !(
               el.nodeName === 'EM' &&

@@ -1,5 +1,5 @@
 import defaults from 'lodash/defaults';
-import { applyDeepToNodes, ApplyDeepToNodesOptions } from './applyDeepToNodes';
+import {applyDeepToNodes, ApplyDeepToNodesOptions} from "../../../core/src/utils/applyDeepToNodes";
 
 /**
  * Recursively merge a source object to children nodes with a query.

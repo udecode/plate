@@ -9,12 +9,12 @@ import {
 import { render } from '@testing-library/react';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import {
+  createDeserializeHtmlPlugin,
   createHistoryPlugin,
   createPlugins,
   createReactPlugin,
 } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createDeserializeHtmlPlugin } from '@udecode/plate-html-serializer';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
