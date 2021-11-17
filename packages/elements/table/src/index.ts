@@ -3,7 +3,6 @@
  */
 
 export * from './createTablePlugin';
-export * from './getTableDeserialize';
 export * from './onKeyDownTable';
 export * from './types';
 export * from './withTable';

@@ -35,8 +35,7 @@
   },
   "dependencies": {
     "@udecode/plate-common": "7.0.2",
-    "@udecode/plate-core": "7.0.2",
-    "@udecode/plate-serializer": "7.0.2"
+    "@udecode/plate-core": "7.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

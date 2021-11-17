@@ -35,10 +35,10 @@ const isValidCsv = (
 export const deserializeCsv = <T = {}>(
   editor: PlateEditor<T>,
   {
-    content,
+    data,
     header = false,
   }: {
-    content: string;
+    data: string;
     header?: boolean;
   }
 ): TDescendant[] | undefined => {
@@ -47,10 +47,10 @@ export const deserializeCsv = <T = {}>(
   } = getPlugin<DeserializeCsvPlugin, T>(editor, KEY_DESERIALIZE_CSV);
 
   // Verify it's a csv string
-  const testCsv = parse(content, { preview: 2 });
+  const testCsv = parse(data, { preview: 2 });
 
   if (testCsv.errors.length === 0) {
-    const csv = parse(content, { header });
+    const csv = parse(data, { header });
 
     if (
       !isValidCsv(

@@ -2,9 +2,9 @@
 
 import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
-import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/underline/createUnderlinePlugin';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/createItalicPlugin';
+import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/createUnderlinePlugin';
 import { createAutoformatPlugin } from '../../createAutoformatPlugin';
 
 jsx;

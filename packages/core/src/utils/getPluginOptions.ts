@@ -1,5 +1,5 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { PluginKey } from '../types/plugins/PlatePlugin/PlatePluginKey';
+import { PluginKey } from '../types/plugins/PlatePluginKey';
 import { getPlugin } from './getPlugin';
 
 export const getPluginOptions = <P = {}, T = {}>(

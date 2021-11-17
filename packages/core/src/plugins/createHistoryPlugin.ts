@@ -1,5 +1,5 @@
 import { withHistory } from 'slate-history';
-import { WithOverride } from '../types/plugins/PlatePlugin/WithOverride';
+import { WithOverride } from '../types/plugins/WithOverride';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 /**

@@ -3,8 +3,8 @@ import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import { OverridesByKey } from '../types/OverridesByKey';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
 import { createPlugins } from './createPlugins';
 import { withPlate } from './withPlate';
 

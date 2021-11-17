@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash';
 import { OverridesByKey } from '../types/OverridesByKey';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PlatePluginComponent } from '../types/plugins/PlatePlugin/PlatePluginComponent';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
 export const createPlugins = <T extends {} = {}>(

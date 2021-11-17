@@ -43,7 +43,6 @@
     "@udecode/plate-link": "7.0.2",
     "@udecode/plate-list": "7.0.2",
     "@udecode/plate-paragraph": "7.0.2",
-    "@udecode/plate-serializer": "7.0.2",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"

@@ -1,5 +1,4 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getExcalidrawDeserialize } from './getExcalidrawDeserialize';
 
 export const ELEMENT_EXCALIDRAW = 'excalidraw';
 
@@ -10,5 +9,4 @@ export const createExcalidrawPlugin = createPluginFactory({
   key: ELEMENT_EXCALIDRAW,
   isElement: true,
   isVoid: true,
-  deserialize: getExcalidrawDeserialize(),
 });

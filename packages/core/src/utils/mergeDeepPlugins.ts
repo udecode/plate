@@ -3,14 +3,14 @@ import keyBy from 'lodash/keyBy';
 import merge from 'lodash/merge';
 import values from 'lodash/values';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 
 /**
  * Recursively merge nested plugins into the the root plugins
  */
 export const mergeDeepPlugins = <
   T = {},
-  P extends PlatePlugin<T> = PlatePlugin<T>
+  P extends WithPlatePlugin<T> = WithPlatePlugin<T>
 >(
   editor: PlateEditor<T>,
   _plugin: P

@@ -1,6 +1,5 @@
 import { isUrl as isUrlProtocol } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
-import { getLinkDeserialize } from './getLinkDeserialize';
 import { onKeyDownLink } from './onKeyDownLink';
 import { LinkPlugin } from './types';
 import { withLink } from './withLink';
@@ -14,7 +13,6 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
-  deserialize: getLinkDeserialize(),
   props: ({ element }) => ({ nodeProps: { url: element?.url } }),
   handlers: {
     onKeyDown: onKeyDownLink,
@@ -30,4 +28,13 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
     },
     hotkey: 'mod+k',
   },
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (el) => ({
+        type,
+        url: el.getAttribute('href'),
+      }),
+      validNodeName: 'A',
+    },
+  }),
 });

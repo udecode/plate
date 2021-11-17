@@ -4,8 +4,8 @@ import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
 import { RenderElement } from '../types/RenderElement';
-import { getRenderElement } from './getRenderElement';
 import { pipeInjectProps } from './pipeInjectProps';
+import { pluginRenderElement } from './pluginRenderElement';
 
 /**
  * @see {@link RenderElement}
@@ -18,7 +18,7 @@ export const pipeRenderElement = (
 
   editor.plugins.forEach((plugin) => {
     if (plugin.isElement) {
-      renderElements.push(getRenderElement(editor, plugin));
+      renderElements.push(pluginRenderElement(editor, plugin));
     }
   });
 

@@ -2,7 +2,7 @@ import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 

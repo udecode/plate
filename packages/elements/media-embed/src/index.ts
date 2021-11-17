@@ -3,6 +3,5 @@
  */
 
 export * from './createMediaEmbedPlugin';
-export * from './getMediaEmbedDeserialize';
 export * from './types';
 export * from './transforms/index';

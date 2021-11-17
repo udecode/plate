@@ -1,11 +1,11 @@
 /** @jsx jsx */
-import { jsx } from '@udecode/plate-test-utils';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-} from '../../../../../elements/code-block/src/constants';
-import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
+import {createDeserializeHtmlPlugin} from '@udecode/plate-html-serializer';
+import {jsx} from '@udecode/plate-test-utils';
+import {createBasicElementsPlugin} from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import {ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE,} from '../../../../../elements/code-block/src/constants';
+import {ELEMENT_PARAGRAPH} from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import {createDeserializeDocxPlugin} from '../createDeserializeDocxPlugin';
+import {getDocxTestName, testDocxDeserializer} from './testDocxDeserializer';
 
 jsx;
 
@@ -29,24 +29,30 @@ describe(getDocxTestName(name), () => {
         <hp>from the beginning of the docx reader.</hp>
       </editor>
     ),
-    plugins: [createBasicElementsPlugin()],
+    plugins: [
+      createBasicElementsPlugin(),
+      createDeserializeHtmlPlugin(),
+      createDeserializeDocxPlugin(),
+    ],
     overrides: {
-      [ELEMENT_CODE_BLOCK]: {
-        deserialize: {
-          rules: [
-            {
-              className: 'SourceCode',
-            },
-          ],
+      [ELEMENT_PARAGRAPH]: {
+        deserializeHtml: {
+          query: (el) => {
+            return !el.classList.contains('SourceCode');
+          },
         },
       },
+      [ELEMENT_CODE_BLOCK]: {
+        deserializeHtml: [
+          {
+            validClassName: 'SourceCode',
+            getNode: null,
+          },
+        ],
+      },
       [ELEMENT_CODE_LINE]: {
-        deserialize: {
-          rules: [
-            {
-              className: 'VerbatimChar',
-            },
-          ],
+        deserializeHtml: {
+          validClassName: 'VerbatimChar',
         },
       },
     },

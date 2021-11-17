@@ -5,7 +5,6 @@
 export * from './constants';
 export * from './createCodeBlockPlugin';
 export * from './decorateCodeLine';
-export * from './getCodeBlockDeserialize';
 export * from './insertFragmentCodeBlock';
 export * from './onKeyDownCodeBlock';
 export * from './types';

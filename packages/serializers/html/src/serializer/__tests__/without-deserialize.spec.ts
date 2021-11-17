@@ -6,7 +6,7 @@ import { serializeHtml } from '../serializeHtml';
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
     const plugin = createParagraphPlugin({
-      deserialize: null,
+      serializeHtml: null,
     });
 
     expect(

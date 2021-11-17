@@ -6,7 +6,6 @@ export * from './createListPlugin';
 export * from './deleteBackwardList';
 export * from './deleteForwardList';
 export * from './deleteFragmentList';
-export * from './getListDeserialize';
 export * from './insertBreakList';
 export * from './insertFragmentList';
 export * from './onKeyDownList';

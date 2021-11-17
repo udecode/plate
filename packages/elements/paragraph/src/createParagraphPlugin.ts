@@ -1,6 +1,5 @@
 import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
-import { getParagraphDeserialize } from './getParagraphDeserialize';
 
 export const ELEMENT_PARAGRAPH = 'p';
 
@@ -10,11 +9,11 @@ export const ELEMENT_PARAGRAPH = 'p';
 export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
-  deserialize: getParagraphDeserialize(),
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },
   options: {
     hotkey: ['mod+opt+0', 'mod+shift+0'],
   },
+  deserializeHtml: { validNodeName: 'P' },
 });

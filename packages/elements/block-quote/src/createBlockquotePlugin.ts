@@ -1,6 +1,5 @@
 import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
-import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
@@ -11,7 +10,9 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote';
 export const createBlockquotePlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_BLOCKQUOTE,
   isElement: true,
-  deserialize: getBlockquoteDeserialize(),
+  deserializeHtml: {
+    validNodeName: 'BLOCKQUOTE',
+  },
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

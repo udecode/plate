@@ -3,7 +3,7 @@ import { createEditor, Editor } from 'slate';
 import { usePlateActions } from '../../stores/plate/plate.actions';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
-import { PlatePlugin } from '../../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
 import { withPlate } from '../../utils/withPlate';

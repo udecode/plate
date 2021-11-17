@@ -1,12 +1,11 @@
 /** @jsx jsx */
 
-import { getElementDeserializer } from '@udecode/plate-common';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 import { createImagePlugin } from '../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../elements/link/src/createLinkPlugin';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -31,17 +30,16 @@ describe('when element has class and attribute, and plugin has deserialize type,
           plugins: [
             {
               key: 'a',
-              deserialize: () => ({
-                element: getElementDeserializer({
+              type: 'poll',
+              deserializeHtml: {
+                isElement: true,
+                getNode: (el) => ({
                   type: 'poll',
-                  getNode: (el) => ({
-                    type: 'poll',
-                    id: el.getAttribute('data-id'),
-                  }),
-                  rules: [{ className: 'poll' }],
-                  withoutChildren: true,
+                  id: el.getAttribute('data-id'),
                 }),
-              }),
+                validClassName: 'poll',
+                withoutChildren: true,
+              },
             },
           ],
         }),
@@ -149,7 +147,7 @@ describe('when plugin has deserialize.attributeNames', () => {
   const editor = createPlateUIEditor({
     plugins: [
       createImagePlugin({
-        deserialize: {
+        deserializeHtml: {
           attributeNames: ['alt'],
         },
       }),
@@ -181,7 +179,7 @@ describe('when plugin has deserialize.getNode', () => {
     plugins: [
       createParagraphPlugin(),
       createLinkPlugin({
-        deserialize: {
+        deserializeHtml: {
           getNode: (el) => ({
             type: 'a',
             url: el.getAttribute('href'),
@@ -209,13 +207,15 @@ describe('when plugin has deserialize.getNode', () => {
   });
 });
 
-describe('when plugin has deserialize.rules.nodeNames', () => {
+describe('when plugin has deserialize.rules.validNodeName', () => {
   const html = `<html><body><p><b>strong</b></p></body></html>`;
 
   const editor = createPlateUIEditor({
     plugins: [
       createParagraphPlugin(),
-      createBoldPlugin({ deserialize: { rules: [{ nodeNames: ['B'] }] } }),
+      createBoldPlugin({
+        deserializeHtml: { validNodeName: ['B'] },
+      }),
     ],
   });
 

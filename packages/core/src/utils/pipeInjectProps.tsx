@@ -1,5 +1,5 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { getInjectProps } from './getInjectProps';
+import { pluginInjectProps } from './pluginInjectProps';
 
 /**
  * Inject plugin props, editor.
@@ -7,7 +7,7 @@ import { getInjectProps } from './getInjectProps';
 export const pipeInjectProps = <T,>(editor: PlateEditor, nodeProps: any): T => {
   editor.plugins.forEach((plugin) => {
     if (plugin.inject.props) {
-      const props = getInjectProps(editor, { plugin, nodeProps });
+      const props = pluginInjectProps(editor, plugin, nodeProps);
 
       if (props) {
         nodeProps = {

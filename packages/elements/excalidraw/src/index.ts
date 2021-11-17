@@ -3,7 +3,6 @@
  */
 
 export * from './createExcalidrawPlugin';
-export * from './getExcalidrawDeserialize';
 export * from './types';
 export * from './components/index';
 export * from './transforms/index';

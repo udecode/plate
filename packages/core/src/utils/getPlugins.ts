@@ -1,5 +1,5 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
 
 /**
  * Get `editor.plugins`

@@ -3,5 +3,4 @@
  */
 
 export * from './createTodoListPlugin';
-export * from './getTodoListDeserialize';
 export * from './types';

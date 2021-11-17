@@ -23,7 +23,7 @@ A plugin to add an element: a paragraph as a block controlled by slate:
 export const createParagraphPlugin = createPluginFactory({
   key: ELEMENT_PARAGRAPH,
   isElement: true,
-  deserialize: getParagraphDeserialize(),
+  deserializeHtml: getParagraphDeserialize(),
   onKeyDown: onKeyDownToggleElement,
 })
 ```
@@ -47,7 +47,7 @@ export const createTagPlugin = createPluginFactory({
   isElement: true,
   isInline: true,
   isVoid: true,
-  deserialize: getTagDeserialize(),
+  deserializeHtml: getTagDeserialize(),
 })
 ```
 
@@ -64,7 +64,7 @@ Finally, a plugin to add a leaf: a highlight mark.
 export const createHighlightPlugin = createPluginFactory({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
-  deserialize: getHighlightDeserialize(),
+  deserializeHtml: getHighlightDeserialize(),
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },

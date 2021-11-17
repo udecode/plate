@@ -1,11 +1,11 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { createBoldPlugin } from './bold/createBoldPlugin';
-import { createCodePlugin } from './code/createCodePlugin';
-import { createItalicPlugin } from './italic/createItalicPlugin';
-import { createStrikethroughPlugin } from './strikethrough/createStrikethroughPlugin';
-import { createSubscriptPlugin } from './subscript/createSubscriptPlugin';
-import { createSuperscriptPlugin } from './superscript/createSuperscriptPlugin';
-import { createUnderlinePlugin } from './underline/createUnderlinePlugin';
+import { createBoldPlugin } from './createBoldPlugin';
+import { createCodePlugin } from './createCodePlugin';
+import { createItalicPlugin } from './createItalicPlugin';
+import { createStrikethroughPlugin } from './createStrikethroughPlugin';
+import { createSubscriptPlugin } from './createSubscriptPlugin';
+import { createSuperscriptPlugin } from './createSuperscriptPlugin';
+import { createUnderlinePlugin } from './createUnderlinePlugin';
 
 /**
  * Enables support for basic marks:

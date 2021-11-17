@@ -3,4 +3,3 @@
  */
 
 export * from './createHorizontalRulePlugin';
-export * from './getHorizontalRuleDeserialize';

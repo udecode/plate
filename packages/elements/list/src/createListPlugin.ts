@@ -1,10 +1,5 @@
+import { findNode } from '@udecode/plate-common';
 import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
-import {
-  getLicDeserialize,
-  getLiDeserialize,
-  getOlDeserialize,
-  getUlDeserialize,
-} from './getListDeserialize';
 import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';
@@ -23,11 +18,11 @@ export const createListPlugin = createPluginFactory({
     {
       key: ELEMENT_UL,
       isElement: true,
-      deserialize: getUlDeserialize(),
       handlers: {
         onKeyDown: onKeyDownList,
       },
       withOverrides: withList,
+      deserializeHtml: { validNodeName: 'UL' },
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_OL,
@@ -35,17 +30,29 @@ export const createListPlugin = createPluginFactory({
       handlers: {
         onKeyDown: onKeyDownList,
       },
-      deserialize: getOlDeserialize(),
+      deserializeHtml: { validNodeName: 'OL' },
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_LI,
       isElement: true,
-      deserialize: getLiDeserialize(),
+      injectPlugin: (editor, { key, type }) => {
+        if (key === 'deserializeHtml') {
+          return {
+            preInsert: () => {
+              const liEntry = findNode(editor, { match: { type } });
+
+              if (liEntry) {
+                return true;
+              }
+            },
+          };
+        }
+      },
+      deserializeHtml: { validNodeName: 'LI' },
     },
     {
       key: ELEMENT_LIC,
       isElement: true,
-      deserialize: getLicDeserialize(),
     },
   ],
 });

@@ -4,5 +4,4 @@
 
 export * from './createDeserializeCsvPlugin';
 export * from './types';
-export * from './withDeserializeCsv';
 export * from './utils/index';

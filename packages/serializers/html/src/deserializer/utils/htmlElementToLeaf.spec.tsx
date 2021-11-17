@@ -3,8 +3,8 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { createItalicPlugin } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '../../../../../marks/basic-marks/src/createItalicPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import {
   htmlElementToLeaf,

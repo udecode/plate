@@ -4,7 +4,7 @@ import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { onKeyDownToggleMark } from '@udecode/plate-common';
 import { getPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 
 jsx;

@@ -76,7 +76,6 @@
     "@udecode/plate-popper": "link:../packages/ui/popper",
     "@udecode/plate-reset-node": "link:../packages/editor/reset-node",
     "@udecode/plate-select": "link:../packages/editor/select",
-    "@udecode/plate-serializer": "link:../packages/serializers/serializer",
     "@udecode/plate-styled-components": "link:../packages/ui/styled-components",
     "@udecode/plate-table": "link:../packages/elements/table",
     "@udecode/plate-table-ui": "link:../packages/elements/table-ui",

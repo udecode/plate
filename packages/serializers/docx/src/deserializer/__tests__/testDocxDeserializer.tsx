@@ -4,8 +4,9 @@ import {
   OverridesByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
+import { createDeserializeHtmlPlugin } from '@udecode/plate-html-serializer';
 import { jsx } from '@udecode/plate-test-utils';
-import { readTestFile } from '../../readTestFile';
+import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
 
 jsx;
@@ -39,13 +40,17 @@ export const testDocxDeserializer = ({
   it('should deserialize', () => {
     const actual = createPlateEditor({
       editor: input,
-      plugins: [...plugins, createDeserializeDocxPlugin({ plugins })],
+      plugins: [
+        ...plugins,
+        createDeserializeHtmlPlugin(),
+        createDeserializeDocxPlugin({ plugins }),
+      ],
       overrides,
     });
 
     actual.insertData(
       createClipboardData(
-        readTestFile(`deserializer/__tests__/${filename}.html`)
+        readTestFile(`../deserializer/__tests__/${filename}.html`)
       )
     );
 

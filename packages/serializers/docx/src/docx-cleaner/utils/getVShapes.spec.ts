@@ -1,4 +1,4 @@
-import { readTestFile } from '../../readTestFile';
+import { readTestFile } from '../../__tests__/readTestFile';
 import { getVShapes } from './getVShapes';
 
 const parser = new DOMParser();
@@ -6,7 +6,7 @@ const parser = new DOMParser();
 describe('getVShapes', () => {
   it('Extracts spids of all v:shapes', () => {
     const input = parser.parseFromString(
-      readTestFile('docx-cleaner/__tests__/input/v-shapes.html'),
+      readTestFile('../docx-cleaner/__tests__/input/v-shapes.html'),
       'text/html'
     );
 

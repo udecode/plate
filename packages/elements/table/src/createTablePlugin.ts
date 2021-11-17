@@ -1,10 +1,4 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import {
-  getTableDeserialize,
-  getTdDeserialize,
-  getThDeserialize,
-  getTrDeserialize,
-} from './getTableDeserialize';
 import { onKeyDownTable } from './onKeyDownTable';
 import { withTable } from './withTable';
 
@@ -19,21 +13,28 @@ export const ELEMENT_TD = 'td';
 export const createTablePlugin = createPluginFactory({
   key: ELEMENT_TABLE,
   isElement: true,
-  deserialize: getTableDeserialize(),
   handlers: {
     onKeyDown: onKeyDownTable,
+  },
+  deserializeHtml: {
+    validNodeName: 'TABLE',
   },
   withOverrides: withTable,
   plugins: [
     {
       key: ELEMENT_TR,
       isElement: true,
-      deserialize: getTrDeserialize(),
+      deserializeHtml: {
+        validNodeName: 'TR',
+      },
     },
     {
       key: ELEMENT_TD,
       isElement: true,
-      deserialize: getTdDeserialize(),
+      deserializeHtml: {
+        attributeNames: ['rowspan', 'colspan'],
+        validNodeName: 'TD',
+      },
       props: ({ element }) => ({
         nodeProps: {
           colSpan: element?.attributes?.colspan,
@@ -44,7 +45,10 @@ export const createTablePlugin = createPluginFactory({
     {
       key: ELEMENT_TH,
       isElement: true,
-      deserialize: getThDeserialize(),
+      deserializeHtml: {
+        attributeNames: ['rowspan', 'colspan'],
+        rules: [{ validNodeName: 'TH' }],
+      },
       props: ({ element }) => ({
         nodeProps: {
           colSpan: element?.attributes?.colspan,

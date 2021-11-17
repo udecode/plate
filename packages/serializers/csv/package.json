@@ -36,7 +36,6 @@
   "dependencies": {
     "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
-    "@udecode/plate-serializer": "7.0.2",
     "@udecode/plate-table": "7.0.2",
     "papaparse": "^5.3.1"
   },

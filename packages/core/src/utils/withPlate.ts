@@ -3,9 +3,10 @@ import { createInlineVoidPlugin } from '../plugins/createInlineVoidPlugin';
 import { createReactPlugin } from '../plugins/createReactPlugin';
 import { setEventEditorId } from '../stores/event-editor/actions/setEventEditorId';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { TEditor } from '../types/slate/TEditor';
 import { setPlatePlugins } from './setPlatePlugins';
+import { withInsertData } from './withInsertData';
 
 export interface WithPlateOptions<T = {}> {
   id?: string | null;
@@ -48,6 +49,10 @@ export const withPlate = <T = {}>(
       },
     },
     ...plugins,
+    {
+      key: 'insertData',
+      withOverrides: withInsertData as any,
+    },
   ]);
 
   // withOverrides

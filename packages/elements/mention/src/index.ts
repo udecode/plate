@@ -3,7 +3,6 @@
  */
 
 export * from './createMentionPlugin';
-export * from './getMentionDeserialize';
 export * from './getMentionOnSelectItem';
 export * from './moveSelectionByOffset';
 export * from './types';

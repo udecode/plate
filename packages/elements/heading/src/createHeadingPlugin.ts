@@ -1,7 +1,6 @@
 import { onKeyDownToggleElement } from '@udecode/plate-common';
 import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
 import { KEYS_HEADING } from './constants';
-import { getHeadingDeserialize } from './getHeadingDeserialize';
 import { HeadingPlugin, HeadingsPlugin } from './types';
 
 /**
@@ -22,7 +21,9 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
       const plugin: PlatePlugin<{}, HeadingPlugin> = {
         key,
         isElement: true,
-        deserialize: getHeadingDeserialize(),
+        deserializeHtml: {
+          validNodeName: `H${level}`,
+        },
         handlers: {
           onKeyDown: onKeyDownToggleElement,
         },

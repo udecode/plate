@@ -1,12 +1,9 @@
-import { TEditor, TNode as TTNode } from '@udecode/plate-core';
+import { TEditor, TNode } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { SetNodesOptions } from '../types/Transforms.types';
 
-export const setNodes = <
-  TNode extends TTNode = TTNode,
-  TNodeMatch extends TTNode = TTNode
->(
+export const setNodes = <T extends TNode = TNode>(
   editor: TEditor,
-  props: Partial<TNode>,
+  props: Partial<T>,
   options?: SetNodesOptions
-) => Transforms.setNodes<TNodeMatch>(editor, props, options as any);
+) => Transforms.setNodes<T>(editor, props, options as any);

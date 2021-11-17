@@ -52,8 +52,7 @@ describe(getDocxTestName(name), () => {
     ],
     overrides: {
       [ELEMENT_PARAGRAPH]: {
-        deserialize: {
-          rules: [{ nodeNames: 'P' }],
+        deserializeHtml: {
           getNode: (el) => {
             console.log(el.className);
             console.log(el.style['mso-list']);

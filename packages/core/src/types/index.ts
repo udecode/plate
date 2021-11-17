@@ -3,6 +3,7 @@
  */
 
 export * from './EventEditorStore';
+export * from './OverridesByKey';
 export * from './PlateEditor';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
@@ -17,4 +18,3 @@ export * from './UseSlatePropsOptions';
 export * from './plugins/index';
 export * from './slate/index';
 export * from './utility/index';
-export * from './OverridesByKey';

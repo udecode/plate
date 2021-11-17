@@ -1,13 +1,9 @@
 import { mergeDeepToNodes } from '@udecode/plate-common';
-import {
-  AnyObject,
-  isElement,
-  PlateEditor,
-  TDescendant,
-} from '@udecode/plate-core';
+import { isElement, PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHtmlChildren } from '../types';
+import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 
 jsx;
 
@@ -24,28 +20,16 @@ export const htmlElementToLeaf = <T = {}>(
   editor: PlateEditor<T>,
   { element, children }: HtmlElementToLeafOptions
 ) => {
-  let leaf: AnyObject = {};
-
-  editor.plugins.forEach((plugin) => {
-    const deserializers = plugin.deserialize?.(editor, plugin).leaf;
-    if (!deserializers) return;
-
-    deserializers.forEach((deserializer) => {
-      const deserialized = deserializer.deserialize(element);
-      if (!deserialized) return;
-
-      leaf = { ...leaf, ...deserialized };
-    });
-  });
+  const node = pipeDeserializeHtmlLeaf(editor, element);
 
   return children.reduce((arr: TDescendant[], child) => {
     if (!child) return arr;
 
     if (isElement(child)) {
-      if (Object.keys(leaf).length) {
+      if (Object.keys(node).length) {
         mergeDeepToNodes({
           node: child,
-          source: leaf,
+          source: node,
           query: {
             filter: ([n]) => Text.isText(n),
           },
@@ -53,7 +37,7 @@ export const htmlElementToLeaf = <T = {}>(
       }
       arr.push(child);
     } else {
-      arr.push(jsx('text', leaf, child));
+      arr.push(jsx('text', node, child));
     }
 
     return arr;

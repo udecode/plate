@@ -1,4 +1,4 @@
-import { PlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from './plugins/PlatePlugin';
 import { EditorId, PlateState } from './PlateStore';
 
 /**

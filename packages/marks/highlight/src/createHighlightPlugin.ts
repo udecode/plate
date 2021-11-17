@@ -1,6 +1,5 @@
 import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
 import { createPluginFactory } from '@udecode/plate-core';
-import { getHighlightDeserialize } from './getHighlightDeserialize';
 
 export const MARK_HIGHLIGHT = 'highlight';
 
@@ -11,9 +10,11 @@ export const MARK_HIGHLIGHT = 'highlight';
 export const createHighlightPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_HIGHLIGHT,
   isLeaf: true,
-  deserialize: getHighlightDeserialize(),
   handlers: {
     onKeyDown: onKeyDownToggleMark,
+  },
+  deserializeHtml: {
+    validNodeName: ['MARK'],
   },
   options: {
     hotkey: 'mod+shift+h',

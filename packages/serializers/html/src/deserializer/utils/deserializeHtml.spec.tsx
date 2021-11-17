@@ -13,36 +13,18 @@ import { createHeadingPlugin } from '../../../../../elements/heading/src/createH
 import { createImagePlugin } from '../../../../../elements/image/src/createImagePlugin';
 import { createLinkPlugin } from '../../../../../elements/link/src/createLinkPlugin';
 import { createListPlugin } from '../../../../../elements/list/src/createListPlugin';
-import {
-  createTodoListPlugin,
-  ELEMENT_TODO_LI,
-} from '../../../../../elements/list/src/todo-list/createTodoListPlugin';
-import { CLASS_TODO_LIST_CHECKED } from '../../../../../elements/list/src/todo-list/getTodoListDeserialize';
 import { createMediaEmbedPlugin } from '../../../../../elements/media-embed/src/createMediaEmbedPlugin';
-import {
-  createMentionPlugin,
-  ELEMENT_MENTION,
-} from '../../../../../elements/mention/src/createMentionPlugin';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
-import { getBoldDeserialize } from '../../../../../marks/basic-marks/src/bold/getBoldDeserialize';
-import { MARK_CODE } from '../../../../../marks/basic-marks/src/code/createCodePlugin';
-import { getCodeDeserialize } from '../../../../../marks/basic-marks/src/code/getCodeDeserialize';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
-import { getItalicDeserialize } from '../../../../../marks/basic-marks/src/italic/getItalicDeserialize';
-import { MARK_STRIKETHROUGH } from '../../../../../marks/basic-marks/src/strikethrough/createStrikethroughPlugin';
-import { getStrikethroughDeserialize } from '../../../../../marks/basic-marks/src/strikethrough/getStrikethroughDeserialize';
-import { MARK_SUBSCRIPT } from '../../../../../marks/basic-marks/src/subscript/createSubscriptPlugin';
-import { getSubscriptDeserialize } from '../../../../../marks/basic-marks/src/subscript/getSubscriptDeserialize';
-import { MARK_SUPERSCRIPT } from '../../../../../marks/basic-marks/src/superscript/createSuperscriptPlugin';
-import { getSuperscriptDeserialize } from '../../../../../marks/basic-marks/src/superscript/getSuperscriptDeserialize';
-import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/underline/createUnderlinePlugin';
-import { getUnderlineDeserialize } from '../../../../../marks/basic-marks/src/underline/getUnderlineDeserialize';
-import { MARK_HIGHLIGHT } from '../../../../../marks/highlight/src/createHighlightPlugin';
-import { getHighlightDeserialize } from '../../../../../marks/highlight/src/getHighlightDeserialize';
-import { MARK_KBD } from '../../../../../marks/kbd/src/createKbdPlugin';
-import { getKbdDeserialize } from '../../../../../marks/kbd/src/getKbdDeserialize';
+import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { createCodePlugin } from '../../../../../marks/basic-marks/src/createCodePlugin';
+import { createItalicPlugin } from '../../../../../marks/basic-marks/src/createItalicPlugin';
+import { createStrikethroughPlugin } from '../../../../../marks/basic-marks/src/createStrikethroughPlugin';
+import { createSubscriptPlugin } from '../../../../../marks/basic-marks/src/createSubscriptPlugin';
+import { createSuperscriptPlugin } from '../../../../../marks/basic-marks/src/createSuperscriptPlugin';
+import { createUnderlinePlugin } from '../../../../../marks/basic-marks/src/createUnderlinePlugin';
+import { createHighlightPlugin } from '../../../../../marks/highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '../../../../../marks/kbd/src/createKbdPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
@@ -144,12 +126,7 @@ describe('when deserializing all plugins', () => {
     '<sup>sup</sup>',
   ];
 
-  const inlineTags = [
-    '<a href="http://google.com">a</a>',
-    `<span data-slate-value="mention" class="${getSlateClass(
-      ELEMENT_MENTION
-    )}" />`,
-  ];
+  const inlineTags = ['<a href="http://google.com">a</a>'];
 
   const elementTags = [
     `<pre><code><div class="${getSlateClass(
@@ -161,10 +138,6 @@ describe('when deserializing all plugins', () => {
     '<ol><li><p>ol-li-p</p></li></ol>',
     '<img alt="" src="https://i.imgur.com/removed.png" />',
     '<table><tr><td>table</td></tr></table>',
-    `<div class="${getSlateClass(
-      ELEMENT_TODO_LI
-    )} ${CLASS_TODO_LIST_CHECKED}">checked</div>`,
-    `<div class="${getSlateClass(ELEMENT_TODO_LI)}">unchecked</div>`,
     `<iframe src="https://player.vimeo.com/video/26689853" />`,
   ];
 
@@ -195,13 +168,10 @@ describe('when deserializing all plugins', () => {
       </hp>
       <hp>
         <ha url="http://google.com">a</ha>
-        <hmention value="mention">
-          <htext />
-        </hmention>
       </hp>
       <hcodeblock>
-        <hcodeline>code 1</hcodeline>
-        <hcodeline>code 2</hcodeline>
+        <text>code 1</text>
+        <text>code 2</text>
       </hcodeblock>
       <hul>
         <hli>
@@ -221,8 +191,6 @@ describe('when deserializing all plugins', () => {
           <htd>table</htd>
         </htr>
       </htable>
-      <htodoli checked>checked</htodoli>
-      <htodoli checked={false}>unchecked</htodoli>
       <hmediaembed url="https://player.vimeo.com/video/26689853">
         {'</body></html>'}
       </hmediaembed>
@@ -232,12 +200,10 @@ describe('when deserializing all plugins', () => {
   it('should be', () => {
     const plugins = renderHook(() => [
       createBlockquotePlugin(),
-      createTodoListPlugin(),
       createHeadingPlugin({ options: { levels: 1 } }),
       createImagePlugin(),
       createLinkPlugin(),
       createListPlugin(),
-      createMentionPlugin(),
       createParagraphPlugin(),
       createCodeBlockPlugin(),
       createTablePlugin(),
@@ -245,15 +211,15 @@ describe('when deserializing all plugins', () => {
       useFindReplacePlugin().plugin,
       createSoftBreakPlugin(),
       createAlignPlugin(),
-      { key: MARK_BOLD, deserialize: getBoldDeserialize() },
-      { key: MARK_HIGHLIGHT, deserialize: getHighlightDeserialize() },
-      { key: MARK_CODE, deserialize: getCodeDeserialize() },
-      { key: MARK_KBD, deserialize: getKbdDeserialize() },
-      { key: MARK_ITALIC, deserialize: getItalicDeserialize() },
-      { key: MARK_STRIKETHROUGH, deserialize: getStrikethroughDeserialize() },
-      { key: MARK_SUBSCRIPT, deserialize: getSubscriptDeserialize() },
-      { key: MARK_SUPERSCRIPT, deserialize: getSuperscriptDeserialize() },
-      { key: MARK_UNDERLINE, deserialize: getUnderlineDeserialize() },
+      createBoldPlugin(),
+      createHighlightPlugin(),
+      createCodePlugin(),
+      createKbdPlugin(),
+      createItalicPlugin(),
+      createStrikethroughPlugin(),
+      createSubscriptPlugin(),
+      createSuperscriptPlugin(),
+      createUnderlinePlugin(),
     ]).result.current;
 
     expect(

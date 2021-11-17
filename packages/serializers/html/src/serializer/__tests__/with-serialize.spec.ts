@@ -1,11 +1,9 @@
 import React from 'react';
 import { createPlateEditor, PlatePlugin } from '@udecode/plate-core';
-import { RenderLeafProps } from 'slate-react';
 import {
   createBoldPlugin,
   createImagePlugin,
   MARK_BOLD,
-  TRenderElementProps,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
@@ -13,10 +11,8 @@ import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 
 const plugins = [
   createImagePlugin({
-    serialize: {
-      element: ({ element }: TRenderElementProps) =>
-        React.createElement('img', { src: element.url }),
-    },
+    serializeHtml: ({ element }) =>
+      React.createElement('img', { src: element.url }),
   }),
 ];
 
@@ -45,12 +41,10 @@ it('custom serialize bold to html', () => {
       createPlateUIEditor({
         plugins: [
           createBoldPlugin({
-            serialize: {
-              leaf: ({ leaf, children }: RenderLeafProps) =>
-                leaf[MARK_BOLD] && !!leaf.text
-                  ? React.createElement('b', {}, children)
-                  : children,
-            },
+            serializeHtml: ({ leaf, children }) =>
+              leaf[MARK_BOLD] && !!leaf.text
+                ? React.createElement('b', {}, children)
+                : children,
           }),
         ],
       }),
@@ -82,7 +76,7 @@ describe('multiple custom leaf serializers', () => {
         key: 'bold',
         isLeaf: true,
         component: Bold as any,
-        serialize: { leaf: Bold },
+        serializeHtml: Bold,
       },
     ];
 

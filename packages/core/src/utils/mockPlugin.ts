@@ -1,7 +1,4 @@
-import {
-  PlatePlugin,
-  WithPlatePlugin,
-} from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { NoInfer } from '../types/utility/NoInfer';
 
 export const mockPlugin = <P = {}>(
@@ -9,6 +6,7 @@ export const mockPlugin = <P = {}>(
 ): WithPlatePlugin<{}, NoInfer<P>> => ({
   key: '',
   type: '',
+  editor: {},
   inject: {},
   options: {} as any,
   ...plugin,

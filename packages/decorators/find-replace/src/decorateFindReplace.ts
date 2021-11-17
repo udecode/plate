@@ -17,7 +17,7 @@ export const decorateFindReplace: Decorate<{}, FindReplacePlugin> = (
         ranges.push({
           anchor: { path, offset: offset - search.length },
           focus: { path, offset },
-          [type!]: true,
+          [type]: true,
         });
       }
       offset = offset + part.length + search.length;

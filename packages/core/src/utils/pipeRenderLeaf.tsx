@@ -4,8 +4,8 @@ import { DefaultLeaf } from '../components/DefaultLeaf';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 import { RenderLeaf } from '../types/RenderLeaf';
-import { getRenderLeaf } from './getRenderLeaf';
 import { pipeInjectProps } from './pipeInjectProps';
+import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 /**
  * @see {@link RenderLeaf}
@@ -18,7 +18,7 @@ export const pipeRenderLeaf = (
 
   editor.plugins.forEach((plugin) => {
     if (plugin.isLeaf && plugin.key) {
-      renderLeafs.push(getRenderLeaf(editor, plugin));
+      renderLeafs.push(pluginRenderLeaf(editor, plugin));
     }
   });
 

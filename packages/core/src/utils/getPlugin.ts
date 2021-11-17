@@ -1,6 +1,6 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { WithPlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
-import { PluginKey } from '../types/plugins/PlatePlugin/PlatePluginKey';
+import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
+import { PluginKey } from '../types/plugins/PlatePluginKey';
 import { getPluginsByKey } from './getPluginsByKey';
 
 /**

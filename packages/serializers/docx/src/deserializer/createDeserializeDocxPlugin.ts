@@ -1,12 +1,24 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { withDeserializeDocx } from './withDeserializeDocx';
+import { KEY_DESERIALIZE_HTML } from '@udecode/plate-html-serializer';
+import cleanDocx from '../docx-cleaner/cleanDocx';
 
-export const KEY_DESERIALIZE_DOCX = 'deserializeDocs';
+export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
 
-/**
- * @see {@link withDeserializeDocx}
- */
 export const createDeserializeDocxPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_DOCX,
-  withOverrides: withDeserializeDocx,
+  injectPlugin: (editor, { key }) => {
+    if (key === KEY_DESERIALIZE_HTML) {
+      return {
+        transformData: (data, { dataTransfer }) => {
+          const rtf = dataTransfer.getData('text/rtf');
+
+          return cleanDocx(data, rtf);
+        },
+      };
+    }
+
+    if (key === 'code_block') {
+      return {};
+    }
+  },
 });

@@ -1,11 +1,7 @@
-import {
-  AnyObject,
-  PlateEditor,
-  TDescendant,
-  TElement,
-} from '@udecode/plate-core';
+import { PlateEditor, TDescendant, TElement } from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
 import { DeserializeHtmlChildren } from '../types';
+import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
 jsx;
 
@@ -15,36 +11,23 @@ jsx;
 export const htmlElementToElement = <T = {}>(
   editor: PlateEditor<T>,
   {
-    element: htmlElement,
+    element,
     children,
   }: {
     element: HTMLElement;
     children: DeserializeHtmlChildren[];
   }
 ): TElement | undefined => {
-  let slateElement: AnyObject | null = null;
-  let withoutChildren: boolean | undefined;
+  const deserialized = pipeDeserializeHtmlElement(editor, element);
 
-  editor.plugins.some((plugin) => {
-    const deserializers = plugin.deserialize?.(editor, plugin).element;
-    if (!deserializers) return;
+  if (deserialized) {
+    const { node, withoutChildren } = deserialized;
 
-    return deserializers.some((deserializer) => {
-      const deserialized = deserializer.deserialize(htmlElement);
-      if (!deserialized) return;
-
-      slateElement = deserialized;
-      withoutChildren = deserializer.withoutChildren;
-      return true;
-    });
-  });
-
-  if (slateElement) {
-    let descendants = children as TDescendant[];
+    let descendants = node.children ?? (children as TDescendant[]);
     if (!descendants.length || withoutChildren) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', slateElement, descendants) as TElement;
+    return jsx('element', node, descendants) as TElement;
   }
 };

@@ -3,7 +3,7 @@
  */
 
 export * from './htmlStringToDOMNode';
-export { trimWhitespace } from './trimWhitespace';
-export { stripSlateDataAttributes } from './stripSlateDataAttributes';
-export { stripClassNames } from './stripClassNames';
-export { isEncoded } from './isEncoded';
+export * from './isEncoded';
+export * from './stripClassNames';
+export * from './stripSlateDataAttributes';
+export * from './trimWhitespace';

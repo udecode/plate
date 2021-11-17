@@ -34,11 +34,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prezly/docx-cleaner": "0.3.0",
+    "@udecode/plate-basic-elements": "7.0.2",
+    "@udecode/plate-basic-marks": "7.0.2",
     "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "@udecode/plate-html-serializer": "7.0.2",
-    "@udecode/plate-serializer": "7.0.2"
+    "@udecode/plate-list": "7.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

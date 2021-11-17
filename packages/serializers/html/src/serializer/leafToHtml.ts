@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElementWithSlate } from '@udecode/plate-common';
 import {
-  getRenderLeaf,
   pipeInjectProps,
   PlateEditor,
   PlateRenderLeafProps,
+  pluginRenderLeaf,
   SlateProps,
 } from '@udecode/plate-core';
 import { stripClassNames } from './utils/stripClassNames';
@@ -24,25 +24,23 @@ export const leafToHtml = (
   const { children } = props;
 
   return editor.plugins.reduce((result, plugin) => {
-    if (!plugin.serialize?.leaf && !plugin.isLeaf) return result;
-    if (
-      (plugin.serialize?.leaf?.(props) ??
-        getRenderLeaf(editor, plugin)(props)) === children
-    )
-      return result;
+    if (!plugin.isLeaf) return result;
 
     props = {
       ...pipeInjectProps<PlateRenderLeafProps>(editor, props),
       children: encodeURIComponent(result),
     };
 
+    const serialized =
+      plugin.serializeHtml?.(props) ?? pluginRenderLeaf(editor, plugin)(props);
+
+    if (serialized === children) return result;
+
     let html = decodeURIComponent(
       renderToStaticMarkup(
         createElementWithSlate({
           ...slateProps,
-          children:
-            plugin.serialize?.leaf?.(props) ??
-            getRenderLeaf(editor, plugin)(props),
+          children: serialized,
         })
       )
     );

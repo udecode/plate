@@ -1,5 +1,4 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
 
 export const ELEMENT_MEDIA_EMBED = 'media_embed';
 
@@ -11,5 +10,18 @@ export const createMediaEmbedPlugin = createPluginFactory({
   key: ELEMENT_MEDIA_EMBED,
   isElement: true,
   isVoid: true,
-  deserialize: getMediaEmbedDeserialize(),
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (el: HTMLElement) => {
+        const url = el.getAttribute('src');
+        if (url) {
+          return {
+            type,
+            url,
+          };
+        }
+      },
+      validNodeName: 'IFRAME',
+    },
+  }),
 });

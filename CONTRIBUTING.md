@@ -191,7 +191,7 @@ Build:
         
         ```tsx
         // add to plugin
-        deserialize: getXDeserialize(),
+        deserializeHtml: getXDeserialize(),
         ```
         
     - `createPlateUI`

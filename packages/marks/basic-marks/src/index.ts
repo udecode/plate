@@ -3,10 +3,10 @@
  */
 
 export * from './createBasicMarksPlugin';
-export * from './bold/index';
-export * from './code/index';
-export * from './italic/index';
-export * from './strikethrough/index';
-export * from './subscript/index';
-export * from './superscript/index';
-export * from './underline/index';
+export * from './createBoldPlugin';
+export * from './createCodePlugin';
+export * from './createItalicPlugin';
+export * from './createStrikethroughPlugin';
+export * from './createSubscriptPlugin';
+export * from './createSuperscriptPlugin';
+export * from './createUnderlinePlugin';

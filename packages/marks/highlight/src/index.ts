@@ -3,4 +3,3 @@
  */
 
 export * from './createHighlightPlugin';
-export * from './getHighlightDeserialize';

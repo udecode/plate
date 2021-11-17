@@ -2,7 +2,7 @@ import { createEditor } from 'slate';
 import { createHeadingPlugin } from '../../../elements/heading/src/createHeadingPlugin';
 import { createParagraphPlugin } from '../../../elements/paragraph/src/createParagraphPlugin';
 import { KEY_INLINE_VOID } from '../plugins/createInlineVoidPlugin';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { getPlugin } from './getPlugin';
 import { withPlate } from './withPlate';
 
@@ -11,7 +11,13 @@ describe('withPlate', () => {
     it('should be', () => {
       const editor = withPlate(createEditor(), { id: '1' });
 
-      const keys = [KEY_INLINE_VOID, 'event-editor', 'react', 'history'];
+      const keys = [
+        KEY_INLINE_VOID,
+        'event-editor',
+        'react',
+        'history',
+        'insertData',
+      ];
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
@@ -48,6 +54,7 @@ describe('withPlate', () => {
         'heading',
         'hh1',
         'h2',
+        'insertData',
       ];
 
       expect(Object.keys(editor.pluginsByKey)).toEqual(keys);
@@ -165,6 +172,66 @@ describe('withPlate', () => {
         { key: pluginAC.key, type: pluginAC.type },
         { key: pluginAD.key, type: pluginAD.type },
       ]);
+    });
+  });
+
+  describe('when then in nested plugins', () => {
+    it('should deep merge the plugins', () => {
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        plugins: [
+          {
+            key: 'a',
+            type: 'a',
+            plugins: [
+              {
+                key: 'aa',
+                type: 'aa',
+              },
+            ],
+            then: () => ({
+              type: 'athen',
+              plugins: [
+                {
+                  key: 'bb',
+                  type: 'bb',
+                  then: () => ({
+                    type: 'athen2',
+                    plugins: [
+                      {
+                        key: 'aa',
+                        type: 'ab',
+                      },
+                      {
+                        key: 'cc',
+                        type: 'cc',
+                      },
+                    ],
+                  }),
+                },
+              ],
+            }),
+          },
+        ],
+      });
+
+      const a = getPlugin(editor, 'a');
+      const aa = getPlugin(editor, 'aa');
+      const bb = getPlugin(editor, 'bb');
+      const cc = getPlugin(editor, 'cc');
+
+      expect({
+        type: a.type,
+      }).toEqual({ type: 'athen' });
+      expect({
+        type: aa.type,
+      }).toEqual({ type: 'ab' });
+      expect({
+        type: bb.type,
+      }).toEqual({ type: 'athen2' });
+      expect({
+        type: cc.type,
+      }).toEqual({ type: 'cc' });
     });
   });
 });

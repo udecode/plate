@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElementWithSlate } from '@udecode/plate-common';
 import {
-  getRenderElement,
   pipeInjectProps,
   PlateEditor,
   PlateRenderElementProps,
+  pluginRenderElement,
   SlateProps,
 } from '@udecode/plate-core';
 import { stripClassNames } from './utils/stripClassNames';
@@ -21,35 +21,31 @@ export const elementToHtml = (
     preserveClassNames?: string[];
   }
 ) => {
+  let html = `<div>${props.children}</div>`;
+
   // If no type provided we wrap children with div tag
   if (!props.element.type) {
-    return `<div>${props.children}</div>`;
+    return html;
   }
-
-  let html: string | undefined;
 
   props = pipeInjectProps<PlateRenderElementProps>(editor, props);
 
   // Search for matching plugin based on element type
   editor.plugins.some((plugin) => {
-    if (!plugin.serialize?.element && !plugin.isElement) return false;
-
     if (
-      !plugin
-        .deserialize?.(editor, plugin)
-        .element?.some((item) => item.type === String(props.element.type))
-    ) {
-      html = `<div>${props.children}</div>`;
+      !plugin.isElement ||
+      plugin.serializeHtml === null ||
+      props.element.type !== plugin.type
+    )
       return false;
-    }
 
     // Render element using picked plugins renderElement function and ReactDOM
     html = renderToStaticMarkup(
       createElementWithSlate({
         ...slateProps,
         children:
-          plugin.serialize?.element?.(props) ??
-          getRenderElement(editor, plugin)(props),
+          plugin.serializeHtml?.(props) ??
+          pluginRenderElement(editor, plugin)(props),
       })
     );
 

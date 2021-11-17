@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/createBoldPlugin';
 import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/createItalicPlugin';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/createItalicPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -55,38 +55,30 @@ describe(getDocxTestName(name), () => {
     plugins: [createParagraphPlugin(), createBasicMarksPlugin()],
     overrides: {
       [MARK_BOLD]: {
-        deserialize: {
-          rules: [
-            { nodeNames: ['STRONG', 'B'] },
-            {
-              style: {
-                fontWeight: ['600', '700', 'bold'],
-              },
+        deserializeHtml: [
+          {
+            validNodeName: ['STRONG', 'B'],
+            query: (el) => {
+              return !(
+                ['STRONG', 'B'].includes(el.nodeName) &&
+                (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
+              );
             },
-          ],
-          getNode: (el) => {
-            if (
-              ['STRONG', 'B'].includes(el.nodeName) &&
-              (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
-            ) {
-              return undefined;
-            }
-
-            return { [MARK_BOLD]: true };
           },
-        },
+          {
+            validStyle: {
+              fontWeight: ['600', '700', 'bold'],
+            },
+          },
+        ],
       },
       [MARK_ITALIC]: {
-        deserialize: {
-          getNode: (el) => {
-            if (
+        deserializeHtml: {
+          query: (el) => {
+            return !(
               el.nodeName === 'EM' &&
               (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
-            ) {
-              return undefined;
-            }
-
-            return { [MARK_ITALIC]: true };
+            );
           },
         },
       },

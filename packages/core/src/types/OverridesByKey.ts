@@ -1,5 +1,5 @@
-import { PlatePlugin } from './plugins/PlatePlugin/PlatePlugin';
-import { PluginKey } from './plugins/PlatePlugin/PlatePluginKey';
+import { PlatePlugin } from './plugins/PlatePlugin';
+import { PluginKey } from './plugins/PlatePluginKey';
 
 export type OverridesByKey<T = {}, P = {}> = Record<
   PluginKey,

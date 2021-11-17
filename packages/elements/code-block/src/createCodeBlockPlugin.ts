@@ -1,11 +1,7 @@
-import { KEY_DESERIALIZE_AST } from '@udecode/plate-ast-serializer';
-import { createPluginFactory } from '@udecode/plate-core';
+import { someNode } from '@udecode/plate-common';
+import { createPluginFactory, getPlugin } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 import { decorateCodeLine } from './decorateCodeLine';
-import {
-  getCodeBlockDeserialize,
-  getCodeLineDeserialize,
-} from './getCodeBlockDeserialize';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 import { CodeBlockPlugin } from './types';
 import { withCodeBlock } from './withCodeBlock';
@@ -16,13 +12,44 @@ import { withCodeBlock } from './withCodeBlock';
 export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
-  deserialize: getCodeBlockDeserialize(),
+  injectPlugin: (editor, { key }) => {
+    if (key !== 'deserializeHtml') return;
+
+    const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
+
+    const isSelectionInCodeLine = someNode(editor, {
+      match: { type: code_line.type },
+    });
+
+    return {
+      isDisabled: isSelectionInCodeLine,
+    };
+  },
+  deserializeHtml: {
+    validNodeName: 'PRE',
+    getNode: (el) => {
+      let lines = el.textContent?.split('\n');
+
+      if (!lines?.length) {
+        lines = [el.textContent ?? ''];
+      }
+
+      const codeLines = lines.map((line) => ({
+        type: ELEMENT_CODE_LINE,
+        children: [{ text: line }],
+      }));
+
+      return {
+        type: ELEMENT_CODE_BLOCK,
+        children: codeLines,
+      };
+    },
+  },
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },
   withOverrides: withCodeBlock,
   options: {
-    deserializers: [KEY_DESERIALIZE_AST],
     hotkey: ['mod+opt+8', 'mod+shift+8'],
     syntax: true,
     syntaxPopularFirst: false,
@@ -31,7 +58,6 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
     {
       key: ELEMENT_CODE_LINE,
       isElement: true,
-      deserialize: getCodeLineDeserialize(),
       decorate: decorateCodeLine,
     },
   ],

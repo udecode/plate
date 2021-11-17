@@ -1,5 +1,4 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { getImageDeserialize } from './getImageDeserialize';
 import { ImagePlugin } from './types';
 import { withImageUpload } from './withImageUpload';
 
@@ -12,6 +11,14 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   key: ELEMENT_IMAGE,
   isElement: true,
   isVoid: true,
-  deserialize: getImageDeserialize(),
   withOverrides: withImageUpload,
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (el) => ({
+        type,
+        url: el.getAttribute('src'),
+      }),
+      validNodeName: 'IMG',
+    },
+  }),
 });

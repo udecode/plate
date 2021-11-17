@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
-import { WithPlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 import { AnyObject } from '../types/utility/AnyObject';
 import { getSlateClass } from './getSlateClass';
 

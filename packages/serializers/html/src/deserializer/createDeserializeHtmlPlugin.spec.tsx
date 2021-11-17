@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { createHeadingPlugin } from '../../../../elements/heading/src/createHeadingPlugin';
 import { createLinkPlugin } from '../../../../elements/link/src/createLinkPlugin';
 import { createMediaEmbedPlugin } from '../../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { createBoldPlugin } from '../../../../marks/basic-marks/src/bold/createBoldPlugin';
+import { createBoldPlugin } from '../../../../marks/basic-marks/src/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
 import { createDeserializeHtmlPlugin } from './createDeserializeHtmlPlugin';
 
@@ -13,12 +13,18 @@ jsx;
 
 describe('when inserting html', () => {
   // noinspection CheckTagEmptyBody
-  const data = {
+  const dataTransfer = {
+    constructor: {
+      name: 'DataTransfer',
+    },
     getData: () => '<html><body><h1>inserted</h1></body></html>',
-  };
+  } as any;
 
   const makeDataTransfer = (value: string): DataTransfer => {
     return {
+      constructor: {
+        name: 'DataTransfer',
+      },
       getData: () => value,
     } as any;
   };
@@ -53,7 +59,7 @@ describe('when inserting html', () => {
         plugins,
       });
 
-      editor.insertData(data as any);
+      editor.insertData(dataTransfer);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -88,7 +94,7 @@ describe('when inserting html', () => {
         plugins,
       });
 
-      editor.insertData(data as any);
+      editor.insertData(dataTransfer as any);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -145,7 +151,7 @@ describe('when inserting empty html', () => {
   ) as any) as PlateEditor;
 
   // noinspection CheckTagEmptyBody
-  const data = {
+  const dataTransfer = {
     getData: () => '<html></html>',
   };
 
@@ -169,7 +175,7 @@ describe('when inserting empty html', () => {
       plugins,
     });
 
-    editor.insertData(data as any);
+    editor.insertData(dataTransfer as any);
 
     expect(editor.children).toEqual(output.children);
   });

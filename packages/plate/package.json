@@ -85,7 +85,6 @@
     "@udecode/plate-popper": "7.0.2",
     "@udecode/plate-reset-node": "7.0.2",
     "@udecode/plate-select": "7.0.2",
-    "@udecode/plate-serializer": "7.0.2",
     "@udecode/plate-styled-components": "7.0.2",
     "@udecode/plate-table": "7.0.2",
     "@udecode/plate-table-ui": "7.0.3",

@@ -10,7 +10,6 @@ it('serializes with edge case where input is non-rich text', () => {
   expect(
     serializeHtml(editor, {
       nodes: deserializeHtml(editor, {
-        plugins: [],
         element: input,
       }),
     })

@@ -64,6 +64,6 @@ it('serialize image with alt to html', () => {
       })
     ).getElementsByTagName('img')[0].outerHTML
   ).toEqual(
-    '<img class="slate-ImageElement-img" src="https://via.placeholder.com/300" alt="Placeholder" width="300">'
+    '<img class="slate-ImageElement-img" src="https://via.placeholder.com/300" alt="Placeholder">'
   );
 });

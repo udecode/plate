@@ -1,6 +1,6 @@
 import { incrementKey } from '../stores/plate/plate.actions';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin/PlatePlugin';
+import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
 
 /**

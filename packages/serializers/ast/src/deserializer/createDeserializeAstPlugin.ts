@@ -1,12 +1,20 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { withDeserializeAst } from './withDeserializeAst';
 
 export const KEY_DESERIALIZE_AST = 'deserializeAst';
 
 /**
- * @see {@link withDeserializeAst}
+ * Enables support for deserializing inserted content from Slate Ast format to Slate format
+ * while apply a small bug fix.
  */
 export const createDeserializeAstPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_AST,
-  withOverrides: withDeserializeAst,
+  editor: {
+    insertData: {
+      format: 'application/x-slate-fragment',
+      getFragment: (editor, plugin, { data }) => {
+        const decoded = decodeURIComponent(window.atob(data));
+        return JSON.parse(decoded);
+      },
+    },
+  },
 });

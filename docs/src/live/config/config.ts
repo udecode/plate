@@ -4,6 +4,7 @@ import {
   createPlateUI,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -20,6 +21,8 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
+  MARK_BOLD,
+  MARK_ITALIC,
   NormalizeTypesPlugin,
   PlatePlugin,
   ResetNodePlugin,
@@ -28,6 +31,7 @@ import {
   TrailingBlockPlugin,
   withProps,
 } from '@udecode/plate';
+import { Partial } from 'rollup-plugin-typescript2/dist/partial';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { css } from 'styled-components';
 import { autoformatRules } from './autoformat/autoformatRules';
@@ -200,56 +204,45 @@ export const CONFIG: Config = {
   },
   docxOptions: {
     [ELEMENT_CODE_BLOCK]: {
-      deserialize: {
-        rules: [
-          {
-            className: 'SourceCode',
-          },
-        ],
+      deserializeHtml: {
+        validClassName: 'SourceCode',
       },
     },
     [ELEMENT_CODE_LINE]: {
-      deserialize: {
-        rules: [
-          {
-            className: 'VerbatimChar',
-          },
-        ],
+      deserializeHtml: {
+        validClassName: 'VerbatimChar',
       },
     },
     [MARK_BOLD]: {
-      deserialize: {
-        rules: [
-          { nodeNames: ['STRONG', 'B'] },
-          {
-            style: {
-              fontWeight: ['600', '700', 'bold'],
-            },
+      deserializeHtml: [
+        { validNodeName: ['STRONG', 'B'] },
+        {
+          validStyle: {
+            fontWeight: ['600', '700', 'bold'],
           },
-        ],
-        getNode: (el) => {
-          if (
-            ['STRONG', 'B'].includes(el.nodeName) &&
-            (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
-          ) {
-            return undefined;
-          }
-
-          return { [MARK_BOLD]: true };
         },
-      },
+      ],
+      // query: (el) => {
+      //   if (
+      //     ['STRONG', 'B'].includes(el.nodeName) &&
+      //     (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
+      //   ) {
+      //     return false;
+      //   }
+      //
+      //   return true;
     },
     [MARK_ITALIC]: {
-      deserialize: {
-        getNode: (el) => {
+      deserializeHtml: {
+        query: (el) => {
           if (
             el.nodeName === 'EM' &&
             (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
           ) {
-            return undefined;
+            return false;
           }
 
-          return { [MARK_ITALIC]: true };
+          return true;
         },
       },
     },
