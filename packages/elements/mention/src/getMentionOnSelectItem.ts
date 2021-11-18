@@ -5,8 +5,12 @@ import {
   NoData,
   TComboboxItem,
 } from '@udecode/plate-combobox';
-import { getBlockAbove, insertNodes } from '@udecode/plate-common';
-import { getPlugin, PlatePluginKey } from '@udecode/plate-core';
+import {
+  getBlockAbove,
+  getPlugin,
+  insertNodes,
+  PlatePluginKey,
+} from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionNode, MentionNodeData, MentionPlugin } from './types';

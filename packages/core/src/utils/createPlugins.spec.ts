@@ -3,9 +3,9 @@ import { createNodeIdPlugin } from '../../../editor/node-id/src/createNodeIdPlug
 import { ELEMENT_H1 } from '../../../elements/heading/src/constants';
 import { createHeadingPlugin } from '../../../elements/heading/src/createHeadingPlugin';
 import { createParagraphPlugin } from '../../../elements/paragraph/src/createParagraphPlugin';
+import { withPlate } from '../plugins/withPlate';
 import { createPlugins } from './createPlugins';
 import { getPlugin } from './getPlugin';
-import { withPlate } from './withPlate';
 
 describe('createPlugins', () => {
   describe('when using components', () => {

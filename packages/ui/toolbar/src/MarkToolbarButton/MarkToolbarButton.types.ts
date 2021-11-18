@@ -1,5 +1,4 @@
-import { ToggleMarkPlugin } from '@udecode/plate-common';
-import { WithPlatePlugin } from '@udecode/plate-core';
+import { ToggleMarkPlugin, WithPlatePlugin } from '@udecode/plate-core';
 import { ToolbarButtonProps } from '../ToolbarButton/ToolbarButton.types';
 
 export interface MarkToolbarButtonProps

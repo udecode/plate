@@ -1,5 +1,5 @@
-import { findNode } from '@udecode/plate-common';
 import {
+  findNode,
   getPlugin,
   PlateEditor,
   PlatePlugin,

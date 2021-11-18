@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { createEditor, Editor } from 'slate';
+import { withPlate } from '../../plugins/withPlate';
 import { usePlateActions } from '../../stores/plate/plate.actions';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
-import { withPlate } from '../../utils/withPlate';
 
 /**
  * Effects to update the plate store from the options.
@@ -20,6 +20,7 @@ export const usePlateEffects = <T = {}>({
   initialValue,
   normalizeInitialValue,
   plugins,
+  disableCorePlugins,
 }: UsePlateEffectsOptions<T>) => {
   const {
     setInitialState,
@@ -82,10 +83,11 @@ export const usePlateEffects = <T = {}>({
         withPlate(baseEditor as any, {
           id,
           plugins: plugins as PlatePlugin[],
+          disableCorePlugins,
         })
       );
     }
-  }, [editorProp, id, plugins, setEditor, editor, enabled]);
+  }, [editorProp, id, plugins, setEditor, editor, enabled, disableCorePlugins]);
 
   // Dynamic plugins, no called when setting the editor
   useEffect(() => {

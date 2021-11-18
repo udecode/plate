@@ -1,9 +1,6 @@
 /** @jsx jsx */
 
-import {
-  createDeserializeHtmlPlugin,
-  createPlateUIEditor,
-} from '@udecode/plate';
+import { createPlateUIEditor } from '@udecode/plate';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -43,11 +40,13 @@ describe('code block deserialization', () => {
             editor: {
               insertData: {
                 format: 'text/plain',
-                getFragment: () => [{ text: 'test' }],
+                getFragment() {
+                  console.log('why');
+                  return [{ text: 'test' }];
+                },
               },
             },
           },
-          createDeserializeHtmlPlugin(),
         ],
       });
 
@@ -79,11 +78,7 @@ describe('code block deserialization', () => {
 
       const editor = createPlateUIEditor({
         editor: input,
-        plugins: [
-          createParagraphPlugin(),
-          createCodeBlockPlugin(),
-          createDeserializeHtmlPlugin(),
-        ],
+        plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
       });
 
       editor.insertData({

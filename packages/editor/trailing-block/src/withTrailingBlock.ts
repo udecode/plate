@@ -1,5 +1,10 @@
-import { getLastNode, insertNodes, queryNode } from '@udecode/plate-common';
-import { TElement, WithOverride } from '@udecode/plate-core';
+import {
+  getLastNode,
+  insertNodes,
+  queryNode,
+  TElement,
+  WithOverride,
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 import { TrailingBlockPlugin } from './createTrailingBlockPlugin';
 

@@ -1,10 +1,12 @@
 import {
   deleteFragment,
   ELEMENT_DEFAULT,
+  getPluginType,
   isFirstChild,
   isSelectionAtBlockStart,
-} from '@udecode/plate-common';
-import { getPluginType, mockPlugin, PlateEditor } from '@udecode/plate-core';
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,

@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import shallow from 'zustand/shallow';
+import { withPlate } from '../../plugins/withPlate';
 import {
   PlateActions,
   PlateChangeKey,
   PlateState,
   PlateStates,
 } from '../../types/PlateStore';
-import { withPlate } from '../../utils/withPlate';
 import { getSetStateByKey } from '../zustand.utils';
 import { getPlateId } from './selectors/getPlateId';
 import { getPlateState } from './selectors/getPlateState';

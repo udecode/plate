@@ -1,6 +1,6 @@
-import { isCollapsed } from '@udecode/plate-common';
 import {
   getPluginType,
+  isCollapsed,
   isElement,
   TElement,
   WithOverride,

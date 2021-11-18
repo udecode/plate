@@ -1,12 +1,10 @@
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   getMark,
+  getPluginType,
   isMarkActive,
   removeMark,
   setMarks,
-} from '@udecode/plate-common';
-import {
-  getPluginType,
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-core';

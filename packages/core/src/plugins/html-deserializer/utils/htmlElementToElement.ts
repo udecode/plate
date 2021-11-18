@@ -1,5 +1,7 @@
-import { PlateEditor, TDescendant, TElement } from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
+import { PlateEditor } from '../../../types/PlateEditor';
+import { TDescendant } from '../../../types/slate/TDescendant';
+import { TElement } from '../../../types/slate/TElement';
 import { DeserializeHtmlChildren } from '../types';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 

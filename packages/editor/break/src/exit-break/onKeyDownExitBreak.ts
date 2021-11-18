@@ -1,15 +1,13 @@
 import {
   ELEMENT_DEFAULT,
   getBlockAbove,
+  getPluginType,
   insertNodes,
   isExpanded,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
-  queryNode,
-} from '@udecode/plate-common';
-import {
-  getPluginType,
   KeyboardHandler,
+  queryNode,
   TEditor,
   TElement,
 } from '@udecode/plate-core';

@@ -1,5 +1,10 @@
-import { deleteFragment, getAbove, getParent } from '@udecode/plate-common';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  deleteFragment,
+  getAbove,
+  getParent,
+  getPluginType,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { Editor, Range, Transforms } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';

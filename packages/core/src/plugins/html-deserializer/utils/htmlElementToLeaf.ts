@@ -1,7 +1,9 @@
-import { mergeDeepToNodes } from '@udecode/plate-common';
-import { isElement, PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
+import { PlateEditor } from '../../../types/PlateEditor';
+import { TDescendant } from '../../../types/slate/TDescendant';
+import { isElement } from '../../../types/slate/TElement';
+import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
 import { DeserializeHtmlChildren } from '../types';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 

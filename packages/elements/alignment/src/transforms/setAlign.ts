@@ -1,13 +1,11 @@
 import {
+  getPluginInjectProps,
+  PlateEditor,
+  PlatePluginKey,
   setNodes,
   SetNodesOptions,
   TNodeMatch,
   unsetNodes,
-} from '@udecode/plate-common';
-import {
-  getPluginInjectProps,
-  PlateEditor,
-  PlatePluginKey,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../createAlignPlugin';

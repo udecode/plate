@@ -3,8 +3,8 @@ import {
   getPreventDefaultHandler,
   isMarkActive,
   toggleMark,
-} from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
 

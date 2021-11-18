@@ -1,9 +1,10 @@
 import {
+  getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
+  PlateEditor,
   someNode,
-} from '@udecode/plate-common';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+} from '@udecode/plate-core';
 import { ELEMENT_LI } from '../createListPlugin';
 
 /**

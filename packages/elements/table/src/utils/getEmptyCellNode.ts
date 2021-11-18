@@ -1,5 +1,8 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  ELEMENT_DEFAULT,
+  getPluginType,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 

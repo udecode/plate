@@ -1,4 +1,4 @@
-import { HotkeyPlugin, RangeBeforeOptions } from '@udecode/plate-common';
+import { HotkeyPlugin, RangeBeforeOptions } from '@udecode/plate-core';
 
 export interface LinkNodeData {
   url: string;

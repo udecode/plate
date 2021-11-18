@@ -81,10 +81,10 @@ describe('createPluginFactory', () => {
 
       const plugin = getPlugin(editor, ELEMENT_LINK);
 
-      expect(plugin.deserializeHtml?.getNode?.({} as any)).toEqual({
+      expect((plugin.deserializeHtml as any)?.getNode?.({} as any)).toEqual({
         test: true,
       });
-      expect(plugin.deserializeHtml?.withoutChildren).toBeTruthy();
+      expect((plugin.deserializeHtml as any)?.withoutChildren).toBeTruthy();
     });
   });
 

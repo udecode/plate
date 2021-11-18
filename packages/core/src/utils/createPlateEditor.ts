@@ -1,19 +1,17 @@
 import { createEditor } from 'slate';
-import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
-import { createReactPlugin } from '../plugins/createReactPlugin';
+import { withPlate, WithPlateOptions } from '../plugins/withPlate';
 import { OverridesByKey } from '../types/OverridesByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
 import { createPlugins } from './createPlugins';
-import { withPlate } from './withPlate';
 
-export interface CreatePlateEditorOptions<T = {}> {
+export interface CreatePlateEditorOptions<T = {}>
+  extends Omit<WithPlateOptions, 'plugins'> {
   editor?: any;
   plugins?: PlatePlugin<T>[];
   components?: Record<string, PlatePluginComponent>;
   overrides?: OverridesByKey<T>;
-  disableCorePlugins?: boolean;
 }
 
 /**
@@ -26,19 +24,11 @@ export interface CreatePlateEditorOptions<T = {}> {
  */
 export const createPlateEditor = <T = {}>({
   editor = createEditor(),
-  plugins: _plugins = [],
+  plugins = [],
   components,
   overrides,
-  disableCorePlugins,
+  ...withPlateOptions
 }: CreatePlateEditorOptions<T> = {}): PlateEditor<T> => {
-  let plugins: PlatePlugin<T>[] = [];
-
-  if (!disableCorePlugins) {
-    plugins = [createReactPlugin(), createHistoryPlugin()];
-  }
-
-  plugins = [...plugins, ..._plugins];
-
   plugins = createPlugins(plugins, {
     components,
     overrides,
@@ -46,5 +36,6 @@ export const createPlateEditor = <T = {}>({
 
   return withPlate(editor, {
     plugins,
+    ...withPlateOptions,
   });
 };

@@ -4,8 +4,8 @@ import {
   getPreventDefaultHandler,
   isCollapsed,
   someNode,
-} from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export interface AlignToolbarButtonProps extends ToolbarButtonProps {

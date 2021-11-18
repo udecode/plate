@@ -1,5 +1,10 @@
-import { isCollapsed, setNodes, someNode } from '@udecode/plate-common';
-import { KeyboardHandler, TElement } from '@udecode/plate-core';
+import {
+  isCollapsed,
+  KeyboardHandler,
+  setNodes,
+  someNode,
+  TElement,
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { ResetNodePlugin } from './types';
 

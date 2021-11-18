@@ -1,5 +1,4 @@
-import { isFirstChild } from '@udecode/plate-common';
-import { PlateEditor, TElement } from '@udecode/plate-core';
+import { isFirstChild, PlateEditor, TElement } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';

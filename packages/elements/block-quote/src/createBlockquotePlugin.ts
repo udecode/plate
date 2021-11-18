@@ -1,5 +1,8 @@
-import { HotkeyPlugin, onKeyDownToggleElement } from '@udecode/plate-common';
-import { createPluginFactory } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  HotkeyPlugin,
+  onKeyDownToggleElement,
+} from '@udecode/plate-core';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 

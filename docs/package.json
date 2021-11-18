@@ -38,7 +38,6 @@
     "@udecode/plate-code-block": "link:../packages/elements/code-block",
     "@udecode/plate-code-block-ui": "link:../packages/elements/code-block-ui",
     "@udecode/plate-combobox": "link:../packages/ui/combobox",
-    "@udecode/plate-common": "link:../packages/common",
     "@udecode/plate-core": "link:../packages/core",
     "@udecode/plate-csv-serializer": "link:../packages/serializers/csv",
     "@udecode/plate-dnd": "link:../packages/blocks/dnd",

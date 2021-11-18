@@ -1,6 +1,5 @@
 import { comboboxStore } from '@udecode/plate-combobox';
-import { insertNodes } from '@udecode/plate-common';
-import { getPlugin, WithOverride } from '@udecode/plate-core';
+import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';

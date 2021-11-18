@@ -1,5 +1,10 @@
-import { getParent, insertNodes } from '@udecode/plate-common';
-import { PlateEditor, PlatePluginKey, TElement } from '@udecode/plate-core';
+import {
+  getParent,
+  insertNodes,
+  PlateEditor,
+  PlatePluginKey,
+  TElement,
+} from '@udecode/plate-core';
 import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
 import { ExcalidrawNodeData } from '../types';
 

@@ -1,15 +1,13 @@
 import {
+  getPluginType,
   getRangeBefore,
   getRangeFromBlockStart,
   getText,
   isCollapsed,
-  someNode,
-  unwrapNodes,
-} from '@udecode/plate-common';
-import {
-  getPluginType,
   mockPlugin,
   PlateEditor,
+  someNode,
+  unwrapNodes,
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';

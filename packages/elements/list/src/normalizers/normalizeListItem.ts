@@ -1,13 +1,11 @@
 import {
   getChildren,
   getParent,
+  getPluginType,
   insertEmptyElement,
   match,
-  setNodes,
-} from '@udecode/plate-common';
-import {
-  getPluginType,
   PlateEditor,
+  setNodes,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';

@@ -1,5 +1,11 @@
-import { insertNodes, isCollapsed, unwrapNodes } from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  getPluginType,
+  insertNodes,
+  isCollapsed,
+  PlateEditor,
+  TElement,
+  unwrapNodes,
+} from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { wrapLink } from './wrapLink';

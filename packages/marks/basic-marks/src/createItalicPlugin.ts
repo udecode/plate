@@ -1,5 +1,8 @@
-import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
-import { createPluginFactory } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  onKeyDownToggleMark,
+  ToggleMarkPlugin,
+} from '@udecode/plate-core';
 import { deserializeHtmlItalic } from './deserializeHtmlItalic';
 
 export const MARK_ITALIC = 'italic';

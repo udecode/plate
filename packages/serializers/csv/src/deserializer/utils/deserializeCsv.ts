@@ -1,5 +1,5 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
 import {
+  ELEMENT_DEFAULT,
   getPlugin,
   getPluginType,
   PlateEditor,

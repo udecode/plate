@@ -1,4 +1,4 @@
-import { HotkeyPlugin, InsertNodesOptions } from '@udecode/plate-common';
+import { HotkeyPlugin, InsertNodesOptions } from '@udecode/plate-core';
 
 export interface CodeBlockPlugin extends HotkeyPlugin {
   syntax?: boolean;

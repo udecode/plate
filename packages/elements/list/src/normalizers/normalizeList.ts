@@ -2,14 +2,12 @@ import {
   ELEMENT_DEFAULT,
   getNode,
   getParent,
-  getPreviousPath,
-  match,
-  setNodes,
-} from '@udecode/plate-common';
-import {
   getPluginType,
+  getPreviousPath,
   isElement,
+  match,
   PlateEditor,
+  setNodes,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';

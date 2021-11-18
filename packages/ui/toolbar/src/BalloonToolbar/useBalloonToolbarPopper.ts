@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getSelectionText, isSelectionExpanded } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import {
   getSelectionBoundingClientRect,
   usePopperPosition,

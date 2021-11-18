@@ -1,5 +1,10 @@
-import { getAbove, isCollapsed, unwrapNodes } from '@udecode/plate-common';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  getAbove,
+  getPluginType,
+  isCollapsed,
+  PlateEditor,
+  unwrapNodes,
+} from '@udecode/plate-core';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';

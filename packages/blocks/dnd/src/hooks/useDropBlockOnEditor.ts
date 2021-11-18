@@ -1,5 +1,5 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { findNode, isExpanded } from '@udecode/plate-common';
+import { findNode, isExpanded } from '@udecode/plate-core';
 import { Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { DragItemBlock } from '../types';

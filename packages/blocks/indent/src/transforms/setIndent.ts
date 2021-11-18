@@ -1,13 +1,11 @@
 import {
+  AnyObject,
   EditorNodesOptions,
   getNodes,
-  setNodes,
-  UnhangRangeOptions,
-} from '@udecode/plate-common';
-import {
-  AnyObject,
   getPluginInjectProps,
   PlateEditor,
+  setNodes,
+  UnhangRangeOptions,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { KEY_INDENT } from '../createIndentPlugin';

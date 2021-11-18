@@ -1,5 +1,5 @@
-import { TDescendant } from '@udecode/plate-core';
 import { jsx } from 'slate-hyperscript';
+import { TDescendant } from '../../../types/slate/TDescendant';
 import { DeserializeHtmlChildren } from '../types';
 
 jsx;

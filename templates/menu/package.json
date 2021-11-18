@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@szhsin/react-menu": "^2.1.0",
-    "@udecode/plate-common": "6.1.0",
     "@udecode/plate-core": "6.0.0",
     "@udecode/plate-styled-components": "6.0.0",
     "@udecode/plate-ui-button": "6.1.0"

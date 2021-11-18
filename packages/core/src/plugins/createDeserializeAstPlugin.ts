@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_DESERIALIZE_AST = 'deserializeAst';
 

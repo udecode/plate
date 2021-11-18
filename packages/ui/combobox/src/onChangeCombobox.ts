@@ -1,5 +1,4 @@
-import { isCollapsed } from '@udecode/plate-common';
-import { OnChange } from '@udecode/plate-core';
+import { isCollapsed, OnChange } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { getTextFromTrigger } from './utils/getTextFromTrigger';
 import { comboboxStore } from './combobox.store';

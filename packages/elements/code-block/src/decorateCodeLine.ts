@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
-import { getParent } from '@udecode/plate-common';
+import { getParent } from '@udecode/plate-core';
 import { Decorate, getPlugin, isElement } from '@udecode/plate-core';
 // noinspection ES6UnusedImports
 import Prism, { languages, Token, tokenize } from 'prismjs';

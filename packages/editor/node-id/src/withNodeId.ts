@@ -2,8 +2,9 @@ import {
   defaultsDeepToNodes,
   queryNode,
   someNode,
-} from '@udecode/plate-common';
-import { TNode, WithOverride } from '@udecode/plate-core';
+  TNode,
+  WithOverride,
+} from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
 import { NodeEntry } from 'slate';
 import { NodeIdPlugin } from './createNodeIdPlugin';

@@ -1,10 +1,11 @@
 import {
+  getPluginInjectProps,
+  PlateEditor,
   setNodes,
   SetNodesOptions,
   TNodeMatch,
   unsetNodes,
-} from '@udecode/plate-common';
-import { getPluginInjectProps, PlateEditor } from '@udecode/plate-core';
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
 

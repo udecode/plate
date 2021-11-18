@@ -1,7 +1,10 @@
 /** @jsx jsx */
 
-import { isSelectionAtBlockStart } from '@udecode/plate-common';
-import { mockPlugin, PlateEditor } from '@udecode/plate-core';
+import {
+  isSelectionAtBlockStart,
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';

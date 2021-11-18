@@ -4,8 +4,7 @@ import {
   CodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { setNodes } from '@udecode/plate-common';
-import { getPluginOptions, TElement } from '@udecode/plate-core';
+import { getPluginOptions, setNodes, TElement } from '@udecode/plate-core';
 import {
   getRootProps,
   StyledElementProps,

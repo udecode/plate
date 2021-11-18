@@ -2,11 +2,9 @@ import {
   getBlockAbove,
   getChildren,
   getNode,
+  getPluginType,
   getText,
   isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
-import {
-  getPluginType,
   PlateEditor,
   TDescendant,
   TElement,

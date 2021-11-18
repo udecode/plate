@@ -2,12 +2,14 @@ import {
   ELEMENT_DEFAULT,
   findNode,
   getNodes,
+  getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
+  PlateEditor,
   setNodes,
+  TElement,
   wrapNodes,
-} from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+} from '@udecode/plate-core';
 import { Editor, Node, NodeEntry, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';

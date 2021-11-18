@@ -1,5 +1,4 @@
-import { getNode, unsetNodes } from '@udecode/plate-common';
-import { WithOverride } from '@udecode/plate-core';
+import { getNode, unsetNodes, WithOverride } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { Node } from 'slate';
 import { getNextIndentList } from './queries/getNextIndentList';

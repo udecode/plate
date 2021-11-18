@@ -1,5 +1,4 @@
-import { match, moveChildren } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
+import { match, moveChildren, PlateEditor } from '@udecode/plate-core';
 import { Node, NodeEntry, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

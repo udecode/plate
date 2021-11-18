@@ -1,5 +1,4 @@
-import { getNode } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
+import { getNode, PlateEditor } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { NodeEntry, Path } from 'slate';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';

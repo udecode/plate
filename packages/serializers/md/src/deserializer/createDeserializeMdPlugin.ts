@@ -1,5 +1,4 @@
-import { isUrl } from '@udecode/plate-common';
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory, isUrl } from '@udecode/plate-core';
 import { deserializeMd } from './utils';
 
 export const KEY_DESERIALIZE_MD = 'deserializeMd';

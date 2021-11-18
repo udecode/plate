@@ -1,7 +1,11 @@
 /** @jsx jsx */
 
-import { insertNodes } from '@udecode/plate-common';
-import { createPlateEditor, PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  insertNodes,
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Transforms } from 'slate';
 import {

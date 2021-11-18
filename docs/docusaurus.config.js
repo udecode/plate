@@ -33,7 +33,6 @@ const alias = {
   '@udecode/plate-code-block': 'elements/code-block',
   '@udecode/plate-code-block-ui': 'elements/code-block-ui',
   '@udecode/plate-combobox': 'ui/combobox',
-  '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
   '@udecode/plate-csv-serializer': 'serializers/csv',
   '@udecode/plate-dnd': 'blocks/dnd',

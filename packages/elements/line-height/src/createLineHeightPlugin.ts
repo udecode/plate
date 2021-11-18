@@ -1,5 +1,8 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { createPluginFactory, getPluginType } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  ELEMENT_DEFAULT,
+  getPluginType,
+} from '@udecode/plate-core';
 
 export const KEY_LINE_HEIGHT = 'lineHeight';
 

@@ -1,6 +1,8 @@
 import React from 'react';
-import { getPreventDefaultHandler } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPreventDefaultHandler,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 import { BlockToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 

@@ -1,5 +1,10 @@
-import { insertNodes, someNode } from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  getPluginType,
+  insertNodes,
+  PlateEditor,
+  someNode,
+  TElement,
+} from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';

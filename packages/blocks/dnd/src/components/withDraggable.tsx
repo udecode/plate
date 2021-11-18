@@ -1,6 +1,9 @@
 import React, { forwardRef, useMemo } from 'react';
-import { createNodesWithHOC } from '@udecode/plate-common';
-import { PlateRenderElementProps, TEditor } from '@udecode/plate-core';
+import {
+  createNodesWithHOC,
+  PlateRenderElementProps,
+  TEditor,
+} from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ReactEditor, useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';

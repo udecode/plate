@@ -8,7 +8,6 @@ import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createHistoryPlugin, createReactPlugin } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
@@ -28,7 +27,6 @@ import { CONFIG } from '../docs/src/live/config/config';
 import { VALUES } from '../docs/src/live/config/values/values';
 import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
-import { createDeserializeHtmlPlugin } from '../packages/core/src/plugins/html-deserializer/createDeserializeHtmlPlugin';
 import { createPlugins } from '../packages/core/src/utils/createPlugins';
 import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
 import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
@@ -75,8 +73,6 @@ export const Example = () => {
     const pluginsMemo = useMemo(() => {
       const plugins = createPlugins(
         [
-          createReactPlugin(),
-          createHistoryPlugin(),
           createParagraphPlugin(),
           createBlockquotePlugin(),
           createTodoListPlugin(),
@@ -108,7 +104,6 @@ export const Example = () => {
           createMentionPlugin(),
           searchHighlightPlugin,
           createDndPlugin(),
-          createDeserializeHtmlPlugin(),
         ],
         {
           components,

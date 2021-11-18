@@ -1,13 +1,12 @@
-import { PlatePlugin } from './plugins/PlatePlugin';
-import { EditorId, PlateState } from './PlateStore';
+import { WithPlateOptions } from '../plugins/withPlate';
+import { PlateState } from './PlateStore';
 
 /**
  * `usePlateEffects` options
  */
 export interface UsePlateEffectsOptions<T = {}>
-  extends Partial<Pick<PlateState<T>, 'editor' | 'value' | 'enabled'>> {
-  id?: EditorId;
-
+  extends WithPlateOptions<T>,
+    Partial<Pick<PlateState<T>, 'editor' | 'value' | 'enabled'>> {
   /**
    * Initial value of the editor.
    * @default [{ children: [{ text: '' }]}]
@@ -20,6 +19,4 @@ export interface UsePlateEffectsOptions<T = {}>
    * @default false
    */
   normalizeInitialValue?: boolean;
-
-  plugins?: PlatePlugin<T>[];
 }

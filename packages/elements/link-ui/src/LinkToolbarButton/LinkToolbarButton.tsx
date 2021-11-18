@@ -1,6 +1,9 @@
 import React from 'react';
-import { someNode } from '@udecode/plate-common';
-import { getPluginType, usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPluginType,
+  someNode,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ELEMENT_LINK, getAndUpsertLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 

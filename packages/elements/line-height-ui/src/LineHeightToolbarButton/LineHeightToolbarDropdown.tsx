@@ -1,6 +1,10 @@
 import React, { useCallback } from 'react';
-import { isCollapsed, someNode } from '@udecode/plate-common';
-import { getPluginInjectProps, usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPluginInjectProps,
+  isCollapsed,
+  someNode,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,

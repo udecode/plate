@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { findNode } from '@udecode/plate-common';
+import { findNode } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
 import { hasListChild } from './hasListChild';

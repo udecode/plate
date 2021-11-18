@@ -2,9 +2,11 @@ import {
   getAbove,
   getNode,
   getParent,
+  getPluginType,
   isCollapsed,
-} from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Location, NodeEntry, Path, Range } from 'slate';
 import { ELEMENT_LI } from '../createListPlugin';
 

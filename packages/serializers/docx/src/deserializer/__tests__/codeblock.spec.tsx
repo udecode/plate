@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { createDeserializeHtmlPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
 import {
@@ -33,11 +32,7 @@ describe(getDocxTestName(name), () => {
         <hp>from the beginning of the docx reader.</hp>
       </editor>
     ),
-    plugins: [
-      createBasicElementsPlugin(),
-      createDeserializeHtmlPlugin(),
-      createDeserializeDocxPlugin(),
-    ],
+    plugins: [createBasicElementsPlugin(), createDeserializeDocxPlugin()],
     overrides: {
       [ELEMENT_PARAGRAPH]: {
         deserializeHtml: {

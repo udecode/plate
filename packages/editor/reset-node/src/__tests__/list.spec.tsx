@@ -3,8 +3,8 @@
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-} from '@udecode/plate-common';
-import { mockPlugin } from '@udecode/plate-core';
+  mockPlugin,
+} from '@udecode/plate-core';
 import { ELEMENT_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

@@ -1,5 +1,4 @@
-import { getAbove } from '@udecode/plate-common';
-import { KeyboardHandler, TElement } from '@udecode/plate-core';
+import { getAbove, KeyboardHandler, TElement } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { getNextTableCell } from './queries/getNextTableCell';
 import { getPreviousTableCell } from './queries/getPreviousTableCell';

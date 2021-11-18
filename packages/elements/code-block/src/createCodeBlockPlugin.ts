@@ -1,5 +1,4 @@
-import { someNode } from '@udecode/plate-common';
-import { createPluginFactory, getPlugin } from '@udecode/plate-core';
+import {createPluginFactory, getPlugin, KEY_DESERIALIZE_HTML, someNode} from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 import { decorateCodeLine } from './decorateCodeLine';
 import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlockPre';
@@ -14,7 +13,7 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
   injectPlugin: (editor, { key }) => {
-    if (key !== 'deserializeHtml') return;
+    if (key !== KEY_DESERIALIZE_HTML) return;
 
     const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 

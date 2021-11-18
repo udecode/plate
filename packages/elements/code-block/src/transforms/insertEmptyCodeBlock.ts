@@ -1,10 +1,12 @@
 import {
   ELEMENT_DEFAULT,
+  getPluginType,
   insertNodes,
   isBlockAboveEmpty,
   isExpanded,
-} from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';

@@ -1,5 +1,4 @@
-import { findNode } from '@udecode/plate-common';
-import { PlateEditor, TDescendant } from '@udecode/plate-core';
+import { findNode, PlateEditor, TDescendant } from '@udecode/plate-core';
 import { Node, Transforms } from 'slate';
 import { getCodeBlockType, getCodeLineType } from './options';
 

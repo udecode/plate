@@ -1,5 +1,7 @@
-import { isUrl as isUrlProtocol } from '@udecode/plate-common';
-import { createPluginFactory } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  isUrl as isUrlProtocol,
+} from '@udecode/plate-core';
 import { onKeyDownLink } from './onKeyDownLink';
 import { LinkPlugin } from './types';
 import { withLink } from './withLink';

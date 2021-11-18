@@ -5,8 +5,9 @@ import {
   getText,
   setNodes,
   someNode,
-} from '@udecode/plate-common';
-import { TEditor, TElement } from '@udecode/plate-core';
+  TEditor,
+  TElement,
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Editor, Range, Transforms } from 'slate';
 import { AutoformatBlockRule } from '../types';

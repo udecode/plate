@@ -8,12 +8,7 @@ import {
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import {
-  createDeserializeHtmlPlugin,
-  createHistoryPlugin,
-  createPlugins,
-  createReactPlugin,
-} from '@udecode/plate-core';
+import { createPlugins } from '@udecode/plate-core';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import {
   AlignToolbarButtons,
@@ -61,8 +56,6 @@ const PlateContainer = () => {
 
   const plugins = createPlugins(
     [
-      createReactPlugin(),
-      createHistoryPlugin(),
       createBlockquotePlugin(),
       createTodoListPlugin(),
       createHeadingPlugin({ options: { levels: 5 } }),
@@ -86,7 +79,6 @@ const PlateContainer = () => {
       createNormalizeTypesPlugin(CONFIG.forceLayout),
       createTrailingBlockPlugin(CONFIG.trailingBlock),
       createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-      createDeserializeHtmlPlugin(),
     ],
     {
       components: createPlateUI(),

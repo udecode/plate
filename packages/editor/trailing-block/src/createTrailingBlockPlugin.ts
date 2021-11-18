@@ -1,5 +1,9 @@
-import { ELEMENT_DEFAULT, QueryNodeOptions } from '@udecode/plate-common';
-import { createPluginFactory, getPluginType } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  ELEMENT_DEFAULT,
+  getPluginType,
+  QueryNodeOptions,
+} from '@udecode/plate-core';
 import { withTrailingBlock } from './withTrailingBlock';
 
 export interface TrailingBlockPlugin extends QueryNodeOptions {

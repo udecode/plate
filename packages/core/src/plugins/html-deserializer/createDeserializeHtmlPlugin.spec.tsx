@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { PlateEditor, PlatePlugin } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { createHeadingPlugin } from '../../../../elements/heading/src/createHeadingPlugin';
@@ -7,7 +6,8 @@ import { createLinkPlugin } from '../../../../elements/link/src/createLinkPlugin
 import { createMediaEmbedPlugin } from '../../../../elements/media-embed/src/createMediaEmbedPlugin';
 import { createBoldPlugin } from '../../../../marks/basic-marks/src/createBoldPlugin';
 import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
-import { createDeserializeHtmlPlugin } from './createDeserializeHtmlPlugin';
+import { PlateEditor } from '../../types/PlateEditor';
+import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 
 jsx;
 
@@ -49,10 +49,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin[] = [
-        createHeadingPlugin(),
-        createDeserializeHtmlPlugin(),
-      ];
+      const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -84,10 +81,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin[] = [
-        createHeadingPlugin(),
-        createDeserializeHtmlPlugin(),
-      ];
+      const plugins: PlatePlugin[] = [createHeadingPlugin()];
 
       const editor = createPlateUIEditor({
         editor: input,
@@ -120,10 +114,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: PlatePlugin[] = [
-      createParagraphPlugin(),
-      createDeserializeHtmlPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [createParagraphPlugin()];
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -165,10 +156,7 @@ describe('when inserting empty html', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugin[] = [
-      createBoldPlugin(),
-      createDeserializeHtmlPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [createBoldPlugin()];
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -206,10 +194,7 @@ describe('when inserting an iframe without src', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugin[] = [
-      createMediaEmbedPlugin(),
-      createDeserializeHtmlPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
 
     const editor = createPlateUIEditor({
       editor: input,
@@ -252,7 +237,6 @@ describe('when inserting link with href', () => {
     const plugins: PlatePlugin[] = [
       createParagraphPlugin(),
       createLinkPlugin(),
-      createDeserializeHtmlPlugin(),
     ];
 
     const editor = createPlateUIEditor({
@@ -294,7 +278,7 @@ describe('when inserting plain text', () => {
 
     const editor = createPlateUIEditor({
       editor: input,
-      plugins: [createDeserializeHtmlPlugin()],
+      plugins: [],
     });
 
     editor.insertData(data as any);

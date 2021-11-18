@@ -1,5 +1,4 @@
-import { match, wrapNodes } from '@udecode/plate-common';
-import { PlateEditor, TElement } from '@udecode/plate-core';
+import { match, PlateEditor, TElement, wrapNodes } from '@udecode/plate-core';
 import { Ancestor, Editor, Element, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries';
 

@@ -1,5 +1,8 @@
-import { findNode } from '@udecode/plate-common';
-import { createPluginFactory, PlatePlugin } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  findNode, KEY_DESERIALIZE_HTML,
+  PlatePlugin,
+} from '@udecode/plate-core';
 import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';
@@ -36,7 +39,7 @@ export const createListPlugin = createPluginFactory({
       key: ELEMENT_LI,
       isElement: true,
       injectPlugin: (editor, { key, type }) => {
-        if (key === 'deserializeHtml') {
+        if (key === KEY_DESERIALIZE_HTML) {
           return {
             preInsert: () => {
               const liEntry = findNode(editor, { match: { type } });

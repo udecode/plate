@@ -17,8 +17,7 @@ import {
   CodeBlockElement,
   CodeLineElement,
 } from '@udecode/plate-code-block-ui';
-import { withProps } from '@udecode/plate-common';
-import { PlatePluginComponent } from '@udecode/plate-core';
+import { PlatePluginComponent, withProps } from '@udecode/plate-core';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
   ELEMENT_H1,

@@ -15,9 +15,6 @@ export const createDeserializeDocxPlugin = createPluginFactory({
         },
       };
     }
-
-    if (key === 'code_block') {
-      return {};
-    }
   },
+  // transformPlugin
 });

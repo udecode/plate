@@ -6,10 +6,12 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ELEMENT_DEFAULT,
+  getPluginType,
   getRangeFromBlockStart,
   getText,
-} from '@udecode/plate-common';
-import { getPluginType, mockPlugin, PlateEditor } from '@udecode/plate-core';
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';

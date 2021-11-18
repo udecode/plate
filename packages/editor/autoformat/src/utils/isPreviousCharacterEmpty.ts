@@ -1,5 +1,4 @@
-import { getRangeBefore, getText } from '@udecode/plate-common';
-import { TEditor } from '@udecode/plate-core';
+import { getRangeBefore, getText, TEditor } from '@udecode/plate-core';
 import { Location } from 'slate';
 
 export const isPreviousCharacterEmpty = (editor: TEditor, at: Location) => {

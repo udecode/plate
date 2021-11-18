@@ -1,5 +1,4 @@
-import { setNodes } from '@udecode/plate-common';
-import { TElement, WithOverride } from '@udecode/plate-core';
+import { setNodes, TElement, WithOverride } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { IndentPlugin } from './types';
 

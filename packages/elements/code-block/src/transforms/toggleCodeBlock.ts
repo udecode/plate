@@ -1,5 +1,11 @@
-import { getNodes, setNodes, someNode, wrapNodes } from '@udecode/plate-common';
-import { PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  getNodes,
+  PlateEditor,
+  setNodes,
+  someNode,
+  TElement,
+  wrapNodes,
+} from '@udecode/plate-core';
 import { getCodeBlockType, getCodeLineType } from '../options';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 

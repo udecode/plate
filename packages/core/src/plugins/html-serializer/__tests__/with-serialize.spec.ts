@@ -1,11 +1,12 @@
 import React from 'react';
-import { createPlateEditor, PlatePlugin } from '@udecode/plate-core';
 import {
   createBoldPlugin,
   createImagePlugin,
   MARK_BOLD,
 } from '../../../../../plate/src/index';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { PlatePlugin } from '../../../types/plugins/PlatePlugin';
+import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

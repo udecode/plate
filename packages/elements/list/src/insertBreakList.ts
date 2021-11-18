@@ -1,5 +1,10 @@
-import { ELEMENT_DEFAULT, isBlockAboveEmpty } from '@udecode/plate-common';
-import { getPluginType, mockPlugin, PlateEditor } from '@udecode/plate-core';
+import {
+  ELEMENT_DEFAULT,
+  getPluginType,
+  isBlockAboveEmpty,
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,

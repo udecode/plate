@@ -1,7 +1,9 @@
-import { isAncestor, TDescendant, TNode } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
-import { queryNode } from '../../../common/src/queries/index';
-import { QueryNodeOptions } from '../../../common/src/types/QueryNodeOptions';
+import { queryNode } from '../common/queries/index';
+import { QueryNodeOptions } from '../common/types/QueryNodeOptions';
+import { isAncestor } from '../types/slate/TAncestor';
+import { TDescendant } from '../types/slate/TDescendant';
+import { TNode } from '../types/slate/TNode';
 
 export interface ApplyDeepToNodesOptions {
   // The destination node object.

@@ -1,5 +1,10 @@
-import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  getAbove,
+  getParent,
+  getPluginType,
+  PlateEditor,
+  someNode,
+} from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 

@@ -1,5 +1,9 @@
-import { isCollapsed, queryNode } from '@udecode/plate-common';
-import { TNode, WithOverride } from '@udecode/plate-core';
+import {
+  isCollapsed,
+  queryNode,
+  TNode,
+  WithOverride,
+} from '@udecode/plate-core';
 import Slate, { Editor, Transforms } from 'slate';
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 

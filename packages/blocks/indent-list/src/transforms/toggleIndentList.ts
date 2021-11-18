@@ -1,5 +1,9 @@
-import { findNode, setNodes, unsetNodes } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
+import {
+  findNode,
+  PlateEditor,
+  setNodes,
+  unsetNodes,
+} from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { indentList, IndentListOptions } from './indentList';
 import { outdentList } from './outdentList';

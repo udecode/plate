@@ -1,5 +1,4 @@
-import { isCollapsed } from '@udecode/plate-common';
-import { WithOverride } from '@udecode/plate-core';
+import { isCollapsed, WithOverride } from '@udecode/plate-core';
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
 import { autoformatText } from './transforms/autoformatText';

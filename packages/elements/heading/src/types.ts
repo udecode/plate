@@ -1,4 +1,4 @@
-import { HotkeyPlugin } from '@udecode/plate-common';
+import { HotkeyPlugin } from '@udecode/plate-core';
 
 export interface HeadingPlugin extends HotkeyPlugin {}
 

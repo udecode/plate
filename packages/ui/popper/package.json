@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@popperjs/core": "2.10.2",
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "react-popper": "2.2.5"
   },

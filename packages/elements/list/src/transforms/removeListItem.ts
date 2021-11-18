@@ -1,10 +1,12 @@
 import {
   deleteFragment,
+  getPluginType,
   getPreviousPath,
   insertNodes,
   isExpanded,
-} from '@udecode/plate-common';
-import { getPluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';

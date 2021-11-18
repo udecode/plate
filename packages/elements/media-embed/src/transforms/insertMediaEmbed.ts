@@ -1,5 +1,10 @@
-import { getParent, insertNodes } from '@udecode/plate-common';
-import { PlateEditor, PlatePluginKey, TElement } from '@udecode/plate-core';
+import {
+  getParent,
+  insertNodes,
+  PlateEditor,
+  PlatePluginKey,
+  TElement,
+} from '@udecode/plate-core';
 import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';
 import { MediaEmbedNodeData } from '../types';
 

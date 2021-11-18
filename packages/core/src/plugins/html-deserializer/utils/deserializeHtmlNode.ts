@@ -1,4 +1,4 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor } from '../../../types/PlateEditor';
 import {
   DeserializeHtmlChildren,
   DeserializeHtmlNodeReturnType,

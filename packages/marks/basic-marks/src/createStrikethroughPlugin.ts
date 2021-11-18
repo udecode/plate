@@ -1,5 +1,8 @@
-import { onKeyDownToggleMark, ToggleMarkPlugin } from '@udecode/plate-common';
-import { createPluginFactory } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  onKeyDownToggleMark,
+  ToggleMarkPlugin,
+} from '@udecode/plate-core';
 
 export const MARK_STRIKETHROUGH = 'strikethrough';
 

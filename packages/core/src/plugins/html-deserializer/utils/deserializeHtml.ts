@@ -1,5 +1,6 @@
-import { normalizeDescendantsToDocumentFragment } from '@udecode/plate-common';
-import { PlateEditor, TDescendant } from '@udecode/plate-core';
+import { normalizeDescendantsToDocumentFragment } from '../../../common/utils/normalizeDescendantsToDocumentFragment';
+import { PlateEditor } from '../../../types/PlateEditor';
+import { TDescendant } from '../../../types/slate/TDescendant';
 import { htmlStringToDOMNode } from '../../html-serializer/utils/htmlStringToDOMNode';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 

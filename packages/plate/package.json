@@ -48,7 +48,6 @@
     "@udecode/plate-code-block": "7.0.2",
     "@udecode/plate-code-block-ui": "7.0.2",
     "@udecode/plate-combobox": "7.0.2",
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "@udecode/plate-csv-serializer": "7.0.2",
     "@udecode/plate-dnd": "7.0.2",

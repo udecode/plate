@@ -5,18 +5,14 @@ import {
   createCodeBlockPlugin,
   createCodePlugin,
   createHeadingPlugin,
-  createHistoryPlugin,
   createImagePlugin,
   createItalicPlugin,
   createParagraphPlugin,
-  createReactPlugin,
   createSelectOnBackspacePlugin,
   createStrikethroughPlugin,
   createUnderlinePlugin,
 } from '@udecode/plate';
 import { CONFIG } from './config';
-
-const core = [createReactPlugin(), createHistoryPlugin()];
 
 const basicElements = [
   createParagraphPlugin(), // paragraph element
@@ -34,12 +30,10 @@ const basicMarks = [
 ];
 
 export const PLUGINS = {
-  core,
   basicElements,
   basicMarks,
-  basicNodes: [...core, ...basicElements, ...basicMarks],
+  basicNodes: [...basicElements, ...basicMarks],
   image: [
-    ...core,
     createBasicElementsPlugin(),
     ...basicMarks,
     createImagePlugin(),
