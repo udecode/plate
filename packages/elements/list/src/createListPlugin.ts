@@ -1,6 +1,7 @@
 import {
   createPluginFactory,
-  findNode, KEY_DESERIALIZE_HTML,
+  findNode,
+  KEY_DESERIALIZE_HTML,
   PlatePlugin,
 } from '@udecode/plate-core';
 import { onKeyDownList } from './onKeyDownList';

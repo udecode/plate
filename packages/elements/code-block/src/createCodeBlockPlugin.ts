@@ -1,4 +1,9 @@
-import {createPluginFactory, getPlugin, KEY_DESERIALIZE_HTML, someNode} from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  getPlugin,
+  KEY_DESERIALIZE_HTML,
+  someNode,
+} from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 import { decorateCodeLine } from './decorateCodeLine';
 import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlockPre';
