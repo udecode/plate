@@ -6,7 +6,7 @@ export interface TransformOptions extends GetInjectPropsOptions {
   nodeValue?: any;
 }
 
-export interface InjectProps<T = {}> {
+export interface InjectProps {
   inject?: {
     /**
      * If defined, Plate will use these options to inject props.

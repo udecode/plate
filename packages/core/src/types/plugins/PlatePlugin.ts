@@ -85,7 +85,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
    * @default key
    */
   type?: string;
-} & InjectProps<T> &
+} & InjectProps &
   Nullable<{
     /**
      * React component rendering a slate element or leaf.
