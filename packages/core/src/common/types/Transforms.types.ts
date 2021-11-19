@@ -1,5 +1,5 @@
-import  { Location, Path, Point, Range } from 'slate';
-import {TNode} from "../../types/slate/TNode";
+import { Location, Path, Point, Range } from 'slate';
+import { TNode } from '../../types/slate/TNode';
 import { MatchOptions } from './Editor.types';
 
 export type TNodeMatch<T extends TNode = TNode> =

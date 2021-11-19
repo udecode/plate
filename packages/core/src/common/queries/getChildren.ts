@@ -1,7 +1,7 @@
 import { NodeEntry, Path } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TDescendant} from "../../types/slate/TDescendant";
-  
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TDescendant } from '../../types/slate/TDescendant';
+
 /**
  * Get children node entries of a node entry.
  * TODO: try Node.children

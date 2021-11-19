@@ -1,8 +1,8 @@
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TEditor} from "../../types/slate/TEditor";
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TEditor } from '../../types/slate/TEditor';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getAbove } from './getAbove';
-  
+
 /**
  * Get the block above a location (default: selection).
  */

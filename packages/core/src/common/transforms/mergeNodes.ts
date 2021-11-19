@@ -1,6 +1,15 @@
-import {Editor, Element, Location, Node, Path, Range, Text, Transforms,} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {hasSingleChild} from '../queries/hasSingleChild';
+import {
+  Editor,
+  Element,
+  Location,
+  Node,
+  Path,
+  Range,
+  Text,
+  Transforms,
+} from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { hasSingleChild } from '../queries/hasSingleChild';
 
 /**
  * Merge a node at a location with the previous node of the same depth,

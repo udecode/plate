@@ -1,10 +1,10 @@
 import { Transforms } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {TElement} from "../../types/slate/TElement";
-import {TNode} from "../../types/slate/TNode";
+import { TEditor } from '../../types/slate/TEditor';
+import { TElement } from '../../types/slate/TElement';
+import { TNode } from '../../types/slate/TNode';
 import { WrapOptions } from '../types/Transforms.types';
 import { unhangRange, UnhangRangeOptions } from './unhangRange';
- 
+
 /**
  * {@link Transforms.wrapNodes}.
  */

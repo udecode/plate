@@ -1,6 +1,6 @@
 import castArray from 'lodash/castArray';
-import {PlateEditor} from "../../types/PlateEditor";
-import {getPluginType} from "../../utils/getPluginType";
+import { PlateEditor } from '../../types/PlateEditor';
+import { getPluginType } from '../../utils/getPluginType';
 
 /**
  * Does the node match the type provided.

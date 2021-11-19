@@ -1,8 +1,8 @@
 import castArray from 'lodash/castArray';
-import {DeserializeHtml} from "../../../types/plugins/DeserializeHtml";
-import {WithPlatePlugin} from "../../../types/plugins/PlatePlugin";
-import {AnyObject} from "../../../types/utility/AnyObject";
-import {Nullable} from "../../../types/utility/Nullable";
+import { DeserializeHtml } from '../../../types/plugins/DeserializeHtml';
+import { WithPlatePlugin } from '../../../types/plugins/PlatePlugin';
+import { AnyObject } from '../../../types/utility/AnyObject';
+import { Nullable } from '../../../types/utility/Nullable';
 
 /**
  * Get a deserializer by type, node names, class names and styles.

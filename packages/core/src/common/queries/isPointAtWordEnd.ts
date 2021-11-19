@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Editor, Point } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 import { getText } from './getText';
 
 // Starts with whitespace char or nothing

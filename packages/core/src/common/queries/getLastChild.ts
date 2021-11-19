@@ -1,7 +1,7 @@
 import { NodeEntry, Path } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TDescendant} from "../../types/slate/TDescendant";
-  
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TDescendant } from '../../types/slate/TDescendant';
+
 /**
  * Get the last child of a node or null if no children.
  */

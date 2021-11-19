@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import {PlateEditor} from "../../types/PlateEditor";
+import { PlateEditor } from '../../types/PlateEditor';
 import { PlateRenderLeafProps } from '../../types/PlateRenderLeafProps';
 import { SlateProps } from '../../types/slate/SlateProps';
-import {pipeInjectProps} from "../../utils/pipeInjectProps";
+import { pipeInjectProps } from '../../utils/pipeInjectProps';
 import { pluginRenderLeaf } from '../../utils/pluginRenderLeaf';
-import {createElementWithSlate} from "./utils/createElementWithSlate";
+import { createElementWithSlate } from './utils/createElementWithSlate';
 import { stripClassNames } from './utils/stripClassNames';
 
 export const leafToHtml = (

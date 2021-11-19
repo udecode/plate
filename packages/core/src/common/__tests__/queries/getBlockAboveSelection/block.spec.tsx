@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import {PlateEditor} from "../../../../types/PlateEditor";
+import { PlateEditor } from '../../../../types/PlateEditor';
 import { getBlockAbove } from '../../../queries/index';
- 
+
 jsx;
 
 const input = ((

@@ -1,6 +1,6 @@
 import { Node, Path } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-  
+import { TEditor } from '../../types/slate/TEditor';
+
 /**
  * Get the descendant node referred to by a specific path.
  * If the path is an empty array, it refers to the root node itself.

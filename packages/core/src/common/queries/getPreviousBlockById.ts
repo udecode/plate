@@ -1,9 +1,9 @@
-import {Editor, Node, NodeEntry} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {TNode} from "../../types/slate/TNode";
-import {QueryNodeOptions} from '../types/QueryNodeOptions';
-import {findNode} from './findNode';
-import {queryNode} from './queryNode';
+import { Editor, Node, NodeEntry } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { TNode } from '../../types/slate/TNode';
+import { QueryNodeOptions } from '../types/QueryNodeOptions';
+import { findNode } from './findNode';
+import { queryNode } from './queryNode';
 
 /**
  * Find the block before a block by id.

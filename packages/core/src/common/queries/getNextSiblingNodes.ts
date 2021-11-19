@@ -1,7 +1,7 @@
 import { NodeEntry, Path } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TDescendant} from "../../types/slate/TDescendant";
-  
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TDescendant } from '../../types/slate/TDescendant';
+
 /**
  * Get the next sibling nodes after a path.
  * @param ancestorEntry Ancestor of the sibling nodes

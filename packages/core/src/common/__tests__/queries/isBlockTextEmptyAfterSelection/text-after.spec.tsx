@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import {createLinkPlugin} from "../../../../../../elements/link/src/createLinkPlugin";
-import {PlateEditor} from "../../../../types/PlateEditor";
-import {createPlateEditor} from "../../../../utils/createPlateEditor";
+import { createLinkPlugin } from '../../../../../../elements/link/src/createLinkPlugin';
+import { PlateEditor } from '../../../../types/PlateEditor';
+import { createPlateEditor } from '../../../../utils/createPlateEditor';
 import { isBlockTextEmptyAfterSelection } from '../../../queries/isBlockTextEmptyAfterSelection';
 
 jsx;

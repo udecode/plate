@@ -2,23 +2,17 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
+import { createListPlugin } from '../../../../../elements/list/src/createListPlugin';
 import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
 import { createItalicPlugin } from '../../../../../marks/basic-marks/src/createItalicPlugin';
 import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
-import {
-  htmlElementToLeaf,
-  HtmlElementToLeafOptions,
-} from './htmlElementToLeaf';
+import { parseHtmlElement } from '../../../../../serializers/docx/src/docx-cleaner/utils/parseHtmlElement';
+import { htmlElementToLeaf } from './htmlElementToLeaf';
 
 jsx;
 
 describe('when children is a text', () => {
-  const input: HtmlElementToLeafOptions = {
-    element: document.createElement('strong'),
-    children: <fragment>test</fragment>,
-  } as any;
-
   const output = (
     <fragment>
       <htext bold>test</htext>
@@ -31,18 +25,13 @@ describe('when children is a text', () => {
         createPlateUIEditor({
           plugins: [createBoldPlugin()],
         }),
-        input as any
+        parseHtmlElement(`<strong>test</strong>`)
       )
     ).toEqual(output);
   });
 });
 
 describe('when there is no plugins', () => {
-  const input = {
-    element: document.createElement('strong'),
-    children: [{ text: 'test' }],
-  };
-
   const output = [{ text: 'test' }];
 
   it('should do nothing', () => {
@@ -51,23 +40,13 @@ describe('when there is no plugins', () => {
         createPlateUIEditor({
           plugins: [{ key: 'a' }],
         }),
-        input
+        parseHtmlElement(`<strong>test</strong>`)
       )
     ).toEqual(output);
   });
 });
 
 describe('when there is a mark above multiple elements', () => {
-  const input = {
-    element: document.createElement('strong'),
-    children: [
-      <hli>
-        <hp>test</hp>test
-      </hli>,
-      null,
-    ],
-  };
-
   const output = (
     <fragment>
       <hli>
@@ -85,11 +64,12 @@ describe('when there is a mark above multiple elements', () => {
         createPlateUIEditor({
           plugins: [
             createParagraphPlugin(),
+            createListPlugin(),
             createBoldPlugin(),
             createItalicPlugin(),
           ],
         }),
-        input as any
+        parseHtmlElement(`<strong><li><p>test</p>test</li></strong>`)
       )
     ).toEqual(output);
   });

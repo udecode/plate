@@ -1,6 +1,6 @@
-import {Editor, Path, Point, Range, Span} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
- 
+import { Editor, Path, Point, Range, Span } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+
 export interface UnhangRangeOptions {
   at?: Range | Path | Point | Span;
   voids?: boolean;

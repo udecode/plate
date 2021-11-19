@@ -1,6 +1,6 @@
 import { Location, Path, Point, Range } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-  
+import { TEditor } from '../../types/slate/TEditor';
+
 /**
  * Get the point from a location (default: selection).
  * If the location is a range, get the anchor point.

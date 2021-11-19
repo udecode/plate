@@ -1,6 +1,6 @@
-import {Editor, Node, NodeEntry, Path, Transforms} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {getNode} from '../queries/getNode';
+import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { getNode } from '../queries/getNode';
 
 export interface MoveChildrenOptions {
   /**

@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Editor, Location, Point } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 
 /**
  * {@link Editor.isStart}. If point is null, return false.

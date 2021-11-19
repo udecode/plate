@@ -1,7 +1,7 @@
-import {castArray} from 'lodash';
-import {Editor, Range, Text, Transforms} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {SetNodesOptions} from '../types/index';
+import { castArray } from 'lodash';
+import { Editor, Range, Text, Transforms } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { SetNodesOptions } from '../types/index';
 
 export interface RemoveMarkOptions
   extends Omit<SetNodesOptions, 'match' | 'split'> {

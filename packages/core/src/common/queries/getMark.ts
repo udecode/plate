@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-  
+import { TEditor } from '../../types/slate/TEditor';
+
 /**
  * Get selected mark by type.
  */

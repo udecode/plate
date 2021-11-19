@@ -1,8 +1,8 @@
 import { Editor, Location, NodeEntry } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TEditor} from "../../types/slate/TEditor";
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TEditor } from '../../types/slate/TEditor';
 import { EditorParentOptions } from '../types/Editor.types';
-  
+
 /**
  * See {@link Editor.parent}.
  * Returns undefined if there is no parent.

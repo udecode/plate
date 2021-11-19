@@ -1,8 +1,8 @@
 import { Editor, Point } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
+import { TEditor } from '../../types/slate/TEditor';
 import { escapeRegExp } from '../utils/escapeRegexp';
 import { getText } from './getText';
- 
+
 /**
  * Is the word at the point after a trigger (punctuation character)
  * https://github.com/ianstormtaylor/slate/blob/main/packages/slate/src/utils/string.ts#L6

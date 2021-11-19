@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { ELEMENT_LI } from '../../../../../../elements/list/src/createListPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
-import {isDescendant} from "../../../../types/slate/TDescendant";
+import { isDescendant } from '../../../../types/slate/TDescendant';
 import { mergeDeepToNodes } from '../../../../utils/mergeDeepToNodes';
 
 jsx;

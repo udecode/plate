@@ -1,6 +1,6 @@
-import { Path } from 'slate'; 
+import { Path } from 'slate';
 import { ReactEditor } from 'slate-react';
-import {TNode} from "../../types/slate/TNode";
+import { TNode } from '../../types/slate/TNode';
 
 /**
  * @see {@link ReactEditor.findPath}

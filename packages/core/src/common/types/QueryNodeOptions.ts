@@ -1,6 +1,6 @@
 import { NodeEntry } from 'slate';
-import {TNode} from "../../types/slate/TNode";
-  
+import { TNode } from '../../types/slate/TNode';
+
 /**
  * Filter nodes.
  */

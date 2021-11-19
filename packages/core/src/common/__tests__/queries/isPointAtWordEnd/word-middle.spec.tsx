@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
-import {PlateEditor} from "../../../../types/PlateEditor";
+import { PlateEditor } from '../../../../types/PlateEditor';
 import { isPointAtWordEnd } from '../../../queries/index';
 
 jsx;

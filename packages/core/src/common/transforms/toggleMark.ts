@@ -1,9 +1,9 @@
 import castArray from 'lodash/castArray';
-import {Editor} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {isMarkActive} from '../queries/isMarkActive';
-import {ToggleMarkPlugin} from '../types/plugins/ToggleMarkPlugin';
-import {removeMark} from './removeMark';
+import { Editor } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { isMarkActive } from '../queries/isMarkActive';
+import { ToggleMarkPlugin } from '../types/plugins/ToggleMarkPlugin';
+import { removeMark } from './removeMark';
 
 export interface ToggleMarkOptions extends Pick<ToggleMarkPlugin, 'clear'> {
   key: string;

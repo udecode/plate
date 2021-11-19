@@ -1,8 +1,8 @@
 import { Location, Path, Point, Range } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TNode} from "../../types/slate/TNode";
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TNode } from '../../types/slate/TNode';
 import { Predicate } from '../queries/match';
-  
+
 export type NodeMatch<T = TNode> = Predicate<T>;
 
 export interface MatchOptions<T = TNode> {

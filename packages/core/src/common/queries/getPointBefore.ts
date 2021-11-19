@@ -2,8 +2,8 @@
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';
 import { Editor, Location, Path, Point } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
- 
+import { TEditor } from '../../types/slate/TEditor';
+
 export interface BeforeOptions {
   distance?: number | undefined;
   unit?: 'character' | 'word' | 'line' | 'block' | 'offset' | undefined;

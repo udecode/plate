@@ -1,7 +1,7 @@
-import {ELEMENT_PARAGRAPH} from "../../../../../../elements/paragraph/src/createParagraphPlugin";
-import {TDescendant} from "../../../../types/slate/TDescendant";
+import { ELEMENT_PARAGRAPH } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { TDescendant } from '../../../../types/slate/TDescendant';
 import { createDocumentNode } from '../../../utils/index';
-  
+
 const output: TDescendant[] = [
   {
     children: [

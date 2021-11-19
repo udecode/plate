@@ -1,7 +1,7 @@
-import {Transforms} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {TNode} from "../../types/slate/TNode";
-import {SetNodesOptions} from '../types/Transforms.types';
+import { Transforms } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { TNode } from '../../types/slate/TNode';
+import { SetNodesOptions } from '../types/Transforms.types';
 
 export const unsetNodes = <T extends TNode = TNode>(
   editor: TEditor,

@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Editor, Location } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 
 /**
  * See {@link Editor.string}.

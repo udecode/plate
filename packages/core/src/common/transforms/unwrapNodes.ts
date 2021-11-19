@@ -1,7 +1,7 @@
-import {Transforms} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {getQueryOptions} from '../queries/match';
-import {WrapOptions} from '../types/Transforms.types';
+import { Transforms } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { getQueryOptions } from '../queries/match';
+import { WrapOptions } from '../types/Transforms.types';
 
 /**
  * Unwrap nodes with extended options.

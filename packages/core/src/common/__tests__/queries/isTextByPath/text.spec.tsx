@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import {PlateEditor} from "../../../../types/PlateEditor";
+import { PlateEditor } from '../../../../types/PlateEditor';
 import { isTextByPath } from '../../../queries/isTextByPath';
 
 jsx;

@@ -1,7 +1,7 @@
-import {PlateEditor} from "../../types/PlateEditor";
-import {TEditor} from "../../types/slate/TEditor";
-import {TElement} from "../../types/slate/TElement";
-import {getPluginType} from "../../utils/getPluginType";
+import { PlateEditor } from '../../types/PlateEditor';
+import { TEditor } from '../../types/slate/TEditor';
+import { TElement } from '../../types/slate/TElement';
+import { getPluginType } from '../../utils/getPluginType';
 import { someNode } from '../queries/someNode';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { ELEMENT_DEFAULT } from '../types/node.types';
@@ -18,7 +18,7 @@ export interface ToggleNodeTypeOptions {
    */
   inactiveType?: string;
 }
- 
+
 /**
  * Toggle the type of the selected node.
  * Don't do anything if activeType === inactiveType.

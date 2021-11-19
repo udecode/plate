@@ -1,5 +1,5 @@
-import {PlateEditor} from "../../../types/PlateEditor";
-import {AnyObject} from "../../../types/utility/AnyObject";
+import { PlateEditor } from '../../../types/PlateEditor';
+import { AnyObject } from '../../../types/utility/AnyObject';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlLeaf = <T = {}>(

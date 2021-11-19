@@ -1,5 +1,7 @@
-export const parseHtmlElement = (html: string): Element | null => {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.firstElementChild;
+const parser = new DOMParser();
+
+export const parseHtmlElement = (html: string) => {
+  const { body } = parser.parseFromString(html, 'text/html');
+
+  return body.firstElementChild as HTMLElement;
 };

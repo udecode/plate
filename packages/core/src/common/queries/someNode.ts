@@ -1,6 +1,6 @@
-import {TEditor} from "../../types/slate/TEditor";
-import {TNode} from "../../types/slate/TNode";
-import {findNode, FindNodeOptions} from './findNode';
+import { TEditor } from '../../types/slate/TEditor';
+import { TNode } from '../../types/slate/TNode';
+import { findNode, FindNodeOptions } from './findNode';
 
 /**
  * Iterate through all of the nodes in the editor and break early for the first truthy match. Otherwise

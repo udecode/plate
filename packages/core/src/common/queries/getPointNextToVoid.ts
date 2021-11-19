@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Editor, Path, Point } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

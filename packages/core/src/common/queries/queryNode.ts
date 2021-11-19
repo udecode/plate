@@ -1,7 +1,7 @@
 import castArray from 'lodash/castArray';
-import {NodeEntry} from 'slate';
-import {TNode} from "../../types/slate/TNode";
-import {QueryNodeOptions} from '../types/QueryNodeOptions';
+import { NodeEntry } from 'slate';
+import { TNode } from '../../types/slate/TNode';
+import { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 /**
  * Query the node entry.

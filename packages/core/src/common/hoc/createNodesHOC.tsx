@@ -1,8 +1,8 @@
 import { FunctionComponent } from 'react';
 import { castArray } from 'lodash';
-import {AnyObject} from "../../types/utility/AnyObject";
+import { AnyObject } from '../../types/utility/AnyObject';
 import { createNodeHOC } from './createNodeHOC';
- 
+
 export type Options<T> = Partial<T> &
   AnyObject & {
     /**

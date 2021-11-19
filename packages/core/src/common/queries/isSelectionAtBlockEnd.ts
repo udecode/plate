@@ -1,4 +1,4 @@
-import {TEditor} from "../../types/slate/TEditor";
+import { TEditor } from '../../types/slate/TEditor';
 import { getBlockAbove } from './getBlockAbove';
 import { isEnd } from './isEnd';
 

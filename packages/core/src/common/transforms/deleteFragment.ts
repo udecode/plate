@@ -1,6 +1,14 @@
-import {Editor, Location, NodeEntry, Path, Point, Range, Transforms,} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {mergeNodes} from './mergeNodes';
+import {
+  Editor,
+  Location,
+  NodeEntry,
+  Path,
+  Point,
+  Range,
+  Transforms,
+} from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { mergeNodes } from './mergeNodes';
 
 export const deleteFragment = (
   editor: TEditor,

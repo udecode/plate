@@ -1,4 +1,4 @@
-export type IndentPlugin<T = {}> = {
+export type IndentPlugin = {
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
    * @default 40

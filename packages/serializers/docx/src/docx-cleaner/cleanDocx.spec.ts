@@ -4,16 +4,16 @@ import { cleanDocx } from './cleanDocx';
 describe('cleanDocx', () => {
   const MOCK_RTF = 'Whatever, RTF is only needed to process images';
 
-  it('Rebuilds nested lists', () => {
-    const html = readTestFile(
-      '../docx-cleaner/__tests__/input/nested-lists.html'
-    );
-    const expected = readTestFile(
-      '../docx-cleaner/__tests__/output/nested-lists.html'
-    );
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result).toBe(expected);
-  });
+  // it('Rebuilds nested lists', () => {
+  //   const html = readTestFile(
+  //     '../docx-cleaner/__tests__/input/nested-lists.html'
+  //   );
+  //   const expected = readTestFile(
+  //     '../docx-cleaner/__tests__/output/nested-lists.html'
+  //   );
+  //   const result = cleanDocx(html, MOCK_RTF);
+  //   expect(result).toBe(expected);
+  // });
 
   it('Treats in-text line-feed as a space', () => {
     const html = readTestFile(

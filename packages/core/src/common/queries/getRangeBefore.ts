@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Editor, Location, Range } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 import { getPointBefore, PointBeforeOptions } from './getPointBefore';
 
 export interface RangeBeforeOptions extends PointBeforeOptions {}

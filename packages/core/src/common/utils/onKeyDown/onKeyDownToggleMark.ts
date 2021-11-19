@@ -1,8 +1,8 @@
 import isHotkey from 'is-hotkey';
-import {KeyboardHandler} from "../../../types/plugins/KeyboardHandler";
+import { KeyboardHandler } from '../../../types/plugins/KeyboardHandler';
 import { toggleMark } from '../../transforms/toggleMark';
 import { ToggleMarkPlugin } from '../../types/plugins/ToggleMarkPlugin';
-  
+
 export const onKeyDownToggleMark: KeyboardHandler<{}, ToggleMarkPlugin> = (
   editor,
   { type, options: { hotkey, clear } }

@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
-import {TAncestor} from "../../types/slate/TAncestor";
-import {TEditor} from "../../types/slate/TEditor"; 
+import { TAncestor } from '../../types/slate/TAncestor';
+import { TEditor } from '../../types/slate/TEditor';
 import { EditorAboveOptions } from '../types/Editor.types';
 import { getQueryOptions } from './match';
 

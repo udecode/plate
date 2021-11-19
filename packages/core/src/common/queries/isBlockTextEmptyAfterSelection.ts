@@ -1,9 +1,9 @@
-import {Editor} from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
-import {isText} from "../../types/slate/TText";
-import {getBlockAbove} from './getBlockAbove';
-import {getNextSiblingNodes} from './getNextSiblingNodes';
-import {getParent} from './getParent';
+import { Editor } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
+import { isText } from '../../types/slate/TText';
+import { getBlockAbove } from './getBlockAbove';
+import { getNextSiblingNodes } from './getNextSiblingNodes';
+import { getParent } from './getParent';
 
 /**
  * Is there empty text after the selection.

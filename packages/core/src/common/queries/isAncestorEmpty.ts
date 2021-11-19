@@ -1,5 +1,5 @@
-import {TEditor} from "../../types/slate/TEditor";
 import { Ancestor, Editor, Node } from 'slate';
+import { TEditor } from '../../types/slate/TEditor';
 
 /**
  * Is an ancestor empty (empty text and no inline children).

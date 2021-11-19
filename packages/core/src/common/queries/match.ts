@@ -1,7 +1,7 @@
 import { castArray } from 'lodash';
 import { Editor } from 'slate';
-import {TEditor} from "../../types/slate/TEditor";
- 
+import { TEditor } from '../../types/slate/TEditor';
+
 export type PredicateObj<T> = Partial<Record<keyof T, any | any[]>>;
 export type PredicateFn<T> = (obj: T) => boolean;
 export type Predicate<T> = PredicateObj<T> | PredicateFn<T>;
