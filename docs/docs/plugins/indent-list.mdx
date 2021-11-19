@@ -126,7 +126,7 @@ npm install @udecode/plate-indent-list
 {
   nodeKey: KEY_LIST_STYLE_TYPE,
   validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-  transformStyle: (e, { style, nodeValue }) => ({
+  transformStyle: ({ style, nodeValue }) => ({
     ...style,
     display: 'list-item',
     listStyleType: nodeValue,

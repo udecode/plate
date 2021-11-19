@@ -1,15 +1,15 @@
 import {
-  cleanBrElements,
-  cleanEmptyElements,
-  cleanEmptyParagraphs,
-  cleanFontElements,
-  cleanFootnotes,
-  cleanImageElements,
-  cleanLinkElements,
-  cleanListElements,
-  cleanQuotes,
-  cleanSpans,
-  cleanTextNodes,
+  cleanDocxListElementsToIndentList,
+  cleanDocxQuotes,
+  cleanDocxSpans,
+  cleanHtmlBrElements,
+  cleanHtmlEmptyElements,
+  cleanHtmlEmptyParagraphs,
+  cleanHtmlFontElements,
+  cleanHtmlFootnotes,
+  cleanHtmlImageElements,
+  cleanHtmlLinkElements,
+  cleanHtmlTextNodes,
   isDocxContent,
   postCleanHtml,
   preCleanHtml,
@@ -17,7 +17,7 @@ import {
 
 const parser = new DOMParser();
 
-const cleanDocx = (html: string, rtf: string): string => {
+export const cleanDocx = (html: string, rtf: string): string => {
   const document = parser.parseFromString(preCleanHtml(html), 'text/html');
   const { body } = document;
 
@@ -25,19 +25,17 @@ const cleanDocx = (html: string, rtf: string): string => {
     return html;
   }
 
-  cleanFootnotes(body);
-  cleanImageElements(document, rtf, body);
-  cleanEmptyElements(body);
-  cleanEmptyParagraphs(body);
-  cleanQuotes(body);
-  cleanSpans(body);
-  cleanTextNodes(body);
-  cleanBrElements(body);
-  cleanLinkElements(body);
-  cleanFontElements(body);
-  cleanListElements(body);
+  cleanHtmlFootnotes(body);
+  cleanHtmlImageElements(document, rtf, body);
+  cleanHtmlEmptyElements(body);
+  cleanHtmlEmptyParagraphs(body);
+  cleanDocxQuotes(body);
+  cleanDocxSpans(body);
+  cleanHtmlTextNodes(body);
+  cleanHtmlBrElements(body);
+  cleanHtmlLinkElements(body);
+  cleanHtmlFontElements(body);
+  cleanDocxListElementsToIndentList(body);
 
   return postCleanHtml(body.innerHTML);
 };
-
-export default cleanDocx;

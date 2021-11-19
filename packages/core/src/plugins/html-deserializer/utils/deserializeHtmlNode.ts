@@ -1,8 +1,5 @@
 import { PlateEditor } from '../../../types/PlateEditor';
-import {
-  DeserializeHtmlChildren,
-  DeserializeHtmlNodeReturnType,
-} from '../types';
+import { DeserializeHtmlNodeReturnType } from '../types';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';
@@ -25,27 +22,14 @@ export const deserializeHtmlNode = <T = {}>(editor: PlateEditor<T>) => (
   const breakLine = htmlBrToNewLine(node);
   if (breakLine) return breakLine;
 
-  const children: DeserializeHtmlChildren[] = Array.from(node.childNodes)
-    .map(deserializeHtmlNode(editor))
-    .flat();
-
   // body
-  const fragment = htmlBodyToFragment({
-    element: node,
-    children,
-  });
+  const fragment = htmlBodyToFragment(editor, node);
   if (fragment) return fragment;
 
   // element
-  const element = htmlElementToElement(editor, {
-    element: node,
-    children,
-  });
+  const element = htmlElementToElement(editor, node);
   if (element) return element;
 
   // leaf
-  return htmlElementToLeaf(editor, {
-    element: node,
-    children,
-  });
+  return htmlElementToLeaf(editor, node);
 };

@@ -15,7 +15,7 @@ npm install @udecode/plate-docx-serializer
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createImagePlugin(),
     createLinkPlugin(),
@@ -25,16 +25,15 @@ npm install @udecode/plate-docx-serializer
     createTodoListPlugin(),
     createMediaEmbedPlugin(),
     createHighlightPlugin(),
-  ];``
+    createDeserializeDocxPlugin(),
+  ], {
+    components: CONFIG.components,
+  });
     
-  plugins.push(createDeserializeDocxPlugin({ plugins }));
-
   return (
     <Plate
       id="deserialize-docx"
       plugins={plugins}
-      components={CONFIG.components}
-      options={CONFIG.docxOptions}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.pasteHtml}
     />

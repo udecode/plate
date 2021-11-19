@@ -41,7 +41,6 @@ describe('code block deserialization', () => {
               insertData: {
                 format: 'text/plain',
                 getFragment() {
-                  console.log('why');
                   return [{ text: 'test' }];
                 },
               },

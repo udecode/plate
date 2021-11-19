@@ -11,7 +11,7 @@ export const createDeserializeAstPlugin = createPluginFactory({
   editor: {
     insertData: {
       format: 'application/x-slate-fragment',
-      getFragment: (editor, plugin, { data }) => {
+      getFragment: ({ data }) => {
         const decoded = decodeURIComponent(window.atob(data));
         return JSON.parse(decoded);
       },

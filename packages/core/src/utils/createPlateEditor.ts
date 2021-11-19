@@ -1,6 +1,6 @@
 import { createEditor } from 'slate';
 import { withPlate, WithPlateOptions } from '../plugins/withPlate';
-import { OverridesByKey } from '../types/OverridesByKey';
+import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
@@ -11,7 +11,7 @@ export interface CreatePlateEditorOptions<T = {}>
   editor?: any;
   plugins?: PlatePlugin<T>[];
   components?: Record<string, PlatePluginComponent>;
-  overrides?: OverridesByKey<T>;
+  overrideByKey?: OverrideByKey<T>;
 }
 
 /**
@@ -26,12 +26,12 @@ export const createPlateEditor = <T = {}>({
   editor = createEditor(),
   plugins = [],
   components,
-  overrides,
+  overrideByKey,
   ...withPlateOptions
 }: CreatePlateEditorOptions<T> = {}): PlateEditor<T> => {
   plugins = createPlugins(plugins, {
     components,
-    overrides,
+    overrideByKey,
   });
 
   return withPlate(editor, {

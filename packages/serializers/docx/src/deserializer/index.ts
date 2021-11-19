@@ -3,4 +3,3 @@
  */
 
 export * from './createDeserializeDocxPlugin';
-export * from './__tests__/index';

@@ -34,7 +34,7 @@ const components = createPlateUI({
 
 ```ts
 export const createPlateUI = (
-  overrides?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
+  overrideByKey?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: AlignCenterElement,
@@ -76,9 +76,9 @@ export const createPlateUI = (
     [MARK_UNDERLINE]: UnderlineLeaf,
   };
 
-  if (overrides) {
-    Object.keys(overrides).forEach((key) => {
-      components[key] = overrides[key];
+  if (overrideByKey) {
+    Object.keys(overrideByKey).forEach((key) => {
+      components[key] = overrideByKey[key];
     });
   }
 

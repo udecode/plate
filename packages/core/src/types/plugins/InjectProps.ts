@@ -1,6 +1,5 @@
 import { CSSProperties } from 'react';
 import { GetInjectPropsOptions } from '../../utils/pluginInjectProps';
-import { PlateEditor } from '../PlateEditor';
 import { AnyObject } from '../utility/AnyObject';
 
 export interface TransformOptions extends GetInjectPropsOptions {
@@ -39,28 +38,19 @@ export interface InjectProps<T = {}> {
        * Transform the className.
        * @default clsx(className, classNames[value])
        */
-      transformClassName?: (
-        editor: PlateEditor<T>,
-        options: TransformOptions
-      ) => any;
+      transformClassName?: (options: TransformOptions) => any;
 
       /**
        * Transform the node value for the style or className.
        * @default nodeValue
        */
-      transformNodeValue?: (
-        editor: PlateEditor<T>,
-        options: TransformOptions
-      ) => any;
+      transformNodeValue?: (options: TransformOptions) => any;
 
       /**
        * Transform the style.
        * @default { ...style, [styleKey]: value }
        */
-      transformStyle?: (
-        editor: PlateEditor<T>,
-        options: TransformOptions
-      ) => CSSProperties;
+      transformStyle?: (options: TransformOptions) => CSSProperties;
 
       /**
        * List of supported node values.

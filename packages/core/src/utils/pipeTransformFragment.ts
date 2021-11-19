@@ -1,18 +1,19 @@
-import { PlatePluginInjectedPlugin } from '../types/plugins/PlatePluginInjectedPlugin';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { TDescendant } from '../types/slate/TDescendant';
+import { InjectedPlugin } from './getInjectedPlugins';
 
 /**
- * Pipe injectPlugins.transformFragment
+ * Pipe editor.insertData.transformFragment
  */
-export const pipeTransformFragment = (
-  injectedPlugins: PlatePluginInjectedPlugin[],
+export const pipeTransformFragment = <T = {}>(
+  plugins: InjectedPlugin<T>[],
   {
     fragment,
     ...options
   }: PlatePluginInsertDataOptions & { fragment: TDescendant[] }
 ) => {
-  injectedPlugins.forEach(({ transformFragment }) => {
+  plugins.forEach((p) => {
+    const transformFragment = p.editor?.insertData?.transformFragment;
     if (!transformFragment) return;
 
     fragment = transformFragment(fragment, options);

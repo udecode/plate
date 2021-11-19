@@ -34,10 +34,18 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-basic-elements": "7.0.2",
     "@udecode/plate-basic-marks": "7.0.2",
+    "@udecode/plate-block-quote": "7.0.2",
+    "@udecode/plate-code-block": "7.0.2",
     "@udecode/plate-core": "7.0.2",
+    "@udecode/plate-heading": "7.0.2",
+    "@udecode/plate-image": "7.0.2",
+    "@udecode/plate-indent": "7.0.2",
+    "@udecode/plate-indent-list": "7.0.2",
+    "@udecode/plate-link": "7.0.2",
     "@udecode/plate-list": "7.0.2",
+    "@udecode/plate-paragraph": "7.0.2",
+    "@udecode/plate-table": "7.0.2",
     "validator": "13.7.0"
   },
   "peerDependencies": {

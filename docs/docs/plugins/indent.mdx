@@ -60,7 +60,7 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
   offset: 24,
   unit: 'px',
   styleKey: 'marginLeft',
-  transformNodeValue: (e, { nodeValue }) => {
+  transformNodeValue: ({ nodeValue }) => {
     const { offset, unit } = getPlugin<IndentPlugin>(e, KEY_INDENT);
   
     return nodeValue * offset + unit;

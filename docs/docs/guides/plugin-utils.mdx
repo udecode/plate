@@ -43,20 +43,19 @@ export interface InjectPropsPlugin<TValue = any> {
    * Transforms the className.
    * @default clsx(className, classNames[value])
    */
-  transformClassName?: (editor: PlateEditor, options: TransformOptions) => any;
+  transformClassName?: (options: TransformOptions) => any;
 
   /**
    * Transforms the node value for the style or className.
    * @default nodeValue
    */
-  transformNodeValue?: (editor: PlateEditor, options: TransformOptions) => TValue;
+  transformNodeValue?: (options: TransformOptions) => TValue;
 
   /**
    * Transforms the style.
    * @default { ...style, [styleKey]: value }
    */
   transformStyle?: (
-    editor: PlateEditor,
     options: TransformOptions
   ) => CSSProperties;
 
@@ -66,7 +65,7 @@ export interface InjectPropsPlugin<TValue = any> {
   validNodeValues?: TValue[];
 
   /**
-   * List of element types for which the overrides apply.
+   * List of element types to override.
    * @default [ELEMENT_DEFAULT]
    */
   validTypes?: string[];

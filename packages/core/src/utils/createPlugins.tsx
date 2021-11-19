@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import { OverridesByKey } from '../types/OverridesByKey';
+import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
 import { overridePluginsByKey } from './overridePluginsByKey';
@@ -8,7 +8,7 @@ export const createPlugins = <T extends {} = {}>(
   plugins: PlatePlugin<T>[],
   {
     components,
-    overrides,
+    overrideByKey,
   }: {
     /**
      * Override plugin component by key.
@@ -18,26 +18,26 @@ export const createPlugins = <T extends {} = {}>(
     /**
      * Override plugin by key.
      */
-    overrides?: OverridesByKey<T>;
+    overrideByKey?: OverrideByKey<T>;
   } = {}
 ): PlatePlugin<T>[] => {
-  let overridesByKey: OverridesByKey<T> = {};
+  let allOverrideByKey: OverrideByKey<T> = {};
 
-  if (overrides) {
-    overridesByKey = cloneDeep(overrides);
+  if (overrideByKey) {
+    allOverrideByKey = cloneDeep(overrideByKey);
   }
 
   if (components) {
     Object.keys(components).forEach((key) => {
-      if (!overridesByKey[key]) overridesByKey[key] = {};
+      if (!allOverrideByKey[key]) allOverrideByKey[key] = {};
 
-      overridesByKey[key].component = components[key];
+      allOverrideByKey[key].component = components[key];
     });
   }
 
-  if (Object.keys(overridesByKey).length) {
+  if (Object.keys(allOverrideByKey).length) {
     return plugins.map((plugin) => {
-      return overridePluginsByKey<T, {}>(plugin, overridesByKey);
+      return overridePluginsByKey<T, {}>(plugin, allOverrideByKey);
     });
   }
 

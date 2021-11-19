@@ -30,7 +30,7 @@ const options = createPlateOptions({
 
 ```ts
 export const createPlateOptions = (
-  overrides?: Partial<
+  overrideByKey?: Partial<
     Record<DefaultPlatePluginKey, Partial<PlatePluginOptions>>
   >
 ) => {
@@ -69,9 +69,9 @@ export const createPlateOptions = (
     [MARK_UNDERLINE]: DEFAULTS_UNDERLINE,
   };
 
-  if (overrides) {
-    Object.keys(overrides).forEach((key) => {
-      options[key] = overrides[key];
+  if (overrideByKey) {
+    Object.keys(overrideByKey).forEach((key) => {
+      options[key] = overrideByKey[key];
     });
   }
 

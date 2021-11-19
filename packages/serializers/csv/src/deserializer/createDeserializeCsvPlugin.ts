@@ -11,15 +11,17 @@ export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
 export const createDeserializeCsvPlugin = createPluginFactory<DeserializeCsvPlugin>(
   {
     key: KEY_DESERIALIZE_CSV,
-    editor: {
-      insertData: {
-        format: 'text/plain',
-        getFragment: (editor, plugin, { data }) =>
-          deserializeCsv(editor, { data, header: true }),
-      },
-    },
     options: {
       errorTolerance: 0.25,
     },
+    then: (editor) => ({
+      editor: {
+        insertData: {
+          format: 'text/plain',
+          getFragment: ({ data }) =>
+            deserializeCsv(editor, { data, header: true }),
+        },
+      },
+    }),
   }
 );

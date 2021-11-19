@@ -231,4 +231,75 @@ describe('withPlate', () => {
       }).toEqual({ type: 'cc' });
     });
   });
+
+  describe('when plugin has overridesByKey', () => {
+    it('should be', () => {
+      const editor = withPlate(createEditor(), {
+        id: '1',
+        plugins: [
+          {
+            key: 'a',
+            type: 'a',
+            plugins: [
+              {
+                key: 'aa',
+                type: 'aa',
+              },
+            ],
+            then: () => ({
+              type: 'athen',
+              plugins: [
+                {
+                  key: 'bb',
+                  type: 'bb',
+                  then: () => ({
+                    type: 'athen2',
+                    plugins: [
+                      {
+                        key: 'aa',
+                        type: 'ab',
+                      },
+                      {
+                        key: 'cc',
+                        type: 'cc',
+                      },
+                    ],
+                  }),
+                },
+              ],
+            }),
+            overrideByKey: {
+              a: {
+                type: 'a1',
+              },
+              aa: {
+                type: 'aa1',
+              },
+              cc: {
+                type: 'cc1',
+              },
+            },
+          },
+        ],
+      });
+
+      const a = getPlugin(editor, 'a');
+      const aa = getPlugin(editor, 'aa');
+      const bb = getPlugin(editor, 'bb');
+      const cc = getPlugin(editor, 'cc');
+
+      expect({
+        type: a.type,
+      }).toEqual({ type: 'a1' });
+      expect({
+        type: aa.type,
+      }).toEqual({ type: 'aa1' });
+      expect({
+        type: bb.type,
+      }).toEqual({ type: 'athen2' });
+      expect({
+        type: cc.type,
+      }).toEqual({ type: 'cc1' });
+    });
+  });
 });

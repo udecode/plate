@@ -17,19 +17,6 @@ import { withCodeBlock } from './withCodeBlock';
 export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
-  injectPlugin: (editor, { key }) => {
-    if (key !== KEY_DESERIALIZE_HTML) return;
-
-    const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
-
-    const isSelectionInCodeLine = someNode(editor, {
-      match: { type: code_line.type },
-    });
-
-    return {
-      isDisabled: isSelectionInCodeLine,
-    };
-  },
   deserializeHtml: deserializeHtmlCodeBlock,
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
@@ -40,6 +27,25 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
     syntax: true,
     syntaxPopularFirst: false,
   },
+  then: (editor) => ({
+    inject: {
+      pluginsByKey: {
+        [KEY_DESERIALIZE_HTML]: {
+          editor: {
+            insertData: {
+              query: () => {
+                const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
+
+                return !someNode(editor, {
+                  match: { type: code_line.type },
+                });
+              },
+            },
+          },
+        },
+      },
+    },
+  }),
   plugins: [
     {
       key: ELEMENT_CODE_LINE,

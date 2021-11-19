@@ -29,7 +29,7 @@ export const createIndentPlugin = createPluginFactory<IndentPlugin>({
     inject: {
       props: {
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-        transformNodeValue: (e, { nodeValue }) => {
+        transformNodeValue: ({ nodeValue }) => {
           return nodeValue * offset! + unit!;
         },
       },

@@ -1,23 +1,23 @@
 import defaultsDeep from 'lodash/defaultsDeep';
-import { OverridesByKey } from '../types/OverridesByKey';
+import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { NoInfer } from '../types/utility/NoInfer';
 
 /**
- * Recursive deep merge of each plugin from `overridesByKey`
+ * Recursive deep merge of each plugin from `overrideByKey`
  * into plugin with same key (plugin > plugin.plugins).
  */
 export const overridePluginsByKey = <T = {}, P = {}>(
   plugin: PlatePlugin<T, NoInfer<P>>,
-  overridesByKey: OverridesByKey<T, NoInfer<P>> = {},
+  overrideByKey: OverrideByKey<T> = {},
   nested?: boolean
 ): PlatePlugin<T, NoInfer<P>> => {
-  if (overridesByKey[plugin.key]) {
+  if (overrideByKey[plugin.key]) {
     const {
       plugins: pluginOverridesPlugins,
       then: pluginOverridesThen,
       ...pluginOverrides
-    } = overridesByKey[plugin.key];
+    } = overrideByKey[plugin.key];
 
     // override plugin
     plugin = defaultsDeep(pluginOverrides, plugin);
@@ -33,9 +33,9 @@ export const overridePluginsByKey = <T = {}, P = {}>(
     }
   }
 
-  // overrides plugin.plugins
+  // override plugin.plugins
   plugin.plugins?.forEach((p, i) => {
-    plugin.plugins![i] = overridePluginsByKey<T, {}>(p, overridesByKey, true);
+    plugin.plugins![i] = overridePluginsByKey<T, {}>(p, overrideByKey, true);
   });
 
   const { then } = plugin;
@@ -46,10 +46,13 @@ export const overridePluginsByKey = <T = {}, P = {}>(
       const pluginThen = { key: plugin.key, ...then(editor, p) };
 
       return defaultsDeep(
-        overridePluginsByKey(pluginThen as any, overridesByKey),
+        overridePluginsByKey(pluginThen as any, overrideByKey),
         pluginThen
       );
     };
+  } else if (overrideByKey[plugin.key]?.then) {
+    // TODO: recursvie
+    plugin.then = overrideByKey[plugin.key].then as any;
   }
 
   return plugin;

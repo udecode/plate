@@ -1,4 +1,4 @@
-import { OverridesByKey } from '../types/OverridesByKey';
+import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { NoInfer } from '../types/utility/NoInfer';
 import { overridePluginsByKey } from './overridePluginsByKey';
@@ -12,10 +12,10 @@ import { overridePluginsByKey } from './overridePluginsByKey';
 export const createPluginFactory = <P = {}>(
   defaultPlugin: PlatePlugin<{}, NoInfer<P>>
 ) => <T = {}>(
-  overrides?: Partial<PlatePlugin<T, NoInfer<P>>>,
-  overridesByKey: OverridesByKey<T, NoInfer<P>> = {}
+  override?: Partial<PlatePlugin<T, NoInfer<P>>>,
+  overrideByKey: OverrideByKey<T> = {}
 ): PlatePlugin<T, NoInfer<P>> => {
-  overridesByKey[defaultPlugin.key] = overrides as any;
+  overrideByKey[defaultPlugin.key] = override as any;
 
-  return overridePluginsByKey<T, P>(defaultPlugin as any, overridesByKey);
+  return overridePluginsByKey<T, P>(defaultPlugin as any, overrideByKey);
 };

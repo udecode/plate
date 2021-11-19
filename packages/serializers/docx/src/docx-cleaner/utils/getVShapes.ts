@@ -1,9 +1,9 @@
-import { getComments } from './getComments';
+import { getHtmlComments } from './getHtmlComments';
 
 const parser = new DOMParser();
 
 export const getVShapes = (document: Document): Record<string, string> => {
-  const comments = getComments(document);
+  const comments = getHtmlComments(document);
 
   return comments.reduce<Record<string, string>>((vShapesMap, comment) => {
     try {

@@ -5,6 +5,7 @@
 export * from './deserializeHtml';
 export * from './deserializeHtmlElement';
 export * from './deserializeHtmlNode';
+export * from './deserializeHtmlNodeChildren';
 export * from './htmlBodyToFragment';
 export * from './htmlBrToNewLine';
 export * from './htmlElementToElement';

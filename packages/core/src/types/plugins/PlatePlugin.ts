@@ -8,9 +8,8 @@ import { InjectComponent } from './InjectComponent';
 import { InjectProps } from './InjectProps';
 import { OnChange } from './OnChange';
 import { PlatePluginComponent } from './PlatePluginComponent';
-import { PlatePluginInjectedPlugin } from './PlatePluginInjectedPlugin';
 import { PlatePluginInsertData } from './PlatePluginInsertData';
-import { PlatePluginKey } from './PlatePluginKey';
+import { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import { PlatePluginProps } from './PlatePluginProps';
 import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
@@ -48,15 +47,16 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
      * Inject component above any node `component`, i.e. above its `children`.
      */
     belowComponent?: InjectComponent;
-  }>;
 
-  /**
-   * Inject into other plugins.
-   */
-  injectPlugin?: (
-    editor: PlateEditor<T>,
-    pluginInjected: WithPlatePlugin<T, P>
-  ) => PlatePluginInjectedPlugin | undefined;
+    /**
+     * Any plugin can use this field to inject code into a stack.
+     * For example, if multiple plugins have defined
+     * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
+     * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
+     * Differs from `overrideByKey` as this is not overriding any plugin.
+     */
+    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
+  }>;
 
   /**
    * Whether it's an element plugin (`renderElement`).
@@ -102,6 +102,11 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
      * HTML deserializer options.
      */
     deserializeHtml?: Nullable<DeserializeHtml> | Nullable<DeserializeHtml>[];
+
+    /**
+     * Override (deeply) plugins by key.
+     */
+    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
 
     /**
      * Recursive plugin support.

@@ -1,4 +1,8 @@
-import { WithOverride } from '@udecode/plate-core';
+import {
+  getInjectedPlugins,
+  pipeInsertDataQuery,
+  WithOverride,
+} from '@udecode/plate-core';
 import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 import { ImagePlugin } from './types';
@@ -11,14 +15,22 @@ import { ImagePlugin } from './types';
  */
 export const withImageUpload: WithOverride<{}, ImagePlugin> = (
   editor,
-  { options: { uploadImage } }
+  plugin
 ) => {
+  const {
+    options: { uploadImage },
+  } = plugin;
   const { insertData } = editor;
 
-  editor.insertData = (data: DataTransfer) => {
-    const text = data.getData('text/plain');
-    const { files } = data;
+  editor.insertData = (dataTransfer: DataTransfer) => {
+    const text = dataTransfer.getData('text/plain');
+    const { files } = dataTransfer;
     if (files && files.length > 0) {
+      const injectedPlugins = getInjectedPlugins(editor, plugin);
+      if (!pipeInsertDataQuery(injectedPlugins, { data: text, dataTransfer })) {
+        return insertData(dataTransfer);
+      }
+
       for (const file of files) {
         const reader = new FileReader();
         const [mime] = file.type.split('/');
@@ -41,7 +53,7 @@ export const withImageUpload: WithOverride<{}, ImagePlugin> = (
     } else if (isImageUrl(text)) {
       insertImage(editor, text);
     } else {
-      insertData(data);
+      insertData(dataTransfer);
     }
   };
 

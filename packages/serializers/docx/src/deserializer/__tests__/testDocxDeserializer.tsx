@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import {
   createPlateEditor,
-  OverridesByKey,
+  OverrideByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -28,19 +28,19 @@ export const testDocxDeserializer = ({
   expected,
   plugins,
   filename,
-  overrides,
+  overrideByKey,
 }: {
   input?: any;
   expected: any;
   plugins: PlatePlugin[];
   filename: string;
-  overrides?: OverridesByKey;
+  overrideByKey?: OverrideByKey;
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({
       editor: input,
       plugins: [...plugins, createDeserializeDocxPlugin()],
-      overrides,
+      overrideByKey,
     });
 
     actual.insertData(

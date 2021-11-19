@@ -1,7 +1,7 @@
-import {PlateEditor} from "../../../types/PlateEditor";
-import {DeserializeHtml} from "../../../types/plugins/DeserializeHtml";
-import {AnyObject} from "../../../types/utility/AnyObject";
-import {Nullable} from "../../../types/utility/Nullable";
+import { PlateEditor } from '../../../types/PlateEditor';
+import { DeserializeHtml } from '../../../types/plugins/DeserializeHtml';
+import { AnyObject } from '../../../types/utility/AnyObject';
+import { Nullable } from '../../../types/utility/Nullable';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlElement = <T = {}>(
@@ -13,7 +13,7 @@ export const pipeDeserializeHtmlElement = <T = {}>(
   editor.plugins.reverse().some((plugin) => {
     result = pluginDeserializeHtml(plugin, { element });
 
-    if (result) return true;
+    return !!result;
   });
 
   return result;

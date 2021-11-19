@@ -1,24 +1,24 @@
 import { Editor } from 'slate';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePluginInjectedPlugin } from '../types/plugins/PlatePluginInjectedPlugin';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { TDescendant } from '../types/slate/TDescendant';
+import { InjectedPlugin } from './getInjectedPlugins';
 
 /**
  * Pipe preInsert then insertFragment.
  */
 export const pipeInsertFragment = <T = {}>(
   editor: PlateEditor<T>,
-  injectedPlugins: PlatePluginInjectedPlugin[],
+  injectedPlugins: InjectedPlugin<T>[],
   {
     fragment,
     ...options
   }: PlatePluginInsertDataOptions & { fragment: TDescendant[] }
 ) => {
   Editor.withoutNormalizing(editor, () => {
-    injectedPlugins.some(
-      ({ preInsert }) => preInsert?.(fragment, options) === true
-    );
+    injectedPlugins.some((p) => {
+      return p.editor?.insertData?.preInsert?.(fragment, options) === true;
+    });
 
     editor.insertFragment(fragment);
   });

@@ -11,7 +11,6 @@ export * from './KeyboardHandler';
 export * from './OnChange';
 export * from './PlatePlugin';
 export * from './PlatePluginComponent';
-export * from './PlatePluginInjectedPlugin';
 export * from './PlatePluginInsertData';
 export * from './PlatePluginKey';
 export * from './PlatePluginProps';

@@ -1,9 +1,9 @@
-import { traverseElements } from './traverseElements';
+import { traverseHtmlElements } from './traverseHtmlElements';
 
 export const isDocxContent = (body: HTMLElement): boolean => {
   let result = false;
 
-  traverseElements(body, (element) => {
+  traverseHtmlElements(body, (element) => {
     const styleAttribute = element.getAttribute('style') || '';
     const classList = Array.from(element.classList);
 

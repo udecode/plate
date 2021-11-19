@@ -1,7 +1,7 @@
 import { WithOverride } from '../types/plugins/WithOverride';
 import { createPluginFactory } from '../utils/createPluginFactory';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
-import { isPluginDisabled } from '../utils/isPluginDisabled';
+import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 import { pipeInsertFragment } from '../utils/pipeInsertFragment';
 import { pipeTransformData } from '../utils/pipeTransformData';
 import { pipeTransformFragment } from '../utils/pipeTransformFragment';
@@ -16,23 +16,14 @@ export const withInsertData: WithOverride = (editor) => {
 
       const injectedPlugins = getInjectedPlugins(editor, plugin);
 
-      const isDisabled = isPluginDisabled(injectedPlugins);
-      if (isDisabled) return false;
-
-      const { format, getFragment, query } = insertDataOptions;
+      const { format, getFragment } = insertDataOptions;
       if (!format) return false;
 
       let data = dataTransfer.getData(format);
       if (!data) return;
 
-      data = pipeTransformData(injectedPlugins, {
-        data,
-        dataTransfer,
-      });
-
       if (
-        query &&
-        !query(editor, plugin, {
+        !pipeInsertDataQuery(injectedPlugins, {
           data,
           dataTransfer,
         })
@@ -40,7 +31,12 @@ export const withInsertData: WithOverride = (editor) => {
         return false;
       }
 
-      let fragment = getFragment?.(editor, plugin, {
+      data = pipeTransformData(injectedPlugins, {
+        data,
+        dataTransfer,
+      });
+
+      let fragment = getFragment?.({
         data,
         dataTransfer,
       });

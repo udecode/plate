@@ -64,7 +64,9 @@ import tw from 'twin.macro';
 import { DefaultPlatePluginKey } from '../types/DefaultPlatePluginKey';
 
 export const createPlateUI = <T extends string = string>(
-  overrides?: Partial<Record<DefaultPlatePluginKey | T, PlatePluginComponent>>
+  overrideByKey?: Partial<
+    Record<DefaultPlatePluginKey | T, PlatePluginComponent>
+  >
 ) => {
   const components = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
@@ -250,9 +252,9 @@ export const createPlateUI = <T extends string = string>(
     [MARK_UNDERLINE]: withProps(StyledLeaf, { as: 'u' }),
   };
 
-  if (overrides) {
-    Object.keys(overrides).forEach((key) => {
-      components[key] = overrides[key];
+  if (overrideByKey) {
+    Object.keys(overrideByKey).forEach((key) => {
+      components[key] = overrideByKey[key];
     });
   }
 

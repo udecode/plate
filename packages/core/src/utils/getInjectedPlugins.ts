@@ -1,20 +1,19 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
-import { PlatePluginInjectedPlugin } from '../types/plugins/PlatePluginInjectedPlugin';
+import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
+
+export type InjectedPlugin<T = {}> = Partial<PlatePlugin<T>>;
 
 export const getInjectedPlugins = <T = {}, P = {}>(
   editor: PlateEditor<T>,
   plugin: WithPlatePlugin<T, P>
-) => {
-  const injectPlugins: PlatePluginInjectedPlugin[] = [];
+): InjectedPlugin<T>[] => {
+  const injectedPlugins: InjectedPlugin<T>[] = [];
 
   editor.plugins.forEach((p) => {
-    const injected = p.injectPlugin?.(editor, plugin as WithPlatePlugin<T>);
+    const injectedPlugin = p.inject.pluginsByKey?.[plugin.key];
 
-    if (injected) {
-      injectPlugins.push(injected);
-    }
+    if (injectedPlugin) injectedPlugins.push(injectedPlugin);
   });
 
-  return injectPlugins;
+  return [plugin as InjectedPlugin<T>, ...injectedPlugins];
 };

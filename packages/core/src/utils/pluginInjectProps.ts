@@ -77,7 +77,7 @@ export const pluginInjectProps = (
 
   const transformOptions = { ...nodeProps, nodeValue };
 
-  const value = transformNodeValue?.(editor, transformOptions) ?? nodeValue;
+  const value = transformNodeValue?.(transformOptions) ?? nodeValue;
 
   if (element) {
     res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
@@ -85,12 +85,12 @@ export const pluginInjectProps = (
 
   if (classNames?.[nodeValue] || transformClassName) {
     res.className =
-      transformClassName?.(editor, transformOptions) ??
+      transformClassName?.(transformOptions) ??
       clsx(className, classNames?.[value]);
   }
 
   if (styleKey) {
-    res.style = transformStyle?.(editor, transformOptions) ?? {
+    res.style = transformStyle?.(transformOptions) ?? {
       ...style,
       [styleKey as string]: value,
     };

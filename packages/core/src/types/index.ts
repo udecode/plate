@@ -3,7 +3,7 @@
  */
 
 export * from './EventEditorStore';
-export * from './OverridesByKey';
+export * from './OverrideByKey';
 export * from './PlateEditor';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
