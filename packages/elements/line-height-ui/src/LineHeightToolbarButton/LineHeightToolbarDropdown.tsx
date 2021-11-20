@@ -27,6 +27,7 @@ export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
     (lineHeight) => {
       if (editor) {
         ReactEditor.focus(editor);
+
         setLineHeight(editor, {
           value: lineHeight,
         });
@@ -41,7 +42,9 @@ export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
         <ToolbarButton
           active={
             isCollapsed(editor?.selection) &&
-            someNode(editor!, { match: (n) => n.lineHeight !== undefined })
+            someNode(editor!, {
+              match: (n) => n[KEY_LINE_HEIGHT] !== undefined,
+            })
           }
           {...props}
         />

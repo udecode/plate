@@ -15,10 +15,11 @@ import {
   preCleanHtml,
 } from './utils';
 
-const parser = new DOMParser();
-
 export const cleanDocx = (html: string, rtf: string): string => {
-  const document = parser.parseFromString(preCleanHtml(html), 'text/html');
+  const document = new DOMParser().parseFromString(
+    preCleanHtml(html),
+    'text/html'
+  );
   const { body } = document;
 
   if (!rtf && !isDocxContent(body)) {

@@ -1,13 +1,11 @@
 import { getHtmlComments } from './getHtmlComments';
 
-const parser = new DOMParser();
-
 export const getVShapes = (document: Document): Record<string, string> => {
   const comments = getHtmlComments(document);
 
   return comments.reduce<Record<string, string>>((vShapesMap, comment) => {
     try {
-      const xmlDocument = parser.parseFromString(comment, 'text/html');
+      const xmlDocument = new DOMParser().parseFromString(comment, 'text/html');
       const vShapes = Array.from(xmlDocument.getElementsByTagName('V:SHAPE'));
 
       vShapes.forEach((vShape) => {

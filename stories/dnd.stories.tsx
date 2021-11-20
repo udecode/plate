@@ -1,5 +1,5 @@
 import './dnd.css';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Meta } from '@storybook/react/types-6-0';
@@ -8,6 +8,7 @@ import { Link } from '@styled-icons/material/Link';
 import { Search } from '@styled-icons/material/Search';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
@@ -28,7 +29,6 @@ import { VALUES } from '../docs/src/live/config/values/values';
 import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
 import { createPlugins } from '../packages/core/src/utils/createPlugins';
-import { useFindReplacePlugin } from '../packages/decorators/find-replace/src/useFindReplacePlugin';
 import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../packages/editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../packages/editor/break/src/exit-break/createExitBreakPlugin';
@@ -68,50 +68,50 @@ export const Example = () => {
   components = withStyledDraggables(components);
 
   const Editor = () => {
-    const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
+    const [search, setSearch] = useState();
 
-    const pluginsMemo = useMemo(() => {
-      const plugins = createPlugins(
-        [
-          createParagraphPlugin(),
-          createBlockquotePlugin(),
-          createTodoListPlugin(),
-          createHeadingPlugin(),
-          createImagePlugin(),
-          createLinkPlugin(),
-          createListPlugin(),
-          createTablePlugin(),
-          createMediaEmbedPlugin(),
-          createCodeBlockPlugin(),
-          createAlignPlugin(),
-          createBoldPlugin(),
-          createCodePlugin(),
-          createItalicPlugin(),
-          createHighlightPlugin(),
-          createUnderlinePlugin(),
-          createStrikethroughPlugin(),
-          createSubscriptPlugin(),
-          createSuperscriptPlugin(),
-          createKbdPlugin(),
-          createNodeIdPlugin(),
-          createAutoformatPlugin(CONFIG.autoformat),
-          createResetNodePlugin(CONFIG.resetBlockType),
-          createSoftBreakPlugin(CONFIG.softBreak),
-          createExitBreakPlugin(CONFIG.exitBreak),
-          createNormalizeTypesPlugin(CONFIG.forceLayout),
-          createTrailingBlockPlugin(CONFIG.trailingBlock),
-          createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-          createMentionPlugin(),
-          searchHighlightPlugin,
-          createDndPlugin(),
-        ],
-        {
-          components,
-        }
-      );
-
-      return plugins;
-    }, [searchHighlightPlugin]);
+    const pluginsMemo = useMemo(
+      () =>
+        createPlugins(
+          [
+            createParagraphPlugin(),
+            createBlockquotePlugin(),
+            createTodoListPlugin(),
+            createHeadingPlugin(),
+            createImagePlugin(),
+            createLinkPlugin(),
+            createListPlugin(),
+            createTablePlugin(),
+            createMediaEmbedPlugin(),
+            createCodeBlockPlugin(),
+            createAlignPlugin(),
+            createBoldPlugin(),
+            createCodePlugin(),
+            createItalicPlugin(),
+            createHighlightPlugin(),
+            createUnderlinePlugin(),
+            createStrikethroughPlugin(),
+            createSubscriptPlugin(),
+            createSuperscriptPlugin(),
+            createKbdPlugin(),
+            createNodeIdPlugin(),
+            createAutoformatPlugin(CONFIG.autoformat),
+            createResetNodePlugin(CONFIG.resetBlockType),
+            createSoftBreakPlugin(CONFIG.softBreak),
+            createExitBreakPlugin(CONFIG.exitBreak),
+            createNormalizeTypesPlugin(CONFIG.forceLayout),
+            createTrailingBlockPlugin(CONFIG.trailingBlock),
+            createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+            createMentionPlugin(),
+            createFindReplacePlugin({ options: { search } }),
+            createDndPlugin(),
+          ],
+          {
+            components,
+          }
+        ),
+      [search]
+    );
 
     return (
       <Plate

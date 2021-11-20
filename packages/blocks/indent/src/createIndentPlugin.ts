@@ -15,12 +15,6 @@ export const createIndentPlugin = createPluginFactory<IndentPlugin>({
   handlers: {
     onKeyDown: onKeyDownIndent,
   },
-  inject: {
-    props: {
-      nodeKey: KEY_INDENT,
-      styleKey: 'marginLeft',
-    },
-  },
   options: {
     offset: 24,
     unit: 'px',
@@ -28,6 +22,8 @@ export const createIndentPlugin = createPluginFactory<IndentPlugin>({
   then: (editor, { options: { offset, unit } = {} }) => ({
     inject: {
       props: {
+        nodeKey: KEY_INDENT,
+        styleKey: 'marginLeft',
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
         transformNodeValue: ({ nodeValue }) => {
           return nodeValue * offset! + unit!;

@@ -13,23 +13,20 @@ npm install @udecode/plate-excalidraw
 
 ```ts live
 () => {
-  const plugins = createPlugins([
+  const plugins = [
     ...PLUGINS.basicNodes,
-    createExcalidrawPlugin(),
+    createExcalidrawPlugin({
+      component: ExcalidrawElement
+    }),
     createSelectOnBackspacePlugin({ allow: [ELEMENT_EXCALIDRAW] }),
-  ], {
-    components: {
-      ...CONFIG.components,
-      [ELEMENT_EXCALIDRAW]: ExcalidrawElement
-    },
-  });
+  ];
      
   return (
     <Plate
       id="excalidraw"
-      plugins={plugins}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.excalidraw}
+      plugins={plugins}
     />
   );
 }

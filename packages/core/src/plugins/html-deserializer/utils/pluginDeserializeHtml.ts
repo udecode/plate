@@ -37,7 +37,13 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
     } = deserializeHtml;
     let { getNode } = deserializeHtml;
 
-    if (isLeaf && !_isLeaf && !isLeafRoot) {
+    // element
+    if (!isLeaf && !(isElementRoot || isElement)) {
+      return;
+    }
+
+    // leaf
+    if (isLeaf && !(isLeafRoot || _isLeaf)) {
       return;
     }
 

@@ -19,19 +19,21 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 
 ```ts live
 () => {
-  const plugins = createPlugins([
+  const plugins = [
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
-      defaultNodeValue: 1.5,
-      validNodeValues: [1, 1.2, 1.5, 2, 3],
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          defaultNodeValue: 1.5,
+          validNodeValues: [1, 1.2, 1.5, 2, 3],
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     })
-  ], {
-    components: CONFIG.components,
-  });
+  ]
 
   return (
     <>
@@ -40,9 +42,9 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
       </HeadingToolbar>
       <Plate
         id="alignment"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.lineHeight}
+        plugins={plugins}
       />
     </>
   );

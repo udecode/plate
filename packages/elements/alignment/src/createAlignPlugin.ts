@@ -12,17 +12,13 @@ export const KEY_ALIGN = 'align';
  */
 export const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,
-  inject: {
-    props: {
-      nodeKey: KEY_ALIGN,
-      defaultNodeValue: 'left',
-      styleKey: 'textAlign',
-      validNodeValues: ['left', 'center', 'right', 'justify'],
-    },
-  },
   then: (editor) => ({
     inject: {
       props: {
+        nodeKey: KEY_ALIGN,
+        defaultNodeValue: 'left',
+        styleKey: 'textAlign',
+        validNodeValues: ['left', 'center', 'right', 'justify'],
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
       },
     },

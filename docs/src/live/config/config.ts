@@ -13,6 +13,7 @@ import {
   ELEMENT_H6,
   ELEMENT_HR,
   ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
   ELEMENT_PARAGRAPH,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
@@ -31,6 +32,10 @@ import {
   TrailingBlockPlugin,
   withProps,
 } from '@udecode/plate';
+import {
+  ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+} from '@udecode/plate-excalidraw';
 import { Partial } from 'rollup-plugin-typescript2/dist/partial';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { css } from 'styled-components';
@@ -82,6 +87,7 @@ export const CONFIG: Config = {
         ],
       },
     }),
+    [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
   }),
 
   align: {
@@ -187,7 +193,7 @@ export const CONFIG: Config = {
   selectOnBackspace: {
     options: {
       query: {
-        allow: [ELEMENT_IMAGE, ELEMENT_HR],
+        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED, ELEMENT_HR],
       },
     },
   },

@@ -14,7 +14,10 @@ npm install @udecode/plate-placeholder
 ```ts live
 () => {
   const components = withStyledPlaceHolders(CONFIG.components);
-  const plugins = createPlugins(PLUGINS.basicNodes, { components });
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createExitBreakPlugin(CONFIG.exitBreak),
+  ], { components });
 
   return (
     <>
@@ -23,9 +26,9 @@ npm install @udecode/plate-placeholder
       </HeadingToolbar>
       <Plate
         id="placeholder"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.placeholder}
+        plugins={plugins}
       />
     </>
   );

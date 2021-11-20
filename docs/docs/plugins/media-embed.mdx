@@ -17,7 +17,13 @@ npm install @udecode/plate-media-embed-ui
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createMediaEmbedPlugin(),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_MEDIA_EMBED] }),
+    createSelectOnBackspacePlugin({
+      options: {
+        query: {
+          allow: [ELEMENT_MEDIA_EMBED],
+        },
+      },
+    }),
   ], {
     components: CONFIG.components,
   });
@@ -30,9 +36,9 @@ npm install @udecode/plate-media-embed-ui
    
       <Plate
         id="media-embed"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.mediaEmbed}
+        plugins={plugins}
       />
     </>
   );

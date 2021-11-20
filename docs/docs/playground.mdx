@@ -13,111 +13,94 @@ See [Installation](/docs/installation)
 
 ```ts live
 () => {
-  let components = createPlateUI({
-    ...CONFIG.components,
-    [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-  });
+  let components = createPlateUI();
   components = withStyledPlaceHolders(components);
 
-  const Editor = () => {
-    const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
+  const plugins = createPlugins([
+    createParagraphPlugin(),
+    createBlockquotePlugin(),
+    createTodoListPlugin(),
+    createHeadingPlugin(),
+    createImagePlugin(),
+    createHorizontalRulePlugin(),
+    createLineHeightPlugin(CONFIG.lineHeight),
+    createLinkPlugin(),
+    createListPlugin(),
+    createTablePlugin(),
+    createMediaEmbedPlugin(),
+    createExcalidrawPlugin(),
+    createCodeBlockPlugin(),
+    createAlignPlugin(CONFIG.align),
+    createBoldPlugin(),
+    createCodePlugin(),
+    createItalicPlugin(),
+    createHighlightPlugin(),
+    createUnderlinePlugin(),
+    createStrikethroughPlugin(),
+    createSubscriptPlugin(),
+    createSuperscriptPlugin(),
+    createFontBackgroundColorPlugin(),
+    createFontFamilyPlugin(),
+    createFontColorPlugin(),
+    createFontSizePlugin(),
+    createFontWeightPlugin(),
+    createKbdPlugin(),
+    createNodeIdPlugin(),
+    createIndentPlugin(CONFIG.indent),
+    createAutoformatPlugin(CONFIG.autoformat),
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createNormalizeTypesPlugin(CONFIG.forceLayout),
+    createTrailingBlockPlugin(CONFIG.trailingBlock),
+    createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+    createComboboxPlugin(),
+    createMentionPlugin(),
+    createDeserializeMdPlugin(),
+    createDeserializeCsvPlugin(),
+    createDeserializeDocxPlugin(),
+  ], {
+    components,
+  });
 
-    const pluginsMemo = useMemo(() => {
-      const plugins = createPlugins([
-        createReactPlugin(),
-        createHistoryPlugin(),
-        createParagraphPlugin(),
-        createBlockquotePlugin(),
-        createTodoListPlugin(),
-        createHeadingPlugin(),
-        createImagePlugin(),
-        createHorizontalRulePlugin(),
-        createLineHeightPlugin(CONFIG.lineHeight),
-        createLinkPlugin(),
-        createListPlugin(),
-        createTablePlugin(),
-        createMediaEmbedPlugin(),
-        createExcalidrawPlugin(),
-        createCodeBlockPlugin(),
-        createAlignPlugin(CONFIG.align),
-        createBoldPlugin(),
-        createCodePlugin(),
-        createItalicPlugin(),
-        createHighlightPlugin(),
-        createUnderlinePlugin(),
-        createStrikethroughPlugin(),
-        createSubscriptPlugin(),
-        createSuperscriptPlugin(),
-        createFontBackgroundColorPlugin(),
-        createFontFamilyPlugin(),
-        createFontColorPlugin(),
-        createFontSizePlugin(),
-        createFontWeightPlugin(),
-        createKbdPlugin(),
-        createNodeIdPlugin(),
-        createIndentPlugin(CONFIG.indent),
-        createAutoformatPlugin(CONFIG.autoformat),
-        createResetNodePlugin(CONFIG.resetBlockType),
-        createSoftBreakPlugin(CONFIG.softBreak),
-        createExitBreakPlugin(CONFIG.exitBreak),
-        createNormalizeTypesPlugin(CONFIG.forceLayout),
-        createTrailingBlockPlugin(CONFIG.trailingBlock),
-        createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
-        createComboboxPlugin(),
-        createMentionPlugin(),
-        createDeserializeMdPlugin(),
-        createDeserializeCsvPlugin(),
-        searchHighlightPlugin,
-      ], {
-        components,
-      });
+  return (
+    <Plate
+      id="playground"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.playground}
+      plugins={plugins}
+    >
+      <HeadingToolbar>
+        <BasicElementToolbarButtons />
+        <ListToolbarButtons />
+        <IndentToolbarButtons />
+        <BasicMarkToolbarButtons />
+        <ColorPickerToolbarDropdown
+          pluginKey={MARK_COLOR}
+          icon={<FormatColorText />}
+          selectedIcon={<Check />}
+          tooltip={{ content: 'Text color' }}
+        />
+        <ColorPickerToolbarDropdown
+          pluginKey={MARK_BG_COLOR}
+          icon={<FontDownload />}
+          selectedIcon={<Check />}
+          tooltip={{ content: 'Highlight color' }}
+        />
+        <AlignToolbarButtons />
+        <LineHeightToolbarDropdown icon={<LineWeight />} />
+        <LinkToolbarButton icon={<Link />} />
+        <ImageToolbarButton icon={<Image />} />
+        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+        <TableToolbarButtons />
+      </HeadingToolbar>
 
-      return plugins;
-    }, [searchHighlightPlugin]);
+      <BallonToolbarMarks />
 
-    return (
-      <Plate
-        id="playground"
-        plugins={pluginsMemo}
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.playground}
-      >
-        <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
-        <HeadingToolbar>
-          <BasicElementToolbarButtons />
-          <ListToolbarButtons />
-          <IndentToolbarButtons />
-          <BasicMarkToolbarButtons />
-          <ColorPickerToolbarDropdown
-            pluginKey={MARK_COLOR}
-            icon={<FormatColorText />}
-            selectedIcon={<Check />}
-            tooltip={{ content: 'Text color' }}
-          />
-          <ColorPickerToolbarDropdown
-            pluginKey={MARK_BG_COLOR}
-            icon={<FontDownload />}
-            selectedIcon={<Check />}
-            tooltip={{ content: 'Highlight color' }}
-          />
-          <AlignToolbarButtons />
-          <LineHeightToolbarDropdown icon={<LineWeight />} />
-          <LinkToolbarButton icon={<Link />} />
-          <ImageToolbarButton icon={<Image />} />
-          <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-          <TableToolbarButtons />
-        </HeadingToolbar>
-
-        <BallonToolbarMarks />
-
-        <MentionCombobox items={CONFIG.mentionItems} />
-
-        <MentionCombobox items={CONFIG.mentionItems} pluginKey="mention2" />
-      </Plate>
-    );
-  }
-
-  return <Editor />;
+      <MentionCombobox items={CONFIG.mentionItems} />
+      <MentionCombobox items={CONFIG.mentionItems} pluginKey="mention2" />
+    </Plate>
+  );
 }
 ```
 

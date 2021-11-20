@@ -63,7 +63,6 @@ npm install @udecode/plate-basic-elements
   };
 
   const plugins = createPlugins([
-    ...PLUGINS.core,
     createBasicElementsPlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
@@ -79,9 +78,9 @@ npm install @udecode/plate-basic-elements
       </HeadingToolbar>
       <Plate
         id="basic-elements"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.basicElements}
+        plugins={plugins}
       />
     </>
   );

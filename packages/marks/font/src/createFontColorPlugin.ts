@@ -11,7 +11,12 @@ export const createFontColorPlugin = createPluginFactory({
   },
   then: (editor, { type }) => ({
     deserializeHtml: {
-      getNode: (element) => ({ [type]: element.style.color }),
+      isLeaf: true,
+      getNode(element) {
+        if (element.style.color) {
+          return { [type]: element.style.color };
+        }
+      },
       validStyle: {
         color: '*',
       },

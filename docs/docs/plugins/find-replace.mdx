@@ -18,26 +18,26 @@ npm install @udecode/plate-find-replace-ui
 
 ```ts live
 () => {
-  const { setSearch, plugin: searchHighlightPlugin } = useFindReplacePlugin();
+  const [search, setSearch] = useState('');
 
   const plugins = useMemo(
     () => createPlugins([
       ...PLUGINS.basicNodes,
-      searchHighlightPlugin,
+      createFindReplacePlugin({ options: { search } }),
     ], {
       components: CONFIG.components,
     }),
-    [searchHighlightPlugin]
+    [search]
   );
-
+  
   return (
     <>
       <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
       <Plate
         id="find-replace"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.findReplace}
+        plugins={plugins}
       />
     </>
   );

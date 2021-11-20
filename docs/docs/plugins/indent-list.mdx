@@ -28,36 +28,40 @@ npm install @udecode/plate-indent-list
 
 ```ts live
 () => {
-  const components = {
-    ...CONFIG.components,
-    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
-      as: 'div',
-      styles: {
-        root: {
-          margin: 0,
-          padding: '4px 0',
+  const plugins = [
+    createHeadingPlugin(),
+    createParagraphPlugin({
+      component: withProps(StyledElement, {
+        as: 'div',
+        styles: {
+          root: {
+            margin: 0,
+            padding: '4px 0',
+          }
         }
-      }
-    })
-  }
-
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
+      })
+    }),
     createIndentListPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     }),
     createIndentPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     }),
-  ], {
-    components,
-  });
+  ];
   
   const IndentToolbarButtons = () => {
     const editor = usePlateEditorRef();
@@ -107,9 +111,9 @@ npm install @udecode/plate-indent-list
       </HeadingToolbar>
       <Plate
         id="indent-list"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.indentList}
+        plugins={plugins}
         normalizeInitialValue
       />
     </>

@@ -5,22 +5,20 @@ title: Preview Markdown
 
 ```ts live
 () => {
-  const plugins = createPlugins([
+  const plugins = [
     ...PLUGINS.basicNodes,
     createPreviewPlugin(),
-  ], {
-    components: CONFIG.components,
-  });
+  ];
 
   return (
     <Plate
       id="editable-voids"
-      plugins={plugins}
       editableProps={{
         ...CONFIG.editableProps,
         renderLeaf: PreviewLeaf,  
       }}
       initialValue={VALUES.previewMd}
+      plugins={plugins}
     />
   );
 }

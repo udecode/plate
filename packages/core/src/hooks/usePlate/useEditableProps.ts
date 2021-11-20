@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import omit from 'lodash/omit';
 import { EditableProps } from 'slate-react/dist/components/editable';
-import { usePlateEditorWithPlugins } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateKey } from '../../stores/plate/selectors/usePlateKey';
 import { UseEditablePropsOptions } from '../../types/UseEditablePropsOptions';
 import { DOM_HANDLERS } from '../../utils/dom-attributes';
 import { pipeDecorate } from '../../utils/pipeDecorate';
@@ -13,10 +14,11 @@ export const useEditableProps = ({
   id = 'main',
   editableProps,
 }: UseEditablePropsOptions): EditableProps => {
-  const editor = usePlateEditorWithPlugins(id);
+  const editor = usePlateEditorRef(id);
+  const keyPlugins = usePlateKey('keyPlugins', id);
 
   const props: EditableProps = useMemo(() => {
-    if (!editor) return {};
+    if (!editor || !keyPlugins) return {};
 
     const _props: EditableProps = {
       decorate: pipeDecorate(editor),
@@ -36,7 +38,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [editableProps, editor]);
+  }, [editableProps, editor, keyPlugins]);
 
   return useMemo(
     () => ({

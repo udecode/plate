@@ -5,4 +5,3 @@
 export * from './createFindReplacePlugin';
 export * from './decorateFindReplace';
 export * from './types';
-export * from './useFindReplacePlugin';

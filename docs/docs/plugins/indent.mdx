@@ -20,17 +20,19 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
 
 ```ts live
 () => {
-  const plugins = createPlugins([
+  const plugins = [
     ...PLUGINS.basicNodes,
     createIndentPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1
-      ],
-    }),
-  ], {
-    components: CONFIG.components,
-  });
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
+    })
+  ];
 
   return (
     <>
@@ -39,9 +41,9 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
       </HeadingToolbar>
       <Plate
         id="indent"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.indent}
+        plugins={plugins}
       />
     </>
   );
@@ -79,12 +81,18 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createIndentPlugin({
-      offset: 3,
-      unit: 'em',
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1
-      ],
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
+      options: {
+        offset: 3,
+        unit: 'em',
+      },
     })
   ], {
     components: CONFIG.components,
@@ -97,9 +105,9 @@ Use the indent or outdent toolbar buttons in the editor below to control the lev
       </HeadingToolbar>
       <Plate
         id="indent-offset"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.indent}
+        plugins={plugins}
       />
     </>
   );

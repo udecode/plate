@@ -17,7 +17,7 @@ Use `serializeHtml`:
 
 ```ts live
 () => {
-  const editor = createPlateUIEditor({
+  const editor = createPlateEditor({
     plugins: PLUGINS.basicNodes,
     components: CONFIG.components
   });
@@ -57,9 +57,9 @@ Use `serializeHtml`:
   return (
     <Plate
       id="deserialize-html"
-      plugins={plugins}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.pasteHtml}
+      plugins={plugins}
     />
   );
 }

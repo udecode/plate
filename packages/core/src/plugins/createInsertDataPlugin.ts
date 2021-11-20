@@ -15,7 +15,6 @@ export const withInsertData: WithOverride = (editor) => {
       if (!insertDataOptions) return false;
 
       const injectedPlugins = getInjectedPlugins(editor, plugin);
-
       const { format, getFragment } = insertDataOptions;
       if (!format) return false;
 

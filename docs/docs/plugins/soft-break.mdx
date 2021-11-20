@@ -25,15 +25,17 @@ npm install @udecode/plate-break
     createExitBreakPlugin(CONFIG.exitBreak),
     createTrailingBlockPlugin(CONFIG.trailingBlock),
     createSoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+      options: {
+        rules: [
+          { hotkey: 'shift+enter' },
+          {
+            hotkey: 'enter',
+            query: {
+              allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+            },
           },
-        },
-      ],
+        ],
+      }
     }),
   ], {
     components: CONFIG.components,
@@ -42,9 +44,9 @@ npm install @udecode/plate-break
   return (
     <Plate
       id="soft-break"
-      plugins={plugins}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.softBreak}
+      plugins={plugins}
     />
   );
 }

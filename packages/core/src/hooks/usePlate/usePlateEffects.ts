@@ -76,7 +76,7 @@ export const usePlateEffects = <T = {}>({
 
   // Set the editor if enabled and editor are defined
   useEffect(() => {
-    if (!editor && enabled && plugins) {
+    if (!editor && enabled) {
       const baseEditor = editorProp ?? createEditor();
 
       setEditor(

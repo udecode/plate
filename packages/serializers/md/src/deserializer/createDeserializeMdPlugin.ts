@@ -10,6 +10,9 @@ export const createDeserializeMdPlugin = createPluginFactory({
       insertData: {
         format: 'text/plain',
         query: ({ data, dataTransfer }) => {
+          const htmlData = dataTransfer.getData('text/html');
+          if (htmlData) return false;
+
           const { files } = dataTransfer;
           if (!files?.length) {
             // if content is simply a URL pass through to not break LinkPlugin

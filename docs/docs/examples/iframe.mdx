@@ -7,20 +7,20 @@ title: IFrame
 () => {
   const editor = usePlateEditorRef('iframe');
 
-  const components = {
-    ...CONFIG.components,
-    [EDITABLE_VOID]: EditableVoidElement,
-  };
-  
-  const plugins = createPlugins(PLUGINS.basicNodes, { components });
+  const plugins = [
+    ...PLUGINS.basicNodes,
+    createEditableVoidPlugin({
+      component: EditableVoidElement
+    }),
+  ];
 
   return (
     <IFrame>
       <Plate
         id="iframe"
-        plugins={plugins}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.iframe}
+        plugins={plugins}
       />
     </IFrame>
   );

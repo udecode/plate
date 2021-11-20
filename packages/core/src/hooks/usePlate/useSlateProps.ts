@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { usePlateActions } from '../../stores/plate/plate.actions';
-import { usePlateEditorWithPlugins } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
+import { usePlateKey } from '../../stores/plate/selectors/usePlateKey';
 import { usePlateValue } from '../../stores/plate/selectors/usePlateValue';
 import { SlateProps } from '../../types/slate/SlateProps';
 import { TNode } from '../../types/slate/TNode';
@@ -15,12 +16,13 @@ export const useSlateProps = ({
   onChange: _onChange,
 }: UseSlatePropsOptions = {}): Omit<SlateProps, 'children'> => {
   const { setValue } = usePlateActions(id);
-  const editor = usePlateEditorWithPlugins(id);
+  const editor = usePlateEditorRef(id);
+  const keyPlugins = usePlateKey('keyPlugins', id);
   const value = usePlateValue(id);
 
   const onChange = useCallback(
     (newValue: TNode[]) => {
-      if (!editor) return;
+      if (!editor || !keyPlugins) return;
 
       const eventIsHandled = pipeOnChange(editor)(newValue);
 
@@ -30,7 +32,7 @@ export const useSlateProps = ({
 
       setValue(newValue);
     },
-    [_onChange, editor, setValue]
+    [_onChange, editor, keyPlugins, setValue]
   );
 
   return useMemo(

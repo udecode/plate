@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react-hooks';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { useFindReplacePlugin } from '../../../../../decorators/find-replace/src/useFindReplacePlugin';
+import { createFindReplacePlugin } from '../../../../../decorators/find-replace/src/createFindReplacePlugin';
 import { createSoftBreakPlugin } from '../../../../../editor/break/src/soft-break/createSoftBreakPlugin';
 import { createAlignPlugin } from '../../../../../elements/alignment/src/createAlignPlugin';
 import { createBlockquotePlugin } from '../../../../../elements/block-quote/src/createBlockquotePlugin';
@@ -201,7 +201,7 @@ describe('when deserializing all plugins', () => {
       createCodeBlockPlugin(),
       createTablePlugin(),
       createMediaEmbedPlugin(),
-      useFindReplacePlugin().plugin,
+      createFindReplacePlugin(),
       createSoftBreakPlugin(),
       createAlignPlugin(),
       createBoldPlugin(),

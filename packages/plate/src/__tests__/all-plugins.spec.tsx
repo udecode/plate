@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   LineWeight,
@@ -9,6 +9,7 @@ import {
 import { render } from '@testing-library/react';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { createPlugins } from '@udecode/plate-core';
+import { createFindReplacePlugin } from '@udecode/plate-find-replace';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import {
   AlignToolbarButtons,
@@ -22,7 +23,6 @@ import {
 import { CONFIG } from '../../../../docs/src/live/config/config';
 import { VALUES } from '../../../../docs/src/live/config/values/values';
 import { Plate } from '../../../core/src/components/Plate';
-import { useFindReplacePlugin } from '../../../decorators/find-replace/src/useFindReplacePlugin';
 import { SearchHighlightToolbar } from '../../../decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
@@ -52,7 +52,7 @@ import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingTo
 import { createPlateUI } from '../utils/createPlateUI';
 
 const PlateContainer = () => {
-  const { setSearch, plugin: findReplacePlugin } = useFindReplacePlugin();
+  const [search, setSearch] = useState();
 
   const plugins = createPlugins(
     [
@@ -70,7 +70,7 @@ const PlateContainer = () => {
       createAlignPlugin(),
       createHighlightPlugin(),
       createMentionPlugin(),
-      findReplacePlugin,
+      createFindReplacePlugin({ options: { search } }),
       createNodeIdPlugin(),
       createAutoformatPlugin(CONFIG.autoformat),
       createResetNodePlugin(CONFIG.resetBlockType),
@@ -87,9 +87,9 @@ const PlateContainer = () => {
 
   return (
     <Plate
-      plugins={plugins}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.playground}
+      plugins={plugins}
     >
       <SearchHighlightToolbar icon={Search} setSearch={setSearch} />
       <HeadingToolbar>
