@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
+import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { ELEMENT_LINK } from '../../../defaults';
-import { withLink } from '../../../withLink';
 
 jsx;
 
@@ -32,9 +30,10 @@ const output = (
 
 describe('when inserting a space after a url text (without link element)', () => {
   it('should wrap the url with a link', () => {
-    const editor = withLink()(
-      withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
-    );
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createLinkPlugin()],
+    });
 
     editor.insertText(text);
 

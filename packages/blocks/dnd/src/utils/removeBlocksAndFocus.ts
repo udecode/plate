@@ -1,4 +1,4 @@
-import { EditorNodesOptions, unhangRange } from '@udecode/plate-common';
+import { EditorNodesOptions, unhangRange } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getBlocksWithId } from './getBlocksWithId';

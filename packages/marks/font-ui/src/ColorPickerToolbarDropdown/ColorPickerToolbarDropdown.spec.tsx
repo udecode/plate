@@ -1,7 +1,12 @@
 import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
-import { Plate, PlateEditor, TDescendant } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  Plate,
+  PlateEditor,
+  TDescendant,
+} from '@udecode/plate-core';
 import {
   createFontBackgroundColorPlugin,
   createFontColorPlugin,
@@ -9,7 +14,7 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
 } from '@udecode/plate-font';
-import { createEditor, Editor, Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { ColorPickerToolbarDropdown } from './ColorPickerToolbarDropdown';
 
 const DEFAULT_PLUGINS = [
@@ -72,7 +77,9 @@ describe('ColorPickerToolbarDropdown', () => {
         userEvents.click(screen.getByTestId('ColorPickerClear'));
 
       beforeEach(() => {
-        editor = createEditor() as PlateEditor;
+        editor = createPlateEditor({
+          plugins: DEFAULT_PLUGINS,
+        }) as PlateEditor;
 
         Component = () => (
           <ColorPickerToolbarDropdown

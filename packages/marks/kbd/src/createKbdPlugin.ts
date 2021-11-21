@@ -1,14 +1,22 @@
-import { getToggleMarkOnKeyDown } from '@udecode/plate-common';
-import { getRenderLeaf, PlatePlugin } from '@udecode/plate-core';
-import { MARK_KBD } from './defaults';
-import { getKbdDeserialize } from './getKbdDeserialize';
+import { createPluginFactory, onKeyDownToggleMark } from '@udecode/plate-core';
+
+export const MARK_KBD = 'kbd';
 
 /**
  * Enables support for code formatting
  */
-export const createKbdPlugin = (): PlatePlugin => ({
-  pluginKeys: MARK_KBD,
-  renderLeaf: getRenderLeaf(MARK_KBD),
-  deserialize: getKbdDeserialize(),
-  onKeyDown: getToggleMarkOnKeyDown(MARK_KBD),
+export const createKbdPlugin = createPluginFactory({
+  key: MARK_KBD,
+  isLeaf: true,
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  deserializeHtml: [
+    { validNodeName: ['KBD'] },
+    {
+      validStyle: {
+        wordWrap: 'break-word',
+      },
+    },
+  ],
 });

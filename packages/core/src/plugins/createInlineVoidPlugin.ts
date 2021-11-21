@@ -1,50 +1,40 @@
-import castArray from 'lodash/castArray';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
-import { WithOverride } from '../types/PlatePlugin/WithOverride';
-import { TElement } from '../types/TElement';
-import { getPlatePluginWithOverrides } from '../utils/getPlatePluginWithOverrides';
+import { WithOverride } from '../types/plugins/WithOverride';
+import { TElement } from '../types/slate/TElement';
+import { createPluginFactory } from '../utils/createPluginFactory';
 
-export interface WithInlineVoidOptions {
-  plugins?: PlatePlugin[];
-  inlineTypes?: string[];
-  voidTypes?: string[];
-}
+export const KEY_INLINE_VOID = 'inline-void';
 
 /**
  * Merge and register all the inline types and void types from the plugins and options,
  * using `editor.isInline` and `editor.isVoid`
  */
-export const withInlineVoid = ({
-  plugins = [],
-  inlineTypes = [],
-  voidTypes = [],
-}: WithInlineVoidOptions): WithOverride => (editor) => {
+export const withInlineVoid: WithOverride = (editor) => {
   const { isInline } = editor;
   const { isVoid } = editor;
 
-  let allInlineTypes = [...inlineTypes];
-  let allVoidTypes = [...voidTypes];
+  const inlineTypes: string[] = [];
+  const voidTypes: string[] = [];
 
-  plugins.forEach((plugin) => {
-    if (plugin.inlineTypes) {
-      allInlineTypes = allInlineTypes.concat(
-        castArray(plugin.inlineTypes(editor))
-      );
+  editor.plugins.forEach((plugin) => {
+    if (!plugin.key) return;
+
+    if (plugin.isInline) {
+      inlineTypes.push(plugin.key);
     }
 
-    if (plugin.voidTypes) {
-      allVoidTypes = allVoidTypes.concat(castArray(plugin.voidTypes(editor)));
+    if (plugin.isVoid) {
+      voidTypes.push(plugin.key);
     }
   });
 
   editor.isInline = (element) => {
-    return allInlineTypes.includes((element as TElement).type)
+    return inlineTypes.includes((element as TElement).type)
       ? true
       : isInline(element);
   };
 
   editor.isVoid = (element) =>
-    allVoidTypes.includes((element as TElement).type) ? true : isVoid(element);
+    voidTypes.includes((element as TElement).type) ? true : isVoid(element);
 
   return editor;
 };
@@ -52,6 +42,7 @@ export const withInlineVoid = ({
 /**
  * @see {@link withInlineVoid}
  */
-export const createInlineVoidPlugin = getPlatePluginWithOverrides(
-  withInlineVoid
-);
+export const createInlineVoidPlugin = createPluginFactory({
+  key: KEY_INLINE_VOID,
+  withOverrides: withInlineVoid,
+});

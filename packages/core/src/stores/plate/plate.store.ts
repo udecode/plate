@@ -8,10 +8,6 @@ import { PlateStates } from '../../types/PlateStore';
  */
 export const plateStore = createVanillaStore<PlateStates>(() => ({}));
 
-// export const plateAtom = atomWithStore(plateStore);
-
-// const factory = () => atom<PlateState>({});
-
 /**
  * Plate store.
  * @see zustand store

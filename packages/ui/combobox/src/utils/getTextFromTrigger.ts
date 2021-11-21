@@ -1,4 +1,4 @@
-import { escapeRegExp, getText } from '@udecode/plate-common';
+import { escapeRegExp, getText } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
 /**

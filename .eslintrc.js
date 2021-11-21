@@ -114,6 +114,7 @@ module.exports = {
     'jest/no-export': 'off',
     'jest/no-identical-title': 'off',
     'jest/no-standalone-expect': 'off',
+    'jest/valid-title': 'off',
 
     'jsx-a11y/anchor-is-valid': 'off',
     'jsx-a11y/click-events-have-key-events': 'off',

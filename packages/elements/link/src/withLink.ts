@@ -1,23 +1,21 @@
 import {
+  getPluginType,
   getRangeBefore,
   getRangeFromBlockStart,
   getText,
   isCollapsed,
-  isUrl as isUrlProtocol,
+  mockPlugin,
+  PlateEditor,
   someNode,
   unwrapNodes,
-} from '@udecode/plate-common';
-import {
-  getPlatePluginType,
-  PlateEditor,
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
-import { Range } from 'slate';
+import { Range, Transforms } from 'slate';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
-import { ELEMENT_LINK } from './defaults';
-import { WithLinkOptions } from './types';
+import { ELEMENT_LINK } from './createLinkPlugin';
+import { LinkPlugin } from './types';
 
 const upsertLink = (
   editor: PlateEditor,
@@ -31,7 +29,7 @@ const upsertLink = (
 ) => {
   unwrapNodes(editor, {
     at,
-    match: { type: getPlatePluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, ELEMENT_LINK) },
   });
 
   const newSelection = editor.selection as Range;
@@ -64,24 +62,18 @@ const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
  * Paste a string inside a link element will edit its children text but not its url.
  *
  */
-export const withLink = ({
-  isUrl = isUrlProtocol,
-  rangeBeforeOptions = {
-    matchString: ' ',
-    skipInvalid: true,
-    afterMatch: true,
-    multiPaths: true,
-  },
-}: WithLinkOptions = {}): WithOverride => (editor) => {
+export const withLink: WithOverride<{}, LinkPlugin> = (
+  editor,
+  { type, options: { isUrl, rangeBeforeOptions } }
+) => {
   const { insertData, insertText } = editor;
-
-  const type = getPlatePluginType(editor, ELEMENT_LINK);
 
   editor.insertText = (text) => {
     if (text === ' ' && isCollapsed(editor.selection)) {
       const selection = editor.selection as Range;
 
       if (upsertLinkIfValid(editor, { isUrl })) {
+        Transforms.move(editor, { unit: 'offset' });
         return insertText(text);
       }
 
@@ -94,8 +86,9 @@ export const withLink = ({
       if (beforeWordRange) {
         const beforeWordText = getText(editor, beforeWordRange);
 
-        if (isUrl(beforeWordText)) {
+        if (isUrl!(beforeWordText)) {
           upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
+          Transforms.move(editor, { unit: 'offset' });
         }
       }
     }
@@ -107,7 +100,7 @@ export const withLink = ({
     const text = data.getData('text/plain');
 
     if (text) {
-      if (isUrl(text)) {
+      if (isUrl!(text)) {
         return upsertLinkAtSelection(editor, { url: text });
       }
 
@@ -127,7 +120,12 @@ export const withLink = ({
   //   insertBreak();
   // };
 
-  editor = withRemoveEmptyNodes({ type })(editor);
+  editor = withRemoveEmptyNodes(
+    editor,
+    mockPlugin({
+      options: { types: type },
+    })
+  );
 
   return editor;
 };

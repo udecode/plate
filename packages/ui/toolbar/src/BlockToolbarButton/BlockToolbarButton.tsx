@@ -3,8 +3,8 @@ import {
   getPreventDefaultHandler,
   someNode,
   toggleNodeType,
-} from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton';
 import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
 
@@ -17,7 +17,7 @@ export const BlockToolbarButton = ({
   active,
   ...props
 }: BlockToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   return (
     <ToolbarButton

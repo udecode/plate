@@ -1,11 +1,18 @@
-import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
-import { ELEMENT_TODO_LI } from './defaults';
-import { getTodoListDeserialize } from './getTodoListDeserialize';
+import {
+  createPluginFactory,
+  HotkeyPlugin,
+  onKeyDownToggleElement,
+} from '@udecode/plate-core';
 
-export const createTodoListPlugin = (): PlatePlugin => ({
-  pluginKeys: ELEMENT_TODO_LI,
-  renderElement: getRenderElement(ELEMENT_TODO_LI),
-  deserialize: getTodoListDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(ELEMENT_TODO_LI),
+export const ELEMENT_TODO_LI = 'action_item';
+
+export const createTodoListPlugin = createPluginFactory<HotkeyPlugin>({
+  key: ELEMENT_TODO_LI,
+  isElement: true,
+  handlers: {
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    hotkey: ['mod+opt+4', 'mod+shift+4'],
+  },
 });

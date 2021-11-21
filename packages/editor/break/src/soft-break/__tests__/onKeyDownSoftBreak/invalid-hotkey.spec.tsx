@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getSoftBreakOnKeyDown } from '../../getSoftBreakOnKeyDown';
+import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsx;
 
@@ -26,6 +27,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  getSoftBreakOnKeyDown()(input)(event);
+  onKeyDownSoftBreak(input, mockPlugin())(event);
   expect(input.children).toEqual(output.children);
 });

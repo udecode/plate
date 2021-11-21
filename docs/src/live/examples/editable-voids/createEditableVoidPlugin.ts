@@ -1,11 +1,9 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate';
-import { EDITABLE_VOID } from './defaults';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createEditableVoidPlugin = (): PlatePlugin => ({
-  renderElement: getRenderElement(EDITABLE_VOID),
-  voidTypes: getPlatePluginTypes(EDITABLE_VOID),
+export const EDITABLE_VOID = 'editable-void';
+
+export const createEditableVoidPlugin = createPluginFactory({
+  key: EDITABLE_VOID,
+  isElement: true,
+  isVoid: true,
 });

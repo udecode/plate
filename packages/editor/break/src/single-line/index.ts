@@ -3,5 +3,5 @@
  */
 
 export * from './createSingleLinePlugin';
-export * from './getSingleLineKeyDown';
+export * from './onKeyDownSingleLine';
 export * from './withSingleLine';

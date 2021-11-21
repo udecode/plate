@@ -3,7 +3,7 @@ title: Configuration
 slug: /configuration
 ---
 
-`Plate` accepts the `options` prop ([PlateOptions](https://plate-api.udecode.io/globals.html#plateoptions)) so you can pass all
+Plate plugins accept options so you can pass all
 the **common** plugin options of your editor in one place.
 
 It's an object whose property keys are [plugin keys](#plugin-keys) and whose property values are [PlatePluginOptions](https://plate-api.udecode.io/interfaces/platepluginoptions.html).
@@ -30,7 +30,7 @@ const options = createPlateOptions({
 
 ```ts
 export const createPlateOptions = (
-  overrides?: Partial<
+  overrideByKey?: Partial<
     Record<DefaultPlatePluginKey, Partial<PlatePluginOptions>>
   >
 ) => {
@@ -69,9 +69,9 @@ export const createPlateOptions = (
     [MARK_UNDERLINE]: DEFAULTS_UNDERLINE,
   };
 
-  if (overrides) {
-    Object.keys(overrides).forEach((key) => {
-      options[key] = overrides[key];
+  if (overrideByKey) {
+    Object.keys(overrideByKey).forEach((key) => {
+      options[key] = overrideByKey[key];
     });
   }
 
@@ -88,16 +88,12 @@ export const createPlateOptions = (
 
 ## Plugin keys
 
-- Each plugin can define one or more `pluginKey` to support configuration.
-  - e.g. the bold plugin defines one `pluginKey`: `MARK_BOLD = 'bold'`
-  - e.g. the list plugin defines multiple `pluginKeys`:
-    - `ELEMENT_UL = 'ul'`
-    - `ELEMENT_OL = 'ol'`
-    - `ELEMENT_LI = 'li'`
-- Each node should have its own `pluginKey`. If a plugin features multiple nodes, it will define multiple `pluginKeys`.
+- Each plugin can define one `key` to support configuration.
+  - e.g. the bold plugin `key` is `MARK_BOLD = 'bold'`
+- Each node should have its own plugin `key`.
 - ⚠️ This is not necessarily equal to `type`:
-  - `type` is used as a slate node type,
-  - `pluginKey` is used for plate plugins configuration.
+  - `type` is the slate node type (default value is `key`),
+  - `key` is the key in the `plugins` set.
 
 ## Options
 
@@ -108,10 +104,6 @@ export const createPlateOptions = (
 ### `component`
 
 - `Plate` maps each slate node to this component to render.
-
-### `defaultType`
-
-- Default type of slate blocks.
 
 ### `deserialize`
 

@@ -28,32 +28,38 @@ npm install @udecode/plate-indent-list
 
 ```ts live
 () => {
-  const components = {
-    ...CONFIG.components,
-    [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
-      as: 'div',
-      styles: {
-        root: {
-          margin: 0,
-          padding: '4px 0',
-        }
-      }
-    })
-  }
-
   const plugins = [
-    ...PLUGINS.basicNodes,
+    createHeadingPlugin(),
+    createParagraphPlugin({
+      component: withProps(StyledElement, {
+        as: 'div',
+        styles: {
+          root: {
+            margin: 0,
+            padding: '4px 0',
+          }
+        }
+      })
+    }),
     createIndentListPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     }),
     createIndentPlugin({
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     }),
   ];
   
@@ -105,11 +111,9 @@ npm install @udecode/plate-indent-list
       </HeadingToolbar>
       <Plate
         id="indent-list"
-        plugins={plugins}
-        components={components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.indentList}
+        plugins={plugins}
         normalizeInitialValue
       />
     </>
@@ -125,8 +129,8 @@ npm install @udecode/plate-indent-list
 ```ts
 {
   nodeKey: KEY_LIST_STYLE_TYPE,
-  validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
-  transformStyle: (e, { style, nodeValue }) => ({
+  validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+  transformStyle: ({ style, nodeValue }) => ({
     ...style,
     display: 'list-item',
     listStyleType: nodeValue,

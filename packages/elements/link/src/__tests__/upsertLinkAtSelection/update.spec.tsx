@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../defaults';
+import { createLinkPlugin, ELEMENT_LINK } from '../../createLinkPlugin';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
-import { withLink } from '../../withLink';
 
 jsx;
 
@@ -37,9 +36,10 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(
-    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(input)
-  );
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
   upsertLinkAtSelection(editor, { url: urlOutput });
 
   expect(input.children).toEqual(output.children);

@@ -3,8 +3,6 @@
  */
 
 export * from './createImagePlugin';
-export * from './defaults';
-export * from './getImageDeserialize';
 export * from './types';
 export * from './withImageUpload';
 export * from './transforms/index';

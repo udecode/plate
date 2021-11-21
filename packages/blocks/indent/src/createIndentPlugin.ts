@@ -1,14 +1,34 @@
-import { getOverrideProps } from '@udecode/plate-common';
-import { PlatePluginEditor } from '@udecode/plate-core';
-import { KEY_INDENT } from './defaults';
-import { getIndentOnKeyDown } from './getIndentOnKeyDown';
-import { IndentPluginOptions } from './types';
+import {
+  createPluginFactory,
+  ELEMENT_DEFAULT,
+  getPluginType,
+} from '@udecode/plate-core';
+import { onKeyDownIndent } from './onKeyDownIndent';
+import { IndentPlugin } from './types';
 import { withIndent } from './withIndent';
 
-export const createIndentPlugin = (
-  options?: IndentPluginOptions
-): PlatePluginEditor => ({
-  overrideProps: getOverrideProps(KEY_INDENT),
-  withOverrides: withIndent(options),
-  onKeyDown: getIndentOnKeyDown(),
+export const KEY_INDENT = 'indent';
+
+export const createIndentPlugin = createPluginFactory<IndentPlugin>({
+  key: KEY_INDENT,
+  withOverrides: withIndent,
+  handlers: {
+    onKeyDown: onKeyDownIndent,
+  },
+  options: {
+    offset: 24,
+    unit: 'px',
+  },
+  then: (editor, { options: { offset, unit } = {} }) => ({
+    inject: {
+      props: {
+        nodeKey: KEY_INDENT,
+        styleKey: 'marginLeft',
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+        transformNodeValue: ({ nodeValue }) => {
+          return nodeValue * offset! + unit!;
+        },
+      },
+    },
+  }),
 });

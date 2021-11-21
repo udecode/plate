@@ -1,13 +1,19 @@
-import { PlatePlugin } from '@udecode/plate-core';
-import { getSoftBreakOnKeyDown } from './getSoftBreakOnKeyDown';
-import { SoftBreakPluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
+import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
+import { SoftBreakPlugin } from './types';
+
+export const KEY_SOFT_BREAK = 'softBreak';
 
 /**
  * Insert soft break following configurable rules.
  * Each rule specifies a hotkey and query options.
  */
-export const createSoftBreakPlugin = (
-  options: SoftBreakPluginOptions = {}
-): PlatePlugin => ({
-  onKeyDown: getSoftBreakOnKeyDown(options),
+export const createSoftBreakPlugin = createPluginFactory<SoftBreakPlugin>({
+  key: KEY_SOFT_BREAK,
+  handlers: {
+    onKeyDown: onKeyDownSoftBreak,
+  },
+  options: {
+    rules: [{ hotkey: 'shift+enter' }],
+  },
 });

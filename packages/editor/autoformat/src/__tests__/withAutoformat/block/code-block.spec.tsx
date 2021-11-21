@@ -6,16 +6,19 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ELEMENT_DEFAULT,
+  getPluginType,
   getRangeFromBlockStart,
   getText,
-} from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { withAutoformat } from '../../../createAutoformatPlugin';
+import { AutoformatPlugin } from '../../../types';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
@@ -40,7 +43,7 @@ describe('when ``` at block start', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(withReact(input), CONFIG.autoformat as any);
 
     editor.insertText('`');
     editor.insertText('new');
@@ -70,37 +73,42 @@ describe('when ``` at block start, but customising with query we get the most re
       </editor>
     ) as any;
 
-    const codeEditor = withAutoformat({
-      rules: [
-        {
-          mode: 'block',
-          type: ELEMENT_CODE_BLOCK,
-          match: '```',
-          triggerAtBlockStart: false,
-          preFormat: clearBlockFormat,
-          format: (editor) => {
-            insertEmptyCodeBlock(editor as PlateEditor, {
-              defaultType: getPlatePluginType(
-                editor as PlateEditor,
-                ELEMENT_DEFAULT
-              ),
-              insertNodesOptions: { select: true },
-            });
-          },
-          query: (editor, rule): boolean => {
-            if (!editor.selection) {
-              return false;
-            }
+    const codeEditor = withAutoformat(
+      withReact(input),
+      mockPlugin<AutoformatPlugin>({
+        options: {
+          rules: [
+            {
+              mode: 'block',
+              type: ELEMENT_CODE_BLOCK,
+              match: '```',
+              triggerAtBlockStart: false,
+              preFormat: clearBlockFormat,
+              format: (editor) => {
+                insertEmptyCodeBlock(editor as PlateEditor, {
+                  defaultType: getPluginType(
+                    editor as PlateEditor,
+                    ELEMENT_DEFAULT
+                  ),
+                  insertNodesOptions: { select: true },
+                });
+              },
+              query: (editor, rule): boolean => {
+                if (!editor.selection) {
+                  return false;
+                }
 
-            const matchRange = getRangeFromBlockStart(editor) as Range;
-            const textFromBlockStart = getText(editor, matchRange);
-            const currentNodeText = (textFromBlockStart || '') + rule.text;
+                const matchRange = getRangeFromBlockStart(editor) as Range;
+                const textFromBlockStart = getText(editor, matchRange);
+                const currentNodeText = (textFromBlockStart || '') + rule.text;
 
-            return rule.match === currentNodeText;
-          },
+                return rule.match === currentNodeText;
+              },
+            },
+          ],
         },
-      ],
-    })(withReact(input));
+      })
+    );
 
     codeEditor.insertText('`');
     codeEditor.insertText('inside code-block');
@@ -130,7 +138,10 @@ describe('when ```', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText('`');
     editor.insertText('new');

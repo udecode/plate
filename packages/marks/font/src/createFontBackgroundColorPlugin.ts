@@ -1,21 +1,21 @@
-import { getOverrideProps } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { defaults } from 'lodash';
-import { MARK_BG_COLOR } from './defaults';
-import { getFontBackgroundColorDeserialize } from './getFontDeserialize';
-import { FontColorPluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createFontBackgroundColorPlugin = (
-  options: FontColorPluginOptions = {}
-): PlatePlugin => ({
-  overrideProps: getOverrideProps(MARK_BG_COLOR),
-  deserialize: getFontBackgroundColorDeserialize(),
-  withOverrides: (editor) => {
-    // TODO: extend plate-core to register options
-    editor.options[MARK_BG_COLOR] = defaults(options, {
+export const MARK_BG_COLOR = 'backgroundColor';
+
+export const createFontBackgroundColorPlugin = createPluginFactory({
+  key: MARK_BG_COLOR,
+  inject: {
+    props: {
       nodeKey: MARK_BG_COLOR,
-    } as FontColorPluginOptions);
-
-    return editor;
+    },
   },
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (element) => ({ [type]: element.style.backgroundColor }),
+
+      validStyle: {
+        backgroundColor: '*',
+      },
+    },
+  }),
 });

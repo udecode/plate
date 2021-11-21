@@ -1,10 +1,12 @@
 import {
   ELEMENT_DEFAULT,
+  getPluginType,
   insertNodes,
   isBlockAboveEmpty,
   isExpanded,
-} from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { CodeBlockInsertOptions } from '../types';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -16,7 +18,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = (
   editor: PlateEditor,
   {
-    defaultType = getPlatePluginType(editor, ELEMENT_DEFAULT),
+    defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
     level = 0,
   }: CodeBlockInsertOptions

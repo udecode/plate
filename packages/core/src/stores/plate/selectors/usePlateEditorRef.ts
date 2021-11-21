@@ -9,3 +9,10 @@ export const getPlateEditorRef = <T = {}>(id?: string | null) =>
  */
 export const usePlateEditorRef = <T = {}>(id?: string | null) =>
   usePlateStore(() => getPlateEditorRef<T>(id));
+
+/**
+ * Get plate editor ref updating on plugins change.
+ */
+export const usePlateEditorWithPlugins = <T = {}>(id?: string | null) => {
+  return usePlateStore(() => getPlateEditorRef<T>(id));
+};

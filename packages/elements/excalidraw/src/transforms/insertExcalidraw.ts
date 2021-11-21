@@ -1,13 +1,16 @@
-import { getParent, insertNodes } from '@udecode/plate-common';
-import { PlateEditor, PlatePluginKey, TElement } from '@udecode/plate-core';
-import { ELEMENT_EXCALIDRAW } from '../defaults';
+import {
+  getParent,
+  insertNodes,
+  PlateEditor,
+  PlatePluginKey,
+  TElement,
+} from '@udecode/plate-core';
+import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
 import { ExcalidrawNodeData } from '../types';
 
 export const insertExcalidraw = (
   editor: PlateEditor,
-  {
-    pluginKey = ELEMENT_EXCALIDRAW,
-  }: Partial<ExcalidrawNodeData> & PlatePluginKey
+  { key = ELEMENT_EXCALIDRAW }: Partial<ExcalidrawNodeData> & PlatePluginKey
 ): void => {
   if (!editor.selection) return;
 
@@ -19,7 +22,7 @@ export const insertExcalidraw = (
   insertNodes<TElement<ExcalidrawNodeData>>(
     editor,
     {
-      type: pluginKey,
+      type: key,
       children: [{ text: '' }],
     },
     { at: path }

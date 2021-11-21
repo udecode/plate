@@ -1,38 +1,44 @@
 import {
+  getPluginInjectProps,
+  PlateEditor,
+  PlatePluginKey,
   setNodes,
   SetNodesOptions,
   TNodeMatch,
   unsetNodes,
-} from '@udecode/plate-common';
-import { getPlatePluginOptions, PlateEditor } from '@udecode/plate-core';
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
-import { KEY_ALIGN } from '../defaults';
-import { Alignment, AlignPluginOptions } from '../types';
+import { KEY_ALIGN } from '../createAlignPlugin';
+import { Alignment } from '../types';
 
 export const setAlign = (
   editor: PlateEditor,
-  { value }: { value: Alignment },
-  options?: SetNodesOptions
+  {
+    key = KEY_ALIGN,
+    value,
+    setNodesOptions,
+  }: { value: Alignment; setNodesOptions?: SetNodesOptions } & PlatePluginKey
 ) => {
-  const { validTypes, defaultNodeValue, nodeKey } = getPlatePluginOptions<
-    Required<AlignPluginOptions>
-  >(editor, KEY_ALIGN);
+  const { validTypes, defaultNodeValue, nodeKey } = getPluginInjectProps(
+    editor,
+    key
+  );
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && validTypes.includes(n.type);
+    Editor.isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
 
   if (value === defaultNodeValue) {
-    unsetNodes(editor, nodeKey, {
+    unsetNodes(editor, nodeKey!, {
       match,
-      ...options,
+      ...setNodesOptions,
     });
   } else {
     setNodes(
       editor,
-      { [nodeKey]: value },
+      { [nodeKey!]: value },
       {
         match,
-        ...options,
+        ...setNodesOptions,
       }
     );
   }

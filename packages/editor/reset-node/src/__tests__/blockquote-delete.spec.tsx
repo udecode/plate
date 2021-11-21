@@ -1,12 +1,15 @@
 /** @jsx jsx */
 
-import { isSelectionAtBlockStart } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
+import {
+  isSelectionAtBlockStart,
+  mockPlugin,
+  PlateEditor,
+} from '@udecode/plate-core';
+import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { CONFIG } from '../../../../../docs/src/live/config/config';
-import { ELEMENT_BLOCKQUOTE } from '../../../../elements/block-quote/src/defaults';
-import { getResetNodeOnKeyDown } from '../getResetNodeOnKeyDown';
+import { ELEMENT_BLOCKQUOTE } from '../../../../elements/block-quote/src/createBlockquotePlugin';
+import { onKeyDownResetNode } from '../onKeyDownResetNode';
 
 jsx;
 
@@ -31,16 +34,21 @@ const output = (
 it('should render', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
 
-  getResetNodeOnKeyDown({
-    rules: [
-      {
-        types: [ELEMENT_BLOCKQUOTE],
-        defaultType: CONFIG.options.p.type,
-        hotkey: 'Backspace',
-        predicate: isSelectionAtBlockStart,
+  onKeyDownResetNode(
+    input,
+    mockPlugin({
+      options: {
+        rules: [
+          {
+            types: [ELEMENT_BLOCKQUOTE],
+            defaultType: ELEMENT_PARAGRAPH,
+            hotkey: 'Backspace',
+            predicate: isSelectionAtBlockStart,
+          },
+        ],
       },
-    ],
-  })(input)(new KeyboardEvent('keydown') as any);
+    })
+  )(new KeyboardEvent('keydown') as any);
 
   expect(input.children).toEqual(output.children);
 });

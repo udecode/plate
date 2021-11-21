@@ -95,8 +95,8 @@ module.exports = {
           items: [
             'plugins/serializing-html',
             'plugins/serializing-md',
-            'plugins/serializing-ast',
             'plugins/serializing-csv',
+            'plugins/serializing-docx',
           ],
           collapsed: false,
         },

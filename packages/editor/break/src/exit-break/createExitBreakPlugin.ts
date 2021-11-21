@@ -1,13 +1,22 @@
-import { PlatePlugin } from '@udecode/plate-core';
-import { getExitBreakOnKeyDown } from './getExitBreakOnKeyDown';
-import { ExitBreakPluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
+import { onKeyDownExitBreak } from './onKeyDownExitBreak';
+import { ExitBreakPlugin } from './types';
+
+export const KEY_EXIT_BREAK = 'exitBreak';
 
 /**
  * Insert soft break following configurable rules.
  * Each rule specifies a hotkey and query options.
  */
-export const createExitBreakPlugin = (
-  options: ExitBreakPluginOptions = {}
-): PlatePlugin => ({
-  onKeyDown: getExitBreakOnKeyDown(options),
+export const createExitBreakPlugin = createPluginFactory<ExitBreakPlugin>({
+  key: KEY_EXIT_BREAK,
+  handlers: {
+    onKeyDown: onKeyDownExitBreak,
+  },
+  options: {
+    rules: [
+      { hotkey: 'mod+enter' },
+      { hotkey: 'mod+shift+enter', before: true },
+    ],
+  },
 });

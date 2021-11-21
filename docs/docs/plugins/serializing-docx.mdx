@@ -1,0 +1,47 @@
+---
+slug: /serializing-docx
+title: Docx
+---
+
+### Installation
+
+```bash npm2yarn
+npm install @udecode/plate-docx-serializer
+```
+
+### Usage
+
+#### Deserializer
+
+```ts live
+() => {
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createImagePlugin(),
+    createLinkPlugin(),
+    createIndentListPlugin(),
+    createIndentPlugin(),
+    createTablePlugin(),
+    createTodoListPlugin(),
+    createMediaEmbedPlugin(),
+    createHighlightPlugin(),
+    createDeserializeDocxPlugin(),
+  ], {
+    components: CONFIG.components,
+  });
+    
+  return (
+    <Plate
+      id="deserialize-docx"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.pasteHtml}
+      plugins={plugins}
+    />
+  );
+}
+```
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
+- [packages/serializers/docx-serializer](https://github.com/udecode/plate/tree/main/packages/serializers/docx/src)

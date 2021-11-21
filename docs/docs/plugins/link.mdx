@@ -20,10 +20,12 @@ npm install @udecode/plate-link-ui
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createLinkPlugin()
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>
@@ -32,11 +34,9 @@ npm install @udecode/plate-link-ui
       </HeadingToolbar>
       <Plate
         id="link"
-        plugins={plugins}
-        components={CONFIG.components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.link}
+        plugins={plugins}
       />
     </>
   );

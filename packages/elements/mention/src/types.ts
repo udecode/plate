@@ -1,5 +1,5 @@
 import { Data, NoData } from '@udecode/plate-combobox';
-import { PlatePluginKey, TElement } from '@udecode/plate-core';
+import { TElement } from '@udecode/plate-core';
 import { CreateMentionNode } from './getMentionOnSelectItem';
 
 export interface MentionNodeData {
@@ -13,10 +13,9 @@ export interface MentionInputNodeData {
 export type MentionNode = TElement<MentionNodeData>;
 export type MentionInputNode = TElement<MentionInputNodeData>;
 
-export interface MentionPluginOptions<TData extends Data = NoData>
-  extends PlatePluginKey {
-  id?: string;
-  trigger?: string;
-  insertSpaceAfterMention?: boolean;
+export interface MentionPlugin<TData extends Data = NoData> {
   createMentionNode?: CreateMentionNode<TData>;
+  id?: string;
+  insertSpaceAfterMention?: boolean;
+  trigger?: string;
 }

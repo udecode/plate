@@ -4,8 +4,10 @@ import {
   getCodeBlockType,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import { getPreventDefaultHandler } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPreventDefaultHandler,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { BlockToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export const CodeBlockToolbarButton = ({
@@ -14,7 +16,7 @@ export const CodeBlockToolbarButton = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
   if (!editor) {
     return null;
   }

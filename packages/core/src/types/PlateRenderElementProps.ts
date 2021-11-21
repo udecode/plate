@@ -1,6 +1,6 @@
+import { TRenderElementProps } from './slate/TRenderElementProps';
 import { AnyObject } from './utility/AnyObject';
 import { PlateRenderNodeProps } from './PlateRenderNodeProps';
-import { TRenderElementProps } from './TRenderElementProps';
 
 /**
  * Element props passed by Plate

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getSelectionText, isSelectionExpanded } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import {
+  getSelectionText,
+  isSelectionExpanded,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import {
   getSelectionBoundingClientRect,
   usePopperPosition,
@@ -8,7 +11,7 @@ import {
 } from '@udecode/plate-popper';
 
 export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   const [isHidden, setIsHidden] = useState(true);
 

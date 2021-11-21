@@ -10,15 +10,13 @@ title: Huge Document
   const WithPlate = () => (
     <Plate
       id="huge-document"
-      plugins={PLUGINS.basicNodes}
-      components={CONFIG.components}
-      options={CONFIG.options}
       editableProps={{
         ...CONFIG.editableProps,
         // spellcheck adds some lag so we disable it
         spellCheck: false,
       }}
       initialValue={initialValue}
+      plugins={PLUGINS.basicNodes}
     />
   );
 

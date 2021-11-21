@@ -13,11 +13,12 @@ title: Preview Markdown
   return (
     <Plate
       id="editable-voids"
-      plugins={plugins}
-      components={CONFIG.components}
-      options={CONFIG.options}
-      editableProps={CONFIG.editableProps}
+      editableProps={{
+        ...CONFIG.editableProps,
+        renderLeaf: PreviewLeaf,  
+      }}
       initialValue={VALUES.previewMd}
+      plugins={plugins}
     />
   );
 }

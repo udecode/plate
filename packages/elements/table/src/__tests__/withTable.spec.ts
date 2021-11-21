@@ -1,4 +1,4 @@
-import { createEditorPlugins } from '../../../../plate/src/utils/createEditorPlugins';
+import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
 import { createTablePlugin } from '../createTablePlugin';
 import { withTable } from '../withTable';
 import { content, out, output2 } from './fixtures';
@@ -7,7 +7,7 @@ const plugins = [createTablePlugin()];
 
 describe('withTable', () => {
   it('should prevent cell deletions on deleteBackward from outside the table', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateUIEditor({
       plugins,
     });
     editor.children = content;
@@ -19,7 +19,7 @@ describe('withTable', () => {
     expect(editor.children).toEqual(content);
   });
   it('should prevent cell deletions on deleteForward from outside the table', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateUIEditor({
       plugins,
     });
     editor.children = content;
@@ -31,7 +31,7 @@ describe('withTable', () => {
     expect(editor.children).toEqual(content);
   });
   it('should prevent cell deletions when selecting multiple cells', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateUIEditor({
       plugins,
     });
     editor.children = content;
@@ -43,7 +43,7 @@ describe('withTable', () => {
     expect(editor.children).toEqual(out);
   });
   it('should allow deletions within a cell without deleting the cell', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateUIEditor({
       plugins,
     });
     editor.children = content;

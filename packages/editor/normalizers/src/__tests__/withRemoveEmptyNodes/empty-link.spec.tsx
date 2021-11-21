@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/defaults';
-import { withRemoveEmptyNodes } from '../../createRemoveEmptyNodesPlugin';
+import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
+import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
 
 jsx;
 
@@ -27,7 +27,16 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = withRemoveEmptyNodes({ type: ELEMENT_LINK })(input);
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [
+      createRemoveEmptyNodesPlugin({
+        options: {
+          types: ELEMENT_LINK,
+        },
+      }),
+    ],
+  });
 
   editor.normalizeNode([(input.children[0] as any).children[0], [0, 0]]);
 

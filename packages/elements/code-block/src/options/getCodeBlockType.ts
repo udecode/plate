@@ -1,5 +1,5 @@
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK } from '../defaults';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { ELEMENT_CODE_BLOCK } from '../constants';
 
 export const getCodeBlockType = <T = {}>(editor: PlateEditor<T>): string =>
-  getPlatePluginType(editor, ELEMENT_CODE_BLOCK);
+  getPluginType(editor, ELEMENT_CODE_BLOCK);

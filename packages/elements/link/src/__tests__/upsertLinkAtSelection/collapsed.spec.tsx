@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { createLinkPlugin } from '../../createLinkPlugin';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
-import { withLink } from '../../withLink';
 
 jsx;
 
@@ -21,7 +22,10 @@ const output = (
 ) as any;
 
 it('should run default insertText', () => {
-  const editor = withLink()(input);
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
   upsertLinkAtSelection(editor, { url });
 
   expect(input.children).toEqual(output.children);

@@ -1,15 +1,25 @@
-import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
-import { ELEMENT_BLOCKQUOTE } from './defaults';
-import { getBlockquoteDeserialize } from './getBlockquoteDeserialize';
+import {
+  createPluginFactory,
+  HotkeyPlugin,
+  onKeyDownToggleElement,
+} from '@udecode/plate-core';
+
+export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
 /**
  * Enables support for block quotes, useful for
  * quotations and passages.
  */
-export const createBlockquotePlugin = (): PlatePlugin => ({
-  pluginKeys: ELEMENT_BLOCKQUOTE,
-  renderElement: getRenderElement(ELEMENT_BLOCKQUOTE),
-  deserialize: getBlockquoteDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(ELEMENT_BLOCKQUOTE),
+export const createBlockquotePlugin = createPluginFactory<HotkeyPlugin>({
+  key: ELEMENT_BLOCKQUOTE,
+  isElement: true,
+  deserializeHtml: {
+    validNodeName: 'BLOCKQUOTE',
+  },
+  handlers: {
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    hotkey: 'mod+shift+.',
+  },
 });

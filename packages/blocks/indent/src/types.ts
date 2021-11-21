@@ -1,7 +1,4 @@
-import { OverridePropsOptions } from '@udecode/plate-common';
-
-export interface IndentPluginOptions
-  extends OverridePropsOptions<string | number> {
+export type IndentPlugin = {
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
    * @default 40
@@ -18,4 +15,4 @@ export interface IndentPluginOptions
    * Maximum number of indentation.
    */
   indentMax?: number;
-}
+};

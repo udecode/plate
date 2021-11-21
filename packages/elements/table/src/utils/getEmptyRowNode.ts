@@ -1,5 +1,5 @@
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_TR } from '../defaults';
+import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { ELEMENT_TR } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from './getEmptyCellNode';
 
@@ -8,7 +8,7 @@ export const getEmptyRowNode = (
   { header, colCount }: TablePluginOptions & { colCount: number }
 ) => {
   return {
-    type: getPlatePluginType(editor, ELEMENT_TR),
+    type: getPluginType(editor, ELEMENT_TR),
     children: Array(colCount)
       .fill(colCount)
       .map(() => getEmptyCellNode(editor, { header })),

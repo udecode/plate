@@ -3,12 +3,9 @@
  */
 
 export * from './createMentionPlugin';
-export * from './defaults';
-export * from './getMentionDeserialize';
 export * from './getMentionOnSelectItem';
 export * from './moveSelectionByOffset';
 export * from './types';
 export * from './withMention';
-export * from './options/index';
 export * from './queries/index';
 export * from './transforms/index';

@@ -1,5 +1,4 @@
-import { findNodePath, getParent } from '@udecode/plate-common';
-import { TElement } from '@udecode/plate-core';
+import { findNodePath, getParent, TElement } from '@udecode/plate-core';
 import { ReactEditor } from 'slate-react';
 
 /**

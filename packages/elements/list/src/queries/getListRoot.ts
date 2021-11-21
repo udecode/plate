@@ -1,7 +1,6 @@
-import { getAbove } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import { getAbove, getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
-import { ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 
 /**
  * Searches upward for the root list element
@@ -16,8 +15,8 @@ export const getListRoot = (
     at,
     match: {
       type: [
-        getPlatePluginType(editor, ELEMENT_UL),
-        getPlatePluginType(editor, ELEMENT_OL),
+        getPluginType(editor, ELEMENT_UL),
+        getPluginType(editor, ELEMENT_OL),
       ],
     },
   });

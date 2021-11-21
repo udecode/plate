@@ -1,14 +1,11 @@
 import React, { useCallback } from 'react';
-import { isCollapsed, someNode } from '@udecode/plate-common';
 import {
-  getPlatePluginOptions,
+  getPluginInjectProps,
+  isCollapsed,
+  someNode,
   usePlateEditorState,
 } from '@udecode/plate-core';
-import {
-  KEY_LINE_HEIGHT,
-  LineHeightPluginOptions,
-  setLineHeight,
-} from '@udecode/plate-line-height';
+import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,
   ToolbarButtonProps,
@@ -18,11 +15,9 @@ import { ReactEditor } from 'slate-react';
 
 export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
   const [open, setOpen] = React.useState(false);
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
-  const { validNodeValues } = getPlatePluginOptions<
-    Required<LineHeightPluginOptions>
-  >(editor, KEY_LINE_HEIGHT);
+  const { validNodeValues } = getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
   const onToggle = useCallback(() => {
     setOpen(!open);
@@ -32,6 +27,7 @@ export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
     (lineHeight) => {
       if (editor) {
         ReactEditor.focus(editor);
+
         setLineHeight(editor, {
           value: lineHeight,
         });
@@ -46,7 +42,9 @@ export const LineHeightToolbarDropdown = (props: ToolbarButtonProps) => {
         <ToolbarButton
           active={
             isCollapsed(editor?.selection) &&
-            someNode(editor!, { match: (n) => n.lineHeight !== undefined })
+            someNode(editor!, {
+              match: (n) => n[KEY_LINE_HEIGHT] !== undefined,
+            })
           }
           {...props}
         />

@@ -1,14 +1,12 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
-import { ELEMENT_HR } from './defaults';
-import { getHorizontalRuleDeserialize } from './getHorizontalRuleDeserialize';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createHorizontalRulePlugin = (): PlatePlugin => ({
-  pluginKeys: ELEMENT_HR,
-  renderElement: getRenderElement(ELEMENT_HR),
-  voidTypes: getPlatePluginTypes(ELEMENT_HR),
-  deserialize: getHorizontalRuleDeserialize(),
+export const ELEMENT_HR = 'hr';
+
+export const createHorizontalRulePlugin = createPluginFactory({
+  key: ELEMENT_HR,
+  isElement: true,
+  isVoid: true,
+  deserializeHtml: {
+    validNodeName: 'HR',
+  },
 });

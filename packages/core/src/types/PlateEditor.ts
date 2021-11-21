@@ -1,15 +1,14 @@
 import { HistoryEditor } from 'slate-history/dist/history-editor';
 import { ReactEditor } from 'slate-react';
-import {
-  PlatePluginOptions,
-  PluginKey,
-} from './PlatePluginOptions/PlateOptions';
-import { TEditor } from './TEditor';
+import { WithPlatePlugin } from './plugins/PlatePlugin';
+import { PluginKey } from './plugins/PlatePluginKey';
+import { TEditor } from './slate/TEditor';
 
-export type PlateEditor<T = {}> = PEditor & HistoryEditor & ReactEditor & T;
+export type PlateEditor<T = {}> = PEditor<T> & HistoryEditor & ReactEditor & T;
 
-export interface PEditor extends TEditor {
+export interface PEditor<T = {}> extends TEditor {
   key: any;
   id: string;
-  options: Record<PluginKey, Partial<PlatePluginOptions>>;
+  plugins: WithPlatePlugin<T>[];
+  pluginsByKey: Record<PluginKey, WithPlatePlugin<T>>;
 }

@@ -24,37 +24,39 @@ npm install @udecode/plate-reset-node
     defaultType: ELEMENT_PARAGRAPH,
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
-    createSoftBreakPlugin(CONFIG.softBreak),
-    createExitBreakPlugin(CONFIG.exitBreak),
     createTrailingBlockPlugin(CONFIG.trailingBlock),
     createResetNodePlugin({
-      rules: [
-        {
-          ...resetBlockTypesCommonRule,
-          hotkey: 'Enter',
-          predicate: isBlockAboveEmpty,
-        },
-        {
-          ...resetBlockTypesCommonRule,
-          hotkey: 'Backspace',
-          predicate: isSelectionAtBlockStart,
-        },
-      ],
+      options: {
+        rules: [
+          {
+            ...resetBlockTypesCommonRule,
+            hotkey: 'Enter',
+            predicate: isBlockAboveEmpty,
+          },
+          {
+            ...resetBlockTypesCommonRule,
+            hotkey: 'Backspace',
+            predicate: isSelectionAtBlockStart,
+          },
+        ],
+      }
     }),
-  ];
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate
       id="reset-node"
-      plugins={plugins}
-      components={CONFIG.components}
-      options={CONFIG.options}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.basicElements}
+      plugins={plugins}
     />
   );
 }

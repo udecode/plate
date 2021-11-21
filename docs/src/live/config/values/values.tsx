@@ -501,7 +501,7 @@ const plainText: any = (
   </fragment>
 );
 
-const pasteCSV: any = (
+const pasteCsv: any = (
   <fragment>
     <hp>
       This example shows how pasting from csv can get parsed into a table. Grab
@@ -928,7 +928,7 @@ const playground: any = getNodesWithRandomId([
   ...exitBreak,
   ...pasteHtml,
   ...pasteMd,
-  ...pasteCSV,
+  ...pasteCsv,
   ...pasteAst,
 ]);
 
@@ -963,7 +963,7 @@ export const VALUES: Record<string, any> = {
   mediaEmbed,
   mentions,
   pasteAst,
-  pasteCSV,
+  pasteCsv,
   pasteHtml,
   pasteMd,
   placeholder,

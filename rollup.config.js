@@ -27,6 +27,15 @@ const includePathOptions = {
   extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
 };
 
+const onwarn = (warning) => {
+  // Silence circular dependency warning for moment package
+  if (warning.code === 'CIRCULAR_DEPENDENCY') {
+    return;
+  }
+
+  console.warn(`(!) ${warning.message}`);
+};
+
 const plugins = [
   // Automatically externalize peerDependencies
   external(),
@@ -149,5 +158,6 @@ export default [
       include: 'src/**',
       // exclude: 'node_modules/**',
     },
+    onwarn,
   },
 ];

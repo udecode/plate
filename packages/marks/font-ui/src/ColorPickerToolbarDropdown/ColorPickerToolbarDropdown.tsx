@@ -1,12 +1,10 @@
 import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   getMark,
+  getPluginType,
   isMarkActive,
   removeMark,
   setMarks,
-} from '@udecode/plate-common';
-import {
-  getPlatePluginType,
   usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-core';
@@ -19,10 +17,10 @@ import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { ColorPicker } from '../ColorPicker/ColorPicker';
 import { ColorType } from '../ColorPicker/ColorType';
-import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './defaults';
+import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './constants';
 
 type ColorPickerToolbarDropdownProps = {
-  pluginKey?: string;
+  pluginKey: string;
   icon: ReactNode;
   selectedIcon: ReactNode;
   colors?: ColorType[];
@@ -40,9 +38,10 @@ export const ColorPickerToolbarDropdown = ({
   ...rest
 }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
   const [open, setOpen] = useState(false);
-  const editor = usePlateEditorState();
-  const editorRef = usePlateEditorRef();
-  const type = getPlatePluginType(editorRef, pluginKey);
+  const editor = usePlateEditorState()!;
+  const editorRef = usePlateEditorRef()!;
+
+  const type = getPluginType(editorRef, pluginKey);
 
   const color = editorRef && getMark(editorRef, type);
 

@@ -1,15 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createEditor, Editor } from 'slate';
-import { createHistoryPlugin } from '../../plugins/createHistoryPlugin';
-import { createReactPlugin } from '../../plugins/createReactPlugin';
+import { withPlate } from '../../plugins/withPlate';
 import { usePlateActions } from '../../stores/plate/plate.actions';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
-import { usePlatePlugins } from '../../stores/plate/selectors/usePlatePlugins';
+import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
-import { flatMapByKey } from '../../utils/flatMapByKey';
-import { pipe } from '../../utils/pipe';
-import { withPlate } from '../../utils/withPlate';
+import { setPlatePlugins } from '../../utils/setPlatePlugins';
 
 /**
  * Effects to update the plate store from the options.
@@ -18,26 +15,23 @@ import { withPlate } from '../../utils/withPlate';
 export const usePlateEffects = <T = {}>({
   id = 'main',
   value,
-  editor,
-  enabled = true,
-  components,
-  options,
+  editor: editorProp,
+  enabled: enabledProp = true,
   initialValue,
   normalizeInitialValue,
   plugins,
+  disableCorePlugins,
 }: UsePlateEffectsOptions<T>) => {
   const {
     setInitialState,
     setValue,
     setEditor,
-    setPlugins,
-    setPluginKeys,
     setEnabled,
     clearState,
   } = usePlateActions(id);
-  const storeEditor = usePlateEditorRef<T>(id);
-  const storeEnabled = usePlateEnabled(id);
-  const storePlugins = usePlatePlugins(id);
+  const enabled = usePlateEnabled(id);
+  const editor = usePlateEditorRef<T>(id);
+  const prevEditorRef = useRef(editor);
 
   // Clear the state on unmount.
   useEffect(
@@ -47,16 +41,15 @@ export const usePlateEffects = <T = {}>({
     [clearState, id]
   );
 
+  // Set initial state on mount
   useEffect(() => {
     setInitialState({
       enabled: true,
-      plugins: [],
-      pluginKeys: [],
       value: [],
     });
   }, [id, setInitialState]);
 
-  // Slate.value
+  // Set initialValue once
   useEffect(() => {
     initialValue && setValue(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,57 +62,50 @@ export const usePlateEffects = <T = {}>({
     !initialValue && !value && setValue([{ children: [{ text: '' }] }]);
   }, [initialValue, setValue, value]);
 
+  // Dynamic enabled
   useEffect(() => {
-    setEnabled(enabled);
-  }, [enabled, setEnabled]);
+    setEnabled(enabledProp);
+  }, [enabledProp, setEnabled]);
 
-  // Plate plugins
+  // Unset the editor if enabled gets false
   useEffect(() => {
-    setPlugins(
-      plugins ?? ([createReactPlugin(), createHistoryPlugin()] as any)
-    );
-  }, [plugins, setPlugins]);
-
-  useEffect(() => {
-    plugins && setPluginKeys(flatMapByKey(plugins, 'pluginKeys'));
-  }, [plugins, setPluginKeys]);
-
-  useEffect(() => {
-    if (storeEditor && !storeEnabled) {
+    if (editor && !enabled) {
       setEditor(undefined);
     }
-  }, [storeEnabled, storeEditor, setEditor]);
+  }, [enabled, editor, setEditor]);
 
-  // Slate.editor
+  // Set the editor if enabled and editor are defined
   useEffect(() => {
-    if (!storeEditor && storeEnabled) {
+    if (!editor && enabled) {
+      const baseEditor = editorProp ?? createEditor();
+
       setEditor(
-        pipe(
-          editor ?? (createEditor() as any),
-          withPlate({
-            id,
-            plugins: storePlugins,
-            options,
-            components,
-          })
-        )
+        withPlate(baseEditor as any, {
+          id,
+          plugins: plugins as PlatePlugin[],
+          disableCorePlugins,
+        })
       );
     }
-  }, [
-    storeEditor,
-    components,
-    editor,
-    id,
-    options,
-    plugins,
-    storeEnabled,
-    storePlugins,
-    setEditor,
-  ]);
+  }, [editorProp, id, plugins, setEditor, editor, enabled, disableCorePlugins]);
 
+  // Dynamic plugins, no called when setting the editor
   useEffect(() => {
-    if (storeEditor && normalizeInitialValue) {
-      Editor.normalize(storeEditor, { force: true });
+    const hasEditorUpdated = prevEditorRef.current === editor;
+    if (editor && hasEditorUpdated && plugins) {
+      setPlatePlugins(editor, plugins);
     }
-  }, [storeEditor, normalizeInitialValue]);
+  }, [plugins, editor]);
+
+  // Force editor normalization
+  useEffect(() => {
+    if (editor && normalizeInitialValue) {
+      Editor.normalize(editor, { force: true });
+    }
+  }, [editor, normalizeInitialValue]);
+
+  // Store previous editor
+  useEffect(() => {
+    prevEditorRef.current = editor;
+  }, [editor]);
 };

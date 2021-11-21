@@ -1,5 +1,10 @@
-import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { isElement, PlateEditor } from '@udecode/plate-core';
+import {
+  getAbove,
+  getParent,
+  isElement,
+  PlateEditor,
+  someNode,
+} from '@udecode/plate-core';
 import { Location } from 'slate';
 import { getCodeLineType } from '../options';
 

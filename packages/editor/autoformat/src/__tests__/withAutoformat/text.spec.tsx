@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../docs/src/live/config/config';
-import { withAutoformat } from '../../createAutoformatPlugin';
+import { withAutoformat } from '../../withAutoformat';
 
 jsx;
 
@@ -29,7 +30,10 @@ describe('when --space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText('-');
 
@@ -59,7 +63,10 @@ describe('when (tm)', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(')');
 
@@ -89,7 +96,10 @@ describe('when &sect', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(';');
 
@@ -119,7 +129,10 @@ describe('when //', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText('/');
 
@@ -159,7 +172,10 @@ describe('when typing %%%', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText('%');
 
@@ -188,15 +204,20 @@ describe('when using quotes', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat({
-      rules: [
-        {
-          mode: 'text',
-          match: '"',
-          format: ['“', '”'],
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin({
+        options: {
+          rules: [
+            {
+              mode: 'text',
+              match: '"',
+              format: ['“', '”'],
+            },
+          ],
         },
-      ],
-    })(withReact(input));
+      })
+    );
 
     editor.insertText('"');
 

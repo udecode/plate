@@ -18,12 +18,12 @@ Plate provides a kit of components for all the plugins.
 
 You can either:
 
-- import and use `createPlateComponents` to create all the components.
+- import and use `createPlateUI` to create all the components.
 The first parameter can be used to override default components by plugin key.
 
 ```ts
 // this will override the paragraph markup
-const components = createPlateComponents({
+const components = createPlateUI({
   [ELEMENT_PARAGRAPH]: withProps(StyledElement, {
     as: 'div',
   }),
@@ -33,8 +33,8 @@ const components = createPlateComponents({
 - or create your own factory:
 
 ```ts
-export const createPlateComponents = (
-  overrides?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
+export const createPlateUI = (
+  overrideByKey?: Partial<Record<DefaultPlatePluginKey, PlatePluginComponent>>
 ) => {
   const components = {
     [ELEMENT_ALIGN_CENTER]: AlignCenterElement,
@@ -76,9 +76,9 @@ export const createPlateComponents = (
     [MARK_UNDERLINE]: UnderlineLeaf,
   };
 
-  if (overrides) {
-    Object.keys(overrides).forEach((key) => {
-      components[key] = overrides[key];
+  if (overrideByKey) {
+    Object.keys(overrideByKey).forEach((key) => {
+      components[key] = overrideByKey[key];
     });
   }
 

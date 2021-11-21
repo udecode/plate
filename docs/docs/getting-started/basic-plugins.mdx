@@ -15,125 +15,109 @@ If you don't provide any plugins to `Plate` as done in the previous section, `cr
 
 ### Plugins
 
-Let's add basic elements and marks using the `plugins` props.
-
-```tsx
-// Stored in PLUGINS.basicNodes
-const basicNodesPlugins = [
-  // editor
-  createReactPlugin(),          // withReact
-  createHistoryPlugin(),        // withHistory
-
-  // elements
-  createParagraphPlugin(),      // paragraph element
-  createBlockquotePlugin(),     // blockquote element
-  createCodeBlockPlugin(),      // code block element
-  createHeadingPlugin(),        // heading elements
-
-  // marks
-  createBoldPlugin(),           // bold mark
-  createItalicPlugin(),         // italic mark
-  createUnderlinePlugin(),      // underline mark
-  createStrikethroughPlugin(),  // strikethrough mark
-  createCodePlugin(),           // code mark
-];
-
-// Quick helper to create a block element with (marked) text
-export const createElement = (
-  text = '',
-  {
-    type = ELEMENT_PARAGRAPH,
-    mark,
-  }: {
-    type?: string;
-    mark?: string;
-  } = {}
-) => {
-  const leaf = { text };
-  if (mark) {
-    leaf[mark] = true;
-  }
-
-  return {
-    type,
-    children: [leaf],
-  };
-};
-
-// Stored in VALUES.basicNodes
-const basicNodesInitialValue = [
-  createElement('🧱 Elements', { type: ELEMENT_H1 }),
-  createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
-  createElement('These are the most common elements, known as blocks:'),
-  createElement('Heading 1', { type: ELEMENT_H1 }),
-  createElement('Heading 2', { type: ELEMENT_H2 }),
-  createElement('Heading 3', { type: ELEMENT_H3 }),
-  createElement('Heading 4', { type: ELEMENT_H4 }),
-  createElement('Heading 5', { type: ELEMENT_H5 }),
-  createElement('Heading 6', { type: ELEMENT_H6 }),
-  createElement('Blockquote', { type: ELEMENT_BLOCKQUOTE }),
-  {
-    type: ELEMENT_CODE_BLOCK,
-    children: [
-      {
-        type: ELEMENT_CODE_LINE,
-        children: [
-          {
-            text: "const a = 'Hello';",
-          },
-        ],
-      },
-      {
-        type: ELEMENT_CODE_LINE,
-        children: [
-          {
-            text: "const b = 'World';",
-          },
-        ],
-      },
-    ],
-  },
-  createElement('💅 Marks', { type: ELEMENT_H1 }),
-  createElement('💧 Basic Marks', { type: ELEMENT_H2 }),
-  createElement(
-    'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.'
-  ),
-  createElement(
-    'You can customize the type, the component and the hotkey for each of these.'
-  ),
-  createElement('This text is bold.', { mark: MARK_BOLD }),
-  createElement('This text is italic.', { mark: MARK_ITALIC }),
-  createElement('This text is underlined.', {
-    mark: MARK_UNDERLINE,
-  }),
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      {
-        text: 'This text is bold, italic and underlined.',
-        [MARK_BOLD]: true,
-        [MARK_ITALIC]: true,
-        [MARK_UNDERLINE]: true,
-      },
-    ],
-  },
-  createElement('This is a strikethrough text.', {
-    mark: MARK_STRIKETHROUGH,
-  }),
-  createElement('This is an inline code.', { mark: MARK_CODE }),
-]
-```
+We first create the initial value.
 
 :::note
-The `type` property is needed on elements as `Plate` will map a React component to each type.
+`Plate` is using the `type` property so a plugin can render a node by type.
 :::
 
 ```tsx live
 () => {
+  // Not important, quick helper to create a block element with (marked) text
+  const createElement = (text, { type = ELEMENT_PARAGRAPH, mark, } = {}) => {
+    const leaf = { text };
+    if (mark) {
+      leaf[mark] = true;
+    }
+  
+    return {
+      type,
+      children: [leaf],
+    };
+  };
+  
+  // Initial value, stored in VALUES.basicNodes
+  const initialValue = [
+    createElement('🧱 Elements', { type: ELEMENT_H1 }),
+    createElement('🔥 Basic Elements', { type: ELEMENT_H2 }),
+    createElement('These are the most common elements, known as blocks:'),
+    createElement('Heading 1', { type: ELEMENT_H1 }),
+    createElement('Heading 2', { type: ELEMENT_H2 }),
+    createElement('Heading 3', { type: ELEMENT_H3 }),
+    createElement('Heading 4', { type: ELEMENT_H4 }),
+    createElement('Heading 5', { type: ELEMENT_H5 }),
+    createElement('Heading 6', { type: ELEMENT_H6 }),
+    createElement('Blockquote', { type: ELEMENT_BLOCKQUOTE }),
+    {
+      type: ELEMENT_CODE_BLOCK,
+      children: [
+        {
+          type: ELEMENT_CODE_LINE,
+          children: [
+            {
+              text: "const a = 'Hello';",
+            },
+          ],
+        },
+        {
+          type: ELEMENT_CODE_LINE,
+          children: [
+            {
+              text: "const b = 'World';",
+            },
+          ],
+        },
+      ],
+    },
+    createElement('💅 Marks', { type: ELEMENT_H1 }),
+    createElement('💧 Basic Marks', { type: ELEMENT_H2 }),
+    createElement(
+      'The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code.'
+    ),
+    createElement(
+      'You can customize the type, the component and the hotkey for each of these.'
+    ),
+    createElement('This text is bold.', { mark: MARK_BOLD }),
+    createElement('This text is italic.', { mark: MARK_ITALIC }),
+    createElement('This text is underlined.', {
+      mark: MARK_UNDERLINE,
+    }),
+    {
+      type: ELEMENT_PARAGRAPH,
+      children: [
+        {
+          text: 'This text is bold, italic and underlined.',
+          [MARK_BOLD]: true,
+          [MARK_ITALIC]: true,
+          [MARK_UNDERLINE]: true,
+        },
+      ],
+    },
+    createElement('This is a strikethrough text.', {
+      mark: MARK_STRIKETHROUGH,
+    }),
+    createElement('This is an inline code.', { mark: MARK_CODE }),
+  ]
+
   const [debugValue, setDebugValue] = useState(null);
   const onChangeDebug = (newValue) => {
     setDebugValue(`value ${JSON.stringify(newValue)}`);
   }
+  
+  const plugins = createPlugins([
+    // elements
+    createParagraphPlugin(),      // paragraph element
+    createBlockquotePlugin(),     // blockquote element
+    createCodeBlockPlugin(),      // code block element
+    createHeadingPlugin(),        // heading elements
+  
+    // marks
+    createBoldPlugin(),           // bold mark
+    createItalicPlugin(),         // italic mark
+    createUnderlinePlugin(),      // underline mark
+    createStrikethroughPlugin(),  // strikethrough mark
+    createCodePlugin(),           // code mark
+  ]);
 
   return (
     <>
@@ -141,8 +125,8 @@ The `type` property is needed on elements as `Plate` will map a React component 
         id="1"
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.basicNodes}
-        plugins={PLUGINS.basicNodes}
         onChange={onChangeDebug}
+        plugins={plugins}
       />
       {debugValue}
     </>
@@ -150,35 +134,25 @@ The `type` property is needed on elements as `Plate` will map a React component 
 }
 ```
 
-Everything actually works, but we didn't provide any `components` to render.
+Everything actually works, but we didn't provide any `components` to render, so it's using the default (unstyled) ones.
 The default element component is a `div` and the default leaf component is a `span`.
 
 :::info
-Plate are bundled without any default component or options,
+Plate plugins are bundled without any default component,
 meaning that you're in full control over markup and styling
-so you can plug-in your design system or the provided one.
+so you can plug-in your own design system or the provided one (see next section).
 :::
 
-### Components & Options
+### Components
 
-Let's pass the `components` and `options` provided by the library.
-
-```tsx
-const components = createPlateComponents();
-const options = createPlateOptions();
-```
+To plug all the components at one time, you can use `createPlugins` which takes 
+the plugins in the first parameter and `components` in the second parameter.
+In the following example we'll use `createPlateUI()`, which returns Plate design system.
 
 ```tsx live
 () => {
-  const components = createPlateComponents();
-  const options = createPlateOptions();
-
   // try to remove some plugins!
-  const basicNodesPlugins = [
-    // editor
-    createReactPlugin(),          // withReact
-    createHistoryPlugin(),        // withHistory
-
+  const plugins = createPlugins([
     // elements
     createParagraphPlugin(),      // paragraph element
     createBlockquotePlugin(),     // blockquote element
@@ -191,16 +165,17 @@ const options = createPlateOptions();
     createUnderlinePlugin(),      // underline mark
     createStrikethroughPlugin(),  // strikethrough mark
     createCodePlugin(),           // code mark
-  ];
-
+  ], {
+    // Plate components
+    components: createPlateUI(),
+  });
+  
   return (
     <Plate
       id="2"
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.basicNodes}
-      plugins={basicNodesPlugins}
-      components={components}
-      options={options}
+      plugins={plugins}
     />
   );
 }
@@ -208,5 +183,5 @@ const options = createPlateOptions();
 
 Voilà!
 
-`Plate` hides a lot of complexity but what if we want to have more control on its state?
-See the [store section](store).
+`Plate` hides a lot of complexity. What if we want to have more control on its state?
+See the [store API](store).

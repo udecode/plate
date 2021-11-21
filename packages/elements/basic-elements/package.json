@@ -34,7 +34,6 @@
   "dependencies": {
     "@udecode/plate-block-quote": "7.0.2",
     "@udecode/plate-code-block": "7.0.2",
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "@udecode/plate-heading": "7.0.2",
     "@udecode/plate-paragraph": "7.0.2"

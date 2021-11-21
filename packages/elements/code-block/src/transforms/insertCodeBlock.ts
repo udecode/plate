@@ -2,11 +2,12 @@ import {
   InsertNodesOptions,
   isExpanded,
   isSelectionAtBlockStart,
+  PlateEditor,
   setNodes,
   someNode,
+  TElement,
   wrapNodes,
-} from '@udecode/plate-common';
-import { PlateEditor, TElement } from '@udecode/plate-core';
+} from '@udecode/plate-core';
 import { getCodeBlockType, getCodeLineType } from '../options';
 
 /**

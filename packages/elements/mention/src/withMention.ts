@@ -1,38 +1,23 @@
 import { comboboxStore } from '@udecode/plate-combobox';
-import { insertNodes } from '@udecode/plate-common';
-import { getPlatePluginOptions, WithOverride } from '@udecode/plate-core';
-import { defaults } from 'lodash';
+import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';
-import { COMBOBOX_TRIGGER_MENTION, ELEMENT_MENTION } from './defaults';
-import { getMentionInputType } from './options';
+import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
   findMentionInput,
   isNodeMentionInput,
   isSelectionInMentionInput,
 } from './queries';
-import { MentionInputNode, MentionPluginOptions } from './types';
+import { MentionInputNode, MentionPlugin } from './types';
 
-export const withMention = ({
-  pluginKey = ELEMENT_MENTION,
-  ...options
-}: MentionPluginOptions = {}): WithOverride => (editor) => {
+export const withMention: WithOverride<{}, MentionPlugin> = (
+  editor,
+  { options: { id, trigger } }
+) => {
+  const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
+
   const { apply, insertText, deleteBackward } = editor;
-
-  // TODO: extend plate-core to register options
-  editor.options[pluginKey] = defaults(options, {
-    pluginKey,
-    type: pluginKey,
-    id: pluginKey,
-    trigger: COMBOBOX_TRIGGER_MENTION,
-    createMentionNode: (item) => ({ value: item.text }),
-  } as MentionPluginOptions);
-
-  const { trigger, id } = getPlatePluginOptions<MentionPluginOptions>(
-    editor,
-    pluginKey
-  );
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
@@ -65,7 +50,7 @@ export const withMention = ({
     }
 
     insertNodes<MentionInputNode>(editor, {
-      type: getMentionInputType(editor),
+      type,
       children: [{ text: '' }],
       trigger,
     });

@@ -18,16 +18,18 @@ npm install @udecode/plate-highlight
 
     return (
       <MarkToolbarButton
-        type={getPlatePluginType(editor, MARK_HIGHLIGHT)}
+        type={getPluginType(editor, MARK_HIGHLIGHT)}
         icon={<Highlight />}
       />
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createHighlightPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>
@@ -36,11 +38,9 @@ npm install @udecode/plate-highlight
       </HeadingToolbar>
       <Plate
         id="highlight"
-        plugins={plugins}
-        components={CONFIG.components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.highlight}
+        plugins={plugins}
       />
     </>
   );

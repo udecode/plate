@@ -6,7 +6,7 @@ export interface ImageNodeData {
   caption?: TDescendant[];
 }
 
-export interface WithImageUploadOptions {
+export interface ImagePlugin {
   /**
    * An optional method that will upload the image to a server.
    * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.

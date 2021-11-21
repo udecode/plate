@@ -1,21 +1,20 @@
-import { getOverrideProps } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { defaults } from 'lodash';
-import { MARK_FONT_SIZE } from './defaults';
-import { getFontSizeDeserialize } from './getFontDeserialize';
-import { FontSizePluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createFontSizePlugin = (
-  options: FontSizePluginOptions = {}
-): PlatePlugin => ({
-  overrideProps: getOverrideProps(MARK_FONT_SIZE),
-  deserialize: getFontSizeDeserialize(),
-  withOverrides: (editor) => {
-    // TODO: extend plate-core to register options
-    editor.options[MARK_FONT_SIZE] = defaults(options, {
+export const MARK_FONT_SIZE = 'fontSize';
+
+export const createFontSizePlugin = createPluginFactory({
+  key: MARK_FONT_SIZE,
+  inject: {
+    props: {
       nodeKey: MARK_FONT_SIZE,
-    } as FontSizePluginOptions);
-
-    return editor;
+    },
   },
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (element) => ({ [type]: element.style.fontSize }),
+      validStyle: {
+        fontSize: '*',
+      },
+    },
+  }),
 });

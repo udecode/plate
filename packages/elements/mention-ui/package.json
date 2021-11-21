@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@udecode/plate-combobox": "7.0.2",
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "@udecode/plate-mention": "7.0.2",
     "@udecode/plate-styled-components": "7.0.2"

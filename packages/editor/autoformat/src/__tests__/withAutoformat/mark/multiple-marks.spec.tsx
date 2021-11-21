@@ -1,12 +1,13 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { MARK_BOLD } from '../../../../../../marks/basic-marks/src/bold/defaults';
-import { MARK_ITALIC } from '../../../../../../marks/basic-marks/src/italic/defaults';
-import { MARK_UNDERLINE } from '../../../../../../marks/basic-marks/src/underline/defaults';
-import { withAutoformat } from '../../../createAutoformatPlugin';
+import { MARK_BOLD } from '../../../../../../marks/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '../../../../../../marks/basic-marks/src/createItalicPlugin';
+import { MARK_UNDERLINE } from '../../../../../../marks/basic-marks/src/createUnderlinePlugin';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
@@ -31,7 +32,10 @@ describe('when inserting ***', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText('*');
     editor.insertText('*');
@@ -62,16 +66,21 @@ describe('when inserting ***___', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat({
-      rules: [
-        {
-          type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-          match: { start: '___***', end: '***__' },
-          trigger: '_',
-          mode: 'mark',
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin({
+        options: {
+          rules: [
+            {
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+              match: { start: '___***', end: '***__' },
+              trigger: '_',
+              mode: 'mark',
+            },
+          ],
         },
-      ],
-    })(withReact(input));
+      })
+    );
 
     editor.insertText('*');
     editor.insertText('*');

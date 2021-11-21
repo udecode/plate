@@ -1,7 +1,7 @@
 import { WithOverride } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 
-export const withSingleLine = (): WithOverride => (editor) => {
+export const withSingleLine: WithOverride = (editor) => {
   const { normalizeNode } = editor;
 
   editor.insertBreak = () => null;

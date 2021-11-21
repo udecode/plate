@@ -3,8 +3,9 @@ import {
   getLastChildPath,
   moveChildren,
   MoveChildrenOptions,
-} from '@udecode/plate-common';
-import { PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 

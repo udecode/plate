@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { createAlignPlugin } from '../../createAlignPlugin';
 import { setAlign } from '../../transforms/setAlign';
 
@@ -24,7 +24,7 @@ const output = ((
 ) as any) as PlateEditor;
 
 it('should remove align prop', () => {
-  const editor = createEditorPlugins({
+  const editor = createPlateUIEditor({
     editor: input,
     plugins: [createAlignPlugin()],
   });

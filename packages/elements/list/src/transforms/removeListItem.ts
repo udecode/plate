@@ -1,12 +1,14 @@
 import {
   deleteFragment,
+  getPluginType,
   getPreviousPath,
   insertNodes,
   isExpanded,
-} from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI, ELEMENT_LIC } from '../defaults';
+import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -56,10 +58,10 @@ export const removeListItem = (
       insertNodes<TElement>(
         editor,
         {
-          type: getPlatePluginType(editor, ELEMENT_LI),
+          type: getPluginType(editor, ELEMENT_LI),
           children: [
             {
-              type: getPlatePluginType(editor, ELEMENT_LIC),
+              type: getPluginType(editor, ELEMENT_LIC),
               children: [{ text: '' }],
             },
           ],

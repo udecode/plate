@@ -1,6 +1,5 @@
 import React from 'react';
-import { setNodes } from '@udecode/plate-common';
-import { TElement } from '@udecode/plate-core';
+import { setNodes, TElement } from '@udecode/plate-core';
 import { TodoListItemNodeData } from '@udecode/plate-list';
 import { getRootProps } from '@udecode/plate-styled-components';
 import clsx from 'clsx';

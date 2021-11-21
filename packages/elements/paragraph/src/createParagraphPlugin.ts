@@ -1,14 +1,22 @@
-import { getToggleElementOnKeyDown } from '@udecode/plate-common';
-import { getRenderElement, PlatePlugin } from '@udecode/plate-core';
-import { ELEMENT_PARAGRAPH } from './defaults';
-import { getParagraphDeserialize } from './getParagraphDeserialize';
+import {
+  createPluginFactory,
+  HotkeyPlugin,
+  onKeyDownToggleElement,
+} from '@udecode/plate-core';
+
+export const ELEMENT_PARAGRAPH = 'p';
 
 /**
  * Enables support for paragraphs.
  */
-export const createParagraphPlugin = (): PlatePlugin => ({
-  pluginKeys: ELEMENT_PARAGRAPH,
-  renderElement: getRenderElement(ELEMENT_PARAGRAPH),
-  deserialize: getParagraphDeserialize(),
-  onKeyDown: getToggleElementOnKeyDown(ELEMENT_PARAGRAPH),
+export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
+  key: ELEMENT_PARAGRAPH,
+  isElement: true,
+  handlers: {
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    hotkey: ['mod+opt+0', 'mod+shift+0'],
+  },
+  deserializeHtml: { validNodeName: 'P' },
 });

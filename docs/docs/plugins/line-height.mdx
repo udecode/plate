@@ -22,14 +22,18 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
   const plugins = [
     ...PLUGINS.basicNodes,
     createLineHeightPlugin({
-      defaultNodeValue: 1.5,
-      validNodeValues: [1, 1.2, 1.5, 2, 3],
-      validTypes: [
-        ELEMENT_PARAGRAPH,
-        ELEMENT_H1,
-      ],
+      inject: {
+        props: {
+          defaultNodeValue: 1.5,
+          validNodeValues: [1, 1.2, 1.5, 2, 3],
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
     })
-  ];
+  ]
 
   return (
     <>
@@ -38,11 +42,9 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
       </HeadingToolbar>
       <Plate
         id="alignment"
-        plugins={plugins}
-        components={CONFIG.components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.lineHeight}
+        plugins={plugins}
       />
     </>
   );
@@ -58,7 +60,7 @@ Click inside a paragraph or a header and click on a toolbar button to apply the 
 {
   nodeKey: KEY_LINE_HEIGHT,
   defaultNodeValue: DEFAULT_LINE_HEIGHT,
-  validTypes: [getPlatePluginType(editor, ELEMENT_DEFAULT)],
+  validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
   validNodeValues: DEFAULT_LINE_HEIGHTS,
 }
 ```

@@ -1,10 +1,9 @@
 /** @jsx jsx */
 
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { PlateEditor } from '@udecode/plate-core';
+import { createPlateEditor, ELEMENT_DEFAULT } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_H1 } from '../../../elements/heading/src/defaults';
-import { withTrailingBlock } from './createTrailingBlockPlugin';
+import { ELEMENT_H1 } from '../../../elements/heading/src/constants';
+import { createTrailingBlockPlugin } from './createTrailingBlockPlugin';
 
 jsx;
 
@@ -27,10 +26,17 @@ describe('when last node is invalid', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock({
-      type: ELEMENT_DEFAULT,
-      level: 0,
-    })(input as PlateEditor);
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [
+        createTrailingBlockPlugin({
+          options: {
+            type: ELEMENT_DEFAULT,
+            level: 0,
+          },
+        }),
+      ],
+    });
 
     editor.normalizeNode([input, []]);
 
@@ -61,10 +67,17 @@ describe('when level = 1', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock({
-      type: ELEMENT_DEFAULT,
-      level: 1,
-    })(input as PlateEditor);
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [
+        createTrailingBlockPlugin({
+          options: {
+            type: ELEMENT_DEFAULT,
+            level: 1,
+          },
+        }),
+      ],
+    });
 
     editor.normalizeNode([input, []]);
 
@@ -88,11 +101,18 @@ describe('when using query', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock({
-      type: ELEMENT_DEFAULT,
-      level: 0,
-      exclude: [ELEMENT_H1],
-    })(input as PlateEditor);
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [
+        createTrailingBlockPlugin({
+          options: {
+            type: ELEMENT_DEFAULT,
+            level: 0,
+            exclude: [ELEMENT_H1],
+          },
+        }),
+      ],
+    });
 
     editor.normalizeNode([input, []]);
 
@@ -118,7 +138,10 @@ describe('when the last node is valid', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock()(input as PlateEditor);
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createTrailingBlockPlugin()],
+    });
 
     editor.normalizeNode([input, []]);
 
@@ -138,10 +161,13 @@ describe('when editor has no children', () => {
   ) as any;
 
   it('should be', () => {
-    const editor = withTrailingBlock()(input as PlateEditor);
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createTrailingBlockPlugin()],
+    });
 
-    editor.normalizeNode([input, []]);
+    editor.normalizeNode([editor, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

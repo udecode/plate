@@ -1,10 +1,11 @@
 import {
+  getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
+  PlateEditor,
   someNode,
-} from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_LI } from '../defaults';
+} from '@udecode/plate-core';
+import { ELEMENT_LI } from '../createListPlugin';
 
 /**
  * Is selection across blocks with list items
@@ -20,6 +21,6 @@ export const isAcrossListItems = (editor: PlateEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getPlatePluginType(editor, ELEMENT_LI) },
+    match: { type: getPluginType(editor, ELEMENT_LI) },
   });
 };

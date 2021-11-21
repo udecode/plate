@@ -1,6 +1,10 @@
 import React from 'react';
-import { getPreventDefaultHandler, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPluginType,
+  getPreventDefaultHandler,
+  someNode,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ToolbarButton } from '@udecode/plate-toolbar';
 import { TableToolbarButtonProps } from './TableToolbarButton.types';
@@ -10,8 +14,8 @@ export const TableToolbarButton = ({
   header,
   ...props
 }: TableToolbarButtonProps) => {
-  const editor = usePlateEditorState();
-  const type = getPlatePluginType(editor, ELEMENT_TABLE);
+  const editor = usePlateEditorState()!;
+  const type = getPluginType(editor, ELEMENT_TABLE);
 
   return (
     <ToolbarButton

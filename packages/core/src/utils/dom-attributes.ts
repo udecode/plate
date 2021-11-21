@@ -1,4 +1,4 @@
-import { DOMHandlers } from '../types/PlatePlugin/DOMHandlers';
+import { DOMHandlers } from '../types/plugins/DOMHandlers';
 
 export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Clipboard Events
@@ -39,8 +39,6 @@ export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Image Events
   'onLoad',
   'onLoadCapture',
-  'onError',
-  'onErrorCapture',
 
   // Keyboard Events
   'onKeyDown',
