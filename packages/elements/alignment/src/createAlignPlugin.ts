@@ -7,8 +7,7 @@ import {
 export const KEY_ALIGN = 'align';
 
 /**
- * Enables support for text alignment, useful to align your content
- * to left, right, center or justify.
+ * Creates a plugin that adds alignment functionality to the editor.
  */
 export const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,

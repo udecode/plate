@@ -15,7 +15,7 @@ import { SerializeHtml } from './SerializeHtml';
 import { WithOverride } from './WithOverride';
 
 /**
- * Plate plugin interface built on top of Slate and Editable.
+ * The `PlatePlugin` interface is a base interface for all plugins.
  */
 export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
   editor?: Nullable<{
