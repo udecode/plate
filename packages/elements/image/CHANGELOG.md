@@ -1,5 +1,13 @@
 # @udecode/plate-image
 
+## 8.0.0
+
+### Minor Changes
+
+- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
+  - `withImageUpload`:
+    - pipes injected plugins `editor.insertData.query` so it can be disabled
+
 ## 7.0.2
 
 ## 7.0.1

@@ -1,5 +1,19 @@
 # @udecode/plate-md-serializer
 
+## 8.0.0
+
+### Major Changes
+
+- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `createDeserializeMdPlugin`:
+    - is now disabled if there is html data in the data transfer.
+
+  Renamed:
+
+  - `createDeserializeMDPlugin` to `createDeserializeMdPlugin`
+  - `deserializeMD` to `deserializeMd`
+
 ## 7.0.2
 
 ## 7.0.1

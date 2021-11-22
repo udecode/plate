@@ -1,5 +1,13 @@
 # @udecode/plate-alignment
 
+## 8.0.0
+
+### Major Changes
+
+- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
+  - `setAlign`
+    - moved param 3 to param 2 as `setNodesOptions`
+
 ## 7.0.2
 
 ## 7.0.1
