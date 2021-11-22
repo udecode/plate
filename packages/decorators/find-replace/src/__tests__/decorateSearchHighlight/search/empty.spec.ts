@@ -1,16 +1,14 @@
+import { createPlateEditor, mockPlugin } from '@udecode/plate-core';
 import { Range } from 'slate';
-import { createEditorPlugins } from '../../../../../../plate/src/utils/createEditorPlugins';
-import { getSearchHighlightDecorate } from '../../../getSearchHighlightDecorate';
-
-const input = { search: '' };
+import { decorateFindReplace } from '../../../decorateFindReplace';
 
 const output: Range[] = [];
 
 it('should be', () => {
   expect(
-    getSearchHighlightDecorate(input)(createEditorPlugins())([
-      { text: '' },
-      [0, 0],
-    ])
+    decorateFindReplace(
+      createPlateEditor(),
+      mockPlugin({ options: { search: '' } })
+    )([{ text: '' }, [0, 0]])
   ).toEqual(output);
 });

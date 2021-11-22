@@ -1,8 +1,12 @@
-import { getNodes, getParent } from '@udecode/plate-common';
-import { EditorNodesOptions } from '@udecode/plate-common/src';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  EditorNodesOptions,
+  getNodes,
+  getParent,
+  getPluginType,
+  PlateEditor,
+} from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
-import { ELEMENT_LIC } from '../defaults';
+import { ELEMENT_LIC } from '../createListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
@@ -23,7 +27,7 @@ export const moveListItems = (
   const [...lics] = getNodes(editor, {
     at,
     match: {
-      type: getPlatePluginType(editor, ELEMENT_LIC),
+      type: getPluginType(editor, ELEMENT_LIC),
     },
   });
 

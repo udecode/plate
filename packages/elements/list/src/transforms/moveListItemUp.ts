@@ -1,12 +1,14 @@
 import {
   getAbove,
   getNode,
+  getPluginType,
   insertNodes,
   isLastChild,
-} from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor, TElement } from '@udecode/plate-core';
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI } from '../defaults';
+import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
@@ -29,7 +31,7 @@ export const moveListItemUp = (
 
     const liParent = getAbove<TElement>(editor, {
       at: listPath,
-      match: { type: getPlatePluginType(editor, ELEMENT_LI) },
+      match: { type: getPluginType(editor, ELEMENT_LI) },
     });
     if (!liParent) {
       let toListPath;

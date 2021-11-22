@@ -9,11 +9,9 @@ import { useSlateProps } from './useSlateProps';
  */
 export const usePlate = <T = {}>({
   id,
-  components,
   editor,
   initialValue,
   value,
-  options,
   plugins,
   onChange,
   editableProps,
@@ -21,12 +19,10 @@ export const usePlate = <T = {}>({
 }: UsePlateOptions<T>) => {
   usePlateEffects({
     id,
-    components,
     plugins,
     initialValue,
     editor,
     value,
-    options,
     normalizeInitialValue,
   });
 

@@ -54,12 +54,8 @@ module.exports = {
     // '^@udecode/plate-font-ui$': '<rootDir>/packages/marks/font-ui/src',
     // '^@udecode/plate-highlight$': '<rootDir>/packages/marks/highlight/src',
     // '^@udecode/plate-kbd$': '<rootDir>/packages/marks/kbd/src',
-    // '^@udecode/plate-html-serializer$':
-    //   '<rootDir>/packages/serializers/html-serializer/src',
     // '^@udecode/plate-md-serializer$':
-    //   '<rootDir>/packages/serializers/md-serializer/src',
-    // '^@udecode/plate-ast-serializer$':
-    //   '<rootDir>/packages/serializers/ast-serializer/src',
+    //   '<rootDir>/packages/serializers/md/src',
     // '^@udecode/plate-autoformat$': '<rootDir>/packages/autoformat/src',
     // '^@udecode/plate-break$': '<rootDir>/packages/break/src',
     // '^@udecode/plate-find-replace$': '<rootDir>/packages/find-replace/src',

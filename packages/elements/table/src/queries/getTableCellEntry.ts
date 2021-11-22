@@ -1,14 +1,19 @@
-import { getAbove, getParent, someNode } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
+import {
+  getAbove,
+  getParent,
+  getPluginType,
+  PlateEditor,
+  someNode,
+} from '@udecode/plate-core';
 import { Location } from 'slate';
-import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../defaults';
+import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 
 /**
  * If at (default = selection) is in table>tr>td or table>tr>th,
  * return table, tr, and td or th node entries.
  */
-export const getTableCellEntry = (
-  editor: PlateEditor,
+export const getTableCellEntry = <T = {}>(
+  editor: PlateEditor<T>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (
@@ -17,8 +22,8 @@ export const getTableCellEntry = (
       at,
       match: {
         type: [
-          getPlatePluginType(editor, ELEMENT_TD),
-          getPlatePluginType(editor, ELEMENT_TH),
+          getPluginType(editor, ELEMENT_TD),
+          getPluginType(editor, ELEMENT_TH),
         ],
       },
     })
@@ -32,8 +37,8 @@ export const getTableCellEntry = (
         at,
         match: {
           type: [
-            getPlatePluginType(editor, ELEMENT_TD),
-            getPlatePluginType(editor, ELEMENT_TH),
+            getPluginType(editor, ELEMENT_TD),
+            getPluginType(editor, ELEMENT_TH),
           ],
         },
       }) || getParent(editor, paragraphPath);
@@ -42,8 +47,8 @@ export const getTableCellEntry = (
     const [tableCellNode, tableCellPath] = tableCell;
 
     if (
-      tableCellNode.type !== getPlatePluginType(editor, ELEMENT_TD) &&
-      tableCellNode.type !== getPlatePluginType(editor, ELEMENT_TH)
+      tableCellNode.type !== getPluginType(editor, ELEMENT_TD) &&
+      tableCellNode.type !== getPluginType(editor, ELEMENT_TH)
     )
       return;
 
@@ -51,7 +56,7 @@ export const getTableCellEntry = (
     if (!tableRow) return;
     const [tableRowNode, tableRowPath] = tableRow;
 
-    if (tableRowNode.type !== getPlatePluginType(editor, ELEMENT_TR)) return;
+    if (tableRowNode.type !== getPluginType(editor, ELEMENT_TR)) return;
 
     const tableElement = getParent(editor, tableRowPath);
     if (!tableElement) return;

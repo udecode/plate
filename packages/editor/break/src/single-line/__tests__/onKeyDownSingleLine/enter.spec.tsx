@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { getSingleLineKeyDown } from '../../getSingleLineKeyDown';
+import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';
 
 jsx;
 
@@ -26,6 +27,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  getSingleLineKeyDown()(input)(event);
+  onKeyDownSingleLine(input, mockPlugin())(event);
   expect(input.children).toEqual(output.children);
 });

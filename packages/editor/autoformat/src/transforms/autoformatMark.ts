@@ -1,5 +1,4 @@
-import { getText, removeMark } from '@udecode/plate-common';
-import { TEditor } from '@udecode/plate-core';
+import { getText, removeMark, TEditor } from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Point, Range, Transforms } from 'slate';
 import { AutoformatMarkRule } from '../types';

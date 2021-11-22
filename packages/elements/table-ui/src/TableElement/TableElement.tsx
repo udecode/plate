@@ -1,5 +1,5 @@
 import React from 'react';
-import { withProviders } from '@udecode/plate-common';
+import { withProviders } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { Provider } from 'jotai';

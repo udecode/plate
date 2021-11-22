@@ -1,21 +1,20 @@
-import { getOverrideProps } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { defaults } from 'lodash';
-import { MARK_FONT_FAMILY } from './defaults';
-import { getFontFamilyDeserialize } from './getFontDeserialize';
-import { FontFamilyPluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createFontFamilyPlugin = (
-  options: FontFamilyPluginOptions = {}
-): PlatePlugin => ({
-  overrideProps: getOverrideProps(MARK_FONT_FAMILY),
-  deserialize: getFontFamilyDeserialize(),
-  withOverrides: (editor) => {
-    // TODO: extend plate-core to register options
-    editor.options[MARK_FONT_FAMILY] = defaults(options, {
+export const MARK_FONT_FAMILY = 'fontFamily';
+
+export const createFontFamilyPlugin = createPluginFactory({
+  key: MARK_FONT_FAMILY,
+  inject: {
+    props: {
       nodeKey: MARK_FONT_FAMILY,
-    } as FontFamilyPluginOptions);
-
-    return editor;
+    },
   },
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (element) => ({ [type]: element.style.fontFamily }),
+      validStyle: {
+        fontFamily: '*',
+      },
+    },
+  }),
 });

@@ -1,22 +1,27 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
-import { ELEMENT_MEDIA_EMBED } from './defaults';
-import { getMediaEmbedDeserialize } from './getMediaEmbedDeserialize';
+import { createPluginFactory } from '@udecode/plate-core';
+
+export const ELEMENT_MEDIA_EMBED = 'media_embed';
 
 /**
  * Enables support for embeddable media such as YouTube
  * or Vimeo videos, Instagram posts and tweets or Google Maps.
  */
-export const createMediaEmbedPlugin = ({
-  pluginKey = ELEMENT_MEDIA_EMBED,
-}: {
-  pluginKey?: string;
-} = {}): PlatePlugin => ({
-  pluginKeys: pluginKey,
-  renderElement: getRenderElement(pluginKey),
-  deserialize: getMediaEmbedDeserialize(pluginKey),
-  voidTypes: getPlatePluginTypes(pluginKey),
+export const createMediaEmbedPlugin = createPluginFactory({
+  key: ELEMENT_MEDIA_EMBED,
+  isElement: true,
+  isVoid: true,
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (el: HTMLElement) => {
+        const url = el.getAttribute('src');
+        if (url) {
+          return {
+            type,
+            url,
+          };
+        }
+      },
+      validNodeName: 'IFRAME',
+    },
+  }),
 });

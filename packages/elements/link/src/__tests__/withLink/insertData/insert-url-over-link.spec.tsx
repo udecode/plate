@@ -1,10 +1,8 @@
 /** @jsx jsx */
 
-import { withInlineVoid } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { ELEMENT_LINK } from '../../../defaults';
-import { withLink } from '../../../withLink';
+import { createLinkPlugin } from '../../../createLinkPlugin';
 
 jsx;
 
@@ -40,9 +38,10 @@ const output = (
 it('should unwrap the existing link', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
 
-  const editor = withLink()(
-    withInlineVoid({ inlineTypes: [ELEMENT_LINK] })(withReact(input))
-  );
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
 
   editor.insertData(data);
 

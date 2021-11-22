@@ -3,8 +3,8 @@ import {
   getPreventDefaultHandler,
   isMarkActive,
   toggleMark,
-} from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
 
@@ -16,14 +16,14 @@ export const MarkToolbarButton = ({
   clear,
   ...props
 }: MarkToolbarButtonProps) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
 
   return (
     <ToolbarButton
-      active={!!editor?.selection && isMarkActive(editor, type)}
+      active={!!editor?.selection && isMarkActive(editor, type!)}
       onMouseDown={
         editor
-          ? getPreventDefaultHandler(toggleMark, editor, type, clear)
+          ? getPreventDefaultHandler(toggleMark, editor, { key: type, clear })
           : undefined
       }
       {...props}

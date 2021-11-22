@@ -17,21 +17,21 @@ npm install @udecode/plate-break
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createListPlugin(),
     createTablePlugin(),
     createSingleLinePlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <Plate
       id="single-line"
-      plugins={plugins}
-      components={CONFIG.components}
-      options={CONFIG.options}
       editableProps={CONFIG.editableProps}
       initialValue={VALUES.singleLine}
+      plugins={plugins}
     />
   );
 }

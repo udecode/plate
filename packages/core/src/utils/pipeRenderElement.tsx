@@ -1,37 +1,29 @@
 import React from 'react';
-import castArray from 'lodash/castArray';
 import { DefaultElement } from 'slate-react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
 import { PlateRenderElementProps } from '../types/PlateRenderElementProps';
-import { TRenderElementProps } from '../types/TRenderElementProps';
-import { pipeOverrideProps } from './pipeOverrideProps';
+import { RenderElement } from '../types/RenderElement';
+import { pipeInjectProps } from './pipeInjectProps';
+import { pluginRenderElement } from './pluginRenderElement';
 
 /**
  * @see {@link RenderElement}
  */
 export const pipeRenderElement = (
   editor: PlateEditor,
-  plugins: PlatePlugin[] = []
+  editableProps?: EditableProps
 ): EditableProps['renderElement'] => {
-  const renderElements = plugins.flatMap(
-    (plugin) => plugin.renderElement?.(editor) ?? []
-  );
+  const renderElements: RenderElement[] = [];
 
-  const propsOverriders = plugins.flatMap((plugin) =>
-    castArray(plugin.overrideProps).flatMap((cb) => cb?.(editor) ?? [])
-  );
+  editor.plugins.forEach((plugin) => {
+    if (plugin.isElement) {
+      renderElements.push(pluginRenderElement(editor, plugin));
+    }
+  });
 
-  return (renderElementProps) => {
-    const props: PlateRenderElementProps = {
-      ...pipeOverrideProps(
-        renderElementProps as TRenderElementProps,
-        propsOverriders
-      ),
-      editor,
-      plugins,
-    };
+  return (nodeProps) => {
+    const props = pipeInjectProps<PlateRenderElementProps>(editor, nodeProps);
 
     let element;
 
@@ -41,6 +33,10 @@ export const pipeRenderElement = (
     });
 
     if (element) return element;
+
+    if (editableProps?.renderElement) {
+      return editableProps.renderElement(props);
+    }
 
     return <DefaultElement {...props} />;
   };

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { withLink } from '../../../withLink';
+import { createLinkPlugin } from '../../../createLinkPlugin';
 
 jsx;
 
@@ -26,7 +26,10 @@ const output = (
 it('should run default insertText', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>test</fragment>);
 
-  const editor = withLink()(withReact(input));
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createLinkPlugin()],
+  });
 
   editor.insertData(data);
 

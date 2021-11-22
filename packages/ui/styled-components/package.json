@@ -32,7 +32,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "clsx": "^1.1.1"
   },

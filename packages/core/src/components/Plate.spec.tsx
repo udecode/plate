@@ -27,6 +27,7 @@ describe('Plate', () => {
 
     const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
       {
+        key: 'a',
         withOverrides: (e) => {
           const { normalizeNode } = e;
           e.normalizeNode = (n: NodeEntry) => {
@@ -69,6 +70,7 @@ describe('Plate', () => {
 
     const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
       {
+        key: 'a',
         withOverrides: (e) => {
           const { normalizeNode } = e;
           e.normalizeNode = (n: NodeEntry) => {

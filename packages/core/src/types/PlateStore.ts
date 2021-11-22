@@ -1,7 +1,5 @@
-import { Editor } from 'slate';
-import { PlatePlugin } from './PlatePlugin/PlatePlugin';
+import { TDescendant } from './slate/TDescendant';
 import { PlateEditor } from './PlateEditor';
-import { TDescendant } from './TDescendant';
 
 /**
  * A unique id used to store the editor state by id.
@@ -10,6 +8,8 @@ import { TDescendant } from './TDescendant';
  * @default 'main'
  */
 export type EditorId = string | null | undefined;
+
+export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
 
 export type PlateState<T = {}> = {
   /**
@@ -21,7 +21,17 @@ export type PlateState<T = {}> = {
   /**
    * A key that is incremented on each editor change.
    */
-  keyChange?: number;
+  keyEditor?: number;
+
+  /**
+   * A key that is incremented on each editor.plugins change.
+   */
+  keyPlugins?: number;
+
+  /**
+   * A key that is incremented on each editor.selection change.
+   */
+  keySelection?: number;
 
   /**
    * If true, plate will create the editor with `withPlate`.
@@ -29,19 +39,6 @@ export type PlateState<T = {}> = {
    * @default true
    */
   enabled?: boolean;
-
-  /**
-   * Plate plugins.
-   * @default [createReactPlugin(), createHistoryPlugin()]
-   */
-  plugins: PlatePlugin<T>[];
-
-  /**
-   * Element keys used by the plugins
-   */
-  pluginKeys: string[];
-
-  selection: Editor['selection'];
 
   /**
    * Editor value.
@@ -72,10 +69,6 @@ export type PlateActions<T = {}> = {
   resetEditor: (id?: string) => void;
 
   setEditor: (value: PlateState<T>['editor'], id?: string) => void;
-  setSelection: (value: PlateState<T>['selection'], id?: string) => void;
-  incrementKeyChange: (id?: string) => void;
   setEnabled: (value: PlateState<T>['enabled'], id?: string) => void;
-  setPlugins: (value: PlateState<T>['plugins'], id?: string) => void;
-  setPluginKeys: (value: PlateState<T>['pluginKeys'], id?: string) => void;
   setValue: (value: PlateState<T>['value'], id?: string) => void;
 };

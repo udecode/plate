@@ -1,13 +1,9 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { OnChange } from '../types/PlatePlugin/OnChange';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { OnChange } from '../types/plugins/OnChange';
 
-export const pipeOnChange = (
-  editor: PlateEditor,
-  plugins: PlatePlugin[] = []
-): ReturnType<OnChange> => {
-  const onChanges = plugins.flatMap(
-    (plugin) => plugin.onChange?.(editor) ?? []
+export const pipeOnChange = (editor: PlateEditor): ReturnType<OnChange> => {
+  const onChanges = editor.plugins.flatMap(
+    (plugin) => plugin.handlers?.onChange?.(editor, plugin) ?? []
   );
 
   return (nodes) => {

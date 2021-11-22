@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw-next": "0.8.0-69b6fbb",
-    "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
     "@udecode/plate-styled-components": "7.0.2"
   },

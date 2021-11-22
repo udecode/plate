@@ -5,9 +5,9 @@ title: Plugin Utils
 
 Plate is providing many utils to create plugins.
 
-### `getOverrideProps`
+### `getInjectProps`
 
-- Util for [overrideProps](creating-plugins#overrideprops)
+- Util for [inject.props](creating-plugins#overrideprops)
 - Return if `element`, `text`, `nodeKey` is defined
 - Return if `node.type` is not in `validTypes` (if defined)
 - Return if `value = node[nodeKey]` is not in `validNodeValues` (if defined)
@@ -16,7 +16,7 @@ Plate is providing many utils to create plugins.
 - Plugin options:
 
 ```ts
-export interface OverridePropsOptions<TValue = any> {
+export interface InjectPropsPlugin<TValue = any> {
   /**
    * Object whose keys are node values and values are classNames which will be extended.
    */
@@ -43,20 +43,19 @@ export interface OverridePropsOptions<TValue = any> {
    * Transforms the className.
    * @default clsx(className, classNames[value])
    */
-  transformClassName?: (editor: PlateEditor, options: TransformOptions) => any;
+  transformClassName?: (options: TransformOptions) => any;
 
   /**
    * Transforms the node value for the style or className.
    * @default nodeValue
    */
-  transformNodeValue?: (editor: PlateEditor, options: TransformOptions) => TValue;
+  transformNodeValue?: (options: TransformOptions) => TValue;
 
   /**
    * Transforms the style.
    * @default { ...style, [styleKey]: value }
    */
   transformStyle?: (
-    editor: PlateEditor,
     options: TransformOptions
   ) => CSSProperties;
 
@@ -66,7 +65,7 @@ export interface OverridePropsOptions<TValue = any> {
   validNodeValues?: TValue[];
 
   /**
-   * List of element types for which the overrides apply.
+   * List of element types to override.
    * @default [ELEMENT_DEFAULT]
    */
   validTypes?: string[];
@@ -107,18 +106,17 @@ createIndentPlugin({
 ### `getRenderElement`
 
 - Util for [renderElement](creating-plugins#renderelement)
-- First param is [pluginKey](configuration#plugin-keys)
+- First param is the plugin [key](configuration#plugin-keys)
 - It will look up the plugin [type](configuration#type):
   - If the type is equals to the slate element type, render `options.component`
   - Else, return `undefined` so Plate pipeline can check the next plugin
 - Plugin options:
   - [type](configuration#type)
   - [component](configuration#component)
-  - [getNodeProps](configuration#getnodeprops)
   - [overrideProps](configuration#overrideprops)
 - Default `component` is `DefaultElement`
    
-### `getRenderLeaf`
+### `pipeRenderLeaf`
 
 - Util for [renderLeaf](creating-plugins#renderleaf)
 - Same than [getRenderElement](plugin-utils#getrenderelement) but for slate leaves.

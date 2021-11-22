@@ -1,6 +1,9 @@
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
-import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
-import { ELEMENT_TD, ELEMENT_TH } from '../defaults';
+import {
+  ELEMENT_DEFAULT,
+  getPluginType,
+  PlateEditor,
+} from '@udecode/plate-core';
+import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 
 export const getEmptyCellNode = (
@@ -9,11 +12,11 @@ export const getEmptyCellNode = (
 ) => {
   return {
     type: header
-      ? getPlatePluginType(editor, ELEMENT_TH)
-      : getPlatePluginType(editor, ELEMENT_TD),
+      ? getPluginType(editor, ELEMENT_TH)
+      : getPluginType(editor, ELEMENT_TD),
     children: [
       {
-        type: getPlatePluginType(editor, ELEMENT_DEFAULT),
+        type: getPluginType(editor, ELEMENT_DEFAULT),
         children: [{ text: '' }],
       },
     ],

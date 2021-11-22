@@ -1,13 +1,18 @@
-import { getParent, insertNodes } from '@udecode/plate-common';
-import { PlateEditor, PlatePluginKey, TElement } from '@udecode/plate-core';
-import { ELEMENT_MEDIA_EMBED } from '../defaults';
+import {
+  getParent,
+  insertNodes,
+  PlateEditor,
+  PlatePluginKey,
+  TElement,
+} from '@udecode/plate-core';
+import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';
 import { MediaEmbedNodeData } from '../types';
 
 export const insertMediaEmbed = (
   editor: PlateEditor,
   {
     url = '',
-    pluginKey = ELEMENT_MEDIA_EMBED,
+    key = ELEMENT_MEDIA_EMBED,
   }: Partial<MediaEmbedNodeData> & PlatePluginKey
 ): void => {
   if (!editor.selection) return;
@@ -17,7 +22,7 @@ export const insertMediaEmbed = (
   insertNodes<TElement>(
     editor,
     {
-      type: pluginKey,
+      type: key,
       url,
       children: [{ text: '' }],
     },

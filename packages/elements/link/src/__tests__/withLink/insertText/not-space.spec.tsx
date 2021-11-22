@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { withLink } from '../../../withLink';
+import { createLinkPlugin } from '../../../createLinkPlugin';
 
 jsx;
 
@@ -25,7 +25,10 @@ const output = (
 
 describe('when inserting a character that is not a space', () => {
   it('should run default insertText', () => {
-    const editor = withLink()(withReact(input));
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [createLinkPlugin()],
+    });
 
     editor.insertText(text);
 

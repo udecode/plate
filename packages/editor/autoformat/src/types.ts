@@ -119,11 +119,9 @@ export type AutoformatRule =
   | AutoformatMarkRule
   | AutoformatTextRule;
 
-export interface WithAutoformatOptions extends AutoformatPluginOptions {}
-
-export interface AutoformatPluginOptions {
+export interface AutoformatPlugin {
   /**
    * A list of triggering rules.
    */
-  rules: AutoformatRule[];
+  rules?: AutoformatRule[];
 }

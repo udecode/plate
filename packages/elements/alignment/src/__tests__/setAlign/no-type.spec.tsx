@@ -2,7 +2,7 @@
 
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorPlugins } from '../../../../../plate/src/utils/createEditorPlugins';
+import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
 import { createAlignPlugin } from '../../createAlignPlugin';
 import { setAlign } from '../../transforms/setAlign';
 
@@ -25,7 +25,7 @@ describe('when type (h1) is not in types', () => {
   ) as any) as PlateEditor;
 
   it('should not align', () => {
-    const editor = createEditorPlugins({
+    const editor = createPlateUIEditor({
       editor: input,
       plugins: [createAlignPlugin()],
     });

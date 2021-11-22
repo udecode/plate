@@ -143,7 +143,7 @@ Build:
             add to plugin:
             
             ```tsx
-            inlineTypes: getPlatePluginTypes(ELEMENT_X),
+            inlineTypes: getPluginTypes(ELEMENT_X),
             ```
             
         - create `/components/XElement`
@@ -165,7 +165,7 @@ Build:
         add to plugin:
         
         ```tsx
-        voidTypes: getPlatePluginTypes(ELEMENT_X),
+        voidTypes: getPluginTypes(ELEMENT_X),
         ```
         
     - deserializer?
@@ -191,10 +191,10 @@ Build:
         
         ```tsx
         // add to plugin
-        deserialize: getXDeserialize(),
+        deserializeHtml: getXDeserialize(),
         ```
         
-    - `createPlateComponents`
+    - `createPlateUI`
         - add the plugin component to `components` object
             
             ```tsx

@@ -3,8 +3,8 @@ import {
   createNodeHOC,
   createNodesHOC,
   isCollapsed,
-} from '@udecode/plate-common';
-import { useEditorState } from '@udecode/plate-core';
+  useEditorState,
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getPlaceholderStyles } from './Placeholder.styles';

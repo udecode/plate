@@ -2,9 +2,10 @@ import React from 'react';
 import {
   CODE_BLOCK_LANGUAGES,
   CODE_BLOCK_LANGUAGES_POPULAR,
-  getCodeBlockPluginOptions,
+  CodeBlockPlugin,
+  ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { useEditorRef } from '@udecode/plate-core';
+import { getPluginOptions, useEditorRef } from '@udecode/plate-core';
 import { CSSProp } from 'styled-components';
 
 export const CodeBlockSelectElement = ({
@@ -19,7 +20,10 @@ export const CodeBlockSelectElement = ({
 }) => {
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
-  const code_block = getCodeBlockPluginOptions(editor);
+  const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin>(
+    editor,
+    ELEMENT_CODE_BLOCK
+  );
   return (
     <select
       value={value}
@@ -35,7 +39,7 @@ export const CodeBlockSelectElement = ({
       {...props}
     >
       <option value="">Plain text</option>
-      {code_block?.syntaxPopularFirst &&
+      {syntaxPopularFirst &&
         Object.entries(CODE_BLOCK_LANGUAGES_POPULAR).map(([key, val]) => (
           <option key={key} value={key}>
             {val}

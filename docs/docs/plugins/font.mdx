@@ -16,19 +16,12 @@ npm install @udecode/plate-font-ui
 
 ```ts live
 () => {
-  const components = createPlateComponents({
-    ...CONFIG.components,
-  });
-
   const plugins = [
     ...PLUGINS.basicNodes,
     createFontColorPlugin(),
     createFontBackgroundColorPlugin(),
     createFontSizePlugin(),
   ];
-
-  plugins.push(createDeserializeHTMLPlugin({ plugins }));
-  plugins.push(createDeserializeAstPlugin({ plugins }));
 
   const CopyContent = () => (
     <div
@@ -46,11 +39,9 @@ npm install @udecode/plate-font-ui
     return (
       <Plate
         id="font"
-        plugins={plugins}
-        components={components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.font}
+        plugins={plugins}
       >
         <HeadingToolbar>
           <ColorPickerToolbarDropdown

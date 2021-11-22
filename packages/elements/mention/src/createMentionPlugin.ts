@@ -1,31 +1,39 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
-import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './defaults';
-import { getMentionDeserialize } from './getMentionDeserialize';
+import { createPluginFactory } from '@udecode/plate-core';
 import { moveSelectionByOffset } from './moveSelectionByOffset';
 import { isSelectionInMentionInput } from './queries';
-import { MentionPluginOptions } from './types';
+import { MentionPlugin } from './types';
 import { withMention } from './withMention';
+
+export const ELEMENT_MENTION = 'mention';
+export const ELEMENT_MENTION_INPUT = 'mention_input';
 
 /**
  * Enables support for autocompleting @mentions.
  */
-export const createMentionPlugin = (
-  options?: MentionPluginOptions
-): PlatePlugin => {
-  const { pluginKey = ELEMENT_MENTION } = options ?? {};
-
-  return {
-    pluginKeys: [pluginKey, ELEMENT_MENTION_INPUT],
-    renderElement: getRenderElement([pluginKey, ELEMENT_MENTION_INPUT]),
-    deserialize: getMentionDeserialize(pluginKey),
-    inlineTypes: getPlatePluginTypes([pluginKey, ELEMENT_MENTION_INPUT]),
-    voidTypes: getPlatePluginTypes(pluginKey),
-    withOverrides: withMention(options),
+export const createMentionPlugin = createPluginFactory<MentionPlugin>({
+  key: ELEMENT_MENTION,
+  isElement: true,
+  isInline: true,
+  isVoid: true,
+  handlers: {
     onKeyDown: (editor) =>
       moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
-  };
-};
+  },
+  withOverrides: withMention,
+  options: {
+    trigger: '@',
+    createMentionNode: (item) => ({ value: item.text }),
+  },
+  plugins: [
+    {
+      key: ELEMENT_MENTION_INPUT,
+      isElement: true,
+      isInline: true,
+    },
+  ],
+  then: (editor, { key }) => ({
+    options: {
+      id: key,
+    },
+  }),
+});

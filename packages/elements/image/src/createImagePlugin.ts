@@ -1,22 +1,24 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
-import { ELEMENT_IMAGE } from './defaults';
-import { getImageDeserialize } from './getImageDeserialize';
-import { WithImageUploadOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
+import { ImagePlugin } from './types';
 import { withImageUpload } from './withImageUpload';
+
+export const ELEMENT_IMAGE = 'img';
 
 /**
  * Enables support for images.
  */
-export const createImagePlugin = (
-  options?: WithImageUploadOptions
-): PlatePlugin => ({
-  pluginKeys: ELEMENT_IMAGE,
-  renderElement: getRenderElement(ELEMENT_IMAGE),
-  deserialize: getImageDeserialize(),
-  voidTypes: getPlatePluginTypes(ELEMENT_IMAGE),
-  withOverrides: withImageUpload(options),
+export const createImagePlugin = createPluginFactory<ImagePlugin>({
+  key: ELEMENT_IMAGE,
+  isElement: true,
+  isVoid: true,
+  withOverrides: withImageUpload,
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      getNode: (el) => ({
+        type,
+        url: el.getAttribute('src'),
+      }),
+      validNodeName: 'IMG',
+    },
+  }),
 });

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { withImageUpload } from '../../withImageUpload';
+import { createImagePlugin } from '../../createImagePlugin';
 
 jsx;
 
@@ -21,7 +21,10 @@ const output = (
 it('should run default insertData', () => {
   jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
 
-  const editor = withImageUpload()(withReact(input));
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [createImagePlugin()],
+  });
 
   const data = {
     getData: () => 'test',

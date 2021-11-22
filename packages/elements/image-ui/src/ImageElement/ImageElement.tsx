@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { setNodes } from '@udecode/plate-common';
+import { setNodes } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
 import { Node, Transforms } from 'slate';
@@ -14,12 +14,6 @@ import { ReactEditor, useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
-
-// const plugins = [
-//   createHistoryPlugin(),
-//   createReactPlugin(),
-//   createSingleLinePlugin(),
-// ];
 
 export const ImageElement = (props: ImageElementProps) => {
   const {

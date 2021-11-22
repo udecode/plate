@@ -1,21 +1,19 @@
 import {
   getChildren,
   getParent,
+  getPluginType,
   insertEmptyElement,
   match,
-  setNodes,
-} from '@udecode/plate-common';
-import {
-  getPlatePluginType,
   PlateEditor,
+  setNodes,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
 import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
-import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../defaults';
+import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 import { moveListItemUp } from '../transforms';
-import { ListNormalizerOptions } from '../types';
+import { ListPlugin } from '../types';
 
 /**
  * Recursively get all the:
@@ -56,14 +54,14 @@ export const normalizeListItem = (
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: NodeEntry<TElement> } & ListNormalizerOptions
+  }: { listItem: NodeEntry<TElement> } & ListPlugin
 ) => {
   let changed = false;
 
   const allValidLiChildrenTypes = [
-    getPlatePluginType(editor, ELEMENT_UL),
-    getPlatePluginType(editor, ELEMENT_OL),
-    getPlatePluginType(editor, ELEMENT_LIC),
+    getPluginType(editor, ELEMENT_UL),
+    getPluginType(editor, ELEMENT_OL),
+    getPluginType(editor, ELEMENT_LIC),
     ...validLiChildrenTypes,
   ];
 
@@ -81,7 +79,7 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
-    insertEmptyElement(editor, getPlatePluginType(editor, ELEMENT_LIC), {
+    insertEmptyElement(editor, getPluginType(editor, ELEMENT_LIC), {
       at: liPath.concat([0]),
     });
     return true;
@@ -91,7 +89,7 @@ export const normalizeListItem = (
   if (
     Editor.isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode as any, {
-      type: getPlatePluginType(editor, ELEMENT_LIC),
+      type: getPluginType(editor, ELEMENT_LIC),
     })
   ) {
     if (
@@ -120,7 +118,7 @@ export const normalizeListItem = (
     setNodes<TElement>(
       editor,
       {
-        type: getPlatePluginType(editor, ELEMENT_LIC),
+        type: getPluginType(editor, ELEMENT_LIC),
       },
       {
         at: firstLiChildPath,

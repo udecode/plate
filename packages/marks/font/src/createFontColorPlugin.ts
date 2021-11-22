@@ -1,21 +1,25 @@
-import { getOverrideProps } from '@udecode/plate-common';
-import { PlatePlugin } from '@udecode/plate-core';
-import { defaults } from 'lodash';
-import { MARK_COLOR } from './defaults';
-import { getFontColorDeserialize } from './getFontDeserialize';
-import { FontWeightPluginOptions } from './types';
+import { createPluginFactory } from '@udecode/plate-core';
 
-export const createFontColorPlugin = (
-  options?: FontWeightPluginOptions
-): PlatePlugin => ({
-  overrideProps: getOverrideProps(MARK_COLOR),
-  deserialize: getFontColorDeserialize(),
-  withOverrides: (editor) => {
-    // TODO: extend plate-core to register options
-    editor.options[MARK_COLOR] = defaults(options, {
+export const MARK_COLOR = 'color';
+
+export const createFontColorPlugin = createPluginFactory({
+  key: MARK_COLOR,
+  inject: {
+    props: {
       nodeKey: MARK_COLOR,
-    } as FontWeightPluginOptions);
-
-    return editor;
+    },
   },
+  then: (editor, { type }) => ({
+    deserializeHtml: {
+      isLeaf: true,
+      getNode(element) {
+        if (element.style.color) {
+          return { [type]: element.style.color };
+        }
+      },
+      validStyle: {
+        color: '*',
+      },
+    },
+  }),
 });

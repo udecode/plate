@@ -1,7 +1,3 @@
-import { OverridePropsOptions } from '@udecode/plate-common';
-
-export interface IndentListPluginOptions extends OverridePropsOptions<string> {}
-
 export enum ListStyleType {
   // The marker is traditional Armenian numbering
   Armenian = 'armenian',

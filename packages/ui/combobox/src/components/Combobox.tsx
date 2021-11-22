@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
-import { isDefined } from '@udecode/plate-common';
-import { useEditorState, usePlateEventId } from '@udecode/plate-core';
+import {
+  isDefined,
+  useEditorState,
+  usePlateEventId,
+} from '@udecode/plate-core';
 import {
   getRangeBoundingClientRect,
   usePopperPosition,

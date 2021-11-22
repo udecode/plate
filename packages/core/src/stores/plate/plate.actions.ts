@@ -1,10 +1,16 @@
 import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import shallow from 'zustand/shallow';
-import { PlateActions, PlateState, PlateStates } from '../../types/PlateStore';
-import { pipe } from '../../utils/pipe';
-import { withPlate } from '../../utils/withPlate';
-import { getSetStateByKey, getStateById } from '../zustand.utils';
+import { withPlate } from '../../plugins/withPlate';
+import {
+  PlateActions,
+  PlateChangeKey,
+  PlateState,
+  PlateStates,
+} from '../../types/PlateStore';
+import { getSetStateByKey } from '../zustand.utils';
+import { getPlateId } from './selectors/getPlateId';
+import { getPlateState } from './selectors/getPlateState';
 import { plateStore, usePlateStore } from './plate.store';
 
 const { getState: get, setState: set } = plateStore;
@@ -30,13 +36,7 @@ export const usePlateActions = <T = {}>(
           delete state[id];
         }),
       setInitialState: (
-        {
-          enabled = true,
-          plugins = [],
-          pluginKeys = [],
-          selection = null,
-          value = [{ children: [{ text: '' }] }],
-        } = {},
+        { enabled = true, value = [{ children: [{ text: '' }] }] } = {},
         id = stateId
       ) =>
         id &&
@@ -45,55 +45,37 @@ export const usePlateActions = <T = {}>(
 
           state[id] = {
             enabled,
-            plugins,
-            pluginKeys,
-            selection,
             value,
           };
         }),
       resetEditor: (id = stateId) => {
         const state = !!id && get()[id];
         if (!state) return;
-        const { editor, plugins } = state;
+        const { editor } = state;
 
         setEditor(
-          pipe(
-            createEditor() as any,
-            withPlate({
-              id,
-              plugins,
-              options: editor?.options,
-            })
-          ),
+          withPlate(createEditor(), {
+            id,
+            plugins: editor?.plugins,
+          }),
           id
         );
       },
-      incrementKeyChange: (id = stateId) =>
-        set((state) => {
-          if (!state[id]) return {};
-
-          const prev = state[id]?.keyChange ?? 1;
-
-          return {
-            [id]: { ...getStateById(state, id), keyChange: prev + 1 },
-          };
-        }),
       setEnabled: getSetStateByKey<PlateState<T>['enabled']>(
         'enabled',
         stateId
       ),
-      setPlugins: getSetStateByKey<PlateState<T>['plugins']>(
-        'plugins',
-        stateId
-      ),
-      setPluginKeys: getSetStateByKey<PlateState<T>['pluginKeys']>(
-        'pluginKeys',
-        stateId
-      ),
-      setSelection: getSetStateByKey<PlateState<T>['selection']>(
-        'selection',
-        stateId
-      ),
     };
   }, [stateId]);
+};
+
+export const incrementKey = (key: PlateChangeKey, id = getPlateId()) => {
+  const state = getPlateState(id);
+  if (!state || !id) return;
+
+  const prev = state[key] ?? 1;
+
+  plateStore.setState({
+    [id]: { ...state, [key]: prev + 1 },
+  });
 };

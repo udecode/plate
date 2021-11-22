@@ -23,7 +23,6 @@ Alternatively you can install only the packages you need:
 ```bash npm2yarn
 npm install @udecode/plate-alignment
 npm install @udecode/plate-alignment-ui
-npm install @udecode/plate-ast-serializer
 npm install @udecode/plate-autoformat
 npm install @udecode/plate-basic-elements
 npm install @udecode/plate-basic-marks
@@ -39,7 +38,6 @@ npm install @udecode/plate-find-replace
 npm install @udecode/plate-find-replace-ui
 npm install @udecode/plate-heading
 npm install @udecode/plate-highlight
-npm install @udecode/plate-html-serializer
 npm install @udecode/plate-image
 npm install @udecode/plate-image-ui
 npm install @udecode/plate-kbd

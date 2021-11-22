@@ -1,17 +1,14 @@
 import {
+  AnyObject,
   EditorNodesOptions,
   getNodes,
+  getPluginInjectProps,
+  PlateEditor,
   setNodes,
   UnhangRangeOptions,
-} from '@udecode/plate-common';
-import {
-  AnyObject,
-  getPlatePluginOptions,
-  PlateEditor,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
-import { KEY_INDENT } from '../defaults';
-import { IndentPluginOptions } from '../types';
+import { KEY_INDENT } from '../createIndentPlugin';
 
 export interface SetIndentOptions {
   /**
@@ -50,10 +47,7 @@ export const setIndent = (
     unsetNodesProps = [],
   }: SetIndentOptions
 ) => {
-  const { nodeKey } = getPlatePluginOptions<Required<IndentPluginOptions>>(
-    editor,
-    KEY_INDENT
-  );
+  const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 
   const nodes = Array.from(
     getNodes(editor, {
@@ -63,17 +57,17 @@ export const setIndent = (
   );
 
   nodes.forEach(([node, path]) => {
-    const blockIndent = node[nodeKey] ?? 0;
+    const blockIndent = node[nodeKey!] ?? 0;
     const newIndent = blockIndent + offset;
 
     const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
     if (newIndent <= 0) {
-      Transforms.unsetNodes(editor, [nodeKey, ...unsetNodesProps], {
+      Transforms.unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
         at: path,
       });
     } else {
-      setNodes(editor, { [nodeKey]: newIndent, ...props }, { at: path });
+      setNodes(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
     }
   });
 };

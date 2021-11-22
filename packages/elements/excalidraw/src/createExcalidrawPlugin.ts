@@ -1,21 +1,12 @@
-import {
-  getPlatePluginTypes,
-  getRenderElement,
-  PlatePlugin,
-} from '@udecode/plate-core';
-import { ELEMENT_EXCALIDRAW } from './defaults';
-import { getExcalidrawDeserialize } from './getExcalidrawDeserialize';
+import { createPluginFactory } from '@udecode/plate-core';
+
+export const ELEMENT_EXCALIDRAW = 'excalidraw';
 
 /**
  * Enables support for Excalidraw drawing tool within a Slate document
  */
-export const createExcalidrawPlugin = ({
-  pluginKey = ELEMENT_EXCALIDRAW,
-}: {
-  pluginKey?: string;
-} = {}): PlatePlugin => ({
-  pluginKeys: pluginKey,
-  renderElement: getRenderElement(pluginKey),
-  deserialize: getExcalidrawDeserialize(pluginKey),
-  voidTypes: getPlatePluginTypes(pluginKey),
+export const createExcalidrawPlugin = createPluginFactory({
+  key: ELEMENT_EXCALIDRAW,
+  isElement: true,
+  isVoid: true,
 });

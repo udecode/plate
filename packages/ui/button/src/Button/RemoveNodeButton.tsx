@@ -1,6 +1,5 @@
 import React from 'react';
-import { findNodePath } from '@udecode/plate-common';
-import { TElement, useEditorRef } from '@udecode/plate-core';
+import { findNodePath, TElement, useEditorRef } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { DeleteIcon } from '../Icon/DeleteIcon';
 import { Button } from './Button';

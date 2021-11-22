@@ -1,19 +1,19 @@
-import { isCollapsed } from '@udecode/plate-common';
 import {
-  getPlatePluginType,
+  getPluginType,
+  isCollapsed,
   isElement,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
 import { Editor, Node, Point, Transforms } from 'slate';
-import { ELEMENT_TD, ELEMENT_TH } from './defaults';
+import { ELEMENT_TD, ELEMENT_TH } from './createTablePlugin';
 
-export const withTable = (): WithOverride => (editor) => {
+export const withTable: WithOverride = (editor) => {
   const matchCells = (node: Node) => {
     return (
       isElement(node) &&
-      (node.type === getPlatePluginType(editor, ELEMENT_TD) ||
-        node.type === getPlatePluginType(editor, ELEMENT_TH))
+      (node.type === getPluginType(editor, ELEMENT_TD) ||
+        node.type === getPluginType(editor, ELEMENT_TH))
     );
   };
 

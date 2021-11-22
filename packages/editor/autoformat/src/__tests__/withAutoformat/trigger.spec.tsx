@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/bold/defaults';
-import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/italic/defaults';
-import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/underline/defaults';
-import { withAutoformat } from '../../createAutoformatPlugin';
+import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { MARK_ITALIC } from '../../../../../marks/basic-marks/src/createItalicPlugin';
+import { MARK_UNDERLINE } from '../../../../../marks/basic-marks/src/createUnderlinePlugin';
+import { createAutoformatPlugin } from '../../createAutoformatPlugin';
 
 jsx;
 
@@ -30,17 +30,24 @@ const output = (
 
 describe('when trigger is defined', () => {
   it('should autoformat', () => {
-    const editor = withAutoformat({
-      rules: [
-        {
-          mode: 'mark',
-          type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-          match: { start: '_***', end: '***' },
-          trigger: '_',
-          ignoreTrim: true,
-        },
+    const editor = createPlateEditor({
+      editor: input,
+      plugins: [
+        createAutoformatPlugin({
+          options: {
+            rules: [
+              {
+                mode: 'mark',
+                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+                match: { start: '_***', end: '***' },
+                trigger: '_',
+                ignoreTrim: true,
+              },
+            ],
+          },
+        }),
       ],
-    })(withReact(input));
+    });
 
     editor.insertText('_');
 

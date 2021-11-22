@@ -1,0 +1,62 @@
+{
+  "name": "@udecode/plate-docx-serializer",
+  "version": "7.0.2",
+  "description": "Docx serializer plugin for Plate",
+  "keywords": [
+    "slate",
+    "plate",
+    "plugin",
+    "serializer",
+    "docx"
+  ],
+  "homepage": "https://plate.udecode.io",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/serializers/docx"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc && yarn rollup",
+    "build:w": "yarn rollup -w",
+    "cti": "sh ../../../cti.sh",
+    "rollup": "rollup -c=../../../rollup.config.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@udecode/plate-basic-marks": "7.0.2",
+    "@udecode/plate-block-quote": "7.0.2",
+    "@udecode/plate-code-block": "7.0.2",
+    "@udecode/plate-core": "7.0.2",
+    "@udecode/plate-heading": "7.0.2",
+    "@udecode/plate-image": "7.0.2",
+    "@udecode/plate-indent": "7.0.2",
+    "@udecode/plate-indent-list": "7.0.2",
+    "@udecode/plate-link": "7.0.2",
+    "@udecode/plate-list": "7.0.2",
+    "@udecode/plate-paragraph": "7.0.2",
+    "@udecode/plate-table": "7.0.2",
+    "validator": "13.7.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.66.1",
+    "slate-history": ">=0.66.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.66.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

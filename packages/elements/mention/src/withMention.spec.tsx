@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createEditorPlugins } from '@udecode/plate';
+import { createPlateUIEditor } from '@udecode/plate';
 import { ComboboxState, comboboxStore } from '@udecode/plate-combobox';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
@@ -14,7 +14,7 @@ jsx;
 
 describe('withMention', () => {
   const trigger = '@';
-  const pluginKey = 'mention';
+  const key = 'mention';
 
   type CreateEditorOptions = { multipleMentionPlugins?: boolean };
 
@@ -24,15 +24,15 @@ describe('withMention', () => {
   ): PlateEditor => {
     const plugins = [
       createParagraphPlugin(),
-      createMentionPlugin({ pluginKey, trigger }),
+      createMentionPlugin({ key, options: { trigger } }),
     ];
     if (multipleMentionPlugins) {
       plugins.push(
-        createMentionPlugin({ pluginKey: 'mention2', trigger: '#' })
+        createMentionPlugin({ key: 'mention2', options: { trigger: '#' } })
       );
     }
 
-    return createEditorPlugins({
+    return createPlateUIEditor({
       editor: (<editor>{state}</editor>) as any,
       plugins,
     });
@@ -287,7 +287,7 @@ describe('withMention', () => {
       );
 
       expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
-        activeId: pluginKey,
+        activeId: key,
       });
     });
 

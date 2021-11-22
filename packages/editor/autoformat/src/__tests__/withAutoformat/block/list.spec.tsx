@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { withAutoformat } from '../../../createAutoformatPlugin';
+import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
@@ -29,7 +30,10 @@ describe('when -space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(' ');
 
@@ -59,7 +63,10 @@ describe('when 1.space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(' ');
 
@@ -85,7 +92,10 @@ describe('when [].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(' ');
 
@@ -111,7 +121,10 @@ describe('when [x].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(CONFIG.autoformat)(withReact(input));
+    const editor = withAutoformat(
+      withReact(input),
+      mockPlugin(CONFIG.autoformat)
+    );
 
     editor.insertText(' ');
 

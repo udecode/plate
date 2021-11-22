@@ -1,14 +1,10 @@
 import React from 'react';
 import { Combobox, ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
-import {
-  getPlatePluginOptions,
-  PlatePluginKey,
-  usePlateEditorRef,
-} from '@udecode/plate-core';
+import { getPluginOptions, usePlateEditorRef } from '@udecode/plate-core';
 import {
   ELEMENT_MENTION,
   getMentionOnSelectItem,
-  MentionPluginOptions,
+  MentionPlugin,
 } from '@udecode/plate-mention';
 
 export const MentionCombobox = <TData extends Data = NoData>({
@@ -20,25 +16,21 @@ export const MentionCombobox = <TData extends Data = NoData>({
 }: Pick<
   Partial<ComboboxProps<TData>>,
   'id' | 'items' | 'component' | 'onRenderItem'
-> &
-  PlatePluginKey) => {
-  const editor = usePlateEditorRef();
+> & { pluginKey?: string }) => {
+  const editor = usePlateEditorRef()!;
 
-  const { trigger } = getPlatePluginOptions<Required<MentionPluginOptions>>(
-    editor,
-    pluginKey
-  );
+  const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
 
   return (
     <Combobox
       id={id}
-      trigger={trigger}
+      trigger={trigger!}
       controlled
       items={items}
       component={component}
       onRenderItem={onRenderItem}
       onSelectItem={getMentionOnSelectItem({
-        pluginKey,
+        key: pluginKey,
       })}
     />
   );

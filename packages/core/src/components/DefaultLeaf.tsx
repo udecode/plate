@@ -7,7 +7,6 @@ export const DefaultLeaf = ({
   text,
   leaf,
   editor,
-  plugins,
   nodeProps,
   ...props
 }: PlateRenderLeafProps) => (

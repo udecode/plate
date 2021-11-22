@@ -1,11 +1,7 @@
 import { SyntheticEvent } from 'react';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { PlateEditor } from '../types/PlateEditor';
-import {
-  DOMHandlers,
-  HandlerReturnType,
-} from '../types/PlatePlugin/DOMHandlers';
-import { PlatePlugin } from '../types/PlatePlugin/PlatePlugin';
+import { DOMHandlers, HandlerReturnType } from '../types/plugins/DOMHandlers';
 
 /**
  * Check if an event is overrided by a handler.
@@ -42,15 +38,12 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-    plugins,
-  }: { editableProps?: EditableProps; handlerKey: K; plugins?: PlatePlugin[] }
+  }: { editableProps?: EditableProps; handlerKey: K }
 ): ((event: any) => void) | undefined => {
   let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
-  if (plugins) {
-    pluginsHandlers = plugins.flatMap(
-      (plugin) => plugin[handlerKey]?.(editor) ?? []
-    );
-  }
+  pluginsHandlers = editor.plugins.flatMap(
+    (plugin) => plugin.handlers?.[handlerKey]?.(editor, plugin) ?? []
+  );
 
   const propsHandler = editableProps?.[handlerKey] as (
     event: any

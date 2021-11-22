@@ -20,25 +20,27 @@ npm install @udecode/plate-list-ui
     return (
       <>
         <ListToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_UL)}
+          type={getPluginType(editor, ELEMENT_UL)}
           icon={<FormatListBulleted />}
         />
         <ListToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_OL)}
+          type={getPluginType(editor, ELEMENT_OL)}
           icon={<FormatListNumbered />}
         />
       </>
     );
   };
 
-  const plugins = [
+  const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
     createListPlugin(),
     createTodoListPlugin(),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>
@@ -47,11 +49,9 @@ npm install @udecode/plate-list-ui
       </HeadingToolbar>
       <Plate
         id="list"
-        plugins={plugins}
-        components={CONFIG.components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.list}
+        plugins={plugins}
       />
     </>
   );

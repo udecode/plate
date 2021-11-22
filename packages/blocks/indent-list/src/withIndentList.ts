@@ -1,24 +1,13 @@
-import { getNode, unsetNodes } from '@udecode/plate-common';
-import { WithOverride } from '@udecode/plate-core';
+import { getNode, unsetNodes, WithOverride } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { defaults } from 'lodash';
 import { Node } from 'slate';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { normalizeListStart } from './transforms/normalizeListStart';
-import { KEY_LIST_STYLE_TYPE } from './defaults';
-import { IndentListPluginOptions } from './types';
+import { KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 
-export const withIndentList = (
-  options?: IndentListPluginOptions
-): WithOverride => (editor) => {
+export const withIndentList: WithOverride = (editor) => {
   const { apply, normalizeNode } = editor;
-
-  // TODO: extend plate-core to register options
-  editor.options[KEY_LIST_STYLE_TYPE] = defaults(
-    options,
-    {} as IndentListPluginOptions
-  );
 
   editor.normalizeNode = ([node, path]) => {
     if (node[KEY_LIST_STYLE_TYPE] && !node[KEY_INDENT]) {

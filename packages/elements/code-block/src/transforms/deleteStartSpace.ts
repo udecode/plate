@@ -1,5 +1,4 @@
-import { getText } from '@udecode/plate-common';
-import { TEditor } from '@udecode/plate-core';
+import { getText, TEditor } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 

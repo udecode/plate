@@ -1,6 +1,5 @@
 import React from 'react';
-import { setNodes } from '@udecode/plate-common';
-import { TElement } from '@udecode/plate-core';
+import { setNodes, TElement } from '@udecode/plate-core';
 import { MediaEmbedNodeData } from '@udecode/plate-media-embed';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { ReactEditor } from 'slate-react';

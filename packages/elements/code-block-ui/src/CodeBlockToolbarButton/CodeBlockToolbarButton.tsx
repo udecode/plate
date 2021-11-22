@@ -1,11 +1,14 @@
 import React from 'react';
 import {
   CodeBlockInsertOptions,
-  getCodeBlockType,
+  ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import { getPreventDefaultHandler } from '@udecode/plate-common';
-import { usePlateEditorState } from '@udecode/plate-core';
+import {
+  getPluginType,
+  getPreventDefaultHandler,
+  usePlateEditorState,
+} from '@udecode/plate-core';
 import { BlockToolbarButton, ToolbarButtonProps } from '@udecode/plate-toolbar';
 
 export const CodeBlockToolbarButton = ({
@@ -14,14 +17,14 @@ export const CodeBlockToolbarButton = ({
 }: ToolbarButtonProps & {
   options?: CodeBlockInsertOptions;
 }) => {
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState()!;
   if (!editor) {
     return null;
   }
 
   return (
     <BlockToolbarButton
-      type={getCodeBlockType(editor)}
+      type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
       onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
         insertNodesOptions: { select: true },
         ...options,

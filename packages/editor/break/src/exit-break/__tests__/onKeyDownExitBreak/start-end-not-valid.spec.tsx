@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
+import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { getExitBreakOnKeyDown } from '../../getExitBreakOnKeyDown';
+import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsx;
 
@@ -29,15 +30,12 @@ const output = (
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'default').mockReturnValue(true);
-  getExitBreakOnKeyDown({
-    rules: [
-      {
-        hotkey: 'enter',
-        level: 0,
-        query: { start: true, end: true },
-      },
-    ],
-  })(input)(event);
+  onKeyDownExitBreak(
+    input,
+    mockPlugin({
+      options: { hotkey: 'enter', level: 0, query: { start: true, end: true } },
+    })
+  )(event);
   expect(input.children).toEqual(output.children);
   expect(input.selection?.anchor).toEqual({ offset: 2, path: [0, 0] });
 });

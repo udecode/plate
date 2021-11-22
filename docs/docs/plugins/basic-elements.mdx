@@ -3,7 +3,7 @@ slug: /plugins/basic-elements
 title: Basic Elements
 ---
 
-### `createBasicElementPlugins`
+### `createBasicElementsPlugin`
 
 Returns a list of the following plugins:
 - `createBlockquotePlugin()` for the `blockquote` element
@@ -27,48 +27,49 @@ npm install @udecode/plate-basic-elements
     return (
       <>
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H1)}
+          type={getPluginType(editor, ELEMENT_H1)}
           icon={<LooksOne />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H2)}
+          type={getPluginType(editor, ELEMENT_H2)}
           icon={<LooksTwo />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H3)}
+          type={getPluginType(editor, ELEMENT_H3)}
           icon={<Looks3 />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H4)}
+          type={getPluginType(editor, ELEMENT_H4)}
           icon={<Looks4 />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H5)}
+          type={getPluginType(editor, ELEMENT_H5)}
           icon={<Looks5 />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_H6)}
+          type={getPluginType(editor, ELEMENT_H6)}
           icon={<Looks6 />}
         />
         <BlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_BLOCKQUOTE)}
+          type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
           icon={<FormatQuote />}
         />
         <CodeBlockToolbarButton
-          type={getPlatePluginType(editor, ELEMENT_CODE_BLOCK)}
+          type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
           icon={<CodeBlock />}
         />
       </>
     );
   };
 
-  const plugins = [
-    ...PLUGINS.core,
-    ...createBasicElementPlugins(),
+  const plugins = createPlugins([
+    createBasicElementsPlugin(),
     createResetNodePlugin(CONFIG.resetBlockType),
     createSoftBreakPlugin(CONFIG.softBreak),
     createExitBreakPlugin(CONFIG.exitBreak),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
 
   return (
     <>
@@ -77,11 +78,9 @@ npm install @udecode/plate-basic-elements
       </HeadingToolbar>
       <Plate
         id="basic-elements"
-        plugins={plugins}
-        components={CONFIG.components}
-        options={CONFIG.options}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.basicElements}
+        plugins={plugins}
       />
     </>
   );
