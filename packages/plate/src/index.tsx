@@ -56,4 +56,5 @@ export * from '@udecode/plate-toolbar';
 export * from '@udecode/plate-trailing-block';
 export * from '@udecode/plate-ui-button';
 export * from '@udecode/plate-ui-popover';
+export * from './types/index';
 export * from './utils/index';

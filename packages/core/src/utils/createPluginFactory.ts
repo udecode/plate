@@ -17,5 +17,5 @@ export const createPluginFactory = <P = {}>(
 ): PlatePlugin<T, NoInfer<P>> => {
   overrideByKey[defaultPlugin.key] = override as any;
 
-  return overridePluginsByKey<T, P>(defaultPlugin as any, overrideByKey);
+  return overridePluginsByKey<T, P>({ ...defaultPlugin } as any, overrideByKey);
 };
