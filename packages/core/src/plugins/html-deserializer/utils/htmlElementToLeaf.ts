@@ -4,13 +4,8 @@ import { PlateEditor } from '../../../types/PlateEditor';
 import { TDescendant } from '../../../types/slate/TDescendant';
 import { isElement } from '../../../types/slate/TElement';
 import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
-import { DeserializeHtmlChildren } from '../types';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
-
-export interface HtmlElementToLeafOptions {
-  children: DeserializeHtmlChildren[];
-}
 
 /**
  * Deserialize HTML to TDescendant[] with marks on Text.

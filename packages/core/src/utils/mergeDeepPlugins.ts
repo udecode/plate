@@ -6,7 +6,7 @@ import { PlateEditor } from '../types/PlateEditor';
 import { WithPlatePlugin } from '../types/plugins/PlatePlugin';
 
 /**
- * Recursively merge nested plugins into the the root plugins
+ * Recursively merge nested plugins into the root plugins
  */
 export const mergeDeepPlugins = <
   T = {},

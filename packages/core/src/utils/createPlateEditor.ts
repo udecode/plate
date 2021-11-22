@@ -16,11 +16,9 @@ export interface CreatePlateEditorOptions<T = {}>
 
 /**
  * Create a plate editor with:
- * - createEditor or `editor` param
- * - withPlate
- * - createReactPlugin
- * - createHistoryPlugin
- * - components
+ * - `createEditor` or custom `editor`
+ * - `withPlate`
+ * - custom `components`
  */
 export const createPlateEditor = <T = {}>({
   editor = createEditor(),

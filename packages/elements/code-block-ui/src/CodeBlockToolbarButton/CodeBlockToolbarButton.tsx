@@ -1,10 +1,11 @@
 import React from 'react';
 import {
   CodeBlockInsertOptions,
-  getCodeBlockType,
+  ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import {
+  getPluginType,
   getPreventDefaultHandler,
   usePlateEditorState,
 } from '@udecode/plate-core';
@@ -23,7 +24,7 @@ export const CodeBlockToolbarButton = ({
 
   return (
     <BlockToolbarButton
-      type={getCodeBlockType(editor)}
+      type={getPluginType(editor, ELEMENT_CODE_BLOCK)}
       onMouseDown={getPreventDefaultHandler(insertEmptyCodeBlock, editor, {
         insertNodesOptions: { select: true },
         ...options,

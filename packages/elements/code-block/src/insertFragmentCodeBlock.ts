@@ -1,11 +1,16 @@
-import { findNode, PlateEditor, TDescendant } from '@udecode/plate-core';
+import {
+  findNode,
+  getPluginType,
+  PlateEditor,
+  TDescendant,
+} from '@udecode/plate-core';
 import { Node, Transforms } from 'slate';
-import { getCodeBlockType, getCodeLineType } from './options';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
 export const insertFragmentCodeBlock = (editor: PlateEditor) => {
   const { insertFragment } = editor;
-  const codeBlockType = getCodeBlockType(editor);
-  const codeLineType = getCodeLineType(editor);
+  const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
+  const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);
 
   function convertNodeToCodeLine(node: TDescendant) {
     return {

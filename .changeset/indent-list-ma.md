@@ -2,8 +2,8 @@
 '@udecode/plate-indent-list': major
 ---
 
-- removed `IndentListPluginOptions` in favor of `PlatePlugin`
+Removed:
+- `IndentListPluginOptions` for `PlatePlugin`
 
-### Rename
-
+Rename:
 - `getIndentListInjectComponent` to `injectIndentListComponent`

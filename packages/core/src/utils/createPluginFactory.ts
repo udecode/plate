@@ -6,8 +6,8 @@ import { overridePluginsByKey } from './overridePluginsByKey';
 /**
  * Create plugin factory with a default plugin.
  * The plugin factory:
- * - first param can be used to (deeply) override the default plugin.
- * - second param can be used to (deeply) override a nested plugin (plugin.plugins) by key.
+ * - param 1 `override` can be used to (deeply) override the default plugin.
+ * - param 2 `overrideByKey` can be used to (deeply) override a nested plugin (in plugin.plugins) by key.
  */
 export const createPluginFactory = <P = {}>(
   defaultPlugin: PlatePlugin<{}, NoInfer<P>>

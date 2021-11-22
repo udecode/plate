@@ -3,6 +3,10 @@ import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
 
 export type InjectedPlugin<T = {}> = Partial<PlatePlugin<T>>;
 
+/**
+ * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`.
+ * It includes `plugin` itself.
+ */
 export const getInjectedPlugins = <T = {}, P = {}>(
   editor: PlateEditor<T>,
   plugin: WithPlatePlugin<T, P>
