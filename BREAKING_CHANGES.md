@@ -1,5 +1,9 @@
 # Breaking Changes
 
+## 8.0.0
+
+
+
 ## 7.0.0
 
 ### `@udecode/plate-core`

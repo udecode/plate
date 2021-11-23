@@ -157,7 +157,7 @@
   };
   ```
 
-  - handlers starting by `on...` are moved to `handlers` property.
+  - handlers starting by `on...` are moved to `handlers` field.
 
   ```ts
   // Before
@@ -183,22 +183,8 @@
 
   ### General
 
-  - the following plugins are now part of the core plugins, so you need to remove these from your `plugins` prop:
-
-  ```ts
-  const corePlugins = [
-    createReactPlugin(),
-    createHistoryPlugin(),
-    createEventEditorPlugin(),
-    createInlineVoidPlugin(),
-    createInsertDataPlugin(),
-    createDeserializeAstPlugin(),
-    createDeserializeHtmlPlugin(),
-  ];
-  ```
-
   - `plugins` is not a parameter anymore as it can be retrieved in `editor.plugins`
-  - `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin properties.
+  - `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin fields.
 
   Renamed:
 
@@ -280,7 +266,7 @@
 
 - [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – `PlatePlugin` extended:
 
-  - These properties are used by `withInsertData` plugin.
+  - These fields are used by `withInsertData` plugin.
 
   ```tsx
   interface PlatePlugin {
@@ -342,7 +328,7 @@
   interface PlatePlugin {
     inject?: {
       /**
-       * Any plugin can use this property to inject code into a stack.
+       * Any plugin can use this field to inject code into a stack.
        * For example, if multiple plugins have defined
        * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
        * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
@@ -353,7 +339,7 @@
   }
   ```
 
-  - `options`: any plugin can use the second generic type to type this property. It means that each plugin can be extended using this property.
+  - `options`: any plugin can use the second generic type to type this field. It means that each plugin can be extended using this field.
   - `type` is now optional
   - `component`: no longer need of `options` to customize the component.
   - `overrideByKey`: a plugin can override other plugins by key (deep merge).
@@ -363,14 +349,14 @@
     - nesting support (recursive)
   - `props`: Override node `component` props. Props object or function with props parameters returning the new props. Previously done by `overrideProps` and `getNodeProps` options.
   - `then`: a function that is called after the plugin is loaded.
-    - this is very powerful as it allows you to have plugin properties derived from the editor and/or the loaded plugin.
+    - this is very powerful as it allows you to have plugin fields derived from the editor and/or the loaded plugin.
     - nesting support (recursive)
 
   ```ts
   interface PlatePlugin {
     /**
      * Recursive plugin merging.
-     * Can be used to derive plugin properties from `editor`, `plugin`.
+     * Can be used to derive plugin fields from `editor`, `plugin`.
      * The returned value will be deeply merged to the plugin.
      */
     then?: (
@@ -385,7 +371,7 @@
   - `createEventEditorPlugin` (core)
   - `createInsertDataPlugin`
     - `withInsertData`
-      - all plugins using `editor.insertData` property will be used here
+      - all plugins using `editor.insertData` field will be used here
       - it first gets the data with `format`
       - then it pipes `query`
       - then it pipes `transformData`
@@ -515,11 +501,11 @@
 
   Types:
 
-  - `PlatePlugin`, `PlatePluginEditor` new properties:
+  - `PlatePlugin`, `PlatePluginEditor` new fields:
     - `injectChildComponent`: Inject child component around any node children.
     - `injectParentComponent`: Inject parent component around any node `component`.
     - `overrideProps` supports arrays.
-  - `SPRenderNodeProps` new properties:
+  - `SPRenderNodeProps` new fields:
     - `editor: PlateEditor`
     - `plugins: PlatePlugin`
   - new types:
@@ -574,7 +560,7 @@
 
 - [#1126](https://github.com/udecode/plate/pull/1126) [`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
   - `PlatePlugin`
-    - new property: `overrideProps`
+    - new field: `overrideProps`
       - Overrides rendered node props (shallow merge).
       - This enables controlling the props of any node component (use cases: indent, align,...).
       - used by `pipeRenderElement` and `pipeRenderLeaf`
@@ -717,8 +703,8 @@ To migrate, find and replace all occurrences of:
 
 - [#687](https://github.com/udecode/slate-plugins/pull/687) [`dfbde8bd`](https://github.com/udecode/slate-plugins/commit/dfbde8bd856e1e646e3d8fe2cbf1df8f9b8c67c3) Thanks [@zbeyens](https://github.com/zbeyens)! - changes:
   - `useEditableProps` (used by `SlatePlugins`):
-    - new properties returned: all handler props from the plugins (if defined)
-    - new core plugins with the following properties:
+    - new fields returned: all handler props from the plugins (if defined)
+    - new core plugins with the following fields:
       - `onFocus: setEventEditorId('focus', id)`
       - `onBlur: setEventEditorId('blur', id)`
       - You can add your own handlers in a plugin
@@ -730,8 +716,8 @@ To migrate, find and replace all occurrences of:
   - `useStoreEditorState`: a new selector. Get editor state which is updated on editor change. Similar to `useSlate`.
   - `SlatePlugin`: the previous plugin could implement the following handlers: `onChange`, `onDOMBeforeInput` and `onKeyDown`. The plugins now implement all DOM handlers: clipboard, composition, focus, form, image, keyboard, media, mouse, selection, touch, pointer, ui, wheel animation and transition events.
   - `SlatePluginsState` (store interface):
-    - a new property `keyChange` incremented by `SlatePlugins` on `useSlate` update.
-    - a new property `selection = editor.selection` updated on `useSlate` update.
+    - a new field `keyChange` incremented by `SlatePlugins` on `useSlate` update.
+    - a new field `selection = editor.selection` updated on `useSlate` update.
   - `pipeHandler`: a new function. Generic pipe for handlers.
 
 ## 1.0.0-next.26
