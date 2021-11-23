@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-block-quote-ui",
-  "version": "7.0.2",
+  "version": "8.0.0",
   "description": "Block quote UI for Plate",
   "keywords": [
     "slate",
@@ -32,9 +32,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "7.0.2",
-    "@udecode/plate-core": "7.0.2",
-    "@udecode/plate-styled-components": "7.0.2"
+    "@udecode/plate-block-quote": "8.0.0",
+    "@udecode/plate-core": "8.0.0",
+    "@udecode/plate-styled-components": "8.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
