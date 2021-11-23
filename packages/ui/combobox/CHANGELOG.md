@@ -1,5 +1,7 @@
 # @udecode/plate-combobox
 
+## 8.0.0
+
 ## 7.0.2
 
 ## 7.0.1

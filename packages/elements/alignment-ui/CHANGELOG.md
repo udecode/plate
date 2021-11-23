@@ -1,5 +1,13 @@
 # @udecode/plate-alignment-ui
 
+## 8.0.0
+
+### Minor Changes
+
+- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
+  - `AlignToolbarButtonProps` extended:
+    - `pluginKey`
+
 ## 7.0.2
 
 ## 7.0.1

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-image-ui",
-  "version": "7.0.2",
+  "version": "8.0.0",
   "description": "Image UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "7.0.2",
-    "@udecode/plate-image": "7.0.2",
-    "@udecode/plate-styled-components": "7.0.2",
-    "@udecode/plate-toolbar": "7.0.2",
+    "@udecode/plate-core": "8.0.0",
+    "@udecode/plate-image": "8.0.0",
+    "@udecode/plate-styled-components": "8.0.0",
+    "@udecode/plate-toolbar": "8.0.0",
     "react-textarea-autosize": "^8.3.3",
     "re-resizable": "^6.9.0"
   },
