@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -51,7 +51,7 @@
     "@udecode/plate-core": "8.0.0",
     "@udecode/plate-csv-serializer": "8.0.0",
     "@udecode/plate-dnd": "8.0.0",
-    "@udecode/plate-docx-serializer": "8.0.0",
+    "@udecode/plate-docx-serializer": "8.0.1",
     "@udecode/plate-find-replace": "8.0.0",
     "@udecode/plate-find-replace-ui": "8.0.0",
     "@udecode/plate-font": "8.0.0",
@@ -62,7 +62,7 @@
     "@udecode/plate-image": "8.0.0",
     "@udecode/plate-image-ui": "8.0.0",
     "@udecode/plate-indent": "8.0.0",
-    "@udecode/plate-indent-list": "8.0.0",
+    "@udecode/plate-indent-list": "8.0.1",
     "@udecode/plate-kbd": "8.0.0",
     "@udecode/plate-line-height": "8.0.0",
     "@udecode/plate-line-height-ui": "8.0.0",

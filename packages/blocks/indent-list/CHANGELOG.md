@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 8.0.1
+
+### Patch Changes
+
+- [#1243](https://github.com/udecode/plate/pull/1243) by [@zbeyens](https://github.com/zbeyens) – fix: Cannot read properties of null
+
 ## 8.0.0
 
 ### Major Changes
