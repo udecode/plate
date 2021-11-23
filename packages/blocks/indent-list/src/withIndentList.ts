@@ -46,11 +46,9 @@ export const withIndentList: WithOverride = (editor) => {
 
       if (properties[KEY_LIST_STYLE_TYPE]) {
         const node = getNode(editor, path);
+        if (!node) return;
 
-        const prevNodeEntry = getPreviousIndentList(editor, [
-          node as any,
-          path,
-        ]);
+        const prevNodeEntry = getPreviousIndentList(editor, [node, path]);
         if (!prevNodeEntry) {
           normalizeListStart(editor, [node as any, path]);
           return;
