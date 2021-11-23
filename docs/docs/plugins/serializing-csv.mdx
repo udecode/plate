@@ -9,7 +9,7 @@ title: CSV
 npm install @udecode/plate-csv-serializer
 ```
 
-### Usage
+### Deserializer Usage
 
 ```ts live
 () => {
@@ -41,7 +41,20 @@ npm install @udecode/plate-csv-serializer
 }
 ```
 
+### Options
+
+```tsx
+export interface DeserializeCsvPlugin {
+  /**
+   * Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed,
+   * Percentage based on number of errors compared to number of rows
+   * @default 0.25
+   */
+  errorTolerance?: number;
+}
+```
+
 ### Source Code
 
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/serializers/csv/src/deserializer/createDeserializeCsvPlugin.ts)
 - [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/serializers/csv-serializer](https://github.com/udecode/plate/tree/main/packages/serializers/csv/src)

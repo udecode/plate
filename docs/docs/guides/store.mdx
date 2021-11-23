@@ -24,7 +24,7 @@ This is useful to store [multiple editors](multiple-editors) and select one base
 
 You can extend this store with any event using [setEventEditorId](store#seteventeditorid).
 
-[Plate](Plate) will store these events out of the box:
+One of the core plugins of [Plate](Plate) will store these events:
 
 - `focus` using `onFocus`
 - `blur` using `onBlur`
@@ -37,23 +37,14 @@ The vanilla store [eventEditorStore](https://plate-api.udecode.io/globals.html#e
 
 ### `editor`
 
-- Slate editor.
-- Default is `pipe(createEditor(), withPlate({ id, plugins, options, components }))`
+- Slate editor reference.
+- Default is `pipe(createEditor(), withPlate({ id, plugins }))`.
 
 ### `enabled`
 
 - If `true`, plate will create the editor with `withPlate`.
 - If `false`, plate will remove the editor from the store.
 - Default is `true`.
-
-### `plugins`
-
-- Plate plugins.
-- Default is `[createReactPlugin(), createHistoryPlugin()]`.
-
-### `key`
-
-- Element keys used by the plugins.
 
 ### `value`
 
@@ -85,14 +76,6 @@ If using multiple stores, you should set the first parameter to the store id you
 ### `setInitialState`
 
 - Set initial state by id. Called by Plate on mount.
-
-### `setPlugins`
-
-- Set `plugins`.
-
-### `setPluginKeys`
-
-- Set `pluginKeys`.
 
 ### `setValue`
 
@@ -132,6 +115,3 @@ If using multiple stores, you should set the first parameter to the store id you
 
 - Get [value](#value).
 
-### `usePlatePlugins`
-
-- Get [plugins](#plugins).

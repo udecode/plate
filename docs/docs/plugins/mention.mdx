@@ -42,8 +42,19 @@ npm install @udecode/plate-mention-ui
 }
 ```
 
+### Options
+
+```ts
+interface MentionPlugin<TData extends Data = NoData> {
+  createMentionNode?: CreateMentionNode<TData>;
+  id?: string;
+  insertSpaceAfterMention?: boolean;
+  trigger?: string;
+}
+```
+
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/elements/mention](https://github.com/udecode/plate/tree/main/packages/elements/mention/src)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/elements/mention/src/createMentionPlugin.ts)
 - [packages/elements/mention-ui](https://github.com/udecode/plate/tree/main/packages/elements/mention-ui/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

@@ -64,10 +64,4 @@ The toolbar actions require an `editor` with a defined `selection`, so it needs 
 which can then be used by the toolbar actions (or any component outside [Plate](Plate))
 to get the [editor](store#editor) from [plateStore](store#plate-store).
 
-
-Usage:
-
-```ts
-const id = usePlateEventId('focus');
-const editor = usePlateEditorState(id);
-```
+By default, the last focused editor id is used.

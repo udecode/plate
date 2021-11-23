@@ -11,11 +11,12 @@ The following undeclared variables and types are imported from `@udecode/plate`.
 
 This guide will use existing plugins. For creating new plugins, [see this section](./creating-plugins).
 
-If you don't provide any plugins to `Plate` as done in the previous section, `createReactPlugin()` and `createHistoryPlugin()` will be used as default.
+If you don't provide any plugins to `Plate` as done in the previous section, 
+`createReactPlugin()`, `createHistoryPlugin()` and other core plugins will be used as default.
 
 ### Plugins
 
-We first create the initial value.
+Let's create the initial value and the basic element and mark plugins.
 
 :::note
 `Plate` is using the `type` property so a plugin can render a node by type.
@@ -104,7 +105,7 @@ We first create the initial value.
     setDebugValue(`value ${JSON.stringify(newValue)}`);
   }
   
-  const plugins = createPlugins([
+  const plugins = [
     // elements
     createParagraphPlugin(),      // paragraph element
     createBlockquotePlugin(),     // blockquote element
@@ -117,7 +118,7 @@ We first create the initial value.
     createUnderlinePlugin(),      // underline mark
     createStrikethroughPlugin(),  // strikethrough mark
     createCodePlugin(),           // code mark
-  ]);
+  ];
 
   return (
     <>
@@ -145,9 +146,9 @@ so you can plug-in your own design system or the provided one (see next section)
 
 ### Components
 
-To plug all the components at one time, you can use `createPlugins` which takes 
-the plugins in the first parameter and `components` in the second parameter.
-In the following example we'll use `createPlateUI()`, which returns Plate design system.
+To plug all the components at once, you can use `createPlugins`:
+- first param: set the `plugins` 
+- second param: set the `components`. In the following example we'll use `createPlateUI()`, which returns all Plate components by key.
 
 ```tsx live
 () => {
@@ -183,5 +184,4 @@ In the following example we'll use `createPlateUI()`, which returns Plate design
 
 Voilà!
 
-`Plate` hides a lot of complexity. What if we want to have more control on its state?
-See the [store API](store).
+`Plate` enforces decoupled structures, you can read the next sections to learn more about the API. 

@@ -3,12 +3,6 @@ slug: /plugins/link
 title: Link
 ---
 
-### `createLinkPlugin`
-
-A link is an inline element:
-- default `type` is `'a'`
-- `url` is the url of the link.
-
 ### Installation
 
 ```bash npm2yarn
@@ -43,8 +37,30 @@ npm install @udecode/plate-link-ui
 }
 ```
 
+### Options
+
+```tsx
+interface LinkPlugin extends HotkeyPlugin {
+  /**
+   * Allow custom config for rangeBeforeOptions.
+   */
+  rangeBeforeOptions?: RangeBeforeOptions;
+
+  /**
+   * Callback to validate an url.
+   */
+  isUrl?: (text: string) => boolean;
+
+  /**
+   * On keyboard shortcut or toolbar mousedown, get the link url by calling this promise. The
+   * default behavior is to use the browser's native `prompt`.
+   */
+  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+}
+```
+
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/elements/link](https://github.com/udecode/plate/tree/main/packages/elements/link/src)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/elements/link/src/createLinkPlugin.ts)
 - [packages/elements/link-ui](https://github.com/udecode/plate/tree/main/packages/elements/link-ui/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

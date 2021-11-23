@@ -44,8 +44,19 @@ npm install @udecode/plate-find-replace-ui
 }
 ```
 
+### Options
+
+```tsx
+export interface FindReplacePlugin {
+  /**
+   * Searching text to highlight
+   */
+  search?: string;
+}
+```
+
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/find-replace](https://github.com/udecode/plate/tree/main/packages/find-replace/src)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/decorators/find-replace/src/createFindReplacePlugin.ts)
 - [packages/find-replace-ui](https://github.com/udecode/plate/tree/main/packages/find-replace-ui/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

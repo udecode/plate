@@ -19,11 +19,17 @@ import { WithOverride } from './WithOverride';
  */
 export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
   editor?: Nullable<{
+    /**
+     * Properties used by the `insertData` core plugin to deserialize inserted data to a slate fragment.
+     * The fragment will be inserted to the editor if not empty.
+     */
     insertData?: PlatePluginInsertData;
   }>;
 
   /**
-   * DOM handler props.
+   * Handlers called whenever the corresponding event occurs in the editor.
+   * Event handlers can return a boolean flag to specify whether the event can be treated as being handled.
+   * If it returns `true`, the next handlers will not be called.
    */
   handlers?: Nullable<
     DOMHandlers<T, P> & {
@@ -39,17 +45,17 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
    */
   inject?: Nullable<{
     /**
-     * Inject component above any node `component`.
+     * Property used by Plate to inject a component above other plugins `component`.
      */
     aboveComponent?: InjectComponent;
 
     /**
-     * Inject component above any node `component`, i.e. above its `children`.
+     * Property used by Plate to inject a component below other plugins `component`, i.e. above its `children`.
      */
     belowComponent?: InjectComponent;
 
     /**
-     * Any plugin can use this field to inject code into a stack.
+     * Property that can be used by a plugin to allow other plugins to inject code.
      * For example, if multiple plugins have defined
      * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
      * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
@@ -59,29 +65,33 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
   }>;
 
   /**
-   * Whether it's an element plugin (`renderElement`).
+   * Property used by Plate to render nodes of this `type` as elements, i.e. `renderElement`.
    */
   isElement?: boolean;
 
   /**
-   * Whether the element is inline.
+   * Property used by `inlineVoid` core plugin to set elements of this `type` as inline.
    */
   isInline?: boolean;
 
   /**
-   * Whether it's a leaf plugin (`renderLeaf`).
+   * Property used by Plate to render nodes of this `type` as leaves, i.e. `renderLeaf`.
    */
   isLeaf?: boolean;
 
   /**
-   * Whether the element is void.
+   * Property used by `inlineVoid` core plugin to set elements of this `type` as void.
    */
   isVoid?: boolean;
 
+  /**
+   * Extended properties used by any plugin as options.
+   */
   options?: P;
 
   /**
-   * Element or mark type.
+   * Property used by Plate to render a node by type.
+   * It requires slate node properties to have a `type` property.
    * @default key
    */
   type?: string;
@@ -99,35 +109,36 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
     decorate?: Decorate<T, P>;
 
     /**
-     * HTML deserializer options.
+     * Properties used by the HTML deserializer core plugin for each HTML element.
      */
     deserializeHtml?: Nullable<DeserializeHtml> | Nullable<DeserializeHtml>[];
 
     /**
-     * Override (deeply) plugins by key.
+     * Property used by Plate to deeply override plugins by key.
      */
     overrideByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
 
     /**
-     * Recursive plugin support.
-     * Can be used to pack multiple plugins.
-     * Plate eventually flats all the plugins into `editor.plugins`.
+     * Recursive plugin support to allow having multiple plugins in a single plugin.
+     * Plate eventually flattens all the plugins into the editor.
      */
     plugins?: PlatePlugin<T>[];
 
     /**
-     * Override node `component` props. Props object or function with props parameters returning the new props.
+     * Property used by Plate to override node `component` props.
+     * If function, its returning value will be shallow merged to the old props, with the old props as parameter.
+     * If object, its value will be shallow merged to the old props.
      */
     props?: PlatePluginProps;
 
     /**
-     * HTML serializer replacing the plugin pluginRenderElement / pipeRenderLeaf.
+     * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
      */
     serializeHtml?: SerializeHtml;
 
     /**
      * Recursive plugin merging.
-     * Can be used to derive plugin fields from `editor`, `plugin`.
+     * Can be used to derive plugin fields from `editor` and `plugin`.
      * The returned value will be deeply merged to the plugin.
      */
     then?: (

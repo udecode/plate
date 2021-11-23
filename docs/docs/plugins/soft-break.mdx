@@ -3,8 +3,6 @@ slug: /plugins/soft-break
 title: Soft Break
 ---
 
-### `createSoftBreakPlugin`
-
 Allows you to create hotkeys which insert a line break, without exiting the current block.
 
 ### Installation
@@ -52,7 +50,24 @@ npm install @udecode/plate-break
 }
 ```
 
+### Options
+
+```tsx
+export interface SoftBreakRule {
+  hotkey: string;
+
+  /**
+   * Filter the block types where the rule applies.
+   */
+  query?: QueryNodeOptions;
+}
+
+export interface SoftBreakPlugin {
+  rules?: SoftBreakRule[];
+}
+```
+
 ### Source Code
 
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/soft-break/createSoftBreakPlugin.ts)
 - [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/break](https://github.com/udecode/plate/tree/main/packages/break/src)

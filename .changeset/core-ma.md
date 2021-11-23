@@ -151,7 +151,7 @@ type DeserializeHtml = {
 }; 
 ```
 
-- handlers starting by `on...` are moved to `handlers` field.
+- handlers starting by `on...` are moved to `handlers` property.
 ```ts
 // Before
 onDrop: handler
@@ -175,8 +175,20 @@ Removed:
 
 ### General
 
+- the following plugins are now part of the core plugins, so you need to remove these from your `plugins` prop:
+```ts
+const corePlugins = [
+  createReactPlugin(),
+  createHistoryPlugin(),
+  createEventEditorPlugin(),
+  createInlineVoidPlugin(),
+  createInsertDataPlugin(),
+  createDeserializeAstPlugin(),
+  createDeserializeHtmlPlugin(),
+]
+```
 - `plugins` is not a parameter anymore as it can be retrieved in `editor.plugins`
-- `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin fields. 
+- `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin properties. 
 
 Renamed:
 - `getPlatePluginType` to `getPluginType`

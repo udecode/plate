@@ -3,4 +3,3 @@
  */
 
 export * from './createBasicElementPlugins';
-export * from './types';

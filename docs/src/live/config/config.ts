@@ -4,7 +4,6 @@ import {
   createPlateUI,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -22,8 +21,6 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
   KEYS_HEADING,
-  MARK_BOLD,
-  MARK_ITALIC,
   NormalizeTypesPlugin,
   PlatePlugin,
   ResetNodePlugin,
@@ -50,7 +47,6 @@ const resetBlockTypesCommonRule = {
 interface Config {
   components: Record<string, any>;
   editableProps: EditableProps;
-  docxOptions: Record<string, Partial<PlatePlugin>>;
 
   align: Partial<PlatePlugin>;
   autoformat: Partial<PlatePlugin<{}, AutoformatPlugin>>;
@@ -67,7 +63,8 @@ interface Config {
 
 export const CONFIG: Config = {
   editableProps: {
-    autoFocus: process.env.NODE_ENV !== 'production',
+    // autoFocus: process.env.NODE_ENV !== 'production',
+    autoFocus: false,
     spellCheck: false,
     placeholder: 'Type…',
     style: {
@@ -206,51 +203,6 @@ export const CONFIG: Config = {
   forceLayout: {
     options: {
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
-    },
-  },
-  docxOptions: {
-    [ELEMENT_CODE_BLOCK]: {
-      deserializeHtml: {
-        validClassName: 'SourceCode',
-      },
-    },
-    [ELEMENT_CODE_LINE]: {
-      deserializeHtml: {
-        validClassName: 'VerbatimChar',
-      },
-    },
-    [MARK_BOLD]: {
-      deserializeHtml: [
-        { validNodeName: ['STRONG', 'B'] },
-        {
-          validStyle: {
-            fontWeight: ['600', '700', 'bold'],
-          },
-        },
-      ],
-      // query: (el) => {
-      //   if (
-      //     ['STRONG', 'B'].includes(el.nodeName) &&
-      //     (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
-      //   ) {
-      //     return false;
-      //   }
-      //
-      //   return true;
-    },
-    [MARK_ITALIC]: {
-      deserializeHtml: {
-        query: (el) => {
-          if (
-            el.nodeName === 'EM' &&
-            (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
-          ) {
-            return false;
-          }
-
-          return true;
-        },
-      },
     },
   },
 };

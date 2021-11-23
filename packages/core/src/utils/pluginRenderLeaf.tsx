@@ -17,9 +17,9 @@ export const pluginRenderLeaf = (
 ): RenderLeaf => (nodeProps: PlateRenderLeafProps) => {
   const { leaf, children } = nodeProps;
 
-  const Leaf = component ?? DefaultLeaf;
-
   if (leaf[type] && !!leaf.text) {
+    const Leaf = component ?? DefaultLeaf;
+
     nodeProps = getRenderNodeProps({
       attributes: leaf.attributes,
       props,

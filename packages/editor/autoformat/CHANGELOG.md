@@ -130,7 +130,7 @@
     - `AutoformatMarkOptions`: options for `autoformatMark`
     - `AutoformatTextOptions`: options for `autoformatText`
     - `AutoformatBlockOptions`: options for `autoformatBlock`
-    - `AutoformatCommonRule`: rule fields for all modes
+    - `AutoformatCommonRule`: rule properties for all modes
     - `MatchRange`
     - `GetMatchPointsReturnType`
   - `mode: 'block'`, `autoformatBlock`:

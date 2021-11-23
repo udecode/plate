@@ -33,7 +33,7 @@
 - [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) –
 
   - `createAlignPlugin`:
-    - this plugin is no longer wrapping a block, but instead setting an `align` field to an existing block
+    - this plugin is no longer wrapping a block, but instead setting an `align` property to an existing block
     - removed `pluginKeys`, `renderElement` and `deserialize`
   - removed:
     - `ELEMENT_ALIGN_LEFT`
