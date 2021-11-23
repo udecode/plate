@@ -1,5 +1,14 @@
 # @udecode/plate-mention
 
+## 8.0.0
+
+### Major Changes
+
+- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
+  - `getMentionInputPluginOptions` for `getPlugin`
+  - `getMentionInputType` for `getPluginType`
+  - `COMBOBOX_TRIGGER_MENTION`
+
 ## 7.0.2
 
 ## 7.0.1
