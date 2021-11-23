@@ -150,7 +150,7 @@ Here is our roadmap to have a complete rich-text editor.
 
 - [x] NormalizeTypes – Enables support for defining type rules for
       specific locations in the document. For example, it can help to
-      ensure that there will always be a single title field at the
+      ensure that there will always be a single title property at the
       beginning of the document.
 - [ ] RestrictedEditing – Enables support for defining which parts of a
       document can be editable for users with more restricted editing

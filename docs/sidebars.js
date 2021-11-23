@@ -21,11 +21,9 @@ module.exports = {
       label: 'Guides',
       items: [
         'guides/Plate',
-        'guides/store',
+        'guides/plugins',
         'guides/styling',
-        'guides/configuration',
-        'guides/creating-plugins',
-        'guides/plugin-utils',
+        'guides/store',
         'guides/multiple-editors',
       ],
       collapsed: false,

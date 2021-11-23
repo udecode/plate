@@ -57,11 +57,11 @@
 
   Types:
 
-  - `PlatePlugin`, `PlatePluginEditor` new fields:
+  - `PlatePlugin`, `PlatePluginEditor` new properties:
     - `injectChildComponent`: Inject child component around any node children.
     - `injectParentComponent`: Inject parent component around any node `component`.
     - `overrideProps` supports arrays.
-  - `SPRenderNodeProps` new fields:
+  - `SPRenderNodeProps` new properties:
     - `editor: PlateEditor`
     - `plugins: PlatePlugin`
   - new types:
@@ -116,7 +116,7 @@
 
 - [#1126](https://github.com/udecode/plate/pull/1126) [`7ee21356`](https://github.com/udecode/plate/commit/7ee21356f0a4e67e367232b3dbc9957254a0c11e) Thanks [@zbeyens](https://github.com/zbeyens)! - feat:
   - `PlatePlugin`
-    - new field: `overrideProps`
+    - new property: `overrideProps`
       - Overrides rendered node props (shallow merge).
       - This enables controlling the props of any node component (use cases: indent, align,...).
       - used by `pipeRenderElement` and `pipeRenderLeaf`
@@ -259,8 +259,8 @@ To migrate, find and replace all occurrences of:
 
 - [#687](https://github.com/udecode/slate-plugins/pull/687) [`dfbde8bd`](https://github.com/udecode/slate-plugins/commit/dfbde8bd856e1e646e3d8fe2cbf1df8f9b8c67c3) Thanks [@zbeyens](https://github.com/zbeyens)! - changes:
   - `useEditableProps` (used by `SlatePlugins`):
-    - new fields returned: all handler props from the plugins (if defined)
-    - new core plugins with the following fields:
+    - new properties returned: all handler props from the plugins (if defined)
+    - new core plugins with the following properties:
       - `onFocus: setEventEditorId('focus', id)`
       - `onBlur: setEventEditorId('blur', id)`
       - You can add your own handlers in a plugin
@@ -272,8 +272,8 @@ To migrate, find and replace all occurrences of:
   - `useStoreEditorState`: a new selector. Get editor state which is updated on editor change. Similar to `useSlate`.
   - `SlatePlugin`: the previous plugin could implement the following handlers: `onChange`, `onDOMBeforeInput` and `onKeyDown`. The plugins now implement all DOM handlers: clipboard, composition, focus, form, image, keyboard, media, mouse, selection, touch, pointer, ui, wheel animation and transition events.
   - `SlatePluginsState` (store interface):
-    - a new field `keyChange` incremented by `SlatePlugins` on `useSlate` update.
-    - a new field `selection = editor.selection` updated on `useSlate` update.
+    - a new property `keyChange` incremented by `SlatePlugins` on `useSlate` update.
+    - a new property `selection = editor.selection` updated on `useSlate` update.
   - `pipeHandler`: a new function. Generic pipe for handlers.
 
 ## 1.0.0-next.26

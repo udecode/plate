@@ -3,7 +3,7 @@ import { PlateEditor } from '../PlateEditor';
 import { WithPlatePlugin } from './PlatePlugin';
 
 /**
- * Function used to decorate ranges.
+ * Property used by Plate to decorate editor ranges.
  * If the function returns undefined then no ranges are modified.
  * If the function returns an array the returned ranges are merged with the ranges called by other plugins.
  */

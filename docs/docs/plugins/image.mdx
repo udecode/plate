@@ -38,8 +38,22 @@ npm install @udecode/plate-image-ui
 }
 ```
 
+### Options
+
+```tsx
+export interface ImagePlugin {
+  /**
+   * An optional method that will upload the image to a server.
+   * The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+   */
+  uploadImage?: (
+    dataUrl: string | ArrayBuffer
+  ) => Promise<string | ArrayBuffer> | string | ArrayBuffer;
+}
+```
+
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/elements/image](https://github.com/udecode/plate/tree/main/packages/elements/image/src)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/elements/image/src/createImagePlugin.ts)
 - [packages/elements/image-ui](https://github.com/udecode/plate/tree/main/packages/elements/image-ui/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

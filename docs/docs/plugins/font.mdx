@@ -3,7 +3,12 @@ slug: /plugins/font
 title: Font
 ---
 
-Use the toolbar dropdowns in the demo below to control font color and font background color.
+Includes the following plugins:
+- Font background color
+- Font color
+- Font family
+- Font size
+- Font weight
 
 ### Installation
 
@@ -13,6 +18,8 @@ npm install @udecode/plate-font-ui
 ```
 
 ### Usage
+
+Use the toolbar dropdowns to control font color and font background color.
 
 ```ts live
 () => {
@@ -66,28 +73,12 @@ npm install @udecode/plate-font-ui
 }
 ```
 
-### Options
-
-- See [getOverrideProps](/docs/plugin-utils#getoverrideprops)
-- Default options:
-
-```ts
-{
-  // createFontBackgroundColorPlugin
-  nodeKey: MARK_BG_COLOR,
-  // createFontColorPlugin
-  nodeKey: MARK_COLOR,
-  // createFontFamilyPlugin
-  nodeKey: MARK_FONT_FAMILY,
-  // createFontSizePlugin
-  nodeKey: MARK_FONT_SIZE,
-  // createFontWeightPlugin
-  nodeKey: MARK_FONT_WEIGHT,
-}
-```
-
 ### Source Code
 
-- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/marks/font](https://github.com/udecode/plate/tree/main/packages/marks/font/src)
+- [Font Background Color Plugin](https://github.com/udecode/plate/blob/main/packages/marks/font/src/createFontBackgroundColorPlugin.ts)
+- [Font Color Plugin](https://github.com/udecode/plate/blob/main/packages/marks/font/src/createFontColorPlugin.ts)
+- [Font Family Plugin](https://github.com/udecode/plate/blob/main/packages/marks/font/src/createFontFamilyPlugin.ts)
+- [Font Size Plugin](https://github.com/udecode/plate/blob/main/packages/marks/font/src/createFontSizePlugin.ts)
+- [Font Weight Plugin](https://github.com/udecode/plate/blob/main/packages/marks/font/src/createFontWeightPlugin.ts)
 - [packages/marks/font-ui](https://github.com/udecode/plate/tree/main/packages/marks/font-ui/src)
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

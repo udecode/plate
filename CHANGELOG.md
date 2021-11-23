@@ -743,7 +743,7 @@ TODO: it's not working when the url is at the start of the block.
     - from `index` to `valueIndex`
     - from `target` to `at`
 - `MentionNode` interface: replaced `mentionable` by `value`. You can
-  add more fields to the element interface instead of adding them to
+  add more properties to the element interface instead of adding them to
   `mentionable`
 - `onKeyDownMark`:
   - signature changed from `({ clear, type, hotkey, }:

@@ -3,7 +3,7 @@
 ---
 
 `PlatePlugin` extended:
-- These fields are used by `withInsertData` plugin.
+- These properties are used by `withInsertData` plugin.
 ```tsx
 interface PlatePlugin {
   editor?: Nullable<{
@@ -63,7 +63,7 @@ interface PlatePlugin {
 interface PlatePlugin {
   inject?: {
     /**
-     * Any plugin can use this field to inject code into a stack.
+     * Any plugin can use this property to inject code into a stack.
      * For example, if multiple plugins have defined
      * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
      * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
@@ -74,7 +74,7 @@ interface PlatePlugin {
 }
 ```
 
-- `options`: any plugin can use the second generic type to type this field. It means that each plugin can be extended using this field.
+- `options`: any plugin can use the second generic type to type this property. It means that each plugin can be extended using this property.
 - `type` is now optional
 - `component`: no longer need of `options` to customize the component.
 - `overrideByKey`: a plugin can override other plugins by key (deep merge).
@@ -84,13 +84,13 @@ interface PlatePlugin {
   - nesting support (recursive)
 - `props`: Override node `component` props. Props object or function with props parameters returning the new props. Previously done by `overrideProps` and `getNodeProps` options.
 - `then`: a function that is called after the plugin is loaded.
-  - this is very powerful as it allows you to have plugin fields derived from the editor and/or the loaded plugin.
+  - this is very powerful as it allows you to have plugin properties derived from the editor and/or the loaded plugin.
   - nesting support (recursive)
 ```ts
 interface PlatePlugin {
   /**
    * Recursive plugin merging.
-   * Can be used to derive plugin fields from `editor`, `plugin`.
+   * Can be used to derive plugin properties from `editor`, `plugin`.
    * The returned value will be deeply merged to the plugin.
    */
   then?: (
@@ -105,7 +105,7 @@ New plugins:
 - `createEventEditorPlugin` (core) 
 - `createInsertDataPlugin`
   - `withInsertData`
-    - all plugins using `editor.insertData` field will be used here
+    - all plugins using `editor.insertData` property will be used here
     - it first gets the data with `format`
     - then it pipes `query`
     - then it pipes `transformData`

@@ -15,7 +15,7 @@
 
   feat:
 
-  - `MentionPluginOptions` new fields:
+  - `MentionPluginOptions` new properties:
     - `id`
     - `insertSpaceAfterMention`
     - `createMentionNode`

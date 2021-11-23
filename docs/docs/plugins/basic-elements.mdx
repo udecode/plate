@@ -3,9 +3,7 @@ slug: /plugins/basic-elements
 title: Basic Elements
 ---
 
-### `createBasicElementsPlugin`
-
-Returns a list of the following plugins:
+Includes the following plugins:
 - `createBlockquotePlugin()` for the `blockquote` element
 - `createCodeBlockPlugin()` for the `code_block` element
 - `createHeadingPlugin()` for the `h1`, `h2`,... elements
@@ -15,6 +13,13 @@ Returns a list of the following plugins:
 
 ```bash npm2yarn
 npm install @udecode/plate-basic-elements
+
+# or
+
+npm install @udecode/plate-block-quote
+npm install @udecode/plate-code-block
+npm install @udecode/plate-heading
+npm install @udecode/plate-paragraph
 ```
 
 ### Usage
@@ -87,7 +92,37 @@ npm install @udecode/plate-basic-elements
 }
 ```
 
+### Options
+
+```tsx
+export type HotkeyPlugin = {
+  /**
+   * Hotkeys to listen to trigger a plugin action.
+   */
+  hotkey?: string | string[];
+};
+
+export interface CodeBlockPlugin extends HotkeyPlugin {
+  syntax?: boolean;
+  syntaxPopularFirst?: boolean;
+  deserializers?: string[];
+}
+
+export interface HeadingPlugin extends HotkeyPlugin {}
+
+export interface HeadingsPlugin {
+  /**
+   * Heading levels supported from 1 to `levels`
+   */
+  levels?: number;
+}
+```
+
 ### Source Code
 
+- [Basic elements plugin](https://github.com/udecode/plate/blob/main/packages/elements/basic-elements/src/createBasicElementPlugins.ts)
+- [Block quote plugin](https://github.com/udecode/plate/blob/main/packages/elements/block-quote/src/createBlockquotePlugin.ts)
+- [Code block plugin](https://github.com/udecode/plate/blob/main/packages/elements/code-block/src/createCodeBlockPlugin.ts)
+- [Heading plugin](https://github.com/udecode/plate/blob/main/packages/elements/heading/src/createHeadingPlugin.ts)
+- [Paragraph plugin](https://github.com/udecode/plate/blob/main/packages/elements/paragraph/src/createParagraphPlugin.ts)
 - [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/elements/basic-elements](https://github.com/udecode/plate/tree/main/packages/elements/basic-elements/src)

@@ -3,8 +3,6 @@ slug: /plugins/exit-break
 title: Exit Break
 ---
 
-### `createExitBreakPlugin`
-
 Allows you to create hotkeys which exit the current block.
 
 ### Installation
@@ -58,7 +56,49 @@ npm install @udecode/plate-break
 }
 ```
 
+### Options
+
+```tsx
+export interface ExitBreakRule {
+  /**
+   * Hotkey to trigger exit break.
+   */
+  hotkey: string;
+
+  /**
+   * @see {@link QueryNodeOptions}
+   */
+  query?: QueryNodeOptions & {
+    /**
+     * When the selection is at the start of the block above.
+     */
+    start?: boolean;
+
+    /**
+     * When the selection is at the end of the block above.
+     */
+    end?: boolean;
+  };
+
+  /**
+   * Path level where to exit. Default is 1.
+   */
+  level?: number;
+
+  /**
+   * Exit before the selected block if true.
+   */
+  before?: boolean;
+
+  defaultType?: string;
+}
+
+export interface ExitBreakPlugin {
+  rules?: ExitBreakRule[];
+}
+```
+
 ### Source Code
 
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/editor/break/src/exit-break/createExitBreakPlugin.ts)
 - [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
-- [packages/break](https://github.com/udecode/plate/tree/main/packages/break/src)

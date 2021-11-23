@@ -83,7 +83,7 @@
 
 ### Minor Changes
 
-- [#977](https://github.com/udecode/plate/pull/977) [`2c341eff`](https://github.com/udecode/plate/commit/2c341eff209637d26de990ebe27460123ba52936) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - `ImageNodeData` new fields:
+- [#977](https://github.com/udecode/plate/pull/977) [`2c341eff`](https://github.com/udecode/plate/commit/2c341eff209637d26de990ebe27460123ba52936) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - `ImageNodeData` new properties:
   - `width?: number`
   - `caption?: TDescendant[]` (it's not yet a slate value but it may be in future releases)
 

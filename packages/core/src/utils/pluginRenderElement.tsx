@@ -14,18 +14,18 @@ export const pluginRenderElement = (
   editor: PlateEditor,
   { key, type, component: _component, props }: PlatePlugin
 ): RenderElement => (nodeProps) => {
-  const Element = _component ?? DefaultElement;
-
-  const injectAboveComponents = editor.plugins.flatMap(
-    (o) => o.inject?.aboveComponent ?? []
-  );
-  const injectBelowComponents = editor.plugins.flatMap(
-    (o) => o.inject?.belowComponent ?? []
-  );
-
   const { element, children: _children } = nodeProps;
 
   if (element.type === type) {
+    const Element = _component ?? DefaultElement;
+
+    const injectAboveComponents = editor.plugins.flatMap(
+      (o) => o.inject?.aboveComponent ?? []
+    );
+    const injectBelowComponents = editor.plugins.flatMap(
+      (o) => o.inject?.belowComponent ?? []
+    );
+
     nodeProps = getRenderNodeProps({
       attributes: element.attributes,
       nodeProps,

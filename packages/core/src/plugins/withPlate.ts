@@ -11,8 +11,22 @@ import { createInsertDataPlugin } from './createInsertDataPlugin';
 import { createReactPlugin } from './createReactPlugin';
 
 export interface WithPlateOptions<T = {}> {
+  /**
+   * A unique id used to store the editor state by id.
+   * Required if rendering multiple `Plate`. Optional otherwise.
+   * Default is `'main'`.
+   */
   id?: string | null;
+
+  /**
+   * Plate plugins.
+   */
   plugins?: PlatePlugin<T>[];
+
+  /**
+   * If `true`, disable all the core plugins.
+   * If an object, disable the core plugin properties that are `true` in the object.
+   */
   disableCorePlugins?:
     | {
         deserializeAst?: boolean;

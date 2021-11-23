@@ -33,10 +33,12 @@ export const overridePluginsByKey = <T = {}, P = {}>(
     }
   }
 
-  // override plugin.plugins
-  plugin.plugins?.forEach((p, i) => {
-    plugin.plugins![i] = overridePluginsByKey<T, {}>(p, overrideByKey, true);
-  });
+  if (plugin.plugins) {
+    // override plugin.plugins
+    plugin.plugins = plugin.plugins.map((p) =>
+      overridePluginsByKey<T, {}>(p, overrideByKey, true)
+    );
+  }
 
   const { then } = plugin;
 
