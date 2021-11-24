@@ -1,0 +1,41 @@
+---
+slug: /examples/multi-editors
+title: Huge Multi Editors
+---
+
+```ts live
+() => {
+  const initialValue = VALUES.createMultiEditors();
+
+  console.log(initialValue)
+  const WithPlate = ({value, id}) => (
+    <Plate
+      id={id}
+      editableProps={{
+        ...CONFIG.editableProps,
+        // spellcheck adds some lag so we disable it
+        spellCheck: false,
+      }}
+      initialValue={value}
+      plugins={PLUGINS.basicNodes}
+    />
+  );
+
+  return (
+    <div className="flex">
+      {initialValue.map((value, idx) => {
+          return (
+            <div style={{border: '1px solid cyan', marginBottom: '20px'}} key={idx}>
+              <div>{idx}</div>
+              <WithPlate value={value} id={idx} />
+            </div>
+          )
+      })}
+    </div>
+  );
+}
+```
+
+### Source Code
+
+- [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)
