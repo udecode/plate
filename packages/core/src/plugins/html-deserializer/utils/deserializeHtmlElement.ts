@@ -7,7 +7,7 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
  */
 export const deserializeHtmlElement = <T = {}>(
   editor: PlateEditor<T>,
-  element: HTMLElement
+  options: { document: Document; element: HTMLElement }
 ): DeserializeHtmlNodeReturnType => {
-  return deserializeHtmlNode(editor)(element);
+  return deserializeHtmlNode(editor)(options);
 };

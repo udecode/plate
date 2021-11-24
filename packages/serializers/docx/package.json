@@ -34,6 +34,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@americanexpress/css-to-js": "1.0.1",
     "@udecode/plate-basic-marks": "8.0.0",
     "@udecode/plate-block-quote": "8.0.0",
     "@udecode/plate-code-block": "8.0.0",

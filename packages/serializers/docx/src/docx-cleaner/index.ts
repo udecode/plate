@@ -6,3 +6,4 @@ export * from './cleanDocx';
 export * from './constants';
 export * from './types';
 export * from './utils/index';
+export { styleSheetToInlineStyles } from './styleSheetToInlineStyles';

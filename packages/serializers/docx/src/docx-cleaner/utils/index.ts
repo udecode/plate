@@ -51,3 +51,4 @@ export * from './traverseHtmlElements';
 export * from './traverseHtmlNode';
 export * from './traverseHtmlTexts';
 export * from './unwrapHtmlElement';
+export { parseHtmlDocument } from './parseHtmlDocument';

@@ -1,5 +1,6 @@
-import { createPluginFactory } from '../../utils/createPluginFactory';
-import { deserializeHtml } from './utils/deserializeHtml';
+import { parseHtmlDocument } from "../../../../serializers/docx/src/docx-cleaner/utils/parseHtmlDocument";
+import { createPluginFactory } from "../../utils/createPluginFactory";
+import { deserializeHtml } from "./utils/deserializeHtml";
 
 export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
 
@@ -13,9 +14,10 @@ export const createDeserializeHtmlPlugin = createPluginFactory({
       insertData: {
         format: 'text/html',
         getFragment: ({ data }) => {
-          const { body } = new DOMParser().parseFromString(data, 'text/html');
-          return deserializeHtml(editor, {
-            element: body,
+          const document = parseHtmlDocument(data);
+          
+          return deserializeHtml(editor, document{
+            document,
           });
         },
       },

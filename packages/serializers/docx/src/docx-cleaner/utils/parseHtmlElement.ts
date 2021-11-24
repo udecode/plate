@@ -1,5 +1,7 @@
+import { parseHtmlDocument } from './parseHtmlDocument';
+
 export const parseHtmlElement = (html: string) => {
-  const { body } = new DOMParser().parseFromString(html, 'text/html');
+  const { body } = parseHtmlDocument(html);
 
   return body.firstElementChild as HTMLElement;
 };
