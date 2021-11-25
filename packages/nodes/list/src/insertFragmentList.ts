@@ -1,22 +1,31 @@
 import {
   findNode,
   getPlugin,
+  isCollapsed,
   PlateEditor,
   PlatePlugin,
   TDescendant,
 } from '@udecode/plate-core';
-import { Node, NodeEntry, Path, Transforms } from 'slate';
-import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from './createListPlugin';
+import { Element, Node, NodeEntry, Path, Transforms } from 'slate';
+import {
+  getListItemContentType,
+  getListItemType,
+  getListTypes,
+} from './queries/getListTypes';
+import { ELEMENT_LI } from './createListPlugin';
 
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
-  const li = getPlugin(editor, ELEMENT_LI);
-  const ul = getPlugin(editor, ELEMENT_UL);
-  const ol = getPlugin(editor, ELEMENT_OL);
+  const listItemPlugin = getPlugin(editor, ELEMENT_LI);
+  const listItemType = getListItemType(editor);
+  const listItemContentType = getListItemContentType(editor);
 
   const isListRoot = (node: TDescendant): boolean =>
-    [ul.type, ol.type].includes(node.type);
+    getListTypes(editor).includes(node.type);
+
+  const isList = (node: TDescendant): boolean =>
+    [...getListTypes(editor), listItemType].includes(node.type);
 
   const getFirstAncestorOfType = (
     root: TDescendant,
@@ -29,6 +38,21 @@ export const insertFragmentList = (editor: PlateEditor) => {
     }
 
     return [Node.get(root, ancestor), ancestor];
+  };
+
+  const findListItemsWithContent = <T extends TDescendant>(first: T): T[] => {
+    let prev = null;
+    let node = first;
+    while (
+      isListRoot(node) ||
+      (node.type === listItemType &&
+        node.children[0].type !== listItemContentType)
+    ) {
+      prev = node;
+      [node] = node.children;
+    }
+
+    return prev ? prev.children : [node];
   };
 
   /**
@@ -49,12 +73,56 @@ export const insertFragmentList = (editor: PlateEditor) => {
           ? commonAncestor
           : Node.common(listRoot, textEntry[1], commonAncestor[1]),
       // any list item would do, we grab the first one
-      getFirstAncestorOfType(listRoot, textEntries[0], li)
+      getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin)
     );
 
-    return isListRoot(commonAncestorEntry[0])
+    const [first, ...rest] = isListRoot(commonAncestorEntry[0])
       ? commonAncestorEntry[0].children
       : [commonAncestorEntry[0]];
+    return [...findListItemsWithContent(first), ...rest];
+  };
+
+  const wrapNodeIntoListItem = (node: TDescendant): TDescendant => {
+    return node.type === listItemType
+      ? node
+      : {
+          type: listItemType,
+          children: [node],
+        };
+  };
+
+  /**
+   * Checks if the fragment only consists of a single LIC in which case it is considered the user's intention was to copy a text, not a list
+   */
+  const isSingleLic = (fragment: TDescendant[]) => {
+    if (fragment.length !== 1 || !isListRoot(fragment[0])) return false;
+
+    const root = fragment[0];
+    // start at root path
+    const queue: Path[] = [[]];
+    let foundLic = false;
+    while (queue.length) {
+      const path = queue.shift()!;
+      const node = Node.get(root, path);
+      if (!Element.isElement(node)) {
+        return false;
+      }
+
+      if (isList(node)) {
+        const children = Array.from(Node.children(root, path)).map(
+          ([, p]) => p
+        );
+        queue.push(...children);
+      } else if ((node as TDescendant).type !== listItemContentType) {
+        return false;
+      } else if (!foundLic) {
+        foundLic = true;
+      } else {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   const convertFragmentToList = (fragment: TDescendant[]) => {
@@ -71,25 +139,90 @@ export const insertFragmentList = (editor: PlateEditor) => {
   };
 
   return (fragment: TDescendant[]) => {
-    const liEntry = findNode(editor, {
-      match: { type: li.type },
+    let liEntry = findNode(editor, {
+      match: { type: listItemType },
+      mode: 'lowest',
+    });
+    // not inserting into a list item, delegate to other plugins
+    if (!liEntry) {
+      return insertFragment(
+        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      );
+    }
+
+    // delete selection (if necessary) so that it can check if needs to insert into an empty block
+    Transforms.insertFragment(editor, [{ text: '' }]);
+
+    // refetch in case the path changed due to deleting across multiple LIs
+    liEntry = findNode(editor, {
+      match: { type: listItemType },
       mode: 'lowest',
     });
 
-    if (liEntry) {
-      const [, liPath] = liEntry;
-
-      // FIXME: fork insertFragment for edge cases
-      return Transforms.insertNodes(editor, convertFragmentToList(fragment), {
-        at: Path.next(liPath),
-        select: true,
-      });
+    const licEntry = findNode(editor, {
+      match: { type: listItemContentType },
+      mode: 'lowest',
+    });
+    if (!licEntry) {
+      return insertFragment(
+        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      );
     }
 
-    const filtered: TDescendant[] = isListRoot(fragment[0])
-      ? [{ text: '' }, ...fragment]
-      : fragment;
+    let [, liPath] = liEntry!;
+    const [licNode] = licEntry!;
+    const isEmptyNode = isCollapsed(editor.selection) && !Node.string(licNode);
 
-    return insertFragment(filtered);
+    const [first, ...rest] = fragment
+      .flatMap(trimList)
+      .map(wrapNodeIntoListItem);
+
+    let nodes;
+    let firstText;
+    if (isListRoot(fragment[0])) {
+      if (isSingleLic(fragment)) {
+        firstText = first;
+        nodes = rest;
+      } else if (isEmptyNode) {
+        // FIXME: is there an more direct way to set this?
+        const li = Node.get(editor, liPath) as Element;
+        const [, ...currentSublists] = li.children;
+        const [newLic, ...newSublists] = first.children;
+        // it will set the LIC to the value of the item to be inserted,
+        // will keep the existing sublists (if any)
+        // and will insert the new sublists
+        if (newSublists?.length && isListRoot(newSublists[0])) {
+          if (currentSublists?.length && isListRoot(currentSublists[0])) {
+            (currentSublists[0] as Element).children = [
+              ...(currentSublists[0] as Element).children,
+              ...(newSublists[0] as Element).children,
+            ];
+            li.children = [newLic, ...currentSublists];
+          } else {
+            li.children = [newLic, ...newSublists];
+          }
+        }
+
+        firstText = { text: '' };
+        nodes = rest;
+      } else {
+        firstText = { text: '' };
+        nodes = [first, ...rest];
+      }
+    } else {
+      firstText = first;
+      nodes = rest;
+    }
+    Transforms.insertFragment(editor, [firstText]); // force removing current selection first and insert text if needed
+    // refetch the selected LI in case something was deleted
+    liEntry = findNode(editor, {
+      match: { type: listItemType },
+      mode: 'lowest',
+    });
+    [, liPath] = liEntry!;
+    return Transforms.insertNodes(editor, nodes, {
+      at: Path.next(liPath),
+      select: true,
+    });
   };
 };
