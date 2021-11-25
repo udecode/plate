@@ -119,6 +119,7 @@ module.exports = {
         'examples/introduction',
         'examples/editable-voids',
         'examples/huge-document',
+        'examples/multi-editors',
         'examples/iframe',
         'examples/preview-markdown',
       ],

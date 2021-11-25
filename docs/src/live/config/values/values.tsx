@@ -904,6 +904,22 @@ const createHugeDocument = () => {
   return hugeDocument;
 };
 
+const createMultiEditors = () => {
+  const multiEditors: TDescendant[][] = [];
+
+  for (let h = 0; h < 350; h++) {
+    const multiEditor: TDescendant[] = [];
+    multiEditor.push(<hh1>{faker.lorem.sentence()}</hh1>);
+
+    for (let p = 0; p < 2; p++) {
+      multiEditor.push(<hp>{faker.lorem.paragraph()}</hp>);
+    }
+    multiEditors.push(multiEditor);
+  }
+
+  return multiEditors;
+};
+
 const basicNodes = [...basicElements, ...basicMarks];
 
 const playground: any = getNodesWithRandomId([
@@ -939,6 +955,7 @@ export const VALUES: Record<string, any> = {
   basicElements,
   basicMarks,
   basicNodes,
+  createMultiEditors,
   createHugeDocument,
   createSpanningTable,
   createTable,
