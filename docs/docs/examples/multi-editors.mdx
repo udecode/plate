@@ -5,10 +5,9 @@ title: Huge Multi Editors
 
 ```ts live
 () => {
-  const initialValue = VALUES.createMultiEditors();
+  const initialValues = VALUES.createMultiEditors();
 
-  console.log(initialValue)
-  const WithPlate = ({value, id}) => (
+  const WithPlate = ({initialValue, id}) => (
     <Plate
       id={id}
       editableProps={{
@@ -16,18 +15,44 @@ title: Huge Multi Editors
         // spellcheck adds some lag so we disable it
         spellCheck: false,
       }}
-      initialValue={value}
+      initialValue={initialValue}
       plugins={PLUGINS.basicNodes}
     />
   );
 
+   const Element = ({ attributes, children, element }) => {
+    switch (element.type) {
+      case 'h1':
+        return <h1 {...attributes}>{children}</h1>;
+      default:
+        return <p {...attributes}>{children}</p>;
+    }
+  };
+
+  const WithoutPlate = ({initialValue, id}) => {
+    const [value, setValue] = useState(initialValue);
+    const renderElement = useCallback((p) => <Element {...p} />, []);
+    const editor = useMemo(() => withReact(createEditor()), []);
+
+    return (
+      <Slate
+        editor={editor}
+        value={value}
+        onChange={useCallback((v) => setValue(v), [])}
+      >
+        <Editable renderElement={renderElement} {...CONFIG.editableProps} />
+      </Slate>
+    );
+  }
+
   return (
     <div className="flex">
-      {initialValue.map((value, idx) => {
+      {initialValues.map((initialValue, idx) => {
           return (
             <div style={{border: '1px solid cyan', marginBottom: '20px'}} key={idx}>
               <div>{idx}</div>
-              <WithPlate value={value} id={idx} />
+              // <WithPlate initialValue={initialValue} id={idx} />
+              <WithoutPlate initialValue={initialValue} id={idx} />
             </div>
           )
       })}
