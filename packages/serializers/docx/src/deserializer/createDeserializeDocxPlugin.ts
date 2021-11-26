@@ -114,15 +114,22 @@ export const createDeserializeDocxPlugin = createPluginFactory({
       ],
     },
     [MARK_ITALIC]: {
-      deserializeHtml: {
-        validNodeName: ['EM', 'I'],
-        query: (el) => {
-          return !(
-            el.nodeName === 'EM' &&
-            (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
-          );
+      deserializeHtml: [
+        {
+          validNodeName: ['EM', 'I'],
+          query: (el) => {
+            return !(
+              el.nodeName === 'EM' &&
+              (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
+            );
+          },
         },
-      },
+        {
+          validStyle: {
+            fontStyle: 'italic',
+          },
+        },
+      ],
     },
   },
 });

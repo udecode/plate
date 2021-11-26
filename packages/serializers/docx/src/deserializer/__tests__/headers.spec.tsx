@@ -1,6 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -30,6 +29,5 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
-    plugins: [createBasicElementsPlugin()],
   });
 });

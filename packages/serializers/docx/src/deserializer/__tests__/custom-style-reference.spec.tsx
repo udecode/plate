@@ -1,7 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -19,7 +17,7 @@ describe(getDocxTestName(name), () => {
         </hp>
         <hp>
           This is text with an <htext italic>emphasized</htext> text style. And
-          this is text with a strengthened text style.
+          this is text with a <htext bold>strengthened</htext> text style.
         </hp>
         <hp>
           <htext />
@@ -27,6 +25,5 @@ describe(getDocxTestName(name), () => {
         <hp>Here is a styled paragraph that inherits from Block Text.</hp>
       </editor>
     ),
-    plugins: [createParagraphPlugin(), createBasicMarksPlugin()],
   });
 });

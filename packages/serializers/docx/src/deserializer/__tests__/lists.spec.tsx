@@ -1,8 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
 import { createIndentListPlugin } from '../../../../../blocks/indent-list/src/createIndentListPlugin';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -48,10 +46,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
-    plugins: [
-      createBasicElementsPlugin(),
-      createIndentListPlugin(),
-      createIndentPlugin(),
-    ],
+    plugins: [createIndentListPlugin()],
   });
 });

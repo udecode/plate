@@ -7,7 +7,7 @@ export const getDocxIndent = (
   const el = element as HTMLElement;
   const { marginLeft } = el.style;
 
-  const marginLeftNumber = parseInt(marginLeft.replace(/[^0-9]/g, ''), 10);
+  const marginLeftNumber = parseInt(marginLeft, 10);
 
   if (!marginLeftNumber) return 0;
 
