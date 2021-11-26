@@ -15,10 +15,24 @@ describe(getDocxTestName(name), () => {
         <hcodeblock>
           <hcodeline>readDocx :: ReaderOptions</hcodeline>
           <hcodeline>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -{'>'} B.ByteString
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `} -{'>'} B.ByteString
           </hcodeline>
           <hcodeline>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -{'>'} Pandoc
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `} -{'>'} Pandoc
           </hcodeline>
         </hcodeblock>
         <hp>from the beginning of the docx reader.</hp>

@@ -2,7 +2,6 @@ import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import {
   deserializeHtmlCodeBlock,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
 import { createPluginFactory, KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
@@ -72,10 +71,13 @@ export const createDeserializeDocxPlugin = createPluginFactory({
     },
     [ELEMENT_CODE_BLOCK]: {
       deserializeHtml: [
-        ...deserializeHtmlCodeBlock,
+        {
+          validNodeName: 'PRE',
+          ...deserializeHtmlCodeBlock,
+        },
         {
           validClassName: 'SourceCode',
-          getNode: null,
+          ...deserializeHtmlCodeBlock,
         },
       ],
     },
@@ -91,11 +93,11 @@ export const createDeserializeDocxPlugin = createPluginFactory({
         },
       },
     },
-    [ELEMENT_CODE_LINE]: {
-      deserializeHtml: {
-        validClassName: 'VerbatimChar',
-      },
-    },
+    // [ELEMENT_CODE_LINE]: {
+    //   deserializeHtml: {
+    //     validClassName: 'VerbatimChar',
+    //   },
+    // },
     [MARK_BOLD]: {
       deserializeHtml: [
         {
