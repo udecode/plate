@@ -139,7 +139,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
   };
 
   return (fragment: TDescendant[]) => {
-    let liEntry = findNode(editor, {
+    const liEntry = findNode(editor, {
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -153,12 +153,6 @@ export const insertFragmentList = (editor: PlateEditor) => {
     // delete selection (if necessary) so that it can check if needs to insert into an empty block
     Transforms.insertFragment(editor, [{ text: '' }]);
 
-    // refetch in case the path changed due to deleting across multiple LIs
-    liEntry = findNode(editor, {
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
-
     const licEntry = findNode(editor, {
       match: { type: listItemContentType },
       mode: 'lowest',
@@ -169,10 +163,9 @@ export const insertFragmentList = (editor: PlateEditor) => {
       );
     }
 
-    let [, liPath] = liEntry!;
+    const [, liPath] = liEntry!;
     const [licNode] = licEntry!;
     const isEmptyNode = isCollapsed(editor.selection) && !Node.string(licNode);
-
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
@@ -184,23 +177,26 @@ export const insertFragmentList = (editor: PlateEditor) => {
         firstText = first;
         nodes = rest;
       } else if (isEmptyNode) {
-        // FIXME: is there an more direct way to set this?
+        // FIXME: is there a more direct way to set this?
         const li = Node.get(editor, liPath) as Element;
         const [, ...currentSublists] = li.children;
         const [newLic, ...newSublists] = first.children;
-        // it will set the LIC to the value of the item to be inserted,
-        // will keep the existing sublists (if any)
-        // and will insert the new sublists
+        // // it will set the LIC to the value of the item to be inserted,
+        // // will keep the existing sublists (if any)
+        // // and will insert the new sublists
         if (newSublists?.length && isListRoot(newSublists[0])) {
           if (currentSublists?.length && isListRoot(currentSublists[0])) {
             (currentSublists[0] as Element).children = [
               ...(currentSublists[0] as Element).children,
               ...(newSublists[0] as Element).children,
             ];
+
             li.children = [newLic, ...currentSublists];
           } else {
             li.children = [newLic, ...newSublists];
           }
+        } else {
+          li.children = [newLic, ...currentSublists];
         }
 
         firstText = { text: '' };
@@ -213,13 +209,8 @@ export const insertFragmentList = (editor: PlateEditor) => {
       firstText = first;
       nodes = rest;
     }
-    Transforms.insertFragment(editor, [firstText]); // force removing current selection first and insert text if needed
-    // refetch the selected LI in case something was deleted
-    liEntry = findNode(editor, {
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
-    [, liPath] = liEntry!;
+    Transforms.insertFragment(editor, [firstText]); // insert text if needed
+
     return Transforms.insertNodes(editor, nodes, {
       at: Path.next(liPath),
       select: true,
