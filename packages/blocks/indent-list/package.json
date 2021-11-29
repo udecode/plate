@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-indent-list",
-  "version": "8.0.1",
+  "version": "8.1.0",
   "description": "Indent list plugin for Plate",
   "keywords": [
     "slate",
@@ -32,9 +32,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "8.0.0",
-    "@udecode/plate-indent": "8.0.0",
-    "@udecode/plate-list": "8.0.0"
+    "@udecode/plate-core": "8.1.0",
+    "@udecode/plate-indent": "8.1.0",
+    "@udecode/plate-list": "8.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

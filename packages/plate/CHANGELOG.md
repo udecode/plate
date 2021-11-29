@@ -1,5 +1,12 @@
 # @udecode/plate
 
+## 8.1.0
+
+### Minor Changes
+
+- [#1249](https://github.com/udecode/plate/pull/1249) by [@zbeyens](https://github.com/zbeyens) – New package:
+  - `@udecode/plate-juice`
+
 ## 8.0.0
 
 ### Major Changes
