@@ -2,9 +2,9 @@
 
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { parseHtmlElement } from '../../../../../serializers/docx/src/docx-cleaner/utils/parseHtmlElement';
 import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
+import { parseHtmlElement } from './parseHtmlElement';
 
 jsx;
 

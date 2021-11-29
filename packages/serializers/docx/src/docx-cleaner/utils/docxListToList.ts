@@ -1,9 +1,9 @@
+import { parseHtmlElement } from '../../../../../core/src/plugins/html-deserializer/utils/parseHtmlElement';
 import { getDocxListContentHtml } from './getDocxListContentHtml';
 import { getDocxListIndent } from './getDocxListIndent';
 import { isDocxBookmark } from './isDocxBookmark';
 import { isDocxList } from './isDocxList';
 import { isDocxOl } from './isDocxOl';
-import { parseHtmlElement } from './parseHtmlElement';
 
 interface Result {
   list: Element | null;

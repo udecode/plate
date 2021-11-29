@@ -14,6 +14,8 @@ export * from './htmlTextNodeToString';
 export * from './isHtmlComment';
 export * from './isHtmlElement';
 export * from './isHtmlText';
+export * from './parseHtmlDocument';
+export * from './parseHtmlElement';
 export * from './pipeDeserializeHtmlElement';
 export * from './pipeDeserializeHtmlLeaf';
 export * from './pluginDeserializeHtml';

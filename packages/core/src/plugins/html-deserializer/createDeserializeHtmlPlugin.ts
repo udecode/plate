@@ -1,6 +1,6 @@
-import { parseHtmlDocument } from '../../../../serializers/docx/src/docx-cleaner/utils/parseHtmlDocument';
 import { createPluginFactory } from '../../utils/createPluginFactory';
 import { deserializeHtml } from './utils/deserializeHtml';
+import { parseHtmlDocument } from './utils/parseHtmlDocument';
 
 export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
 
