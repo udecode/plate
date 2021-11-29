@@ -1,5 +1,12 @@
 # @udecode/plate-basic-marks
 
+## 8.1.0
+
+### Minor Changes
+
+- [#1249](https://github.com/udecode/plate/pull/1249) by [@zbeyens](https://github.com/zbeyens) – Code plugin `deserializeHtml`:
+  - new valid style: `fontFamily: 'Consolas'`
+
 ## 8.0.0
 
 ### Major Changes

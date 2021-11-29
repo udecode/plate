@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 8.1.0
+
+### Minor Changes
+
+- [#1249](https://github.com/udecode/plate/pull/1249) by [@zbeyens](https://github.com/zbeyens) – new utils:
+  - `parseHtmlDocument`
+  - `parseHtmlElement`
+
 ## 8.0.0
 
 ### Major Changes
