@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-indent-list",
-  "version": "8.0.1",
+  "version": "8.0.0",
   "description": "Indent list plugin for Plate",
   "keywords": [
     "slate",
