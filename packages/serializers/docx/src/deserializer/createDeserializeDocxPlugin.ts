@@ -93,11 +93,6 @@ export const createDeserializeDocxPlugin = createPluginFactory({
         },
       },
     },
-    // [ELEMENT_CODE_LINE]: {
-    //   deserializeHtml: {
-    //     validClassName: 'VerbatimChar',
-    //   },
-    // },
     [MARK_BOLD]: {
       deserializeHtml: [
         {
