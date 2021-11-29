@@ -3,7 +3,12 @@ import { generateSpaces } from './generateSpaces';
 export const cleanDocxSpacerun = (element: Element): void => {
   const styleAttribute = element.getAttribute('style');
 
-  if (styleAttribute !== 'mso-spacerun:yes') {
+  if (
+    !(
+      styleAttribute &&
+      ['mso-spacerun:yes', 'mso-spacerun: yes'].includes(styleAttribute)
+    )
+  ) {
     return;
   }
 

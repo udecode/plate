@@ -1,7 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -50,6 +48,5 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
-    plugins: [createParagraphPlugin(), createBasicMarksPlugin()],
   });
 });

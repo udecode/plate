@@ -77,6 +77,7 @@ import {
   createIndentListPlugin,
   createIndentPlugin,
   createItalicPlugin,
+  createJuicePlugin,
   createKbdPlugin,
   createLinkPlugin,
   createListPlugin,
@@ -225,6 +226,7 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  createJuicePlugin,
   StyledElement,
   toggleIndentList,
   React,

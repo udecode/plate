@@ -65,4 +65,16 @@ describe('cleanDocx', () => {
     const result = cleanDocx(html, MOCK_RTF);
     expect(result).toBe(expected);
   });
+
+  // it('Stylesheet', () => {
+  //   const html = readTestFile(
+  //     '../docx-cleaner/__tests__/input/custom-styles.html'
+  //   );
+  //   const expected = readTestFile(
+  //     '../docx-cleaner/__tests__/output/custom-styles.html'
+  //   );
+  //   const result = cleanDocx(html, MOCK_RTF);
+  //   expect(1).toBe(1);
+  //   // expect(result).toBe(expected);
+  // });
 });

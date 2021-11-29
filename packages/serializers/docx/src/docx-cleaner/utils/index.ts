@@ -41,7 +41,6 @@ export * from './isDocxList';
 export * from './isDocxOl';
 export * from './isHtmlFragmentHref';
 export * from './isOlSymbol';
-export * from './parseHtmlElement';
 export * from './postCleanHtml';
 export * from './preCleanHtml';
 export * from './removeHtmlNodesBetweenComments';

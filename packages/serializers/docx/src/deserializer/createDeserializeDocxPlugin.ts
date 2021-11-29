@@ -2,7 +2,6 @@ import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import {
   deserializeHtmlCodeBlock,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
 } from '@udecode/plate-code-block';
 import { createPluginFactory, KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
@@ -72,10 +71,13 @@ export const createDeserializeDocxPlugin = createPluginFactory({
     },
     [ELEMENT_CODE_BLOCK]: {
       deserializeHtml: [
-        ...deserializeHtmlCodeBlock,
+        {
+          validNodeName: 'PRE',
+          ...deserializeHtmlCodeBlock,
+        },
         {
           validClassName: 'SourceCode',
-          getNode: null,
+          ...deserializeHtmlCodeBlock,
         },
       ],
     },
@@ -89,11 +91,6 @@ export const createDeserializeDocxPlugin = createPluginFactory({
             return !isDocxContent(body);
           },
         },
-      },
-    },
-    [ELEMENT_CODE_LINE]: {
-      deserializeHtml: {
-        validClassName: 'VerbatimChar',
       },
     },
     [MARK_BOLD]: {
@@ -114,15 +111,22 @@ export const createDeserializeDocxPlugin = createPluginFactory({
       ],
     },
     [MARK_ITALIC]: {
-      deserializeHtml: {
-        validNodeName: ['EM', 'I'],
-        query: (el) => {
-          return !(
-            el.nodeName === 'EM' &&
-            (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
-          );
+      deserializeHtml: [
+        {
+          validNodeName: ['EM', 'I'],
+          query: (el) => {
+            return !(
+              el.nodeName === 'EM' &&
+              (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
+            );
+          },
         },
-      },
+        {
+          validStyle: {
+            fontStyle: 'italic',
+          },
+        },
+      ],
     },
   },
 });

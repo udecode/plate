@@ -1,9 +1,9 @@
+import { parseHtmlElement } from '@udecode/plate-core';
 import { getDocxListContentHtml } from './getDocxListContentHtml';
 import { getDocxListIndent } from './getDocxListIndent';
 import { isDocxBookmark } from './isDocxBookmark';
 import { isDocxList } from './isDocxList';
 import { isDocxOl } from './isDocxOl';
-import { parseHtmlElement } from './parseHtmlElement';
 
 interface Result {
   list: Element | null;

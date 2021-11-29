@@ -1,7 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
-import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
@@ -17,15 +15,28 @@ describe(getDocxTestName(name), () => {
         <hcodeblock>
           <hcodeline>readDocx :: ReaderOptions</hcodeline>
           <hcodeline>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -{'>'} B.ByteString
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `} -{'>'} B.ByteString
           </hcodeline>
           <hcodeline>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -{'>'} Pandoc
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `}
+            {` `} -{'>'} Pandoc
           </hcodeline>
         </hcodeblock>
         <hp>from the beginning of the docx reader.</hp>
       </editor>
     ),
-    plugins: [createBasicElementsPlugin(), createDeserializeDocxPlugin()],
   });
 });

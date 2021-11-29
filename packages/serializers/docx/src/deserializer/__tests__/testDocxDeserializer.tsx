@@ -1,10 +1,14 @@
 /** @jsx jsx */
+import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
   createPlateEditor,
   OverrideByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
+import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import { createJuicePlugin } from '../../../../juice/src/createJuicePlugin';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
 
@@ -26,20 +30,27 @@ export const testDocxDeserializer = ({
     </editor>
   ),
   expected,
-  plugins,
+  plugins = [],
   filename,
   overrideByKey,
 }: {
   input?: any;
   expected: any;
-  plugins: PlatePlugin[];
+  plugins?: PlatePlugin[];
   filename: string;
   overrideByKey?: OverrideByKey;
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({
       editor: input,
-      plugins: [...plugins, createDeserializeDocxPlugin()],
+      plugins: [
+        ...plugins,
+        createIndentPlugin(),
+        createBasicElementsPlugin(),
+        createBasicMarksPlugin(),
+        createDeserializeDocxPlugin(),
+        createJuicePlugin(),
+      ],
       overrideByKey,
     });
 
