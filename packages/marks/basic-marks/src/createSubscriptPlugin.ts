@@ -5,6 +5,7 @@ import {
 } from '@udecode/plate-core';
 
 export const MARK_SUBSCRIPT = 'subscript';
+const MARK_SUPERSCRIPT = 'superscript';
 
 /**
  * Enables support for subscript formatting.
@@ -16,8 +17,8 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
     onKeyDown: onKeyDownToggleMark,
   },
   options: {
-    hotkey: 'mod+.',
-    clear: MARK_SUBSCRIPT,
+    hotkey: 'mod+,',
+    clear: MARK_SUPERSCRIPT,
   },
   deserializeHtml: [
     { validNodeName: ['SUB'] },

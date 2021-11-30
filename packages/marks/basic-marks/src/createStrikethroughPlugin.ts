@@ -16,7 +16,7 @@ export const createStrikethroughPlugin = createPluginFactory<ToggleMarkPlugin>({
     onKeyDown: onKeyDownToggleMark,
   },
   options: {
-    hotkey: 'mod+shift+s',
+    hotkey: 'mod+shift+x',
   },
   deserializeHtml: [
     { validNodeName: ['S', 'DEL', 'STRIKE'] },
