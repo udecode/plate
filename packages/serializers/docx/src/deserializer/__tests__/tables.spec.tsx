@@ -128,7 +128,7 @@ describe(getDocxTestName(name), () => {
               <hp>
                 <htext />
               </hp>
-              <hp>Multiparagraph</hp>
+              <hp>Full</hp>
             </htd>
           </htr>
 
