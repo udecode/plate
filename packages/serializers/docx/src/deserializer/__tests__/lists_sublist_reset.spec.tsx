@@ -1,0 +1,34 @@
+/** @jsx jsx */
+import { jsx } from '@udecode/plate-test-utils';
+import { createIndentListPlugin } from '../../../../../blocks/indent-list/src/createIndentListPlugin';
+import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
+
+jsx;
+
+const name = 'lists_sublist_reset';
+
+describe(getDocxTestName(name), () => {
+  testDocxDeserializer({
+    filename: name,
+    expected: (
+      <editor>
+        <hp indent={1} listStyleType="decimal">
+          Head 1
+        </hp>
+        <hp indent={2} listStyleType="decimal">
+          Head 1.1
+        </hp>
+        <hp indent={2} listStyleType="decimal" listStart={2}>
+          Head 1.2
+        </hp>
+        <hp indent={1} listStyleType="decimal" listStart={2}>
+          Head 2
+        </hp>
+        <hp indent={2} listStyleType="decimal">
+          Head 2.1
+        </hp>
+      </editor>
+    ),
+    plugins: [createIndentListPlugin()],
+  });
+});
