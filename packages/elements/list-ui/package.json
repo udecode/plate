@@ -35,14 +35,15 @@
     "@udecode/plate-core": "8.1.0",
     "@udecode/plate-list": "8.1.0",
     "@udecode/plate-styled-components": "8.1.0",
-    "@udecode/plate-toolbar": "8.1.0"
+    "@udecode/plate-toolbar": "8.1.0",
+    "jotai": "^1.4.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.66.1",
+    "slate-react": ">=0.69.0",
     "styled-components": ">=5.0.0"
   },
   "publishConfig": {

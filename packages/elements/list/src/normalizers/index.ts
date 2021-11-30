@@ -3,5 +3,8 @@
  */
 
 export * from './normalizeList';
+export * from './normalizeListItemMarks';
 export * from './normalizeListItem';
 export * from './normalizeNestedList';
+export * from './normalizeListItemOrders';
+export * from './normalizeListItemContentMarkToMarkers';

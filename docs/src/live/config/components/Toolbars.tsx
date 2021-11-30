@@ -1,6 +1,6 @@
 import 'tippy.js/animations/scale.css';
 import 'tippy.js/dist/tippy.css';
-import React from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
@@ -40,6 +40,10 @@ import {
   BalloonToolbar,
   BlockToolbarButton,
   CodeBlockToolbarButton,
+  ColorPicker,
+  ColorType,
+  DEFAULT_COLORS,
+  DEFAULT_CUSTOM_COLORS,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -53,13 +57,17 @@ import {
   ELEMENT_H6,
   ELEMENT_OL,
   ELEMENT_UL,
+  getMark,
   getPluginType,
   getPreventDefaultHandler,
   indent,
   insertTable,
+  isListItemContentMarkActive,
+  isMarkActive,
   ListToolbarButton,
   MARK_BOLD,
   MARK_CODE,
+  MARK_COLOR,
   MARK_HIGHLIGHT,
   MARK_ITALIC,
   MARK_KBD,
@@ -69,10 +77,21 @@ import {
   MARK_UNDERLINE,
   MarkToolbarButton,
   outdent,
+  removeListItemContentMarkByMarkerSelection,
+  removeMark,
+  setListItemContentMarkByMarkerSelection,
+  setMarks,
   TableToolbarButton,
+  toggleMark,
   ToolbarButton,
+  ToolbarButtonProps,
+  ToolbarDropdown,
+  useListItemMarkerSelection,
   usePlateEditorRef,
+  usePlateEditorState,
+  usePlateEventId,
 } from '@udecode/plate';
+import { ReactEditor } from 'slate-react';
 
 export const BasicElementToolbarButtons = () => {
   const editor = usePlateEditorRef()!;
@@ -144,6 +163,194 @@ export const ListToolbarButtons = () => {
       <ListToolbarButton
         type={getPluginType(editor, ELEMENT_OL)}
         icon={<FormatListNumbered />}
+      />
+    </>
+  );
+};
+
+export const ListExtensionToolbarButtons = () => {
+  const editor = usePlateEditorState(usePlateEventId('focus'));
+
+  const ToggleMarkButton = ({
+    type,
+    clear,
+    icon,
+  }: {
+    type: string;
+    clear?: string;
+  } & ToolbarButtonProps): JSX.Element => {
+    const [licSelection] = useListItemMarkerSelection(editor?.id as string);
+
+    const active =
+      editor &&
+      (licSelection
+        ? isListItemContentMarkActive(editor, licSelection, type)
+        : !!editor?.selection && isMarkActive(editor, type));
+
+    return (
+      <ToolbarButton
+        active={active}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          if (!editor) {
+            return;
+          }
+
+          if (licSelection) {
+            setListItemContentMarkByMarkerSelection(
+              editor,
+              licSelection,
+              type,
+              !active
+            );
+          } else {
+            !!editor?.selection && toggleMark(editor, { key: type, clear });
+          }
+        }}
+        icon={icon}
+      />
+    );
+  };
+
+  type ColorPickerToolbarDropdownProps = {
+    pluginKey?: string;
+    icon: ReactNode;
+    selectedIcon: ReactNode;
+    colors?: ColorType[];
+    customColors?: ColorType[];
+    closeOnSelect?: boolean;
+  };
+
+  const ColorPickerToolbarDropdown = ({
+    pluginKey,
+    icon,
+    selectedIcon,
+    colors = DEFAULT_COLORS,
+    customColors = DEFAULT_CUSTOM_COLORS,
+    closeOnSelect = true,
+    ...rest
+  }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
+    const [open, setOpen] = useState(false);
+    const editorRef = usePlateEditorRef();
+    const type = getPluginType(editorRef, pluginKey);
+    const [licSelection] = useListItemMarkerSelection(editor?.id as string);
+
+    const color =
+      editorRef &&
+      (licSelection
+        ? isListItemContentMarkActive(editorRef, licSelection, type)
+        : getMark(editorRef, type));
+
+    const [selectedColor, setSelectedColor] = useState<string>();
+
+    const onToggle = useCallback(() => {
+      setOpen(!open);
+    }, [open, setOpen]);
+
+    const updateColor = useCallback(
+      (value: string) => {
+        if (editorRef && editor && (editor.selection || licSelection)) {
+          setSelectedColor(value);
+
+          if (licSelection) {
+            setListItemContentMarkByMarkerSelection(
+              editor,
+              licSelection,
+              type,
+              value
+            );
+          } else {
+            ReactEditor.focus(editorRef);
+
+            setMarks(editor, { [type]: value });
+          }
+        }
+      },
+      [editorRef, licSelection, type]
+    );
+
+    const updateColorAndClose = useCallback(
+      (value: string) => {
+        updateColor(value);
+        closeOnSelect && onToggle();
+      },
+      [closeOnSelect, onToggle, updateColor]
+    );
+
+    const clearColor = useCallback(() => {
+      if (editorRef && editor && (editor.selection || licSelection)) {
+        if (selectedColor) {
+          if (licSelection) {
+            removeListItemContentMarkByMarkerSelection(
+              editor,
+              type,
+              licSelection
+            );
+          } else {
+            ReactEditor.focus(editorRef);
+            removeMark(editor, { key: type });
+          }
+        }
+
+        closeOnSelect && onToggle();
+      }
+    }, [closeOnSelect, editorRef, licSelection, onToggle, selectedColor, type]);
+
+    useEffect(() => {
+      if (editor?.selection) {
+        setSelectedColor(color);
+      }
+    }, [color]);
+
+    return (
+      <ToolbarDropdown
+        control={
+          <ToolbarButton
+            active={!!editor?.selection && isMarkActive(editor, type)}
+            icon={icon}
+            {...rest}
+          />
+        }
+        open={open}
+        onOpen={onToggle}
+        onClose={onToggle}
+      >
+        <ColorPicker
+          color={selectedColor || color}
+          colors={colors}
+          customColors={customColors}
+          selectedIcon={selectedIcon}
+          updateColor={updateColorAndClose}
+          updateCustomColor={updateColor}
+          clearColor={clearColor}
+        />
+      </ToolbarDropdown>
+    );
+  };
+
+  return (
+    <>
+      <ListToolbarButton
+        type={getPluginType(editor, ELEMENT_UL)}
+        icon={<FormatListBulleted />}
+      />
+      <ListToolbarButton
+        type={getPluginType(editor, ELEMENT_OL)}
+        icon={<FormatListNumbered />}
+      />
+      <ToggleMarkButton
+        type={getPluginType(editor, MARK_BOLD)}
+        icon={<FormatBold />}
+      />
+      <ToggleMarkButton
+        type={getPluginType(editor, MARK_ITALIC)}
+        icon={<FormatItalic />}
+      />
+      <ColorPickerToolbarDropdown
+        pluginKey={MARK_COLOR}
+        icon={<div>Color</div>}
+        selectedIcon={<div>Selected</div>}
+        tooltip={{ content: 'Text color' }}
       />
     </>
   );

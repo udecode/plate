@@ -9,9 +9,10 @@ export * from './deleteFragmentList';
 export * from './insertBreakList';
 export * from './insertFragmentList';
 export * from './onKeyDownList';
-export * from './types';
 export * from './withList';
+
 export * from './normalizers/index';
 export * from './queries/index';
 export * from './todo-list/index';
 export * from './transforms/index';
+export * from './types/index';

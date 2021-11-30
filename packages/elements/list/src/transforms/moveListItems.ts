@@ -3,7 +3,7 @@ import {
   getNodes,
   getParent,
   getPluginType,
-  PlateEditor,
+  PlateEditor
 } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../createListPlugin';

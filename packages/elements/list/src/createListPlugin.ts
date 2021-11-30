@@ -1,5 +1,8 @@
+import { KEY_ALIGN } from '@udecode/plate-alignment/src';
 import {
   createPluginFactory,
+  ELEMENT_DEFAULT,
+  getPluginType,
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
   someNode,
@@ -8,6 +11,7 @@ import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
 import { withList } from './withList';
 
+export const KEY_LIST = 'list';
 export const ELEMENT_UL = 'ul';
 export const ELEMENT_OL = 'ol';
 export const ELEMENT_LI = 'li';
@@ -16,8 +20,8 @@ export const ELEMENT_LIC = 'lic';
 /**
  * Enables support for bulleted, numbered and to-do lists.
  */
-export const createListPlugin = createPluginFactory({
-  key: 'list',
+export const createListPlugin = createPluginFactory<ListPlugin>({
+  key: KEY_LIST,
   plugins: [
     {
       key: ELEMENT_UL,
@@ -61,4 +65,8 @@ export const createListPlugin = createPluginFactory({
       isElement: true,
     },
   ],
+  options: {
+    marks: [],
+    enableOrdering: false,
+  },
 });

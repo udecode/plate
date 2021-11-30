@@ -1,17 +1,29 @@
-import { WithOverride } from '@udecode/plate-core';
+import { TNode, WithOverride } from '@udecode/plate-core';
+import { NodeEntry } from 'slate';
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
 import { deleteFragmentList } from './deleteFragmentList';
 import { insertBreakList } from './insertBreakList';
 import { insertFragmentList } from './insertFragmentList';
-import { normalizeList } from './normalizers';
+import {
+  normalizeList,
+  normalizeListItemContentMarkToMarkers,
+  normalizeListItemMarks,
+  normalizeListItemOrders,
+} from './normalizers';
 import { ListPlugin } from './types';
 
 export const withList: WithOverride<{}, ListPlugin> = (
   editor,
-  { options: { validLiChildrenTypes } }
+  { options: { enableOrdering, marks } }
 ) => {
-  const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
+  const {
+    insertBreak,
+    deleteBackward,
+    deleteForward,
+    deleteFragment,
+    normalizeNode,
+  } = editor;
 
   editor.insertBreak = () => {
     if (insertBreakList(editor)) return;
@@ -39,7 +51,24 @@ export const withList: WithOverride<{}, ListPlugin> = (
 
   editor.insertFragment = insertFragmentList(editor);
 
-  editor.normalizeNode = normalizeList(editor, { validLiChildrenTypes });
+  editor.normalizeNode = (nodeEntry) => {
+    const shouldReturnEarly = normalizeList(editor, nodeEntry);
+
+    if (marks?.length || enableOrdering) {
+      normalizeListItemOrders(editor, nodeEntry[1]);
+    }
+
+    if (marks?.length) {
+      normalizeListItemContentMarkToMarkers(
+        editor,
+        nodeEntry as NodeEntry<TNode>
+      );
+      normalizeListItemMarks(editor, nodeEntry as NodeEntry<TNode>);
+    }
+    if (!shouldReturnEarly) {
+      normalizeNode(nodeEntry);
+    }
+  };
 
   return editor;
 };

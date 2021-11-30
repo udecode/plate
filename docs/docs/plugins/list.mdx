@@ -10,7 +10,7 @@ npm install @udecode/plate-list
 npm install @udecode/plate-list-ui
 ```
 
-### Usage
+### Basic Usage
 
 ```ts live
 () => {
@@ -68,6 +68,165 @@ export interface ListPlugin extends HotkeyPlugin {
   validLiChildrenTypes?: string[];
 }
 ```
+
+### Numbered ordered list
+
+With ordering enabled the list wil calculate its own order and enables you to format the numbers how you want them
+> If you mix `ol` with `ul` the ordering will restart whenever the list type changes
+
+> Note the normalizeInitialValue={true} between the Plate params, it needs this, so it would generate the order for the list items
+
+
+```ts live
+() => {
+  const ListToolbarButtons = () => {
+    const editor = usePlateEditorRef();
+
+    return (
+      <>
+        <ListToolbarButton
+          type={getPluginType(editor, ELEMENT_UL)}
+          icon={<FormatListBulleted />}
+        />
+        <ListToolbarButton
+          type={getPluginType(editor, ELEMENT_OL)}
+          icon={<FormatListNumbered />}
+        />
+      </>
+    );
+  };
+
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createResetNodePlugin(CONFIG.resetBlockType),
+    createSoftBreakPlugin(CONFIG.softBreak),
+    createExitBreakPlugin(CONFIG.exitBreak),
+    createListPlugin({
+      options:{
+        enableOrdering: true,
+        onRenderMarker: ({order})=>{
+          const last = order.pop();
+          return (
+           <>
+            {order.length ? `${order.join('.')}.` : ''}
+            <b>{last}:</b>
+           </>
+          );
+        }
+      }
+    }),
+    createTodoListPlugin(),
+  ], {
+    components: createPlateUI({
+      [ELEMENT_OL]: withProps(StyledElement, {
+        as: 'ol',
+        styles: {
+          root: {
+            listStyleType: 'none',
+            paddingInlineStart: '24px',
+          },
+        },
+      }),
+      [ELEMENT_LIC]: withProps(OrderedListItemContentElement, {}),
+    }),
+  });
+
+  return (
+    <>
+      <HeadingToolbar>
+        <ListToolbarButtons />
+      </HeadingToolbar>
+      <Plate
+        id="list"
+        editableProps={CONFIG.editableProps}
+        initialValue={VALUES.list}
+        plugins={plugins}
+        normalizeInitialValue={true}
+      />
+    </>
+  );
+}
+```
+
+### Formatted ordered list
+
+When using `Marks`, you might want to enable `marks` in the list options this will allow you to format the numbering of the lists as well
+
+This will do a couple of things:
+* The numbering wil be selectable
+  * Single click will select the same depth items while clicking again will select the  clicked element
+* You can format the numbers with the `marks`
+  > Currently, Toolbar elements provided by Plate does not support list item content selection, but you can achieve this easily.
+  >
+  > For more details check out the plugin options and the [`ListExtensionToolbarButtons`](https://github.com/udecode/plate/blob/main/docs/src/live/config/components/Toolbars.tsx) component, so you know how to change your toolbar element for this.
+* If the whole text in a list item content is marked with one of the `marks` the numbering will inherit it
+  * You can always override this mark by selecting the numbering and changing it
+
+```ts live
+() => {
+  //  const plugins = [
+  //   ...PLUGINS.basicNodes,
+  //   createResetNodePlugin(CONFIG.resetBlockType),
+  //   createSoftBreakPlugin(CONFIG.softBreak),
+  //   createExitBreakPlugin(CONFIG.exitBreak),
+  //   createBoldPlugin(),
+  //   createItalicPlugin(),
+  //   createFontColorPlugin(),
+  //   createListPlugin({
+  //     marks: [
+  //       {
+  //         nodeKey: MARK_BOLD,
+  //         styleKey: 'fontWeight',
+  //         transformNodeValue: (e, {value}) => value ? 'bold' : 'inherit'
+  //       },
+  //       {
+  //         nodeKey: MARK_ITALIC,
+  //         styleKey: 'fontStyle',
+  //         transformNodeValue: (e, {value}) => value ? 'italic' : 'inherit'
+  //       },
+  //       {
+  //         nodeKey: MARK_COLOR,
+  //         styleKey: 'color',
+  //       }
+  //     ]
+  //   }),
+  // ];
+  //
+  // const components = createPlateComponents({
+  //   [ELEMENT_OL]: withProps(StyledElement, {
+  //     as: 'ol',
+  //     styles: {
+  //       root: {
+  //         listStyleType: 'none',
+  //         paddingInlineStart: '24px',
+  //       },
+  //     },
+  //   }),
+  //   [ELEMENT_LIC]: withProps(OrderedListItemContentElement, {}),
+  // });
+  //
+  // return (
+  //   <>
+  //     <HeadingToolbar>
+  //       <ListExtensionToolbarButtons />
+  //     </HeadingToolbar>
+  //     <Plate
+  //       id="list3"
+  //       plugins={plugins}
+  //       components={components}
+  //       options={CONFIG.options}
+  //       editableProps={CONFIG.editableProps}
+  //       initialValue={VALUES.listExtension}
+  //       normalizeInitialValue={true}
+  //     >
+  //       <PlateMarkedListEffect />
+  //     </Plate>
+  //   </>
+  // );
+  return null;
+}
+```
+
 
 ### Source Code
 
