@@ -17,7 +17,7 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   },
   options: {
     hotkey: 'mod+.',
-    clear: MARK_SUBSCRIPT,
+    clear: MARK_SUPERSCRIPT,
   },
   deserializeHtml: [
     { validNodeName: ['SUB'] },
