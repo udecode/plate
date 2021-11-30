@@ -17,7 +17,7 @@ export const createSuperscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   },
   options: {
     hotkey: 'mod+,',
-    clear: MARK_SUPERSCRIPT,
+    clear: MARK_SUBSCRIPT,
   },
   deserializeHtml: [
     { validNodeName: ['SUP'] },
