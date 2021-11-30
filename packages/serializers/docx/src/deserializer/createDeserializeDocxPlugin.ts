@@ -1,3 +1,4 @@
+import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import {
   deserializeHtmlCodeBlock,
@@ -13,7 +14,6 @@ import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { KEY_ALIGN } from '../../../../elements/alignment/src/createAlignPlugin';
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import { getDocxIndent } from '../docx-cleaner/utils/getDocxIndent';
 import { getDocxListContentHtml } from '../docx-cleaner/utils/getDocxListContentHtml';
