@@ -199,10 +199,10 @@ describe('when pasting ul > 2 li fragment', () => {
                   <hlic>three</hlic>
                   <hul>
                     <hli>
-                      <hlic>two</hlic>
+                      <hlic>five</hlic>
                     </hli>
                     <hli>
-                      <hlic>five</hlic>
+                      <hlic>two</hlic>
                     </hli>
                   </hul>
                 </hli>

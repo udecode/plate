@@ -164,7 +164,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
     }
 
     const [, liPath] = liEntry!;
-    const [licNode] = licEntry!;
+    const [licNode, licPath] = licEntry!;
     const isEmptyNode = isCollapsed(editor.selection) && !Node.string(licNode);
     const [first, ...rest] = fragment
       .flatMap(trimList)
@@ -181,22 +181,27 @@ export const insertFragmentList = (editor: PlateEditor) => {
         const li = Node.get(editor, liPath) as Element;
         const [, ...currentSublists] = li.children;
         const [newLic, ...newSublists] = first.children;
-        // // it will set the LIC to the value of the item to be inserted,
-        // // will keep the existing sublists (if any)
-        // // and will insert the new sublists
-        if (newSublists?.length && isListRoot(newSublists[0])) {
-          if (currentSublists?.length && isListRoot(currentSublists[0])) {
-            (currentSublists[0] as Element).children = [
-              ...(currentSublists[0] as Element).children,
-              ...(newSublists[0] as Element).children,
-            ];
-
-            li.children = [newLic, ...currentSublists];
+        Transforms.insertNodes(editor, newLic, {
+          at: Path.next(licPath),
+          select: true,
+        });
+        Transforms.removeNodes(editor, {
+          at: licPath,
+        });
+        if (newSublists?.length) {
+          if (currentSublists?.length) {
+            // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
+            const path = [...liPath, 1, 0];
+            Transforms.insertNodes(editor, newSublists[0].children, {
+              at: path,
+              select: true,
+            });
           } else {
-            li.children = [newLic, ...newSublists];
+            Transforms.insertNodes(editor, newSublists, {
+              at: Path.next(licPath),
+              select: true,
+            });
           }
-        } else {
-          li.children = [newLic, ...currentSublists];
         }
 
         firstText = { text: '' };
