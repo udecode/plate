@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
   createPlateEditor,
   OverrideByKey,
@@ -8,6 +7,14 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
 import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import {
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+} from '../../../../../elements/heading/src/constants';
+import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
+import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
 import { createJuicePlugin } from '../../../../juice/src/createJuicePlugin';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
@@ -45,9 +52,21 @@ export const testDocxDeserializer = ({
       editor: input,
       plugins: [
         ...plugins,
-        createIndentPlugin(),
+        createIndentPlugin({
+          inject: {
+            props: {
+              validTypes: [
+                ELEMENT_PARAGRAPH,
+                ELEMENT_H1,
+                ELEMENT_H2,
+                ELEMENT_H3,
+              ],
+            },
+          },
+        }),
         createBasicElementsPlugin(),
         createBasicMarksPlugin(),
+        createTablePlugin(),
         createDeserializeDocxPlugin(),
         createJuicePlugin(),
       ],

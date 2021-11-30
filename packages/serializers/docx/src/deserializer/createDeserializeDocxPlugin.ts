@@ -3,11 +3,17 @@ import {
   deserializeHtmlCodeBlock,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
-import { createPluginFactory, KEY_DESERIALIZE_HTML } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  DeserializeHtml,
+  KEY_DESERIALIZE_HTML,
+} from '@udecode/plate-core';
+import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { KEY_ALIGN } from '../../../../elements/alignment/src/createAlignPlugin';
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import { getDocxIndent } from '../docx-cleaner/utils/getDocxIndent';
 import { getDocxListContentHtml } from '../docx-cleaner/utils/getDocxListContentHtml';
@@ -17,6 +23,33 @@ import { isDocxContent } from '../docx-cleaner/utils/isDocxContent';
 import { isDocxList } from '../docx-cleaner/utils/isDocxList';
 
 export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
+
+const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
+  const node = { type };
+
+  if (element.style.textAlign) {
+    node[KEY_ALIGN] = element.style.textAlign;
+  }
+
+  if (isDocxList(element)) {
+    node[KEY_INDENT] = getDocxListIndent(element);
+
+    const text = element.textContent ?? '';
+
+    node[KEY_LIST_STYLE_TYPE] =
+      getTextListStyleType(text) ?? ListStyleType.Disc;
+
+    element.innerHTML = getDocxListContentHtml(element);
+  } else {
+    const indent = getDocxIndent(element);
+
+    if (indent) {
+      node[KEY_INDENT] = indent;
+    }
+  }
+
+  return node;
+};
 
 export const createDeserializeDocxPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_DOCX,
@@ -42,30 +75,28 @@ export const createDeserializeDocxPlugin = createPluginFactory({
           query: (el) => {
             return !el.classList.contains('SourceCode');
           },
-          getNode: (element) => {
-            const node = {
-              type,
-            };
-
-            if (isDocxList(element)) {
-              node[KEY_INDENT] = getDocxListIndent(element);
-
-              const text = element.textContent ?? '';
-
-              node[KEY_LIST_STYLE_TYPE] =
-                getTextListStyleType(text) ?? ListStyleType.Disc;
-
-              element.innerHTML = getDocxListContentHtml(element);
-            } else {
-              const indent = getDocxIndent(element);
-
-              if (indent) {
-                node[KEY_INDENT] = indent;
-              }
-            }
-
-            return node;
-          },
+          getNode: getListNode(type),
+        },
+      }),
+    },
+    [ELEMENT_H1]: {
+      then: (editor, { type }) => ({
+        deserializeHtml: {
+          getNode: getListNode(type),
+        },
+      }),
+    },
+    [ELEMENT_H2]: {
+      then: (editor, { type }) => ({
+        deserializeHtml: {
+          getNode: getListNode(type),
+        },
+      }),
+    },
+    [ELEMENT_H3]: {
+      then: (editor, { type }) => ({
+        deserializeHtml: {
+          getNode: getListNode(type),
         },
       }),
     },
@@ -81,6 +112,9 @@ export const createDeserializeDocxPlugin = createPluginFactory({
         },
       ],
     },
+    // [ELEMENT_TABLE]: {
+    //   deserializeHtml:
+    // },
     [ELEMENT_IMAGE]: {
       editor: {
         insertData: {
