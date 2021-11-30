@@ -17,7 +17,7 @@ export const createSuperscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
     onKeyDown: onKeyDownToggleMark,
   },
   options: {
-    hotkey: 'mod+,',
+    hotkey: 'mod+.',
     clear: MARK_SUBSCRIPT,
   },
   deserializeHtml: [
