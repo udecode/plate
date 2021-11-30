@@ -34,6 +34,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@udecode/plate-alignment": "8.1.0",
     "@udecode/plate-basic-marks": "8.1.0",
     "@udecode/plate-block-quote": "8.1.0",
     "@udecode/plate-code-block": "8.1.0",

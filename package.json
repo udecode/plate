@@ -6,14 +6,14 @@
     "packages/**"
   ],
   "scripts": {
-    "prebuild": "yarn clean",
+    "prebuild": "rimraf dist",
     "build": "lerna exec -- yarn build",
     "build-storybook": "build-storybook",
     "build:all": "yarn && yarn build && yarn build:docs",
     "build:docs": "cd docs && yarn && yarn build",
     "build:main": "lerna exec --since main -- yarn build",
     "build:w": "lerna exec --parallel -- yarn build:w",
-    "clean": "rimraf dist",
+    "clean": "lerna run prebuild && yarn workspace @udecode/plate-test-utils build",
     "commit-version": "git add . && git commit -m \"chore(release): publish `node -p 'require(\"./lerna.json\").version'`\"",
     "cti": "lerna run cti",
     "cti:clean": "lerna exec -- cti clean ./src",

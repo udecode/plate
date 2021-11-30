@@ -41,16 +41,7 @@ npm install @udecode/plate-indent-list
         }
       })
     }),
-    createIndentListPlugin({
-      inject: {
-        props: {
-          validTypes: [
-            ELEMENT_PARAGRAPH,
-            ELEMENT_H1
-          ],
-        },
-      },
-    }),
+    createIndentListPlugin(),
     createIndentPlugin({
       inject: {
         props: {
