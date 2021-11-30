@@ -11184,6 +11184,11 @@ jotai@^1.4.0:
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.4.0.tgz#0f350f65a968dd3ee2f9ad3618a3af635cd10220"
   integrity sha512-CUB+A3N+WjtimZvtDnMXvVRognzKh86KB3rKnQlbRvpnmGYU+O9aOZMWSgTaxstXc4Y5GYy02LBEjiv4Rs8MAg==
 
+jotai@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.npmjs.org/jotai/-/jotai-1.4.2.tgz#0747581840c82ec0862d4c15ee0f7d59246ed46e"
+  integrity sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==
+
 js-cookie@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/js-cookie/-/js-cookie-2.2.1.tgz#69e106dc5d5806894562902aa5baec3744e9b2b8"

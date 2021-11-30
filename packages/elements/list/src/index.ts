@@ -11,9 +11,10 @@ export * from './getListDeserialize';
 export * from './getListInsertBreak';
 export * from './getListInsertFragment';
 export * from './getListOnKeyDown';
-export * from './types';
 export * from './withList';
+
 export * from './normalizers/index';
 export * from './queries/index';
 export * from './todo-list/index';
 export * from './transforms/index';
+export * from './types/index';

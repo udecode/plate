@@ -1,5 +1,4 @@
-import { getNodes, getParent } from '@udecode/plate-common';
-import { EditorNodesOptions } from '@udecode/plate-common/src';
+import { EditorNodesOptions, getNodes, getParent } from '@udecode/plate-common';
 import { getPlatePluginType, PlateEditor } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../defaults';

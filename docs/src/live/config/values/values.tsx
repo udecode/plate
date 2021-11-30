@@ -699,6 +699,44 @@ const list: any = (
   </fragment>
 );
 
+const listExtension: any = (
+  <fragment>
+    <hh2>✍️ List Extensdions</hh2>
+    <hp>
+      <htext />
+    </hp>
+    <hol licStyles={{ 1: { italic: true } }}>
+      <hli>
+        <hlic>
+          <htext>Numbered list</htext>
+        </hlic>
+        <hol>
+          <hli>
+            <hlic>{faker.lorem.paragraph()}</hlic>
+            <hol>
+              <hli>
+                <hlic>{faker.lorem.paragraph()}</hlic>
+              </hli>
+            </hol>
+          </hli>
+          <hli>
+            <hlic>{faker.lorem.paragraph()}</hlic>
+            <hol>
+              <hli>
+                <hlic>{faker.lorem.paragraph()}</hlic>
+              </hli>
+            </hol>
+          </hli>
+        </hol>
+      </hli>
+      <hli>
+        <hlic>{faker.lorem.paragraph()}</hlic>
+      </hli>
+    </hol>
+    <hp>Try it out for yourself!</hp>
+  </fragment>
+);
+
 const findReplace: any = (
   <fragment>
     <hp>
@@ -959,6 +997,7 @@ export const VALUES: Record<string, any> = {
   lineHeight,
   link,
   list,
+  listExtension,
   marks,
   mediaEmbed,
   mentions,

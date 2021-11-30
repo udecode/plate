@@ -14,6 +14,8 @@ import {
   ELEMENT_H6,
   ELEMENT_HR,
   ELEMENT_IMAGE,
+  ELEMENT_LIC,
+  ELEMENT_OL,
   ELEMENT_PARAGRAPH,
   ELEMENT_TD,
   ELEMENT_TODO_LI,
@@ -24,10 +26,12 @@ import {
   KEYS_HEADING,
   LineHeightPluginOptions,
   NormalizeTypesPluginOptions,
+  OrderedListItemContentElement,
   PlatePluginOptions,
   ResetBlockTypePluginOptions,
   SelectOnBackspacePluginOptions,
   SoftBreakPluginOptions,
+  StyledElement,
   TrailingBlockPluginOptions,
   withProps,
 } from '@udecode/plate';
@@ -57,6 +61,7 @@ export const CONFIG: {
   selectOnBackspace: SelectOnBackspacePluginOptions;
   softBreak: SoftBreakPluginOptions;
   trailingBlock: TrailingBlockPluginOptions;
+  listComponents: Record<string, any>;
 } = {
   editableProps: {
     autoFocus: process.env.NODE_ENV !== 'production',
@@ -80,6 +85,31 @@ export const CONFIG: {
         ],
       },
     }),
+  }),
+
+  listComponents: createPlateComponents({
+    [ELEMENT_CODE_BLOCK]: withProps(CodeBlockElement, {
+      styles: {
+        root: [
+          css`
+            background-color: #111827;
+            code {
+              color: white;
+            }
+          `,
+        ],
+      },
+    }),
+    [ELEMENT_OL]: withProps(StyledElement, {
+      as: 'ol',
+      styles: {
+        root: {
+          listStyle: 'none',
+          paddingInlineStart: '24px',
+        },
+      },
+    }),
+    [ELEMENT_LIC]: withProps(OrderedListItemContentElement, {}),
   }),
 
   align: {

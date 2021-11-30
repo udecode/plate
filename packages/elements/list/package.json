@@ -34,14 +34,15 @@
   "dependencies": {
     "@udecode/plate-common": "7.0.2",
     "@udecode/plate-core": "7.0.2",
-    "@udecode/plate-reset-node": "7.0.2"
+    "@udecode/plate-reset-node": "7.0.2",
+    "jotai": "^1.4.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.66.1"
+    "slate-react": ">=0.67.0"
   },
   "publishConfig": {
     "access": "public"
