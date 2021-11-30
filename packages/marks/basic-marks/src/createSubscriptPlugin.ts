@@ -5,6 +5,7 @@ import {
 } from '@udecode/plate-core';
 
 export const MARK_SUBSCRIPT = 'subscript';
+const MARK_SUPERSCRIPT = 'superscript';
 
 /**
  * Enables support for subscript formatting.
