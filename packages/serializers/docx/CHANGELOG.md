@@ -1,5 +1,13 @@
 # @udecode/plate-docx-serializer
 
+## 8.2.0
+
+### Minor Changes
+
+- [#1252](https://github.com/udecode/plate/pull/1252) by [@zbeyens](https://github.com/zbeyens) –
+  - support text align for p, h1, h2, h3
+  - support for list h1, h2, h3
+
 ## 8.1.0
 
 ### Patch Changes
