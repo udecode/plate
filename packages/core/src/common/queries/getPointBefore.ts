@@ -3,6 +3,7 @@ import castArray from 'lodash/castArray';
 import map from 'lodash/map';
 import { Editor, Location, Path, Point } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
+import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {
   distance?: number | undefined;
@@ -35,11 +36,6 @@ export interface PointBeforeOptions extends BeforeOptions {
    * If false, lookup until the first invalid character.
    */
   skipInvalid?: boolean;
-
-  /**
-   * Allow lookup across multiple node paths.
-   */
-  multiPaths?: boolean;
 }
 
 /**
@@ -78,10 +74,14 @@ export const getPointBefore = (
       // not found
       if (!beforePoint) return;
 
-      // different path
+      // stop looking outside of current block
       if (
-        !options.multiPaths &&
-        !Path.equals(beforePoint.path, previousBeforePoint.path)
+        isRangeAcrossBlocks(editor, {
+          at: {
+            anchor: beforePoint,
+            focus: previousBeforePoint,
+          },
+        })
       ) {
         return;
       }
