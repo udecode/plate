@@ -16,7 +16,7 @@ type ColorPickerProps = {
   clearColor: () => void;
 };
 
-export const ColorPicker = ({
+const ColorPickerInternal = ({
   color,
   colors,
   customColors,
@@ -55,3 +55,11 @@ export const ColorPicker = ({
     </div>
   );
 };
+
+export const ColorPicker = React.memo(
+  ColorPickerInternal,
+  (prev, next) =>
+    prev.color === next.color &&
+    prev.colors === next.colors &&
+    prev.customColors === next.customColors
+);
