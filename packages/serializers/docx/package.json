@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-docx-serializer",
-  "version": "8.2.0",
+  "version": "8.2.1",
   "description": "Docx serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@udecode/plate-alignment": "8.1.0",
-    "@udecode/plate-basic-marks": "8.1.0",
+    "@udecode/plate-basic-marks": "8.2.1",
     "@udecode/plate-block-quote": "8.1.0",
     "@udecode/plate-code-block": "8.1.0",
     "@udecode/plate-core": "8.1.0",

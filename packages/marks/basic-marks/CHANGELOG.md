@@ -1,5 +1,14 @@
 # @udecode/plate-basic-marks
 
+## 8.2.1
+
+### Patch Changes
+
+- [#1253](https://github.com/udecode/plate/pull/1253) by [@thefinnomenon](https://github.com/thefinnomenon) –
+  - fix: The Subscript and Superscript plugins weren't clearing the other one on hotkey use. There was a typo in each one where they cleared themselves instead of the other
+  - swap hotkeys: `mod+,` for subscript and `mod+.` for superscript
+  - updated the hotkey for strikethrough to match Google Docs `mod+shift+x`. The existing one `mod+shift+s` would cause a refresh in Chrome.
+
 ## 8.1.0
 
 ### Minor Changes
