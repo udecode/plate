@@ -26,7 +26,6 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
       matchString: ' ',
       skipInvalid: true,
       afterMatch: true,
-      multiPaths: false,
     },
     hotkey: 'mod+k',
   },
