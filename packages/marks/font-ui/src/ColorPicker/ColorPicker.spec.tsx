@@ -6,6 +6,8 @@ import {
   DEFAULT_CUSTOM_COLORS,
 } from '../ColorPickerToolbarDropdown/constants';
 import { ColorPicker } from './ColorPicker';
+import * as ColorPickerStyles from './ColorPicker.styles';
+import { ColorType } from './ColorType';
 
 describe('ColorPicker', () => {
   let updateColor: jest.Mock;
@@ -14,11 +16,19 @@ describe('ColorPicker', () => {
 
   let rerender: RenderResult['rerender'];
 
-  const Component = ({ color }: { color?: string }) => (
+  const Component = ({
+    color,
+    colors,
+    customColors,
+  }: {
+    color?: string;
+    colors?: ColorType[];
+    customColors?: ColorType[];
+  }) => (
     <ColorPicker
       color={color}
-      colors={DEFAULT_COLORS}
-      customColors={DEFAULT_CUSTOM_COLORS}
+      colors={colors || DEFAULT_COLORS}
+      customColors={customColors || DEFAULT_CUSTOM_COLORS}
       selectedIcon={<div data-testid="SelectedIcon">Selected</div>}
       updateColor={updateColor}
       updateCustomColor={updateCustomColor}
@@ -67,6 +77,52 @@ describe('ColorPicker', () => {
       userEvents.click(clearButton);
 
       expect(clearColor).toHaveBeenCalled();
+    });
+  });
+
+  describe('memo color picker', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+    it('should render once with same color, colors, and customColor', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" />);
+      container.rerender(<Component color="#FFFFFF" />);
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(1);
+    });
+    it('should render twice with different color', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" />);
+      container.rerender(<Component color="#FFFFFE" />);
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(2);
+    });
+    it('should render twice with different memory of colors', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" />);
+      container.rerender(
+        <Component color="#FFFFFF" colors={[...DEFAULT_COLORS]} />
+      );
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(2);
+    });
+    it('should render twice with different memory of customColors', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" />);
+      container.rerender(
+        <Component color="#FFFFFF" customColors={[...DEFAULT_CUSTOM_COLORS]} />
+      );
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(2);
     });
   });
 });
