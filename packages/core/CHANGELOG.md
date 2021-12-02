@@ -1,5 +1,20 @@
 # @udecode/plate-core
 
+## 8.3.0
+
+### Patch Changes
+
+- [#1266](https://github.com/udecode/plate/pull/1266) by [@zbeyens](https://github.com/zbeyens) –
+
+  - HTML deserializer:
+    - parent attributes does not override child leaf attributes anymore. For example, if a span has fontSize style = 16px, and its child span has fontSize style = 18px, it's now deserializing to 18px instead of 16px.
+  - Inject props:
+    - does not inject props when node value = `inject.props.defaultNodeValue` anymore.
+
+- [#1257](https://github.com/udecode/plate/pull/1257) by [@tjramage](https://github.com/tjramage) –
+  - fix link upsert on space
+  - `getPointBefore`: will return early if the point before is in another block. Removed `multiPaths` option as it's not used anymore.
+
 ## 8.1.0
 
 ### Minor Changes

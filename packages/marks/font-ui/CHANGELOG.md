@@ -1,5 +1,11 @@
 # @udecode/plate-font-ui
 
+## 8.3.0
+
+### Patch Changes
+
+- [#1261](https://github.com/udecode/plate/pull/1261) by [@ccsrvs](https://github.com/ccsrvs) – Added React Memo to ColorPicker to reduce unneeded rerenders leading to sluggish performance
+
 ## 8.1.0
 
 ## 8.0.0

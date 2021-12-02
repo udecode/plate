@@ -1,5 +1,15 @@
 # @udecode/plate-docx-serializer
 
+## 8.3.0
+
+### Minor Changes
+
+- [#1266](https://github.com/udecode/plate/pull/1266) by [@zbeyens](https://github.com/zbeyens) –
+  - deserialize line-height in paragraph and headers
+  - deserialize tabs
+  - deserialize block marks: copy block marks to a new span child
+  - fix a juice bug: juice ignores the first class when there is <!-- just after style, so we remove it
+
 ## 8.2.1
 
 ## 8.2.0

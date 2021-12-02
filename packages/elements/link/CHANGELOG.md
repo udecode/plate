@@ -1,5 +1,13 @@
 # @udecode/plate-link
 
+## 8.3.0
+
+### Patch Changes
+
+- [#1257](https://github.com/udecode/plate/pull/1257) by [@tjramage](https://github.com/tjramage) –
+  - fix link upsert on space
+  - `getPointBefore`: will return early if the point before is in another block. Removed `multiPaths` option as it's not used anymore.
+
 ## 8.1.0
 
 ## 8.0.0
