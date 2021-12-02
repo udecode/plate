@@ -11,8 +11,8 @@ describe(getDocxTestName(name), () => {
     filename: name,
     expected: (
       <editor>
-        <hp>Some text separated{`\t`}by a tab.</hp>
-        <hp>{`\t`}Tab-indented text.</hp>
+        <hp lineHeight="115%">Some text separated{`\t`}by a tab.</hp>
+        <hp lineHeight="115%">{`\t`}Tab-indented text.</hp>
       </editor>
     ),
   });

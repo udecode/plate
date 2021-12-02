@@ -11,9 +11,11 @@ describe(getDocxTestName(name), () => {
     filename: name,
     expected: (
       <editor>
-        <hp indent={1}>First bullet point created and then deleted</hp>
-        <hp>A normal paragraph</hp>
-        <hp indent={1}>
+        <hp indent={1} lineHeight="115%">
+          First bullet point created and then deleted
+        </hp>
+        <hp lineHeight="115%">A normal paragraph</hp>
+        <hp indent={1} lineHeight="115%">
           First bullet point created and then deleted after the normal paragraph
         </hp>
       </editor>

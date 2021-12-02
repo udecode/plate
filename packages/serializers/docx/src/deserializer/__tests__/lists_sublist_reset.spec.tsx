@@ -12,19 +12,19 @@ describe(getDocxTestName(name), () => {
     filename: name,
     expected: (
       <editor>
-        <hp indent={1} listStyleType="decimal">
+        <hp indent={1} listStyleType="decimal" lineHeight="107%">
           Head 1
         </hp>
-        <hp indent={2} listStyleType="decimal">
+        <hp indent={2} listStyleType="decimal" lineHeight="107%">
           Head 1.1
         </hp>
-        <hp indent={2} listStyleType="decimal" listStart={2}>
+        <hp indent={2} listStyleType="decimal" listStart={2} lineHeight="107%">
           Head 1.2
         </hp>
-        <hp indent={1} listStyleType="decimal" listStart={2}>
+        <hp indent={1} listStyleType="decimal" listStart={2} lineHeight="107%">
           Head 2
         </hp>
-        <hp indent={2} listStyleType="decimal">
+        <hp indent={2} listStyleType="decimal" lineHeight="107%">
           Head 2.1
         </hp>
       </editor>

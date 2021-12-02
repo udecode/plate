@@ -11,10 +11,10 @@ describe(getDocxTestName(name), () => {
     filename: name,
     expected: (
       <editor>
-        <hp indent={1} listStyleType="decimal">
+        <hp indent={1} listStyleType="decimal" lineHeight="115%">
           One
         </hp>
-        <hp indent={1}>
+        <hp indent={1} lineHeight="115%">
           Two{'\n'}
           {'\n'}Three
         </hp>
