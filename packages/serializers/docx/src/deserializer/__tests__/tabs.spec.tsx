@@ -4,20 +4,15 @@ import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
 
-const name = 'dummy_item_after_list_item';
+const name = 'tabs';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     filename: name,
     expected: (
       <editor>
-        <hp indent={1} listStyleType="decimal" lineHeight="115%">
-          One
-        </hp>
-        <hp indent={1} lineHeight="115%">
-          Two{'\n'}
-          {'\n'}Three
-        </hp>
+        <hp lineHeight="115%">Some text separated{`\t`}by a tab.</hp>
+        <hp lineHeight="115%">{`\t`}Tab-indented text.</hp>
       </editor>
     ),
   });

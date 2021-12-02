@@ -25,10 +25,14 @@ import { isDocxList } from '../docx-cleaner/utils/isDocxList';
 export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
 
 const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
-  const node = { type };
+  const node: any = { type };
 
   if (element.style.textAlign) {
     node[KEY_ALIGN] = element.style.textAlign;
+  }
+
+  if (element.style.lineHeight) {
+    node.lineHeight = element.style.lineHeight;
   }
 
   if (isDocxList(element)) {

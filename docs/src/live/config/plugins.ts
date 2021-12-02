@@ -1,20 +1,49 @@
 import {
   createBasicElementsPlugin,
-  createBasicMarksPlugin,
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodeBlockPlugin,
+  createCodePlugin,
+  createHeadingPlugin,
   createImagePlugin,
+  createItalicPlugin,
+  createParagraphPlugin,
   createPlateUI,
   createPlugins,
   createSelectOnBackspacePlugin,
+  createStrikethroughPlugin,
+  createSubscriptPlugin,
+  createSuperscriptPlugin,
+  createUnderlinePlugin,
 } from '@udecode/plate';
 import { CONFIG } from './config';
 
-const basicElements = createPlugins([createBasicElementsPlugin()], {
-  components: createPlateUI(),
-});
+const basicElements = createPlugins(
+  [
+    createBlockquotePlugin(),
+    createCodeBlockPlugin(),
+    createHeadingPlugin(),
+    createParagraphPlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 
-const basicMarks = createPlugins([createBasicMarksPlugin()], {
-  components: createPlateUI(),
-});
+const basicMarks = createPlugins(
+  [
+    createBoldPlugin(),
+    createCodePlugin(),
+    createItalicPlugin(),
+    createStrikethroughPlugin(),
+    createSubscriptPlugin(),
+    createSuperscriptPlugin(),
+    createUnderlinePlugin(),
+  ],
+  {
+    components: createPlateUI(),
+  }
+);
 
 export const PLUGINS = {
   basicElements,

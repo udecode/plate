@@ -123,7 +123,6 @@ export const CONFIG: Config = {
     inject: {
       props: {
         defaultNodeValue: 1.5,
-        validNodeValues: [1, 1.2, 1.5, 2, 3],
         validTypes: [
           ELEMENT_PARAGRAPH,
           ELEMENT_H1,

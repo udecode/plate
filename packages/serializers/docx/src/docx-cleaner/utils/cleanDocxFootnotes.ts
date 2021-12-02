@@ -8,7 +8,10 @@ const extractFootnoteNumber = (footnote: Element): string => {
   return (footnote.textContent || '').trim().replace(/[[\]]/g, '');
 };
 
-export const cleanHtmlFootnotes = (rootNode: Node): void => {
+/**
+ * Replace docx footnotes with sup element.
+ */
+export const cleanDocxFootnotes = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (isDocxFootnote(element)) {
       const footnoteReplacement = document.createElement('sup');

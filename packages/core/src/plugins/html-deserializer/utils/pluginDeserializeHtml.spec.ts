@@ -106,7 +106,7 @@ describe('when element is strong and validNodeName is strong', () => {
             validNodeName: 'STRONG',
           },
         }),
-        { element: el, isLeaf: true }
+        { element: el, deserializeLeaf: true }
       )?.node
     ).toEqual({ [MARK_BOLD]: true });
   });

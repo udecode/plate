@@ -419,7 +419,7 @@ const mentions: any = (
 
 const pasteHtml: any = (
   <fragment>
-    <hh1>🍪 Deserialize HTML</hh1>
+    <hh1>Deserialize HTML</hh1>
     <hp>
       By default, pasting content into a Slate editor will use the clipboard's{' '}
       <htext code>'text/plain'</htext> data. That's okay for some use cases, but
@@ -433,32 +433,40 @@ const pasteHtml: any = (
       content (not the source code) from another site into this editor and it's
       formatting should be preserved.
     </hp>
+    <hp>
+      <htext />
+    </hp>
+  </fragment>
+);
+
+const pasteDocx: any = (
+  <fragment>
+    <hh1>Deserialize Docx</hh1>
+    <hp>Copy and paste Docx content from Microsoft Word.</hp>
+    <hp>
+      <htext />
+    </hp>
   </fragment>
 );
 
 const pasteMd: any = (
   <fragment>
-    <hh1>🍩 Deserialize Markdown</hh1>
+    <hh1>Deserialize Markdown</hh1>
     <hp>
-      By default, pasting content into a Slate editor will use the clipboard's{' '}
-      <htext code>'text/plain'</htext> data. That's okay for some use cases, but
-      sometimes you want users to be able to paste in content and have it
-      maintain its formatting. To do this, your editor needs to handle{' '}
-      <htext code>'text/html'</htext> data.
-    </hp>
-    <hp>This is an example of doing exactly that!</hp>
-    <hp>
-      Try it out for yourself! Copy and paste Markdown content from{' '}
+      Copy and paste Markdown content from{' '}
       <ha url="https://markdown-it.github.io/">
         https://markdown-it.github.io/
       </ha>
+    </hp>
+    <hp>
+      <htext />
     </hp>
   </fragment>
 );
 
 const pasteAst: any = (
   <fragment>
-    <hh2>✍️ Slate AST</hh2>
+    <hh2>Slate AST</hh2>
     <hul>
       <hli>
         <hlic>Bulleted list</hlic>
@@ -503,9 +511,10 @@ const plainText: any = (
 
 const pasteCsv: any = (
   <fragment>
+    <hh1>Deserialize CSV</hh1>
+    <hp>Copy and paste CSV content into a table.</hp>
     <hp>
-      This example shows how pasting from csv can get parsed into a table. Grab
-      a CSV source and paste it below.
+      <htext />
     </hp>
   </fragment>
 );
@@ -943,6 +952,7 @@ const playground: any = getNodesWithRandomId([
   ...softBreak,
   ...exitBreak,
   ...pasteHtml,
+  ...pasteDocx,
   ...pasteMd,
   ...pasteCsv,
   ...pasteAst,
@@ -982,6 +992,7 @@ export const VALUES: Record<string, any> = {
   pasteAst,
   pasteCsv,
   pasteHtml,
+  pasteDocx,
   pasteMd,
   placeholder,
   plainText,

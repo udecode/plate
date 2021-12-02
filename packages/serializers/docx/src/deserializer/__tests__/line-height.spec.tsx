@@ -4,20 +4,16 @@ import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;
 
-const name = 'dummy_item_after_list_item';
+const name = 'line-height';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     filename: name,
     expected: (
       <editor>
-        <hp indent={1} listStyleType="decimal" lineHeight="115%">
-          One
-        </hp>
-        <hp indent={1} lineHeight="115%">
-          Two{'\n'}
-          {'\n'}Three
-        </hp>
+        <hh1 lineHeight="200%">Line-height 2.0</hh1>
+        <hp lineHeight="150%">Line-height 1.5</hp>
+        <hp lineHeight="150%">Line-height 1.5</hp>
       </editor>
     ),
   });

@@ -60,6 +60,7 @@ export const pluginInjectProps = (
     transformNodeValue,
     transformStyle,
     validNodeValues,
+    defaultNodeValue,
   } = props;
 
   if (validTypes && node.type && !validTypes.includes(node.type)) {
@@ -69,7 +70,11 @@ export const pluginInjectProps = (
   const nodeValue = node[nodeKey!];
 
   // early return if there is now reason to add styles
-  if (!nodeValue || (validNodeValues && !validNodeValues.includes(nodeValue))) {
+  if (
+    !nodeValue ||
+    (validNodeValues && !validNodeValues.includes(nodeValue)) ||
+    nodeValue === defaultNodeValue
+  ) {
     return;
   }
 

@@ -33,7 +33,18 @@ export const htmlElementToLeaf = <T = {}>(
         }
         arr.push(child);
       } else {
-        arr.push(jsx('text', node, child));
+        const attributes = { ...node };
+
+        // attributes should not override child attributes
+        if (child.text) {
+          Object.keys(attributes).forEach((key) => {
+            if (attributes[key] && child[key]) {
+              attributes[key] = child[key];
+            }
+          });
+        }
+
+        arr.push(jsx('text', attributes, child));
       }
 
       return arr;

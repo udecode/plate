@@ -1,6 +1,9 @@
-import { changeTagName } from './changeTagName';
+import { replaceTagName } from './replaceTagName';
 import { traverseHtmlElements } from './traverseHtmlElements';
 
+/**
+ * Replace p.MsoQuote elements with blockquote.
+ */
 export const cleanDocxQuotes = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (
@@ -8,7 +11,7 @@ export const cleanDocxQuotes = (rootNode: Node): void => {
       element.tagName === 'P' &&
       element.classList.contains('MsoQuote')
     ) {
-      changeTagName(element, 'blockquote');
+      replaceTagName(element, 'blockquote');
     }
 
     return true;

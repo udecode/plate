@@ -2,6 +2,9 @@ import { isHtmlFragmentHref } from './isHtmlFragmentHref';
 import { traverseHtmlElements } from './traverseHtmlElements';
 import { unwrapHtmlElement } from './unwrapHtmlElement';
 
+/**
+ * Remove fragment hrefs and spans without inner text.
+ */
 export const cleanHtmlLinkElements = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (element.tagName !== 'A') {

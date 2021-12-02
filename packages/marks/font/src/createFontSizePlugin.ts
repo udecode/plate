@@ -11,6 +11,7 @@ export const createFontSizePlugin = createPluginFactory({
   },
   then: (editor, { type }) => ({
     deserializeHtml: {
+      isLeaf: true,
       getNode: (element) => ({ [type]: element.style.fontSize }),
       validStyle: {
         fontSize: '*',

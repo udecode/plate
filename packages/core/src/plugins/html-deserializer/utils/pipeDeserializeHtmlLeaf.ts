@@ -11,7 +11,7 @@ export const pipeDeserializeHtmlLeaf = <T = {}>(
   editor.plugins.reverse().forEach((plugin) => {
     const deserialized = pluginDeserializeHtml(plugin, {
       element,
-      isLeaf: true,
+      deserializeLeaf: true,
     });
     if (!deserialized) return;
 

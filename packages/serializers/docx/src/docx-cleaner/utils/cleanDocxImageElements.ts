@@ -4,7 +4,10 @@ import { getVShapeSpid } from './getVShapeSpid';
 import { hexToBase64 } from './hexToBase64';
 import { traverseHtmlElements } from './traverseHtmlElements';
 
-export const cleanHtmlImageElements = (
+/**
+ * Clean docx image elements.
+ */
+export const cleanDocxImageElements = (
   document: Document,
   rtf: string,
   rootNode: Node

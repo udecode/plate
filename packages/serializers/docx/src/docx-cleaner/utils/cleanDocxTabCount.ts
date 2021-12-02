@@ -1,5 +1,8 @@
-import { generateSpaces } from './generateSpaces';
+import { generateTabs } from './generateSpaces';
 
+/**
+ * Replace element with tabs if its style starts with 'mso-tab-count'.
+ */
 export const cleanDocxTabCount = (element: Element): void => {
   const styleAttribute = element.getAttribute('style') || '';
 
@@ -9,7 +12,7 @@ export const cleanDocxTabCount = (element: Element): void => {
 
   const [, countString] = styleAttribute.split(':');
   const count = parseInt(countString, 10);
-  const replacementNode = document.createTextNode(generateSpaces(count));
+  const replacementNode = document.createTextNode(generateTabs(count));
 
   if (element.parentNode) {
     element.parentNode.replaceChild(replacementNode, element);

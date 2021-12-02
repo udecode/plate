@@ -1,17 +1,23 @@
 /** @jsx jsx */
+import { createAlignPlugin } from '@udecode/plate-alignment';
 import {
   createPlateEditor,
   OverrideByKey,
   PlatePlugin,
 } from '@udecode/plate-core';
+import { createImagePlugin } from '@udecode/plate-image';
+import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
+import { CONFIG } from '../../../../../../docs/src/live/config/config';
 import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementPlugins';
+import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementsPlugin';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
 } from '../../../../../elements/heading/src/constants';
+import { createHorizontalRulePlugin } from '../../../../../elements/horizontal-rule/src/createHorizontalRulePlugin';
+import { createLineHeightPlugin } from '../../../../../elements/line-height/src/createLineHeightPlugin';
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
 import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
@@ -52,6 +58,12 @@ export const testDocxDeserializer = ({
       editor: input,
       plugins: [
         ...plugins,
+        createImagePlugin(),
+        createHorizontalRulePlugin(),
+        createLineHeightPlugin(CONFIG.lineHeight),
+        createLinkPlugin(),
+        createTablePlugin(),
+        createAlignPlugin(CONFIG.align),
         createIndentPlugin({
           inject: {
             props: {
