@@ -1,5 +1,13 @@
 # @udecode/plate-font
 
+## 8.3.0
+
+### Minor Changes
+
+- [#1266](https://github.com/udecode/plate/pull/1266) by [@zbeyens](https://github.com/zbeyens) –
+  - font plugins are now deserializable to HTML
+  - `defaultNodeValue` of font color plugin is now `'black'`
+
 ## 8.1.0
 
 ## 8.0.0

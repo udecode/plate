@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 8.3.0
+
 ## 8.2.1
 
 ### Patch Changes
