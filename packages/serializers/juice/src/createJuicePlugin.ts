@@ -11,7 +11,10 @@ export const createJuicePlugin = createPluginFactory({
         editor: {
           insertData: {
             transformData: (data) => {
-              return juice(data);
+              // juice ignores the first class when there is <!-- just after <style>, so we remove it
+              let newData = data.replace(/<style>(\s*?)<!--/g, '<style>');
+              newData = juice(newData);
+              return newData;
             },
           },
         },

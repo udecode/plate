@@ -1,13 +1,15 @@
+import { copyBlockMarksToSpanChild } from './utils/copyBlockMarksToSpanChild';
 import {
-  cleanDocxListElementsToIndentList,
+  cleanDocxBrComments,
+  cleanDocxEmptyParagraphs,
+  cleanDocxFootnotes,
+  cleanDocxImageElements,
+  cleanDocxListElements,
   cleanDocxQuotes,
   cleanDocxSpans,
   cleanHtmlBrElements,
   cleanHtmlEmptyElements,
-  cleanHtmlEmptyParagraphs,
   cleanHtmlFontElements,
-  cleanHtmlFootnotes,
-  cleanHtmlImageElements,
   cleanHtmlLinkElements,
   cleanHtmlTextNodes,
   isDocxContent,
@@ -26,17 +28,19 @@ export const cleanDocx = (html: string, rtf: string): string => {
     return html;
   }
 
-  cleanHtmlFootnotes(body);
-  cleanHtmlImageElements(document, rtf, body);
+  cleanDocxFootnotes(body);
+  cleanDocxImageElements(document, rtf, body);
   cleanHtmlEmptyElements(body);
-  cleanHtmlEmptyParagraphs(body);
+  cleanDocxEmptyParagraphs(body);
   cleanDocxQuotes(body);
   cleanDocxSpans(body);
   cleanHtmlTextNodes(body);
+  cleanDocxBrComments(body);
   cleanHtmlBrElements(body);
   cleanHtmlLinkElements(body);
   cleanHtmlFontElements(body);
-  cleanDocxListElementsToIndentList(body);
+  cleanDocxListElements(body);
+  copyBlockMarksToSpanChild(body);
 
   return postCleanHtml(body.innerHTML);
 };

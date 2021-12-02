@@ -1,6 +1,9 @@
 import { isHtmlComment } from '@udecode/plate-core';
 import { traverseHtmlComments } from './traverseHtmlComments';
 
+/**
+ * Removes HTML nodes between HTML comments.
+ */
 export const removeHtmlNodesBetweenComments = (
   rootNode: Node,
   start: string,

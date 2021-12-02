@@ -10,7 +10,10 @@ const isHtmlElementEmpty = (element: Element): boolean =>
   (isHtmlOpEmpty(element.firstElementChild) ||
     isHtmlElementEmpty(element.firstElementChild));
 
-export const cleanHtmlEmptyParagraphs = (rootNode: Node): void => {
+/**
+ * Remove paragraph innerHTML if its child is 'O:P' with NO_BREAK_SPACE.
+ */
+export const cleanDocxEmptyParagraphs = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (element.tagName === 'P' && isHtmlElementEmpty(element)) {
       element.innerHTML = '';

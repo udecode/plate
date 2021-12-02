@@ -9,7 +9,10 @@ import { Nullable } from '../../../types/utility/Nullable';
  */
 export const pluginDeserializeHtml = <T = {}, P = {}>(
   plugin: WithPlatePlugin<T, P>,
-  { element: el, isLeaf }: { element: HTMLElement; isLeaf?: boolean }
+  {
+    element: el,
+    deserializeLeaf,
+  }: { element: HTMLElement; deserializeLeaf?: boolean }
 ): (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined => {
   const {
     deserializeHtml: _deserializeHtml,
@@ -32,18 +35,19 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
       validAttribute,
       attributeNames,
       query,
-      isLeaf: _isLeaf,
-      isElement,
+      isLeaf: isLeafRule,
+      isElement: isElementRule,
     } = deserializeHtml;
     let { getNode } = deserializeHtml;
 
-    // element
-    if (!isLeaf && !(isElementRoot || isElement)) {
+    const isElement = isElementRule || isElementRoot;
+    const isLeaf = isLeafRule || isLeafRoot;
+
+    if (!deserializeLeaf && !isElement) {
       return;
     }
 
-    // leaf
-    if (isLeaf && !(isLeafRoot || _isLeaf)) {
+    if (deserializeLeaf && !isLeaf) {
       return;
     }
 
@@ -52,7 +56,7 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
     }
 
     if (!getNode) {
-      if (isElement || isElementRoot) {
+      if (isElement) {
         getNode = () => ({ type });
       } else if (isLeaf) {
         getNode = () => ({ [type]: true });
@@ -85,6 +89,13 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
 
         // Ignore if el style value is falsy (for value *)
         if (value === '*' && !el.style[key]) return false;
+
+        const defaultNodeValue = plugin.inject.props?.defaultNodeValue;
+
+        // Ignore if the style value = plugin.inject.props.defaultNodeValue
+        if (defaultNodeValue && defaultNodeValue === el.style[key]) {
+          return false;
+        }
       }
     }
 
@@ -105,6 +116,7 @@ export const pluginDeserializeHtml = <T = {}, P = {}>(
     }
 
     node = getNode(el);
+
     if (!node) return;
 
     if (attributeNames) {

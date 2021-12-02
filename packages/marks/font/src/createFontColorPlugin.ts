@@ -7,6 +7,7 @@ export const createFontColorPlugin = createPluginFactory({
   inject: {
     props: {
       nodeKey: MARK_COLOR,
+      defaultNodeValue: 'black',
     },
   },
   then: (editor, { type }) => ({

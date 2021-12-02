@@ -1,4 +1,8 @@
-export const changeTagName = (element: Element, tagName: string): Element => {
+/**
+ * Replace `element` tag name by `tagName`.
+ * Attributes, innerHTML and parent relationship is kept.
+ */
+export const replaceTagName = (element: Element, tagName: string): Element => {
   const newElement = document.createElement(tagName);
 
   newElement.innerHTML = element.innerHTML;

@@ -12,7 +12,9 @@ describe(getDocxTestName(name), () => {
     filename: name,
     expected: (
       <editor>
-        <hh2>A table, with and without a header row</hh2>
+        <hh2>
+          <htext>A table, with and without a header row</htext>
+        </hh2>
         <hp>
           <htext />
         </hp>

@@ -1,4 +1,4 @@
-import { createBasicElementsPlugin } from '../../../elements/basic-elements/src/createBasicElementPlugins';
+import { createBasicElementsPlugin } from '../../../elements/basic-elements/src/createBasicElementsPlugin';
 import {
   createLinkPlugin,
   ELEMENT_LINK,

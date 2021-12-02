@@ -11,6 +11,7 @@ export const createFontFamilyPlugin = createPluginFactory({
   },
   then: (editor, { type }) => ({
     deserializeHtml: {
+      isLeaf: true,
       getNode: (element) => ({ [type]: element.style.fontFamily }),
       validStyle: {
         fontFamily: '*',
