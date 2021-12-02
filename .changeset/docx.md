@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-docx': minor
+'@udecode/plate-docx-serializer': minor
 ---
 
 - deserialize line-height in paragraph and headers
