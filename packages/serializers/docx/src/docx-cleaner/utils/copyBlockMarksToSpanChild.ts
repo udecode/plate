@@ -25,16 +25,6 @@ export const copyBlockMarksToSpanChild = (rootNode: Node) => {
         },
       } = el;
 
-      // console.log(el.className, {
-      //   backgroundColor,
-      //   color,
-      //   fontFamily,
-      //   fontSize,
-      //   fontStyle,
-      //   fontWeight,
-      //   textDecoration,
-      // });
-
       if (
         backgroundColor ||
         color ||
