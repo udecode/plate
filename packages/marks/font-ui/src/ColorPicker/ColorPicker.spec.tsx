@@ -20,10 +20,12 @@ describe('ColorPicker', () => {
     color,
     colors,
     customColors,
+    open,
   }: {
     color?: string;
     colors?: ColorType[];
     customColors?: ColorType[];
+    open?: boolean;
   }) => (
     <ColorPicker
       color={color}
@@ -33,6 +35,7 @@ describe('ColorPicker', () => {
       updateColor={updateColor}
       updateCustomColor={updateCustomColor}
       clearColor={clearColor}
+      open={open}
     />
   );
 
@@ -122,6 +125,24 @@ describe('ColorPicker', () => {
       container.rerender(
         <Component color="#FFFFFF" customColors={[...DEFAULT_CUSTOM_COLORS]} />
       );
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(2);
+    });
+    it('should render once with same open value', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" open />);
+      container.rerender(<Component color="#FFFFFF" open />);
+      expect(spyColorPickerStyles).toHaveBeenCalledTimes(1);
+    });
+    it('should render twice with different open value', () => {
+      const spyColorPickerStyles = jest.spyOn(
+        ColorPickerStyles,
+        'getColorPickerStyles'
+      );
+      const container = render(<Component color="#FFFFFF" open />);
+      container.rerender(<Component color="#FFFFFF" open={false} />);
       expect(spyColorPickerStyles).toHaveBeenCalledTimes(2);
     });
   });

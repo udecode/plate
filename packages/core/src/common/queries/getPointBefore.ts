@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 import castArray from 'lodash/castArray';
 import map from 'lodash/map';
-import { Editor, Location, Path, Point } from 'slate';
+import { Editor, Location, Point } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 

@@ -14,6 +14,7 @@ type ColorPickerProps = {
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   clearColor: () => void;
+  open?: boolean;
 };
 
 const ColorPickerInternal = ({
@@ -61,5 +62,6 @@ export const ColorPicker = React.memo(
   (prev, next) =>
     prev.color === next.color &&
     prev.colors === next.colors &&
-    prev.customColors === next.customColors
+    prev.customColors === next.customColors &&
+    prev.open === next.open
 );
