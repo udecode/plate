@@ -100,15 +100,17 @@ describe('ColorPickerToolbarDropdown', () => {
       });
 
       it('should open the color picker', () => {
+        expect(screen.getByTestId('ColorPicker')).not.toBeVisible();
+
         openToolbar();
 
         expect(screen.getByTestId('ColorPicker')).toBeVisible();
       });
 
-      it(`should apply ${target}`, () => {
-        openToolbar();
+      it(`should apply ${target}`, async () => {
+        await openToolbar();
 
-        applyColor();
+        await applyColor();
 
         expect(editor.children).toEqual([
           {
@@ -121,13 +123,17 @@ describe('ColorPickerToolbarDropdown', () => {
             ],
           },
         ]);
+
+        const value = await screen.findByTestId('ColorPicker');
+        expect(value).not.toBeVisible();
       });
 
-      it(`should clear selected ${target}`, () => {
-        openToolbar();
-        applyColor();
+      it(`should clear selected ${target}`, async () => {
+        await openToolbar();
+        await applyColor();
+        await openToolbar();
 
-        clearColor();
+        await clearColor();
 
         expect(editor.children).toEqual([
           {
@@ -139,6 +145,9 @@ describe('ColorPickerToolbarDropdown', () => {
             ],
           },
         ]);
+
+        const value = await screen.findByTestId('ColorPicker');
+        expect(value).not.toBeVisible();
       });
     });
   };

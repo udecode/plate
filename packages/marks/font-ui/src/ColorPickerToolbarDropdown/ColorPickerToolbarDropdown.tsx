@@ -113,6 +113,7 @@ export const ColorPickerToolbarDropdown = ({
         updateColor={updateColorAndClose}
         updateCustomColor={updateColor}
         clearColor={clearColor}
+        open={open}
       />
     </ToolbarDropdown>
   );
