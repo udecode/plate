@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "8.3.0",
+  "version": "8.3.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -55,7 +55,7 @@
     "@udecode/plate-find-replace": "8.3.0",
     "@udecode/plate-find-replace-ui": "8.3.0",
     "@udecode/plate-font": "8.3.0",
-    "@udecode/plate-font-ui": "8.3.0",
+    "@udecode/plate-font-ui": "8.3.1",
     "@udecode/plate-heading": "8.3.0",
     "@udecode/plate-highlight": "8.3.0",
     "@udecode/plate-horizontal-rule": "8.3.0",
