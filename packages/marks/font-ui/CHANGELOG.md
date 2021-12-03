@@ -1,5 +1,11 @@
 # @udecode/plate-font-ui
 
+## 8.3.1
+
+### Patch Changes
+
+- [#1272](https://github.com/udecode/plate/pull/1272) by [@ccsrvs](https://github.com/ccsrvs) – Fixes Issue #1271 - Color Picker does not close on first selection
+
 ## 8.3.0
 
 ### Patch Changes
