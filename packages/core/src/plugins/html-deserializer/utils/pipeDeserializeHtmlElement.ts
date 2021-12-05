@@ -10,7 +10,7 @@ export const pipeDeserializeHtmlElement = <T = {}>(
 ) => {
   let result: (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined;
 
-  editor.plugins.reverse().some((plugin) => {
+  [...editor.plugins].reverse().some((plugin) => {
     result = pluginDeserializeHtml(plugin, { element });
 
     return !!result;
