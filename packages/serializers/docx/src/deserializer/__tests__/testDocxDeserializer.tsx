@@ -81,6 +81,7 @@ export const testDocxDeserializer = ({
         }),
         createDeserializeDocxPlugin(),
         createJuicePlugin(),
+        createDeserializeDocxPlugin(),
       ],
       overrideByKey,
     });
