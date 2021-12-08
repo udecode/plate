@@ -1,18 +1,18 @@
 import {
   findNode,
   getPlugin,
-  isCollapsed,
   PlateEditor,
   PlatePlugin,
   TDescendant,
+  TElement,
 } from '@udecode/plate-core';
-import { Element, Node, NodeEntry, Path, Transforms } from 'slate';
+import { Editor, Element, Node, NodeEntry, Path, Transforms } from 'slate';
+import { ELEMENT_LI } from './createListPlugin';
 import {
   getListItemContentType,
   getListItemType,
   getListTypes,
-} from './queries/getListTypes';
-import { ELEMENT_LI } from './createListPlugin';
+} from './queries';
 
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
@@ -23,9 +23,6 @@ export const insertFragmentList = (editor: PlateEditor) => {
 
   const isListRoot = (node: TDescendant): boolean =>
     getListTypes(editor).includes(node.type);
-
-  const isList = (node: TDescendant): boolean =>
-    [...getListTypes(editor), listItemType].includes(node.type);
 
   const getFirstAncestorOfType = (
     root: TDescendant,
@@ -95,34 +92,17 @@ export const insertFragmentList = (editor: PlateEditor) => {
    * Checks if the fragment only consists of a single LIC in which case it is considered the user's intention was to copy a text, not a list
    */
   const isSingleLic = (fragment: TDescendant[]) => {
-    if (fragment.length !== 1 || !isListRoot(fragment[0])) return false;
+    const isFragmentOnlyListRoot =
+      fragment.length === 1 && isListRoot(fragment[0]);
 
-    const root = fragment[0];
-    // start at root path
-    const queue: Path[] = [[]];
-    let foundLic = false;
-    while (queue.length) {
-      const path = queue.shift()!;
-      const node = Node.get(root, path);
-      if (!Element.isElement(node)) {
-        return false;
-      }
-
-      if (isList(node)) {
-        const children = Array.from(Node.children(root, path)).map(
-          ([, p]) => p
-        );
-        queue.push(...children);
-      } else if ((node as TDescendant).type !== listItemContentType) {
-        return false;
-      } else if (!foundLic) {
-        foundLic = true;
-      } else {
-        return false;
-      }
-    }
-
-    return true;
+    return (
+      isFragmentOnlyListRoot &&
+      [...Node.nodes({ children: fragment })]
+        .filter((entry): entry is NodeEntry<TElement> =>
+          Element.isElement(entry[0])
+        )
+        .filter(([node]) => node.type === listItemContentType).length === 1
+    );
   };
 
   const convertFragmentToList = (fragment: TDescendant[]) => {
@@ -163,9 +143,9 @@ export const insertFragmentList = (editor: PlateEditor) => {
       );
     }
 
-    const [, liPath] = liEntry!;
-    const [licNode, licPath] = licEntry!;
-    const isEmptyNode = isCollapsed(editor.selection) && !Node.string(licNode);
+    const [, liPath] = liEntry;
+    const [licNode, licPath] = licEntry;
+    const isEmptyNode = Editor.isEmpty(editor, licNode as TElement);
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
