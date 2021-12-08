@@ -657,6 +657,72 @@ describe('when pasting ul > 2 li fragment', () => {
 
       editorTest(input, fragment, expected);
     });
+
+    it('should insert nested lis with selection across multiple lics', () => {
+      const input = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>onetwo</hlic>
+            </hli>
+            <hli>
+              <hlic>three</hlic>
+            </hli>
+            <hli>
+              <hlic>four</hlic>
+            </hli>
+          </hul>
+          <selection>
+            <anchor path={[0, 0, 0, 0]} offset={3} />
+            <focus path={[0, 1, 0, 0]} offset={5} />
+          </selection>
+        </editor>
+      ) as any) as PlateEditor;
+
+      const fragment = ((
+        <fragment>
+          <hul>
+            <hli>
+              <hlic>five</hlic>
+            </hli>
+            <hli>
+              <hlic>six</hlic>
+              <hul>
+                <hli>
+                  <hlic>seven</hlic>
+                </hli>
+              </hul>
+            </hli>
+          </hul>
+        </fragment>
+      ) as any) as TDescendant[];
+
+      const expected = ((
+        <editor>
+          <hul>
+            <hli>
+              <hlic>one</hlic>
+            </hli>
+            <hli>
+              <hlic>five</hlic>
+            </hli>
+            <hli>
+              <hlic>six</hlic>
+              <hul>
+                <hli>
+                  <hlic>seven</hlic>
+                </hli>
+              </hul>
+            </hli>
+            <hli>
+              <hlic>four</hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any) as PlateEditor;
+
+      editorTest(input, fragment, expected);
+    });
   });
 
   describe('when selection not in li', () => {
