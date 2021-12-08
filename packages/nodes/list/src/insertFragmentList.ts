@@ -6,7 +6,7 @@ import {
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
-import { Editor, Element, Node, NodeEntry, Path, Transforms } from 'slate';
+import { Element, Node, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import {
   getListItemContentType,
@@ -112,7 +112,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
   ) => {
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;
-    const isEmptyNode = Editor.isEmpty(editor, licNode as TElement);
+    const isEmptyNode = !Node.string(licNode);
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
@@ -165,7 +165,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
   };
 
   return (fragment: TDescendant[]) => {
-    const liEntry = findNode(editor, {
+    let liEntry = findNode(editor, {
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -179,6 +179,12 @@ export const insertFragmentList = (editor: PlateEditor) => {
     // delete selection (if necessary) so that it can check if needs to insert into an empty block
     Transforms.insertFragment(editor, [{ text: '' }]);
 
+    // refetch to find the currently selected LI after the deletion above is performed
+    liEntry = findNode(editor, {
+      match: { type: listItemType },
+      mode: 'lowest',
+    });
+
     const licEntry = findNode(editor, {
       match: { type: listItemContentType },
       mode: 'lowest',
@@ -191,13 +197,14 @@ export const insertFragmentList = (editor: PlateEditor) => {
 
     const { textNode, listItemNodes } = getTextAndListItemNodes(
       fragment,
-      liEntry,
+      liEntry!,
       licEntry
     );
 
     Transforms.insertFragment(editor, [textNode]); // insert text if needed
 
-    const [, liPath] = liEntry;
+    const [, liPath] = liEntry!;
+
     return Transforms.insertNodes(editor, listItemNodes, {
       at: Path.next(liPath),
       select: true,
