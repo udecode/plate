@@ -105,57 +105,23 @@ export const insertFragmentList = (editor: PlateEditor) => {
     );
   };
 
-  const convertFragmentToList = (fragment: TDescendant[]) => {
-    const trimmedFragment = fragment.flatMap((node) => trimList(node));
-
-    if (trimmedFragment.every((node) => node.type === ELEMENT_LI)) {
-      return trimmedFragment;
-    }
-
-    return trimmedFragment.map((node) => ({
-      type: ELEMENT_LI,
-      children: node.children ?? [node],
-    }));
-  };
-
-  return (fragment: TDescendant[]) => {
-    const liEntry = findNode(editor, {
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
-    // not inserting into a list item, delegate to other plugins
-    if (!liEntry) {
-      return insertFragment(
-        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
-
-    // delete selection (if necessary) so that it can check if needs to insert into an empty block
-    Transforms.insertFragment(editor, [{ text: '' }]);
-
-    const licEntry = findNode(editor, {
-      match: { type: listItemContentType },
-      mode: 'lowest',
-    });
-    if (!licEntry) {
-      return insertFragment(
-        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
-
+  const getTextAndListItemNodes = (
+    fragment: TDescendant[],
+    liEntry: NodeEntry,
+    licEntry: NodeEntry
+  ) => {
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;
     const isEmptyNode = Editor.isEmpty(editor, licNode as TElement);
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
-
-    let nodes;
-    let firstText;
+    let textNode;
+    let listItemNodes;
     if (isListRoot(fragment[0])) {
       if (isSingleLic(fragment)) {
-        firstText = first;
-        nodes = rest;
+        textNode = first;
+        listItemNodes = rest;
       } else if (isEmptyNode) {
         // FIXME: is there a more direct way to set this?
         const li = Node.get(editor, liPath) as Element;
@@ -184,19 +150,55 @@ export const insertFragmentList = (editor: PlateEditor) => {
           }
         }
 
-        firstText = { text: '' };
-        nodes = rest;
+        textNode = { text: '' };
+        listItemNodes = rest;
       } else {
-        firstText = { text: '' };
-        nodes = [first, ...rest];
+        textNode = { text: '' };
+        listItemNodes = [first, ...rest];
       }
     } else {
-      firstText = first;
-      nodes = rest;
+      textNode = first;
+      listItemNodes = rest;
     }
-    Transforms.insertFragment(editor, [firstText]); // insert text if needed
 
-    return Transforms.insertNodes(editor, nodes, {
+    return { textNode, listItemNodes };
+  };
+
+  return (fragment: TDescendant[]) => {
+    const liEntry = findNode(editor, {
+      match: { type: listItemType },
+      mode: 'lowest',
+    });
+    // not inserting into a list item, delegate to other plugins
+    if (!liEntry) {
+      return insertFragment(
+        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      );
+    }
+
+    // delete selection (if necessary) so that it can check if needs to insert into an empty block
+    Transforms.insertFragment(editor, [{ text: '' }]);
+
+    const licEntry = findNode(editor, {
+      match: { type: listItemContentType },
+      mode: 'lowest',
+    });
+    if (!licEntry) {
+      return insertFragment(
+        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      );
+    }
+
+    const { textNode, listItemNodes } = getTextAndListItemNodes(
+      fragment,
+      liEntry,
+      licEntry
+    );
+
+    Transforms.insertFragment(editor, [textNode]); // insert text if needed
+
+    const [, liPath] = liEntry;
+    return Transforms.insertNodes(editor, listItemNodes, {
       at: Path.next(liPath),
       select: true,
     });
