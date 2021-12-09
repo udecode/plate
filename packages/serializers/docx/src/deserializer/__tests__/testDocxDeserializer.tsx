@@ -79,8 +79,8 @@ export const testDocxDeserializer = ({
         createBasicElementsPlugin(),
         createBasicMarksPlugin(),
         createTablePlugin(),
-        createDeserializeDocxPlugin(),
         createJuicePlugin(),
+        createDeserializeDocxPlugin(),
       ],
       overrideByKey,
     });
