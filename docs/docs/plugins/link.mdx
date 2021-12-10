@@ -16,7 +16,9 @@ npm install @udecode/plate-link-ui
 () => {
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
-    createLinkPlugin()
+    createLinkPlugin({
+      type: 'link'
+    })
   ], {
     components: CONFIG.components,
   });

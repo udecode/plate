@@ -1,9 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { createEditor, Editor } from 'slate';
 import { withPlate } from '../../plugins/withPlate';
-import { usePlateActions } from '../../stores/plate/plate.actions';
+import {
+  getPlateActions,
+  platesActions,
+  usePlateSelectors,
+} from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
-import { usePlateEnabled } from '../../stores/plate/selectors/usePlateEnabled';
+import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
@@ -14,7 +18,7 @@ import { setPlatePlugins } from '../../utils/setPlatePlugins';
  */
 export const usePlateEffects = <T = {}>({
   id = 'main',
-  value,
+  value: valueProp,
   editor: editorProp,
   enabled: enabledProp = true,
   initialValue,
@@ -22,78 +26,79 @@ export const usePlateEffects = <T = {}>({
   plugins,
   disableCorePlugins,
 }: UsePlateEffectsOptions<T>) => {
-  const {
-    setInitialState,
-    setValue,
-    setEditor,
-    setEnabled,
-    clearState,
-  } = usePlateActions(id);
-  const enabled = usePlateEnabled(id);
+  const plateActions = getPlateActions(id);
+  const enabled = usePlateSelectors(id).enabled();
   const editor = usePlateEditorRef<T>(id);
   const prevEditorRef = useRef(editor);
 
   // Clear the state on unmount.
   useEffect(
     () => () => {
-      clearState();
+      platesActions.unset(id);
     },
-    [clearState, id]
+    [id]
   );
 
   // Set initial state on mount
   useEffect(() => {
-    setInitialState({
-      enabled: true,
-      value: [],
-    });
-  }, [id, setInitialState]);
+    platesActions.set(id);
+  }, [id]);
 
   // Set initialValue once
   useEffect(() => {
-    initialValue && setValue(initialValue);
+    initialValue && plateActions.value(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
+  }, [plateActions]);
 
   // Slate.value
   useEffect(() => {
-    value && setValue(value);
-
-    !initialValue && !value && setValue([{ children: [{ text: '' }] }]);
-  }, [initialValue, setValue, value]);
+    valueProp && plateActions.value(valueProp);
+  }, [plateActions, valueProp]);
 
   // Dynamic enabled
   useEffect(() => {
-    setEnabled(enabledProp);
-  }, [enabledProp, setEnabled]);
+    plateActions.enabled(enabledProp);
+  }, [enabledProp, plateActions]);
 
   // Unset the editor if enabled gets false
   useEffect(() => {
     if (editor && !enabled) {
-      setEditor(undefined);
+      plateActions.editor(null);
     }
-  }, [enabled, editor, setEditor]);
+  }, [enabled, editor, plateActions]);
 
   // Set the editor if enabled and editor are defined
   useEffect(() => {
     if (!editor && enabled) {
-      const baseEditor = editorProp ?? createEditor();
-
-      setEditor(
-        withPlate(baseEditor as any, {
-          id,
-          plugins: plugins as PlatePlugin[],
-          disableCorePlugins,
-        })
+      plateActions.editor(
+        (editorProp as PlateEditor) ??
+          withPlate(createEditor(), {
+            id,
+            plugins: plugins as PlatePlugin[],
+            disableCorePlugins,
+          })
       );
     }
-  }, [editorProp, id, plugins, setEditor, editor, enabled, disableCorePlugins]);
+  }, [
+    editorProp,
+    id,
+    plugins,
+    editor,
+    enabled,
+    disableCorePlugins,
+    plateActions,
+  ]);
 
   // Dynamic plugins, no called when setting the editor
   useEffect(() => {
-    const hasEditorUpdated = prevEditorRef.current === editor;
-    if (editor && hasEditorUpdated && plugins) {
+    if (editor && editor === prevEditorRef.current && plugins) {
       setPlatePlugins(editor, plugins);
+    }
+
+    if (editor && plugins) {
+      editor.plugins.forEach((plugin) => {
+        plugin.useHook?.(editor, plugin);
+      });
     }
   }, [plugins, editor]);
 
@@ -101,10 +106,11 @@ export const usePlateEffects = <T = {}>({
   useEffect(() => {
     if (editor && normalizeInitialValue) {
       Editor.normalize(editor, { force: true });
+      console.log(editor.children);
     }
   }, [editor, normalizeInitialValue]);
 
-  // Store previous editor
+  // Save previous editor
   useEffect(() => {
     prevEditorRef.current = editor;
   }, [editor]);

@@ -1,17 +1,17 @@
 import { memo, useEffect } from 'react';
 import { useEditorState } from '../hooks/useEditorState';
-import { incrementKey } from '../stores/plate/plate.actions';
+import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateProps } from './Plate';
 
 export const EditorStateEffect = memo(({ id }: Pick<PlateProps, 'id'>) => {
   const editorState = useEditorState();
 
   useEffect(() => {
-    incrementKey('keyEditor', id);
+    getPlateActions(id).incrementKey('keyEditor');
   });
 
   useEffect(() => {
-    incrementKey('keySelection', id);
+    getPlateActions(id).incrementKey('keySelection');
   }, [editorState.selection, id]);
 
   return null;

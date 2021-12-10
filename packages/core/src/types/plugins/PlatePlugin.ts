@@ -146,6 +146,8 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
       plugin: WithPlatePlugin<T, P>
     ) => Partial<PlatePlugin<T, P>>;
 
+    useHook?: (editor: PlateEditor<T>, plugin: WithPlatePlugin<T, P>) => void;
+
     /**
      * Editor method overriders.
      */

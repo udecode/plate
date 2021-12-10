@@ -1,4 +1,4 @@
-import { incrementKey } from '../stores/plate/plate.actions';
+import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
@@ -31,5 +31,5 @@ export const setPlatePlugins = <T = {}>(
     }
   });
 
-  incrementKey('keyPlugins', editor.id);
+  getPlateActions(editor.id).incrementKey('keyPlugins');
 };

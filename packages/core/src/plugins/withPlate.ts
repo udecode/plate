@@ -16,7 +16,7 @@ export interface WithPlateOptions<T = {}> {
    * Required if rendering multiple `Plate`. Optional otherwise.
    * Default is `'main'`.
    */
-  id?: string | null;
+  id?: string;
 
   /**
    * Plate plugins.

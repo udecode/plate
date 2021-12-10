@@ -16,14 +16,12 @@ export const withInlineVoid: WithOverride = (editor) => {
   const voidTypes: string[] = [];
 
   editor.plugins.forEach((plugin) => {
-    if (!plugin.key) return;
-
     if (plugin.isInline) {
-      inlineTypes.push(plugin.key);
+      inlineTypes.push(plugin.type);
     }
 
     if (plugin.isVoid) {
-      voidTypes.push(plugin.key);
+      voidTypes.push(plugin.type);
     }
   });
 

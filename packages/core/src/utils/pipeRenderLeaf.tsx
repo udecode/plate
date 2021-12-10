@@ -12,7 +12,7 @@ import { pluginRenderLeaf } from './pluginRenderLeaf';
  */
 export const pipeRenderLeaf = (
   editor: PlateEditor,
-  editableProps?: EditableProps
+  renderLeafProp?: EditableProps['renderLeaf']
 ): EditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
 
@@ -32,8 +32,8 @@ export const pipeRenderLeaf = (
       }
     });
 
-    if (editableProps?.renderLeaf) {
-      return editableProps.renderLeaf(props);
+    if (renderLeafProp) {
+      return renderLeafProp(props);
     }
 
     return <DefaultLeaf {...props} />;

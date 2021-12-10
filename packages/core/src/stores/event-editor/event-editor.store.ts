@@ -1,16 +1,19 @@
-import create from 'zustand';
-import createVanillaStore from 'zustand/vanilla';
-import { EventEditorState } from '../../types/EventEditorStore';
+import { createStore } from '@udecode/zustood';
+import { EditorId } from '../../types/PlateStore';
+
+export type EventEditorKey = 'blur' | 'focus' | 'last';
+
+export type EventEditorState = Record<EventEditorKey, EditorId | null>;
 
 /**
  * Store where the keys are event names and the values are editor ids.
  */
-export const eventEditorStore = createVanillaStore<EventEditorState>(
-  () => ({})
-);
+export const eventEditorStore = createStore('event-editor')({
+  blur: null,
+  focus: null,
+  last: null,
+} as EventEditorState);
 
-/**
- * Store where the keys are event names and the values are editor ids.
- * @see zustand store
- */
-export const useEventEditorStore = create(eventEditorStore);
+export const eventEditorActions = eventEditorStore.set;
+export const eventEditorSelectors = eventEditorStore.get;
+export const useEventEditorSelectors = eventEditorStore.use;

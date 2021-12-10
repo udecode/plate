@@ -14,8 +14,9 @@ npm install @udecode/plate-core
 ```ts live
 () => {
   const id = 'plate';
-  const { setEnabled, resetEditor } = usePlateActions(id);
-  const enabled = usePlateEnabled(id);
+  
+  const useSelectors = usePlateSelectors(id);
+  const enabled = useSelectors ? useSelectors.enabled() : null;
 
   return (
     <>
@@ -23,7 +24,7 @@ npm install @udecode/plate-core
         className="cursor-pointer"
         type="button"
         onClick={() => {
-          setEnabled(!enabled);
+          getPlateActions(id).enabled(!enabled);
         }}
       >
         {enabled ? 'Disable editor' : 'Enable editor'}
@@ -32,7 +33,7 @@ npm install @udecode/plate-core
         className="ml-2 cursor-pointer"
         type="button"
         onClick={() => {
-          resetEditor(id);
+          getPlateActions(id).resetEditor();
         }}
       >
         Reset editor (history)

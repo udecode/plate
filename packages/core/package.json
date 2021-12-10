@@ -38,9 +38,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "clsx": "^1.1.1",
-    "lodash": "^4.17.21",
-    "zustand": "^3.4.2"
+    "@udecode/zustood": "0.4.1",
+    "clsx": "1.1.1",
+    "lodash": "4.17.21",
+    "use-deep-compare": "1.1.0",
+    "zustand": "3.6.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
