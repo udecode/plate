@@ -94,19 +94,12 @@ export const usePlateEffects = <T = {}>({
     if (editor && editor === prevEditorRef.current && plugins) {
       setPlatePlugins(editor, plugins);
     }
-
-    if (editor && plugins) {
-      editor.plugins.forEach((plugin) => {
-        plugin.useHook?.(editor, plugin);
-      });
-    }
   }, [plugins, editor]);
 
   // Force editor normalization
   useEffect(() => {
     if (editor && normalizeInitialValue) {
       Editor.normalize(editor, { force: true });
-      console.log(editor.children);
     }
   }, [editor, normalizeInitialValue]);
 

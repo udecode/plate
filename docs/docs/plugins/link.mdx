@@ -14,17 +14,32 @@ npm install @udecode/plate-link-ui
 
 ```ts live
 () => {
-  const plugins = createPlugins([
-    ...PLUGINS.basicNodes,
-    createLinkPlugin({
-      type: 'link'
-    })
-  ], {
-    components: CONFIG.components,
-  });
+  const [plugins, setPlugins] = useState(createPlugins([
+     ...PLUGINS.basicNodes,
+     createLinkPlugin({
+       useHook: () => {
+         useEffect(() => {
+           console.log('aaa')
+         }, [])
+       }
+     })
+   ], {
+     components: CONFIG.components,
+   }))
+
 
   return (
     <>
+      <button onClick={() => {setPlugins([...plugins, {
+        key: 'ab',
+        useHook: () => {
+                                                         useEffect(() => {
+                                                           console.log('bbb')
+                                                         
+                                                         }, [])
+                                                       }
+                                                       }
+      ])}}>add</button>
       <HeadingToolbar>
         <LinkToolbarButton icon={<Link />} />
       </HeadingToolbar>

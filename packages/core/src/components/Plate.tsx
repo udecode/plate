@@ -5,6 +5,7 @@ import { usePlate } from '../hooks/usePlate/usePlate';
 import { SlateProps } from '../types/slate/SlateProps';
 import { UsePlateEffectsOptions } from '../types/UsePlateEffectsOptions';
 import { UseSlatePropsOptions } from '../types/UseSlatePropsOptions';
+import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
 export interface PlateProps<T = {}>
@@ -41,6 +42,7 @@ export const Plate = <T extends {} = {}>({
     <Slate {...(slateProps as SlateProps)}>
       {children}
       <EditorStateEffect id={options.id} />
+      <EditorRefEffect id={options.id} />
       {renderEditable ? renderEditable(editable) : editable}
     </Slate>
   );
