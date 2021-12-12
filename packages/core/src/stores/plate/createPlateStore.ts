@@ -7,14 +7,20 @@ import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
 export const createPlateStore = (state: Partial<PlateStoreState> = {}) =>
   createStore(`plate-${state.id}`)({
     id: 'main',
+    value: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
     editor: null,
-    enabled: true,
     keyEditor: 1,
     keyPlugins: 1,
     keySelection: 1,
-    value: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
+    decorate: null,
+    enabled: true,
+    editableProps: null,
+    onChange: null,
+    plugins: [],
+    renderElement: null,
+    renderLeaf: null,
     ...state,
-  }).extendActions((_set, _get) => ({
+  } as PlateStoreState).extendActions((_set, _get) => ({
     /**
      * Set a new editor with plate.
      */

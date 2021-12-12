@@ -22,22 +22,6 @@ const initialValue = [
   },
 ];
 
-it('should render draggable component', () => {
-  const { container } = render(
-    <DndProvider backend={TestBackend}>
-      <Plate
-        plugins={[
-          createParagraphPlugin({
-            component: withDraggable(components[ELEMENT_PARAGRAPH]),
-          }),
-        ]}
-        initialValue={initialValue}
-      />
-    </DndProvider>
-  );
-  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
-});
-
 // eslint-disable-next-line jest/no-commented-out-tests
 // it('should filter based on level', () => {
 //   const _components = createPlateUI({

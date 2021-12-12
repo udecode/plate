@@ -1,18 +1,10 @@
+import { PlateProps } from '../components/Plate';
 import { PlateEditor } from '../types/PlateEditor';
 import { TEditor } from '../types/slate/TEditor';
-import {
-  setPlatePlugins,
-  SetPlatePluginsOptions,
-} from '../utils/setPlatePlugins';
+import { setPlatePlugins } from '../utils/setPlatePlugins';
 
-export interface WithPlateOptions<T = {}> extends SetPlatePluginsOptions<T> {
-  /**
-   * A unique id used to store the editor state by id.
-   * Required if rendering multiple `Plate`. Optional otherwise.
-   * Default is `'main'`.
-   */
-  id?: string;
-}
+export interface WithPlateOptions<T = {}>
+  extends Pick<PlateProps<T>, 'id' | 'disableCorePlugins' | 'plugins'> {}
 
 /**
  * Apply `withInlineVoid` and all plate plugins `withOverrides`.

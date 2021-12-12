@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createEditor, Editor } from 'slate';
+import { PlateProps } from '../../components/Plate';
 import { withPlate } from '../../plugins/withPlate';
 import {
   getPlateActions,
@@ -9,8 +10,8 @@ import {
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
-import { UsePlateEffectsOptions } from '../../types/UsePlateEffectsOptions';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
+import { usePlateStoreEffects } from './usePlateStoreEffects';
 
 /**
  * Effects to update the plate store from the options.
@@ -18,18 +19,24 @@ import { setPlatePlugins } from '../../utils/setPlatePlugins';
  */
 export const usePlateEffects = <T = {}>({
   id = 'main',
-  value: valueProp,
   editor: editorProp,
-  enabled: enabledProp = true,
   initialValue,
   normalizeInitialValue,
-  plugins,
+  plugins: pluginsProp,
   disableCorePlugins,
-}: UsePlateEffectsOptions<T>) => {
-  const plateActions = getPlateActions(id);
-  const enabled = usePlateSelectors(id).enabled();
+  editableProps,
+  onChange,
+  value,
+  enabled: enabledProp,
+}: PlateProps<T>) => {
   const editor = usePlateEditorRef<T>(id);
+  const enabled = usePlateSelectors(id).enabled();
+  const plugins = usePlateSelectors(id).plugins() as PlatePlugin<T>[];
+
+  const prevEditor = useRef(editor);
   const prevPlugins = useRef(plugins);
+
+  const plateActions = getPlateActions(id);
 
   // Clear the state on unmount.
   useEffect(
@@ -50,15 +57,14 @@ export const usePlateEffects = <T = {}>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plateActions]);
 
-  // Slate.value
-  useEffect(() => {
-    valueProp && plateActions.value(valueProp);
-  }, [plateActions, valueProp]);
-
-  // Dynamic enabled
-  useEffect(() => {
-    plateActions.enabled(enabledProp);
-  }, [enabledProp, plateActions]);
+  usePlateStoreEffects({
+    editableProps,
+    onChange,
+    id,
+    value,
+    enabled: enabledProp,
+    plugins: pluginsProp,
+  });
 
   // Unset the editor if enabled gets false
   useEffect(() => {
@@ -74,7 +80,7 @@ export const usePlateEffects = <T = {}>({
         (editorProp as PlateEditor) ??
           withPlate(createEditor(), {
             id,
-            plugins: plugins as PlatePlugin[],
+            plugins: pluginsProp,
             disableCorePlugins,
           })
       );
@@ -87,6 +93,7 @@ export const usePlateEffects = <T = {}>({
     enabled,
     disableCorePlugins,
     plateActions,
+    pluginsProp,
   ]);
 
   // Dynamic plugins

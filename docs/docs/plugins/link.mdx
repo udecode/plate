@@ -17,7 +17,7 @@ npm install @udecode/plate-link-ui
   const [plugins, setPlugins] = useState(createPlugins([
      ...PLUGINS.basicNodes,
      createLinkPlugin({
-       useHook: () => {
+       useHooks: () => {
          useEffect(() => {
            console.log('aaa')
          }, [])
@@ -32,7 +32,7 @@ npm install @udecode/plate-link-ui
     <>
       <button onClick={() => {setPlugins([...plugins, {
         key: 'ab',
-        useHook: () => {
+        useHooks: () => {
                                                          useEffect(() => {
                                                            console.log('bbb')
                                                          

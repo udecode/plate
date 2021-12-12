@@ -1,3 +1,4 @@
+import { PlateProps } from '../components/Plate';
 import {
   createDeserializeAstPlugin,
   KEY_DESERIALIZE_AST,
@@ -26,32 +27,15 @@ import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
-export interface SetPlatePluginsOptions<T = {}> {
-  plugins?: PlatePlugin<T>[];
-
-  /**
-   * If `true`, disable all the core plugins.
-   * If an object, disable the core plugin properties that are `true` in the object.
-   */
-  disableCorePlugins?:
-    | {
-        deserializeAst?: boolean;
-        deserializeHtml?: boolean;
-        eventEditor?: boolean;
-        inlineVoid?: boolean;
-        insertData?: boolean;
-        history?: boolean;
-        react?: boolean;
-      }
-    | boolean;
-}
-
 /**
  * Flatten deep plugins then set editor.plugins and editor.pluginsByKey
  */
 export const setPlatePlugins = <T = {}>(
   editor: PlateEditor<T>,
-  { disableCorePlugins, plugins: _plugins = [] }: SetPlatePluginsOptions<T>
+  {
+    disableCorePlugins,
+    plugins: _plugins = [],
+  }: Pick<PlateProps<T>, 'plugins' | 'disableCorePlugins'>
 ) => {
   let plugins: PlatePlugin<T>[] = [];
 
