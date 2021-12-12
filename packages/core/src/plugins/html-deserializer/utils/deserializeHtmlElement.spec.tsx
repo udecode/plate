@@ -37,7 +37,11 @@ describe('when element has class and attribute, and plugin has deserialize type,
                   type: 'poll',
                   id: el.getAttribute('data-id'),
                 }),
-                validClassName: 'poll',
+                rules: [
+                  {
+                    validClassName: 'poll',
+                  },
+                ],
                 withoutChildren: true,
               },
             },
@@ -214,7 +218,7 @@ describe('when plugin has deserialize.rules.validNodeName', () => {
     plugins: [
       createParagraphPlugin(),
       createBoldPlugin({
-        deserializeHtml: { validNodeName: ['B'] },
+        deserializeHtml: { rules: [{ validNodeName: ['B'] }] },
       }),
     ],
   });

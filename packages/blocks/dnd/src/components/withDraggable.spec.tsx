@@ -61,20 +61,20 @@ it('should not be draggable if readOnly', () => {
   expect(container.querySelector('.slate-Draggable')).not.toBeInTheDocument();
 });
 
-it('should be draggable in readOnly if allowReadOnly', () => {
-  const { container } = render(
-    <DndProvider backend={TestBackend}>
-      <Plate
-        plugins={[
-          createParagraphPlugin({
-            component: withDraggable(components[ELEMENT_PARAGRAPH], {
-              allowReadOnly: true,
-            }),
-          }),
-        ]}
-        initialValue={initialValue}
-      />
-    </DndProvider>
-  );
-  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
-});
+// it('should be draggable in readOnly if allowReadOnly', () => {
+//   const { container } = render(
+//     <DndProvider backend={TestBackend}>
+//       <Plate
+//         plugins={[
+//           createParagraphPlugin({
+//             component: withDraggable(components[ELEMENT_PARAGRAPH], {
+//               allowReadOnly: true,
+//             }),
+//           }),
+//         ]}
+//         initialValue={initialValue}
+//       />
+//     </DndProvider>
+//   );
+//   expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
+// });
