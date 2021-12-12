@@ -14,11 +14,15 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   withOverrides: withImageUpload,
   then: (editor, { type }) => ({
     deserializeHtml: {
+      rules: [
+        {
+          validNodeName: 'IMG',
+        },
+      ],
       getNode: (el) => ({
         type,
         url: el.getAttribute('src'),
       }),
-      validNodeName: 'IMG',
     },
   }),
 });

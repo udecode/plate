@@ -1,9 +1,9 @@
 import {
   createPluginFactory,
   onKeyDownToggleMark,
+  someHtmlElement,
   ToggleMarkPlugin,
 } from '@udecode/plate-core';
-import { deserializeHtmlItalic } from './deserializeHtmlItalic';
 
 export const MARK_ITALIC = 'italic';
 
@@ -19,5 +19,16 @@ export const createItalicPlugin = createPluginFactory<ToggleMarkPlugin>({
   options: {
     hotkey: 'mod+i',
   },
-  deserializeHtml: deserializeHtmlItalic,
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['EM', 'I'] },
+      {
+        validStyle: {
+          fontStyle: 'italic',
+        },
+      },
+    ],
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.fontStyle === 'normal'),
+  },
 });

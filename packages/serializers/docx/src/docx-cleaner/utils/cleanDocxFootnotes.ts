@@ -1,5 +1,5 @@
+import { traverseHtmlElements } from '@udecode/plate-core';
 import { isDocxFootnote } from './isDocxFootnote';
-import { traverseHtmlElements } from './traverseHtmlElements';
 
 /**
  * Gets "4" from "[4]", "A" from "[A]", etc.

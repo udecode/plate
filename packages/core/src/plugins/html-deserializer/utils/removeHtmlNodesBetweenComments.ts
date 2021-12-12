@@ -1,4 +1,4 @@
-import { isHtmlComment } from '@udecode/plate-core';
+import { isHtmlComment } from './isHtmlComment';
 import { traverseHtmlComments } from './traverseHtmlComments';
 
 /**

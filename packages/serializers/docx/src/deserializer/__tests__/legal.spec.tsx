@@ -15,7 +15,7 @@ describe(getDocxTestName(name), () => {
         <hp align="center">
           <htext bold>TITLE</htext>
         </hp>
-        <hp>
+        <hp indent={1}>
           <htext />
         </hp>
         <hp align="center">
@@ -46,12 +46,21 @@ describe(getDocxTestName(name), () => {
         <hp align="justify" indent={1}>
           B
         </hp>
-        <hp align="center">
+        <hp align="center" indent={1} lineHeight="normal">
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp align="justify" indent={1}>
+        <hp align="justify" indent={1} lineHeight="normal">
           C
         </hp>
+        <hp indent={7}>
+          <htext underline>{'\t'}</htext>
+          {'\n'}Name
+        </hp>
+        <hp indent={7}>Date of signature: </hp>
+        <hp indent={7}>
+          <htext />
+        </hp>
+        <hp indent={7}>__________________________________</hp>
       </editor>
     ),
     plugins: [createIndentListPlugin()],

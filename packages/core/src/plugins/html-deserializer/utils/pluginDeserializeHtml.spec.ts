@@ -1,5 +1,6 @@
 import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
 import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { mockPlugin } from '../../../utils/mockPlugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
@@ -9,12 +10,17 @@ describe('when element is p and validNodeName is P', () => {
   it('should be p type', () => {
     expect(
       pluginDeserializeHtml(
+        createPlateEditor(),
         mockPlugin({
           type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
             isElement: true,
             getNode: node,
-            validNodeName: 'P',
+            rules: [
+              {
+                validNodeName: 'P',
+              },
+            ],
           },
         }),
         { element: document.createElement('p') }
@@ -30,14 +36,19 @@ describe('when element is p with color and rule style is different', () => {
 
     expect(
       pluginDeserializeHtml(
+        createPlateEditor(),
         mockPlugin({
           type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
             isElement: true,
             getNode: node,
-            validStyle: {
-              color: '#333',
-            },
+            rules: [
+              {
+                validStyle: {
+                  color: '#333',
+                },
+              },
+            ],
           },
         }),
         { element }
@@ -53,14 +64,19 @@ describe('when element is p with same style color than rule', () => {
 
     expect(
       pluginDeserializeHtml(
+        createPlateEditor(),
         mockPlugin({
           type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
             isElement: true,
             getNode: node,
-            validStyle: {
-              color: 'rgb(255, 0, 0)',
-            },
+            rules: [
+              {
+                validStyle: {
+                  color: 'rgb(255, 0, 0)',
+                },
+              },
+            ],
           },
         }),
         { element }
@@ -76,14 +92,19 @@ describe('when element has style color and rule style color is *', () => {
 
     expect(
       pluginDeserializeHtml(
+        createPlateEditor(),
         mockPlugin({
           type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
             isElement: true,
             getNode: node,
-            validStyle: {
-              color: '*',
-            },
+            rules: [
+              {
+                validStyle: {
+                  color: '*',
+                },
+              },
+            ],
           },
         }),
         { element }
@@ -99,11 +120,16 @@ describe('when element is strong and validNodeName is strong', () => {
 
     expect(
       pluginDeserializeHtml(
+        createPlateEditor(),
         mockPlugin({
           isLeaf: true,
           type: MARK_BOLD,
           deserializeHtml: {
-            validNodeName: 'STRONG',
+            rules: [
+              {
+                validNodeName: 'STRONG',
+              },
+            ],
           },
         }),
         { element: el, deserializeLeaf: true }

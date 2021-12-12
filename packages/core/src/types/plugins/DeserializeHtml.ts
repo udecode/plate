@@ -23,35 +23,40 @@ export type DeserializeHtml = {
   /**
    * Deserialize html element to slate node.
    */
-  getNode?: (element: HTMLElement) => AnyObject | undefined;
+  getNode?: (
+    element: HTMLElement,
+    node: AnyObject
+  ) => AnyObject | undefined | void;
 
   query?: (element: HTMLElement) => boolean;
 
-  /**
-   * Deserialize an element:
-   * - if this option (string) is in the element attribute names.
-   * - if this option (object) values match the element attributes.
-   */
-  validAttribute?: string | { [key: string]: string | string[] };
+  rules?: {
+    /**
+     * Deserialize an element:
+     * - if this option (string) is in the element attribute names.
+     * - if this option (object) values match the element attributes.
+     */
+    validAttribute?: string | { [key: string]: string | string[] };
 
-  /**
-   * Valid element `className`.
-   */
-  validClassName?: string;
+    /**
+     * Valid element `className`.
+     */
+    validClassName?: string;
 
-  /**
-   * Valid element `nodeName`.
-   * Set '*' to allow any node name.
-   */
-  validNodeName?: string | string[];
+    /**
+     * Valid element `nodeName`.
+     * Set '*' to allow any node name.
+     */
+    validNodeName?: string | string[];
 
-  /**
-   * Valid element style values.
-   * Can be a list of string (only one match is needed).
-   */
-  validStyle?: Partial<
-    Record<keyof CSSStyleDeclaration, string | string[] | undefined>
-  >;
+    /**
+     * Valid element style values.
+     * Can be a list of string (only one match is needed).
+     */
+    validStyle?: Partial<
+      Record<keyof CSSStyleDeclaration, string | string[] | undefined>
+    >;
+  }[];
 
   /**
    * Whether or not to include deserialized children on this node

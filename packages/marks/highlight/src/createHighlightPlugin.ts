@@ -17,7 +17,11 @@ export const createHighlightPlugin = createPluginFactory<ToggleMarkPlugin>({
     onKeyDown: onKeyDownToggleMark,
   },
   deserializeHtml: {
-    validNodeName: ['MARK'],
+    rules: [
+      {
+        validNodeName: ['MARK'],
+      },
+    ],
   },
   options: {
     hotkey: 'mod+shift+h',

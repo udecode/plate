@@ -29,7 +29,7 @@ export const usePlateEffects = <T = {}>({
   const plateActions = getPlateActions(id);
   const enabled = usePlateSelectors(id).enabled();
   const editor = usePlateEditorRef<T>(id);
-  const prevEditorRef = useRef(editor);
+  const prevPlugins = useRef(plugins);
 
   // Clear the state on unmount.
   useEffect(
@@ -89,12 +89,13 @@ export const usePlateEffects = <T = {}>({
     plateActions,
   ]);
 
-  // Dynamic plugins, no called when setting the editor
+  // Dynamic plugins
   useEffect(() => {
-    if (editor && editor === prevEditorRef.current && plugins) {
-      setPlatePlugins(editor, plugins);
+    if (editor && prevPlugins.current !== plugins) {
+      setPlatePlugins(editor, { plugins, disableCorePlugins });
+      prevPlugins.current = plugins;
     }
-  }, [plugins, editor]);
+  }, [plugins, editor, disableCorePlugins]);
 
   // Force editor normalization
   useEffect(() => {
@@ -102,9 +103,4 @@ export const usePlateEffects = <T = {}>({
       Editor.normalize(editor, { force: true });
     }
   }, [editor, normalizeInitialValue]);
-
-  // Save previous editor
-  useEffect(() => {
-    prevEditorRef.current = editor;
-  }, [editor]);
 };

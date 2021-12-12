@@ -13,9 +13,13 @@ export const createFontFamilyPlugin = createPluginFactory({
     deserializeHtml: {
       isLeaf: true,
       getNode: (element) => ({ [type]: element.style.fontFamily }),
-      validStyle: {
-        fontFamily: '*',
-      },
+      rules: [
+        {
+          validStyle: {
+            fontFamily: '*',
+          },
+        },
+      ],
     },
   }),
 });

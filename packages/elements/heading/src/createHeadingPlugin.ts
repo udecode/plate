@@ -25,7 +25,11 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
         key,
         isElement: true,
         deserializeHtml: {
-          validNodeName: `H${level}`,
+          rules: [
+            {
+              validNodeName: `H${level}`,
+            },
+          ],
         },
         handlers: {
           onKeyDown: onKeyDownToggleElement,

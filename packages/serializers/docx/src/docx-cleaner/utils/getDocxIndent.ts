@@ -1,15 +1,18 @@
-const DOCX_INDENT_STEP = 32;
+const DOCX_INDENT_STEP = 36;
+
+const extractNumber = (str: string) =>
+  parseInt(str.replace(/[^\d.,]+/, ''), 10);
 
 export const getDocxIndent = (
   element: Element,
   indentStep = DOCX_INDENT_STEP
 ): number => {
   const el = element as HTMLElement;
-  const { marginLeft } = el.style;
+  const { marginLeft, textIndent } = el.style;
 
-  const marginLeftNumber = parseInt(marginLeft, 10);
+  const indent = extractNumber(marginLeft) || extractNumber(textIndent);
 
-  if (!marginLeftNumber) return 0;
+  if (!indent) return 0;
 
-  return Math.round(marginLeftNumber / indentStep);
+  return Math.round(indent / indentStep);
 };

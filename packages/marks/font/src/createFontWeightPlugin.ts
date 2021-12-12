@@ -13,9 +13,13 @@ export const createFontWeightPlugin = createPluginFactory({
     deserializeHtml: {
       isLeaf: true,
       getNode: (element) => ({ [type]: element.style.fontWeight }),
-      validStyle: {
-        fontWeight: '*',
-      },
+      rules: [
+        {
+          validStyle: {
+            fontWeight: '*',
+          },
+        },
+      ],
     },
   }),
 });

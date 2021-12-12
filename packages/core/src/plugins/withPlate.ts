@@ -1,43 +1,17 @@
 import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { TEditor } from '../types/slate/TEditor';
-import { setPlatePlugins } from '../utils/setPlatePlugins';
-import { createDeserializeHtmlPlugin } from './html-deserializer/createDeserializeHtmlPlugin';
-import { createDeserializeAstPlugin } from './createDeserializeAstPlugin';
-import { createEventEditorPlugin } from './createEventEditorPlugin';
-import { createHistoryPlugin } from './createHistoryPlugin';
-import { createInlineVoidPlugin } from './createInlineVoidPlugin';
-import { createInsertDataPlugin } from './createInsertDataPlugin';
-import { createReactPlugin } from './createReactPlugin';
+import {
+  setPlatePlugins,
+  SetPlatePluginsOptions,
+} from '../utils/setPlatePlugins';
 
-export interface WithPlateOptions<T = {}> {
+export interface WithPlateOptions<T = {}> extends SetPlatePluginsOptions<T> {
   /**
    * A unique id used to store the editor state by id.
    * Required if rendering multiple `Plate`. Optional otherwise.
    * Default is `'main'`.
    */
   id?: string;
-
-  /**
-   * Plate plugins.
-   */
-  plugins?: PlatePlugin<T>[];
-
-  /**
-   * If `true`, disable all the core plugins.
-   * If an object, disable the core plugin properties that are `true` in the object.
-   */
-  disableCorePlugins?:
-    | {
-        deserializeAst?: boolean;
-        deserializeHtml?: boolean;
-        eventEditor?: boolean;
-        inlineVoid?: boolean;
-        insertData?: boolean;
-        history?: boolean;
-        react?: boolean;
-      }
-    | boolean;
 }
 
 /**
@@ -59,47 +33,10 @@ export const withPlate = <T = {}>(
     editor.key = Math.random();
   }
 
-  let allPlugins: PlatePlugin<T>[] = [];
-
-  if (disableCorePlugins !== true) {
-    if (typeof disableCorePlugins !== 'object') {
-      allPlugins = [
-        createReactPlugin(),
-        createHistoryPlugin(),
-        createEventEditorPlugin(),
-        createInlineVoidPlugin(),
-        createInsertDataPlugin(),
-        createDeserializeAstPlugin(),
-        createDeserializeHtmlPlugin(),
-      ];
-    } else {
-      if (!disableCorePlugins.react) {
-        allPlugins.push(createReactPlugin());
-      }
-      if (!disableCorePlugins.history) {
-        allPlugins.push(createHistoryPlugin());
-      }
-      if (!disableCorePlugins.eventEditor) {
-        allPlugins.push(createEventEditorPlugin());
-      }
-      if (!disableCorePlugins.inlineVoid) {
-        allPlugins.push(createInlineVoidPlugin());
-      }
-      if (!disableCorePlugins.insertData) {
-        allPlugins.push(createInsertDataPlugin());
-      }
-      if (!disableCorePlugins.deserializeAst) {
-        allPlugins.push(createDeserializeAstPlugin());
-      }
-      if (!disableCorePlugins.deserializeHtml) {
-        allPlugins.push(createDeserializeHtmlPlugin());
-      }
-    }
-  }
-
-  allPlugins = [...allPlugins, ...plugins];
-
-  setPlatePlugins(editor, allPlugins);
+  setPlatePlugins(editor, {
+    plugins,
+    disableCorePlugins,
+  });
 
   // withOverrides
   editor.plugins.forEach((plugin) => {

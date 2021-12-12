@@ -111,7 +111,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
     /**
      * Properties used by the HTML deserializer core plugin for each HTML element.
      */
-    deserializeHtml?: Nullable<DeserializeHtml> | Nullable<DeserializeHtml>[];
+    deserializeHtml?: Nullable<DeserializeHtml>;
 
     /**
      * Property used by Plate to deeply override plugins by key.
@@ -144,7 +144,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
     then?: (
       editor: PlateEditor<T>,
       plugin: WithPlatePlugin<T, P>
-    ) => Partial<PlatePlugin<T, P>>;
+    ) => Partial<PlatePlugin<T, P>> | void;
 
     useHook?: (editor: PlateEditor<T>, plugin: WithPlatePlugin<T, P>) => void;
 

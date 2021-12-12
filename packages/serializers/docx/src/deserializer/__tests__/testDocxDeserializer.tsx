@@ -60,9 +60,12 @@ export const testDocxDeserializer = ({
         ...plugins,
         createImagePlugin(),
         createHorizontalRulePlugin(),
-        createLineHeightPlugin(CONFIG.lineHeight),
         createLinkPlugin(),
         createTablePlugin(),
+        createBasicElementsPlugin(),
+        createBasicMarksPlugin(),
+        createTablePlugin(),
+        createLineHeightPlugin(CONFIG.lineHeight),
         createAlignPlugin(CONFIG.align),
         createIndentPlugin({
           inject: {
@@ -76,11 +79,8 @@ export const testDocxDeserializer = ({
             },
           },
         }),
-        createBasicElementsPlugin(),
-        createBasicMarksPlugin(),
-        createTablePlugin(),
-        createJuicePlugin(),
         createDeserializeDocxPlugin(),
+        createJuicePlugin(),
       ],
       overrideByKey,
     });

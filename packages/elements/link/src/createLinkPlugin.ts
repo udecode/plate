@@ -31,11 +31,15 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   },
   then: (editor, { type }) => ({
     deserializeHtml: {
+      rules: [
+        {
+          validNodeName: 'A',
+        },
+      ],
       getNode: (el) => ({
         type,
         url: el.getAttribute('href'),
       }),
-      validNodeName: 'A',
     },
   }),
 });

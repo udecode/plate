@@ -13,9 +13,13 @@ export const createFontSizePlugin = createPluginFactory({
     deserializeHtml: {
       isLeaf: true,
       getNode: (element) => ({ [type]: element.style.fontSize }),
-      validStyle: {
-        fontSize: '*',
-      },
+      rules: [
+        {
+          validStyle: {
+            fontSize: '*',
+          },
+        },
+      ],
     },
   }),
 });

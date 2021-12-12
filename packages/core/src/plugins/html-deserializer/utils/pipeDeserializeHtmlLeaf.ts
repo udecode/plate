@@ -9,7 +9,7 @@ export const pipeDeserializeHtmlLeaf = <T = {}>(
   let node: AnyObject = {};
 
   [...editor.plugins].reverse().forEach((plugin) => {
-    const deserialized = pluginDeserializeHtml(plugin, {
+    const deserialized = pluginDeserializeHtml(editor, plugin, {
       element,
       deserializeLeaf: true,
     });

@@ -2,6 +2,7 @@ import {
   createPluginFactory,
   ELEMENT_DEFAULT,
   getPluginType,
+  mapInjectPropsToPlugin,
 } from '@udecode/plate-core';
 
 export const KEY_ALIGN = 'align';
@@ -21,5 +22,15 @@ export const createAlignPlugin = createPluginFactory({
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
       },
     },
+    then: (_, plugin) =>
+      mapInjectPropsToPlugin(editor, plugin, {
+        deserializeHtml: {
+          getNode: (el, node) => {
+            if (el.style.textAlign) {
+              node[plugin.key] = el.style.textAlign;
+            }
+          },
+        },
+      }),
   }),
 });

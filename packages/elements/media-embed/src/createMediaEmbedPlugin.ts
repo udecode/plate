@@ -12,6 +12,11 @@ export const createMediaEmbedPlugin = createPluginFactory({
   isVoid: true,
   then: (editor, { type }) => ({
     deserializeHtml: {
+      rules: [
+        {
+          validNodeName: 'IFRAME',
+        },
+      ],
       getNode: (el: HTMLElement) => {
         const url = el.getAttribute('src');
         if (url) {
@@ -21,7 +26,6 @@ export const createMediaEmbedPlugin = createPluginFactory({
           };
         }
       },
-      validNodeName: 'IFRAME',
     },
   }),
 });
