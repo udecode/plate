@@ -1,3 +1,41 @@
+# 9.0.0
+
+## @udecode/plate-core@9.0.0
+
+-   [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+    -   `Plate`
+        -   `editor` prop can now be fully controlled: Plate is not applying `withPlate` on it anymore
+    -   `PlatePlugin.deserializeHtml`
+        -   can't be an array anymore
+        -   moved `validAttribute`, `validClassName`, `validNodeName`, `validStyle` to `deserializeHtml.rules` property
+    -   renamed `plateStore` to `platesStore`
+    -   `platesStore` is now a zustood store
+    -   `eventEditorStore` is now a zustood store
+    -   `getPlateId` now gets the last editor id if not focused or blurred
+        -   used by `usePlateEditorRef` and `usePlateEditorState`
+    -   removed:
+        -   `usePlateEnabled` for `usePlateSelectors(id).enabled()`
+        -   `usePlateValue` for `usePlateSelectors(id).value()`
+        -   `usePlateActions`:
+            -   `resetEditor` for `getPlateActions(id).resetEditor()`
+            -   `clearState` for `platesActions.unset()`
+            -   `setInitialState` for `platesActions.set(id)`
+            -   `setEditor` for `getPlateActions(id).editor(value)`
+            -   `setEnabled` for `getPlateActions(id).enabled(value)`
+            -   `setValue` for `getPlateActions(id).value(value)`
+        -   `getPlateState`
+        -   `usePlateState`
+        -   `usePlateKey`
+
+## @udecode/plate@9.0.0
+
+-   [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+   -   renamed `plate-x-ui` to `plate-ui-x`: all packages depending on `styled-components` has `plate-ui` prefix
+   -   renamed `plate-x-serializer` to `plate-serializer-x`
+   -   is now exporting only these (new) packages:
+       -   `@udecode/plate-headless`: all unstyled packages
+       -   `@udecode/plate-ui`: all styled packages
+
 # 8.0.0
 
 ## @udecode/plate-indent-list@8.0.0
