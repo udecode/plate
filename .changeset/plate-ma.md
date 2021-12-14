@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-plate': major
+'@udecode/plate': major
 ---
 
 - renamed `plate-x-ui` to `plate-ui-x`: all packages depending on `styled-components` has `plate-ui` prefix
