@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { UsePopperPositionOptions } from '@udecode/plate-popper';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarProps } from '../Toolbar/Toolbar.types';
 
 export interface BalloonToolbarStyleProps extends BalloonToolbarProps {}

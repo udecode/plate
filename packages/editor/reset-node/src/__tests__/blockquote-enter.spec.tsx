@@ -8,7 +8,7 @@ import {
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_BLOCKQUOTE } from '../../../../elements/block-quote/src/createBlockquotePlugin';
+import { ELEMENT_BLOCKQUOTE } from '../../../../nodes/block-quote/src/createBlockquotePlugin';
 import { onKeyDownResetNode } from '../onKeyDownResetNode';
 
 jsx;

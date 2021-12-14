@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
-import { createFontBackgroundColorPlugin } from '../../../../../marks/font/src/createFontBackgroundColorPlugin';
-import { createFontColorPlugin } from '../../../../../marks/font/src/createFontColorPlugin';
-import { createFontFamilyPlugin } from '../../../../../marks/font/src/createFontFamilyPlugin';
-import { createFontSizePlugin } from '../../../../../marks/font/src/createFontSizePlugin';
-import { createFontWeightPlugin } from '../../../../../marks/font/src/createFontWeightPlugin';
+import { createFontBackgroundColorPlugin } from '../../../../../nodes/font/src/createFontBackgroundColorPlugin';
+import { createFontColorPlugin } from '../../../../../nodes/font/src/createFontColorPlugin';
+import { createFontFamilyPlugin } from '../../../../../nodes/font/src/createFontFamilyPlugin';
+import { createFontSizePlugin } from '../../../../../nodes/font/src/createFontSizePlugin';
+import { createFontWeightPlugin } from '../../../../../nodes/font/src/createFontWeightPlugin';
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
 jsx;

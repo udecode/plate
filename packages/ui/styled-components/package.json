@@ -36,7 +36,7 @@
     "clsx": "^1.1.1"
   },
   "devDependencies": {
-    "twin.macro": "^2.6.1"
+    "twin.macro": "2.8.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

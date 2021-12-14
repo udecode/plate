@@ -4,7 +4,7 @@ import {
   createImagePlugin,
   MARK_BOLD,
 } from '../../../../../plate/src/index';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { PlatePlugin } from '../../../types/plugins/PlatePlugin';
 import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { serializeHtml } from '../serializeHtml';

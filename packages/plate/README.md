@@ -1,6 +1,6 @@
 # Plate
 
-This package bundles Plate core and plugins for a quick start.
+This package bundles Plate core, plugins and UI for a quick start.
 
 ## Documentation
 

@@ -4,12 +4,12 @@ import {
   useEditorState,
   useEventEditorSelectors,
 } from '@udecode/plate-core';
+import { PortalBody } from '@udecode/plate-styled-components';
 import {
   getRangeBoundingClientRect,
   usePopperPosition,
   virtualReference,
-} from '@udecode/plate-popper';
-import { PortalBody } from '@udecode/plate-styled-components';
+} from '@udecode/plate-ui-popper';
 import {
   comboboxStore,
   getComboboxStoreById,

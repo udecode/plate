@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-docx-serializer",
+  "name": "@udecode/plate-serializer-docx",
   "version": "8.3.0",
   "description": "Docx serializer plugin for Plate",
   "keywords": [

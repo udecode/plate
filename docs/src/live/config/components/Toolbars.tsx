@@ -32,7 +32,6 @@ import { Looks5 } from '@styled-icons/material/Looks5';
 import { Looks6 } from '@styled-icons/material/Looks6';
 import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
-import { TippyProps } from '@tippyjs/react';
 import {
   addColumn,
   addRow,
@@ -237,7 +236,7 @@ export const MarkBallonToolbar = () => {
 
   const arrow = false;
   const theme = 'dark';
-  const tooltip: TippyProps = {
+  const tooltip: any = {
     arrow: true,
     delay: 0,
     duration: [200, 0],

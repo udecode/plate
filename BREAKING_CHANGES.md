@@ -369,13 +369,13 @@
     -   `plate-html-serializer`
     -   `plate-serializer`
 
- ## @udecode/plate-csv-serializer@8.0.0
+ ## @udecode/plate-serializer-csv@8.0.0
 
 -   [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Renamed:
     -   `createDeserializeCSVPlugin` to `createDeserializeCsvPlugin`
     -   `deserializeCSV` to `deserializeCsv`
 
- ## @udecode/plate-md-serializer@8.0.0
+ ## @udecode/plate-serializer-md@8.0.0
 
 -   [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
 

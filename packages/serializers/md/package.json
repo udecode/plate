@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-md-serializer",
+  "name": "@udecode/plate-serializer-md",
   "version": "8.3.0",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [

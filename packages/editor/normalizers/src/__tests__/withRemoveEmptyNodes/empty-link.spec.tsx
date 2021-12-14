@@ -2,7 +2,7 @@
 
 import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_LINK } from '../../../../../elements/link/src/createLinkPlugin';
+import { ELEMENT_LINK } from '../../../../../nodes/link/src/createLinkPlugin';
 import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
 
 jsx;

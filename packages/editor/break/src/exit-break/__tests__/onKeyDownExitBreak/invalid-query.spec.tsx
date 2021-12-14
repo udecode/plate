@@ -3,7 +3,7 @@
 import { mockPlugin } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_H1 } from '../../../../../../elements/heading/src/constants';
+import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsx;

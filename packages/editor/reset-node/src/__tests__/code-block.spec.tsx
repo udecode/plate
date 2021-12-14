@@ -8,7 +8,7 @@ import {
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { ELEMENT_CODE_BLOCK } from '../../../../elements/code-block/src/constants';
+import { ELEMENT_CODE_BLOCK } from '../../../../nodes/code-block/src/constants';
 import { onKeyDownResetNode } from '../onKeyDownResetNode';
 
 jsx;

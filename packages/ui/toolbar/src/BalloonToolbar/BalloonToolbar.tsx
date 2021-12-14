@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { UsePopperPositionOptions } from '@udecode/plate-popper';
 import { PortalBody } from '@udecode/plate-styled-components';
+import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';

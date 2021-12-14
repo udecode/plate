@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { TElement } from '../../../../types/slate/TElement';
 import { createNode } from '../../../utils/index';
 

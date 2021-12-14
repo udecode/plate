@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../../elements/paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { TDescendant } from '../../../../types/slate/TDescendant';
 import { createDocumentNode } from '../../../utils/index';
 

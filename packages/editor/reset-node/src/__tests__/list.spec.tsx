@@ -9,8 +9,8 @@ import { ELEMENT_LI } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
-import { unwrapList } from '../../../../elements/list/src/transforms/unwrapList';
-import { createPlateUIEditor } from '../../../../plate/src/utils/createPlateUIEditor';
+import { unwrapList } from '../../../../nodes/list/src/transforms/unwrapList';
+import { createPlateUIEditor } from '../../../../ui/plate/src/utils/createPlateUIEditor';
 import { onKeyDownResetNode } from '../onKeyDownResetNode';
 
 jsx;

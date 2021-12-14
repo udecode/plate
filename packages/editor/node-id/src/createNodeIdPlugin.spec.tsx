@@ -11,8 +11,8 @@ import { Transforms } from 'slate';
 import {
   ELEMENT_LI,
   ELEMENT_UL,
-} from '../../../elements/list/src/createListPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../elements/paragraph/src/createParagraphPlugin';
+} from '../../../nodes/list/src/createListPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../nodes/paragraph/src/createParagraphPlugin';
 import { createNodeIdPlugin } from './createNodeIdPlugin';
 
 jsx;

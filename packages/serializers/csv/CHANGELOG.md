@@ -1,4 +1,4 @@
-# @udecode/plate-csv-serializer
+# @udecode/plate-serializer-csv
 
 ## 8.3.0
 

@@ -29,13 +29,13 @@ import {
   TrailingBlockPlugin,
   withProps,
 } from '@udecode/plate';
-import {
-  ELEMENT_EXCALIDRAW,
-  ExcalidrawElement,
-} from '@udecode/plate-excalidraw';
 import { Partial } from 'rollup-plugin-typescript2/dist/partial';
 import { EditableProps } from 'slate-react/dist/components/editable';
 import { css } from 'styled-components';
+import {
+  ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+} from '../../../../packages/ui/nodes/excalidraw';
 import { autoformatRules } from './autoformat/autoformatRules';
 import { MENTIONABLES } from './mentionables';
 

@@ -1,0 +1,27 @@
+---
+'@udecode/plate-core': major
+---
+
+- `Plate`
+  - `editor` prop can now be fully controlled: Plate is not applying `withPlate` on it anymore
+- `PlatePlugin.deserializeHtml`
+  - can't be an array anymore
+  - moved `validAttribute`, `validClassName`, `validNodeName`, `validStyle` to `deserializeHtml.rules` property
+- renamed `plateStore` to `platesStore`
+- `platesStore` is now a zustood store
+- `eventEditorStore` is now a zustood store
+- `getPlateId` now gets the last editor id if not focused or blurred
+  - used by `usePlateEditorRef` and `usePlateEditorState`
+- removed:
+  - `usePlateEnabled` for `usePlateSelectors(id).enabled()`
+  - `usePlateValue` for `usePlateSelectors(id).value()`
+  - `usePlateActions`:
+    - `resetEditor` for `getPlateActions(id).resetEditor()`
+    - `clearState` for `platesActions.unset()`
+    - `setInitialState` for `platesActions.set(id)`
+    - `setEditor` for `getPlateActions(id).editor(value)`
+    - `setEnabled` for `getPlateActions(id).enabled(value)`
+    - `setValue` for `getPlateActions(id).value(value)`
+  - `getPlateState`
+  - `usePlateState`
+  - `usePlateKey`
