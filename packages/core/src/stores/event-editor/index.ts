@@ -3,5 +3,3 @@
  */
 
 export * from './event-editor.store';
-export * from './actions/index';
-export * from './selectors/index';

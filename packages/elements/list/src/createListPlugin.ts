@@ -26,7 +26,13 @@ export const createListPlugin = createPluginFactory({
         onKeyDown: onKeyDownList,
       },
       withOverrides: withList,
-      deserializeHtml: { validNodeName: 'UL' },
+      deserializeHtml: {
+        rules: [
+          {
+            validNodeName: 'UL',
+          },
+        ],
+      },
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_OL,
@@ -34,12 +40,12 @@ export const createListPlugin = createPluginFactory({
       handlers: {
         onKeyDown: onKeyDownList,
       },
-      deserializeHtml: { validNodeName: 'OL' },
+      deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
     } as PlatePlugin<{}, ListPlugin>,
     {
       key: ELEMENT_LI,
       isElement: true,
-      deserializeHtml: { validNodeName: 'LI' },
+      deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
       then: (editor, { type }) => ({
         inject: {
           pluginsByKey: {

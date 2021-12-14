@@ -13,9 +13,13 @@ export const createFontBackgroundColorPlugin = createPluginFactory({
     deserializeHtml: {
       isLeaf: true,
       getNode: (element) => ({ [type]: element.style.backgroundColor }),
-      validStyle: {
-        backgroundColor: '*',
-      },
+      rules: [
+        {
+          validStyle: {
+            backgroundColor: '*',
+          },
+        },
+      ],
     },
   }),
 });

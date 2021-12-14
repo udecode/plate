@@ -20,12 +20,14 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
     hotkey: 'mod+,',
     clear: MARK_SUPERSCRIPT,
   },
-  deserializeHtml: [
-    { validNodeName: ['SUB'] },
-    {
-      validStyle: {
-        verticalAlign: 'sub',
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['SUB'] },
+      {
+        validStyle: {
+          verticalAlign: 'sub',
+        },
       },
-    },
-  ],
+    ],
+  },
 });

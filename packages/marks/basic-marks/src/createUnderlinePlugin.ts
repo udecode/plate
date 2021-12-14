@@ -1,6 +1,7 @@
 import {
   createPluginFactory,
   onKeyDownToggleMark,
+  someHtmlElement,
   ToggleMarkPlugin,
 } from '@udecode/plate-core';
 
@@ -18,12 +19,18 @@ export const createUnderlinePlugin = createPluginFactory<ToggleMarkPlugin>({
   options: {
     hotkey: 'mod+u',
   },
-  deserializeHtml: [
-    { validNodeName: ['U'] },
-    {
-      validStyle: {
-        textDecoration: 'underline',
+  deserializeHtml: {
+    rules: [
+      {
+        validNodeName: ['U'],
       },
-    },
-  ],
+      {
+        validStyle: {
+          textDecoration: ['underline'],
+        },
+      },
+    ],
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
+  },
 });

@@ -2,7 +2,7 @@ import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import {
-  createPlateEditor,
+  getPlateEditorRef,
   Plate,
   PlateEditor,
   TDescendant,
@@ -37,20 +37,14 @@ const DEFAULT_INITIAL_VALUE: TDescendant[] = [
 function renderWithPlate(
   ui: ReactElement,
   {
-    editor,
     initialValue = DEFAULT_INITIAL_VALUE,
     ...options
   }: {
-    editor: PlateEditor;
     initialValue?: TDescendant[];
-  } & RenderOptions
+  } & RenderOptions = {}
 ) {
   const Wrapper = ({ children }: { children?: ReactNode }) => (
-    <Plate
-      editor={editor}
-      plugins={DEFAULT_PLUGINS}
-      initialValue={initialValue}
-    >
+    <Plate plugins={DEFAULT_PLUGINS} initialValue={initialValue}>
       {children}
     </Plate>
   );
@@ -77,10 +71,6 @@ describe('ColorPickerToolbarDropdown', () => {
         userEvents.click(screen.getByTestId('ColorPickerClear'));
 
       beforeEach(() => {
-        editor = createPlateEditor({
-          plugins: DEFAULT_PLUGINS,
-        }) as PlateEditor;
-
         Component = () => (
           <ColorPickerToolbarDropdown
             pluginKey={pluginKey}
@@ -90,7 +80,9 @@ describe('ColorPickerToolbarDropdown', () => {
           />
         );
 
-        renderWithPlate(<Component />, { editor });
+        renderWithPlate(<Component />);
+
+        editor = getPlateEditorRef()!;
 
         // select the entire text
         Transforms.select(editor, {

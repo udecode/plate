@@ -13,7 +13,7 @@ export const getInjectedPlugins = <T = {}, P = {}>(
 ): InjectedPlugin<T>[] => {
   const injectedPlugins: InjectedPlugin<T>[] = [];
 
-  editor.plugins.forEach((p) => {
+  [...editor.plugins].reverse().forEach((p) => {
     const injectedPlugin = p.inject.pluginsByKey?.[plugin.key];
 
     if (injectedPlugin) injectedPlugins.push(injectedPlugin);

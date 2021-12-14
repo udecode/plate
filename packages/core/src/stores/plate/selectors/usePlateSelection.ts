@@ -1,11 +1,11 @@
+import { usePlateSelectors } from '../platesStore';
 import { usePlateEditorRef } from './usePlateEditorRef';
-import { usePlateKey } from './usePlateKey';
 
 /**
  * Get the editor selection which is updated on editor change.
  */
-export const usePlateSelection = (id?: string | null) => {
-  usePlateKey('keySelection', id);
+export const usePlateSelection = (id?: string) => {
+  usePlateSelectors(id).keySelection();
 
   return usePlateEditorRef(id)?.selection;
 };

@@ -18,5 +18,12 @@ export const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   options: {
     hotkey: ['mod+opt+0', 'mod+shift+0'],
   },
-  deserializeHtml: { validNodeName: 'P' },
+  deserializeHtml: {
+    rules: [
+      {
+        validNodeName: 'P',
+      },
+    ],
+    query: (el) => el.style.fontFamily !== 'Consolas',
+  },
 });

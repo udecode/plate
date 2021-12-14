@@ -17,10 +17,7 @@ import { withCodeBlock } from './withCodeBlock';
 export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
   key: ELEMENT_CODE_BLOCK,
   isElement: true,
-  deserializeHtml: {
-    ...deserializeHtmlCodeBlock,
-    validNodeName: 'PRE',
-  },
+  deserializeHtml: deserializeHtmlCodeBlock,
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },

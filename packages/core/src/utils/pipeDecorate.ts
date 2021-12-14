@@ -7,11 +7,15 @@ import { PlateEditor } from '../types/PlateEditor';
  * Optimization: return undefined if empty list so Editable uses a memo.
  */
 export const pipeDecorate = (
-  editor: PlateEditor
+  editor: PlateEditor,
+  decorateProp?: EditableProps['decorate']
 ): EditableProps['decorate'] => {
   const decorates = editor.plugins.flatMap(
     (plugin) => plugin.decorate?.(editor, plugin) ?? []
   );
+  if (decorateProp) {
+    decorates.push(decorateProp);
+  }
   if (!decorates.length) return;
 
   return (entry: NodeEntry) => {

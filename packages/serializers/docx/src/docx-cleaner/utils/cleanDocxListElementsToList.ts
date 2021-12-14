@@ -1,6 +1,6 @@
+import { traverseHtmlElements } from '@udecode/plate-core';
 import { docxListToList } from './docxListToList';
 import { isDocxList } from './isDocxList';
-import { traverseHtmlElements } from './traverseHtmlElements';
 
 export const cleanDocxListElementsToList = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {

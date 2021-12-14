@@ -122,7 +122,7 @@ export const CONFIG: Config = {
   lineHeight: {
     inject: {
       props: {
-        defaultNodeValue: 1.5,
+        defaultNodeValue: 'normal',
         validTypes: [
           ELEMENT_PARAGRAPH,
           ELEMENT_H1,

@@ -20,12 +20,14 @@ export const createSuperscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
     hotkey: 'mod+.',
     clear: MARK_SUBSCRIPT,
   },
-  deserializeHtml: [
-    { validNodeName: ['SUP'] },
-    {
-      validStyle: {
-        verticalAlign: 'super',
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['SUP'] },
+      {
+        validStyle: {
+          verticalAlign: 'super',
+        },
       },
-    },
-  ],
+    ],
+  },
 });

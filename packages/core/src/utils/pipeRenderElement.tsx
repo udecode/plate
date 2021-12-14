@@ -12,7 +12,7 @@ import { pluginRenderElement } from './pluginRenderElement';
  */
 export const pipeRenderElement = (
   editor: PlateEditor,
-  editableProps?: EditableProps
+  renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
   const renderElements: RenderElement[] = [];
 
@@ -34,8 +34,8 @@ export const pipeRenderElement = (
 
     if (element) return element;
 
-    if (editableProps?.renderElement) {
-      return editableProps.renderElement(props);
+    if (renderElementProp) {
+      return renderElementProp(props);
     }
 
     return <DefaultElement {...props} />;

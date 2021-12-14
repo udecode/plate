@@ -1,4 +1,10 @@
+import { EditableProps } from 'slate-react/dist/components/editable';
+import { createPlateStore } from '../stores/plate/createPlateStore';
+import { platesStore } from '../stores/plate/platesStore';
+import { PlatePlugin } from './plugins/PlatePlugin';
 import { TDescendant } from './slate/TDescendant';
+import { TNode } from './slate/TNode';
+import { Nullable } from './utility/Nullable';
 import { PlateEditor } from './PlateEditor';
 
 /**
@@ -11,64 +17,65 @@ export type EditorId = string | null | undefined;
 
 export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
 
-export type PlateState<T = {}> = {
+export type PlateStoreState<T = {}> = {
   /**
-   * Slate editor reference.
-   * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
+   * A unique id used to store the editor state by id.
+   * Required if rendering multiple `Plate`. Optional otherwise.
+   * Default is `'main'`.
    */
-  editor?: PlateEditor<T>;
+  id: string;
 
-  /**
-   * A key that is incremented on each editor change.
-   */
-  keyEditor?: number;
+  plugins: PlatePlugin<T>[];
+} & Required<
+  Nullable<Pick<EditableProps, 'decorate' | 'renderElement' | 'renderLeaf'>>
+> &
+  Nullable<{
+    /**
+     * The props for the `Editable` component.
+     */
+    editableProps: EditableProps;
 
-  /**
-   * A key that is incremented on each editor.plugins change.
-   */
-  keyPlugins?: number;
+    /**
+     * Slate editor reference.
+     * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
+     */
+    editor: PlateEditor<T>;
 
-  /**
-   * A key that is incremented on each editor.selection change.
-   */
-  keySelection?: number;
+    /**
+     * If true, plate will create the editor with `withPlate`.
+     * If false, plate will remove the editor from the store.
+     * @default true
+     */
+    enabled: boolean;
 
-  /**
-   * If true, plate will create the editor with `withPlate`.
-   * If false, plate will remove the editor from the store.
-   * @default true
-   */
-  enabled?: boolean;
+    /**
+     * A key that is incremented on each editor change.
+     */
+    keyEditor: number;
 
-  /**
-   * Editor value.
-   * @default [{ children: [{ text: '' }]}]
-   */
-  value: TDescendant[];
-};
+    /**
+     * A key that is incremented on each editor.plugins change.
+     */
+    keyPlugins: number;
 
-/**
- * @see {@link EditorId}
- */
-export type PlateStates<T = {}> = Record<string, PlateState<T>>;
+    /**
+     * A key that is incremented on each editor.selection change.
+     */
+    keySelection: number;
 
-export type PlateActions<T = {}> = {
-  /**
-   * Remove state by id. Called by `Plate` on unmount.
-   */
-  clearState: (id?: string) => void;
+    /**
+     * Controlled callback called when the editor state changes.
+     */
+    onChange: (value: TNode[]) => void;
 
-  /**
-   * Set initial state by id. Called by `Plate` on mount.
-   */
-  setInitialState: (value?: Partial<PlateState<T>>, id?: string) => void;
+    /**
+     * Value of the editor.
+     * @default [{ type: 'p', children: [{ text: '' }]}]
+     */
+    value: TDescendant[];
+  }>;
 
-  /**
-   * Set a new editor with plate.
-   */
-  resetEditor: (id?: string) => void;
+export type PlateStoreApi = ReturnType<typeof createPlateStore>;
+export type PlatesStoreApi = typeof platesStore;
 
-  setEditor: (value: PlateState<T>['editor'], id?: string) => void;
-  setEnabled: (value: PlateState<T>['enabled'], id?: string) => void;
-  setValue: (value: PlateState<T>['value'], id?: string) => void;
-};
+export type PlatesStoreState = Record<string, PlateStoreApi>;

@@ -1,6 +1,8 @@
-import { isHtmlComment } from '@udecode/plate-core';
-import { removeHtmlNodesBetweenComments } from './removeHtmlNodesBetweenComments';
-import { traverseHtmlElements } from './traverseHtmlElements';
+import {
+  isHtmlComment,
+  removeHtmlNodesBetweenComments,
+  traverseHtmlElements,
+} from '@udecode/plate-core';
 
 /**
  * Remove HTML nodes between comments in the next sibling after BR.

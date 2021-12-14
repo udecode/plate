@@ -1,11 +1,11 @@
+import { usePlateSelectors } from '../platesStore';
 import { getPlateEditorRef } from './usePlateEditorRef';
-import { usePlateKey } from './usePlateKey';
 
-export const getPlatePlugins = <T = {}>(id?: string | null) =>
+export const getPlatePlugins = <T = {}>(id?: string) =>
   getPlateEditorRef<T>(id)?.plugins;
 
-export const usePlatePlugins = <T = {}>(id?: string | null) => {
-  usePlateKey('keyPlugins', id);
+export const usePlatePlugins = <T = {}>(id?: string) => {
+  usePlateSelectors(id).keyPlugins();
 
   return getPlatePlugins<T>(id);
 };

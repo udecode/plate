@@ -1,4 +1,4 @@
-import { setEventEditorId } from '../stores/event-editor/actions/setEventEditorId';
+import { eventEditorActions } from '../stores/event-editor/event-editor.store';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_EVENT_EDITOR = 'event-editor';
@@ -7,10 +7,10 @@ export const createEventEditorPlugin = createPluginFactory({
   key: KEY_EVENT_EDITOR,
   handlers: {
     onFocus: (editor) => () => {
-      setEventEditorId('focus', editor.id);
+      eventEditorActions.focus?.(editor.id);
     },
     onBlur: (editor) => () => {
-      setEventEditorId('blur', editor.id);
+      eventEditorActions.blur?.(editor.id);
     },
   },
 });

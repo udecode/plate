@@ -7,6 +7,10 @@ export const createHorizontalRulePlugin = createPluginFactory({
   isElement: true,
   isVoid: true,
   deserializeHtml: {
-    validNodeName: 'HR',
+    rules: [
+      {
+        validNodeName: 'HR',
+      },
+    ],
   },
 });

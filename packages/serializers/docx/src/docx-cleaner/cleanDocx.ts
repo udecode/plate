@@ -1,4 +1,13 @@
-import { copyBlockMarksToSpanChild } from './utils/copyBlockMarksToSpanChild';
+import {
+  cleanHtmlBrElements,
+  cleanHtmlEmptyElements,
+  cleanHtmlFontElements,
+  cleanHtmlLinkElements,
+  cleanHtmlTextNodes,
+  copyBlockMarksToSpanChild,
+  postCleanHtml,
+  preCleanHtml,
+} from '@udecode/plate-core';
 import {
   cleanDocxBrComments,
   cleanDocxEmptyParagraphs,
@@ -7,14 +16,7 @@ import {
   cleanDocxListElements,
   cleanDocxQuotes,
   cleanDocxSpans,
-  cleanHtmlBrElements,
-  cleanHtmlEmptyElements,
-  cleanHtmlFontElements,
-  cleanHtmlLinkElements,
-  cleanHtmlTextNodes,
   isDocxContent,
-  postCleanHtml,
-  preCleanHtml,
 } from './utils';
 
 export const cleanDocx = (html: string, rtf: string): string => {

@@ -11,12 +11,14 @@ export const createKbdPlugin = createPluginFactory({
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },
-  deserializeHtml: [
-    { validNodeName: ['KBD'] },
-    {
-      validStyle: {
-        wordWrap: 'break-word',
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['KBD'] },
+      {
+        validStyle: {
+          wordWrap: 'break-word',
+        },
       },
-    },
-  ],
+    ],
+  },
 });

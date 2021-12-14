@@ -17,7 +17,7 @@ export const createTablePlugin = createPluginFactory({
     onKeyDown: onKeyDownTable,
   },
   deserializeHtml: {
-    validNodeName: 'TABLE',
+    rules: [{ validNodeName: 'TABLE' }],
   },
   withOverrides: withTable,
   plugins: [
@@ -25,7 +25,7 @@ export const createTablePlugin = createPluginFactory({
       key: ELEMENT_TR,
       isElement: true,
       deserializeHtml: {
-        validNodeName: 'TR',
+        rules: [{ validNodeName: 'TR' }],
       },
     },
     {
@@ -33,7 +33,7 @@ export const createTablePlugin = createPluginFactory({
       isElement: true,
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
-        validNodeName: 'TD',
+        rules: [{ validNodeName: 'TD' }],
       },
       props: ({ element }) => ({
         nodeProps: {
@@ -47,7 +47,7 @@ export const createTablePlugin = createPluginFactory({
       isElement: true,
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
-        validNodeName: 'TH',
+        rules: [{ validNodeName: 'TH' }],
       },
       props: ({ element }) => ({
         nodeProps: {

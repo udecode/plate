@@ -1,6 +1,6 @@
+import { traverseHtmlElements } from '@udecode/plate-core';
 import { cleanDocxSpacerun } from './cleanDocxSpacerun';
 import { cleanDocxTabCount } from './cleanDocxTabCount';
-import { traverseHtmlElements } from './traverseHtmlElements';
 
 /**
  * Clean docx spaceruns and tab counts.

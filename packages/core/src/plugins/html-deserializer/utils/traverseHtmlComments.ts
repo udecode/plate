@@ -1,4 +1,4 @@
-import { isHtmlComment } from '@udecode/plate-core';
+import { isHtmlComment } from './isHtmlComment';
 import { traverseHtmlNode } from './traverseHtmlNode';
 
 type Callback = (node: Comment) => boolean;

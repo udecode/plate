@@ -1,15 +1,17 @@
-import { KEY_ALIGN } from '@udecode/plate-alignment';
-import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
-import {
-  deserializeHtmlCodeBlock,
-  ELEMENT_CODE_BLOCK,
-} from '@udecode/plate-code-block';
 import {
   createPluginFactory,
   DeserializeHtml,
   KEY_DESERIALIZE_HTML,
+  PlatePlugin,
 } from '@udecode/plate-core';
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import {
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+} from '@udecode/plate-heading';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
@@ -26,14 +28,6 @@ export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
 
 const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
   const node: any = { type };
-
-  if (element.style.textAlign) {
-    node[KEY_ALIGN] = element.style.textAlign;
-  }
-
-  if (element.style.lineHeight) {
-    node.lineHeight = element.style.lineHeight;
-  }
 
   if (isDocxList(element)) {
     node[KEY_INDENT] = getDocxListIndent(element);
@@ -55,6 +49,28 @@ const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
   return node;
 };
 
+const KEYS = [
+  ELEMENT_PARAGRAPH,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+];
+
+const overrideByKey: Record<string, Partial<PlatePlugin>> = {};
+
+KEYS.forEach((key) => {
+  overrideByKey[key] = {
+    then: (editor, { type }) => ({
+      deserializeHtml: {
+        getNode: getListNode(type),
+      },
+    }),
+  };
+});
+
 export const createDeserializeDocxPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_DOCX,
   inject: {
@@ -73,52 +89,7 @@ export const createDeserializeDocxPlugin = createPluginFactory({
     },
   },
   overrideByKey: {
-    [ELEMENT_PARAGRAPH]: {
-      then: (editor, { type }) => ({
-        deserializeHtml: {
-          query: (el) => {
-            return !el.classList.contains('SourceCode');
-          },
-          getNode: getListNode(type),
-        },
-      }),
-    },
-    [ELEMENT_H1]: {
-      then: (editor, { type }) => ({
-        deserializeHtml: {
-          getNode: getListNode(type),
-        },
-      }),
-    },
-    [ELEMENT_H2]: {
-      then: (editor, { type }) => ({
-        deserializeHtml: {
-          getNode: getListNode(type),
-        },
-      }),
-    },
-    [ELEMENT_H3]: {
-      then: (editor, { type }) => ({
-        deserializeHtml: {
-          getNode: getListNode(type),
-        },
-      }),
-    },
-    [ELEMENT_CODE_BLOCK]: {
-      deserializeHtml: [
-        {
-          validNodeName: 'PRE',
-          ...deserializeHtmlCodeBlock,
-        },
-        {
-          validClassName: 'SourceCode',
-          ...deserializeHtmlCodeBlock,
-        },
-      ],
-    },
-    // [ELEMENT_TABLE]: {
-    //   deserializeHtml:
-    // },
+    ...overrideByKey,
     [ELEMENT_IMAGE]: {
       editor: {
         insertData: {
@@ -130,41 +101,6 @@ export const createDeserializeDocxPlugin = createPluginFactory({
           },
         },
       },
-    },
-    [MARK_BOLD]: {
-      deserializeHtml: [
-        {
-          validNodeName: ['STRONG', 'B'],
-          query: (el) => {
-            return !(
-              (el.children[0] as HTMLElement)?.style.fontWeight === 'normal'
-            );
-          },
-        },
-        {
-          validStyle: {
-            fontWeight: ['600', '700', 'bold'],
-          },
-        },
-      ],
-    },
-    [MARK_ITALIC]: {
-      deserializeHtml: [
-        {
-          validNodeName: ['EM', 'I'],
-          query: (el) => {
-            return !(
-              el.nodeName === 'EM' &&
-              (el.children[0] as HTMLElement)?.style.fontStyle === 'normal'
-            );
-          },
-        },
-        {
-          validStyle: {
-            fontStyle: 'italic',
-          },
-        },
-      ],
     },
   },
 });

@@ -13,22 +13,29 @@ export const MARK_CODE = 'code';
 export const createCodePlugin = createPluginFactory<ToggleMarkPlugin>({
   key: MARK_CODE,
   isLeaf: true,
-  deserializeHtml: [
-    {
-      validNodeName: ['CODE'],
-      query: (el) => !findHtmlParentElement(el, 'PRE'),
-    },
-    {
-      validStyle: {
-        wordWrap: 'break-word',
+  deserializeHtml: {
+    rules: [
+      {
+        validNodeName: ['CODE'],
       },
-    },
-    {
-      validStyle: {
-        fontFamily: 'Consolas',
+      {
+        validStyle: {
+          wordWrap: 'break-word',
+        },
       },
+      {
+        validStyle: {
+          fontFamily: 'Consolas',
+        },
+      },
+    ],
+    query(el) {
+      const blockAbove = findHtmlParentElement(el, 'P');
+      if (blockAbove?.style.fontFamily === 'Consolas') return false;
+
+      return !findHtmlParentElement(el, 'PRE');
     },
-  ],
+  },
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },

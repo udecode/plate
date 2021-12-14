@@ -916,7 +916,7 @@ const createHugeDocument = () => {
 const createMultiEditors = () => {
   const multiEditors: TDescendant[][] = [];
 
-  for (let h = 0; h < 200; h++) {
+  for (let h = 0; h < 400; h++) {
     const multiEditor: TDescendant[] = [];
     multiEditor.push(<hh1>{faker.lorem.sentence()}</hh1>);
 

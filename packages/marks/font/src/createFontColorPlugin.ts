@@ -18,9 +18,13 @@ export const createFontColorPlugin = createPluginFactory({
           return { [type]: element.style.color };
         }
       },
-      validStyle: {
-        color: '*',
-      },
+      rules: [
+        {
+          validStyle: {
+            color: '*',
+          },
+        },
+      ],
     },
   }),
 });

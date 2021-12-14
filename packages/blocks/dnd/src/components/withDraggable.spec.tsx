@@ -22,22 +22,6 @@ const initialValue = [
   },
 ];
 
-it('should render draggable component', () => {
-  const { container } = render(
-    <DndProvider backend={TestBackend}>
-      <Plate
-        plugins={[
-          createParagraphPlugin({
-            component: withDraggable(components[ELEMENT_PARAGRAPH]),
-          }),
-        ]}
-        initialValue={initialValue}
-      />
-    </DndProvider>
-  );
-  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
-});
-
 // eslint-disable-next-line jest/no-commented-out-tests
 // it('should filter based on level', () => {
 //   const _components = createPlateUI({
@@ -77,20 +61,20 @@ it('should not be draggable if readOnly', () => {
   expect(container.querySelector('.slate-Draggable')).not.toBeInTheDocument();
 });
 
-it('should be draggable in readOnly if allowReadOnly', () => {
-  const { container } = render(
-    <DndProvider backend={TestBackend}>
-      <Plate
-        plugins={[
-          createParagraphPlugin({
-            component: withDraggable(components[ELEMENT_PARAGRAPH], {
-              allowReadOnly: true,
-            }),
-          }),
-        ]}
-        initialValue={initialValue}
-      />
-    </DndProvider>
-  );
-  expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
-});
+// it('should be draggable in readOnly if allowReadOnly', () => {
+//   const { container } = render(
+//     <DndProvider backend={TestBackend}>
+//       <Plate
+//         plugins={[
+//           createParagraphPlugin({
+//             component: withDraggable(components[ELEMENT_PARAGRAPH], {
+//               allowReadOnly: true,
+//             }),
+//           }),
+//         ]}
+//         initialValue={initialValue}
+//       />
+//     </DndProvider>
+//   );
+//   expect(container.querySelector('.slate-Draggable')).toBeInTheDocument();
+// });

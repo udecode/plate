@@ -107,14 +107,16 @@ const createReactPlugin = {
 // Example
 const createBoldPlugin = {
   // ...
-  deserializeHtml: [
-    { validNodeName: ['STRONG', 'B'] },
-    {
-      validStyle: {
-        fontWeight: ['600', '700', 'bold'],
+  deserializeHtml: {
+    rules: [
+      { validNodeName: ['STRONG', 'B'] },
+      {
+       validStyle: {
+         fontWeight: ['600', '700', 'bold'],
+       },
       },
-    },
-  ],
+    ],
+  }
 };
 ```
 

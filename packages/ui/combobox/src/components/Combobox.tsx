@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import {
   isDefined,
   useEditorState,
-  usePlateEventId,
+  useEventEditorSelectors,
 } from '@udecode/plate-core';
 import {
   getRangeBoundingClientRect,
@@ -151,7 +151,7 @@ export const Combobox = <TData extends Data = NoData>({
   ...props
 }: ComboboxProps<TData>) => {
   const editor = useEditorState();
-  const focusedEditorId = usePlateEventId('focus');
+  const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
   const activeId = comboboxStore.use.activeId();
 
