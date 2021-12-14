@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-serializers-docx': minor
+'@udecode/plate-serializer-docx': minor
 ---
 
 - moved many utils to `@udecode/plate-core`

@@ -98,7 +98,11 @@ export const usePlateEffects = <T = {}>({
 
   // Dynamic plugins
   useEffect(() => {
-    if (editor && prevPlugins.current !== plugins) {
+    if (
+      editor &&
+      prevEditor.current === editor &&
+      prevPlugins.current !== plugins
+    ) {
       setPlatePlugins(editor, { plugins, disableCorePlugins });
       prevPlugins.current = plugins;
     }
@@ -110,4 +114,8 @@ export const usePlateEffects = <T = {}>({
       Editor.normalize(editor, { force: true });
     }
   }, [editor, normalizeInitialValue]);
+
+  useEffect(() => {
+    prevEditor.current = editor;
+  }, [editor]);
 };
