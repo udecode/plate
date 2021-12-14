@@ -1,5 +1,7 @@
 # @udecode/plate-font-ui
 
+## 9.0.0
+
 ## 8.3.1
 
 ### Patch Changes

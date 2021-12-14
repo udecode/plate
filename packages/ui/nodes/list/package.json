@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-list",
-  "version": "8.3.0",
+  "version": "9.0.0",
   "description": "List UI for Plate",
   "keywords": [
     "slate",
@@ -32,10 +32,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-core": "8.3.0",
-    "@udecode/plate-list": "8.3.0",
-    "@udecode/plate-styled-components": "8.3.0",
-    "@udecode/plate-ui-toolbar": "8.3.0"
+    "@udecode/plate-core": "9.0.0",
+    "@udecode/plate-list": "9.0.0",
+    "@udecode/plate-styled-components": "9.0.0",
+    "@udecode/plate-ui-toolbar": "9.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

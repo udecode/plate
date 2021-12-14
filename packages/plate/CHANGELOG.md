@@ -1,5 +1,16 @@
 # @udecode/plate
 
+## 9.0.0
+
+### Major Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - renamed `plate-x-ui` to `plate-ui-x`: all packages depending on `styled-components` has `plate-ui` prefix
+  - renamed `plate-x-serializer` to `plate-serializer-x`
+  - is now exporting only these (new) packages:
+    - `@udecode/plate-headless`: all unstyled packages
+    - `@udecode/plate-ui`: all styled packages
+
 ## 8.3.1
 
 ## 8.3.0
