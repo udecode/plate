@@ -1,5 +1,7 @@
 # @udecode/plate-link
 
+## 9.0.0
+
 ## 8.3.0
 
 ### Patch Changes

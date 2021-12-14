@@ -1,5 +1,99 @@
 # @udecode/plate-core
 
+## 9.0.0
+
+### Major Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - `Plate`
+    - `editor` prop can now be fully controlled: Plate is not applying `withPlate` on it anymore
+  - `PlatePlugin.deserializeHtml`
+    - can't be an array anymore
+    - moved `validAttribute`, `validClassName`, `validNodeName`, `validStyle` to `deserializeHtml.rules` property
+  - renamed `plateStore` to `platesStore`
+  - `platesStore` is now a zustood store
+  - `eventEditorStore` is now a zustood store
+  - `getPlateId` now gets the last editor id if not focused or blurred
+    - used by `usePlateEditorRef` and `usePlateEditorState`
+  - removed:
+    - `usePlateEnabled` for `usePlateSelectors(id).enabled()`
+    - `usePlateValue` for `usePlateSelectors(id).value()`
+    - `usePlateActions`:
+      - `resetEditor` for `getPlateActions(id).resetEditor()`
+      - `clearState` for `platesActions.unset()`
+      - `setInitialState` for `platesActions.set(id)`
+      - `setEditor` for `getPlateActions(id).editor(value)`
+      - `setEnabled` for `getPlateActions(id).enabled(value)`
+      - `setValue` for `getPlateActions(id).value(value)`
+    - `getPlateState`
+    - `usePlateState`
+    - `usePlateKey`
+
+### Minor Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - new packages
+    - `@udecode/zustood`
+    - `use-deep-compare`
+  - `Plate`
+    - renders a new component: `EditorRefEffect`
+      - it renders `plugin.useHooks(editor, plugin)` for all `editor.plugins`
+      - note that it will unmount and remount the hooks on `plugins` change
+    - `useEditableProps`
+      - subscribes to the store `editableProps`, `decorate`, `renderLeaf`, `renderElement`
+      - `decorate`, `renderLeaf`, `renderElement` are now separately memoized
+      - `useDeepCompareMemo` instead of `useMemo` for performance
+    - `useSlateProps`
+      - subscribes to the store `onChange`, `value`
+    - `usePlateEffects`
+      - update the plate store on props change:
+        - `editableProps`
+        - `onChange`
+        - `value`
+        - `enabled`
+        - `plugins`
+        - `decorate`
+        - `renderElement`
+        - `renderLeaf`
+  - `PlatePlugin`
+    - `useHooks`: new property to use hooks once the editor is initialized.
+    - `deserializeHtml`
+      - `getNode` has a new parameter `node`
+      - `getNode` can be injected by other plugins
+  - `createPlateStore`: create a plate zustood store
+    - actions: `resetEditor`, `incrementKey`
+    - new properties:
+      - `plugins`
+      - `decorate`
+      - `renderElement`
+      - `renderLeaf`
+      - `editableProps`
+      - `onChange`
+  - `platesStore`:
+    - actions: `set`, `unset`
+    - selectors: `get`
+  - `usePlateId`: hook version of `getPlateId`
+  - `platesActions`
+  - `getPlateActions`
+  - `getPlateSelectors`
+  - `usePlateSelectors`
+  - `getPlateStore`
+  - `usePlateStore`
+  - `eventEditorActions`
+  - `eventEditorSelectors`
+  - `useEventEditorSelectors`
+  - `mapInjectPropsToPlugin`: Map plugin inject props to injected plugin
+
+### Patch Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - fix performance issue with hundreds of Plate editors
+  - fix a bug where `editor.plugins` was reversed
+  - `Plate`
+    - `editor.plugins` were missing plugins on `plugins` prop change
+  - `withInlineVoid`:
+    - use `plugin.type` instead of `plugin.key`
+
 ## 8.3.0
 
 ### Patch Changes

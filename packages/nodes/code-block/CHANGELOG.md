@@ -1,5 +1,13 @@
 # @udecode/plate-code-block
 
+## 9.0.0
+
+### Minor Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - `deserializeHtml`:
+    - added a rule: `<p>` nodes with `fontFamily: 'Consolas'`
+
 ## 8.3.0
 
 ## 8.1.0

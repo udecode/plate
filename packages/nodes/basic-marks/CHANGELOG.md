@@ -1,5 +1,19 @@
 # @udecode/plate-basic-marks
 
+## 9.0.0
+
+### Minor Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - bold `deserializeHtml.query`:
+    - invalid if a child element has `fontWeight: 'normal'`
+  - italic `deserializeHtml.query`:
+    - invalid if a child element has `fontStyle: 'normal'`
+  - strikethrough `deserializeHtml.query`:
+    - invalid if a child element has `textDecoration: 'normal'`
+  - underline `deserializeHtml.query`:
+    - invalid if a child element has `textDecoration: 'normal'`
+
 ## 8.3.0
 
 ## 8.2.1

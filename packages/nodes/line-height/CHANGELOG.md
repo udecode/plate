@@ -1,5 +1,12 @@
 # @udecode/plate-line-height
 
+## 9.0.0
+
+### Minor Changes
+
+- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
+  - inject `deserializeHtml.getNode` to set `lineHeight` if `el.style.lineHeight` is defined
+
 ## 8.3.0
 
 ### Minor Changes
