@@ -9,18 +9,18 @@ import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { CONFIG } from '../../../../../../docs/src/live/config/config';
-import { createIndentPlugin } from '../../../../../blocks/indent/src/createIndentPlugin';
-import { createBasicElementsPlugin } from '../../../../../elements/basic-elements/src/createBasicElementsPlugin';
+import { createBasicElementsPlugin } from '../../../../../nodes/basic-elements/src/createBasicElementsPlugin';
+import { createBasicMarksPlugin } from '../../../../../nodes/basic-marks/src/createBasicMarksPlugin';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
-} from '../../../../../elements/heading/src/constants';
-import { createHorizontalRulePlugin } from '../../../../../elements/horizontal-rule/src/createHorizontalRulePlugin';
-import { createLineHeightPlugin } from '../../../../../elements/line-height/src/createLineHeightPlugin';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
-import { createBasicMarksPlugin } from '../../../../../marks/basic-marks/src/createBasicMarksPlugin';
+} from '../../../../../nodes/heading/src/constants';
+import { createHorizontalRulePlugin } from '../../../../../nodes/horizontal-rule/src/createHorizontalRulePlugin';
+import { createIndentPlugin } from '../../../../../nodes/indent/src/createIndentPlugin';
+import { createLineHeightPlugin } from '../../../../../nodes/line-height/src/createLineHeightPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
 import { createJuicePlugin } from '../../../../juice/src/createJuicePlugin';
 import { readTestFile } from '../../__tests__/readTestFile';
 import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';

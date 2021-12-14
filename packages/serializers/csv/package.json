@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-csv-serializer",
+  "name": "@udecode/plate-serializer-csv",
   "version": "8.3.0",
   "description": "CSV serializer plugin for Plate",
   "keywords": [

@@ -2,8 +2,8 @@
 
 import { createPlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { ELEMENT_H1 } from '../../../../../elements/heading/src/constants';
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { ELEMENT_H1 } from '../../../../../nodes/heading/src/constants';
+import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { createNormalizeTypesPlugin } from '../../createNormalizeTypesPlugin';
 
 jsx;

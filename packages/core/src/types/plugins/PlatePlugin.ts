@@ -146,6 +146,9 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
       plugin: WithPlatePlugin<T, P>
     ) => Partial<PlatePlugin<T, P>> | void;
 
+    /**
+     * Hook called when the editor is initialized.
+     */
     useHooks?: (editor: PlateEditor<T>, plugin: WithPlatePlugin<T, P>) => void;
 
     /**

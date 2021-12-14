@@ -1,9 +1,9 @@
+import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
-} from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+} from '../../../../../nodes/paragraph/src/createParagraphPlugin';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 
 it('serialize with slate className', () => {

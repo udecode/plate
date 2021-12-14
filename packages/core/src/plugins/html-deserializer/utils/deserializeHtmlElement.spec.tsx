@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
-import { createImagePlugin } from '../../../../../elements/image/src/createImagePlugin';
-import { createLinkPlugin } from '../../../../../elements/link/src/createLinkPlugin';
-import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createTablePlugin } from '../../../../../elements/table/src/createTablePlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
+import { createImagePlugin } from '../../../../../nodes/image/src/createImagePlugin';
+import { createLinkPlugin } from '../../../../../nodes/link/src/createLinkPlugin';
+import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
+import { createTablePlugin } from '../../../../../nodes/table/src/createTablePlugin';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;

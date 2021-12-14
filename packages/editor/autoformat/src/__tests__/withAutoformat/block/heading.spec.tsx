@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { clearBlockFormat } from '../../../../../../../docs/src/live/config/autoformat/autoformatUtils';
 import { CONFIG } from '../../../../../../../docs/src/live/config/config';
-import { ELEMENT_H1 } from '../../../../../../elements/heading/src/constants';
+import { ELEMENT_H1 } from '../../../../../../nodes/heading/src/constants';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;

@@ -8,7 +8,7 @@ import {
   getSelectionBoundingClientRect,
   usePopperPosition,
   UsePopperPositionOptions,
-} from '@udecode/plate-popper';
+} from '@udecode/plate-ui-popper';
 
 export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
   const editor = usePlateEditorState()!;

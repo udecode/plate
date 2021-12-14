@@ -1,8 +1,8 @@
-import { createBasicElementsPlugin } from '../../../elements/basic-elements/src/createBasicElementsPlugin';
+import { createBasicElementsPlugin } from '../../../nodes/basic-elements/src/createBasicElementsPlugin';
 import {
   createLinkPlugin,
   ELEMENT_LINK,
-} from '../../../elements/link/src/createLinkPlugin';
+} from '../../../nodes/link/src/createLinkPlugin';
 import { createPlateEditor } from './createPlateEditor';
 import { createPluginFactory } from './createPluginFactory';
 import { getPlugin } from './getPlugin';

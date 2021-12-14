@@ -1,8 +1,8 @@
-import { createListPlugin } from '../../../../../elements/list/src/createListPlugin';
-import { createParagraphPlugin } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { createBoldPlugin } from '../../../../../marks/basic-marks/src/createBoldPlugin';
-import { createItalicPlugin } from '../../../../../marks/basic-marks/src/createItalicPlugin';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { createBoldPlugin } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
+import { createItalicPlugin } from '../../../../../nodes/basic-marks/src/createItalicPlugin';
+import { createListPlugin } from '../../../../../nodes/list/src/createListPlugin';
+import { createParagraphPlugin } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

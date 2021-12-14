@@ -13,7 +13,7 @@ import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createImagePlugin } from '@udecode/plate-image';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { HeadingToolbar } from '@udecode/plate-toolbar';
+import { HeadingToolbar } from '@udecode/plate-ui-toolbar';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
@@ -26,10 +26,8 @@ import { withStyledDraggables } from '../docs/src/live/config/components/withSty
 import { withStyledPlaceHolders } from '../docs/src/live/config/components/withStyledPlaceHolders';
 import { CONFIG } from '../docs/src/live/config/config';
 import { VALUES } from '../docs/src/live/config/values/values';
-import { createDndPlugin } from '../packages/blocks/dnd/src/createDndPlugin';
 import { Plate } from '../packages/core/src/components/Plate';
 import { createPlugins } from '../packages/core/src/utils/createPlugins';
-import { SearchHighlightToolbar } from '../packages/decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../packages/editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../packages/editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../packages/editor/break/src/soft-break/createSoftBreakPlugin';
@@ -38,25 +36,27 @@ import { createNormalizeTypesPlugin } from '../packages/editor/normalizers/src/c
 import { createResetNodePlugin } from '../packages/editor/reset-node/src/createResetNodePlugin';
 import { createSelectOnBackspacePlugin } from '../packages/editor/select/src/createSelectOnBackspacePlugin';
 import { createTrailingBlockPlugin } from '../packages/editor/trailing-block/src/createTrailingBlockPlugin';
-import { createAlignPlugin } from '../packages/elements/alignment/src/createAlignPlugin';
-import { ImageToolbarButton } from '../packages/elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
-import { LinkToolbarButton } from '../packages/elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
-import { createListPlugin } from '../packages/elements/list/src/createListPlugin';
-import { createTodoListPlugin } from '../packages/elements/list/src/todo-list/createTodoListPlugin';
-import { createMediaEmbedPlugin } from '../packages/elements/media-embed/src/createMediaEmbedPlugin';
-import { createMentionPlugin } from '../packages/elements/mention/src/createMentionPlugin';
-import { MentionCombobox } from '../packages/elements/mention-ui/src/MentionCombobox/MentionCombobox';
-import { createTablePlugin } from '../packages/elements/table/src/createTablePlugin';
-import { createBoldPlugin } from '../packages/marks/basic-marks/src/createBoldPlugin';
-import { createCodePlugin } from '../packages/marks/basic-marks/src/createCodePlugin';
-import { createItalicPlugin } from '../packages/marks/basic-marks/src/createItalicPlugin';
-import { createStrikethroughPlugin } from '../packages/marks/basic-marks/src/createStrikethroughPlugin';
-import { createSubscriptPlugin } from '../packages/marks/basic-marks/src/createSubscriptPlugin';
-import { createSuperscriptPlugin } from '../packages/marks/basic-marks/src/createSuperscriptPlugin';
-import { createUnderlinePlugin } from '../packages/marks/basic-marks/src/createUnderlinePlugin';
-import { createHighlightPlugin } from '../packages/marks/highlight/src/createHighlightPlugin';
-import { createKbdPlugin } from '../packages/marks/kbd/src/createKbdPlugin';
-import { createPlateUI } from '../packages/plate/src/utils/createPlateUI';
+import { createAlignPlugin } from '../packages/nodes/alignment/src/createAlignPlugin';
+import { createBoldPlugin } from '../packages/nodes/basic-marks/src/createBoldPlugin';
+import { createCodePlugin } from '../packages/nodes/basic-marks/src/createCodePlugin';
+import { createItalicPlugin } from '../packages/nodes/basic-marks/src/createItalicPlugin';
+import { createStrikethroughPlugin } from '../packages/nodes/basic-marks/src/createStrikethroughPlugin';
+import { createSubscriptPlugin } from '../packages/nodes/basic-marks/src/createSubscriptPlugin';
+import { createSuperscriptPlugin } from '../packages/nodes/basic-marks/src/createSuperscriptPlugin';
+import { createUnderlinePlugin } from '../packages/nodes/basic-marks/src/createUnderlinePlugin';
+import { createHighlightPlugin } from '../packages/nodes/highlight/src/createHighlightPlugin';
+import { createKbdPlugin } from '../packages/nodes/kbd/src/createKbdPlugin';
+import { createListPlugin } from '../packages/nodes/list/src/createListPlugin';
+import { createTodoListPlugin } from '../packages/nodes/list/src/todo-list/createTodoListPlugin';
+import { createMediaEmbedPlugin } from '../packages/nodes/media-embed/src/createMediaEmbedPlugin';
+import { createMentionPlugin } from '../packages/nodes/mention/src/createMentionPlugin';
+import { createTablePlugin } from '../packages/nodes/table/src/createTablePlugin';
+import { createDndPlugin } from '../packages/ui/dnd/src/createDndPlugin';
+import { SearchHighlightToolbar } from '../packages/ui/find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
+import { ImageToolbarButton } from '../packages/ui/nodes/image/src/ImageToolbarButton/ImageToolbarButton';
+import { LinkToolbarButton } from '../packages/ui/nodes/link/src/LinkToolbarButton/LinkToolbarButton';
+import { MentionCombobox } from '../packages/ui/nodes/mention/src/MentionCombobox/MentionCombobox';
+import { createPlateUI } from '../packages/ui/plate/src/utils/createPlateUI';
 
 export default {
   title: 'Drag & Drop',

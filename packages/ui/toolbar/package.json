@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-toolbar",
+  "name": "@udecode/plate-ui-toolbar",
   "version": "8.3.0",
   "description": "Toolbar UI for Plate",
   "keywords": [
@@ -35,7 +35,7 @@
     "@tippyjs/react": "^4.2.0",
     "@udecode/plate-core": "8.3.0",
     "react-popper": "^2.2.4",
-    "@udecode/plate-popper": "8.3.0",
+    "@udecode/plate-ui-popper": "8.3.0",
     "@udecode/plate-styled-components": "8.3.0",
     "react-use": "^17.1.1"
   },

@@ -1,4 +1,4 @@
-import { UsePopperOptions } from '@udecode/plate-popper';
+import { UsePopperOptions } from '@udecode/plate-ui-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { Range } from 'slate';
 import { NoData, TComboboxItem } from './components';

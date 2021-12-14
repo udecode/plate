@@ -67,7 +67,7 @@ export const useEditableProps = ({
     return _props;
   }, [decorate, editableProps, isValid, renderElement, renderLeaf]);
 
-  return useMemo(
+  return useDeepCompareMemo(
     () => ({
       ...omit(editableProps, [...DOM_HANDLERS, 'renderElement', 'renderLeaf']),
       ...props,

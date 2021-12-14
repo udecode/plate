@@ -2,7 +2,7 @@ import {
   createImagePlugin,
   createLinkPlugin,
 } from '../../../../../plate/src/index';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

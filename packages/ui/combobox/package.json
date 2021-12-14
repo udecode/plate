@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-combobox",
+  "name": "@udecode/plate-ui-combobox",
   "version": "8.3.0",
   "description": "Combobox UI for Plate",
   "keywords": [
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@udecode/plate-core": "8.3.0",
-    "@udecode/plate-popper": "8.3.0",
+    "@udecode/plate-ui-popper": "8.3.0",
     "@udecode/plate-styled-components": "8.3.0",
     "@udecode/zustood": "0.4.0",
     "downshift": "6.1.7",

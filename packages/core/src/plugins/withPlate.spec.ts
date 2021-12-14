@@ -1,6 +1,6 @@
 import { createEditor } from 'slate';
-import { createHeadingPlugin } from '../../../elements/heading/src/createHeadingPlugin';
-import { createParagraphPlugin } from '../../../elements/paragraph/src/createParagraphPlugin';
+import { createHeadingPlugin } from '../../../nodes/heading/src/createHeadingPlugin';
+import { createParagraphPlugin } from '../../../nodes/paragraph/src/createParagraphPlugin';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { getPlugin } from '../utils/getPlugin';
 import { KEY_DESERIALIZE_HTML } from './html-deserializer/createDeserializeHtmlPlugin';

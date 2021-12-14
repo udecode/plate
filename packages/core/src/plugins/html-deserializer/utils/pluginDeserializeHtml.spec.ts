@@ -1,5 +1,5 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
-import { MARK_BOLD } from '../../../../../marks/basic-marks/src/createBoldPlugin';
+import { MARK_BOLD } from '../../../../../nodes/basic-marks/src/createBoldPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
 import { createPlateEditor } from '../../../utils/createPlateEditor';
 import { mockPlugin } from '../../../utils/mockPlugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';

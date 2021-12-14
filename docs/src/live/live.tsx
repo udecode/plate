@@ -191,9 +191,9 @@ import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
-} from '@udecode/plate-excalidraw';
+} from '../../../packages/ui/nodes/excalidraw';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { LineHeightToolbarDropdown } from '@udecode/plate-line-height-ui';
+import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { clearBlockFormat } from './config/autoformat/autoformatUtils';

@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH } from '../../../../../elements/paragraph/src/createParagraphPlugin';
+import { ELEMENT_PARAGRAPH } from '../../../../../nodes/paragraph/src/createParagraphPlugin';
 import {
   createAlignPlugin,
   createBlockquotePlugin,
@@ -9,7 +9,7 @@ import {
   createParagraphPlugin,
   createTablePlugin,
 } from '../../../../../plate/src/index';
-import { createPlateUIEditor } from '../../../../../plate/src/utils/createPlateUIEditor';
+import { createPlateUIEditor } from '../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { serializeHtml } from '../serializeHtml';
 import { htmlStringToDOMNode } from '../utils/htmlStringToDOMNode';
 

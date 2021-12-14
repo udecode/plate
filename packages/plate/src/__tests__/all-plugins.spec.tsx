@@ -7,10 +7,12 @@ import {
   Search,
 } from '@styled-icons/material';
 import { render } from '@testing-library/react';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createPlugins } from '@udecode/plate-core';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace';
-import { createHeadingPlugin } from '@udecode/plate-heading';
+import {
+  createBasicElementsPlugin,
+  createFindReplacePlugin,
+  createHeadingPlugin,
+  createPlugins,
+} from '@udecode/plate-headless';
 import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
@@ -23,7 +25,6 @@ import {
 import { CONFIG } from '../../../../docs/src/live/config/config';
 import { VALUES } from '../../../../docs/src/live/config/values/values';
 import { Plate } from '../../../core/src/components/Plate';
-import { SearchHighlightToolbar } from '../../../decorators/find-replace-ui/src/SearchHighlightToolbar/SearchHighlightToolbar';
 import { createAutoformatPlugin } from '../../../editor/autoformat/src/createAutoformatPlugin';
 import { createExitBreakPlugin } from '../../../editor/break/src/exit-break/createExitBreakPlugin';
 import { createSoftBreakPlugin } from '../../../editor/break/src/soft-break/createSoftBreakPlugin';
@@ -32,24 +33,25 @@ import { createNormalizeTypesPlugin } from '../../../editor/normalizers/src/crea
 import { createResetNodePlugin } from '../../../editor/reset-node/src/createResetNodePlugin';
 import { createSelectOnBackspacePlugin } from '../../../editor/select/src/createSelectOnBackspacePlugin';
 import { createTrailingBlockPlugin } from '../../../editor/trailing-block/src/createTrailingBlockPlugin';
-import { createAlignPlugin } from '../../../elements/alignment/src/createAlignPlugin';
-import { createBlockquotePlugin } from '../../../elements/block-quote/src/createBlockquotePlugin';
-import { createImagePlugin } from '../../../elements/image/src/createImagePlugin';
-import { ImageToolbarButton } from '../../../elements/image-ui/src/ImageToolbarButton/ImageToolbarButton';
-import { LineHeightToolbarDropdown } from '../../../elements/line-height-ui/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
-import { createLinkPlugin } from '../../../elements/link/src/createLinkPlugin';
-import { LinkToolbarButton } from '../../../elements/link-ui/src/LinkToolbarButton/LinkToolbarButton';
-import { createListPlugin } from '../../../elements/list/src/createListPlugin';
-import { createTodoListPlugin } from '../../../elements/list/src/todo-list/createTodoListPlugin';
-import { createMediaEmbedPlugin } from '../../../elements/media-embed/src/createMediaEmbedPlugin';
-import { MediaEmbedToolbarButton } from '../../../elements/media-embed-ui/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
-import { createMentionPlugin } from '../../../elements/mention/src/createMentionPlugin';
-import { MentionCombobox } from '../../../elements/mention-ui/src/MentionCombobox';
-import { createTablePlugin } from '../../../elements/table/src/createTablePlugin';
-import { createBasicMarksPlugin } from '../../../marks/basic-marks/src/createBasicMarksPlugin';
-import { createHighlightPlugin } from '../../../marks/highlight/src/createHighlightPlugin';
+import { createAlignPlugin } from '../../../nodes/alignment/src/createAlignPlugin';
+import { createBasicMarksPlugin } from '../../../nodes/basic-marks/src/createBasicMarksPlugin';
+import { createBlockquotePlugin } from '../../../nodes/block-quote/src/createBlockquotePlugin';
+import { createHighlightPlugin } from '../../../nodes/highlight/src/createHighlightPlugin';
+import { createImagePlugin } from '../../../nodes/image/src/createImagePlugin';
+import { createLinkPlugin } from '../../../nodes/link/src/createLinkPlugin';
+import { createListPlugin } from '../../../nodes/list/src/createListPlugin';
+import { createTodoListPlugin } from '../../../nodes/list/src/todo-list/createTodoListPlugin';
+import { createMediaEmbedPlugin } from '../../../nodes/media-embed/src/createMediaEmbedPlugin';
+import { createMentionPlugin } from '../../../nodes/mention/src/createMentionPlugin';
+import { createTablePlugin } from '../../../nodes/table/src/createTablePlugin';
+import { SearchHighlightToolbar } from '../../../ui/find-replace/src/SearchHighlightToolbar/SearchHighlightToolbar';
+import { ImageToolbarButton } from '../../../ui/nodes/image/src/ImageToolbarButton/ImageToolbarButton';
+import { LineHeightToolbarDropdown } from '../../../ui/nodes/line-height/src/LineHeightToolbarButton/LineHeightToolbarDropdown';
+import { LinkToolbarButton } from '../../../ui/nodes/link/src/LinkToolbarButton/LinkToolbarButton';
+import { MediaEmbedToolbarButton } from '../../../ui/nodes/media-embed/src/MediaEmbedToolbarButton/MediaEmbedToolbarButton';
+import { MentionCombobox } from '../../../ui/nodes/mention/src/MentionCombobox';
+import { createPlateUI } from '../../../ui/plate/src/utils/createPlateUI';
 import { HeadingToolbar } from '../../../ui/toolbar/src/HeadingToolbar/HeadingToolbar';
-import { createPlateUI } from '../utils/createPlateUI';
 
 const PlateContainer = () => {
   const [search, setSearch] = useState();

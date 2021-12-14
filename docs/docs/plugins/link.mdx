@@ -7,39 +7,23 @@ title: Link
 
 ```bash npm2yarn
 npm install @udecode/plate-link
-npm install @udecode/plate-link-ui
+npm install @udecode/plate-ui-link
 ```
 
 ### Usage
 
 ```ts live
 () => {
-  const [plugins, setPlugins] = useState(createPlugins([
-     ...PLUGINS.basicNodes,
-     createLinkPlugin({
-       useHooks: () => {
-         useEffect(() => {
-           console.log('aaa')
-         }, [])
-       }
-     })
-   ], {
-     components: CONFIG.components,
-   }))
+  const plugins = createPlugins([
+    ...PLUGINS.basicNodes,
+    createLinkPlugin()
+  ], {
+    components: CONFIG.components,
+  });
 
 
   return (
     <>
-      <button onClick={() => {setPlugins([...plugins, {
-        key: 'ab',
-        useHooks: () => {
-                                                         useEffect(() => {
-                                                           console.log('bbb')
-                                                         
-                                                         }, [])
-                                                       }
-                                                       }
-      ])}}>add</button>
       <HeadingToolbar>
         <LinkToolbarButton icon={<Link />} />
       </HeadingToolbar>
@@ -78,6 +62,6 @@ interface LinkPlugin extends HotkeyPlugin {
 
 ### Source Code
 
-- [Plugin](https://github.com/udecode/plate/blob/main/packages/elements/link/src/createLinkPlugin.ts)
-- [packages/elements/link-ui](https://github.com/udecode/plate/tree/main/packages/elements/link-ui/src)
+- [Plugin](https://github.com/udecode/plate/blob/main/packages/nodes/link/src/createLinkPlugin.ts)
+- [packages/ui/nodes/link](https://github.com/udecode/plate/tree/main/packages/ui/nodes/link/src)
 - [Variables](https://github.com/udecode/plate/blob/main/docs/src/live/live.tsx)

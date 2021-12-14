@@ -167,7 +167,7 @@
   - @udecode/plate-placeholder@5.3.5
   - @udecode/plate-reset-node@5.3.5
   - @udecode/plate-select@5.3.5
-  - @udecode/plate-csv-serializer@5.3.5
+  - @udecode/plate-serializer-csv@5.3.5
   - @udecode/plate-html-serializer@5.3.5
   - @udecode/plate-serializer@5.3.5
   - @udecode/plate-trailing-block@5.3.5
@@ -185,7 +185,7 @@
   - @udecode/plate-code-block@5.3.4
   - @udecode/plate-code-block-ui@5.3.4
   - @udecode/plate-ast-serializer@5.3.4
-  - @udecode/plate-csv-serializer@5.3.4
+  - @udecode/plate-serializer-csv@5.3.4
   - @udecode/plate-html-serializer@5.3.4
   - @udecode/plate-md-serializer@5.3.4
   - @udecode/plate-basic-elements@5.3.4
@@ -212,7 +212,7 @@
   - @udecode/plate-core@5.3.1
   - @udecode/plate-code-block@5.3.1
   - @udecode/plate-ast-serializer@5.3.1
-  - @udecode/plate-csv-serializer@5.3.1
+  - @udecode/plate-serializer-csv@5.3.1
   - @udecode/plate-html-serializer@5.3.1
   - @udecode/plate-md-serializer@5.3.1
   - @udecode/plate-serializer@5.3.1
@@ -311,7 +311,7 @@
   - @udecode/plate-reset-node@5.3.0
   - @udecode/plate-select@5.3.0
   - @udecode/plate-ast-serializer@5.3.0
-  - @udecode/plate-csv-serializer@5.3.0
+  - @udecode/plate-serializer-csv@5.3.0
   - @udecode/plate-html-serializer@5.3.0
   - @udecode/plate-md-serializer@5.3.0
   - @udecode/plate-serializer@5.3.0
@@ -409,7 +409,7 @@
   - @udecode/plate-placeholder@5.1.0
   - @udecode/plate-reset-node@5.1.0
   - @udecode/plate-select@5.1.0
-  - @udecode/plate-csv-serializer@5.1.0
+  - @udecode/plate-serializer-csv@5.1.0
   - @udecode/plate-html-serializer@5.1.0
   - @udecode/plate-serializer@5.1.0
   - @udecode/plate-trailing-block@5.1.0
@@ -507,7 +507,7 @@
   - @udecode/plate-placeholder@4.4.0
   - @udecode/plate-reset-node@4.4.0
   - @udecode/plate-select@4.4.0
-  - @udecode/plate-csv-serializer@4.4.0
+  - @udecode/plate-serializer-csv@4.4.0
   - @udecode/plate-html-serializer@4.4.0
   - @udecode/plate-serializer@4.4.0
   - @udecode/plate-trailing-block@4.4.0
@@ -559,7 +559,7 @@
   - @udecode/plate-reset-node@4.3.7
   - @udecode/plate-select@4.3.7
   - @udecode/plate-ast-serializer@4.3.7
-  - @udecode/plate-csv-serializer@4.3.7
+  - @udecode/plate-serializer-csv@4.3.7
   - @udecode/plate-html-serializer@4.3.7
   - @udecode/plate-md-serializer@4.3.7
   - @udecode/plate-serializer@4.3.7
@@ -663,7 +663,7 @@
   - @udecode/plate-placeholder@4.3.0
   - @udecode/plate-reset-node@4.3.0
   - @udecode/plate-select@4.3.0
-  - @udecode/plate-csv-serializer@4.3.0
+  - @udecode/plate-serializer-csv@4.3.0
   - @udecode/plate-html-serializer@4.3.0
   - @udecode/plate-serializer@4.3.0
   - @udecode/plate-trailing-block@4.3.0
@@ -735,7 +735,7 @@
   - @udecode/plate-list-ui@3.5.1
   - @udecode/plate-ast-serializer@3.5.1
   - @udecode/plate-md-serializer@3.5.1
-  - @udecode/plate-csv-serializer@3.5.1
+  - @udecode/plate-serializer-csv@3.5.1
   - @udecode/plate-html-serializer@3.5.1
   - @udecode/plate-dnd@3.5.1
   - @udecode/plate-alignment-ui@3.5.1
@@ -813,7 +813,7 @@
   - @udecode/plate-reset-node@3.4.0
   - @udecode/plate-select@3.4.0
   - @udecode/plate-ast-serializer@3.4.0
-  - @udecode/plate-csv-serializer@3.4.0
+  - @udecode/plate-serializer-csv@3.4.0
   - @udecode/plate-html-serializer@3.4.0
   - @udecode/plate-md-serializer@3.4.0
   - @udecode/plate-serializer@3.4.0
@@ -893,7 +893,7 @@
   - @udecode/plate-reset-node@3.2.0
   - @udecode/plate-select@3.2.0
   - @udecode/plate-ast-serializer@3.2.0
-  - @udecode/plate-csv-serializer@3.2.0
+  - @udecode/plate-serializer-csv@3.2.0
   - @udecode/plate-html-serializer@3.2.0
   - @udecode/plate-md-serializer@3.2.0
   - @udecode/plate-trailing-block@3.2.0
@@ -944,7 +944,7 @@
   - @udecode/plate-reset-node@3.1.3
   - @udecode/plate-select@3.1.3
   - @udecode/plate-ast-serializer@3.1.3
-  - @udecode/plate-csv-serializer@3.1.3
+  - @udecode/plate-serializer-csv@3.1.3
   - @udecode/plate-md-serializer@3.1.3
   - @udecode/plate-serializer@3.1.3
   - @udecode/plate-trailing-block@3.1.3
@@ -962,7 +962,7 @@
   - @udecode/plate-ast-serializer@3.1.2
   - @udecode/plate-md-serializer@3.1.2
   - @udecode/plate-table-ui@3.1.2
-  - @udecode/plate-csv-serializer@3.1.2
+  - @udecode/plate-serializer-csv@3.1.2
 
 ## 3.1.1
 
@@ -1023,7 +1023,7 @@
 - Updated dependencies [[`83aaf31c`](https://github.com/udecode/plate/commit/83aaf31c02b24f388d1f178dcd4b80354ddab773)]:
   - @udecode/plate-table@3.0.2
   - @udecode/plate-table-ui@3.0.2
-  - @udecode/plate-csv-serializer@3.0.2
+  - @udecode/plate-serializer-csv@3.0.2
 
 ## 3.0.1
 
@@ -1080,7 +1080,7 @@
 - Updated dependencies [[`099a86fa`](https://github.com/udecode/plate/commit/099a86faede3b3acf7da6842a78e4fab76815073)]:
   - @udecode/plate-table@2.0.1
   - @udecode/plate-table-ui@2.0.1
-  - @udecode/plate-csv-serializer@2.0.1
+  - @udecode/plate-serializer-csv@2.0.1
 
 ## 2.0.0
 
@@ -1125,7 +1125,7 @@
   - @udecode/plate-reset-node@2.0.0
   - @udecode/plate-select@2.0.0
   - @udecode/plate-ast-serializer@2.0.0
-  - @udecode/plate-csv-serializer@2.0.0
+  - @udecode/plate-serializer-csv@2.0.0
   - @udecode/plate-html-serializer@2.0.0
   - @udecode/plate-md-serializer@2.0.0
   - @udecode/plate-serializer@2.0.0
@@ -1209,7 +1209,7 @@
   - @udecode/plate-reset-node@1.1.6
   - @udecode/plate-select@1.1.6
   - @udecode/plate-ast-serializer@1.1.6
-  - @udecode/plate-csv-serializer@1.1.6
+  - @udecode/plate-serializer-csv@1.1.6
   - @udecode/plate-html-serializer@1.1.6
   - @udecode/plate-md-serializer@1.1.6
   - @udecode/plate-serializer@1.1.6
@@ -1224,21 +1224,21 @@
 - Updated dependencies [[`f955b72c`](https://github.com/udecode/plate/commit/f955b72c0ab97e2e2ca54f17f9f8022f7d0f121b)]:
   - @udecode/plate-table@1.1.5
   - @udecode/plate-table-ui@1.1.5
-  - @udecode/plate-csv-serializer@1.1.5
+  - @udecode/plate-serializer-csv@1.1.5
 
 ## 1.1.4
 
 ### Patch Changes
 
 - Updated dependencies [[`decc90d9`](https://github.com/udecode/plate/commit/decc90d984170d94ac8dbd0dc487a107d68d296d)]:
-  - @udecode/plate-csv-serializer@1.1.4
+  - @udecode/plate-serializer-csv@1.1.4
 
 ## 1.1.3
 
 ### Patch Changes
 
 - Updated dependencies [[`c5c73683`](https://github.com/udecode/plate/commit/c5c73683eb3b9c9a091fe1fa05113c9176f9b12a)]:
-  - @udecode/plate-csv-serializer@1.1.3
+  - @udecode/plate-serializer-csv@1.1.3
 
 ## 1.1.2
 

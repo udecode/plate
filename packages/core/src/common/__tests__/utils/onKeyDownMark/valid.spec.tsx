@@ -5,8 +5,8 @@ import * as isHotkey from 'is-hotkey';
 import {
   createBoldPlugin,
   MARK_BOLD,
-} from '../../../../../../marks/basic-marks/src/createBoldPlugin';
-import { createPlateUIEditor } from '../../../../../../plate/src/utils/createPlateUIEditor';
+} from '../../../../../../nodes/basic-marks/src/createBoldPlugin';
+import { createPlateUIEditor } from '../../../../../../ui/plate/src/utils/createPlateUIEditor';
 import { getPlugin } from '../../../../utils/getPlugin';
 import { ToggleMarkPlugin } from '../../../types/plugins/ToggleMarkPlugin';
 import { onKeyDownToggleMark } from '../../../utils/onKeyDown/onKeyDownToggleMark';
