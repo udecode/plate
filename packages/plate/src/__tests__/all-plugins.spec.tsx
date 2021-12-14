@@ -114,8 +114,10 @@ const PlateContainer = () => {
   );
 };
 
-it('should render', () => {
-  render(<PlateContainer />);
+describe('when all plugins', () => {
+  it('should render', () => {
+    render(<PlateContainer />);
 
-  expect(1).toBe(1);
+    expect(1).toBe(1);
+  });
 });
