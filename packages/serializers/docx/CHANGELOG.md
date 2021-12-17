@@ -1,5 +1,12 @@
 # @udecode/plate-docx-serializer
 
+## 9.1.0
+
+### Minor Changes
+
+- [#1315](https://github.com/udecode/plate/pull/1315) by [@zbeyens](https://github.com/zbeyens) –
+  - handle `in` unit for indentation
+
 ## 9.0.0
 
 ### Minor Changes
