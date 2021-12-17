@@ -1,4 +1,4 @@
-import { ExcalidrawNodeData } from '../../../../../packages/ui/nodes/excalidraw';
+import { ExcalidrawNodeData } from '@udecode/plate-ui-excalidraw';
 
 export const initialDataExcalidraw: ExcalidrawNodeData = {
   data: {

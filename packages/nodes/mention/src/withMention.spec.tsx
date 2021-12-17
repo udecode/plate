@@ -1,10 +1,14 @@
 /** @jsx jsx */
 
 import { createPlateUIEditor } from '@udecode/plate';
+import {
+  comboboxActions,
+  comboboxSelectors,
+  ComboboxState,
+} from '@udecode/plate-combobox';
 import { PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { ComboboxState, comboboxStore } from '@udecode/plate-ui-combobox';
 import { Range, Transforms } from 'slate';
 import { createMentionPlugin } from './createMentionPlugin';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -55,7 +59,7 @@ describe('withMention', () => {
   };
 
   beforeEach(() => {
-    comboboxStore.set.byId({});
+    comboboxActions.byId({});
   });
 
   describe('creating a mention input', () => {
@@ -286,7 +290,7 @@ describe('withMention', () => {
         { multipleMentionPlugins: true }
       );
 
-      expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+      expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         activeId: key,
       });
     });
@@ -304,7 +308,7 @@ describe('withMention', () => {
         offset: 0,
       });
 
-      expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+      expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         activeId: null,
       });
     });
@@ -313,18 +317,18 @@ describe('withMention', () => {
       const editor = createEditorWithMentionInput();
 
       editor.insertText('abc');
-      expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+      expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'abc',
       });
 
       editor.deleteBackward('character');
-      expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+      expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'ab',
       });
 
       Transforms.move(editor, { distance: 1, reverse: true });
       editor.deleteForward('character');
-      expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+      expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'a',
       });
     });

@@ -1,5 +1,16 @@
 import React, { useCallback, useEffect } from 'react';
 import {
+  comboboxActions,
+  comboboxSelectors,
+  Data,
+  getComboboxStoreById,
+  NoData,
+  TComboboxItem,
+  useActiveComboboxStore,
+  useComboboxControls,
+  useComboboxSelectors,
+} from '@udecode/plate-combobox';
+import {
   isDefined,
   useEditorState,
   useEventEditorSelectors,
@@ -10,30 +21,24 @@ import {
   usePopperPosition,
   virtualReference,
 } from '@udecode/plate-ui-popper';
-import {
-  comboboxStore,
-  getComboboxStoreById,
-  useActiveComboboxStore,
-} from '../combobox.store';
-import { useComboboxControls } from '../hooks';
 import { getComboboxStyles } from './Combobox.styles';
-import { ComboboxProps, Data, NoData, TComboboxItem } from './Combobox.types';
+import { ComboboxProps } from './Combobox.types';
 
 const ComboboxContent = <TData extends Data = NoData>(
   props: Pick<ComboboxProps<TData>, 'component' | 'items' | 'onRenderItem'>
 ) => {
   const { component: Component, items, onRenderItem } = props;
 
-  const targetRange = comboboxStore.use.targetRange();
-  const filteredItems = comboboxStore.use.filteredItems();
-  const highlightedIndex = comboboxStore.use.highlightedIndex();
-  const popperContainer = comboboxStore.use.popperContainer?.();
-  const popperOptions = comboboxStore.use.popperOptions?.();
+  const targetRange = useComboboxSelectors.targetRange();
+  const filteredItems = useComboboxSelectors.filteredItems();
+  const highlightedIndex = useComboboxSelectors.highlightedIndex();
+  const popperContainer = useComboboxSelectors.popperContainer?.();
+  const popperOptions = useComboboxSelectors.popperOptions?.();
   const editor = useEditorState();
   const combobox = useComboboxControls();
   const activeComboboxStore = useActiveComboboxStore()!;
-  const text = comboboxStore.use.text();
-  const storeItems = comboboxStore.use.items();
+  const text = useComboboxSelectors.text();
+  const storeItems = useComboboxSelectors.items();
   const filter = activeComboboxStore.use.filter?.();
   const maxSuggestions =
     activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
@@ -42,7 +47,7 @@ const ComboboxContent = <TData extends Data = NoData>(
 
   // Update items
   useEffect(() => {
-    items && comboboxStore.set.items(items);
+    items && comboboxActions.items(items);
   }, [items]);
 
   // Filter items
@@ -50,9 +55,7 @@ const ComboboxContent = <TData extends Data = NoData>(
     if (!isDefined(text)) return;
 
     if (text.length === 0) {
-      return comboboxStore.set.filteredItems(
-        storeItems.slice(0, maxSuggestions)
-      );
+      return comboboxActions.filteredItems(storeItems.slice(0, maxSuggestions));
     }
 
     const _filteredItems = storeItems
@@ -63,7 +66,7 @@ const ComboboxContent = <TData extends Data = NoData>(
       )
       .slice(0, maxSuggestions);
 
-    comboboxStore.set.filteredItems(_filteredItems);
+    comboboxActions.filteredItems(_filteredItems);
   }, [filter, storeItems, maxSuggestions, text]);
 
   // Get target range rect
@@ -124,7 +127,7 @@ const ComboboxContent = <TData extends Data = NoData>(
                 e.preventDefault();
 
                 const onSelectItem = getComboboxStoreById(
-                  comboboxStore.get.activeId()
+                  comboboxSelectors.activeId()
                 )?.get.onSelectItem();
                 onSelectItem?.(editor, item);
               }}
@@ -153,10 +156,10 @@ export const Combobox = <TData extends Data = NoData>({
   const editor = useEditorState();
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
-  const activeId = comboboxStore.use.activeId();
+  const activeId = useComboboxSelectors.activeId();
 
   useEffect(() => {
-    comboboxStore.set.setComboboxById({
+    comboboxActions.setComboboxById({
       id,
       trigger,
       searchPattern,

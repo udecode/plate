@@ -1,16 +1,17 @@
 import {
+  comboboxActions,
+  ComboboxOnSelectItem,
+  comboboxSelectors,
+  Data,
+  NoData,
+  TComboboxItem,
+} from '@udecode/plate-combobox';
+import {
   getBlockAbove,
   getPlugin,
   insertNodes,
   PlatePluginKey,
 } from '@udecode/plate-core';
-import {
-  ComboboxOnSelectItem,
-  comboboxStore,
-  Data,
-  NoData,
-  TComboboxItem,
-} from '@udecode/plate-ui-combobox';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionNode, MentionNodeData, MentionPlugin } from './types';
@@ -22,7 +23,7 @@ export interface CreateMentionNode<TData extends Data> {
 export const getMentionOnSelectItem = <TData extends Data = NoData>({
   key = ELEMENT_MENTION,
 }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> => (editor, item) => {
-  const targetRange = comboboxStore.get.targetRange();
+  const targetRange = comboboxSelectors.targetRange();
   if (!targetRange) return;
 
   const {
@@ -63,5 +64,5 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
       Transforms.delete(editor);
     }
   });
-  return comboboxStore.set.reset();
+  return comboboxActions.reset();
 };
