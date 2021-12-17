@@ -1,5 +1,5 @@
+import { comboboxActions } from '@udecode/plate-combobox';
 import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
-import { comboboxStore } from '@udecode/plate-ui-combobox';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';
@@ -66,7 +66,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
       if (currentMentionInput) {
-        comboboxStore.set.text(Node.string(currentMentionInput[0]));
+        comboboxActions.text(Node.string(currentMentionInput[0]));
       }
     } else if (operation.type === 'set_selection') {
       const previousMentionInputPath = Range.isRange(operation.properties)
@@ -82,7 +82,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       }
 
       if (currentMentionInputPath) {
-        comboboxStore.set.targetRange(editor.selection);
+        comboboxActions.targetRange(editor.selection);
       }
     } else if (
       operation.type === 'insert_node' &&
@@ -92,7 +92,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         return;
       }
 
-      comboboxStore.set.open({
+      comboboxActions.open({
         activeId: id!,
         text: '',
         targetRange: editor.selection,
@@ -105,7 +105,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         return;
       }
 
-      comboboxStore.set.reset();
+      comboboxActions.reset();
     }
   };
 

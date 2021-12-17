@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useCombobox } from 'downshift';
-import { comboboxStore } from '../combobox.store';
+import { useComboboxSelectors } from '../combobox.store';
 
 export const useComboboxControls = () => {
-  const isOpen = comboboxStore.use.isOpen();
-  const highlightedIndex = comboboxStore.use.highlightedIndex();
-  const filteredItems = comboboxStore.use.filteredItems();
+  const isOpen = useComboboxSelectors.isOpen();
+  const highlightedIndex = useComboboxSelectors.highlightedIndex();
+  const filteredItems = useComboboxSelectors.filteredItems();
 
   const {
     closeMenu,

@@ -1,7 +1,7 @@
 import { isCollapsed, OnChange } from '@udecode/plate-core';
 import { Range } from 'slate';
 import { getTextFromTrigger } from './utils/getTextFromTrigger';
-import { comboboxStore } from './combobox.store';
+import { comboboxActions, comboboxSelectors } from './combobox.store';
 
 /**
  * For each combobox state (byId):
@@ -12,8 +12,8 @@ import { comboboxStore } from './combobox.store';
  * Close the combobox if needed
  */
 export const onChangeCombobox: OnChange = (editor) => () => {
-  const byId = comboboxStore.get.byId();
-  const activeId = comboboxStore.get.activeId();
+  const byId = comboboxSelectors.byId();
+  const activeId = comboboxSelectors.activeId();
 
   let shouldClose = true;
 
@@ -51,7 +51,7 @@ export const onChangeCombobox: OnChange = (editor) => () => {
 
     const { range, textAfterTrigger } = isCursorAfterTrigger;
 
-    comboboxStore.set.open({
+    comboboxActions.open({
       activeId: id,
       text: textAfterTrigger,
       targetRange: range,
@@ -61,7 +61,7 @@ export const onChangeCombobox: OnChange = (editor) => () => {
     break;
   }
 
-  if (shouldClose && comboboxStore.get.isOpen()) {
-    comboboxStore.set.reset();
+  if (shouldClose && comboboxSelectors.isOpen()) {
+    comboboxActions.reset();
   }
 };

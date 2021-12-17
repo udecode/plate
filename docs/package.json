@@ -34,6 +34,7 @@
     "@udecode/plate-block-quote": "link:../packages/nodes/block-quote",
     "@udecode/plate-break": "link:../packages/editor/break",
     "@udecode/plate-code-block": "link:../packages/nodes/code-block",
+    "@udecode/plate-combobox": "link:../packages/editor/combobox",
     "@udecode/plate-core": "link:../packages/core",
     "@udecode/plate-find-replace": "link:../packages/decorators/find-replace",
     "@udecode/plate-font": "link:../packages/nodes/font",

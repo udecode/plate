@@ -1,5 +1,7 @@
 # @udecode/plate
 
+## 9.1.0
+
 ## 9.0.0
 
 ### Major Changes

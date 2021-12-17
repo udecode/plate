@@ -1,8 +1,6 @@
-import { UsePopperOptions } from '@udecode/plate-ui-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { Range } from 'slate';
-import { NoData, TComboboxItem } from './components';
-import { ComboboxOnSelectItem } from './types';
+import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 
 export type ComboboxStateById<TData = NoData> = {
   /**
@@ -85,7 +83,7 @@ export type ComboboxState<TData = NoData> = {
   /**
    * Overrides `usePopper` options.
    */
-  popperOptions?: UsePopperOptions;
+  popperOptions?: any;
 
   /**
    * Range from the trigger to the cursor.
@@ -137,12 +135,16 @@ export const comboboxStore = createStore('combobox')<ComboboxState>({
     isOpen: () => !!state.activeId,
   }));
 
+export const useComboboxSelectors = comboboxStore.use;
+export const comboboxSelectors = comboboxStore.get;
+export const comboboxActions = comboboxStore.set;
+
 export const getComboboxStoreById = (id: string | null) =>
-  id ? comboboxStore.get.byId()[id] : null;
+  id ? comboboxSelectors.byId()[id] : null;
 
 export const useActiveComboboxStore = () => {
-  const activeId = comboboxStore.use.activeId();
-  const comboboxes = comboboxStore.use.byId();
+  const activeId = useComboboxSelectors.activeId();
+  const comboboxes = useComboboxSelectors.byId();
 
   return activeId ? comboboxes[activeId] : null;
 };
