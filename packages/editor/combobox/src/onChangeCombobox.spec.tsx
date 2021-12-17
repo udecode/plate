@@ -5,7 +5,11 @@ import { HandlerReturnType, mockPlugin } from '@udecode/plate-core';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { ComboboxState, comboboxStore } from './combobox.store';
+import {
+  comboboxActions,
+  comboboxSelectors,
+  ComboboxState,
+} from './combobox.store';
 import { createComboboxPlugin } from './createComboboxPlugin';
 import { onChangeCombobox } from './onChangeCombobox';
 
@@ -36,7 +40,7 @@ describe('onChangeCombobox', () => {
     searchPattern?: string;
     controlled?: boolean;
   } = {}) =>
-    comboboxStore.set.setComboboxById({
+    comboboxActions.setComboboxById({
       id,
       trigger,
       searchPattern,
@@ -45,8 +49,8 @@ describe('onChangeCombobox', () => {
     });
 
   beforeEach(() => {
-    comboboxStore.set.byId({});
-    comboboxStore.set.reset();
+    comboboxActions.byId({});
+    comboboxActions.reset();
   });
 
   it('should open the combobox if the text after trigger matches pattern', () => {
@@ -59,7 +63,7 @@ describe('onChangeCombobox', () => {
       </hp>
     );
 
-    expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+    expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
       text: 'hello',
       activeId: expect.anything(),
     });
@@ -75,7 +79,7 @@ describe('onChangeCombobox', () => {
       </hp>
     );
 
-    expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+    expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
       activeId: null,
     });
   });
@@ -85,7 +89,7 @@ describe('onChangeCombobox', () => {
 
     createCombobox({ id, controlled: true });
 
-    comboboxStore.set.open({
+    comboboxActions.open({
       activeId: id,
       text: '',
       targetRange: null,
@@ -97,7 +101,7 @@ describe('onChangeCombobox', () => {
       </hp>
     );
 
-    expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+    expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
       activeId: id,
     });
   });
@@ -113,7 +117,7 @@ describe('onChangeCombobox', () => {
       </hp>
     );
 
-    expect(comboboxStore.get.state()).toMatchObject<Partial<ComboboxState>>({
+    expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
       text: 'hello',
       activeId: expect.anything(),
     });

@@ -1,6 +1,10 @@
 import { KeyboardHandler } from '@udecode/plate-core';
 import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
-import { comboboxStore, getComboboxStoreById } from './combobox.store';
+import {
+  comboboxActions,
+  comboboxSelectors,
+  getComboboxStoreById,
+} from './combobox.store';
 
 /**
  * If the combobox is open, handle:
@@ -14,8 +18,8 @@ export const onKeyDownCombobox: KeyboardHandler = (editor) => (event) => {
     highlightedIndex,
     filteredItems,
     activeId,
-  } = comboboxStore.get.state();
-  const isOpen = comboboxStore.get.isOpen();
+  } = comboboxSelectors.state();
+  const isOpen = comboboxSelectors.isOpen();
 
   if (!isOpen) return;
 
@@ -34,7 +38,7 @@ export const onKeyDownCombobox: KeyboardHandler = (editor) => (event) => {
       () => {},
       true
     );
-    comboboxStore.set.highlightedIndex(newIndex);
+    comboboxActions.highlightedIndex(newIndex);
     return;
   }
   if (event.key === 'ArrowUp') {
@@ -47,12 +51,12 @@ export const onKeyDownCombobox: KeyboardHandler = (editor) => (event) => {
       () => {},
       true
     );
-    comboboxStore.set.highlightedIndex(newIndex);
+    comboboxActions.highlightedIndex(newIndex);
     return;
   }
   if (event.key === 'Escape') {
     event.preventDefault();
-    comboboxStore.set.reset();
+    comboboxActions.reset();
     return;
   }
 

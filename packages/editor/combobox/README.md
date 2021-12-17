@@ -1,6 +1,6 @@
-# Plate combobox UI
+# Plate combobox
 
-This package implements the combobox UI for Plate.
+This package implements the combobox for Plate.
 
 ## Documentation
 

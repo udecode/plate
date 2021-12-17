@@ -55,7 +55,7 @@ const plugins = [
   commonjs({
     include: /node_modules/,
     namedExports: {
-      'react-is': ['typeOf', 'isElement', 'isValidElementType'],
+      'react-is': ['typeOf', 'isElement', 'isForwardRef', 'isValidElementType'],
     },
   }),
 
