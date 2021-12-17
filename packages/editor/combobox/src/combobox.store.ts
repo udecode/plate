@@ -1,4 +1,3 @@
-import { UsePopperOptions } from '@udecode/plate-ui-popper';
 import { createStore, StateActions, StoreApi } from '@udecode/zustood';
 import { Range } from 'slate';
 import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
@@ -84,7 +83,7 @@ export type ComboboxState<TData = NoData> = {
   /**
    * Overrides `usePopper` options.
    */
-  popperOptions?: UsePopperOptions;
+  popperOptions?: any;
 
   /**
    * Range from the trigger to the cursor.
