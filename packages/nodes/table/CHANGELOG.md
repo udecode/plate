@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 9.1.1
+
+### Patch Changes
+
+- [#1322](https://github.com/udecode/plate/pull/1322) by [@sctang2020](https://github.com/sctang2020) – fix #1216, set cusor to first cell for newly created table
+
 ## 9.0.0
 
 ## 8.3.0
