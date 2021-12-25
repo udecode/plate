@@ -42,7 +42,7 @@ export const getTextFromTrigger = (
 
   return {
     range,
-    textAfterTrigger: text.substring(1),
+    textAfterTrigger: text.substring(trigger.length),
   };
 };
 
