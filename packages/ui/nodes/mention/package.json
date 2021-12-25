@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui-mention",
-  "version": "9.1.0",
+  "version": "9.1.2",
   "description": "Media embed UI for Plate",
   "keywords": [
     "slate",
@@ -36,7 +36,7 @@
     "@udecode/plate-core": "9.0.0",
     "@udecode/plate-mention": "9.1.0",
     "@udecode/plate-styled-components": "9.0.0",
-    "@udecode/plate-ui-combobox": "9.1.0"
+    "@udecode/plate-ui-combobox": "9.1.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
