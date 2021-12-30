@@ -1,4 +1,5 @@
 import React from 'react';
+import { useReadOnly } from 'slate-react';
 import {
   CODE_BLOCK_LANGUAGES,
   CODE_BLOCK_LANGUAGES_POPULAR,
@@ -24,6 +25,9 @@ export const CodeBlockSelectElement = ({
     editor,
     ELEMENT_CODE_BLOCK
   );
+
+  if(useReadOnly()) return;
+
   return (
     <select
       value={value}
