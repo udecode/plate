@@ -19,7 +19,7 @@ export const CodeBlockSelectElement = ({
   className?: string;
   css?: CSSProp;
 }) => {
-  if(useReadOnly()) return;
+  if(useReadOnly()) return null;
 
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
