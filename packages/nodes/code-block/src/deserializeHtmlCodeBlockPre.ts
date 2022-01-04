@@ -14,10 +14,17 @@ export const deserializeHtmlCodeBlock: DeserializeHtml = {
     },
   ],
   getNode: (el) => {
-    let lines = el.textContent?.split('\n');
+    const codeBlockNode = [...el.childNodes].find(
+      (node: ChildNode) => node.nodeName === 'CODE'
+    );
+
+    if (!codeBlockNode) return;
+
+    const codeBlockTextContent = codeBlockNode.textContent;
+    let lines = codeBlockTextContent?.split('\n');
 
     if (!lines?.length) {
-      lines = [el.textContent ?? ''];
+      lines = [codeBlockTextContent ?? ''];
     }
 
     const codeLines = lines.map((line) => ({
