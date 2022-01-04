@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 9.1.3
+
+### Patch Changes
+
+- [#1331](https://github.com/udecode/plate/pull/1331) by [@Pedrobusou](https://github.com/Pedrobusou) – add missing getPluginType usage
+
 ## 9.1.1
 
 ### Patch Changes
