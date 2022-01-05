@@ -19,10 +19,11 @@ export const CodeBlockSelectElement = ({
   className?: string;
   css?: CSSProp;
 }) => {
-  if(useReadOnly()) return null;
-
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
+
+  if (useReadOnly()) return null;
+
   const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin>(
     editor,
     ELEMENT_CODE_BLOCK
