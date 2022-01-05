@@ -1,5 +1,4 @@
 import React from 'react';
-import { useReadOnly } from 'slate-react';
 import {
   CODE_BLOCK_LANGUAGES,
   CODE_BLOCK_LANGUAGES_POPULAR,
@@ -7,6 +6,7 @@ import {
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-core';
+import { useReadOnly } from 'slate-react';
 import { CSSProp } from 'styled-components';
 
 export const CodeBlockSelectElement = ({
