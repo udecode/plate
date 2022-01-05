@@ -42,7 +42,9 @@ export const addColumn = (
       currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
         const isHeaderRow =
-          header === undefined ? row.children[0].type === getPluginType(editor, ELEMENT_TH) : header;
+          header === undefined
+            ? row.children[0].type === getPluginType(editor, ELEMENT_TH)
+            : header;
 
         insertNodes<TElement>(
           editor,
