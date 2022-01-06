@@ -237,3 +237,45 @@ describe('when pasting ul > 2 li fragment', () => {
     });
   });
 });
+
+describe('when pasting text fragment inside li fragment', () => {
+  it('should normalize text as li and insert it', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              one
+              <cursor />
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const fragment = ((
+      <fragment>
+        <hp>two</hp>
+        <hp>three</hp>
+      </fragment>
+    ) as any) as TDescendant[];
+
+    const expected = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>one</hlic>
+          </hli>
+          <hli>
+            <hlic>two</hlic>
+          </hli>
+          <hli>
+            <hlic>three</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    editorTest(input, fragment, expected);
+  });
+});
