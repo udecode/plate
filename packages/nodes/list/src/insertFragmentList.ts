@@ -57,6 +57,19 @@ export const insertFragmentList = (editor: PlateEditor) => {
       : [commonAncestorEntry[0]];
   };
 
+  const convertFragmentToList = (fragment: TDescendant[]) => {
+    const trimmedFragment = fragment.flatMap((node) => trimList(node));
+
+    if (trimmedFragment.every((node) => node.type === ELEMENT_LI)) {
+      return trimmedFragment;
+    }
+
+    return trimmedFragment.map((node) => ({
+      type: ELEMENT_LI,
+      children: node.children ?? [node],
+    }));
+  };
+
   return (fragment: TDescendant[]) => {
     const liEntry = findNode(editor, {
       match: { type: li.type },
@@ -67,11 +80,10 @@ export const insertFragmentList = (editor: PlateEditor) => {
       const [, liPath] = liEntry;
 
       // FIXME: fork insertFragment for edge cases
-      return Transforms.insertNodes(
-        editor,
-        fragment.flatMap((node) => trimList(node)),
-        { at: Path.next(liPath), select: true }
-      );
+      return Transforms.insertNodes(editor, convertFragmentToList(fragment), {
+        at: Path.next(liPath),
+        select: true,
+      });
     }
 
     const filtered: TDescendant[] = isListRoot(fragment[0])
