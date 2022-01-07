@@ -1,5 +1,13 @@
 # @udecode/plate-list
 
+## 9.2.0
+
+### Patch Changes
+
+- [#1336](https://github.com/udecode/plate/pull/1336) by [@fondation451](https://github.com/fondation451) – Copy/paste inside a list now works properly with pasting text:
+  The text was not pasted at all.
+  For other kind of nodes like "p", there were pasted but inside the same bullet.
+
 ## 9.0.0
 
 ## 8.3.0

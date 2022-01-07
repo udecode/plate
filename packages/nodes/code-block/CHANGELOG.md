@@ -1,5 +1,13 @@
 # @udecode/plate-code-block
 
+## 9.2.0
+
+### Patch Changes
+
+- [#1338](https://github.com/udecode/plate/pull/1338) by [@zbeyens](https://github.com/zbeyens) – Swap ast and html plugin order
+
+- [#1334](https://github.com/udecode/plate/pull/1334) by [@Pedrobusou](https://github.com/Pedrobusou) – prevent extra nodes from being copy pasted
+
 ## 9.0.0
 
 ### Minor Changes

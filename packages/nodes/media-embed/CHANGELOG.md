@@ -1,5 +1,7 @@
 # @udecode/plate-media-embed
 
+## 9.2.0
+
 ## 9.0.0
 
 ## 8.3.0

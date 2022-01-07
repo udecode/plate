@@ -1,5 +1,7 @@
 # @udecode/plate-styled-components
 
+## 9.2.0
+
 ## 9.0.0
 
 ## 8.3.0
