@@ -19,6 +19,7 @@ export const withInsertData: WithOverride = (editor) => {
       if (!format) return false;
 
       let data = dataTransfer.getData(format);
+      console.log(plugin, format, data);
       if (!data) return;
 
       if (
