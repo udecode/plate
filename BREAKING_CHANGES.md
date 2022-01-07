@@ -35,6 +35,7 @@
    -   is now exporting only these (new) packages:
        -   `@udecode/plate-headless`: all unstyled packages
        -   `@udecode/plate-ui`: all styled packages
+   -   renamed `PlateState` to `PlateStoreState`
 
 # 8.0.0
 
