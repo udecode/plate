@@ -6,6 +6,7 @@ import {
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-core';
+import { useReadOnly } from 'slate-react';
 import { CSSProp } from 'styled-components';
 
 export const CodeBlockSelectElement = ({
@@ -20,10 +21,14 @@ export const CodeBlockSelectElement = ({
 }) => {
   const [value, setValue] = React.useState(lang);
   const editor = useEditorRef();
+
+  if (useReadOnly()) return null;
+
   const { syntaxPopularFirst } = getPluginOptions<CodeBlockPlugin>(
     editor,
     ELEMENT_CODE_BLOCK
   );
+
   return (
     <select
       value={value}
