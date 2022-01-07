@@ -63,16 +63,16 @@ export const setPlatePlugins = <T = {}>(
         editor.pluginsByKey?.[KEY_INSERT_DATA] ?? createInsertDataPlugin()
       );
     }
-    if (typeof dcp !== 'object' || !dcp.deserializeAst) {
-      plugins.push(
-        editor.pluginsByKey?.[KEY_DESERIALIZE_AST] ??
-          createDeserializeAstPlugin()
-      );
-    }
     if (typeof dcp !== 'object' || !dcp.deserializeHtml) {
       plugins.push(
         editor.pluginsByKey?.[KEY_DESERIALIZE_HTML] ??
           createDeserializeHtmlPlugin()
+      );
+    }
+    if (typeof dcp !== 'object' || !dcp.deserializeAst) {
+      plugins.push(
+        editor.pluginsByKey?.[KEY_DESERIALIZE_AST] ??
+          createDeserializeAstPlugin()
       );
     }
   }
