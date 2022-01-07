@@ -81,7 +81,8 @@ describe('code block deserialization', () => {
       });
 
       editor.insertData({
-        getData: () => `<pre><code>test</code></pre>`,
+        getData: (format: string) =>
+          format === 'text/html' && `<pre><code>test</code></pre>`,
       } as any);
 
       expect(editor.children).toEqual(output.children);

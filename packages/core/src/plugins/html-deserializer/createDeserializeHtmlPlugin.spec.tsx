@@ -17,7 +17,8 @@ describe('when inserting html', () => {
     constructor: {
       name: 'DataTransfer',
     },
-    getData: () => '<html><body><h1>inserted</h1></body></html>',
+    getData: (format: string) =>
+      format === 'text/html' && '<html><body><h1>inserted</h1></body></html>',
   } as any;
 
   const makeDataTransfer = (value: string): DataTransfer => {
@@ -25,7 +26,7 @@ describe('when inserting html', () => {
       constructor: {
         name: 'DataTransfer',
       },
-      getData: () => value,
+      getData: (format: string) => format === 'text/html' && value,
     } as any;
   };
 
@@ -143,7 +144,7 @@ describe('when inserting empty html', () => {
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
-    getData: () => '<html></html>',
+    getData: (format: string) => format === 'text/html' && '<html></html>',
   };
 
   const output = (
@@ -181,7 +182,9 @@ describe('when inserting an iframe without src', () => {
 
   // noinspection CheckTagEmptyBody
   const data = {
-    getData: () => '<html><body><iframe>inserted</iframe></body></html>',
+    getData: (format: string) =>
+      format === 'text/html' &&
+      '<html><body><iframe>inserted</iframe></body></html>',
   };
 
   const output = (
@@ -219,7 +222,8 @@ describe('when inserting link with href', () => {
 
   // noinspection CheckTagEmptyBody
   const data = {
-    getData: () =>
+    getData: (format: string) =>
+      format === 'text/html' &&
       `<html><body><a href="http://test.com">link</a></body></html>`,
   };
 

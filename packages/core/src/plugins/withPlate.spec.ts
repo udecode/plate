@@ -16,8 +16,8 @@ const coreKeys = [
   KEY_EVENT_EDITOR,
   KEY_INLINE_VOID,
   KEY_INSERT_DATA,
-  KEY_DESERIALIZE_AST,
   KEY_DESERIALIZE_HTML,
+  KEY_DESERIALIZE_AST,
 ];
 
 describe('withPlate', () => {
