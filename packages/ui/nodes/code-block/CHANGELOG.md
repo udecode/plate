@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 9.2.0
+
+### Minor Changes
+
+- [#1327](https://github.com/udecode/plate/pull/1327) by [@Pedrobusou](https://github.com/Pedrobusou) – Prevent languageSelector from showing when editor is readOnly
+
 ## 9.0.0
 
 ## 8.3.0

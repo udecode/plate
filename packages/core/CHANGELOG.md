@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 9.2.0
+
+### Patch Changes
+
+- [#1338](https://github.com/udecode/plate/pull/1338) by [@zbeyens](https://github.com/zbeyens) – Swap ast and html plugin order
+
 ## 9.0.0
 
 ### Major Changes

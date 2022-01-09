@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 9.2.0
+
 ## 9.0.0
 
 ### Minor Changes

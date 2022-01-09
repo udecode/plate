@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 9.2.0
+
+### Patch Changes
+
+- [#1334](https://github.com/udecode/plate/pull/1334) by [@Pedrobusou](https://github.com/Pedrobusou) – prevent extra nodes from being copy pasted
+
 ## 9.1.3
 
 ### Patch Changes
