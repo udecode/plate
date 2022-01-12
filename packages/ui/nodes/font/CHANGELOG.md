@@ -1,5 +1,11 @@
 # @udecode/plate-font-ui
 
+## 9.2.1
+
+### Patch Changes
+
+- [#1341](https://github.com/udecode/plate/pull/1341) by [@zbeyens](https://github.com/zbeyens) – Fix components using `usePlateEditorState` by introducing `withEditor` / `EditorProvider` hoc
+
 ## 9.2.0
 
 ## 9.0.0
