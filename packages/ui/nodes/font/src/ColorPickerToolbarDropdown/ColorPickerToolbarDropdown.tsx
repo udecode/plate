@@ -7,6 +7,7 @@ import {
   setMarks,
   usePlateEditorRef,
   usePlateEditorState,
+  withEditor,
 } from '@udecode/plate-core';
 import {
   ToolbarButton,
@@ -28,93 +29,95 @@ type ColorPickerToolbarDropdownProps = {
   closeOnSelect?: boolean;
 };
 
-export const ColorPickerToolbarDropdown = ({
-  pluginKey,
-  icon,
-  selectedIcon,
-  colors = DEFAULT_COLORS,
-  customColors = DEFAULT_CUSTOM_COLORS,
-  closeOnSelect = true,
-  ...rest
-}: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
-  const [open, setOpen] = useState(false);
-  const editor = usePlateEditorState()!;
-  const editorRef = usePlateEditorRef()!;
+export const ColorPickerToolbarDropdown = withEditor(
+  ({
+    pluginKey,
+    icon,
+    selectedIcon,
+    colors = DEFAULT_COLORS,
+    customColors = DEFAULT_CUSTOM_COLORS,
+    closeOnSelect = true,
+    ...rest
+  }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
+    const [open, setOpen] = useState(false);
+    const editor = usePlateEditorState()!;
+    const editorRef = usePlateEditorRef()!;
 
-  const type = getPluginType(editorRef, pluginKey);
+    const type = getPluginType(editorRef, pluginKey);
 
-  const color = editorRef && getMark(editorRef, type);
+    const color = editorRef && getMark(editorRef, type);
 
-  const [selectedColor, setSelectedColor] = useState<string>();
+    const [selectedColor, setSelectedColor] = useState<string>();
 
-  const onToggle = useCallback(() => {
-    setOpen(!open);
-  }, [open, setOpen]);
+    const onToggle = useCallback(() => {
+      setOpen(!open);
+    }, [open, setOpen]);
 
-  const updateColor = useCallback(
-    (value: string) => {
+    const updateColor = useCallback(
+      (value: string) => {
+        if (editorRef && editor && editor.selection) {
+          setSelectedColor(value);
+
+          Transforms.select(editorRef, editor.selection);
+          ReactEditor.focus(editorRef);
+
+          setMarks(editor, { [type]: value });
+        }
+      },
+      [editor, editorRef, type]
+    );
+
+    const updateColorAndClose = useCallback(
+      (value: string) => {
+        updateColor(value);
+        closeOnSelect && onToggle();
+      },
+      [closeOnSelect, onToggle, updateColor]
+    );
+
+    const clearColor = useCallback(() => {
       if (editorRef && editor && editor.selection) {
-        setSelectedColor(value);
-
         Transforms.select(editorRef, editor.selection);
         ReactEditor.focus(editorRef);
 
-        setMarks(editor, { [type]: value });
+        if (selectedColor) {
+          removeMark(editor, { key: type });
+        }
+
+        closeOnSelect && onToggle();
       }
-    },
-    [editor, editorRef, type]
-  );
+    }, [closeOnSelect, editor, editorRef, onToggle, selectedColor, type]);
 
-  const updateColorAndClose = useCallback(
-    (value: string) => {
-      updateColor(value);
-      closeOnSelect && onToggle();
-    },
-    [closeOnSelect, onToggle, updateColor]
-  );
-
-  const clearColor = useCallback(() => {
-    if (editorRef && editor && editor.selection) {
-      Transforms.select(editorRef, editor.selection);
-      ReactEditor.focus(editorRef);
-
-      if (selectedColor) {
-        removeMark(editor, { key: type });
+    useEffect(() => {
+      if (editor?.selection) {
+        setSelectedColor(color);
       }
+    }, [color, editor?.selection]);
 
-      closeOnSelect && onToggle();
-    }
-  }, [closeOnSelect, editor, editorRef, onToggle, selectedColor, type]);
-
-  useEffect(() => {
-    if (editor?.selection) {
-      setSelectedColor(color);
-    }
-  }, [color, editor?.selection]);
-
-  return (
-    <ToolbarDropdown
-      control={
-        <ToolbarButton
-          active={!!editor?.selection && isMarkActive(editor, type)}
-          icon={icon}
-          {...rest}
-        />
-      }
-      open={open}
-      onOpen={onToggle}
-      onClose={onToggle}
-    >
-      <ColorPicker
-        color={selectedColor || color}
-        colors={colors}
-        customColors={customColors}
-        selectedIcon={selectedIcon}
-        updateColor={updateColorAndClose}
-        updateCustomColor={updateColor}
-        clearColor={clearColor}
+    return (
+      <ToolbarDropdown
+        control={
+          <ToolbarButton
+            active={!!editor?.selection && isMarkActive(editor, type)}
+            icon={icon}
+            {...rest}
+          />
+        }
         open={open}
-      />
-    </ToolbarDropdown>
-  );
-};
+        onOpen={onToggle}
+        onClose={onToggle}
+      >
+        <ColorPicker
+          color={selectedColor || color}
+          colors={colors}
+          customColors={customColors}
+          selectedIcon={selectedIcon}
+          updateColor={updateColorAndClose}
+          updateCustomColor={updateColor}
+          clearColor={clearColor}
+          open={open}
+        />
+      </ToolbarDropdown>
+    );
+  }
+);

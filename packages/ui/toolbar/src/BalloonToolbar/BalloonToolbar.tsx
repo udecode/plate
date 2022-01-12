@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { withEditor } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarBase } from '../Toolbar/Toolbar';
@@ -6,7 +7,7 @@ import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';
 import { useBalloonToolbarPopper } from './useBalloonToolbarPopper';
 
-export const BalloonToolbar = (props: BalloonToolbarProps) => {
+export const BalloonToolbar = withEditor((props: BalloonToolbarProps) => {
   const {
     children,
     theme = 'dark',
@@ -48,4 +49,4 @@ export const BalloonToolbar = (props: BalloonToolbarProps) => {
       </ToolbarBase>
     </PortalBody>
   );
-};
+});
