@@ -1,5 +1,7 @@
 # @udecode/plate-normalizers
 
+## 9.2.1
+
 ## 9.2.0
 
 ## 9.0.0

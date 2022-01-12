@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 9.2.1
+
 ## 9.2.0
 
 ### Patch Changes
