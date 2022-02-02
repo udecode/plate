@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@udecode/plate-core": "9.2.1",
-    "@udecode/zustood": "0.4.0",
+    "@udecode/zustood": "0.4.4",
     "downshift": "6.1.7",
     "zustand": "3.6.7"
   },
