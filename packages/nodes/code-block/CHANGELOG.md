@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 9.2.2
+
+### Patch Changes
+
+- [#1358](https://github.com/udecode/plate/pull/1358) by [@jyc5131](https://github.com/jyc5131) – fix: "decorateCodeLine don't check the path of nodeEntry" when adding a code block
+
 ## 9.2.1
 
 ## 9.2.0
