@@ -13,11 +13,14 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { ELEMENT_IMAGE } from '@udecode/plate-image';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { KEY_INDENT, KEY_TEXT_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
-import { getDocxIndent } from '../docx-cleaner/utils/getDocxIndent';
+import {
+  getDocxIndent,
+  getDocxTextIndent,
+} from '../docx-cleaner/utils/getDocxIndent';
 import { getDocxListContentHtml } from '../docx-cleaner/utils/getDocxListContentHtml';
 import { getDocxListIndent } from '../docx-cleaner/utils/getDocxListIndent';
 import { getTextListStyleType } from '../docx-cleaner/utils/getTextListStyleType';
@@ -40,9 +43,13 @@ const getListNode = (type: string): DeserializeHtml['getNode'] => (element) => {
     element.innerHTML = getDocxListContentHtml(element);
   } else {
     const indent = getDocxIndent(element);
-
     if (indent) {
       node[KEY_INDENT] = indent;
+    }
+
+    const textIndent = getDocxTextIndent(element);
+    if (textIndent) {
+      node[KEY_TEXT_INDENT] = textIndent;
     }
   }
 

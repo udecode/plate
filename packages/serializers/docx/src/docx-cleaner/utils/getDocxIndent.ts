@@ -19,15 +19,17 @@ const styleToIndent = (style: string, indentStep = DOCX_INDENT_STEP) => {
   return 0;
 };
 
-export const getDocxIndent = (element: Element): number => {
+export const getDocxSpacing = (element: Element, cssProp: string): number => {
   const el = element as HTMLElement;
-  const { marginLeft, textIndent } = el.style;
+  const spacing = el.style[cssProp];
 
-  let indent = styleToIndent(marginLeft);
-  if (indent) return indent;
+  if (!spacing) return 0;
 
-  indent = styleToIndent(textIndent);
-  if (indent) return indent;
-
-  return 0;
+  return styleToIndent(spacing) || 0;
 };
+
+export const getDocxIndent = (element: Element) =>
+  getDocxSpacing(element, 'marginLeft');
+
+export const getDocxTextIndent = (element: Element) =>
+  getDocxSpacing(element, 'textIndent');

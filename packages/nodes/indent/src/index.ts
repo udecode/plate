@@ -3,6 +3,7 @@
  */
 
 export * from './createIndentPlugin';
+export * from './createTextIndentPlugin';
 export * from './onKeyDownIndent';
 export * from './types';
 export * from './withIndent';

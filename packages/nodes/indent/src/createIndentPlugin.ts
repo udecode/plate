@@ -25,9 +25,7 @@ export const createIndentPlugin = createPluginFactory<IndentPlugin>({
         nodeKey: KEY_INDENT,
         styleKey: 'marginLeft',
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-        transformNodeValue: ({ nodeValue }) => {
-          return nodeValue * offset! + unit!;
-        },
+        transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
       },
     },
   }),
