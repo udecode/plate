@@ -59,6 +59,7 @@ export const decorateCodeLine: Decorate = (editor, { type }) => {
   return (entry: NodeEntry) => {
     const ranges: any = [];
     const [node, path] = entry;
+    if (path.length === 0) return;
     const codeBlock = getParent(editor, path);
 
     if (!codeBlock) return;
