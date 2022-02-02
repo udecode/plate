@@ -1,8 +1,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { isEqual, memoize } from 'lodash';
-import { createEditor, Editor, NodeEntry, Transforms } from 'slate';
+import { Editor, NodeEntry, Transforms } from 'slate';
 import { PlatePlugin, TEditor } from '../types';
+import { createPlateEditor } from '../utils/createPlateEditor';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
@@ -81,11 +82,11 @@ describe('Plate', () => {
       },
     ])();
 
-    const editor = createEditor();
+    const editor = createPlateEditor();
 
     render(
       <Plate
-        editor={editor as any}
+        editor={editor}
         plugins={plugins}
         initialValue={[{ children: [{ text: '' }] }]}
       />
