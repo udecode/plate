@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 9.3.0
+
+### Patch Changes
+
+- [#1362](https://github.com/udecode/plate/pull/1362) by [@zbeyens](https://github.com/zbeyens) – Upgrade zustood 0.4.4
+
 ## 9.2.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @udecode/plate-indent
 
+## 9.3.0
+
+### Minor Changes
+
+- [#1364](https://github.com/udecode/plate/pull/1364) by [@zbeyens](https://github.com/zbeyens) – Feat: new textIndent plugin + docx deserializer support
+
 ## 9.2.1
 
 ## 9.2.0

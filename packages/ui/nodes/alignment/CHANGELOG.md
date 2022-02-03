@@ -1,5 +1,7 @@
 # @udecode/plate-alignment-ui
 
+## 9.3.0
+
 ## 9.2.1
 
 ### Patch Changes
