@@ -1,7 +1,5 @@
 # @udecode/plate-code-block-ui
 
-## 9.2.2
-
 ## 9.2.1
 
 ### Patch Changes
