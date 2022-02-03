@@ -1,5 +1,7 @@
 # @udecode/plate-excalidraw
 
+## 9.3.1
+
 ## 9.3.0
 
 ## 9.2.1
