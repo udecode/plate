@@ -1,5 +1,7 @@
 # @udecode/plate-paragraph
 
+## 9.3.0
+
 ## 9.2.1
 
 ## 9.2.0
