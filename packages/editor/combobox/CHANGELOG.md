@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 9.2.2
+
+### Patch Changes
+
+- [#1362](https://github.com/udecode/plate/pull/1362) by [@zbeyens](https://github.com/zbeyens) – Upgrade zustood 0.4.4
+
 ## 9.2.1
 
 ## 9.2.0
