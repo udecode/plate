@@ -99,6 +99,7 @@ import {
   createSubscriptPlugin,
   createSuperscriptPlugin,
   createTablePlugin,
+  createTextIndentPlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
@@ -225,6 +226,7 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  createTextIndentPlugin,
   getPlateActions,
   usePlateSelectors,
   createJuicePlugin,
