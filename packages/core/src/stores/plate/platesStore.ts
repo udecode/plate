@@ -34,9 +34,14 @@ export const platesStore = createStore('plate')({} as PlatesStoreState)
     get(id: string) {
       return state[id];
     },
+    has(id: string) {
+      return !!state[id];
+    },
   }));
 
 export const platesActions = platesStore.set;
+export const platesSelectors = platesStore.get;
+export const usePlatesSelectors = platesStore.use;
 
 export const getPlateActions = (id?: string) => getPlateStore(id).set;
 export const getPlateSelectors = (id?: string) => getPlateStore(id).get;

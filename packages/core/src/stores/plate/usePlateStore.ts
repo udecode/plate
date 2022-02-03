@@ -1,18 +1,18 @@
 import { PlateStoreApi } from '../../types/PlateStore';
 import { getPlateId, usePlateId } from './selectors/getPlateId';
+import { createPlateStore } from './createPlateStore';
 import { platesStore } from './platesStore';
+
+const loadingStore = createPlateStore({
+  id: 'loading',
+});
 
 export const getPlateStore = (id?: string): PlateStoreApi => {
   id = getPlateId(id);
 
   const store = platesStore.get.get(id);
 
-  if (!store) {
-    platesStore.set.set(id);
-    return platesStore.get.get(id);
-  }
-
-  return store;
+  return store || loadingStore;
 };
 
 export const usePlateStore = (id?: string): PlateStoreApi => {
@@ -20,10 +20,5 @@ export const usePlateStore = (id?: string): PlateStoreApi => {
 
   const store = platesStore.use.get(id);
 
-  if (!store) {
-    platesStore.set.set(id);
-    return platesStore.get.get(id);
-  }
-
-  return store;
+  return store || loadingStore;
 };

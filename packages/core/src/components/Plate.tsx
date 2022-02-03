@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Editable, Slate } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
+import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { PlateStoreState } from '../types/PlateStore';
 import { SlateProps } from '../types/slate/SlateProps';
 import { EditorRefEffect } from './EditorRefEffect';
@@ -50,7 +51,7 @@ export interface PlateProps<T = {}>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const Plate = <T extends {} = {}>({
+export const PlateContent = <T extends {} = {}>({
   children,
   renderEditable,
   ...options
@@ -69,4 +70,26 @@ export const Plate = <T extends {} = {}>({
       {renderEditable ? renderEditable(editable) : editable}
     </Slate>
   );
+};
+
+export const Plate = <T extends {} = {}>(props: PlateProps<T>) => {
+  const { id = 'main' } = props;
+  const isReady = usePlatesSelectors.has(id);
+
+  // Clear the state on unmount.
+  useEffect(
+    () => () => {
+      platesActions.unset(id);
+    },
+    [id]
+  );
+
+  // Set initial state on mount
+  useEffect(() => {
+    platesActions.set(id);
+  }, [id]);
+
+  if (!isReady) return null;
+
+  return <PlateContent {...props} />;
 };
