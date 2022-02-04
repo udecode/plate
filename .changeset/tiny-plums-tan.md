@@ -1,7 +1,7 @@
 ---
-"@udecode/plate-indent-list": patch
-"@udecode/plate-indent": patch
-"@udecode/plate-serializer-docx": patch
+"@udecode/plate-indent-list": minor
+"@udecode/plate-indent": minor
+"@udecode/plate-serializer-docx": minor
 ---
 
-Feat: docx deserializer support more indent list styles: DecimalLeadingZero, LowerRoman, UpperRoman, UpperAlpha
+Docx deserializer supports more indent list styles: DecimalLeadingZero, LowerRoman, UpperRoman, UpperAlpha
