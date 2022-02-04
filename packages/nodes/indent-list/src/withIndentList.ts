@@ -28,6 +28,29 @@ export const withIndentList: WithOverride = (editor) => {
       nodeBefore = getNode(editor, path);
     }
 
+    // If there is a previous indent list, the inserted indent list style type should be the same.
+    if (operation.type === 'insert_node') {
+      const listStyleType = operation.node[KEY_LIST_STYLE_TYPE];
+
+      if (listStyleType) {
+        const prevNodeEntry = getPreviousIndentList(
+          editor,
+          [operation.node, path],
+          {
+            sameStyleType: false,
+          }
+        );
+
+        if (
+          prevNodeEntry &&
+          prevNodeEntry[0][KEY_LIST_STYLE_TYPE] !== listStyleType
+        ) {
+          operation.node[KEY_LIST_STYLE_TYPE] =
+            prevNodeEntry[0][KEY_LIST_STYLE_TYPE];
+        }
+      }
+    }
+
     // FIXME: delete first list
     // let nextNodeEntryBefore: any;
     // if (
@@ -62,110 +85,116 @@ export const withIndentList: WithOverride = (editor) => {
       }
     }
 
-    if (operation.type === 'set_node' && nodeBefore) {
-      const prevListStyleType = operation.properties[KEY_LIST_STYLE_TYPE];
-      const listStyleType = operation.newProperties[KEY_LIST_STYLE_TYPE];
+    if (nodeBefore) {
+      if (operation.type === 'set_node') {
+        const prevListStyleType = operation.properties[KEY_LIST_STYLE_TYPE];
+        const listStyleType = operation.newProperties[KEY_LIST_STYLE_TYPE];
 
-      // Remove list style type
-      if (prevListStyleType && !listStyleType) {
-        const node = getNode(editor, path);
-        if (!node) return;
+        // Remove list style type
+        if (prevListStyleType && !listStyleType) {
+          const node = getNode(editor, path);
+          if (!node) return;
 
-        const nextNodeEntry = getNextIndentList(editor, [node, path]);
-        if (!nextNodeEntry) return;
+          const nextNodeEntry = getNextIndentList(editor, [node, path]);
+          if (!nextNodeEntry) return;
 
-        normalizeListStart(editor, nextNodeEntry);
-      }
-
-      // Update list style type
-      if (
-        (prevListStyleType || listStyleType) &&
-        prevListStyleType !== listStyleType
-      ) {
-        const node = getNode(editor, path);
-        if (!node) return;
-
-        /**
-         * Case:
-         * - 1-<o>-1 <- toggle ol
-         * - <1>-1-2 <- normalize
-         * - 1-2-3
-         */
-        const prevNodeEntry = getPreviousIndentList(editor, [node, path]);
-        if (prevNodeEntry) {
-          normalizeListStart(editor, prevNodeEntry);
-        }
-
-        /**
-         * Case:
-         * - 1-<2>-3 <- toggle ul
-         * - 1-o-<3> <- normalize
-         * - 1-o-1
-         */
-        const nextNodeEntry = getNextIndentList(editor, [nodeBefore, path]);
-        if (nextNodeEntry) {
-          normalizeListStart(editor, nextNodeEntry);
-        }
-      }
-
-      const prevIndent = operation.properties[KEY_INDENT];
-      const indent = operation.newProperties[KEY_INDENT];
-
-      // Update indent
-      if (prevIndent !== indent) {
-        const node = getNode(editor, path);
-        if (!node) return;
-
-        /**
-         * Case:
-         * - 1-<o>-1 <- indent
-         * - <1>-1o-1 <- normalize node before
-         * - 1-1o-2
-         */
-        let prevNodeEntry = getPreviousIndentList(editor, [nodeBefore, path], {
-          sameStyleType: false,
-        });
-        if (prevNodeEntry) {
-          normalizeListStart(editor, prevNodeEntry);
-        }
-
-        /**
-         * Case:
-         * - 11-<1>-11 <- indent
-         * - <11>-11-12 <- normalize prev node after
-         * - 11-12-13
-         */
-        prevNodeEntry = getPreviousIndentList(editor, [node, path], {
-          sameStyleType: false,
-        });
-        if (prevNodeEntry) {
-          normalizeListStart(editor, prevNodeEntry);
-        }
-
-        /**
-         * Case:
-         * - 11-<12>-13 <- outdent
-         * - 11-2-<13> <- normalize next node before
-         * - 11-2-11
-         */
-        let nextNodeEntry = getNextIndentList(editor, [nodeBefore, path], {
-          sameStyleType: false,
-        });
-        if (nextNodeEntry) {
           normalizeListStart(editor, nextNodeEntry);
         }
 
-        /**
-         * Case:
-         * - 1-<1o>-2 <- outdent
-         * - 1-o-<2> <- normalize next node after
-         * - 1-o-1
-         */
-        nextNodeEntry = getNextIndentList(editor, [node, path], {
-          sameStyleType: false,
-        });
-        if (nextNodeEntry) {
-          normalizeListStart(editor, nextNodeEntry);
+        // Update list style type
+        if (
+          (prevListStyleType || listStyleType) &&
+          prevListStyleType !== listStyleType
+        ) {
+          const node = getNode(editor, path);
+          if (!node) return;
+
+          /**
+           * Case:
+           * - 1-<o>-1 <- toggle ol
+           * - <1>-1-2 <- normalize
+           * - 1-2-3
+           */
+          const prevNodeEntry = getPreviousIndentList(editor, [node, path]);
+          if (prevNodeEntry) {
+            normalizeListStart(editor, prevNodeEntry);
+          }
+
+          /**
+           * Case:
+           * - 1-<2>-3 <- toggle ul
+           * - 1-o-<3> <- normalize
+           * - 1-o-1
+           */
+          const nextNodeEntry = getNextIndentList(editor, [nodeBefore, path]);
+          if (nextNodeEntry) {
+            normalizeListStart(editor, nextNodeEntry);
+          }
+        }
+
+        const prevIndent = operation.properties[KEY_INDENT];
+        const indent = operation.newProperties[KEY_INDENT];
+
+        // Update indent
+        if (prevIndent !== indent) {
+          const node = getNode(editor, path);
+          if (!node) return;
+
+          /**
+           * Case:
+           * - 1-<o>-1 <- indent
+           * - <1>-1o-1 <- normalize node before
+           * - 1-1o-2
+           */
+          let prevNodeEntry = getPreviousIndentList(
+            editor,
+            [nodeBefore, path],
+            {
+              sameStyleType: false,
+            }
+          );
+          if (prevNodeEntry) {
+            normalizeListStart(editor, prevNodeEntry);
+          }
+
+          /**
+           * Case:
+           * - 11-<1>-11 <- indent
+           * - <11>-11-12 <- normalize prev node after
+           * - 11-12-13
+           */
+          prevNodeEntry = getPreviousIndentList(editor, [node, path], {
+            sameStyleType: false,
+          });
+          if (prevNodeEntry) {
+            normalizeListStart(editor, prevNodeEntry);
+          }
+
+          /**
+           * Case:
+           * - 11-<12>-13 <- outdent
+           * - 11-2-<13> <- normalize next node before
+           * - 11-2-11
+           */
+          let nextNodeEntry = getNextIndentList(editor, [nodeBefore, path], {
+            sameStyleType: false,
+          });
+          if (nextNodeEntry) {
+            normalizeListStart(editor, nextNodeEntry);
+          }
+
+          /**
+           * Case:
+           * - 1-<1o>-2 <- outdent
+           * - 1-o-<2> <- normalize next node after
+           * - 1-o-1
+           */
+          nextNodeEntry = getNextIndentList(editor, [node, path], {
+            sameStyleType: false,
+          });
+          if (nextNodeEntry) {
+            normalizeListStart(editor, nextNodeEntry);
+          }
         }
       }
     }
