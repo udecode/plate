@@ -1,5 +1,7 @@
 # @udecode/plate-basic-elements
 
+## 9.3.1
+
 ## 9.3.0
 
 ## 9.2.1

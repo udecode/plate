@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 9.3.1
+
+### Patch Changes
+
+- [#1367](https://github.com/udecode/plate/pull/1367) by [@zbeyens](https://github.com/zbeyens) – Fix: "Adding new Editor instances after render of another instance causes a bad setState error". We were setting the plate store anytime `getPlateStore` was called, so it could be called outside a `useEffect`. `Plate` now returns `null` until the plate store is set in the plates store, so `getPlateStore` always returns a defined store. Note that you'd need the same check on your end above any component using plate selectors.
+
 ## 9.3.0
 
 ### Patch Changes
