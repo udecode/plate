@@ -51,26 +51,17 @@ describe(getDocxTestName(name), () => {
         <hp indent={2} listStyleType="lower-alpha" listStart={10}>
           m
         </hp>
-        <hp>
-          <text />
-        </hp>
         <hp indent={2} listStyleType="upper-roman">
           a
         </hp>
         <hp indent={2} listStyleType="upper-roman" listStart={2}>
           b
         </hp>
-        <hp>
-          <text />
-        </hp>
         <hp indent={1} listStyleType="upper-alpha">
           a
         </hp>
         <hp indent={1} listStyleType="upper-alpha" listStart={2}>
           b
-        </hp>
-        <hp>
-          <text />
         </hp>
         <hp indent={1} listStyleType="decimal-leading-zero">
           a

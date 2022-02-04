@@ -5,6 +5,7 @@ import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { normalizeListStart } from './transforms/normalizeListStart';
 import { KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
+import { ListStyleType } from './types';
 
 export const withIndentList: WithOverride = (editor) => {
   const { apply, normalizeNode } = editor;
@@ -29,10 +30,14 @@ export const withIndentList: WithOverride = (editor) => {
     }
 
     // If there is a previous indent list, the inserted indent list style type should be the same.
+    // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
     if (operation.type === 'insert_node') {
       const listStyleType = operation.node[KEY_LIST_STYLE_TYPE];
 
-      if (listStyleType) {
+      if (
+        listStyleType &&
+        ['lower-roman', 'upper-roman'].includes(listStyleType)
+      ) {
         const prevNodeEntry = getPreviousIndentList(
           editor,
           [operation.node, path],
@@ -41,12 +46,20 @@ export const withIndentList: WithOverride = (editor) => {
           }
         );
 
-        if (
-          prevNodeEntry &&
-          prevNodeEntry[0][KEY_LIST_STYLE_TYPE] !== listStyleType
-        ) {
-          operation.node[KEY_LIST_STYLE_TYPE] =
-            prevNodeEntry[0][KEY_LIST_STYLE_TYPE];
+        if (prevNodeEntry) {
+          const prevListStyleType = prevNodeEntry[0][KEY_LIST_STYLE_TYPE];
+
+          if (
+            prevListStyleType === ListStyleType.LowerAlpha &&
+            listStyleType === ListStyleType.LowerRoman
+          ) {
+            operation.node[KEY_LIST_STYLE_TYPE] = ListStyleType.LowerAlpha;
+          } else if (
+            prevListStyleType === ListStyleType.UpperAlpha &&
+            listStyleType === ListStyleType.UpperRoman
+          ) {
+            operation.node[KEY_LIST_STYLE_TYPE] = ListStyleType.UpperAlpha;
+          }
         }
       }
     }
