@@ -3,12 +3,29 @@ import { ListStyleType } from '@udecode/plate-indent-list';
 export const getTextListStyleType = (
   text: string
 ): ListStyleType | undefined => {
-  // text.match(/^\d+\s*[-\\.)]?\s+/)?.[0];
+  text = text.trimStart();
+
   if (text.match(/^\d+[\\.]/)?.[0]) {
+    if (text[0] === '0') {
+      return ListStyleType.DecimalLeadingZero;
+    }
+
     return ListStyleType.Decimal;
+  }
+
+  if (text.match(/^[ivmcldx]+\./)?.[0]) {
+    return ListStyleType.LowerRoman;
   }
 
   if (text.match(/^[a-z]+\./)?.[0]) {
     return ListStyleType.LowerAlpha;
+  }
+
+  if (text.match(/^[IVMCLDX]+\./)?.[0]) {
+    return ListStyleType.UpperRoman;
+  }
+
+  if (text.match(/^[A-Z]+\./)?.[0]) {
+    return ListStyleType.UpperAlpha;
   }
 };
