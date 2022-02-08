@@ -1,5 +1,7 @@
 # @udecode/plate-placeholder
 
+## 10.0.0
+
 ## 9.3.1
 
 ## 9.3.0
