@@ -1,7 +1,9 @@
+import { useAtom } from 'jotai';
 import {
   eventEditorSelectors,
   useEventEditorSelectors,
 } from '../../event-editor/event-editor.store';
+import { plateIdAtom } from '../../plateIdAtom';
 
 /**
  * - Get the last focused editor id if any
@@ -23,6 +25,9 @@ export const getPlateId = (id?: string): string => {
 };
 
 export const usePlateId = (id?: string): string => {
+  const [plateId] = useAtom(plateIdAtom);
+  if (plateId) return plateId;
+
   const focus = useEventEditorSelectors.focus?.();
   const blur = useEventEditorSelectors.blur?.();
   const last = useEventEditorSelectors.last?.();

@@ -4,13 +4,13 @@ import {
   getPreventDefaultHandler,
   someNode,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ToolbarButton } from '@udecode/plate-ui-toolbar';
 import { TableToolbarButtonProps } from './TableToolbarButton.types';
 
-export const TableToolbarButton = withEditor(
+export const TableToolbarButton = withPlateProvider(
   ({ transform, header, ...props }: TableToolbarButtonProps) => {
     const editor = usePlateEditorState()!;
     const type = getPluginType(editor, ELEMENT_TABLE);

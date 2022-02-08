@@ -4,7 +4,7 @@ import {
   someNode,
   toggleNodeType,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton';
 import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
@@ -12,7 +12,7 @@ import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
 /**
  * Toolbar button to toggle the type of elements in selection.
  */
-export const BlockToolbarButton = withEditor(
+export const BlockToolbarButton = withPlateProvider(
   ({ type, inactiveType, active, ...props }: BlockToolbarButtonProps) => {
     const editor = usePlateEditorState()!;
 

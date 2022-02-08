@@ -8,14 +8,14 @@ import {
   getPluginType,
   getPreventDefaultHandler,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import {
   BlockToolbarButton,
   ToolbarButtonProps,
 } from '@udecode/plate-ui-toolbar';
 
-export const CodeBlockToolbarButton = withEditor(
+export const CodeBlockToolbarButton = withPlateProvider(
   ({
     options,
     ...props

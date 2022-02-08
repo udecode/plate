@@ -4,7 +4,7 @@ import {
   isCollapsed,
   someNode,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@udecode/plate-ui-toolbar';
 import { ReactEditor } from 'slate-react';
 
-export const LineHeightToolbarDropdown = withEditor(
+export const LineHeightToolbarDropdown = withPlateProvider(
   (props: ToolbarButtonProps) => {
     const [open, setOpen] = React.useState(false);
     const editor = usePlateEditorState()!;

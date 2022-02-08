@@ -40,6 +40,7 @@
   "dependencies": {
     "@udecode/zustood": "0.4.4",
     "clsx": "1.1.1",
+    "jotai": "1.5.3",
     "lodash": "4.17.21",
     "use-deep-compare": "1.1.0",
     "zustand": "3.6.7"

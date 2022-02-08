@@ -4,3 +4,4 @@
 
 export * from './event-editor/index';
 export * from './plate/index';
+export { plateIdAtom } from './plateIdAtom';
