@@ -26,13 +26,13 @@ export const getPlateId = (id?: string): string => {
 
 export const usePlateId = (id?: string): string => {
   const [plateId] = useAtom(plateIdAtom);
-  if (plateId) return plateId;
 
-  const focus = useEventEditorSelectors.focus?.();
-  const blur = useEventEditorSelectors.blur?.();
-  const last = useEventEditorSelectors.last?.();
+  const focus = useEventEditorSelectors.focus();
+  const blur = useEventEditorSelectors.blur();
+  const last = useEventEditorSelectors.last();
 
   if (id) return id;
+  if (plateId) return plateId;
   if (focus) return focus;
   if (blur) return blur;
 

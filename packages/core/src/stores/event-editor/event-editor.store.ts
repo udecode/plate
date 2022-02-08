@@ -13,10 +13,6 @@ export type EventEditorState = {
    * Last editor id.
    */
   last: string | null;
-  /**
-   * Last editor id that has been focused.
-   */
-  lastFocus: string | null;
 };
 
 /**
@@ -26,8 +22,6 @@ export const eventEditorStore = createStore('event-editor')({
   blur: null,
   focus: null,
   last: null,
-  lastBlur: null,
-  lastFocus: null,
 } as EventEditorState);
 
 export const eventEditorActions = eventEditorStore.set;

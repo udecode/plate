@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { withPlateProvider } from '@udecode/plate-core';
+import { PortalBody } from '@udecode/plate-styled-components';
 import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarBase } from '../Toolbar/Toolbar';
 import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
@@ -37,17 +38,17 @@ export const BalloonToolbar = withPlateProvider(
     });
 
     return (
-      // <PortalBody element={portalElement}>
-      <ToolbarBase
-        ref={popperRef}
-        css={styles.root.css}
-        className={styles.root.className}
-        style={popperStyles.popper}
-        {...attributes.popper}
-      >
-        {children}
-      </ToolbarBase>
-      // </PortalBody>
+      <PortalBody element={portalElement}>
+        <ToolbarBase
+          ref={popperRef}
+          css={styles.root.css}
+          className={styles.root.className}
+          style={popperStyles.popper}
+          {...attributes.popper}
+        >
+          {children}
+        </ToolbarBase>
+      </PortalBody>
     );
   }
 );
