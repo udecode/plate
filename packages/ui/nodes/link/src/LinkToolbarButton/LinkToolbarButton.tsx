@@ -3,7 +3,7 @@ import {
   getPluginType,
   someNode,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK, getAndUpsertLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
@@ -15,7 +15,7 @@ export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
 
-export const LinkToolbarButton = withEditor(
+export const LinkToolbarButton = withPlateProvider(
   ({ getLinkUrl, ...props }: LinkToolbarButtonProps) => {
     const editor = usePlateEditorState()!;
 

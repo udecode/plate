@@ -11,7 +11,7 @@ import 'prismjs/components/prism-cpp';
 import 'prismjs/components/prism-csharp';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-dart';
-import 'prismjs/components/prism-django';
+// import 'prismjs/components/prism-django';
 import 'prismjs/components/prism-docker';
 import 'prismjs/components/prism-ejs';
 import 'prismjs/components/prism-erlang';

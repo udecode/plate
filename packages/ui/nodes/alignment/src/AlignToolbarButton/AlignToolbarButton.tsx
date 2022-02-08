@@ -5,7 +5,7 @@ import {
   isCollapsed,
   someNode,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -14,7 +14,7 @@ export interface AlignToolbarButtonProps extends ToolbarButtonProps {
   pluginKey?: string;
 }
 
-export const AlignToolbarButton = withEditor(
+export const AlignToolbarButton = withPlateProvider(
   ({ value, pluginKey = KEY_ALIGN, ...props }: AlignToolbarButtonProps) => {
     const editor = usePlateEditorState()!;
 

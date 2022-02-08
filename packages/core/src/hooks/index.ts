@@ -5,3 +5,4 @@
 export * from './useEditorRef';
 export * from './useEditorState';
 export * from './usePlate/index';
+export * from './useCreatePlateStore';

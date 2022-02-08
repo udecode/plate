@@ -1,4 +1,5 @@
 import { createStore } from '@udecode/zustood';
+import { castArray } from 'lodash';
 import { PlatesStoreState } from '../../types/PlateStore';
 import { eventEditorActions } from '../event-editor/event-editor.store';
 import { createPlateStore } from './createPlateStore';
@@ -34,8 +35,10 @@ export const platesStore = createStore('plate')({} as PlatesStoreState)
     get(id: string) {
       return state[id];
     },
-    has(id: string) {
-      return !!state[id];
+    has(id?: string | string[]) {
+      const ids = castArray<string>(id);
+
+      return ids.every((_id) => !!state[_id]);
     },
   }));
 

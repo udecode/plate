@@ -20,5 +20,13 @@ export const usePlateStore = (id?: string): PlateStoreApi => {
 
   const store = platesStore.use.get(id);
 
+  if (store) {
+    return store;
+  }
+
+  console.warn(
+    "The plate hooks must be used inside the <PlateProvider id={id}> component's context."
+  );
+
   return store || loadingStore;
 };

@@ -7,7 +7,7 @@ import {
   setMarks,
   usePlateEditorRef,
   usePlateEditorState,
-  withEditor,
+  withPlateProvider,
 } from '@udecode/plate-core';
 import {
   ToolbarButton,
@@ -29,7 +29,7 @@ type ColorPickerToolbarDropdownProps = {
   closeOnSelect?: boolean;
 };
 
-export const ColorPickerToolbarDropdown = withEditor(
+export const ColorPickerToolbarDropdown = withPlateProvider(
   ({
     pluginKey,
     icon,
