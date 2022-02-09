@@ -1,3 +1,11 @@
+# 10.0.0
+
+## @udecode/plate-ui-toolbar@10.0.0
+
+### Major Changes
+
+-   [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) – Before, `BalloonToolbar` could be outside `Plate`. Now, `BallonToolbar` should be a child of `Plate` to support multiple editors.
+
 # 9.0.0
 
 ## @udecode/plate-core@9.0.0
