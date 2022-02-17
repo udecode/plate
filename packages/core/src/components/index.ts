@@ -8,3 +8,4 @@ export * from './PlateProvider';
 export * from './EditorRefEffect';
 export * from './EditorStateEffect';
 export * from './Plate';
+export * from './PlateTest';

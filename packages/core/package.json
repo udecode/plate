@@ -43,7 +43,7 @@
     "jotai": "1.5.3",
     "lodash": "4.17.21",
     "use-deep-compare": "1.1.0",
-    "zustand": "3.6.7"
+    "zustand": "3.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
