@@ -506,7 +506,8 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert simple text inside a list', () => {
+    // Auto-correct generates a Paragraph node (in Chromium)
+    it('should insert autocorrect-inserted paragraph inside a list', () => {
       const input = ((
         <editor>
           <hul>
@@ -864,7 +865,7 @@ describe('when pasting ul > 2 li fragment', () => {
 });
 
 describe('when pasting text fragment inside li fragment', () => {
-  it('should normalize text as li and insert it', () => {
+  it('should normalize text as li and insert it (multiple paragraph nodes)', () => {
     const input = ((
       <editor>
         <hul>
@@ -889,13 +890,46 @@ describe('when pasting text fragment inside li fragment', () => {
       <editor>
         <hul>
           <hli>
+            <hlic>onetwo</hlic>
+          </hli>
+          <hli>
+            <hlic>three</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    editorTest(input, fragment, expected);
+  });
+
+  it('should normalize text as li and insert it (single paragraph node)', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>
+              <cursor />
+            </hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const fragment = ((
+      <fragment>
+        <hp>one</hp>
+        <hp>two</hp>
+      </fragment>
+    ) as any) as TDescendant[];
+
+    const expected = ((
+      <editor>
+        <hul>
+          <hli>
             <hlic>one</hlic>
           </hli>
           <hli>
             <hlic>two</hlic>
-          </hli>
-          <hli>
-            <hlic>three</hlic>
           </hli>
         </hul>
       </editor>
