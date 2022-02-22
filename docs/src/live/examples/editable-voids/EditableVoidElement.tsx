@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { createBasicElementsPlugin } from '@udecode/plate';
 import {
+  createBasicElementsPlugin,
   createExitBreakPlugin,
-  createSoftBreakPlugin,
-} from '@udecode/plate-break';
-import {
   createPlugins,
+  createResetNodePlugin,
+  createSoftBreakPlugin,
   Plate,
   PlateRenderElementProps,
-} from '@udecode/plate-core';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
+} from '@udecode/plate';
 import { CONFIG } from '../../config/config';
 import { VALUES } from '../../config/values/values';
 
