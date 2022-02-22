@@ -8,11 +8,7 @@ import {
 } from '@udecode/plate-core';
 import { Element, Node, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
-import {
-  getListItemContentType,
-  getListItemType,
-  getListTypes,
-} from './queries';
+import { getListItemContentType, getListItemType, isListRoot } from './queries';
 
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
@@ -20,9 +16,6 @@ export const insertFragmentList = (editor: PlateEditor) => {
   const listItemPlugin = getPlugin(editor, ELEMENT_LI);
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
-
-  const isListRoot = (node: TDescendant): boolean =>
-    getListTypes(editor).includes(node.type);
 
   const getFirstAncestorOfType = (
     root: TDescendant,
@@ -41,7 +34,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
     let prev = null;
     let node = first;
     while (
-      isListRoot(node) ||
+      isListRoot(editor, node) ||
       (node.type === listItemType &&
         node.children[0].type !== listItemContentType)
     ) {
@@ -58,7 +51,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
    * @returns If argument is not a list root, returns it, otherwise returns ul[] or li[].
    */
   const trimList = <T extends TDescendant>(listRoot: T): T[] => {
-    if (!isListRoot(listRoot)) {
+    if (!isListRoot(editor, listRoot)) {
       return [listRoot];
     }
 
@@ -73,7 +66,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
       getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin)
     );
 
-    const [first, ...rest] = isListRoot(commonAncestorEntry[0])
+    const [first, ...rest] = isListRoot(editor, commonAncestorEntry[0])
       ? commonAncestorEntry[0].children
       : [commonAncestorEntry[0]];
     return [...findListItemsWithContent(first), ...rest];
@@ -93,7 +86,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
    */
   const isSingleLic = (fragment: TDescendant[]) => {
     const isFragmentOnlyListRoot =
-      fragment.length === 1 && isListRoot(fragment[0]);
+      fragment.length === 1 && isListRoot(editor, fragment[0]);
 
     return (
       isFragmentOnlyListRoot &&
@@ -118,7 +111,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
       .map(wrapNodeIntoListItem);
     let textNode;
     let listItemNodes;
-    if (isListRoot(fragment[0])) {
+    if (isListRoot(editor, fragment[0])) {
       if (isSingleLic(fragment)) {
         textNode = first;
         listItemNodes = rest;
@@ -172,7 +165,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
     // not inserting into a list item, delegate to other plugins
     if (!liEntry) {
       return insertFragment(
-        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
 
@@ -191,7 +184,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
     });
     if (!licEntry) {
       return insertFragment(
-        isListRoot(fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
 

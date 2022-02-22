@@ -3,6 +3,7 @@
 import { createPlateUIEditor } from '@udecode/plate/src';
 import { getNode, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { Editor } from 'slate';
 import { createListPlugin } from '../createListPlugin';
 
 jsx;
@@ -156,6 +157,45 @@ describe('clean up lists', () => {
     const node = getNode(editor, path);
 
     editor.normalizeNode([node!, path]);
+
+    expect(input.children).toEqual(output.children);
+  });
+
+  it('should only allow li to be child of ul', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hp>bad</hp>
+          <hli>
+            <hlic>ok</hlic>
+          </hli>
+          <hp>bad</hp>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const output = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>bad</hlic>
+          </hli>
+          <hli>
+            <hlic>ok</hlic>
+          </hli>
+          <hli>
+            <hlic>bad</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
+
+    const editor = createPlateUIEditor({
+      editor: input,
+      plugins: [createListPlugin()],
+    });
+
+    Editor.normalize(editor, { force: true });
 
     expect(input.children).toEqual(output.children);
   });

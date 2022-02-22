@@ -1,5 +1,6 @@
 import {
   ELEMENT_DEFAULT,
+  getChildren,
   getNode,
   getParent,
   getPluginType,
@@ -10,10 +11,11 @@ import {
   setNodes,
   TDescendant,
   TElement,
+  wrapNodes,
 } from '@udecode/plate-core';
 import { Descendant, NodeEntry, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
-import { getListTypes } from '../queries/getListTypes';
+import { getListTypes, isListRoot } from '../queries';
 import { moveListItemsToList } from '../transforms';
 import { ListPlugin } from '../types';
 import { normalizeListItem } from './normalizeListItem';
@@ -32,7 +34,23 @@ export const normalizeList = (
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
   return ([node, path]: NodeEntry) => {
-    if (!isElement(node)) return;
+    if (!isElement(node)) {
+      return normalizeNode([node, path]);
+    }
+
+    if (isListRoot(editor, node)) {
+      const nonLiChild = getChildren([node, path]).find(
+        ([child]) => child.type !== liType
+      );
+
+      if (nonLiChild) {
+        return wrapNodes(
+          editor,
+          { type: liType, children: [] },
+          { at: nonLiChild[1] }
+        );
+      }
+    }
 
     // remove empty list
     if (match(node, { type: getListTypes(editor) })) {
