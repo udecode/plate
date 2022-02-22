@@ -15,4 +15,3 @@ export * from './normalizers/index';
 export * from './queries/index';
 export * from './todo-list/index';
 export * from './transforms/index';
-export { isListRoot } from "./queries";
