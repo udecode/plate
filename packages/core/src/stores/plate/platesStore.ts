@@ -58,13 +58,7 @@ export const platesStore = createStore('plate')({} as PlatesStoreState)
         if (!id) return;
 
         const store = draft[id];
-        if (store) {
-          if (state) {
-            store.set.state((_draft) => {
-              setPlateState(_draft as any, state);
-            });
-          }
-        } else {
+        if (!store) {
           draft[id] = createPlateStore({
             id,
             ...setPlateState({}, state ?? {}),
