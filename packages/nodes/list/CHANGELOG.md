@@ -1,5 +1,16 @@
 # @udecode/plate-list
 
+## 10.1.0
+
+### Minor Changes
+
+- [#1386](https://github.com/udecode/plate/pull/1386) by [@fakedarren](https://github.com/fakedarren) – Improvements to list behaviours:
+
+  - copy/paste of lis into existing lists
+  - behaviour of browser autocorrection
+
+  Improvements to list-specific tests
+
 ## 10.0.0
 
 ## 9.3.1
