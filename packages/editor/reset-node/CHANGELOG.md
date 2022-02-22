@@ -1,5 +1,7 @@
 # @udecode/plate-reset-node
 
+## 10.1.0
+
 ## 10.0.0
 
 ## 9.3.1

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "slate",
@@ -35,13 +35,13 @@
     "test": "jest"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "10.0.0",
-    "@udecode/plate-code-block": "10.0.0",
-    "@udecode/plate-core": "10.0.0",
-    "@udecode/plate-heading": "10.0.0",
-    "@udecode/plate-link": "10.0.0",
-    "@udecode/plate-list": "10.0.0",
-    "@udecode/plate-paragraph": "10.0.0",
+    "@udecode/plate-block-quote": "10.1.0",
+    "@udecode/plate-code-block": "10.1.0",
+    "@udecode/plate-core": "10.1.0",
+    "@udecode/plate-heading": "10.1.0",
+    "@udecode/plate-link": "10.1.0",
+    "@udecode/plate-list": "10.1.0",
+    "@udecode/plate-paragraph": "10.1.0",
     "remark-parse": "^9.0.0",
     "remark-slate": "^1.4.0",
     "unified": "^9.2.0"
