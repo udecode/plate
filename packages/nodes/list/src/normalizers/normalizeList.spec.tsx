@@ -8,6 +8,17 @@ import { createListPlugin } from '../createListPlugin';
 
 jsx;
 
+const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  Editor.normalize(editor, { force: true });
+
+  expect(input.children).toEqual(output.children);
+};
+
 describe('merge lists', () => {
   it('should not merge lists with different type', () => {
     const input = ((
@@ -40,17 +51,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [0];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 
   it('should merge the next list if it has the same type', () => {
@@ -82,17 +83,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [0];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 
   it('should merge the previous list if it has the same type', () => {
@@ -124,17 +115,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [1];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 });
 
@@ -148,17 +129,7 @@ describe('clean up lists', () => {
 
     const output = ((<editor />) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [0];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 
   it('should only allow li to be child of ul', () => {
@@ -190,13 +161,6 @@ describe('clean up lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    Editor.normalize(editor, { force: true });
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 });
