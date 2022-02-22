@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { castArray } from 'lodash';
+import { PlateProps } from '../components/Plate';
 import { platesActions, platesSelectors } from '../stores/plate/platesStore';
 import { usePlateId } from '../stores/plate/selectors/getPlateId';
 
@@ -7,7 +8,10 @@ import { usePlateId } from '../stores/plate/selectors/getPlateId';
  * On mount: create plate store and set it to the plates store.
  * If id is not defined, event id is used.
  */
-export const useCreatePlateStore = (_ids?: string | string[]) => {
+export const usePlatesStoreEffect = (
+  _ids?: string | string[],
+  props?: PlateProps
+) => {
   const __ids = castArray<string>(_ids);
   const id = usePlateId(__ids[0]);
 
@@ -18,11 +22,11 @@ export const useCreatePlateStore = (_ids?: string | string[]) => {
 
       ids.forEach((_id) => {
         if (!platesSelectors.has(_id)) {
-          platesActions.set(_id);
+          platesActions.set(_id, props);
         }
       });
     } else if (!platesSelectors.has(id)) {
-      platesActions.set(id);
+      platesActions.set(id, props);
     }
-  }, [_ids, id]);
+  }, [_ids, id, props]);
 };

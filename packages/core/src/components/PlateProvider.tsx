@@ -1,17 +1,19 @@
 import React, { FC } from 'react';
 import { castArray } from 'lodash';
 import { withHOC } from '../common/hoc/withHOC';
-import { useCreatePlateStore } from '../hooks/useCreatePlateStore';
+import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
 import { usePlatesSelectors } from '../stores/plate/platesStore';
 import { usePlateId } from '../stores/plate/selectors/getPlateId';
+import { PlateProps } from './Plate';
 
 export const PlateProvider = ({
   id: _ids,
   children,
+  ...props
 }: {
   id?: string | string[];
   children: any;
-}) => {
+} & PlateProps) => {
   const ids = castArray<string>(_ids);
   const id = usePlateId(ids[0]);
   if (ids[0] === undefined) {
@@ -19,7 +21,7 @@ export const PlateProvider = ({
   }
 
   const hasId = usePlatesSelectors.has(ids);
-  useCreatePlateStore(_ids);
+  usePlatesStoreEffect(_ids, props);
 
   if (!hasId) return null;
 

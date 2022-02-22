@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderLeaf } from '@udecode/plate-core';
+import { RenderLeaf } from '@udecode/plate';
 import { getPreviewLeafStyles } from './PreviewLeaf.styles';
 
 export const PreviewLeaf: RenderLeaf = (props) => {

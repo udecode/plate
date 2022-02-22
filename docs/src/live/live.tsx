@@ -79,6 +79,7 @@ import {
   createItalicPlugin,
   createJuicePlugin,
   createKbdPlugin,
+  createLineHeightPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
@@ -147,6 +148,7 @@ import {
   isSelectionAtBlockStart,
   isType,
   KEYS_HEADING,
+  LineHeightToolbarDropdown,
   LinkToolbarButton,
   ListToolbarButton,
   MARK_BG_COLOR,
@@ -187,13 +189,11 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
-import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { clearBlockFormat } from './config/autoformat/autoformatUtils';
