@@ -3,9 +3,21 @@
 import { createPlateUIEditor } from '@udecode/plate/src';
 import { getNode, PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
+import { Editor } from 'slate';
 import { createListPlugin } from '../createListPlugin';
 
 jsx;
+
+const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
+  const editor = createPlateUIEditor({
+    editor: input,
+    plugins: [createListPlugin()],
+  });
+
+  Editor.normalize(editor, { force: true });
+
+  expect(input.children).toEqual(output.children);
+};
 
 describe('merge lists', () => {
   it('should not merge lists with different type', () => {
@@ -39,17 +51,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [0];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 
   it('should merge the next list if it has the same type', () => {
@@ -81,17 +83,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [0];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 
   it('should merge the previous list if it has the same type', () => {
@@ -123,17 +115,7 @@ describe('merge lists', () => {
       </editor>
     ) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
-
-    const path = [1];
-    const node = getNode(editor, path);
-
-    editor.normalizeNode([node!, path]);
-
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 });
 
@@ -147,16 +129,38 @@ describe('clean up lists', () => {
 
     const output = ((<editor />) as any) as PlateEditor;
 
-    const editor = createPlateUIEditor({
-      editor: input,
-      plugins: [createListPlugin()],
-    });
+    testNormalize(input, output);
+  });
 
-    const path = [0];
-    const node = getNode(editor, path);
+  it('should only allow li to be child of ul', () => {
+    const input = ((
+      <editor>
+        <hul>
+          <hp>bad</hp>
+          <hli>
+            <hlic>ok</hlic>
+          </hli>
+          <hp>bad</hp>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
 
-    editor.normalizeNode([node!, path]);
+    const output = ((
+      <editor>
+        <hul>
+          <hli>
+            <hlic>bad</hlic>
+          </hli>
+          <hli>
+            <hlic>ok</hlic>
+          </hli>
+          <hli>
+            <hlic>bad</hlic>
+          </hli>
+        </hul>
+      </editor>
+    ) as any) as PlateEditor;
 
-    expect(input.children).toEqual(output.children);
+    testNormalize(input, output);
   });
 });
