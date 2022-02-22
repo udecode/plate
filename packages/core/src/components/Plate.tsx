@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Provider } from 'jotai';
 import { Editable, Slate } from 'slate-react';
-import { useCreatePlateStore } from '../hooks/useCreatePlateStore';
 import { usePlate } from '../hooks/usePlate/usePlate';
+import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
 import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { plateIdAtom } from '../stores/plateIdAtom';
 import { PlateStoreState } from '../types/PlateStore';
@@ -76,7 +76,7 @@ export const PlateContent = <T extends {} = {}>({
 };
 
 export const Plate = <T extends {} = {}>(props: PlateProps<T>) => {
-  const { id = 'main' } = props;
+  const { id = 'main', ...state } = props;
   const hasId = usePlatesSelectors.has(id);
 
   // Clear the state on unmount.
@@ -88,7 +88,7 @@ export const Plate = <T extends {} = {}>(props: PlateProps<T>) => {
   );
 
   // Set initial state on mount
-  useCreatePlateStore(id);
+  usePlatesStoreEffect(id, state as any);
 
   if (!hasId) return null;
 

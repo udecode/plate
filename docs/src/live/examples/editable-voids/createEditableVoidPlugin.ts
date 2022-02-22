@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-core';
+import { createPluginFactory } from '@udecode/plate';
 
 export const EDITABLE_VOID = 'editable-void';
 

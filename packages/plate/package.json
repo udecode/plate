@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -37,8 +37,8 @@
     "rollup": "rollup -c=../../rollup.config.js"
   },
   "dependencies": {
-    "@udecode/plate-headless": "10.0.0",
-    "@udecode/plate-ui": "10.0.0"
+    "@udecode/plate-headless": "10.1.0",
+    "@udecode/plate-ui": "10.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

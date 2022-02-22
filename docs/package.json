@@ -27,6 +27,7 @@
     ]
   },
   "resolutions": {
+    "@udecode/plate": "link:../packages/plate",
     "@udecode/plate-alignment": "link:../packages/nodes/alignment",
     "@udecode/plate-autoformat": "link:../packages/editor/autoformat",
     "@udecode/plate-basic-elements": "link:../packages/nodes/basic-elements",
