@@ -41,7 +41,8 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.66.1"
+    "slate-react": ">=0.66.1",
+    "zustand": ">=3.7.0"
   },
   "publishConfig": {
     "access": "public"

@@ -34,8 +34,7 @@
   "dependencies": {
     "@udecode/plate-core": "10.0.0",
     "@udecode/zustood": "0.4.4",
-    "downshift": "6.1.7",
-    "zustand": "3.7.0"
+    "downshift": "6.1.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -43,7 +42,8 @@
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.66.1",
-    "styled-components": ">=5.0.0"
+    "styled-components": ">=5.0.0",
+    "zustand": ">=3.7.0"
   },
   "publishConfig": {
     "access": "public"

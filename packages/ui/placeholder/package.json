@@ -41,7 +41,8 @@
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
     "slate-react": ">=0.66.1",
-    "styled-components": ">=5.0.0"
+    "styled-components": ">=5.0.0",
+    "zustand": ">=3.7.0"
   },
   "publishConfig": {
     "access": "public"
