@@ -8,10 +8,9 @@ export const getBlocksWithId = (
   editor: TEditor,
   options: EditorNodesOptions
 ) => {
-  return [
-    ...getNodes(editor, {
-      match: (n) => Editor.isBlock(editor, n) && !!n.id,
-      ...options,
-    }),
-  ];
+  const _nodes = getNodes(editor, {
+    match: (n) => Editor.isBlock(editor, n) && !!n.id,
+    ...options,
+  });
+  return Array.from(_nodes);
 };

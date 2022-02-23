@@ -55,7 +55,8 @@ export const insertFragmentList = (editor: PlateEditor) => {
       return [listRoot];
     }
 
-    const textEntries = Array.from(Node.texts(listRoot));
+    const _texts = Node.texts(listRoot);
+    const textEntries = Array.from(_texts);
 
     const commonAncestorEntry = textEntries.reduce<NodeEntry<TDescendant>>(
       (commonAncestor, textEntry) =>

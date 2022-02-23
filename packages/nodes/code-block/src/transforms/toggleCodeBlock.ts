@@ -33,11 +33,10 @@ export const toggleCodeBlock = (editor: PlateEditor) => {
     };
     wrapNodes(editor, codeBlock);
 
-    const nodes = [
-      ...getNodes(editor, {
-        match: { type: getCodeLineType(editor) },
-      }),
-    ];
+    const _nodes = getNodes(editor, {
+      match: { type: getCodeLineType(editor) },
+    });
+    const nodes = Array.from(_nodes);
 
     const codeLine = {
       type: codeBlockType,

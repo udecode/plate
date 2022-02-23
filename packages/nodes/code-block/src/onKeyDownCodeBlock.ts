@@ -1,7 +1,7 @@
-import { getParent, KeyboardHandler } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { getNodes, getParent, KeyboardHandler } from '@udecode/plate-core';
+import { Editor, Transforms } from 'slate';
+import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
-import { getCodeLines } from './queries/getCodeLines';
 import { indentCodeLine } from './transforms/indentCodeLine';
 import { outdentCodeLine } from './transforms/outdentCodeLine';
 import { CodeBlockPlugin } from './types';
@@ -15,45 +15,30 @@ export const onKeyDownCodeBlock: KeyboardHandler<{}, CodeBlockPlugin> = (
 ) => (e) => {
   if (e.key === 'Tab') {
     const shiftTab = e.shiftKey;
-    const res = getCodeLineEntry(editor, {});
-    if (res) {
-      const { codeBlock, codeLine } = res;
 
-      e.preventDefault();
+    const _codeLines = getNodes(editor, {
+      match: { type: getCodeLineType(editor) },
+    });
+    const codeLines = Array.from(_codeLines);
 
-      // outdent with shift+tab
-
-      if (shiftTab) {
-        // TODO: outdent multiple lines
-        outdentCodeLine(editor, { codeBlock, codeLine });
-      }
-
-      // indent with tab
-      const tab = !e.shiftKey;
-      if (tab) {
-        // TODO: indent multiple lines
-        indentCodeLine(editor, { codeBlock, codeLine });
-      }
-      return;
-    }
-    const codeLines = getCodeLines(editor, {});
-    if (codeLines && codeLines?.[0]) {
+    if (codeLines.length) {
       e.preventDefault();
       const [, firstLinePath] = codeLines[0];
-      const codeBlock = getParent(editor, firstLinePath)!;
-      for (const codeLine of codeLines) {
-        if (shiftTab) {
-          // TODO: outdent multiple lines
-          outdentCodeLine(editor, { codeBlock, codeLine });
-        }
+      const codeBlock = getParent(editor, firstLinePath);
+      if (!codeBlock) return;
 
-        // indent with tab
-        const tab = !e.shiftKey;
-        if (tab) {
-          // TODO: indent multiple lines
-          indentCodeLine(editor, { codeBlock, codeLine });
+      Editor.withoutNormalizing(editor, () => {
+        for (const codeLine of codeLines) {
+          if (shiftTab) {
+            outdentCodeLine(editor, { codeBlock, codeLine });
+          }
+
+          // indent with tab
+          if (!shiftTab) {
+            indentCodeLine(editor, { codeBlock, codeLine });
+          }
         }
-      }
+      });
     }
   }
 

@@ -23,13 +23,15 @@ export const moveListItems = (
     at = editor.selection ?? undefined,
   }: MoveListItemsOptions = {}
 ) => {
-  // Get the selected lic
-  const [...lics] = getNodes(editor, {
+  const _nodes = getNodes(editor, {
     at,
     match: {
       type: getPluginType(editor, ELEMENT_LIC),
     },
   });
+
+  // Get the selected lic
+  const lics = Array.from(_nodes);
 
   if (!lics.length) return;
 
