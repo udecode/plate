@@ -49,12 +49,11 @@ export const setIndent = (
 ) => {
   const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 
-  const nodes = Array.from(
-    getNodes(editor, {
-      block: true,
-      ...getNodesOptions,
-    })
-  );
+  const _nodes = getNodes(editor, {
+    block: true,
+    ...getNodesOptions,
+  });
+  const nodes = Array.from(_nodes);
 
   nodes.forEach(([node, path]) => {
     const blockIndent = node[nodeKey!] ?? 0;

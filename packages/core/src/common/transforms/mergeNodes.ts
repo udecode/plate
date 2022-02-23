@@ -78,7 +78,8 @@ export const mergeNodes = (
       }
     }
 
-    const [current] = Editor.nodes(editor, { at, match, voids, mode });
+    const _nodes = Editor.nodes(editor, { at, match, voids, mode });
+    const [current] = Array.from(_nodes);
     const prev = Editor.previous(editor, { at, match, voids, mode });
 
     if (!current || !prev) {
@@ -95,7 +96,8 @@ export const mergeNodes = (
     const newPath = Path.next(prevPath);
     const commonPath = Path.common(path, prevPath);
     const isPreviousSibling = Path.isSibling(path, prevPath);
-    const levels = Array.from(Editor.levels(editor, { at: path }), ([n]) => n)
+    const _levels = Editor.levels(editor, { at: path });
+    const levels = Array.from(_levels, ([n]) => n)
       .slice(commonPath.length)
       .slice(0, -1);
 

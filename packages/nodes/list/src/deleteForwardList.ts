@@ -73,24 +73,22 @@ const selectionIsInAListHandler = (
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = getPluginType(editor, ELEMENT_LI);
-    const liWithSiblings = Array.from(
-      Editor.nodes(editor, {
-        at: listItem[1],
-        mode: 'lowest',
-        match: (node: TDescendant, path) => {
-          if (path.length === 0) {
-            return false;
-          }
+    const _nodes = Editor.nodes(editor, {
+      at: listItem[1],
+      mode: 'lowest',
+      match: (node: TDescendant, path) => {
+        if (path.length === 0) {
+          return false;
+        }
 
-          const isNodeLi = node.type === liType;
-          const isSiblingOfNodeLi =
-            (getNode(editor, Path.next(path)) as TDescendant)?.type === liType;
+        const isNodeLi = node.type === liType;
+        const isSiblingOfNodeLi =
+          (getNode(editor, Path.next(path)) as TDescendant)?.type === liType;
 
-          return isNodeLi && isSiblingOfNodeLi;
-        },
-      }),
-      (entry) => entry[1]
-    )[0];
+        return isNodeLi && isSiblingOfNodeLi;
+      },
+    });
+    const liWithSiblings = Array.from(_nodes, (entry) => entry[1])[0];
 
     if (!liWithSiblings) {
       // there are no more list item in the list
