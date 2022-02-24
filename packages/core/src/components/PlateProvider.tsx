@@ -3,25 +3,20 @@ import { castArray } from 'lodash';
 import { withHOC } from '../common/hoc/withHOC';
 import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
 import { usePlatesSelectors } from '../stores/plate/platesStore';
-import { usePlateId } from '../stores/plate/selectors/getPlateId';
-import { PlateProps } from './Plate';
 
 export const PlateProvider = ({
-  id: _ids,
+  id: _ids = 'main',
   children,
-  ...props
 }: {
   id?: string | string[];
   children: any;
-} & PlateProps) => {
-  const ids = castArray<string>(_ids);
-  const id = usePlateId(ids[0]);
-  if (ids[0] === undefined) {
-    ids[0] = id;
-  }
+}) => {
+  const ids = castArray<string>(_ids) ?? ['main'];
+  const id = ids[0];
 
   const hasId = usePlatesSelectors.has(ids);
-  usePlatesStoreEffect(_ids, props);
+
+  usePlatesStoreEffect(_ids);
 
   if (!hasId) return null;
 

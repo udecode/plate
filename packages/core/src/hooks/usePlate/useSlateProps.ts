@@ -36,13 +36,14 @@ export const useSlateProps = ({ id }: Pick<PlateProps, 'id'> = {}): Omit<
     [onChangeProp, editor, id, keyPlugins]
   );
 
-  return useMemo(
-    () => ({
-      key: editor?.key,
+  return useMemo(() => {
+    if (!editor) return {};
+
+    return {
+      key: editor.key,
       editor,
       onChange,
       value,
-    }),
-    [editor, onChange, value]
-  );
+    };
+  }, [editor, onChange, value]);
 };

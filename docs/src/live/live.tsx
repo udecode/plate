@@ -58,7 +58,6 @@ import {
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
-  createComboboxPlugin,
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
@@ -171,6 +170,7 @@ import {
   outdentList,
   pipeRenderLeaf,
   Plate,
+  PlateProvider,
   SearchHighlightToolbar,
   serializeHtml,
   setNodes,
@@ -189,6 +189,7 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
+import { createComboboxPlugin } from '@udecode/plate-combobox';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
@@ -240,6 +241,7 @@ const ReactLiveScope = {
   BorderAll,
   BorderBottom,
   BorderClear,
+  PlateProvider,
   BorderLeft,
   BorderRight,
   BorderTop,
