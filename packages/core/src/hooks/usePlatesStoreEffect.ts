@@ -28,5 +28,7 @@ export const usePlatesStoreEffect = (
     } else if (!platesSelectors.has(id)) {
       platesActions.set(id, props);
     }
-  }, [_ids, id, props]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_ids, id]);
 };

@@ -1,9 +1,7 @@
 import { createStore } from '@udecode/zustood';
 import { castArray } from 'lodash';
-import { createEditor } from 'slate';
 import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
-import { withPlate } from '../../plugins/withPlate';
 import { PlatesStoreState, PlateStoreState } from '../../types/PlateStore';
 import { eventEditorActions } from '../event-editor/event-editor.store';
 import { createPlateStore } from './createPlateStore';
@@ -29,12 +27,6 @@ export const setPlateState = (
     if (state.editor) {
       draft.value = state.editor.children;
     }
-  } else if (draft.enabled !== false) {
-    draft.editor = withPlate(createEditor(), {
-      id: draft.id,
-      plugins: draft.plugins,
-      disableCorePlugins: state.disableCorePlugins,
-    });
   }
 
   if (!isUndefined(state.initialValue)) draft.value = state.initialValue;
@@ -57,12 +49,14 @@ export const platesStore = createStore('plate')({} as PlatesStoreState)
       set.state((draft) => {
         if (!id) return;
 
-        const store = draft[id];
+        let store = draft[id];
         if (!store) {
-          draft[id] = createPlateStore({
+          store = createPlateStore({
             id,
             ...setPlateState({}, state ?? {}),
           });
+
+          draft[id] = store;
 
           eventEditorActions.last(id);
         }
