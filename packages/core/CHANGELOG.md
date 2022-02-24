@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 10.1.1
+
+### Patch Changes
+
+- [#1388](https://github.com/udecode/plate/pull/1388) by [@zbeyens](https://github.com/zbeyens) – fix for docs only: use `Array.from` instead of destructuring generators
+
+- [#1392](https://github.com/udecode/plate/pull/1392) by [@zbeyens](https://github.com/zbeyens) – fix: using `PlateProvider` was not setting the initial value
+
 ## 10.1.0
 
 ### Minor Changes
