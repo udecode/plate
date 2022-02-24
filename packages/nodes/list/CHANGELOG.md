@@ -1,5 +1,11 @@
 # @udecode/plate-list
 
+## 10.1.1
+
+### Patch Changes
+
+- [#1388](https://github.com/udecode/plate/pull/1388) by [@zbeyens](https://github.com/zbeyens) – fix for docs only: use `Array.from` instead of destructuring generators
+
 ## 10.1.0
 
 ### Minor Changes
