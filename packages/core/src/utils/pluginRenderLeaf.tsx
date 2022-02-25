@@ -8,7 +8,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
  * Get a `Editable.renderLeaf` handler for `options.type`.
- * If the type is equals to the slate leaf type and if the text is not empty, render `options.component`.
+ * If the type is equals to the slate leaf type, render `options.component`.
  * Else, return `children`.
  */
 export const pluginRenderLeaf =
