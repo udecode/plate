@@ -11,24 +11,26 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate leaf type and if the text is not empty, render `options.component`.
  * Else, return `children`.
  */
-export const pluginRenderLeaf = (
-  editor: PlateEditor,
-  { key, type = key, component, props }: PlatePlugin
-): RenderLeaf => (nodeProps: PlateRenderLeafProps) => {
-  const { leaf, children } = nodeProps;
+export const pluginRenderLeaf =
+  (
+    editor: PlateEditor,
+    { key, type = key, component, props }: PlatePlugin
+  ): RenderLeaf =>
+  (nodeProps: PlateRenderLeafProps) => {
+    const { leaf, children } = nodeProps;
 
-  if (leaf[type] && !!leaf.text) {
-    const Leaf = component ?? DefaultLeaf;
+    if (leaf[type]) {
+      const Leaf = component ?? DefaultLeaf;
 
-    nodeProps = getRenderNodeProps({
-      attributes: leaf.attributes,
-      props,
-      nodeProps,
-      type,
-    });
+      nodeProps = getRenderNodeProps({
+        attributes: leaf.attributes,
+        props,
+        nodeProps,
+        type,
+      });
 
-    return <Leaf {...nodeProps}>{children}</Leaf>;
-  }
+      return <Leaf {...nodeProps}>{children}</Leaf>;
+    }
 
-  return children;
-};
+    return children;
+  };
