@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.1.2
+
+### Patch Changes
+
+- [#1393](https://github.com/udecode/plate/pull/1393) by [@dylans](https://github.com/dylans) – Check for leaf was too strict with checking for text
+
 ## 10.1.1
 
 ### Patch Changes

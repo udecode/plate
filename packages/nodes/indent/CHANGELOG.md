@@ -1,5 +1,7 @@
 # @udecode/plate-indent
 
+## 10.1.2
+
 ## 10.1.1
 
 ### Patch Changes
