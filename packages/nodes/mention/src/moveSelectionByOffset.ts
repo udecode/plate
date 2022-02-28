@@ -18,7 +18,7 @@ export const moveSelectionByOffset = (
     return true;
   }
 
-  if (event.key === 'ArrowRight') {
+  if (event.key === 'ArrowRight' || event.key === 'Escape') {
     event.preventDefault();
     Transforms.move(editor, { unit: 'offset' });
     return true;
