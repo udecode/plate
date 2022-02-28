@@ -212,6 +212,27 @@ describe('withMention', () => {
         focus: { path: [0, 0], offset: 1 },
       });
     });
+
+    it('should remove the input when inserting break in empty input', () => {
+      const editor = createEditor(
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>
+            <cursor />
+          </hmentioninput>
+          <htext />
+        </hp>
+      );
+
+      editor.insertBreak();
+
+      expect(editor.children).toEqual([<hp>@</hp>]);
+
+      expect(editor.selection).toEqual<Range>({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+    });
   });
 
   describe('typing in a mention input', () => {

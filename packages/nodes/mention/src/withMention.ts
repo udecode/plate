@@ -17,7 +17,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
 ) => {
   const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
 
-  const { apply, insertText, deleteBackward } = editor;
+  const { apply, insertBreak, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
@@ -26,6 +26,15 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     }
 
     deleteBackward(unit);
+  };
+
+  editor.insertBreak = () => {
+    const currentMentionInput = findMentionInput(editor);
+    if (currentMentionInput && Node.string(currentMentionInput[0]) === '') {
+      return removeMentionInput(editor, currentMentionInput[1]);
+    }
+
+    insertBreak();
   };
 
   editor.insertText = (text) => {
