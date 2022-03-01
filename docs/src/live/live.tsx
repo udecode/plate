@@ -58,6 +58,7 @@ import {
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
+  createComboboxPlugin,
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
@@ -189,7 +190,6 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
-import { createComboboxPlugin } from '@udecode/plate-combobox';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
