@@ -2,7 +2,8 @@ import { KeyboardEvent } from 'react';
 import { PlateEditor } from '@udecode/plate-core';
 import { HandlerReturnType } from '@udecode/plate-core/src';
 import { Range, Transforms } from 'slate';
-import { findMentionInput, removeMentionInput } from '.';
+import { removeMentionInput } from './transforms/removeMentionInput';
+import { findMentionInput } from './queries';
 
 export const moveSelectionByOffset = (
   editor: PlateEditor,
@@ -28,10 +29,9 @@ export const moveSelectionByOffset = (
 
   if (event.key === 'Escape') {
     event.preventDefault();
-    const currentMentionInput = findMentionInput(editor);
+    const currentMentionInput = findMentionInput(editor)!;
     if (currentMentionInput) {
-      const [, path] = currentMentionInput;
-      removeMentionInput(editor, path);
+      removeMentionInput(editor, currentMentionInput[1]);
     }
     return true;
   }

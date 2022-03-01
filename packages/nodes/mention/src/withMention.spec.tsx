@@ -213,11 +213,12 @@ describe('withMention', () => {
       });
     });
 
-    it('should remove the input when inserting break in empty input', () => {
+    it('should block insert break', () => {
       const editor = createEditor(
         <hp>
           <htext />
           <hmentioninput trigger={trigger}>
+            n
             <cursor />
           </hmentioninput>
           <htext />
@@ -226,11 +227,20 @@ describe('withMention', () => {
 
       editor.insertBreak();
 
-      expect(editor.children).toEqual([<hp>@</hp>]);
+      expect(editor.children).toEqual([
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>
+            n
+            <cursor />
+          </hmentioninput>
+          <htext />
+        </hp>,
+      ]);
 
       expect(editor.selection).toEqual<Range>({
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1 },
+        anchor: { path: [0, 1, 0], offset: 1 },
+        focus: { path: [0, 1, 0], offset: 1 },
       });
     });
   });
