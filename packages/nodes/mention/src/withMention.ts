@@ -30,8 +30,8 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
 
   editor.insertBreak = () => {
     const currentMentionInput = findMentionInput(editor);
-    if (currentMentionInput && Node.string(currentMentionInput[0]) === '') {
-      return removeMentionInput(editor, currentMentionInput[1]);
+    if (currentMentionInput) {
+      return;
     }
 
     insertBreak();
