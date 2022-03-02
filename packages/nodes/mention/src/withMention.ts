@@ -47,22 +47,41 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
-    const previousCharLocation = Editor.before(editor, editor.selection);
-    if (previousCharLocation) {
-      const previousChar = Editor.string(
+    const previousChar = Editor.string(
+      editor,
+      Editor.range(
         editor,
-        Editor.range(editor, editor.selection, previousCharLocation)
-      );
-      if (previousChar !== '' && previousChar !== ' ') {
-        return insertText(text);
-      }
+        editor.selection,
+        Editor.before(editor, editor.selection)
+      )
+    );
+
+    const nextChar = Editor.string(
+      editor,
+      Editor.range(
+        editor,
+        editor.selection,
+        Editor.after(editor, editor.selection)
+      )
+    );
+
+    const beginningOfLine = previousChar === '';
+    const endOfLine = nextChar === '';
+    const precededByWhitespace = previousChar === ' ';
+    const followedByWhitespace = nextChar === ' ';
+
+    if (
+      (beginningOfLine || precededByWhitespace) &&
+      (endOfLine || followedByWhitespace)
+    ) {
+      return insertNodes<MentionInputNode>(editor, {
+        type,
+        children: [{ text: '' }],
+        trigger,
+      });
     }
 
-    insertNodes<MentionInputNode>(editor, {
-      type,
-      children: [{ text: '' }],
-      trigger,
-    });
+    return insertText(text);
   };
 
   editor.apply = (operation) => {
