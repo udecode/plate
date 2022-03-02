@@ -13,6 +13,7 @@ import {
   PlatePluginKey,
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
+import { HistoryEditor } from 'slate-history';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionNode, MentionNodeData, MentionPlugin } from './types';
 
@@ -43,8 +44,17 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
       Transforms.insertText(editor, ' ');
     }
 
-    // select the text and insert the element
-    Transforms.select(editor, targetRange);
+    // Create a new undo stack with the selection set at target range regardless
+    // of current state. Both are important for undo, without either undo will
+    // crash. Transforms.select will not always set the selection, so we went for the
+    // raw op. The error appears to only appear in slate-react, not in headless.
+    HistoryEditor.withoutMerging(editor, () =>
+      editor.apply({
+        type: 'set_selection',
+        properties: editor.selection,
+        newProperties: targetRange,
+      })
+    );
 
     Transforms.removeNodes(editor, {
       // TODO: replace any

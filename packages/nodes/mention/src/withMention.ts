@@ -1,7 +1,6 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
-import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -29,8 +28,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
   };
 
   editor.insertBreak = () => {
-    const currentMentionInput = findMentionInput(editor);
-    if (currentMentionInput) {
+    if (isSelectionInMentionInput(editor)) {
       return;
     }
 
@@ -85,11 +83,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
   };
 
   editor.apply = (operation) => {
-    if (HistoryEditor.isHistoryEditor(editor) && findMentionInput(editor)) {
-      HistoryEditor.withoutSaving(editor, () => apply(operation));
-    } else {
-      apply(operation);
-    }
+    apply(operation);
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
@@ -120,9 +114,19 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         return;
       }
 
+      const text = operation.node.children[0]?.text ?? '';
+
+      // Needed for undo - after an undo a mention insert we only receive
+      // an insert_node with the mention input, i.e. nothing indicating that it
+      // was an undo.
+      Transforms.setSelection(editor, {
+        anchor: { path: operation.path, offset: text.length },
+        focus: { path: operation.path, offset: text.length },
+      });
+
       comboboxActions.open({
         activeId: id!,
-        text: '',
+        text,
         targetRange: editor.selection,
       });
     } else if (

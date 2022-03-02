@@ -348,27 +348,90 @@ describe('withMention', () => {
   });
 
   describe('history', () => {
-    it('should not capture transformations inside a mention input', async () => {
+    it('should undo inserting a mention by showing mention input', async () => {
       const editor = createEditorWithMentionInput(
         <hp>
-          <cursor />
+          <htext>
+            hello <cursor /> world
+          </htext>
         </hp>
       );
 
       // flush previous ops to get a new undo batch going for mention input
       await Promise.resolve();
 
-      editor.insertText('test');
       getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
-
-      // flush previous ops to get a new undo batch going for mention input
-      await Promise.resolve();
 
       editor.undo();
 
       expect(editor.children).toEqual([
         <hp>
-          <htext />
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello <cursor /> world</htext>
+        </hp>,
+      ]);
+    });
+
+    it('should undo inserting a mention after input by showing mention input with the text', async () => {
+      const editor = createEditorWithMentionInput(
+        <hp>
+          <htext>
+            hello <cursor /> world
+          </htext>
+        </hp>
+      );
+
+      // flush previous ops to get a new undo batch going for mention input
+      await Promise.resolve();
+
+      editor.insertText('t');
+      editor.insertText('e');
+
+      // flush previous ops to get a new undo batch going for mention input
+      await Promise.resolve();
+
+      getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext>te</htext>
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello <cursor /> world</htext>
         </hp>,
       ]);
     });
