@@ -51,7 +51,7 @@ export const Header = () => {
                     'button button--outline button--primary button--lg',
                     styles.getStarted
                   )}
-                  to={useBaseUrl('docs/')}
+                  href="https://github.com/udecode/plate"
                 >
                   GitHub
                 </Link>
