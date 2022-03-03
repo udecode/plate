@@ -1,16 +1,14 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate';
 import {
   comboboxActions,
   comboboxSelectors,
   ComboboxState,
 } from '@udecode/plate-combobox';
 import { PlateEditor } from '@udecode/plate-core';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
-import { createMentionPlugin } from './createMentionPlugin';
+import { createEditorWithMentions } from './testing/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
 
@@ -24,23 +22,12 @@ describe('withMention', () => {
 
   const createEditor = (
     state: JSX.Element,
-    { multipleMentionPlugins }: CreateEditorOptions = {}
-  ): PlateEditor => {
-    const plugins = [
-      createParagraphPlugin(),
-      createMentionPlugin({ key, options: { trigger } }),
-    ];
-    if (multipleMentionPlugins) {
-      plugins.push(
-        createMentionPlugin({ key: 'mention2', options: { trigger: '#' } })
-      );
-    }
-
-    return createPlateUIEditor({
-      editor: (<editor>{state}</editor>) as any,
-      plugins,
+    options: CreateEditorOptions = {}
+  ): PlateEditor =>
+    createEditorWithMentions(state, {
+      ...options,
+      pluginOptions: { ...options, key, trigger },
     });
-  };
 
   const createEditorWithMentionInput = (
     at: JSX.Element = (
@@ -378,7 +365,9 @@ describe('withMention', () => {
 
       expect(editor.children).toEqual([
         <hp>
-          <htext>hello <cursor /> world</htext>
+          <htext>
+            hello <cursor /> world
+          </htext>
         </hp>,
       ]);
     });
@@ -431,7 +420,9 @@ describe('withMention', () => {
 
       expect(editor.children).toEqual([
         <hp>
-          <htext>hello <cursor /> world</htext>
+          <htext>
+            hello <cursor /> world
+          </htext>
         </hp>,
       ]);
     });
