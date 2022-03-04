@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 10.2.0
+
 ## 10.1.3
 
 ### Patch Changes
