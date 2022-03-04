@@ -4,5 +4,6 @@
 
 Improvements to mentions behaviours:
 
-- pressing 'esc' will take you out of the mentions flow, so you can type `@`, esc, and `@` will be part of the content
-- inserting a break in an empty mention will remove the empty mention before injecting a new line
+- pressing 'esc' will take you out of the mentions flow
+- improve undo behavior (fixes #1284, #1285)
+- fix entioning at the beginning of a line and before other text (fixes #1232)
