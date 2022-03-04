@@ -44,28 +44,21 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
       Transforms.insertText(editor, ' ');
     }
 
-    // Create a new undo stack with the selection set at target range regardless
-    // of current state. Both are important for undo, without either undo will
-    // crash. Transforms.select will not always set the selection, so we went for the
-    // raw op. The error appears to only appear in slate-react, not in headless.
+    Transforms.select(editor, targetRange);
+
     HistoryEditor.withoutMerging(editor, () =>
-      editor.apply({
-        type: 'set_selection',
-        properties: editor.selection,
-        newProperties: targetRange,
+      Transforms.removeNodes(editor, {
+        // TODO: replace any
+        match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
       })
     );
 
-    Transforms.removeNodes(editor, {
-      // TODO: replace any
-      match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
-    });
-
     insertNodes<MentionNode>(editor, {
-      type: type!,
+      type,
       children: [{ text: '' }],
       ...createMentionNode!(item),
     });
+
     // move the selection after the element
     Transforms.move(editor);
 

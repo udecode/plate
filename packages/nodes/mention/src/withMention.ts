@@ -36,11 +36,11 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
   };
 
   editor.insertText = (text) => {
-    if (isSelectionInMentionInput(editor)) {
-      return Transforms.insertText(editor, text);
-    }
-
-    if (!editor.selection || text !== trigger) {
+    if (
+      !editor.selection ||
+      text !== trigger ||
+      isSelectionInMentionInput(editor)
+    ) {
       return insertText(text);
     }
 
@@ -120,8 +120,8 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       // an insert_node with the mention input, i.e. nothing indicating that it
       // was an undo.
       Transforms.setSelection(editor, {
-        anchor: { path: operation.path, offset: text.length },
-        focus: { path: operation.path, offset: text.length },
+        anchor: { path: operation.path.concat([0]), offset: text.length },
+        focus: { path: operation.path.concat([0]), offset: text.length },
       });
 
       comboboxActions.open({
