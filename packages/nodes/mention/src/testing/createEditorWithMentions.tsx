@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import { createPlateEditor, PlateEditor } from '@udecode/plate-core';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlateUIEditor } from '@udecode/plate-ui/src';
 import { createMentionPlugin } from '../createMentionPlugin';
 
 jsx;
@@ -33,7 +32,7 @@ export const createEditorWithMentions = (
     );
   }
 
-  return createPlateUIEditor({
+  return createPlateEditor({
     editor: (<editor>{state}</editor>) as any,
     plugins,
   });
