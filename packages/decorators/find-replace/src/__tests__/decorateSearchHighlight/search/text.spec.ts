@@ -37,3 +37,21 @@ it('should be', () => {
     output
   );
 });
+
+it('should be', () => {
+  const editor = createPlateEditor({
+    plugins: [
+      createFindReplacePlugin({
+        options: {
+          search: 'Test',
+        },
+      }),
+    ],
+  });
+
+  const plugin = getPlugin(editor, MARK_SEARCH_HIGHLIGHT);
+
+  expect(plugin.decorate?.(editor, plugin)([{ text: 'test' }, [0, 0]])).toEqual(
+    output
+  );
+});
