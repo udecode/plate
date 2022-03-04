@@ -1,16 +1,14 @@
 /** @jsx jsx */
 
-import { createPlateUIEditor } from '@udecode/plate';
 import {
   comboboxActions,
   comboboxSelectors,
   ComboboxState,
 } from '@udecode/plate-combobox';
 import { PlateEditor } from '@udecode/plate-core';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
-import { createMentionPlugin } from './createMentionPlugin';
+import { createEditorWithMentions } from './testing/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
 
@@ -24,23 +22,12 @@ describe('withMention', () => {
 
   const createEditor = (
     state: JSX.Element,
-    { multipleMentionPlugins }: CreateEditorOptions = {}
-  ): PlateEditor => {
-    const plugins = [
-      createParagraphPlugin(),
-      createMentionPlugin({ key, options: { trigger } }),
-    ];
-    if (multipleMentionPlugins) {
-      plugins.push(
-        createMentionPlugin({ key: 'mention2', options: { trigger: '#' } })
-      );
-    }
-
-    return createPlateUIEditor({
-      editor: (<editor>{state}</editor>) as any,
-      plugins,
+    options: CreateEditorOptions = {}
+  ): PlateEditor =>
+    createEditorWithMentions(state, {
+      ...options,
+      pluginOptions: { ...options, key, trigger },
     });
-  };
 
   const createEditorWithMentionInput = (
     at: JSX.Element = (
@@ -63,8 +50,31 @@ describe('withMention', () => {
   });
 
   describe('creating a mention input', () => {
-    it('should insert a mention input when the trigger is inserted after line beginning', () => {
-      const editor = createEditorWithMentionInput();
+    it('should insert a mention input when the trigger is inserted between words', () => {
+      const editor = createEditorWithMentionInput(
+        <hp>
+          hello <cursor /> world
+        </hp>
+      );
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+            <cursor />
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+    });
+
+    it('should insert a mention input when the trigger is inserted at line beginning followed by a whitespace', () => {
+      const editor = createEditorWithMentionInput(
+        <hp>
+          <cursor /> hello world
+        </hp>
+      );
 
       expect(editor.children).toEqual([
         <hp>
@@ -73,12 +83,12 @@ describe('withMention', () => {
             <htext />
             <cursor />
           </hmentioninput>
-          <htext />
+          <htext> hello world</htext>
         </hp>,
       ]);
     });
 
-    it('should insert a mention input when the trigger is inserted after whitespace', () => {
+    it('should insert a mention input when the trigger is inserted at line end preceded by a whitespace', () => {
       const editor = createEditorWithMentionInput(
         <hp>
           hello world <cursor />
@@ -97,10 +107,10 @@ describe('withMention', () => {
       ]);
     });
 
-    it('should insert the trigger as text when trigger follows non-whitespace character', () => {
+    it('should insert the trigger as text when the trigger is appended to a word', () => {
       const editor = createEditor(
         <hp>
-          a
+          hello
           <cursor />
         </hp>
       );
@@ -109,8 +119,47 @@ describe('withMention', () => {
 
       expect(editor.children).toEqual([
         <hp>
-          a@
+          hello@
           <cursor />
+        </hp>,
+      ]);
+    });
+
+    it('should insert the trigger as text when the trigger is prepended to a word', () => {
+      const editor = createEditor(
+        <hp>
+          <cursor />
+          hello
+        </hp>
+      );
+
+      editor.insertText(trigger);
+
+      expect(editor.children).toEqual([
+        <hp>
+          @
+          <cursor />
+          hello
+        </hp>,
+      ]);
+    });
+
+    it('should insert the trigger as text when the trigger is inserted into a word', () => {
+      const editor = createEditor(
+        <hp>
+          hel
+          <cursor />
+          lo
+        </hp>
+      );
+
+      editor.insertText(trigger);
+
+      expect(editor.children).toEqual([
+        <hp>
+          hel@
+          <cursor />
+          lo
         </hp>,
       ]);
     });
@@ -212,6 +261,37 @@ describe('withMention', () => {
         focus: { path: [0, 0], offset: 1 },
       });
     });
+
+    it('should block insert break', () => {
+      const editor = createEditor(
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>
+            n
+            <cursor />
+          </hmentioninput>
+          <htext />
+        </hp>
+      );
+
+      editor.insertBreak();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext />
+          <hmentioninput trigger={trigger}>
+            n
+            <cursor />
+          </hmentioninput>
+          <htext />
+        </hp>,
+      ]);
+
+      expect(editor.selection).toEqual<Range>({
+        anchor: { path: [0, 1, 0], offset: 1 },
+        focus: { path: [0, 1, 0], offset: 1 },
+      });
+    });
   });
 
   describe('typing in a mention input', () => {
@@ -255,27 +335,94 @@ describe('withMention', () => {
   });
 
   describe('history', () => {
-    it('should not capture transformations inside a mention input', async () => {
+    it('should undo inserting a mention by showing mention input', async () => {
       const editor = createEditorWithMentionInput(
         <hp>
-          <cursor />
+          <htext>
+            hello <cursor /> world
+          </htext>
         </hp>
       );
 
       // flush previous ops to get a new undo batch going for mention input
       await Promise.resolve();
 
-      editor.insertText('test');
       getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
-
-      // flush previous ops to get a new undo batch going for mention input
-      await Promise.resolve();
 
       editor.undo();
 
       expect(editor.children).toEqual([
         <hp>
-          <htext />
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>
+            hello <cursor /> world
+          </htext>
+        </hp>,
+      ]);
+    });
+
+    it('should undo inserting a mention after input by showing mention input with the text', async () => {
+      const editor = createEditorWithMentionInput(
+        <hp>
+          <htext>
+            hello <cursor /> world
+          </htext>
+        </hp>
+      );
+
+      // flush previous ops to get a new undo batch going for mention input
+      await Promise.resolve();
+
+      editor.insertText('t');
+      editor.insertText('e');
+
+      // flush previous ops to get a new undo batch going for mention input
+      await Promise.resolve();
+
+      getMentionOnSelectItem()(editor, { key: 'test', text: 'test' });
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext>te</htext>
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>hello </htext>
+          <hmentioninput trigger={trigger}>
+            <htext />
+          </hmentioninput>
+          <htext> world</htext>
+        </hp>,
+      ]);
+
+      editor.undo();
+
+      expect(editor.children).toEqual([
+        <hp>
+          <htext>
+            hello <cursor /> world
+          </htext>
         </hp>,
       ]);
     });

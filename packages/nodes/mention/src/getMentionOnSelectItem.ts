@@ -13,6 +13,7 @@ import {
   PlatePluginKey,
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
+import { HistoryEditor } from 'slate-history';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionNode, MentionNodeData, MentionPlugin } from './types';
 
@@ -43,19 +44,21 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
       Transforms.insertText(editor, ' ');
     }
 
-    // select the text and insert the element
     Transforms.select(editor, targetRange);
 
-    Transforms.removeNodes(editor, {
-      // TODO: replace any
-      match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
-    });
+    HistoryEditor.withoutMerging(editor, () =>
+      Transforms.removeNodes(editor, {
+        // TODO: replace any
+        match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
+      })
+    );
 
     insertNodes<MentionNode>(editor, {
-      type: type!,
+      type,
       children: [{ text: '' }],
       ...createMentionNode!(item),
     });
+
     // move the selection after the element
     Transforms.move(editor);
 

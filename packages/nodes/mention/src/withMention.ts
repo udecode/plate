@@ -1,7 +1,6 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
-import { HistoryEditor } from 'slate-history';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -17,7 +16,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
 ) => {
   const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
 
-  const { apply, insertText, deleteBackward } = editor;
+  const { apply, insertBreak, insertText, deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
@@ -28,40 +27,63 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     deleteBackward(unit);
   };
 
-  editor.insertText = (text) => {
+  editor.insertBreak = () => {
     if (isSelectionInMentionInput(editor)) {
-      return Transforms.insertText(editor, text);
+      return;
     }
 
-    if (!editor.selection || text !== trigger) {
+    insertBreak();
+  };
+
+  editor.insertText = (text) => {
+    if (
+      !editor.selection ||
+      text !== trigger ||
+      isSelectionInMentionInput(editor)
+    ) {
       return insertText(text);
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
-    const previousCharLocation = Editor.before(editor, editor.selection);
-    if (previousCharLocation) {
-      const previousChar = Editor.string(
+    const previousChar = Editor.string(
+      editor,
+      Editor.range(
         editor,
-        Editor.range(editor, editor.selection, previousCharLocation)
-      );
-      if (previousChar !== '' && previousChar !== ' ') {
-        return insertText(text);
-      }
+        editor.selection,
+        Editor.before(editor, editor.selection)
+      )
+    );
+
+    const nextChar = Editor.string(
+      editor,
+      Editor.range(
+        editor,
+        editor.selection,
+        Editor.after(editor, editor.selection)
+      )
+    );
+
+    const beginningOfLine = previousChar === '';
+    const endOfLine = nextChar === '';
+    const precededByWhitespace = previousChar === ' ';
+    const followedByWhitespace = nextChar === ' ';
+
+    if (
+      (beginningOfLine || precededByWhitespace) &&
+      (endOfLine || followedByWhitespace)
+    ) {
+      return insertNodes<MentionInputNode>(editor, {
+        type,
+        children: [{ text: '' }],
+        trigger,
+      });
     }
 
-    insertNodes<MentionInputNode>(editor, {
-      type,
-      children: [{ text: '' }],
-      trigger,
-    });
+    return insertText(text);
   };
 
   editor.apply = (operation) => {
-    if (HistoryEditor.isHistoryEditor(editor) && findMentionInput(editor)) {
-      HistoryEditor.withoutSaving(editor, () => apply(operation));
-    } else {
-      apply(operation);
-    }
+    apply(operation);
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
@@ -92,9 +114,19 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         return;
       }
 
+      const text = operation.node.children[0]?.text ?? '';
+
+      // Needed for undo - after an undo a mention insert we only receive
+      // an insert_node with the mention input, i.e. nothing indicating that it
+      // was an undo.
+      Transforms.setSelection(editor, {
+        anchor: { path: operation.path.concat([0]), offset: text.length },
+        focus: { path: operation.path.concat([0]), offset: text.length },
+      });
+
       comboboxActions.open({
         activeId: id!,
-        text: '',
+        text,
         targetRange: editor.selection,
       });
     } else if (

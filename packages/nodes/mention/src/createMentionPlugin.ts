@@ -1,5 +1,5 @@
 import { createPluginFactory } from '@udecode/plate-core';
-import { moveSelectionByOffset } from './moveSelectionByOffset';
+import { mentionOnKeyDownHandler } from './handlers/mentionOnKeyDownHandler';
 import { isSelectionInMentionInput } from './queries';
 import { MentionPlugin } from './types';
 import { withMention } from './withMention';
@@ -16,8 +16,7 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
   isInline: true,
   isVoid: true,
   handlers: {
-    onKeyDown: (editor) =>
-      moveSelectionByOffset(editor, { query: isSelectionInMentionInput }),
+    onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
   },
   withOverrides: withMention,
   options: {
