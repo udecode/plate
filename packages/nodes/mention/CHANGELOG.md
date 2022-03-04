@@ -1,5 +1,15 @@
 # @udecode/plate-mention
 
+## 10.2.0
+
+### Minor Changes
+
+- [#1397](https://github.com/udecode/plate/pull/1397) by [@fakedarren](https://github.com/fakedarren) – Improvements to mentions behaviours:
+
+  - pressing 'esc' will take you out of the mentions flow
+  - improve undo behavior (fixes #1284, #1285)
+  - fix entioning at the beginning of a line and before other text (fixes #1232)
+
 ## 10.1.2
 
 ## 10.1.1
