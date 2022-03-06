@@ -2,6 +2,7 @@ import {
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
+  ELEMENT_CODE_SYNTAX,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
@@ -41,6 +42,7 @@ import { BlockquoteElement } from '@udecode/plate-ui-block-quote';
 import {
   CodeBlockElement,
   CodeLineElement,
+  CodeSyntaxLeaf,
 } from '@udecode/plate-ui-code-block';
 import { HrElement } from '@udecode/plate-ui-horizontal-rule';
 import { ImageElement } from '@udecode/plate-ui-image';
@@ -66,6 +68,7 @@ export const createPlateUI = <T extends string = string>(
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     [ELEMENT_CODE_LINE]: CodeLineElement,
+    [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_HR]: HrElement,
     [ELEMENT_H1]: withProps(StyledElement, {
       as: 'h1',

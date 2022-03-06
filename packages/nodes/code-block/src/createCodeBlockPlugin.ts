@@ -4,7 +4,11 @@ import {
   KEY_DESERIALIZE_HTML,
   someNode,
 } from '@udecode/plate-core';
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
+import {
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_CODE_SYNTAX,
+} from './constants';
 import { decorateCodeLine } from './decorateCodeLine';
 import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlockPre';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
@@ -50,6 +54,10 @@ export const createCodeBlockPlugin = createPluginFactory<CodeBlockPlugin>({
     {
       key: ELEMENT_CODE_LINE,
       isElement: true,
+    },
+    {
+      key: ELEMENT_CODE_SYNTAX,
+      isLeaf: true,
       decorate: decorateCodeLine,
     },
   ],
