@@ -1,5 +1,7 @@
 # @udecode/plate-highlight
 
+## 10.2.1
+
 ## 10.1.2
 
 ## 10.1.1

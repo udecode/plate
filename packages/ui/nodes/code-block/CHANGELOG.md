@@ -1,5 +1,11 @@
 # @udecode/plate-code-block-ui
 
+## 10.2.1
+
+### Patch Changes
+
+- [#1420](https://github.com/udecode/plate/pull/1420) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Fix code block syntax highlight
+
 ## 10.1.2
 
 ## 10.1.1

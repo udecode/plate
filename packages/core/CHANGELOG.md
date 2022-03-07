@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.2.1
+
+### Patch Changes
+
+- [#1415](https://github.com/udecode/plate/pull/1415) by [@chaseadamsio](https://github.com/chaseadamsio) – fix useEditableProps plugins memoization
+
 ## 10.1.2
 
 ### Patch Changes

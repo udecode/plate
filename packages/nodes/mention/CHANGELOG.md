@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 10.2.1
+
 ## 10.2.0
 
 ### Minor Changes
