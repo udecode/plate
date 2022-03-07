@@ -21,31 +21,29 @@ export const useEditableProps = ({
   const storeRenderLeaf = usePlateSelectors(id).renderLeaf();
   const storeRenderElement = usePlateSelectors(id).renderElement();
 
-  const isValid = editor && !!keyPlugins;
-
   const decorate = useMemo(() => {
-    if (!isValid) return;
+    if (!(editor && !!keyPlugins)) return;
 
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
-  }, [editableProps?.decorate, editor, isValid, storeDecorate]);
+  }, [editableProps?.decorate, editor, keyPlugins, storeDecorate]);
 
   const renderElement = useMemo(() => {
-    if (!isValid) return;
+    if (!(editor && !!keyPlugins)) return;
 
     return pipeRenderElement(
       editor,
       storeRenderElement ?? editableProps?.renderElement
     );
-  }, [editableProps?.renderElement, editor, isValid, storeRenderElement]);
+  }, [editableProps?.renderElement, editor, keyPlugins, storeRenderElement]);
 
   const renderLeaf = useMemo(() => {
-    if (!isValid) return;
+    if (!(editor && !!keyPlugins)) return;
 
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
-  }, [editableProps?.renderLeaf, editor, isValid, storeRenderLeaf]);
+  }, [editableProps?.renderLeaf, editor, keyPlugins, storeRenderLeaf]);
 
   const props: EditableProps = useDeepCompareMemo(() => {
-    if (!isValid) return {};
+    if (!(editor && !!keyPlugins)) return {};
 
     const _props: EditableProps = {
       decorate,
@@ -65,7 +63,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, isValid, renderElement, renderLeaf]);
+  }, [decorate, editableProps, renderElement, renderLeaf]);
 
   return useDeepCompareMemo(
     () => ({
