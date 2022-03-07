@@ -4,8 +4,7 @@
 
 export * from './createMentionPlugin';
 export * from './getMentionOnSelectItem';
-export * from './handlers/moveSelectionByOffset';
-export * from './handlers/mentionOnKeyDownHandler';
+export * from './handlers';
 export * from './types';
 export * from './withMention';
 export * from './queries/index';

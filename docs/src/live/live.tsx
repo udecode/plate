@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import 'prismjs/themes/prism.css';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
