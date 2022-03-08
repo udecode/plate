@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.2.2
+
+### Patch Changes
+
+- [`15e64184`](https://github.com/udecode/plate/commit/15e6418473aa3f2c6e7c7e5395fa005f028591c4) by [@zbeyens](https://github.com/zbeyens) – Revert plugins memoization fix https://github.com/udecode/plate/pull/1415#issuecomment-1061794845
+
 ## 10.2.1
 
 ### Patch Changes
