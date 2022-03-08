@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 10.2.2
+
 ## 10.2.1
 
 ### Patch Changes
