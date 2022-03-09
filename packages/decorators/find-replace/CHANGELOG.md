@@ -1,5 +1,11 @@
 # @udecode/plate-find-replace
 
+## 10.2.3
+
+### Patch Changes
+
+- [#1426](https://github.com/udecode/plate/pull/1426) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Fix find replace not highlighting search term
+
 ## 10.2.2
 
 ## 10.2.1
