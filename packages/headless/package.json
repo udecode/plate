@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "10.2.2",
+  "version": "10.2.3",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -46,7 +46,7 @@
     "@udecode/plate-code-block": "10.2.2",
     "@udecode/plate-combobox": "10.2.2",
     "@udecode/plate-core": "10.2.2",
-    "@udecode/plate-find-replace": "10.2.2",
+    "@udecode/plate-find-replace": "10.2.3",
     "@udecode/plate-font": "10.2.2",
     "@udecode/plate-heading": "10.2.2",
     "@udecode/plate-highlight": "10.2.2",
