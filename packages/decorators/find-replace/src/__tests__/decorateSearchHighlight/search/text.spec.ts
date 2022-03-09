@@ -15,7 +15,8 @@ const output: Range[] = [
       offset: 4,
       path: [0, 0],
     },
-    search_highlight: true,
+    search: 'test',
+    [MARK_SEARCH_HIGHLIGHT]: true,
   } as any,
 ];
 

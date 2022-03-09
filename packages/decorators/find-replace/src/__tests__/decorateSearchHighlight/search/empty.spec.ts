@@ -1,14 +1,22 @@
-import { createPlateEditor, mockPlugin } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
 import { Range } from 'slate';
+import {
+  createFindReplacePlugin,
+  MARK_SEARCH_HIGHLIGHT,
+} from '../../../createFindReplacePlugin';
 import { decorateFindReplace } from '../../../decorateFindReplace';
 
 const output: Range[] = [];
 
 it('should be', () => {
+  const editor = createPlateEditor({
+    plugins: [createFindReplacePlugin({ options: { search: '' } })],
+  });
+
   expect(
     decorateFindReplace(
-      createPlateEditor(),
-      mockPlugin({ options: { search: '' } })
+      editor,
+      editor.pluginsByKey[MARK_SEARCH_HIGHLIGHT]
     )([{ text: '' }, [0, 0]])
   ).toEqual(output);
 });
