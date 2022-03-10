@@ -14,7 +14,7 @@ export const decorateFindReplace: Decorate<{}, FindReplacePlugin> = (
   }
 
   const { text } = node;
-  const parts = text.split(search);
+  const parts = text.toLowerCase().split(search.toLowerCase());
   let offset = 0;
   parts.forEach((part, i) => {
     if (i !== 0) {
