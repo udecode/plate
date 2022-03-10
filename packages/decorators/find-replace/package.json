@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-find-replace",
-  "version": "10.2.3",
+  "version": "10.2.4",
   "description": "Find and replace plugin for Plate",
   "keywords": [
     "slate",
