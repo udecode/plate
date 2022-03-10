@@ -1,5 +1,11 @@
 # @udecode/plate-find-replace
 
+## 10.2.4
+
+### Patch Changes
+
+- [#1414](https://github.com/udecode/plate/pull/1414) by [@dtslvr](https://github.com/dtslvr) – Support case-insensitive matching
+
 ## 10.2.3
 
 ### Patch Changes
