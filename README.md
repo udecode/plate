@@ -21,16 +21,14 @@ Plate
 
 ### Hiring
 
-We're advertising Plate job opportunities. We're only asking that the job includes contributing to Plate, even partially.
+Plate consulting:
+- [@zbeyens](https://superpeer.com/zbeyens) – author
 
-These people are hiring Plate developers:
+Looking to hire:
 - [@dylans](https://github.com/dylans) – co-owner
-- [@nicholasareed](https://github.com/nicholasareed), [@david-ps](https://github.com/david-ps)
+- [@nicholasareed](https://github.com/nicholasareed)
 
-These people are open to Plate jobs:
-- [@seloner](https://github.com/seloner)
-
-DM [@zbeyens](https://github.com/zbeyens) to be added to the list.
+DM [@zbeyens](https://github.com/zbeyens) to get added to the list if your offer includes Plate contribution.
 
 ## Introduction
 
