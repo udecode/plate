@@ -5,3 +5,5 @@
 export * from './createExitBreakPlugin';
 export * from './onKeyDownExitBreak';
 export * from './types';
+export * from './queries/index';
+export * from './transforms/index';
