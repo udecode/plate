@@ -12,7 +12,9 @@ export const onKeyDownExitBreak: KeyboardHandler<{}, ExitBreakPlugin> = (
 
   rules.forEach(({ hotkey, ...rule }) => {
     if (isHotkey(hotkey, event as any) && queryNode(entry, rule.query)) {
-      exitBreak(editor, rule);
+      if (exitBreak(editor, rule)) {
+        event.preventDefault();
+      }
     }
   });
 };
