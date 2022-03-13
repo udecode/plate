@@ -1,5 +1,11 @@
 # @udecode/plate-line-height-ui
 
+## 10.4.0
+
+### Minor Changes
+
+- [#1435](https://github.com/udecode/plate/pull/1435) by [@zbeyens](https://github.com/zbeyens) – new prop: editor `id`
+
 ## 10.2.2
 
 ## 10.2.1

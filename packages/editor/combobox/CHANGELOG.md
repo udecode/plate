@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 10.4.0
+
+### Patch Changes
+
+- [#1432](https://github.com/udecode/plate/pull/1432) by [@bkegley](https://github.com/bkegley) – Remove unnecessary peer dep in combobox
+
 ## 10.2.2
 
 ## 10.2.1

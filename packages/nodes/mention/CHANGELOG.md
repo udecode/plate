@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 10.4.0
+
 ## 10.2.2
 
 ## 10.2.1
