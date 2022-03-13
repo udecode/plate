@@ -8,7 +8,7 @@ import {
 import { PlateEditor } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
-import { createEditorWithMentions } from './testing/createEditorWithMentions';
+import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
 
