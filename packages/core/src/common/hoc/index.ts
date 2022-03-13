@@ -4,6 +4,6 @@
 
 export * from './createNodeHOC';
 export * from './createNodesHOC';
+export * from './withHOC';
 export * from './withProps';
 export * from './withProviders';
-export * from './withHOC';

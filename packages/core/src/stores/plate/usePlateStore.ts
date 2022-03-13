@@ -1,5 +1,6 @@
 import { PlateStoreApi } from '../../types/PlateStore';
-import { getPlateId, usePlateId } from './selectors/getPlateId';
+import { getEventEditorId } from '../event-editor/selectors/getEventEditorId';
+import { usePlateId } from './selectors/usePlateId';
 import { createPlateStore } from './createPlateStore';
 import { platesStore } from './platesStore';
 
@@ -8,7 +9,7 @@ const loadingStore = createPlateStore({
 });
 
 export const getPlateStore = (id?: string): PlateStoreApi => {
-  id = getPlateId(id);
+  id = getEventEditorId(id);
 
   const store = platesStore.get.get(id);
 
@@ -16,7 +17,8 @@ export const getPlateStore = (id?: string): PlateStoreApi => {
 };
 
 export const usePlateStore = (id?: string): PlateStoreApi => {
-  id = usePlateId(id);
+  const plateId = usePlateId();
+  id = id ?? plateId ?? 'main';
 
   const store = platesStore.use.get(id);
 

@@ -3,8 +3,9 @@ import {
   getPluginInjectProps,
   isCollapsed,
   someNode,
+  useEventPlateId,
   usePlateEditorState,
-  withPlateProvider,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
@@ -14,10 +15,13 @@ import {
 } from '@udecode/plate-ui-toolbar';
 import { ReactEditor } from 'slate-react';
 
-export const LineHeightToolbarDropdown = withPlateProvider(
+export const LineHeightToolbarDropdown = withPlateEventProvider(
   (props: ToolbarButtonProps) => {
+    let { id } = props;
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
+
     const [open, setOpen] = React.useState(false);
-    const editor = usePlateEditorState()!;
 
     const { validNodeValues } = getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 

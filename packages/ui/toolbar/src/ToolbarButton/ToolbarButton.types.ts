@@ -7,6 +7,8 @@ import { CSSProp } from 'styled-components';
 export interface ToolbarButtonProps
   extends StyledProps<{ active?: CSSProp }>,
     AnyObject {
+  id?: string;
+
   /**
    * Is it active.
    */

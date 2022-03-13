@@ -2,8 +2,9 @@ import React from 'react';
 import {
   getPluginType,
   someNode,
+  useEventPlateId,
   usePlateEditorState,
-  withPlateProvider,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ELEMENT_LINK, getAndUpsertLink } from '@udecode/plate-link';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
@@ -15,9 +16,10 @@ export interface LinkToolbarButtonProps extends ToolbarButtonProps {
   getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 }
 
-export const LinkToolbarButton = withPlateProvider(
-  ({ getLinkUrl, ...props }: LinkToolbarButtonProps) => {
-    const editor = usePlateEditorState()!;
+export const LinkToolbarButton = withPlateEventProvider(
+  ({ id, getLinkUrl, ...props }: LinkToolbarButtonProps) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
 
     const type = getPluginType(editor, ELEMENT_LINK);
     const isLink = !!editor?.selection && someNode(editor, { match: { type } });

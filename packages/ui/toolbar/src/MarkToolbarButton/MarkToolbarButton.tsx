@@ -3,8 +3,9 @@ import {
   getPreventDefaultHandler,
   isMarkActive,
   toggleMark,
+  useEventPlateId,
   usePlateEditorState,
-  withPlateProvider,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton/ToolbarButton';
 import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
@@ -12,9 +13,10 @@ import { MarkToolbarButtonProps } from './MarkToolbarButton.types';
 /**
  * Toolbar button to toggle the mark of the leaves in selection.
  */
-export const MarkToolbarButton = withPlateProvider(
-  ({ type, clear, ...props }: MarkToolbarButtonProps) => {
-    const editor = usePlateEditorState()!;
+export const MarkToolbarButton = withPlateEventProvider(
+  ({ id, type, clear, ...props }: MarkToolbarButtonProps) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
 
     return (
       <ToolbarButton

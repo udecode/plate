@@ -3,3 +3,4 @@
  */
 
 export * from './event-editor.store';
+export * from './selectors/index';

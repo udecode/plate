@@ -3,8 +3,9 @@ import {
   getPreventDefaultHandler,
   someNode,
   toggleNodeType,
+  useEventPlateId,
   usePlateEditorState,
-  withPlateProvider,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton } from '../ToolbarButton';
 import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
@@ -12,9 +13,10 @@ import { BlockToolbarButtonProps } from './BlockToolbarButton.types';
 /**
  * Toolbar button to toggle the type of elements in selection.
  */
-export const BlockToolbarButton = withPlateProvider(
-  ({ type, inactiveType, active, ...props }: BlockToolbarButtonProps) => {
-    const editor = usePlateEditorState()!;
+export const BlockToolbarButton = withPlateEventProvider(
+  ({ id, type, inactiveType, active, ...props }: BlockToolbarButtonProps) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
 
     return (
       <ToolbarButton

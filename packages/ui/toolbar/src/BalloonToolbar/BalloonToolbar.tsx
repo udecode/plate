@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { withPlateProvider } from '@udecode/plate-core';
+import { withPlateEventProvider } from '@udecode/plate-core';
 import { PortalBody } from '@udecode/plate-styled-components';
 import { UsePopperPositionOptions } from '@udecode/plate-ui-popper';
 import { ToolbarBase } from '../Toolbar/Toolbar';
@@ -7,7 +7,7 @@ import { getBalloonToolbarStyles } from './BalloonToolbar.styles';
 import { BalloonToolbarProps } from './BalloonToolbar.types';
 import { useBalloonToolbarPopper } from './useBalloonToolbarPopper';
 
-export const BalloonToolbar = withPlateProvider(
+export const BalloonToolbar = withPlateEventProvider(
   (props: BalloonToolbarProps) => {
     const {
       children,
