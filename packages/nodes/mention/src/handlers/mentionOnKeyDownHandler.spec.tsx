@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { createEditorWithMentions } from '../testing/createEditorWithMentions';
+import { createEditorWithMentions } from '../__tests__/createEditorWithMentions';
 import { mentionOnKeyDownHandler } from './mentionOnKeyDownHandler';
 
 jsx;
