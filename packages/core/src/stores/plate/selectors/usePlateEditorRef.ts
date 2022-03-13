@@ -7,6 +7,5 @@ export const getPlateEditorRef = <T = {}>(id?: string) =>
 /**
  * Get editor ref which is never updated.
  */
-export const usePlateEditorRef = <T = {}>(id?: string) => {
-  return usePlateSelectors(id).editor() as PlateEditor<T>;
-};
+export const usePlateEditorRef = <T = {}>(id?: string) =>
+  usePlateSelectors(id).editor() as PlateEditor<T>;
