@@ -1,5 +1,7 @@
 # @udecode/plate-combobox
 
+## 10.4.1
+
 ## 10.4.0
 
 ### Patch Changes

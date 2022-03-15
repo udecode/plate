@@ -1,5 +1,7 @@
 # @udecode/plate-font-ui
 
+## 10.4.1
+
 ## 10.4.0
 
 ### Minor Changes
