@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.4.1
+
+### Patch Changes
+
+- [#1440](https://github.com/udecode/plate/pull/1440) by [@zbeyens](https://github.com/zbeyens) – Critical fix: plate hooks without id. `usePlateId` (used to get plate store) is now working below `PlateProvider` and outside `Plate`.
+
 ## 10.4.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-find-replace
 
+## 10.4.1
+
 ## 10.4.0
 
 ## 10.2.4
