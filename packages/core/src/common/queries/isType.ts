@@ -11,8 +11,9 @@ export const isType = (
   key?: string | string[]
 ) => {
   const keys = castArray(key);
-  keys.forEach((_key) => {
-    if (node?.type === getPluginType(editor, _key)) return true;
-  });
-  return false;
+  const types: string[] = [];
+
+  keys.forEach((_key) => types.push(getPluginType(editor, _key)));
+
+  return types.includes(node?.type);
 };
