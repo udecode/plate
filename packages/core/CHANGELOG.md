@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.4.2
+
+### Patch Changes
+
+- [#1447](https://github.com/udecode/plate/pull/1447) by [@ryanbarr](https://github.com/ryanbarr) – Update isType to correctly return the expected boolean value.
+
 ## 10.4.1
 
 ### Patch Changes
