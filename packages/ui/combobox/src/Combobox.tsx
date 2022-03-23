@@ -25,7 +25,10 @@ import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
 const ComboboxContent = <TData extends Data = NoData>(
-  props: Pick<ComboboxProps<TData>, 'component' | 'items' | 'onRenderItem'>
+  props: Omit<
+    ComboboxProps<TData>,
+    'id' | 'trigger' | 'searchPattern' | 'onSelectItem' | 'controlled'
+  >
 ) => {
   const { component: Component, items, onRenderItem } = props;
 
