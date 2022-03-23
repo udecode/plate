@@ -1,5 +1,11 @@
 # @udecode/plate-mention-ui
 
+## 10.4.3
+
+### Patch Changes
+
+- [#1456](https://github.com/udecode/plate/pull/1456) by [@zbeyens](https://github.com/zbeyens) – Fix `MentionCombobox` props to be the same than `Combobox` to allow overriding.
+
 ## 10.4.2
 
 ## 10.4.1
