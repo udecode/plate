@@ -1,5 +1,7 @@
 # @udecode/plate-mention-ui
 
+## 10.4.4
+
 ## 10.4.3
 
 ### Patch Changes

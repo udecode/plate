@@ -1,5 +1,11 @@
 # @udecode/plate-ui-combobox
 
+## 10.4.4
+
+### Patch Changes
+
+- [#1458](https://github.com/udecode/plate/pull/1458) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Fix maxSuggestions and filter props not used
+
 ## 10.4.2
 
 ## 10.4.1
