@@ -12,7 +12,7 @@ import { MentionInputNode, MentionPlugin } from './types';
 
 export const withMention: WithOverride<{}, MentionPlugin> = (
   editor,
-  { options: { id, trigger } }
+  { options: { id, trigger, creationId } }
 ) => {
   const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
 
@@ -72,11 +72,15 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       (beginningOfLine || precededByWhitespace) &&
       (endOfLine || followedByWhitespace)
     ) {
-      return insertNodes<MentionInputNode>(editor, {
+      const data: MentionInputNode = {
         type,
         children: [{ text: '' }],
         trigger,
-      });
+      };
+      if (creationId) {
+        data.creationId = creationId;
+      }
+      return insertNodes<MentionInputNode>(editor, data);
     }
 
     return insertText(text);
@@ -116,19 +120,24 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
 
       const text = operation.node.children[0]?.text ?? '';
 
-      // Needed for undo - after an undo a mention insert we only receive
-      // an insert_node with the mention input, i.e. nothing indicating that it
-      // was an undo.
-      Transforms.setSelection(editor, {
-        anchor: { path: operation.path.concat([0]), offset: text.length },
-        focus: { path: operation.path.concat([0]), offset: text.length },
-      });
+      if (
+        creationId === undefined ||
+        operation.node.creationId === creationId
+      ) {
+        // Needed for undo - after an undo a mention insert we only receive
+        // an insert_node with the mention input, i.e. nothing indicating that it
+        // was an undo.
+        Transforms.setSelection(editor, {
+          anchor: { path: operation.path.concat([0]), offset: text.length },
+          focus: { path: operation.path.concat([0]), offset: text.length },
+        });
 
-      comboboxActions.open({
-        activeId: id!,
-        text,
-        targetRange: editor.selection,
-      });
+        comboboxActions.open({
+          activeId: id!,
+          text,
+          targetRange: editor.selection,
+        });
+      }
     } else if (
       operation.type === 'remove_node' &&
       isNodeMentionInput(editor, operation.node)
