@@ -21,7 +21,7 @@ npm install @udecode/plate-ui-mention
     ...PLUGINS.basicNodes,
     createComboboxPlugin(),
     createMentionPlugin(),
-    createMentionPlugin({ key: '#', component: MentionElement, options: { trigger: '#', creationId: "mention" } }),
+    createMentionPlugin({ key: '#', component: MentionElement, options: { trigger: '#', inputCreation: {key: 'creationId', value: 'main'} } }),
     createMentionPlugin({ key: '/', component: MentionElement, options: { trigger: '/' } }),
   ], {
     components: CONFIG.components,

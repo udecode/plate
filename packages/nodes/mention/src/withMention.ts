@@ -12,7 +12,7 @@ import { MentionInputNode, MentionPlugin } from './types';
 
 export const withMention: WithOverride<{}, MentionPlugin> = (
   editor,
-  { options: { id, trigger, creationId } }
+  { options: { id, trigger, inputCreation } }
 ) => {
   const { type } = getPlugin(editor, ELEMENT_MENTION_INPUT);
 
@@ -77,8 +77,8 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         children: [{ text: '' }],
         trigger,
       };
-      if (creationId) {
-        data.creationId = creationId;
+      if (inputCreation) {
+        data[inputCreation.key] = inputCreation.value;
       }
       return insertNodes<MentionInputNode>(editor, data);
     }
@@ -121,8 +121,8 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       const text = operation.node.children[0]?.text ?? '';
 
       if (
-        creationId === undefined ||
-        operation.node.creationId === creationId
+        inputCreation === undefined ||
+        operation.node[inputCreation.key] === inputCreation.value
       ) {
         // Needed for undo - after an undo a mention insert we only receive
         // an insert_node with the mention input, i.e. nothing indicating that it

@@ -8,7 +8,6 @@ export interface MentionNodeData {
 
 export interface MentionInputNodeData {
   trigger: string;
-  creationId?: string;
 }
 
 export type MentionNode = TElement<MentionNodeData>;
@@ -19,5 +18,5 @@ export interface MentionPlugin<TData extends Data = NoData> {
   id?: string;
   insertSpaceAfterMention?: boolean;
   trigger?: string;
-  creationId?: string;
+  inputCreation?: { key: string; value: string };
 }
