@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-headless",
-  "version": "10.4.2",
+  "version": "10.4.5",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -60,7 +60,7 @@
     "@udecode/plate-link": "10.4.2",
     "@udecode/plate-list": "10.4.2",
     "@udecode/plate-media-embed": "10.4.2",
-    "@udecode/plate-mention": "10.4.2",
+    "@udecode/plate-mention": "10.4.5",
     "@udecode/plate-node-id": "10.4.2",
     "@udecode/plate-normalizers": "10.4.2",
     "@udecode/plate-paragraph": "10.4.2",
