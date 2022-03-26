@@ -18,4 +18,5 @@ export interface MentionPlugin<TData extends Data = NoData> {
   id?: string;
   insertSpaceAfterMention?: boolean;
   trigger?: string;
+  inputCreation?: { key: string; value: string };
 }
