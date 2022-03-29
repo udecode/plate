@@ -28,7 +28,7 @@ npm install @udecode/plate-indent-list
 
 ```ts live
 () => {
-  const plugins = [
+  const plugins = createPlugins([
     createHeadingPlugin(),
     createParagraphPlugin({
       component: withProps(StyledElement, {
@@ -41,7 +41,16 @@ npm install @udecode/plate-indent-list
         }
       })
     }),
-    createIndentListPlugin(),
+    createIndentListPlugin({
+      inject: {
+        props: {
+          validTypes: [
+            ELEMENT_PARAGRAPH,
+            ELEMENT_H1
+          ],
+        },
+      },
+    }),
     createIndentPlugin({
       inject: {
         props: {
@@ -52,7 +61,9 @@ npm install @udecode/plate-indent-list
         },
       },
     }),
-  ];
+  ], {
+    components: CONFIG.components,
+  });
   
   const IndentToolbarButtons = () => {
     const editor = usePlateEditorRef();
@@ -96,18 +107,17 @@ npm install @udecode/plate-indent-list
   };
 
   return (
-    <>
+    <Plate
+      id="indent-list"
+      editableProps={CONFIG.editableProps}
+      initialValue={VALUES.indentList}
+      plugins={plugins}
+      normalizeInitialValue
+    >
       <HeadingToolbar>
         <IndentToolbarButtons />
       </HeadingToolbar>
-      <Plate
-        id="indent-list"
-        editableProps={CONFIG.editableProps}
-        initialValue={VALUES.indentList}
-        plugins={plugins}
-        normalizeInitialValue
-      />
-    </>
+    </Plate>
   );
 }
 ```

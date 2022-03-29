@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { createPlateEditor, getNode, TElement } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-core';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
-import { Editor, Path } from 'slate';
-import { getPreviousPath } from '../../../../core/src/common/queries/getPreviousPath';
+import { Editor } from 'slate';
 import { createParagraphPlugin } from '../../../paragraph/src/createParagraphPlugin';
+import { indentListPluginPage } from '../__tests__/indentListPluginPage';
 import { createIndentListPlugin } from '../createIndentListPlugin';
 
 jsx;
@@ -153,57 +153,7 @@ describe('normalizeIndentListStart', () => {
         plugins: [
           createParagraphPlugin(),
           createIndentPlugin(),
-          createIndentListPlugin({
-            then: (e) => ({
-              options: {
-                getSiblingIndentListOptions: {
-                  getPreviousEntry: ([, path]) => {
-                    const prevPath = getPreviousPath(path);
-                    if (!prevPath) {
-                      if (path[0] === 0) return;
-
-                      const prevPagePath = [path[0] - 1];
-
-                      const node = getNode(e, prevPagePath) as
-                        | TElement
-                        | undefined;
-                      if (!node) return;
-
-                      const lastNode = node.children[node.children.length - 1];
-                      return [
-                        lastNode,
-                        prevPagePath.concat(node.children.length - 1),
-                      ];
-                    }
-
-                    const prevNode = getNode(e, prevPath);
-                    if (!prevNode) return;
-
-                    return [prevNode, prevPath];
-                  },
-                  getNextEntry: ([, path]) => {
-                    const nextPath = Path.next(path);
-                    const nextNode = getNode(e, nextPath);
-                    if (!nextNode) {
-                      const nextPagePath = [path[0] + 1];
-                      const nextPageNode = getNode(e, nextPagePath) as
-                        | TElement
-                        | undefined;
-
-                      if (!nextPageNode) return;
-
-                      return [
-                        nextPageNode.children[0],
-                        nextPagePath.concat([0]),
-                      ];
-                    }
-
-                    return [nextNode, nextPath];
-                  },
-                },
-              },
-            }),
-          }),
+          createIndentListPlugin(indentListPluginPage),
         ],
         normalizeInitialValue: true,
       }) as any;

@@ -50,7 +50,7 @@ export const normalizeIndentListStart = (
     if (!prevEntry) {
       normalized = normalizeFirstIndentListStart(editor, entry);
 
-      // if no prevEntry and not normalized, next should not be normalized
+      // if no prevEntry and not normalized, nothing happened: next should not be normalized
       if (!normalized) return;
     }
 
@@ -60,11 +60,9 @@ export const normalizeIndentListStart = (
 
     // normalize next until current is not normalized
     while (normalizeNext) {
-      normalizeNext = normalizeNextIndentListStart(
-        editor,
-        currEntry,
-        prevEntry
-      );
+      normalizeNext =
+        normalizeNextIndentListStart(editor, currEntry, prevEntry) ||
+        normalized;
 
       if (normalizeNext) normalized = true;
 

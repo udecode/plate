@@ -8,7 +8,7 @@ export const setIndentListNode = (
   editor: TEditor,
   {
     listStyleType = ListStyleType.Disc,
-    indent,
+    indent = 0,
     at,
   }: {
     listStyleType?: string;
@@ -16,9 +16,11 @@ export const setIndentListNode = (
     at: Path;
   }
 ) => {
-  const props = { [KEY_LIST_STYLE_TYPE]: listStyleType };
-  if (!indent) {
-    props[KEY_INDENT] = 1;
-  }
-  setNodes(editor, props, { at });
+  const newIndent = indent || indent + 1;
+
+  setNodes(
+    editor,
+    { [KEY_LIST_STYLE_TYPE]: listStyleType, [KEY_INDENT]: newIndent },
+    { at }
+  );
 };

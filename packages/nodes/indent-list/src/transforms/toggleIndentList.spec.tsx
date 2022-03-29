@@ -3,6 +3,7 @@
 import { createPlateEditor, TEditor } from '@udecode/plate-core';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
+import { indentListPluginPage } from '../__tests__/indentListPluginPage';
 import { createIndentListPlugin } from '../createIndentListPlugin';
 import { toggleIndentList } from './toggleIndentList';
 
@@ -300,6 +301,54 @@ describe('toggleIndentList', () => {
         });
 
         toggleIndentList(editor, { listStyleType: 'disc' });
+
+        expect(editor.children).toEqual(output.children);
+      });
+    });
+
+    describe('when across pages', () => {
+      it('should outdent', async () => {
+        const input = ((
+          <editor>
+            <element>
+              <hp indent={1} listStyleType="disc">
+                1
+                <cursor />
+              </hp>
+            </element>
+            <element>
+              <hp indent={1} listStyleType="disc">
+                2
+              </hp>
+            </element>
+          </editor>
+        ) as any) as TEditor;
+
+        const output = ((
+          <editor>
+            <element>
+              <hp indent={1} listStyleType="decimal">
+                1
+                <cursor />
+              </hp>
+            </element>
+            <element>
+              <hp indent={1} listStart={2} listStyleType="decimal">
+                2
+              </hp>
+            </element>
+          </editor>
+        ) as any) as TEditor;
+
+        const editor = createPlateEditor({
+          editor: input,
+          plugins: [
+            createIndentListPlugin(indentListPluginPage),
+            createIndentPlugin(),
+          ],
+        });
+
+        toggleIndentList(editor, { listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
