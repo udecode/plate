@@ -1,6 +1,7 @@
 module.exports = {
   collectCoverageFrom: [
-    'packages/*/src/**/*',
+    'packages/**/src/**/*.{ts,tsx}',
+    '!**/*.styles.ts*',
     '!**/index.ts*',
     '!**/*test*/**',
     '!**/*fixture*/**',
@@ -8,6 +9,7 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
+  rootDir: '.',
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.test.json',
@@ -18,7 +20,7 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.js',
     // '^@udecode/plate-ui-dnd$': '<rootDir>/packages/dnd/src',
-    '^@udecode/plate-common$': '<rootDir>/packages/common/src',
+    // '^@udecode/plate-common$': '<rootDir>/packages/common/src',
     // '^@udecode/plate-basic-elements$':
     //   '<rootDir>/packages/nodes/basic-elements/src',
     // '^@udecode/plate-alignment$': '<rootDir>/packages/nodes/alignment/src',

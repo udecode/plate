@@ -1,37 +1,29 @@
-import { getNode, getPreviousPath, PlateEditor } from '@udecode/plate-core';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { getNode, getPreviousPath, TEditor } from '@udecode/plate-core';
 import { NodeEntry } from 'slate';
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import {
+  getSiblingIndentList,
+  GetSiblingIndentListOptions,
+} from './getSiblingIndentList';
 
+/**
+ * Get the previous indent list node.
+ */
 export const getPreviousIndentList = (
-  editor: PlateEditor,
-  [node, path]: NodeEntry,
-  {
-    sameStyleType = true,
-  }: { sameIndent?: boolean; sameStyleType?: boolean } = {}
+  editor: TEditor,
+  entry: NodeEntry,
+  options?: Partial<GetSiblingIndentListOptions>
 ): NodeEntry | undefined => {
-  const indent = node[KEY_INDENT];
-  const listStyleType = node[KEY_LIST_STYLE_TYPE];
+  return getSiblingIndentList(editor, entry, {
+    getPreviousEntry: ([, currPath]) => {
+      const prevPath = getPreviousPath(currPath);
+      if (!prevPath) return;
 
-  let prevPath = getPreviousPath(path);
-
-  while (true) {
-    if (!prevPath) return;
-
-    const prevNode = getNode(editor, prevPath);
-
-    if (!prevNode || !prevNode[KEY_INDENT] || prevNode[KEY_INDENT] < indent) {
-      return;
-    }
-
-    if (prevNode[KEY_INDENT] === indent) {
-      if (sameStyleType && prevNode[KEY_LIST_STYLE_TYPE] !== listStyleType) {
-        return;
-      }
+      const prevNode = getNode(editor, prevPath);
+      if (!prevNode) return;
 
       return [prevNode, prevPath];
-    }
-
-    prevPath = getPreviousPath(prevPath);
-  }
+    },
+    ...options,
+    getNextEntry: undefined,
+  });
 };
