@@ -1,5 +1,14 @@
 # @udecode/plate-indent-list
 
+## 10.5.0
+
+### Minor Changes
+
+- [#1465](https://github.com/udecode/plate/pull/1465) by [@zbeyens](https://github.com/zbeyens) –
+  - indent-list plugin:
+    - new option: `getSiblingIndentListOptions` which is used by normalizers to get list siblings (e.g. for `listStart`).
+    - normalizer handling a few more cases
+
 ## 10.4.2
 
 ## 10.4.1
