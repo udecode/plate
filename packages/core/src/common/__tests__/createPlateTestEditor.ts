@@ -1,9 +1,9 @@
 import { buildTestHarness } from 'slate-test-utils';
-import { PlateTest } from '../components/PlateTest';
+import { PlateTest } from '../../components/PlateTest';
 import {
   createPlateEditor,
   CreatePlateEditorOptions,
-} from './createPlateEditor';
+} from '../../utils/createPlateEditor';
 
 /**
  * `buildTestHarness` where:
