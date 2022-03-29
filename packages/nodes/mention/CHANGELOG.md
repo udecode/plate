@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 10.4.5
+
+### Patch Changes
+
+- [#1461](https://github.com/udecode/plate/pull/1461) by [@karthikcodes6](https://github.com/karthikcodes6) – adds current mention creationId to fix opening the mention in multiple sessions
+
 ## 10.4.2
 
 ## 10.4.1

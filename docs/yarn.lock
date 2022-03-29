@@ -2055,7 +2055,7 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.6.tgz#250a7b16c3b91f672a24552ec64678eeb1d3a08d"
   integrity sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==
 
-"@udecode/plate-alignment@10.1.2":
+"@udecode/plate-alignment@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2063,7 +2063,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-autoformat@10.1.2":
+"@udecode/plate-autoformat@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2071,7 +2071,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-elements@10.1.2":
+"@udecode/plate-basic-elements@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2079,7 +2079,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-basic-marks@10.1.2":
+"@udecode/plate-basic-marks@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2087,7 +2087,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-block-quote@10.1.2":
+"@udecode/plate-block-quote@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2095,7 +2095,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-break@10.1.2":
+"@udecode/plate-break@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2103,7 +2103,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-code-block@10.1.2":
+"@udecode/plate-code-block@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2111,7 +2111,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-combobox@10.1.2":
+"@udecode/plate-combobox@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2119,7 +2119,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-core@10.1.2":
+"@udecode/plate-core@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2131,7 +2131,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-find-replace@10.1.2":
+"@udecode/plate-find-replace@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2139,7 +2139,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-font@10.1.2":
+"@udecode/plate-font@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2147,7 +2147,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-heading@10.1.2":
+"@udecode/plate-heading@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2155,7 +2155,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-headless@10.1.3":
+"@udecode/plate-headless@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2163,7 +2163,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-highlight@10.1.2":
+"@udecode/plate-highlight@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2171,7 +2171,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-horizontal-rule@10.1.2":
+"@udecode/plate-horizontal-rule@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2179,7 +2179,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image@10.1.2":
+"@udecode/plate-image@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2187,7 +2187,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-indent-list@10.1.2":
+"@udecode/plate-indent-list@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2195,7 +2195,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-indent@10.1.2":
+"@udecode/plate-indent@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2203,7 +2203,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-juice@10.1.2":
+"@udecode/plate-juice@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2211,7 +2211,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-kbd@10.1.2":
+"@udecode/plate-kbd@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2219,7 +2219,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-line-height@10.1.2":
+"@udecode/plate-line-height@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2227,7 +2227,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-link@10.1.2":
+"@udecode/plate-link@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2235,7 +2235,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-list@10.1.2":
+"@udecode/plate-list@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2243,7 +2243,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-media-embed@10.1.2":
+"@udecode/plate-media-embed@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2251,7 +2251,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-mention@10.1.2":
+"@udecode/plate-mention@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2259,7 +2259,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-node-id@10.1.2":
+"@udecode/plate-node-id@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2267,7 +2267,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-normalizers@10.1.2":
+"@udecode/plate-normalizers@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2275,7 +2275,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-paragraph@10.1.2":
+"@udecode/plate-paragraph@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2283,7 +2283,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-reset-node@10.1.2":
+"@udecode/plate-reset-node@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2291,7 +2291,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-select@10.1.2":
+"@udecode/plate-select@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2299,7 +2299,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-csv@10.1.2":
+"@udecode/plate-serializer-csv@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2307,7 +2307,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-docx@10.1.2":
+"@udecode/plate-serializer-docx@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2315,7 +2315,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-md@10.1.2":
+"@udecode/plate-serializer-md@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2323,7 +2323,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-styled-components@10.1.2":
+"@udecode/plate-styled-components@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2331,7 +2331,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-table@10.1.2":
+"@udecode/plate-table@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2343,7 +2343,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-trailing-block@10.1.2":
+"@udecode/plate-trailing-block@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2351,7 +2351,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-alignment@10.1.2":
+"@udecode/plate-ui-alignment@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2359,7 +2359,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-block-quote@10.1.2":
+"@udecode/plate-ui-block-quote@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2367,7 +2367,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-button@10.1.2":
+"@udecode/plate-ui-button@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2375,7 +2375,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-code-block@10.1.2":
+"@udecode/plate-ui-code-block@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2383,7 +2383,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-combobox@10.1.2":
+"@udecode/plate-ui-combobox@10.4.4":
   version "0.0.0"
   uid ""
 
@@ -2391,7 +2391,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-dnd@10.1.2":
+"@udecode/plate-ui-dnd@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2399,7 +2399,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-find-replace@10.1.2":
+"@udecode/plate-ui-find-replace@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2407,7 +2407,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-font@10.1.2":
+"@udecode/plate-ui-font@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2419,7 +2419,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-image@10.1.2":
+"@udecode/plate-ui-image@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2427,7 +2427,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-line-height@10.1.2":
+"@udecode/plate-ui-line-height@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2435,7 +2435,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-link@10.1.2":
+"@udecode/plate-ui-link@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2443,7 +2443,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-list@10.1.2":
+"@udecode/plate-ui-list@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2451,7 +2451,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-media-embed@10.1.2":
+"@udecode/plate-ui-media-embed@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2459,7 +2459,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-mention@10.1.2":
+"@udecode/plate-ui-mention@10.4.4":
   version "0.0.0"
   uid ""
 
@@ -2467,7 +2467,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-placeholder@10.1.2":
+"@udecode/plate-ui-placeholder@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2475,7 +2475,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-popover@10.1.2":
+"@udecode/plate-ui-popover@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2483,7 +2483,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-popper@10.1.2":
+"@udecode/plate-ui-popper@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2491,7 +2491,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-table@10.1.2":
+"@udecode/plate-ui-table@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2499,7 +2499,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-toolbar@10.1.2":
+"@udecode/plate-ui-toolbar@10.4.2":
   version "0.0.0"
   uid ""
 
@@ -2507,7 +2507,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui@10.1.3":
+"@udecode/plate-ui@10.4.4":
   version "0.0.0"
   uid ""
 
