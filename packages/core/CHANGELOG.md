@@ -1,5 +1,14 @@
 # @udecode/plate-core
 
+## 10.5.0
+
+### Minor Changes
+
+- [#1465](https://github.com/udecode/plate/pull/1465) by [@zbeyens](https://github.com/zbeyens) –
+  - `withoutNormalizing`: `Editor.withoutNormalizing` which returns true if normalized
+  - `createPlateEditor`: add `normalizeInitialValue` option
+  - `createPlateTestEditor`
+
 ## 10.4.2
 
 ### Patch Changes
