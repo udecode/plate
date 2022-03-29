@@ -44,7 +44,6 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
           [operation.node, path],
           {
             eqIndent: false,
-            breakOnLowerIndent: false,
             breakOnEqIndentNeqListStyleType: false,
             ...getSiblingIndentListOptions,
           }
