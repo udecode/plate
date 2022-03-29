@@ -4,3 +4,5 @@
 
 export * from './getNextIndentList';
 export * from './getPreviousIndentList';
+export * from './getSiblingIndentList';
+export { areEqListStyleType } from './areEqListStyleType';

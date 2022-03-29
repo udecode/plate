@@ -5,6 +5,7 @@ import { Plate, PlateProps } from './Plate';
 export const PlateTest = ({
   variant = 'wordProcessor',
   editableProps,
+  normalizeInitialValue,
   ...props
 }: {
   variant?: 'comment' | 'wordProcessor';
@@ -18,6 +19,7 @@ export const PlateTest = ({
       editor,
       plugins,
       id,
+      normalizeInitialValue,
     });
   }
 

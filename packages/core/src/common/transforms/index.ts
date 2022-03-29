@@ -18,4 +18,5 @@ export * from './toggleNodeType';
 export * from './toggleWrapNodes';
 export * from './unhangRange';
 export * from './unwrapNodes';
+export * from './withoutNormalizing';
 export * from './wrapNodes';

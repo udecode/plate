@@ -8,3 +8,4 @@ export * from './types';
 export * from './withIndentList';
 export * from './queries/index';
 export * from './transforms/index';
+export { normalizeIndentList } from './normalizeIndentList';
