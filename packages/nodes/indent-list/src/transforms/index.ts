@@ -3,12 +3,10 @@
  */
 
 export * from './indentList';
-export * from '../normalizers/normalizeIndentListStart';
 export * from './outdentList';
+export * from './setIndentListNode';
+export * from './setIndentListNodes';
+export * from './setIndentListSiblingNodes';
 export * from './toggleIndentList';
-export { normalizeFirstIndentListStart } from '../normalizers/normalizeFirstIndentListStart';
-export { setIndentListNode } from './setIndentListNode';
-export { toggleIndentListSet } from './toggleIndentListSet';
-export { toggleIndentListUnset } from './toggleIndentListUnset';
-export { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
-export { setIndentListNodes } from './setIndentListNodes';
+export * from './toggleIndentListSet';
+export * from './toggleIndentListUnset';

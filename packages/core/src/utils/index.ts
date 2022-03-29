@@ -4,6 +4,7 @@
 
 export * from './applyDeepToNodes';
 export * from './createPlateEditor';
+export * from './createPlateTestEditor';
 export * from './createPluginFactory';
 export * from './createPlugins';
 export * from './dom-attributes';
