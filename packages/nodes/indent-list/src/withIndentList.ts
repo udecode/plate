@@ -1,6 +1,6 @@
 import { getNode, TEditor, WithOverride } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { Node } from 'slate';
+import { Editor, Node, PathRef } from 'slate';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
@@ -68,15 +68,27 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
     }
 
     // FIXME: delete first list
-    // let nextNodeEntryBefore: any;
-    // if (
-    //   operation.type === 'merge_node' &&
-    //   operation.properties[KEY_LIST_STYLE_TYPE]
-    // ) {
-    //   const node = getNode(editor, path);
-    //
-    //   nextNodeEntryBefore = getNextIndentList(editor, [node as any, path]);
-    // }
+    let nextIndentListPathRef: PathRef | null = null;
+    if (
+      operation.type === 'merge_node' &&
+      operation.properties[KEY_LIST_STYLE_TYPE]
+    ) {
+      const node = getNode(editor, path);
+
+      if (node) {
+        const nextNodeEntryBefore = getNextIndentList(
+          editor,
+          [node, path],
+          getSiblingIndentListOptions
+        );
+        if (nextNodeEntryBefore) {
+          nextIndentListPathRef = Editor.pathRef(
+            editor,
+            nextNodeEntryBefore[1]
+          );
+        }
+      }
+    }
 
     apply(operation);
 
@@ -87,29 +99,44 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
         const node = getNode(editor, path);
         if (!node) return;
 
-        const prevNodeEntry = getPreviousIndentList(
-          editor,
-          [node, path],
-          getSiblingIndentListOptions
-        );
-        if (!prevNodeEntry) {
-          normalizeIndentListStart(
-            editor,
-            [node as any, path],
-            getSiblingIndentListOptions
-          );
-          return;
-        }
+        // const prevNodeEntry = getPreviousIndentList(
+        //   editor,
+        //   [node, path],
+        //   getSiblingIndentListOptions
+        // );
+        // if (!prevNodeEntry) {
+        // normalizeIndentListStart(
+        //   editor,
+        //   [node as any, path],
+        //   getSiblingIndentListOptions
+        // );
+        //   return;
+        // }
+        // normalizeIndentListStart(
+        //   editor,
+        //   prevNodeEntry,
+        //   getSiblingIndentListOptions
+        // );
 
         normalizeIndentListStart(
           editor,
-          prevNodeEntry,
+          [node as any, path],
           getSiblingIndentListOptions
         );
-        // FIXME: delete first list
-        // if (nextNodeEntryBefore) {
-        //   normalizeListStart(editor,nextNodeEntryBefore);
-        // }
+
+        if (nextIndentListPathRef) {
+          const nextPath = nextIndentListPathRef.unref();
+          if (nextPath) {
+            const nextNode = getNode(editor, nextPath);
+            if (nextNode) {
+              normalizeIndentListStart(
+                editor,
+                [nextNode, nextPath],
+                getSiblingIndentListOptions
+              );
+            }
+          }
+        }
       }
     }
 
@@ -125,7 +152,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
 
           const nextNodeEntry = getNextIndentList(
             editor,
-            [node, path],
+            [nodeBefore, path],
             getSiblingIndentListOptions
           );
           if (!nextNodeEntry) return;
@@ -151,18 +178,18 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
            * - <1>-1-2 <- normalize
            * - 1-2-3
            */
-          const prevNodeEntry = getPreviousIndentList(
-            editor,
-            [node, path],
-            getSiblingIndentListOptions
-          );
-          if (prevNodeEntry) {
-            normalizeIndentListStart(
-              editor,
-              prevNodeEntry,
-              getSiblingIndentListOptions
-            );
-          }
+          // const prevNodeEntry = getPreviousIndentList(
+          //   editor,
+          //   [node, path],
+          //   getSiblingIndentListOptions
+          // );
+          // if (prevNodeEntry) {
+          //   normalizeIndentListStart(
+          //     editor,
+          //     prevNodeEntry,
+          //     getSiblingIndentListOptions
+          //   );
+          // }
 
           /**
            * Case:
@@ -170,9 +197,21 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
            * - 1-o-<3> <- normalize
            * - 1-o-1
            */
-          const nextNodeEntry = getNextIndentList(
+          let nextNodeEntry = getNextIndentList(
             editor,
             [nodeBefore, path],
+            getSiblingIndentListOptions
+          );
+          if (nextNodeEntry) {
+            normalizeIndentListStart(
+              editor,
+              nextNodeEntry,
+              getSiblingIndentListOptions
+            );
+          }
+          nextNodeEntry = getNextIndentList(
+            editor,
+            [node, path],
             getSiblingIndentListOptions
           );
           if (nextNodeEntry) {

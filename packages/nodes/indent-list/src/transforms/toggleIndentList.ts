@@ -1,14 +1,22 @@
 import {
   getBlockAbove,
   getNodes,
+  getPluginOptions,
   isCollapsed,
   isExpanded,
   PlateEditor,
+  setNodes,
   TElement,
+  unsetNodes,
+  withoutNormalizing,
 } from '@udecode/plate-core';
+import { KEY_INDENT } from '@udecode/plate-indent';
+import {
+  IndentListPlugin,
+  KEY_LIST_STYLE_TYPE,
+} from '../createIndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { IndentListOptions } from './indentList';
-import { outdentList } from './outdentList';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
 import { toggleIndentListSet } from './toggleIndentListSet';
@@ -23,6 +31,11 @@ export const toggleIndentList = (
 ) => {
   const { listStyleType } = options;
 
+  const { getSiblingIndentListOptions } = getPluginOptions<IndentListPlugin>(
+    editor,
+    KEY_LIST_STYLE_TYPE
+  );
+
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove(editor);
     if (!entry) return;
@@ -35,7 +48,10 @@ export const toggleIndentList = (
       return;
     }
 
-    setIndentListSiblingNodes(editor, entry, { listStyleType });
+    setIndentListSiblingNodes(editor, entry, {
+      listStyleType,
+      getSiblingIndentListOptions,
+    });
     return;
   }
 
@@ -48,7 +64,27 @@ export const toggleIndentList = (
     });
 
     if (eqListStyleType) {
-      outdentList(editor, options);
+      withoutNormalizing(editor, () => {
+        entries.forEach((entry) => {
+          const [node, path] = entry;
+
+          unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
+          if (node[KEY_INDENT] > 1) {
+            setNodes(
+              editor,
+              { [KEY_INDENT]: node[KEY_INDENT] - 1 },
+              { at: path }
+            );
+          } else {
+            unsetNodes(editor, KEY_INDENT, { at: path });
+          }
+          // setIndentListNode(editor, {
+          //   listStyleType,
+          //   indent: node[KEY_INDENT],
+          //   at: path,
+          // });
+        });
+      });
       return;
     }
 
