@@ -1,5 +1,14 @@
 # @udecode/plate-indent-list
 
+## 10.5.1
+
+### Patch Changes
+
+- [#1467](https://github.com/udecode/plate/pull/1467) by [@zbeyens](https://github.com/zbeyens) –
+  - fix indent `listStart` normalization
+  - fix `toggleIndentList`
+  - fix normalization on `merge_node` and `set_node` ops
+
 ## 10.5.0
 
 ### Minor Changes
