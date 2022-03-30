@@ -22,7 +22,7 @@ describe('toggleIndentList', () => {
 
       const output = ((
         <editor>
-          <hp indent={3} listStyleType="disc">
+          <hp indent={4} listStyleType="disc">
             1<cursor />
           </hp>
         </editor>
@@ -80,7 +80,7 @@ describe('toggleIndentList', () => {
 
       const output = ((
         <editor>
-          <hp indent={1}>
+          <hp>
             1<cursor />
           </hp>
         </editor>
