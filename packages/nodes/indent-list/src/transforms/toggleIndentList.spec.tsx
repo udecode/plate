@@ -307,7 +307,7 @@ describe('toggleIndentList', () => {
     });
 
     describe('when across pages', () => {
-      it('should outdent', async () => {
+      it('should toggle', async () => {
         const input = ((
           <editor>
             <element>
