@@ -22,21 +22,23 @@ npm install @udecode/plate-autoformat
   const plugins = createPlugins([
     ...PLUGINS.basicNodes,
     createHorizontalRulePlugin(),
-    createSelectOnBackspacePlugin({ allow: [ELEMENT_HR] }),
+    createSelectOnBackspacePlugin({ options: { query: { allow: [ELEMENT_HR] }}}),
     createAutoformatPlugin({
-      rules: [{
-        mode: 'block',
-        type: ELEMENT_HR,
-        match: ['---', '—-', '___ '],
-        preFormat: clearBlockFormat,
-        format: (editor) => {
-          setNodes(editor, { type: ELEMENT_HR });
-          insertNodes(editor, {
-            type: ELEMENT_DEFAULT,
-            children: [{ text: '' }],
-          });
-        },
-      }],
+      options: {
+        rules: [{
+          mode: 'block',
+          type: ELEMENT_HR,
+          match: ['---', '—-', '___ '],
+          preFormat: clearBlockFormat,
+          format: (editor) => {
+            setNodes(editor, { type: ELEMENT_HR });
+            insertNodes(editor, {
+              type: ELEMENT_DEFAULT,
+              children: [{ text: '' }],
+            });
+          },
+        }],
+      },
     }),
   ], {
     components: CONFIG.components,
