@@ -4,7 +4,9 @@
 
 export * from './DefaultLeaf';
 export * from './EditablePlugins';
-export * from './EditorProvider';
 export * from './EditorRefEffect';
 export * from './EditorStateEffect';
 export * from './Plate';
+export * from './PlateEventProvider';
+export * from './PlateProvider';
+export * from './PlateTest';

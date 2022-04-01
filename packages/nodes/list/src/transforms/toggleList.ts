@@ -44,11 +44,10 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
         const list = { type, children: [] };
         wrapNodes(editor, list);
 
-        const nodes = [
-          ...getNodes(editor, {
-            match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
-          }),
-        ];
+        const _nodes = getNodes(editor, {
+          match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
+        });
+        const nodes = Array.from(_nodes);
         setNodes(editor, { type: getPluginType(editor, ELEMENT_LIC) });
 
         const listItem = {
@@ -103,11 +102,10 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
         }
       } else {
         const rootPathLength = commonEntry[1].length;
-        const nodes = (Array.from(
-          getNodes(editor, {
-            mode: 'all',
-          })
-        ) as NodeEntry<TElement>[])
+        const _nodes = getNodes(editor, {
+          mode: 'all',
+        });
+        const nodes = (Array.from(_nodes) as NodeEntry<TElement>[])
           .filter(([, path]) => path.length === rootPathLength + 1)
           .reverse();
 

@@ -1,5 +1,41 @@
 # @udecode/plate-code-block
 
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.2.2
+
+## 10.2.1
+
+### Patch Changes
+
+- [#1420](https://github.com/udecode/plate/pull/1420) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Fix code block syntax highlight
+
+## 10.1.2
+
+## 10.1.1
+
+### Patch Changes
+
+- [#1388](https://github.com/udecode/plate/pull/1388) by [@zbeyens](https://github.com/zbeyens) – fix for docs only: use `Array.from` instead of destructuring generators
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.3.1
+
+## 9.3.0
+
+### Patch Changes
+
+- [#1358](https://github.com/udecode/plate/pull/1358) by [@jyc5131](https://github.com/jyc5131) – fix: "decorateCodeLine don't check the path of nodeEntry" when adding a code block
+
 ## 9.2.1
 
 ## 9.2.0

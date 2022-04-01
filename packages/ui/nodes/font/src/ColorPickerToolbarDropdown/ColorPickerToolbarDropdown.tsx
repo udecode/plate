@@ -5,9 +5,10 @@ import {
   isMarkActive,
   removeMark,
   setMarks,
+  useEventPlateId,
   usePlateEditorRef,
   usePlateEditorState,
-  withEditor,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import {
   ToolbarButton,
@@ -29,8 +30,9 @@ type ColorPickerToolbarDropdownProps = {
   closeOnSelect?: boolean;
 };
 
-export const ColorPickerToolbarDropdown = withEditor(
+export const ColorPickerToolbarDropdown = withPlateEventProvider(
   ({
+    id,
     pluginKey,
     icon,
     selectedIcon,
@@ -39,9 +41,11 @@ export const ColorPickerToolbarDropdown = withEditor(
     closeOnSelect = true,
     ...rest
   }: ColorPickerToolbarDropdownProps & ToolbarButtonProps) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
+    const editorRef = usePlateEditorRef(id)!;
+
     const [open, setOpen] = useState(false);
-    const editor = usePlateEditorState()!;
-    const editorRef = usePlateEditorRef()!;
 
     const type = getPluginType(editorRef, pluginKey);
 

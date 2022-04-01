@@ -1,5 +1,51 @@
 # @udecode/plate-indent-list
 
+## 10.5.1
+
+### Patch Changes
+
+- [#1467](https://github.com/udecode/plate/pull/1467) by [@zbeyens](https://github.com/zbeyens) –
+  - fix indent `listStart` normalization
+  - fix `toggleIndentList`
+  - fix normalization on `merge_node` and `set_node` ops
+
+## 10.5.0
+
+### Minor Changes
+
+- [#1465](https://github.com/udecode/plate/pull/1465) by [@zbeyens](https://github.com/zbeyens) –
+  - indent-list plugin:
+    - new option: `getSiblingIndentListOptions` which is used by normalizers to get list siblings (e.g. for `listStart`).
+    - normalizer handling a few more cases
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.4.0
+
+### Minor Changes
+
+- [#1373](https://github.com/udecode/plate/pull/1373) by [@zbeyens](https://github.com/zbeyens) – Docx deserializer supports more indent list styles: DecimalLeadingZero, LowerRoman, UpperRoman, UpperAlpha
+
+## 9.3.1
+
+## 9.3.0
+
 ## 9.2.1
 
 ## 9.2.0

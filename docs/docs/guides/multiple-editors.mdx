@@ -21,7 +21,9 @@ Let's render 3 editors with common heading and balloon toolbars.
         id={id}
         plugins={plugins}
         initialValue={initialValue}
-      />
+      >
+        <BallonToolbarMarks />
+      </Plate>
     </div>
   );
 
@@ -31,8 +33,6 @@ Let's render 3 editors with common heading and balloon toolbars.
         <BasicElementToolbarButtons />
         <BasicMarkToolbarButtons />
       </HeadingToolbar>
-
-      <BallonToolbarMarks />
 
       <div className="flex">
         <MultipleEditor
@@ -48,7 +48,7 @@ Let's render 3 editors with common heading and balloon toolbars.
         <MultipleEditor
           id="multiple-editors-image"
           plugins={PLUGINS.image}
-          initialValue={VALUES.images}
+          initialValue={VALUES.image}
         />
       </div>
     </div>

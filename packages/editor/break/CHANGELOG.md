@@ -1,5 +1,36 @@
 # @udecode/plate-break
 
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.3.0
+
+### Minor Changes
+
+- [#1429](https://github.com/udecode/plate/pull/1429) by [@zbeyens](https://github.com/zbeyens) –
+  - extracted `exitBreak` transform from `onKeyDownExitBreak` to manually exit break.
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.3.1
+
+## 9.3.0
+
 ## 9.2.1
 
 ## 9.2.0

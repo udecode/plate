@@ -57,13 +57,14 @@ npm install @udecode/plate-ui-toolbar
 
   return (
     <>
-      <BallonToolbarMarks />
       <Plate
         id="balloon-toolbar"
         plugins={PLUGINS.basicNodes}
         editableProps={CONFIG.editableProps}
         initialValue={VALUES.balloonToolbar}
-      />
+      >
+        <BallonToolbarMarks />
+      </Plate>
     </>
   );
 }

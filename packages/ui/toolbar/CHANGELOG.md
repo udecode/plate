@@ -1,5 +1,41 @@
 # @udecode/plate-toolbar
 
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+### Major Changes
+
+- [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) – Before, `BalloonToolbar` could be outside `Plate`. Now, `BallonToolbar` should be a child of `Plate`.
+  This fixes the multi editor bug.
+
+### Patch Changes
+
+- [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) –
+  - `BalloonToolbar`:
+    - fix: hide when the editor is not focused.
+    - fix: multiple editors can have a balloon toolbar.
+
+## 9.3.1
+
+## 9.3.0
+
 ## 9.2.1
 
 ### Patch Changes

@@ -1,5 +1,43 @@
 # @udecode/plate-docx-serializer
 
+## 10.5.1
+
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.3.0
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.4.0
+
+### Minor Changes
+
+- [#1373](https://github.com/udecode/plate/pull/1373) by [@zbeyens](https://github.com/zbeyens) – Docx deserializer supports more indent list styles: DecimalLeadingZero, LowerRoman, UpperRoman, UpperAlpha
+
+## 9.3.1
+
+## 9.3.0
+
+### Minor Changes
+
+- [#1364](https://github.com/udecode/plate/pull/1364) by [@zbeyens](https://github.com/zbeyens) – Feat: new textIndent plugin + docx deserializer support
+
 ## 9.2.1
 
 ## 9.2.0

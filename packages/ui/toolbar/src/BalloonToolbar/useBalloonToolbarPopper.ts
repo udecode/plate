@@ -1,38 +1,46 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   getSelectionText,
   isSelectionExpanded,
+  useEditorState,
   useEventEditorSelectors,
-  usePlateEditorState,
 } from '@udecode/plate-core';
 import {
   getSelectionBoundingClientRect,
   usePopperPosition,
   UsePopperPositionOptions,
 } from '@udecode/plate-ui-popper';
+import { useFocused } from 'slate-react';
 
 export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
-  const focusId = useEventEditorSelectors.focus();
-  const editor = usePlateEditorState(focusId!)!;
+  const focusedEditorId = useEventEditorSelectors.focus();
+  const editor = useEditorState();
+  const focused = useFocused();
 
   const [isHidden, setIsHidden] = useState(true);
 
   const selectionExpanded = editor && isSelectionExpanded(editor);
   const selectionText = editor && getSelectionText(editor);
 
-  const show = useCallback(() => {
-    if (isHidden && selectionExpanded) {
-      setIsHidden(false);
-    }
-  }, [isHidden, selectionExpanded]);
-
   useEffect(() => {
-    if (!selectionText) {
+    if (
+      !selectionExpanded ||
+      !selectionText ||
+      !focused ||
+      editor.id !== focusedEditorId
+    ) {
       setIsHidden(true);
     } else if (selectionText && selectionExpanded) {
       setIsHidden(false);
     }
-  }, [selectionExpanded, selectionText, show]);
+  }, [
+    editor.id,
+    editor.selection,
+    focused,
+    focusedEditorId,
+    selectionExpanded,
+    selectionText,
+  ]);
 
   const popperResult = usePopperPosition({
     isHidden,
@@ -44,7 +52,9 @@ export const useBalloonToolbarPopper = (options: UsePopperPositionOptions) => {
   const { update } = popperResult;
 
   useEffect(() => {
-    selectionTextLength > 0 && update?.();
+    if (selectionTextLength > 0) {
+      update?.();
+    }
   }, [selectionTextLength, update]);
 
   return popperResult;

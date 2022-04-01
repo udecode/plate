@@ -25,7 +25,16 @@ import { getComboboxStyles } from './Combobox.styles';
 import { ComboboxProps } from './Combobox.types';
 
 const ComboboxContent = <TData extends Data = NoData>(
-  props: Pick<ComboboxProps<TData>, 'component' | 'items' | 'onRenderItem'>
+  props: Omit<
+    ComboboxProps<TData>,
+    | 'id'
+    | 'trigger'
+    | 'searchPattern'
+    | 'onSelectItem'
+    | 'controlled'
+    | 'maxSuggestions'
+    | 'filter'
+  >
 ) => {
   const { component: Component, items, onRenderItem } = props;
 
@@ -151,6 +160,8 @@ export const Combobox = <TData extends Data = NoData>({
   searchPattern,
   onSelectItem,
   controlled,
+  maxSuggestions,
+  filter,
   ...props
 }: ComboboxProps<TData>) => {
   const editor = useEditorState();
@@ -165,8 +176,18 @@ export const Combobox = <TData extends Data = NoData>({
       searchPattern,
       controlled,
       onSelectItem,
+      maxSuggestions,
+      filter,
     });
-  }, [id, trigger, searchPattern, controlled, onSelectItem]);
+  }, [
+    id,
+    trigger,
+    searchPattern,
+    controlled,
+    onSelectItem,
+    maxSuggestions,
+    filter,
+  ]);
 
   if (
     !combobox ||

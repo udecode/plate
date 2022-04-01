@@ -4,4 +4,5 @@
 
 export * from './useEditorRef';
 export * from './useEditorState';
+export * from './usePlatesStoreEffect';
 export * from './usePlate/index';

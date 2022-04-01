@@ -8,15 +8,12 @@ import { TablePopover } from '../TablePopover/TablePopover';
 import { getTableElementStyles } from './TableElement.styles';
 import { TableElementProps } from './TableElement.types';
 
-export const TableElementBase = (props: TableElementProps) => {
-  const {
-    attributes,
-    children,
-    nodeProps,
-    element,
-    transformColSizes,
-    onRenderContainer: Popover = TablePopover,
-  } = props;
+export const TableElementBase = ({
+  transformColSizes,
+  onRenderContainer: Popover = TablePopover,
+  ...props
+}: TableElementProps) => {
+  const { attributes, children, nodeProps, element } = props;
 
   const rootProps = getRootProps(props);
 

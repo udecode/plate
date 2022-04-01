@@ -1,12 +1,12 @@
 /** @jsxRuntime classic */
-/** @jsx jsx */
+/** @jsx hjsx */
 import { ELEMENT_HR, TDescendant } from '@udecode/plate';
-import { jsx } from '@udecode/plate-test-utils';
+import { hjsx } from '@udecode/plate-test-utils';
 import * as faker from 'faker';
 import { initialDataExcalidraw } from './initialDataExcalidraw';
 import { createList, getNodesWithRandomId } from './utils';
 
-jsx;
+hjsx;
 
 const align: any = (
   <fragment>
@@ -412,7 +412,7 @@ const mentions: any = (
       <hmention value="Mace Windu">
         <htext />
       </hmention>
-      !
+      <htext />
     </hp>
   </fragment>
 );

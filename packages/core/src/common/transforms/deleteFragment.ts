@@ -111,7 +111,8 @@ export const deleteFragment = (
     const matches: NodeEntry[] = [];
     let lastPath: Path | undefined;
 
-    for (const entry of Editor.nodes(editor, { at, voids })) {
+    const _nodes = Editor.nodes(editor, { at, voids });
+    for (const entry of _nodes) {
       const [node, path] = entry;
 
       if (lastPath && Path.compare(path, lastPath) === 0) {

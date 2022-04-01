@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import 'prismjs/themes/prism.css';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
@@ -79,6 +80,7 @@ import {
   createItalicPlugin,
   createJuicePlugin,
   createKbdPlugin,
+  createLineHeightPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
@@ -99,6 +101,7 @@ import {
   createSubscriptPlugin,
   createSuperscriptPlugin,
   createTablePlugin,
+  createTextIndentPlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
@@ -146,6 +149,7 @@ import {
   isSelectionAtBlockStart,
   isType,
   KEYS_HEADING,
+  LineHeightToolbarDropdown,
   LinkToolbarButton,
   ListToolbarButton,
   MARK_BG_COLOR,
@@ -168,6 +172,7 @@ import {
   outdentList,
   pipeRenderLeaf,
   Plate,
+  PlateProvider,
   SearchHighlightToolbar,
   serializeHtml,
   setNodes,
@@ -186,13 +191,11 @@ import {
   withProps,
   withStyledProps,
 } from '@udecode/plate';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
-import { LineHeightToolbarDropdown } from '@udecode/plate-ui-line-height';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
 import { clearBlockFormat } from './config/autoformat/autoformatUtils';
@@ -225,6 +228,7 @@ import { HighlightHTML } from './utils/HighlightHTML';
 // Add react-live imports you need here
 const ReactLiveScope = {
   ...React,
+  createTextIndentPlugin,
   getPlateActions,
   usePlateSelectors,
   createJuicePlugin,
@@ -238,6 +242,7 @@ const ReactLiveScope = {
   BorderAll,
   BorderBottom,
   BorderClear,
+  PlateProvider,
   BorderLeft,
   BorderRight,
   BorderTop,

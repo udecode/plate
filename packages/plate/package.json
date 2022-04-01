@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "9.2.1",
+  "version": "10.5.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -37,8 +37,8 @@
     "rollup": "rollup -c=../../rollup.config.js"
   },
   "dependencies": {
-    "@udecode/plate-headless": "9.2.1",
-    "@udecode/plate-ui": "9.2.1"
+    "@udecode/plate-headless": "10.5.1",
+    "@udecode/plate-ui": "10.5.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -46,7 +46,7 @@
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.66.1",
+    "slate-react": ">=0.74.2",
     "styled-components": ">=5.0.0"
   },
   "publishConfig": {

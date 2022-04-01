@@ -4,25 +4,33 @@ import { FindReplacePlugin } from './types';
 
 export const decorateFindReplace: Decorate<{}, FindReplacePlugin> = (
   editor,
-  { type, options: { search } }
+  { key, type }
 ) => ([node, path]: NodeEntry) => {
-  const ranges: Range[] = [];
+  const ranges: SearchRange[] = [];
 
-  if (search && Text.isText(node)) {
-    const { text } = node;
-    const parts = text.split(search);
-    let offset = 0;
-    parts.forEach((part, i) => {
-      if (i !== 0) {
-        ranges.push({
-          anchor: { path, offset: offset - search.length },
-          focus: { path, offset },
-          [type]: true,
-        });
-      }
-      offset = offset + part.length + search.length;
-    });
+  const { search } = editor.pluginsByKey[key].options as FindReplacePlugin;
+  if (!search || !Text.isText(node)) {
+    return ranges;
   }
 
+  const { text } = node;
+  const parts = text.toLowerCase().split(search.toLowerCase());
+  let offset = 0;
+  parts.forEach((part, i) => {
+    if (i !== 0) {
+      ranges.push({
+        anchor: { path, offset: offset - search.length },
+        focus: { path, offset },
+        search,
+        [type]: true,
+      });
+    }
+    offset = offset + part.length + search.length;
+  });
+
   return ranges;
+};
+
+type SearchRange = Range & {
+  search: string;
 };

@@ -22,43 +22,41 @@ export const getPreviousBlockById = (
     }
   }
   let found = false;
-  const nodeEntries = [
-    ...Editor.nodes(editor, {
-      mode: 'highest',
-      reverse: true,
-      match: (_n) => {
-        const n = _n as TNode;
+  const _nodes = Editor.nodes(editor, {
+    mode: 'highest',
+    reverse: true,
+    match: (_n) => {
+      const n = _n as TNode;
 
-        // filter nodes that are not blocks and without id.
-        if (!Editor.isBlock(editor, n) || !n.id) return false;
+      // filter nodes that are not blocks and without id.
+      if (!Editor.isBlock(editor, n) || !n.id) return false;
 
-        // find the block then take the previous one.
-        if (n.id === id) {
-          found = true;
-          return false;
-        }
+      // find the block then take the previous one.
+      if (n.id === id) {
+        found = true;
+        return false;
+      }
 
-        return found && n.id !== id && queryNode([n, []], query);
-      },
-      at: [],
-    }),
-  ];
+      return found && n.id !== id && queryNode([n, []], query);
+    },
+    at: [],
+  });
+  const nodeEntries = Array.from(_nodes);
   if (nodeEntries.length) {
     return nodeEntries[0];
   }
   if (!found) return;
 
-  const firstNodeEntry = [
-    ...Editor.nodes(editor, {
-      mode: 'highest',
-      match: (_n) => {
-        const n = _n as TNode;
+  const _entries = Editor.nodes(editor, {
+    mode: 'highest',
+    match: (_n) => {
+      const n = _n as TNode;
 
-        return Editor.isBlock(editor, n) && !!n.id && queryNode([n, []], query);
-      },
-      at: [],
-    }),
-  ];
+      return Editor.isBlock(editor, n) && !!n.id && queryNode([n, []], query);
+    },
+    at: [],
+  });
+  const firstNodeEntry = Array.from(_entries);
 
   if (firstNodeEntry.length) {
     const [, path] = firstNodeEntry[0];

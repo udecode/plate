@@ -15,13 +15,13 @@ describe(getDocxTestName(name), () => {
         <hp align="center">
           <htext bold>TITLE</htext>
         </hp>
-        <hp indent={1}>
+        <hp textIndent={1}>
           <htext />
         </hp>
         <hp align="center">
           <htext bold>Name</htext>
         </hp>
-        <hp align="justify" indent={1} lineHeight="normal">
+        <hp align="justify" textIndent={1} lineHeight="normal">
           A
         </hp>
         <hp align="justify">
@@ -46,10 +46,10 @@ describe(getDocxTestName(name), () => {
         <hp align="justify" indent={1}>
           B
         </hp>
-        <hp align="center" indent={1} lineHeight="normal">
+        <hp align="center" textIndent={1} lineHeight="normal">
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp align="justify" indent={1} lineHeight="normal">
+        <hp align="justify" textIndent={1} lineHeight="normal">
           C
         </hp>
         <hp indent={7}>

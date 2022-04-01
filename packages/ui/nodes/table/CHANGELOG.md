@@ -1,5 +1,37 @@
 # @udecode/plate-table-ui
 
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.3.0
+
+### Patch Changes
+
+- [#1429](https://github.com/udecode/plate/pull/1429) by [@zbeyens](https://github.com/zbeyens) – `TableElement`:
+  - fix undefined case
+  - fix warning "Unknown event handler property `onRenderContainer`. It will be ignored."
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.3.1
+
+## 9.3.0
+
 ## 9.2.1
 
 ### Patch Changes

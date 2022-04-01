@@ -28,12 +28,13 @@ npm install @udecode/plate-serializer-docx
     createFontWeightPlugin(),
     createIndentListPlugin(),
     createIndentPlugin(CONFIG.indent),
+    createTextIndentPlugin(),
     createDeserializeDocxPlugin(),
     createJuicePlugin(),
   ], {
     components: CONFIG.components,
   });
-    
+  
   return (
     <Plate
       id="deserialize-docx"

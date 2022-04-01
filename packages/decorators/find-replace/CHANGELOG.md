@@ -1,5 +1,41 @@
 # @udecode/plate-find-replace
 
+## 10.5.0
+
+## 10.4.2
+
+## 10.4.1
+
+## 10.4.0
+
+## 10.2.4
+
+### Patch Changes
+
+- [#1414](https://github.com/udecode/plate/pull/1414) by [@dtslvr](https://github.com/dtslvr) – Support case-insensitive matching
+
+## 10.2.3
+
+### Patch Changes
+
+- [#1426](https://github.com/udecode/plate/pull/1426) by [@nemanja-tosic](https://github.com/nemanja-tosic) – Fix find replace not highlighting search term
+
+## 10.2.2
+
+## 10.2.1
+
+## 10.1.2
+
+## 10.1.1
+
+## 10.1.0
+
+## 10.0.0
+
+## 9.3.1
+
+## 9.3.0
+
 ## 9.2.1
 
 ## 9.2.0

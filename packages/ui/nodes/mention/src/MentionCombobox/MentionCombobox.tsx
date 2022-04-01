@@ -8,16 +8,16 @@ import {
 } from '@udecode/plate-mention';
 import { Combobox, ComboboxProps } from '@udecode/plate-ui-combobox';
 
+export interface MentionComboboxProps<TData extends Data = NoData>
+  extends Partial<ComboboxProps<TData>> {
+  pluginKey?: string;
+}
+
 export const MentionCombobox = <TData extends Data = NoData>({
-  items,
-  component,
-  onRenderItem,
   pluginKey = ELEMENT_MENTION,
   id = pluginKey,
-}: Pick<
-  Partial<ComboboxProps<TData>>,
-  'id' | 'items' | 'component' | 'onRenderItem'
-> & { pluginKey?: string }) => {
+  ...props
+}: MentionComboboxProps<TData>) => {
   const editor = usePlateEditorRef()!;
 
   const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
@@ -27,12 +27,10 @@ export const MentionCombobox = <TData extends Data = NoData>({
       id={id}
       trigger={trigger!}
       controlled
-      items={items}
-      component={component}
-      onRenderItem={onRenderItem}
       onSelectItem={getMentionOnSelectItem({
         key: pluginKey,
       })}
+      {...props}
     />
   );
 };

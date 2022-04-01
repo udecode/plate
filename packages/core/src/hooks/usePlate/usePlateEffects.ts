@@ -4,7 +4,6 @@ import { PlateProps } from '../../components/Plate';
 import { withPlate } from '../../plugins/withPlate';
 import {
   getPlateActions,
-  platesActions,
   usePlateSelectors,
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
@@ -37,19 +36,6 @@ export const usePlateEffects = <T = {}>({
   const prevPlugins = useRef(plugins);
 
   const plateActions = getPlateActions(id);
-
-  // Clear the state on unmount.
-  useEffect(
-    () => () => {
-      platesActions.unset(id);
-    },
-    [id]
-  );
-
-  // Set initial state on mount
-  useEffect(() => {
-    platesActions.set(id);
-  }, [id]);
 
   // Set initialValue once
   useEffect(() => {

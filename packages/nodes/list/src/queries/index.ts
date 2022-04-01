@@ -9,3 +9,4 @@ export * from './getListTypes';
 export * from './hasListChild';
 export * from './isAcrossListItems';
 export * from './isListNested';
+export * from './isListRoot';

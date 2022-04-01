@@ -1,5 +1,113 @@
 # @udecode/plate-core
 
+## 10.5.0
+
+### Minor Changes
+
+- [#1465](https://github.com/udecode/plate/pull/1465) by [@zbeyens](https://github.com/zbeyens) –
+  - `withoutNormalizing`: `Editor.withoutNormalizing` which returns true if normalized
+  - `createPlateEditor`: add `normalizeInitialValue` option
+  - `createPlateTestEditor`
+
+## 10.4.2
+
+### Patch Changes
+
+- [#1447](https://github.com/udecode/plate/pull/1447) by [@ryanbarr](https://github.com/ryanbarr) – Update isType to correctly return the expected boolean value.
+
+## 10.4.1
+
+### Patch Changes
+
+- [#1440](https://github.com/udecode/plate/pull/1440) by [@zbeyens](https://github.com/zbeyens) – Critical fix: plate hooks without id. `usePlateId` (used to get plate store) is now working below `PlateProvider` and outside `Plate`.
+
+## 10.4.0
+
+### Minor Changes
+
+- [#1435](https://github.com/udecode/plate/pull/1435) by [@zbeyens](https://github.com/zbeyens) – Fix a critical issue when using multiple editors #1352
+  - `withHOC`: 3rd parameter can be used to add props to HOC.
+  - `usePlateId` now just gets plate id atom value and no longer gets event editor id as fallback.
+  - `useEventEditorId`: Get last event editor id: focus, blur or last.
+  - `useEventPlateId`: Get provider plate id or event editor id.
+  - `PlateEventProvider`: `PlateProvider` where id is the event editor id (used for toolbar buttons).
+  - `withPlateEventProvider`
+
+## 10.2.2
+
+### Patch Changes
+
+- [`15e64184`](https://github.com/udecode/plate/commit/15e6418473aa3f2c6e7c7e5395fa005f028591c4) by [@zbeyens](https://github.com/zbeyens) – Revert plugins memoization fix https://github.com/udecode/plate/pull/1415#issuecomment-1061794845
+
+## 10.2.1
+
+### Patch Changes
+
+- [#1415](https://github.com/udecode/plate/pull/1415) by [@chaseadamsio](https://github.com/chaseadamsio) – fix useEditableProps plugins memoization
+
+## 10.1.2
+
+### Patch Changes
+
+- [#1393](https://github.com/udecode/plate/pull/1393) by [@dylans](https://github.com/dylans) – Check for leaf was too strict with checking for text
+
+## 10.1.1
+
+### Patch Changes
+
+- [#1388](https://github.com/udecode/plate/pull/1388) by [@zbeyens](https://github.com/zbeyens) – fix for docs only: use `Array.from` instead of destructuring generators
+
+- [#1392](https://github.com/udecode/plate/pull/1392) by [@zbeyens](https://github.com/zbeyens) – fix: using `PlateProvider` was not setting the initial value
+
+## 10.1.0
+
+### Minor Changes
+
+- [#1381](https://github.com/udecode/plate/pull/1381) by [@zbeyens](https://github.com/zbeyens) –
+
+  - vendor:
+    - upgrade slate to "0.72.8"
+    - upgrade slate-react to "0.72.9"
+    - upgrade zustand to "3.7.0"
+  - new component for testing: `PlateTest`
+
+- [#1387](https://github.com/udecode/plate/pull/1387) by [@zbeyens](https://github.com/zbeyens) –
+  - `Plate` props are merged into the initial store state to override the default values.
+    - the initial value will be `editor.children` if `editor` prop is defined.
+  - `PlateProvider` accepts `PlateProps` so set the initial store state
+
+## 10.0.0
+
+### Minor Changes
+
+- [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) –
+  - new dep: jotai
+  - `Plate`:
+    - set the store only if it's not already set (e.g. controlled use-case)
+    - there is now a jotai provider with plate id so it can be used by plate selectors if no id is given as parameter.
+  - `PlateProvider`: Create plate store and mount/unmount if `id` prop updates. `id` can be `string[]`. Use this component on top of components using plate hook selectors, otherwise your components would not rerender on change. Not needed for plate non-hook selectors (getters).
+  - `useCreatePlateStore`: hook that creates a plate store into the plates store, if not defined.
+  - `usePlateId`: returns the provider plate id (if any).
+  - `usePlateStore`: if the hook is used before the plate store is created, it will console warn "The plate hooks must be used inside the `<PlateProvider id={id}>` component's context."
+  -
+
+### Patch Changes
+
+- [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) –
+  - `eventEditorSelectors.focus()` should now return the currently focused editor id, and `null` if no editor is focused.
+
+## 9.3.1
+
+### Patch Changes
+
+- [#1367](https://github.com/udecode/plate/pull/1367) by [@zbeyens](https://github.com/zbeyens) – Fix: "Adding new Editor instances after render of another instance causes a bad setState error". We were setting the plate store anytime `getPlateStore` was called, so it could be called outside a `useEffect`. `Plate` now returns `null` until the plate store is set in the plates store, so `getPlateStore` always returns a defined store. Note that you'd need the same check on your end above any component using plate selectors.
+
+## 9.3.0
+
+### Patch Changes
+
+- [#1362](https://github.com/udecode/plate/pull/1362) by [@zbeyens](https://github.com/zbeyens) – Upgrade zustood 0.4.4
+
 ## 9.2.1
 
 ### Patch Changes

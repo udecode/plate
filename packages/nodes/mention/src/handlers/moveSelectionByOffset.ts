@@ -1,13 +1,20 @@
-import { KeyboardEvent } from 'react';
 import { PlateEditor } from '@udecode/plate-core';
-import { HandlerReturnType } from '@udecode/plate-core/src';
 import { Range, Transforms } from 'slate';
+import { KeyboardEventHandler } from './KeyboardEventHandler';
 
-export const moveSelectionByOffset = (
+export interface MoveSelectionByOffsetOptions {
+  query?: (editor: PlateEditor) => boolean;
+}
+
+// TODO: move to core
+export const moveSelectionByOffset: (
   editor: PlateEditor,
-  { query = () => true }: { query: (editor: PlateEditor) => boolean }
-) => (event: KeyboardEvent): HandlerReturnType => {
+  options?: MoveSelectionByOffsetOptions
+) => KeyboardEventHandler = (editor, { query = () => true } = {}) => (
+  event
+) => {
   const { selection } = editor;
+
   if (!selection || Range.isExpanded(selection) || !query(editor)) {
     return false;
   }

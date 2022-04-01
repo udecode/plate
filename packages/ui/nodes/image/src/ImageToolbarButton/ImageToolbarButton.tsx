@@ -11,10 +11,11 @@ export interface ImageToolbarButtonProps extends ToolbarButtonProps {
 }
 
 export const ImageToolbarButton = ({
+  id,
   getImageUrl,
   ...props
 }: ImageToolbarButtonProps) => {
-  const editor = usePlateEditorRef()!;
+  const editor = usePlateEditorRef(id)!;
 
   return (
     <ToolbarButton

@@ -4,8 +4,9 @@ import {
   getPreventDefaultHandler,
   isCollapsed,
   someNode,
+  useEventPlateId,
   usePlateEditorState,
-  withEditor,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
@@ -14,9 +15,10 @@ export interface AlignToolbarButtonProps extends ToolbarButtonProps {
   pluginKey?: string;
 }
 
-export const AlignToolbarButton = withEditor(
-  ({ value, pluginKey = KEY_ALIGN, ...props }: AlignToolbarButtonProps) => {
-    const editor = usePlateEditorState()!;
+export const AlignToolbarButton = withPlateEventProvider(
+  ({ id, value, pluginKey = KEY_ALIGN, ...props }: AlignToolbarButtonProps) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
 
     return (
       <ToolbarButton

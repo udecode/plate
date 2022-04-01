@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "9.2.1",
+  "version": "10.5.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "keywords": [
     "wysiwyg",
@@ -40,16 +40,17 @@
   "dependencies": {
     "@udecode/zustood": "0.4.4",
     "clsx": "1.1.1",
+    "jotai": "1.5.3",
     "lodash": "4.17.21",
     "use-deep-compare": "1.1.0",
-    "zustand": "3.6.7"
+    "zustand": "3.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.66.1",
     "slate-history": ">=0.66.0",
-    "slate-react": ">=0.66.1"
+    "slate-react": ">=0.74.2"
   },
   "publishConfig": {
     "access": "public"

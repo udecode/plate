@@ -1,5 +1,14 @@
 # @udecode/plate-test-utils
 
+## 10.1.0
+
+### Minor Changes
+
+- [#1381](https://github.com/udecode/plate/pull/1381) by [@zbeyens](https://github.com/zbeyens) –
+  - `jsx` now supports [slate-test-utils](https://github.com/mwood23/slate-test-utils)
+  - exports `hjsx` for non-testing use-cases
+  - better typing
+
 ## 3.2.0
 
 ### Minor Changes

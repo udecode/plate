@@ -1,8 +1,9 @@
 import React from 'react';
 import {
   getPreventDefaultHandler,
+  useEventPlateId,
   usePlateEditorState,
-  withEditor,
+  withPlateEventProvider,
 } from '@udecode/plate-core';
 import { ELEMENT_UL, getListItemEntry, toggleList } from '@udecode/plate-list';
 import {
@@ -10,9 +11,14 @@ import {
   ToolbarButtonProps,
 } from '@udecode/plate-ui-toolbar';
 
-export const ListToolbarButton = withEditor(
-  ({ type = ELEMENT_UL, ...props }: ToolbarButtonProps & { type?: string }) => {
-    const editor = usePlateEditorState()!;
+export const ListToolbarButton = withPlateEventProvider(
+  ({
+    id,
+    type = ELEMENT_UL,
+    ...props
+  }: ToolbarButtonProps & { type?: string }) => {
+    id = useEventPlateId(id);
+    const editor = usePlateEditorState(id)!;
 
     const res = !!editor?.selection && getListItemEntry(editor);
 
