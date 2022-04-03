@@ -82,11 +82,8 @@ export const serializeHtml = (
         preserveClassNames,
       });
     })
+    .map((e) => (isEncoded(e) ? decodeURIComponent(e) : e))
     .join('');
-
-  if (isEncoded(result)) {
-    result = decodeURIComponent(result);
-  }
 
   if (stripWhitespace) {
     result = trimWhitespace(result);
