@@ -158,8 +158,7 @@ it('serialize image to html', () => {
         nodes: [
           {
             type: 'img',
-            url:
-              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+            url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
             children: [],
           },
         ],
@@ -250,4 +249,24 @@ it('serialize align className to html', () => {
   ).toBe(
     '<p class="slate-p slate-align-center" style="text-align:center">I am centered text!</p>'
   );
+});
+
+it('serialize image and paragraph to html', () => {
+  const plugins = [createParagraphPlugin(), createImagePlugin()];
+  const render = serializeHtml(createPlateUIEditor({ plugins }), {
+    nodes: [
+      {
+        type: ELEMENT_PARAGRAPH,
+        children: [{ text: 'I am centered text!' }],
+      },
+      {
+        type: 'img',
+        url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+        children: [],
+      },
+    ],
+  });
+  const result =
+    '<p class="slate-p">I am centered text!</p><div class="slate-img"><div contenteditable="false"><figure class="slate-ImageElement-figure"><div style="position:relative;user-select:auto;width:100%;height:100%;max-width:100%;min-width:92px;box-sizing:border-box;flex-shrink:0" class="slate-ImageElement-resizable"><img class="slate-ImageElement-img" src="https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg" alt=""/><div><div  style="position:absolute;user-select:none;width:10px;height:100%;top:0px;left:0;cursor:col-resize"><div class="slate-ImageElement-handleLeft"></div></div><div  style="position:absolute;user-select:none;width:10px;height:100%;top:0px;right:0;cursor:col-resize"><div class="slate-ImageElement-handleRight"></div></div></div></div></figure></div></div>';
+  expect(render).toBe(result);
 });
