@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 10.5.2
+
+### Patch Changes
+
+- [#1472](https://github.com/udecode/plate/pull/1472) by [@m9rc1n](https://github.com/m9rc1n) – Fix Url encoded HTML nodes on adding an image #1189.
+  Updated function `serializeHtml` to use `decodeURIComponent` per node, instead of complete text.
+  This is fixing problem when combination of image and i.e. paragraph nodes would result in paragraph node not decoded.
+
 ## 10.5.0
 
 ### Minor Changes
