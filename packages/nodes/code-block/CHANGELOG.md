@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 10.5.2
+
 ## 10.5.0
 
 ## 10.4.2
