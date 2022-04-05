@@ -29,8 +29,10 @@ export const toggleMark = (
       return;
     }
 
-    const clears: string[] = castArray(clear);
-    removeMark(editor, { key: clears });
+    if (clear) {
+      const clears: string[] = castArray(clear);
+      removeMark(editor, { key: clears });
+    }
 
     editor.addMark(key, true);
   });
