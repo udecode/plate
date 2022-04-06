@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 10.5.3
+
+### Patch Changes
+
+- [#1476](https://github.com/udecode/plate/pull/1476) by [@chrishyle](https://github.com/chrishyle) – Fixed an error in toggleMark that caused removeMark to be called when there is no mark to remove
+
 ## 10.5.2
 
 ### Patch Changes
