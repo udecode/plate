@@ -62,6 +62,7 @@ export const onKeyDownCombobox: KeyboardHandler = (editor) => (event) => {
 
   if (['Tab', 'Enter'].includes(event.key)) {
     event.preventDefault();
+    event.stopPropagation();
     if (filteredItems[highlightedIndex]) {
       onSelectItem?.(editor, filteredItems[highlightedIndex]);
     }
