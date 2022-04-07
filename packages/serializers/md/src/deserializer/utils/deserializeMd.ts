@@ -15,6 +15,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
+import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
@@ -43,6 +44,7 @@ export const deserializeMd = (editor: PlateEditor, data: string) => {
         // subscript: getPluginType(editor, MARK_SUBSCRIPT),
         // superscript: getPluginType(editor, MARK_SUPERSCRIPT),
         code_block: getPluginType(editor, ELEMENT_CODE_BLOCK),
+        thematic_break: getPluginType(editor, ELEMENT_HR),
         ul_list: getPluginType(editor, ELEMENT_UL),
         ol_list: getPluginType(editor, ELEMENT_OL),
         listItem: getPluginType(editor, ELEMENT_LI),
