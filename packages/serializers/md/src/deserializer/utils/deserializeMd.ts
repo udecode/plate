@@ -43,6 +43,7 @@ export const deserializeMd = (editor: PlateEditor, data: string) => {
         // subscript: getPluginType(editor, MARK_SUBSCRIPT),
         // superscript: getPluginType(editor, MARK_SUPERSCRIPT),
         code_block: getPluginType(editor, ELEMENT_CODE_BLOCK),
+        thematic_break: getPluginType(editor, ELEMENT_HR),
         ul_list: getPluginType(editor, ELEMENT_UL),
         ol_list: getPluginType(editor, ELEMENT_OL),
         listItem: getPluginType(editor, ELEMENT_LI),
