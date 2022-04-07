@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 10.6.0
+
+### Minor Changes
+
+- [#1482](https://github.com/udecode/plate/pull/1482) by [@108EAA0A](https://github.com/108EAA0A) – Deserialization of markdown horizontal rule
+
 ## 10.5.3
 
 ## 10.5.2

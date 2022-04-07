@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 10.6.0
+
+### Patch Changes
+
+- [#1483](https://github.com/udecode/plate/pull/1483) by [@woodpeng](https://github.com/woodpeng) – fix the issue of ComboBox Enter and Tab event propagate to editor on Chrome
+
 ## 10.5.3
 
 ## 10.5.2
