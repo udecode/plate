@@ -9,7 +9,6 @@ export const getCommentElementStyles = (props: StyledElementProps) =>
     { prefixClassNames: 'CommentElement', ...props },
     {
       root: css`
-        display: inline-block;
         background-color: #fee9ae;
       `,
     }

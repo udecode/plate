@@ -13,7 +13,7 @@ export const CommentElement = (props: StyledElementProps<CommentNodeData>) => {
   const { root } = getCommentElementStyles(props);
 
   return (
-    <div
+    <span
       {...attributes}
       css={root.css}
       className={root.className}
@@ -21,6 +21,6 @@ export const CommentElement = (props: StyledElementProps<CommentNodeData>) => {
       {...nodeProps}
     >
       {children}
-    </div>
+    </span>
   );
 };
