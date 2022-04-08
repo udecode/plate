@@ -111,7 +111,7 @@ Build:
         export const MARK_X = 'x';
         
         // for options
-        export const DEFAULTS_X: : Partial<PlatePluginOptions> = {}
+        export const DEFAULTS_X: Partial<PlatePluginOptions> = {}
         ```
         
     - add to plugin:
