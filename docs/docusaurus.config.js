@@ -101,7 +101,8 @@ module.exports = {
   customFields: { ...customFields },
   themeConfig: {
     algolia: {
-      apiKey: '9c3a7f330e20d38672788d4cce383265',
+      appId: 'HNVXCXRG8Q',
+      apiKey: '4a186ddc10e4fc66646a1359ddedfbf0',
       indexName: 'plate',
     },
     // announcementBar: {
