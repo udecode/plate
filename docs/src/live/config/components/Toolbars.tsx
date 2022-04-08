@@ -3,6 +3,7 @@ import 'tippy.js/dist/tippy.css';
 import React from 'react';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { CommentAdd } from '@styled-icons/boxicons-regular/CommentAdd';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
 import { Subscript } from '@styled-icons/foundation/Subscript';
 import { Superscript } from '@styled-icons/foundation/Superscript';
@@ -34,6 +35,8 @@ import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
   addColumn,
+  addComment,
+  AddCommentToolbarButton,
   addRow,
   AlignToolbarButton,
   BalloonToolbar,
@@ -228,6 +231,12 @@ export const TableToolbarButtons = () => (
     <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
     <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
     <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
+  </>
+);
+
+export const CollaborationToolbarButtons = () => (
+  <>
+    <AddCommentToolbarButton icon={<CommentAdd />} transform={addComment} />
   </>
 );
 

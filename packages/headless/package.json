@@ -45,6 +45,7 @@
     "@udecode/plate-break": "10.5.3",
     "@udecode/plate-code-block": "10.5.3",
     "@udecode/plate-combobox": "10.6.0",
+    "@udecode/plate-comments": "1.0.0",
     "@udecode/plate-core": "10.5.3",
     "@udecode/plate-find-replace": "10.5.3",
     "@udecode/plate-font": "10.5.3",

@@ -43,6 +43,7 @@
     "@udecode/plate-ui-block-quote": "10.5.3",
     "@udecode/plate-ui-code-block": "10.5.3",
     "@udecode/plate-ui-combobox": "10.6.0",
+    "@udecode/plate-ui-comments": "1.0.0",
     "@udecode/plate-ui-dnd": "10.5.3",
     "@udecode/plate-ui-find-replace": "10.5.3",
     "@udecode/plate-ui-font": "10.5.3",

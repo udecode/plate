@@ -11,6 +11,7 @@ export * from '@udecode/plate-break';
 export * from '@udecode/plate-code-block';
 export * from '@udecode/plate-combobox';
 export * from '@udecode/plate-core';
+export * from '@udecode/plate-comments';
 export * from '@udecode/plate-find-replace';
 export * from '@udecode/plate-font';
 export * from '@udecode/plate-heading';

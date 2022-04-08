@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
 import 'prismjs/themes/prism.css';
+import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
@@ -60,6 +60,7 @@ import {
   createCodeBlockPlugin,
   createCodePlugin,
   createComboboxPlugin,
+  createCommentsPlugin,
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
@@ -203,6 +204,7 @@ import {
   AlignToolbarButtons,
   BasicElementToolbarButtons,
   BasicMarkToolbarButtons,
+  CollaborationToolbarButtons,
   HighlightToolbarButton,
   IndentToolbarButtons,
   KbdToolbarButton,
@@ -255,6 +257,7 @@ const ReactLiveScope = {
   CONFIG,
   createAlignPlugin,
   createAutoformatPlugin,
+  createCommentsPlugin,
   createBasicElementsPlugin,
   createBasicMarksPlugin,
   createBlockquotePlugin,
@@ -451,6 +454,7 @@ const ReactLiveScope = {
   withStyledDraggables,
   withStyledPlaceHolders,
   withStyledProps,
+  CollaborationToolbarButtons,
 };
 
 export default ReactLiveScope;
