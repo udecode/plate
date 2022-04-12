@@ -1,5 +1,5 @@
 import React from 'react';
-import { addComment, ELEMENT_COMMENT } from '@udecode/plate-comments';
+import { ELEMENT_COMMENT } from '@udecode/plate-comments';
 import {
   getPluginType,
   someNode,
@@ -11,7 +11,6 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export const AddCommentToolbarButton = withPlateEventProvider(
   ({ id, onAddComment, ...props }: ToolbarButtonProps) => {
-    console.log('props', props);
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
 
@@ -22,12 +21,11 @@ export const AddCommentToolbarButton = withPlateEventProvider(
     return (
       <ToolbarButton
         active={isComment}
-        onMouseDown={async (event) => {
+        onMouseDown={(event) => {
           if (!editor) return;
 
           event.preventDefault();
-          await onAddComment(editor);
-          addComment(editor);
+          onAddComment(editor);
         }}
         {...props}
       />

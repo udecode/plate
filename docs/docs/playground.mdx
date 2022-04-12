@@ -65,6 +65,7 @@ See [Installation](/docs/installation)
     components,
   });
 
+  const [showThread, setShowThread] = useState(false)
   const [threadPosition, setThreadPosition] = useState({left: 0, top: 0})
 
   const determineAbsolutePosition = useCallback(
@@ -98,11 +99,20 @@ See [Installation](/docs/installation)
       const threadPosition = {
         left: editorX + editorWidth + 16,
         top: selectionDOMNodePosition.top
-      }
-      setThreadPosition(threadPosition)
+      };
+      setThreadPosition(threadPosition);
+      setShowThread(true);
     },
     []
   )
+
+  const onSubmitComment = useCallback(
+    function onSubmitComment(editor, comment) {
+      addComment(editor, comment);
+      setShowThread(false);
+    },
+    []
+  );
 
   return (
     <Plate
@@ -141,7 +151,7 @@ See [Installation](/docs/installation)
 
       <MentionCombobox items={CONFIG.mentionItems} />
 
-      <Thread position={threadPosition} />
+      <Thread show={showThread} position={threadPosition} onSubmitComment={onSubmitComment} />
     </Plate>
   );
 }

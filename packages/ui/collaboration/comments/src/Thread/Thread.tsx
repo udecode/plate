@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { PlateEditor, usePlateEditorRef } from '@udecode/plate-core';
 import { StyledElementProps } from '@udecode/plate-styled-components';
 import {
   getAuthorTimestampStyles,
@@ -15,9 +16,39 @@ import {
 } from './Thread.styles';
 
 export function Thread({
+  show,
   position,
+  onSubmitComment: onSubmitCommentCallback,
   ...props
-}: { position: { left: number; top: number } } & StyledElementProps) {
+}: {
+  show: boolean;
+  position: { left: number; top: number };
+  onSubmitComment: (editor: PlateEditor, comment: any) => void;
+} & StyledElementProps) {
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  const editor = usePlateEditorRef();
+  const onSubmitComment = useCallback(
+    function onSubmitComment() {
+      const comment = {
+        text: textAreaRef.current!.value,
+      };
+      onSubmitCommentCallback(editor, comment);
+    },
+    [editor, onSubmitCommentCallback]
+  );
+
+  useEffect(
+    function onShow() {
+      if (show) {
+        const textArea = textAreaRef.current!;
+        textArea.value = '';
+        textArea.focus();
+      }
+    },
+    [show, textAreaRef]
+  );
+
   const { root } = getThreadStyles(props);
   const { root: commentHeader } = getCommentHeaderStyles(props);
   const { root: avatarHolder } = getAvatarHolderStyles(props);
@@ -31,7 +62,15 @@ export function Thread({
   const { root: cancelButton } = getCancelButtonStyles(props);
 
   return (
-    <div css={root.css} className={root.className} style={{ ...position }}>
+    <div
+      css={root.css}
+      className={root.className}
+      style={{
+        display: show ? 'block' : 'none',
+        left: position.left,
+        top: position.top,
+      }}
+    >
       <div css={commentHeader.css} className={commentHeader.className}>
         <div css={avatarHolder.css} className={avatarHolder.className}>
           <img
@@ -50,12 +89,18 @@ export function Thread({
         </div>
       </div>
       <div css={commentInput.css} className={commentInput.className}>
-        <textarea rows={1} css={textArea.css} className={textArea.className} />
+        <textarea
+          ref={textAreaRef}
+          rows={1}
+          css={textArea.css}
+          className={textArea.className}
+        />
         <div css={buttons.css} className={buttons.className}>
           <button
             type="button"
             css={commentButton.css}
             className={commentButton.className}
+            onClick={onSubmitComment}
           >
             Comment
           </button>

@@ -21,7 +21,7 @@ export const upsertCommentAtSelection = <T = {}>(
     comment,
     wrap,
   }: {
-    comment: string;
+    comment: any;
     /**
      * If true, wrap the link at the location (default: selection) even if the selection is collapsed.
      */

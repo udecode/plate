@@ -43,6 +43,7 @@ import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
 import {
   addColumn,
+  addComment,
   addRow,
   AlignToolbarButton,
   BalloonToolbar,
@@ -457,6 +458,7 @@ const ReactLiveScope = {
   withStyledPlaceHolders,
   withStyledProps,
   CollaborationToolbarButtons,
+  addComment,
 };
 
 export default ReactLiveScope;
