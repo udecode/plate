@@ -65,6 +65,45 @@ See [Installation](/docs/installation)
     components,
   });
 
+  const [threadPosition, setThreadPosition] = useState({left: 0, top: 0})
+
+  const determineAbsolutePosition = useCallback(
+    function determineAbsolutePosition(
+      element
+    ) {
+      let left = 0;
+      let top = 0;
+      do {
+        left += element.offsetLeft || 0;
+        top += element.offsetTop || 0;
+        element = element.offsetParent;
+      } while (element);
+      return {
+        left,
+        top,
+      };
+    },
+    []
+  )
+
+  const onAddComment = useCallback(
+    function onAddComment(editor) {
+      const selectionNode = Editor.node(editor, editor.selection)[0];
+      const selectionDOMNode = ReactEditor.toDOMNode(editor, selectionNode);
+      const selectionDOMNodePosition = determineAbsolutePosition(selectionDOMNode);
+
+      const editorDOMNode = ReactEditor.toDOMNode(editor, editor);
+      const {x: editorX, width: editorWidth} = editorDOMNode.getBoundingClientRect();
+
+      const threadPosition = {
+        left: editorX + editorWidth + 16,
+        top: selectionDOMNodePosition.top
+      }
+      setThreadPosition(threadPosition)
+    },
+    []
+  )
+
   return (
     <Plate
       id="playground"
@@ -95,12 +134,14 @@ See [Installation](/docs/installation)
         <ImageToolbarButton icon={<Image />} />
         <MediaEmbedToolbarButton icon={<OndemandVideo />} />
         <TableToolbarButtons />
-        <CollaborationToolbarButtons />
+        <CollaborationToolbarButtons onAddComment={onAddComment} />
       </HeadingToolbar>
 
       <BallonToolbarMarks />
 
       <MentionCombobox items={CONFIG.mentionItems} />
+
+      <Thread position={threadPosition} />
     </Plate>
   );
 }

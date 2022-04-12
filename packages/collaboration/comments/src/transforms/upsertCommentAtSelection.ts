@@ -40,10 +40,10 @@ export const upsertCommentAtSelection = <T = {}>(
     });
   }
 
-  // if our cursor is inside an existing link, but don't have the text selected, select it now
+  // if our cursor is inside an existing comment, but don't have the text selected, select it now
   if (wrap && isCollapsed(editor.selection)) {
-    const linkLeaf = Editor.leaf(editor, editor.selection);
-    const [, inlinePath] = linkLeaf;
+    const commentLeaf = Editor.leaf(editor, editor.selection);
+    const [, inlinePath] = commentLeaf;
     Transforms.select(editor, inlinePath);
   }
 

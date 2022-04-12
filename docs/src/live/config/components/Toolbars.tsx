@@ -234,9 +234,12 @@ export const TableToolbarButtons = () => (
   </>
 );
 
-export const CollaborationToolbarButtons = () => (
+export const CollaborationToolbarButtons = ({ onAddComment }) => (
   <>
-    <AddCommentToolbarButton icon={<CommentAdd />} transform={addComment} />
+    <AddCommentToolbarButton
+      icon={<CommentAdd />}
+      onAddComment={onAddComment}
+    />
   </>
 );
 

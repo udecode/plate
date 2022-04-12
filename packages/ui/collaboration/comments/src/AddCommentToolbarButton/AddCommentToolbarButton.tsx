@@ -10,7 +10,8 @@ import {
 import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 
 export const AddCommentToolbarButton = withPlateEventProvider(
-  ({ id, ...props }: ToolbarButtonProps) => {
+  ({ id, onAddComment, ...props }: ToolbarButtonProps) => {
+    console.log('props', props);
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
 
@@ -25,6 +26,7 @@ export const AddCommentToolbarButton = withPlateEventProvider(
           if (!editor) return;
 
           event.preventDefault();
+          await onAddComment(editor);
           addComment(editor);
         }}
         {...props}
