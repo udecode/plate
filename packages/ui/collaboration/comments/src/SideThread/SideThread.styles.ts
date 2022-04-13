@@ -1,10 +1,7 @@
-import {
-  createStyles,
-  StyledElementProps,
-} from '@udecode/plate-styled-components';
+import { createStyles, StyledProps } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 
-export const getThreadStyles = (props: StyledElementProps) =>
+export const getSideThreadStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'Thread',
@@ -21,7 +18,7 @@ export const getThreadStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCommentHeaderStyles = (props: StyledElementProps) =>
+export const getCommentHeaderStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'CommentHeader',
@@ -48,7 +45,7 @@ export const getCommentHeaderStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getAvatarHolderStyles = (props: StyledElementProps) =>
+export const getAvatarHolderStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'AvatarHolder',
@@ -74,7 +71,7 @@ export const getAvatarHolderStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCommentProfileImageStyles = (props: StyledElementProps) =>
+export const getCommentProfileImageStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'CommentProfileImage',
@@ -105,7 +102,7 @@ export const getCommentProfileImageStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getAuthorTimestampStyles = (props: StyledElementProps) =>
+export const getAuthorTimestampStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'AuthorTimestamp',
@@ -137,7 +134,7 @@ export const getAuthorTimestampStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCommenterNameStyles = (props: StyledElementProps) =>
+export const getCommenterNameStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'CommenterName',
@@ -168,7 +165,7 @@ export const getCommenterNameStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCommentInputStyles = (props: StyledElementProps) =>
+export const getCommentInputStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'CommentInput',
@@ -203,7 +200,7 @@ export const getCommentInputStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getTextAreaStyles = (props: StyledElementProps) =>
+export const getTextAreaStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'ThreadTextArea',
@@ -234,7 +231,7 @@ export const getTextAreaStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getButtonsStyles = (props: StyledElementProps) =>
+export const getButtonsStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'Buttons',
@@ -260,7 +257,7 @@ export const getButtonsStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCommentButtonStyles = (props: StyledElementProps) =>
+export const getCommentButtonStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'ThreadCommentButton',
@@ -312,7 +309,7 @@ export const getCommentButtonStyles = (props: StyledElementProps) =>
     }
   );
 
-export const getCancelButtonStyles = (props: StyledElementProps) =>
+export const getCancelButtonStyles = (props: StyledProps) =>
   createStyles(
     {
       prefixClassNames: 'ThreadCommentButton',

@@ -132,6 +132,7 @@ import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
+  ELEMENT_THREAD,
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
@@ -178,14 +179,15 @@ import {
   SearchHighlightToolbar,
   serializeHtml,
   setNodes,
+  SideThread,
   StyledElement,
   StyledLeaf,
   TableToolbarButton,
-  Thread,
   toggleIndentList,
   toggleList,
   ToolbarButton,
   unwrapList,
+  useComments,
   usePlate,
   usePlateEditorRef,
   usePlateEditorState,
@@ -201,6 +203,7 @@ import {
 } from '@udecode/plate-ui-excalidraw';
 import { createEditor, Editor, Transforms } from 'slate';
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react';
+import { Playground } from '../components/Playground';
 import { clearBlockFormat } from './config/autoformat/autoformatUtils';
 import {
   AlignToolbarButtons,
@@ -271,7 +274,6 @@ const ReactLiveScope = {
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
   createEditableVoidPlugin,
-  Thread,
   createEditor,
   createPlateUIEditor,
   createPlateEditor,
@@ -459,6 +461,10 @@ const ReactLiveScope = {
   withStyledProps,
   CollaborationToolbarButtons,
   addThread,
+  ELEMENT_THREAD,
+  useComments,
+  SideThread,
+  Playground,
 };
 
 export default ReactLiveScope;

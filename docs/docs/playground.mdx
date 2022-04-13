@@ -65,62 +65,6 @@ See [Installation](/docs/installation)
     components,
   });
 
-  const [thread, setThread] = useState(null)
-  const [showThread, setShowThread] = useState(false)
-  const [threadPosition, setThreadPosition] = useState({left: 0, top: 0})
-
-  const determineAbsolutePosition = useCallback(
-    function determineAbsolutePosition(
-      element
-    ) {
-      let left = 0;
-      let top = 0;
-      do {
-        left += element.offsetLeft || 0;
-        top += element.offsetTop || 0;
-        element = element.offsetParent;
-      } while (element);
-      return {
-        left,
-        top,
-      };
-    },
-    []
-  )
-
-  const onAddThread = useCallback(
-    function onAddThread(editor) {
-      const selectionNode = Editor.node(editor, editor.selection)[0];
-      const selectionDOMNode = ReactEditor.toDOMNode(editor, selectionNode);
-      const selectionDOMNodePosition = determineAbsolutePosition(selectionDOMNode);
-
-      const editorDOMNode = ReactEditor.toDOMNode(editor, editor);
-      const {x: editorX, width: editorWidth} = editorDOMNode.getBoundingClientRect();
-
-      const threadPosition = {
-        left: editorX + editorWidth + 16,
-        top: selectionDOMNodePosition.top
-      };
-      setThreadPosition(threadPosition);
-      setShowThread(true);
-    },
-    []
-  )
-
-  const onSubmitComment = useCallback(
-    function onSubmitComment(editor, comment) {
-      const thread = {
-        id: 1, // FIXME
-        comments: [
-          comment
-        ]
-      }
-      addThread(editor, thread);
-      setShowThread(false);
-    },
-    []
-  );
-
   return (
     <Plate
       id="playground"
@@ -128,37 +72,7 @@ See [Installation](/docs/installation)
       initialValue={VALUES.playground}
       plugins={plugins}
     >
-      <HeadingToolbar>
-        <BasicElementToolbarButtons />
-        <ListToolbarButtons />
-        <IndentToolbarButtons />
-        <BasicMarkToolbarButtons />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_COLOR}
-          icon={<FormatColorText />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Text color' }}
-        />
-        <ColorPickerToolbarDropdown
-          pluginKey={MARK_BG_COLOR}
-          icon={<FontDownload />}
-          selectedIcon={<Check />}
-          tooltip={{ content: 'Highlight color' }}
-        />
-        <AlignToolbarButtons />
-        <LineHeightToolbarDropdown icon={<LineWeight />} />
-        <LinkToolbarButton icon={<Link />} />
-        <ImageToolbarButton icon={<Image />} />
-        <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-        <TableToolbarButtons />
-        <CollaborationToolbarButtons onAddThread={onAddThread} />
-      </HeadingToolbar>
-
-      <BallonToolbarMarks />
-
-      <MentionCombobox items={CONFIG.mentionItems} />
-
-      <Thread thread={thread} show={showThread} position={threadPosition} onSubmitComment={onSubmitComment} />
+      <Playground />
     </Plate>
   );
 }

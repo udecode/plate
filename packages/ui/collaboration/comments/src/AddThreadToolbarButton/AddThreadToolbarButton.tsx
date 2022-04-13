@@ -25,7 +25,7 @@ export const AddThreadToolbarButton = withPlateEventProvider(
           if (!editor) return;
 
           event.preventDefault();
-          onAddThread(editor);
+          onAddThread();
         }}
         {...props}
       />
