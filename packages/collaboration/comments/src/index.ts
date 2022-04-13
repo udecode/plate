@@ -1,3 +1,3 @@
 export * from './createThreadPlugin';
-export * from './types';
+export type { ThreadNodeData, ThreadPlugin } from './types';
 export * from './transforms/index';
