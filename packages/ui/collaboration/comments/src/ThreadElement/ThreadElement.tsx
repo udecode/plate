@@ -1,17 +1,17 @@
 import React from 'react';
-import { CommentNodeData } from '@udecode/plate-comments';
+import { ThreadNodeData } from '@udecode/plate-comments';
 import {
   getRootProps,
   StyledElementProps,
 } from '@udecode/plate-styled-components';
 import classNames from 'classnames';
-import { getCommentElementStyles } from './CommentElement.styles';
+import { getThreadElementStyles } from './ThreadElement.styles';
 
-export const CommentElement = (props: StyledElementProps<CommentNodeData>) => {
+export const ThreadElement = (props: StyledElementProps<ThreadNodeData>) => {
   const { attributes, children, nodeProps, element } = props;
 
   const rootProps = getRootProps(props);
-  const { root, selected } = getCommentElementStyles(props);
+  const { root, selected } = getThreadElementStyles(props);
 
   return (
     <span

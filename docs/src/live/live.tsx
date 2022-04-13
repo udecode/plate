@@ -43,8 +43,8 @@ import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { Search } from '@styled-icons/material/Search';
 import {
   addColumn,
-  addComment,
   addRow,
+  addThread,
   AlignToolbarButton,
   BalloonToolbar,
   BlockToolbarButton,
@@ -61,7 +61,6 @@ import {
   createCodeBlockPlugin,
   createCodePlugin,
   createComboboxPlugin,
-  createCommentsPlugin,
   createDeserializeCsvPlugin,
   createDeserializeDocxPlugin,
   createDeserializeMdPlugin,
@@ -104,6 +103,7 @@ import {
   createSuperscriptPlugin,
   createTablePlugin,
   createTextIndentPlugin,
+  createThreadPlugin,
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
@@ -259,7 +259,7 @@ const ReactLiveScope = {
   CONFIG,
   createAlignPlugin,
   createAutoformatPlugin,
-  createCommentsPlugin,
+  createThreadPlugin,
   createBasicElementsPlugin,
   createBasicMarksPlugin,
   createBlockquotePlugin,
@@ -458,7 +458,7 @@ const ReactLiveScope = {
   withStyledPlaceHolders,
   withStyledProps,
   CollaborationToolbarButtons,
-  addComment,
+  addThread,
 };
 
 export default ReactLiveScope;

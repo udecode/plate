@@ -1,3 +1,3 @@
-export * from './AddCommentToolbarButton/index';
-export * from './CommentElement/index';
+export * from './AddThreadToolbarButton/index';
+export * from './ThreadElement/index';
 export * from './Thread/index';

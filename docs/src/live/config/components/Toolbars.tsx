@@ -35,9 +35,9 @@ import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
   addColumn,
-  addComment,
-  AddCommentToolbarButton,
   addRow,
+  addThread,
+  AddThreadToolbarButton,
   AlignToolbarButton,
   BalloonToolbar,
   BlockToolbarButton,
@@ -234,12 +234,9 @@ export const TableToolbarButtons = () => (
   </>
 );
 
-export const CollaborationToolbarButtons = ({ onAddComment }) => (
+export const CollaborationToolbarButtons = ({ onAddThread }) => (
   <>
-    <AddCommentToolbarButton
-      icon={<CommentAdd />}
-      onAddComment={onAddComment}
-    />
+    <AddThreadToolbarButton icon={<CommentAdd />} onAddThread={onAddThread} />
   </>
 );
 

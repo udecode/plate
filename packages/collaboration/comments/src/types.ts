@@ -1,3 +1,14 @@
-export interface CommentNodeData {}
+export interface ThreadNodeData {
+  thread: Thread;
+}
 
-export interface CommentsPlugin {}
+export interface ThreadPlugin {}
+
+export interface Comment {
+  id: any;
+  text: string;
+}
+
+export interface Thread {
+  comments: Comment[];
+}

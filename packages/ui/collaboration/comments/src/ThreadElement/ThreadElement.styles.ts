@@ -5,10 +5,10 @@ import {
 import { StyledProps } from '@udecode/plate-styled-components/src';
 import { css, CSSProp } from 'styled-components';
 
-export const getCommentElementStyles = (props: StyledElementProps) =>
+export const getThreadElementStyles = (props: StyledElementProps) =>
   createStyles<StyledProps<{ selected: CSSProp }>>(
     {
-      prefixClassNames: 'CommentElement',
+      prefixClassNames: 'ThreadElement',
       ...props,
     } as any,
     {

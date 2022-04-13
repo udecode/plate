@@ -60,11 +60,12 @@ See [Installation](/docs/installation)
     createDeserializeCsvPlugin(),
     createDeserializeDocxPlugin(),
     createJuicePlugin(),
-    createCommentsPlugin(),
+    createThreadPlugin(),
   ], {
     components,
   });
 
+  const [thread, setThread] = useState(null)
   const [showThread, setShowThread] = useState(false)
   const [threadPosition, setThreadPosition] = useState({left: 0, top: 0})
 
@@ -87,8 +88,8 @@ See [Installation](/docs/installation)
     []
   )
 
-  const onAddComment = useCallback(
-    function onAddComment(editor) {
+  const onAddThread = useCallback(
+    function onAddThread(editor) {
       const selectionNode = Editor.node(editor, editor.selection)[0];
       const selectionDOMNode = ReactEditor.toDOMNode(editor, selectionNode);
       const selectionDOMNodePosition = determineAbsolutePosition(selectionDOMNode);
@@ -108,7 +109,13 @@ See [Installation](/docs/installation)
 
   const onSubmitComment = useCallback(
     function onSubmitComment(editor, comment) {
-      addComment(editor, comment);
+      const thread = {
+        id: 1, // FIXME
+        comments: [
+          comment
+        ]
+      }
+      addThread(editor, thread);
       setShowThread(false);
     },
     []
@@ -144,14 +151,14 @@ See [Installation](/docs/installation)
         <ImageToolbarButton icon={<Image />} />
         <MediaEmbedToolbarButton icon={<OndemandVideo />} />
         <TableToolbarButtons />
-        <CollaborationToolbarButtons onAddComment={onAddComment} />
+        <CollaborationToolbarButtons onAddThread={onAddThread} />
       </HeadingToolbar>
 
       <BallonToolbarMarks />
 
       <MentionCombobox items={CONFIG.mentionItems} />
 
-      <Thread show={showThread} position={threadPosition} onSubmitComment={onSubmitComment} />
+      <Thread thread={thread} show={showThread} position={threadPosition} onSubmitComment={onSubmitComment} />
     </Plate>
   );
 }
