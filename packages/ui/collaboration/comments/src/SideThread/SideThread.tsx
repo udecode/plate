@@ -2,17 +2,17 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { Comment, Thread } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import {
-  getAuthorTimestampStyles,
-  getAvatarHolderStyles,
-  getButtonsStyles,
-  getCancelButtonStyles,
-  getCommentButtonStyles,
-  getCommenterNameStyles,
-  getCommentHeaderStyles,
-  getCommentInputStyles,
-  getCommentProfileImageStyles,
-  getSideThreadStyles,
-  getTextAreaStyles,
+  createAuthorTimestampStyles,
+  createAvatarHolderStyles,
+  createButtonsStyles,
+  createCancelButtonStyles,
+  createCommentButtonStyles,
+  createCommenterNameStyles,
+  createCommentHeaderStyles,
+  createCommentInputStyles,
+  createCommentProfileImageStyles,
+  createSideThreadStyles,
+  createTextAreaStyles,
 } from './SideThread.styles';
 import { SideThreadComment } from './SideThreadComment';
 
@@ -33,7 +33,7 @@ export function SideThread({
   const onSubmitComment = useCallback(
     function onSubmitComment() {
       const comment = {
-        id: 1, // FIXME
+        id: Math.floor(Math.random() * 1000), // FIXME
         text: textAreaRef.current!.value,
       };
       onSubmitCommentCallback(comment);
@@ -52,17 +52,17 @@ export function SideThread({
     [show, textAreaRef]
   );
 
-  const { root } = getSideThreadStyles(props);
-  const { root: commentHeader } = getCommentHeaderStyles(props);
-  const { root: avatarHolder } = getAvatarHolderStyles(props);
-  const { root: commentProfileImage } = getCommentProfileImageStyles(props);
-  const { root: authorTimestamp } = getAuthorTimestampStyles(props);
-  const { root: commenterName } = getCommenterNameStyles(props);
-  const { root: commentInput } = getCommentInputStyles(props);
-  const { root: textArea } = getTextAreaStyles(props);
-  const { root: buttons } = getButtonsStyles(props);
-  const { root: commentButton } = getCommentButtonStyles(props);
-  const { root: cancelButton } = getCancelButtonStyles(props);
+  const { root } = createSideThreadStyles(props);
+  const { root: commentHeader } = createCommentHeaderStyles(props);
+  const { root: avatarHolder } = createAvatarHolderStyles(props);
+  const { root: commentProfileImage } = createCommentProfileImageStyles(props);
+  const { root: authorTimestamp } = createAuthorTimestampStyles(props);
+  const { root: commenterName } = createCommenterNameStyles(props);
+  const { root: commentInput } = createCommentInputStyles(props);
+  const { root: textArea } = createTextAreaStyles(props);
+  const { root: buttons } = createButtonsStyles(props);
+  const { root: commentButton } = createCommentButtonStyles(props);
+  const { root: cancelButton } = createCancelButtonStyles(props);
 
   return (
     <div

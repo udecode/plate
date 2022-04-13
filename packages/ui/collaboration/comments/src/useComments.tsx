@@ -8,7 +8,6 @@ import {
 import {
   getAbove,
   getPluginType,
-  usePlateEditorRef,
   usePlateEditorState,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
@@ -112,14 +111,15 @@ export function useComments(): any {
 
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
-      const newThread = {
-        id: 1, // FIXME
-        comments: [comment],
+      const newThread: Thread = thread || {
+        id: Math.floor(Math.random() * 1000), // FIXME
+        comments: [],
       };
+      newThread.comments.push(comment);
       addThread(editor, newThread);
       setIsThreadShown(false);
     },
-    [editor]
+    [editor, thread]
   );
 
   const onAddThread = useCallback(

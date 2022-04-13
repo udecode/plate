@@ -10,5 +10,6 @@ export interface Comment {
 }
 
 export interface Thread {
+  id: any;
   comments: Comment[];
 }
