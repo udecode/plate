@@ -74,8 +74,10 @@ export function useComments(): any {
   const showThread = useCallback(
     function showThread(threadNodeEntry: any) {
       const { thread: selectedThread } = threadNodeEntry[0];
-      setThread(selectedThread);
-      requestAnimationFrame(() => updateThreadPosition(threadNodeEntry));
+      requestAnimationFrame(() => {
+        updateThreadPosition(threadNodeEntry);
+        setThread(selectedThread);
+      });
     },
     [updateThreadPosition]
   );
@@ -129,15 +131,12 @@ export function useComments(): any {
   const onAddThread = useCallback(
     function onAddThread() {
       if (editor.selection) {
-        // updateThreadPosition();
         const newThread: Thread = {
           id: Math.floor(Math.random() * 1000), // FIXME
           comments: [],
           isResolved: false,
         };
         upsertThread(editor, newThread);
-        console.log('setThread(newThread)', newThread);
-        setThread(newThread);
       }
     },
     [editor]
