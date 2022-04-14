@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Comment, Thread } from '@udecode/plate-comments';
+import { addThread, Comment, Thread } from '@udecode/plate-comments';
+import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import {
   createAuthorTimestampStyles,
@@ -28,6 +29,7 @@ export function SideThread({
   position: { left: number; top: number };
   onSubmitComment: (comment: Comment) => void;
 } & StyledProps) {
+  const editor = usePlateEditorRef();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const onSubmitComment = useCallback(
@@ -39,6 +41,16 @@ export function SideThread({
       onSubmitCommentCallback(comment);
     },
     [onSubmitCommentCallback]
+  );
+
+  const onResolveThread = useCallback(
+    function onResolveThread() {
+      if (thread) {
+        thread.isResolved = true;
+        addThread(editor, thread);
+      }
+    },
+    [editor, thread]
   );
 
   useEffect(
@@ -74,8 +86,13 @@ export function SideThread({
         top: position.top,
       }}
     >
-      {thread?.comments.map((comment: Comment) => (
-        <SideThreadComment key={comment.id} comment={comment} />
+      {thread?.comments.map((comment: Comment, index) => (
+        <SideThreadComment
+          key={comment.id}
+          comment={comment}
+          showResolveThreadButton={index === 0}
+          onResolveThread={onResolveThread}
+        />
       ))}
 
       <div>

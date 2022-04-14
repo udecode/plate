@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { Check } from '@styled-icons/material/Check';
 import { Comment } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import {
@@ -15,8 +16,14 @@ import {
 } from './SideThreadComment.styles';
 import { SideThreadCommentEditing } from './SideThreadCommentEditing';
 
-export function SideThreadComment(props: { comment: Comment } & StyledProps) {
-  const { comment } = props;
+export function SideThreadComment(
+  props: {
+    comment: Comment;
+    showResolveThreadButton: boolean;
+    onResolveThread: () => void;
+  } & StyledProps
+) {
+  const { comment, showResolveThreadButton, onResolveThread } = props;
 
   const [isEdited, setIsEdited] = useState(false);
 
@@ -62,6 +69,16 @@ export function SideThreadComment(props: { comment: Comment } & StyledProps) {
             Jonas Aschenbrenner
           </div>
         </div>
+        {showResolveThreadButton ? (
+          <button
+            type="button"
+            className="mdc-icon-button"
+            onClick={onResolveThread}
+          >
+            <div className="mdc-icon-button__ripple" />
+            <Check style={{ color: '#2196f3' }} />
+          </button>
+        ) : null}
         <MenuButton onEdit={onEdit} />
       </div>
       {isEdited ? (

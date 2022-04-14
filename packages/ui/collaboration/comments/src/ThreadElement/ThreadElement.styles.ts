@@ -5,8 +5,8 @@ import {
 import { StyledProps } from '@udecode/plate-styled-components/src';
 import { css, CSSProp } from 'styled-components';
 
-export const getThreadElementStyles = (props: StyledElementProps) =>
-  createStyles<StyledProps<{ selected: CSSProp }>>(
+export const createThreadElementStyles = (props: StyledElementProps) =>
+  createStyles<StyledProps<{ selected: CSSProp; resolved: CSSProp }>>(
     {
       prefixClassNames: 'ThreadElement',
       ...props,
@@ -17,6 +17,9 @@ export const getThreadElementStyles = (props: StyledElementProps) =>
       `,
       selected: css`
         background-color: #fcc934;
+      `,
+      resolved: css`
+        background-color: initial !important;
       `,
     }
   );

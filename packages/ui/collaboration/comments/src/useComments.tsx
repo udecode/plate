@@ -99,7 +99,7 @@ export function useComments(): any {
         const threadNode = getAbove(editor, {
           match: { type },
         });
-        if (threadNode) {
+        if (threadNode && !threadNode[0].thread.isResolved) {
           showThread(threadNode);
         } else {
           hideThread();
@@ -114,6 +114,7 @@ export function useComments(): any {
       const newThread: Thread = thread || {
         id: Math.floor(Math.random() * 1000), // FIXME
         comments: [],
+        isResolved: false,
       };
       newThread.comments.push(comment);
       addThread(editor, newThread);

@@ -24,7 +24,7 @@ export const upsertThreadAtSelection = <T = {}>(
   }: {
     thread: Thread;
     /**
-     * If true, wrap the link at the location (default: selection) even if the selection is collapsed.
+     * If true, wrap the thread at the location (default: selection) even if the selection is collapsed.
      */
     wrap?: boolean;
   }

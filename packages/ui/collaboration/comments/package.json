@@ -39,8 +39,7 @@
     "@udecode/plate-core": "10.5.3",
     "@udecode/plate-comments": "1.0.0",
     "@udecode/plate-styled-components": "10.5.3",
-    "@udecode/plate-ui-toolbar": "10.5.3",
-    "classnames": "^2.3.1"
+    "@udecode/plate-ui-toolbar": "10.5.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
