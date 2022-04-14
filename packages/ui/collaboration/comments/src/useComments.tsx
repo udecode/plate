@@ -83,7 +83,6 @@ export function useComments(): any {
   );
 
   const hideThread = useCallback(function hideThread() {
-    console.log('setThread(null)');
     setThread(null);
   }, []);
 
