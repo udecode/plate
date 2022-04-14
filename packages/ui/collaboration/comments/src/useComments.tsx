@@ -3,7 +3,6 @@ import {
   Comment,
   deleteThread,
   ELEMENT_THREAD,
-  findThreadNodes,
   Thread,
   upsertThread,
 } from '@udecode/plate-comments';
@@ -12,7 +11,7 @@ import {
   getPluginType,
   usePlateEditorState,
 } from '@udecode/plate-core';
-import { Editor } from 'slate';
+import { NodeEntry } from 'slate';
 import { ReactEditor } from 'slate-react';
 
 export function determineAbsolutePosition(element: HTMLElement) {
@@ -45,6 +44,10 @@ export function useComments(): any {
   const editor = usePlateEditorState();
   const [thread, setThread] = useState<Thread | null>(null);
   const [threadPosition, setThreadPosition] = useState({ left: 0, top: 0 });
+  const [
+    newThreadThreadNodeEntry,
+    setNewThreadThreadNodeEntry,
+  ] = useState<NodeEntry | null>(null);
 
   const updateThreadPosition = useCallback(
     function updateThreadPosition(threadNodeEntry) {
@@ -86,21 +89,6 @@ export function useComments(): any {
     setThread(null);
   }, []);
 
-  const deleteEmptyThreads = useCallback(
-    function removeEmptyThreads() {
-      const threadNodes = findThreadNodes(editor);
-      for (const threadNodeEntry of threadNodes) {
-        const threadNode = threadNodeEntry[0];
-        const threadNodeThread = threadNode.thread;
-        if (threadNodeThread.comments.length === 0) {
-          const threadNodePath = threadNodeEntry[1];
-          deleteThread(editor, threadNodePath);
-        }
-      }
-    },
-    [editor]
-  );
-
   useEffect(
     function onEditorChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
@@ -108,20 +96,28 @@ export function useComments(): any {
       const threadNodeEntry = getAbove(editor, {
         match: { type },
       });
-      // deleteEmptyThreads();
+      const isThreadNodeTheNewThreadNode =
+        threadNodeEntry &&
+        newThreadThreadNodeEntry &&
+        threadNodeEntry[0].id === (newThreadThreadNodeEntry[0] as any).id;
+      if (newThreadThreadNodeEntry && !isThreadNodeTheNewThreadNode) {
+        deleteThread(editor, newThreadThreadNodeEntry[1]);
+        setNewThreadThreadNodeEntry(null);
+      }
       if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
         showThread(threadNodeEntry);
       } else {
         hideThread();
       }
     },
-    [editor.selection, showThread, hideThread, editor, deleteEmptyThreads]
+    [editor.selection, showThread, hideThread, editor, newThreadThreadNodeEntry]
   );
 
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
       thread!.comments.push(comment);
       upsertThread(editor, thread!);
+      setNewThreadThreadNodeEntry(null);
       setThread(null);
     },
     [editor, thread]
@@ -135,7 +131,8 @@ export function useComments(): any {
           comments: [],
           isResolved: false,
         };
-        upsertThread(editor, newThread);
+        const newThreadThreadNodeEntry2 = upsertThread(editor, newThread);
+        setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
       }
     },
     [editor]

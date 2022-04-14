@@ -6,6 +6,7 @@ import {
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
+import { findSelectedThreadNodeEntry } from '../findSelectedThreadNodeEntry';
 import { Thread } from '../types';
 import { wrapThread } from './wrapThread';
 
@@ -17,7 +18,7 @@ import { wrapThread } from './wrapThread';
 export const upsertThreadAtSelection = <T = {}>(
   editor: PlateEditor<T>,
   thread: Thread
-) => {
+): any => {
   if (editor.selection) {
     const type = getPluginType(editor, ELEMENT_THREAD);
 
@@ -38,5 +39,6 @@ export const upsertThreadAtSelection = <T = {}>(
         path: editor.selection.anchor.path,
       },
     });
+    return findSelectedThreadNodeEntry(editor);
   }
 };

@@ -1,9 +1,6 @@
-import {
-  createPluginFactory,
-  getAbove,
-  getPluginType,
-} from '@udecode/plate-core';
-import { findThreadNodes } from './findThreadNodes';
+import { createPluginFactory } from '@udecode/plate-core';
+import { findSelectedThreadNodeEntry } from './findSelectedThreadNodeEntry';
+import { findThreadNodeEntries } from './findThreadNodeEntries';
 import { ThreadPlugin } from './types.js';
 
 export const ELEMENT_THREAD = 'thread';
@@ -14,21 +11,17 @@ export const createThreadPlugin = createPluginFactory<ThreadPlugin>({
   isInline: true,
   handlers: {
     onChange(editor) {
-      const type = getPluginType(editor, ELEMENT_THREAD);
       return () => {
-        const threadNodes = findThreadNodes(editor);
+        const threadNodes = findThreadNodeEntries(editor);
         for (const threadNode of threadNodes) {
           threadNode[0].selected = false;
         }
 
-        const threadNode = getAbove(editor, {
-          match: { type },
-        });
-        if (threadNode) {
-          const { thread } = threadNode[0];
+        const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+        if (threadNodeEntry) {
+          const { thread } = threadNodeEntry[0];
           if (thread) {
-            threadNode[0].selected = true;
-            // window.alert(comment);
+            threadNodeEntry[0].selected = true;
           }
         }
       };
