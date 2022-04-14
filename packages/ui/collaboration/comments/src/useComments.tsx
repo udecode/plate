@@ -89,6 +89,16 @@ export function useComments(): any {
     setThread(null);
   }, []);
 
+  const onCancelCreateThread = useCallback(
+    function onCancelCreateThread() {
+      if (newThreadThreadNodeEntry) {
+        deleteThread(editor, newThreadThreadNodeEntry[1]);
+        setNewThreadThreadNodeEntry(null);
+      }
+    },
+    [editor, newThreadThreadNodeEntry]
+  );
+
   useEffect(
     function onEditorChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
@@ -100,9 +110,8 @@ export function useComments(): any {
         threadNodeEntry &&
         newThreadThreadNodeEntry &&
         threadNodeEntry[0].id === (newThreadThreadNodeEntry[0] as any).id;
-      if (newThreadThreadNodeEntry && !isThreadNodeTheNewThreadNode) {
-        deleteThread(editor, newThreadThreadNodeEntry[1]);
-        setNewThreadThreadNodeEntry(null);
+      if (!isThreadNodeTheNewThreadNode) {
+        onCancelCreateThread();
       }
       if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
         showThread(threadNodeEntry);
@@ -110,17 +119,14 @@ export function useComments(): any {
         hideThread();
       }
     },
-    [editor.selection, showThread, hideThread, editor, newThreadThreadNodeEntry]
-  );
-
-  const onSubmitComment = useCallback(
-    function onSubmitComment(comment: Comment) {
-      thread!.comments.push(comment);
-      upsertThread(editor, thread!);
-      setNewThreadThreadNodeEntry(null);
-      setThread(null);
-    },
-    [editor, thread]
+    [
+      editor.selection,
+      showThread,
+      hideThread,
+      editor,
+      newThreadThreadNodeEntry,
+      onCancelCreateThread,
+    ]
   );
 
   const onAddThread = useCallback(
@@ -138,10 +144,21 @@ export function useComments(): any {
     [editor]
   );
 
+  const onSubmitComment = useCallback(
+    function onSubmitComment(comment: Comment) {
+      thread!.comments.push(comment);
+      upsertThread(editor, thread!);
+      setNewThreadThreadNodeEntry(null);
+      setThread(null);
+    },
+    [editor, thread]
+  );
+
   return {
     thread,
     position: threadPosition,
-    onSubmitComment,
     onAddThread,
+    onSubmitComment,
+    onCancelCreateThread,
   };
 }

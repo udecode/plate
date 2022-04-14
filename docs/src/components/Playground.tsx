@@ -37,8 +37,9 @@ export function Playground() {
   const {
     thread,
     position: threadPosition,
-    onSubmitComment,
     onAddThread,
+    onSubmitComment,
+    onCancelCreateThread,
   } = useComments();
 
   return (
@@ -78,6 +79,7 @@ export function Playground() {
           thread={thread}
           position={threadPosition}
           onSubmitComment={onSubmitComment}
+          onCancelCreateThread={onCancelCreateThread}
         />
       ) : null}
     </>

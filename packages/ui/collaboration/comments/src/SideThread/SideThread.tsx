@@ -26,11 +26,13 @@ export function SideThread({
   thread,
   position,
   onSubmitComment: onSubmitCommentCallback,
+  onCancelCreateThread,
   ...props
 }: {
   thread: Thread;
   position: { left: number; top: number };
   onSubmitComment: (comment: Comment) => void;
+  onCancelCreateThread: () => void;
 } & StyledProps) {
   const editor = usePlateEditorRef();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -163,6 +165,7 @@ export function SideThread({
               type="button"
               css={cancelButton.css}
               className={cancelButton.className}
+              onClick={onCancelCreateThread}
             >
               Cancel
             </button>
