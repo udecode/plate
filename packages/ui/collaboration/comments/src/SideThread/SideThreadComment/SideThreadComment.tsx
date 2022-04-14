@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+// eslint-disable-next-line no-restricted-imports
 import { Check } from '@styled-icons/material/Check';
 import { Comment } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
@@ -21,9 +22,15 @@ export function SideThreadComment(
     comment: Comment;
     showResolveThreadButton: boolean;
     onResolveThread: () => void;
+    onDelete: (comment: Comment) => void;
   } & StyledProps
 ) {
-  const { comment, showResolveThreadButton, onResolveThread } = props;
+  const {
+    comment,
+    showResolveThreadButton,
+    onResolveThread,
+    onDelete: onDeleteCallback,
+  } = props;
 
   const [isEdited, setIsEdited] = useState(false);
 
@@ -38,6 +45,13 @@ export function SideThreadComment(
   const onEdit = useCallback(function onEdit() {
     setIsEdited(true);
   }, []);
+
+  const onDelete = useCallback(
+    function onDelete() {
+      onDeleteCallback(comment);
+    },
+    [comment, onDeleteCallback]
+  );
 
   const onSave = useCallback(
     function onSave(text: string) {
@@ -79,7 +93,7 @@ export function SideThreadComment(
             <Check style={{ color: '#2196f3' }} />
           </button>
         ) : null}
-        <MenuButton onEdit={onEdit} />
+        <MenuButton onEdit={onEdit} onDelete={onDelete} />
       </div>
       {isEdited ? (
         <SideThreadCommentEditing

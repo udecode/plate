@@ -36,7 +36,6 @@ import { CONFIG } from '../live/config/config';
 export function Playground() {
   const {
     thread,
-    show: showThread,
     position: threadPosition,
     onSubmitComment,
     onAddThread,
@@ -74,12 +73,13 @@ export function Playground() {
 
       <MentionCombobox items={CONFIG.mentionItems} />
 
-      <SideThread
-        thread={thread}
-        show={showThread}
-        position={threadPosition}
-        onSubmitComment={onSubmitComment}
-      />
+      {thread ? (
+        <SideThread
+          thread={thread}
+          position={threadPosition}
+          onSubmitComment={onSubmitComment}
+        />
+      ) : null}
     </>
   );
 }

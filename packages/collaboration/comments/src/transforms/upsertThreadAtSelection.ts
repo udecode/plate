@@ -1,12 +1,10 @@
 import {
+  getAbove,
   getPluginType,
-  insertNodes,
-  isCollapsed,
   PlateEditor,
-  TElement,
   unwrapNodes,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import { Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { Thread } from '../types';
 import { wrapThread } from './wrapThread';
@@ -18,39 +16,21 @@ import { wrapThread } from './wrapThread';
  */
 export const upsertThreadAtSelection = <T = {}>(
   editor: PlateEditor<T>,
-  {
-    thread,
-    wrap,
-  }: {
-    thread: Thread;
-    /**
-     * If true, wrap the thread at the location (default: selection) even if the selection is collapsed.
-     */
-    wrap?: boolean;
-  }
+  thread: Thread
 ) => {
-  if (!editor.selection) return;
-
-  const type = getPluginType(editor, ELEMENT_THREAD);
-
-  if (!wrap && isCollapsed(editor.selection)) {
-    return insertNodes<TElement>(editor, {
-      type,
-      thread,
-      children: [],
+  if (editor.selection) {
+    const type = getPluginType(editor, ELEMENT_THREAD);
+    unwrapNodes(editor, { at: editor.selection, match: { type } });
+    wrapThread(editor, { at: editor.selection, thread });
+    Transforms.select(editor, {
+      anchor: {
+        offset: 0,
+        path: [1, 0],
+      },
+      focus: {
+        offset: 5,
+        path: [1, 1, 0],
+      },
     });
   }
-
-  // if our cursor is inside an existing comment, but don't have the text selected, select it now
-  if (wrap && isCollapsed(editor.selection)) {
-    const threadLeaf = Editor.leaf(editor, editor.selection);
-    const [, inlinePath] = threadLeaf;
-    Transforms.select(editor, inlinePath);
-  }
-
-  unwrapNodes(editor, { at: editor.selection, match: { type } });
-
-  wrapThread(editor, { at: editor.selection, thread });
-
-  Transforms.collapse(editor, { edge: 'end' });
 };

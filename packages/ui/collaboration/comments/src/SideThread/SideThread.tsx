@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { addThread, Comment, Thread } from '@udecode/plate-comments';
+import {
+  Comment,
+  deleteThreadAtSelection,
+  Thread,
+  upsertThread,
+} from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import {
@@ -19,13 +24,11 @@ import { SideThreadComment } from './SideThreadComment';
 
 export function SideThread({
   thread,
-  show,
   position,
   onSubmitComment: onSubmitCommentCallback,
   ...props
 }: {
-  thread: Thread | null;
-  show: boolean;
+  thread: Thread;
   position: { left: number; top: number };
   onSubmitComment: (comment: Comment) => void;
 } & StyledProps) {
@@ -45,23 +48,50 @@ export function SideThread({
 
   const onResolveThread = useCallback(
     function onResolveThread() {
-      if (thread) {
-        thread.isResolved = true;
-        addThread(editor, thread);
-      }
+      thread.isResolved = true;
+      upsertThread(editor, thread);
     },
     [editor, thread]
   );
 
+  const deleteThread = useCallback(
+    function deleteThread() {
+      deleteThreadAtSelection(editor);
+    },
+    [editor]
+  );
+
+  const deleteComment = useCallback(
+    function deleteComment(comment) {
+      thread.comments = thread.comments.filter(
+        (comment2) => comment2 !== comment
+      );
+      upsertThread(editor, thread);
+    },
+    [editor, thread]
+  );
+
+  const onDelete = useCallback(
+    function onDelete(comment: Comment) {
+      const isFirstComment = thread.comments.indexOf(comment) === 0;
+      if (isFirstComment) {
+        deleteThread();
+      } else {
+        deleteComment(comment);
+      }
+    },
+    [deleteComment, deleteThread, thread]
+  );
+
   useEffect(
     function onShow() {
-      if (show) {
-        const textArea = textAreaRef.current!;
-        textArea.value = '';
+      const textArea = textAreaRef.current!;
+      textArea.value = '';
+      if (thread.comments.length === 0) {
         textArea.focus();
       }
     },
-    [show, textAreaRef]
+    [textAreaRef, thread]
   );
 
   const { root } = createSideThreadStyles(props);
@@ -81,17 +111,17 @@ export function SideThread({
       css={root.css}
       className={root.className}
       style={{
-        display: show ? 'block' : 'none',
         left: position.left,
         top: position.top,
       }}
     >
-      {thread?.comments.map((comment: Comment, index) => (
+      {thread.comments.map((comment: Comment, index) => (
         <SideThreadComment
           key={comment.id}
           comment={comment}
           showResolveThreadButton={index === 0}
           onResolveThread={onResolveThread}
+          onDelete={onDelete}
         />
       ))}
 

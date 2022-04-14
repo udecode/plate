@@ -36,7 +36,6 @@ import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import {
   addColumn,
   addRow,
-  addThread,
   AddThreadToolbarButton,
   AlignToolbarButton,
   BalloonToolbar,
@@ -73,6 +72,7 @@ import {
   outdent,
   TableToolbarButton,
   ToolbarButton,
+  upsertThread,
   usePlateEditorRef,
 } from '@udecode/plate';
 

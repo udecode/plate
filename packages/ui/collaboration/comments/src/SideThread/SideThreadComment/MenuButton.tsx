@@ -9,6 +9,7 @@ import { MoreVert } from '@styled-icons/material/MoreVert';
 
 export interface MenuButtonProps {
   onEdit: () => void;
+  onDelete: () => void;
 }
 
 export class MenuButton extends React.Component<MenuButtonProps> {
@@ -30,7 +31,7 @@ export class MenuButton extends React.Component<MenuButtonProps> {
   }
 
   render() {
-    const { onEdit } = this.props;
+    const { onEdit, onDelete } = this.props;
 
     return (
       <div className="mdc-menu-surface--anchor">
@@ -54,7 +55,7 @@ export class MenuButton extends React.Component<MenuButtonProps> {
               <span className="mdc-list-item__ripple" />
               <span className="mdc-list-item__text">Edit</span>
             </li>
-            <li className="mdc-list-item" role="menuitem">
+            <li className="mdc-list-item" role="menuitem" onClick={onDelete}>
               <span className="mdc-list-item__ripple" />
               <span className="mdc-list-item__text">Delete</span>
             </li>

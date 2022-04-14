@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  addThread,
   Comment,
+  deleteThread,
   ELEMENT_THREAD,
+  findThreadNodes,
   Thread,
+  upsertThread,
 } from '@udecode/plate-comments';
 import {
   getAbove,
@@ -41,15 +43,14 @@ export interface UseCommentsResult {
 
 export function useComments(): any {
   const editor = usePlateEditorState();
-  const [thread, setThread] = useState(null);
-  const [isThreadShown, setIsThreadShown] = useState(false);
+  const [thread, setThread] = useState<Thread | null>(null);
   const [threadPosition, setThreadPosition] = useState({ left: 0, top: 0 });
 
   const updateThreadPosition = useCallback(
     function updateThreadPosition() {
       let left;
       let top;
-      if (editor?.selection) {
+      if (editor.selection) {
         const selectionNode = Editor.node(editor, editor.selection)[0];
         const selectionDOMNode = ReactEditor.toDOMNode(editor, selectionNode);
         const selectionDOMNodePosition = determineAbsolutePosition(
@@ -82,58 +83,73 @@ export function useComments(): any {
       const { thread: selectedThread } = threadNode[0];
       setThread(selectedThread);
       updateThreadPosition();
-      setIsThreadShown(true);
     },
     [updateThreadPosition]
   );
 
   const hideThread = useCallback(function hideThread() {
     setThread(null);
-    setIsThreadShown(false);
   }, []);
 
-  useEffect(
-    function onEditorChange() {
-      if (editor) {
-        const type = getPluginType(editor, ELEMENT_THREAD);
-        const threadNode = getAbove(editor, {
-          match: { type },
-        });
-        if (threadNode && !threadNode[0].thread.isResolved) {
-          showThread(threadNode);
-        } else {
-          hideThread();
+  const deleteEmptyThreads = useCallback(
+    function removeEmptyThreads() {
+      const threadNodes = findThreadNodes(editor);
+      for (const threadNodeEntry of threadNodes) {
+        const threadNode = threadNodeEntry[0];
+        const threadNodeThread = threadNode.thread;
+        if (threadNodeThread.comments.length === 0) {
+          const threadNodePath = threadNodeEntry[1];
+          deleteThread(editor, threadNodePath);
         }
       }
     },
-    [editor.selection, showThread, hideThread, editor]
+    [editor]
+  );
+
+  useEffect(
+    function onEditorChange() {
+      const type = getPluginType(editor, ELEMENT_THREAD);
+      // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
+      const threadNode = getAbove(editor, {
+        match: { type },
+      });
+      // deleteEmptyThreads();
+      if (threadNode && !threadNode[0].thread.isResolved) {
+        showThread(threadNode);
+      } else {
+        hideThread();
+      }
+    },
+    [editor.selection, showThread, hideThread, editor, deleteEmptyThreads]
   );
 
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
-      const newThread: Thread = thread || {
-        id: Math.floor(Math.random() * 1000), // FIXME
-        comments: [],
-        isResolved: false,
-      };
-      newThread.comments.push(comment);
-      addThread(editor, newThread);
-      setIsThreadShown(false);
+      thread!.comments.push(comment);
+      upsertThread(editor, thread!);
+      setThread(null);
     },
     [editor, thread]
   );
 
   const onAddThread = useCallback(
     function onAddThread() {
-      updateThreadPosition();
-      setIsThreadShown(true);
+      if (editor.selection) {
+        updateThreadPosition();
+        const newThread: Thread = {
+          id: Math.floor(Math.random() * 1000), // FIXME
+          comments: [],
+          isResolved: false,
+        };
+        upsertThread(editor, newThread);
+        setThread(newThread);
+      }
     },
-    [updateThreadPosition]
+    [editor, updateThreadPosition]
   );
 
   return {
     thread,
-    show: isThreadShown,
     position: threadPosition,
     onSubmitComment,
     onAddThread,
