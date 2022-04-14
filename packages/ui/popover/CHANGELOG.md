@@ -1,5 +1,11 @@
 # @udecode/plate-ui-popover
 
+## 10.6.2
+
+### Patch Changes
+
+- [#1492](https://github.com/udecode/plate/pull/1492) by [@zbeyens](https://github.com/zbeyens) – add styled-components peerDep to plate-ui-popover
+
 ## 10.5.3
 
 ## 10.5.2
