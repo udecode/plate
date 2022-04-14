@@ -39,6 +39,7 @@ export class MenuButton extends React.Component<MenuButtonProps> {
           className="mdc-icon-button"
           onClick={this.onClick}
         >
+          <div className="mdc-icon-button__ripple" />
           <MoreVert />
         </button>
         <div ref={this.ref} className="mdc-menu mdc-menu-surface">
