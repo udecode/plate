@@ -1,10 +1,10 @@
 import {
-  getAbove,
   getPluginType,
+  isCollapsed,
   PlateEditor,
   unwrapNodes,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { Editor, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { Thread } from '../types';
 import { wrapThread } from './wrapThread';
@@ -21,18 +21,25 @@ export const upsertThreadAtSelection = <T = {}>(
   if (editor.selection) {
     const type = getPluginType(editor, ELEMENT_THREAD);
     console.log('selection before', editor.selection);
+
+    if (isCollapsed(editor.selection)) {
+      const threadLeaf = Editor.leaf(editor, editor.selection);
+      const [, inlinePath] = threadLeaf;
+      Transforms.select(editor, inlinePath);
+    }
+
     unwrapNodes(editor, { at: editor.selection, match: { type } });
     wrapThread(editor, { at: editor.selection, thread });
     console.log('selection after', editor.selection);
-    Transforms.select(editor, {
-      anchor: {
-        offset: 1,
-        path: [1, 1, 0],
-      },
-      focus: {
-        offset: 1,
-        path: [1, 1, 0],
-      },
-    });
+    // Transforms.select(editor, {
+    //   anchor: {
+    //     offset: 1,
+    //     path: [1, 1, 0],
+    //   },
+    //   focus: {
+    //     offset: 1,
+    //     path: [1, 1, 0],
+    //   },
+    // });
   }
 };
