@@ -47,31 +47,24 @@ export function useComments(): any {
   const [threadPosition, setThreadPosition] = useState({ left: 0, top: 0 });
 
   const updateThreadPosition = useCallback(
-    function updateThreadPosition() {
-      let left;
-      let top;
-      if (editor.selection) {
-        const selectionNode = Editor.node(editor, editor.selection)[0];
-        const selectionDOMNode = ReactEditor.toDOMNode(editor, selectionNode);
-        const selectionDOMNodePosition = determineAbsolutePosition(
-          selectionDOMNode
-        );
+    function updateThreadPosition(threadNodeEntry) {
+      const selectionDOMNode = ReactEditor.toDOMNode(
+        editor,
+        threadNodeEntry[0]
+      );
+      const selectionDOMNodePosition = determineAbsolutePosition(
+        selectionDOMNode
+      );
 
-        const editorDOMNode = ReactEditor.toDOMNode(editor, editor);
-        const {
-          x: editorX,
-          width: editorWidth,
-        } = editorDOMNode.getBoundingClientRect();
-        left = editorX + editorWidth + 16;
-        top = selectionDOMNodePosition.top;
-      } else {
-        left = 0;
-        top = 0;
-      }
+      const editorDOMNode = ReactEditor.toDOMNode(editor, editor);
+      const {
+        x: editorX,
+        width: editorWidth,
+      } = editorDOMNode.getBoundingClientRect();
 
       const newThreadPosition = {
-        left,
-        top,
+        left: editorX + editorWidth + 16,
+        top: selectionDOMNodePosition.top,
       };
       setThreadPosition(newThreadPosition);
     },
@@ -79,15 +72,16 @@ export function useComments(): any {
   );
 
   const showThread = useCallback(
-    function showThread(threadNode: any) {
-      const { thread: selectedThread } = threadNode[0];
+    function showThread(threadNodeEntry: any) {
+      const { thread: selectedThread } = threadNodeEntry[0];
       setThread(selectedThread);
-      updateThreadPosition();
+      requestAnimationFrame(() => updateThreadPosition(threadNodeEntry));
     },
     [updateThreadPosition]
   );
 
   const hideThread = useCallback(function hideThread() {
+    console.log('setThread(null)');
     setThread(null);
   }, []);
 
@@ -110,12 +104,12 @@ export function useComments(): any {
     function onEditorChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
       // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
-      const threadNode = getAbove(editor, {
+      const threadNodeEntry = getAbove(editor, {
         match: { type },
       });
       // deleteEmptyThreads();
-      if (threadNode && !threadNode[0].thread.isResolved) {
-        showThread(threadNode);
+      if (threadNodeEntry && !threadNodeEntry[0].thread.isResolved) {
+        showThread(threadNodeEntry);
       } else {
         hideThread();
       }
@@ -135,17 +129,18 @@ export function useComments(): any {
   const onAddThread = useCallback(
     function onAddThread() {
       if (editor.selection) {
-        updateThreadPosition();
+        // updateThreadPosition();
         const newThread: Thread = {
           id: Math.floor(Math.random() * 1000), // FIXME
           comments: [],
           isResolved: false,
         };
         upsertThread(editor, newThread);
+        console.log('setThread(newThread)', newThread);
         setThread(newThread);
       }
     },
-    [editor, updateThreadPosition]
+    [editor]
   );
 
   return {

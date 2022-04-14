@@ -20,15 +20,17 @@ export const upsertThreadAtSelection = <T = {}>(
 ) => {
   if (editor.selection) {
     const type = getPluginType(editor, ELEMENT_THREAD);
+    console.log('selection before', editor.selection);
     unwrapNodes(editor, { at: editor.selection, match: { type } });
     wrapThread(editor, { at: editor.selection, thread });
+    console.log('selection after', editor.selection);
     Transforms.select(editor, {
       anchor: {
-        offset: 0,
-        path: [1, 0],
+        offset: 1,
+        path: [1, 1, 0],
       },
       focus: {
-        offset: 5,
+        offset: 1,
         path: [1, 1, 0],
       },
     });
