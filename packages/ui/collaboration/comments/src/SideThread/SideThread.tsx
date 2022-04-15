@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import {
   Comment,
   deleteThreadAtSelection,
+  isFirstComment,
   Thread,
   upsertThread,
 } from '@udecode/plate-comments';
@@ -39,11 +40,11 @@ export function SideThread({
 
   const onSubmitComment = useCallback(
     function onSubmitComment() {
-      const comment = {
+      const newComment = {
         id: Math.floor(Math.random() * 1000), // FIXME
         text: textAreaRef.current!.value,
       };
-      onSubmitCommentCallback(comment);
+      onSubmitCommentCallback(newComment);
     },
     [onSubmitCommentCallback]
   );
@@ -75,8 +76,7 @@ export function SideThread({
 
   const onDelete = useCallback(
     function onDelete(comment: Comment) {
-      const isFirstComment = thread.comments.indexOf(comment) === 0;
-      if (isFirstComment) {
+      if (isFirstComment(thread, comment)) {
         deleteThread();
       } else {
         deleteComment(comment);
@@ -141,7 +141,7 @@ export function SideThread({
           </div>
           <div css={authorTimestamp.css} className={authorTimestamp.className}>
             <div css={commenterName.css} className={commenterName.className}>
-              Jonas Aschenbrenner
+              Jon Doe
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { getPluginType, PlateEditor, wrapNodes } from '@udecode/plate-core';
 import { Location } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
-import { Thread } from '../types';
+import { Thread } from '../Thread';
 
 export const wrapThread = <T = {}>(
   editor: PlateEditor<T>,

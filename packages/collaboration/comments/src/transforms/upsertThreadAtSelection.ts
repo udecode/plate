@@ -7,7 +7,7 @@ import {
 import { Editor, Transforms } from 'slate';
 import { ELEMENT_THREAD } from '../createThreadPlugin';
 import { findSelectedThreadNodeEntry } from '../findSelectedThreadNodeEntry';
-import { Thread } from '../types';
+import { Thread } from '../Thread';
 import { wrapThread } from './wrapThread';
 
 /**
