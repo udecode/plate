@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 10.6.3
+
+### Patch Changes
+
+- [#1494](https://github.com/udecode/plate/pull/1494) by [@woodpeng](https://github.com/woodpeng) – prevent tab key event in table propagate to editor
+
 ## 10.5.3
 
 ## 10.5.2
