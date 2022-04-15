@@ -7,6 +7,7 @@ import { getTableCellEntry } from './queries/getTableCellEntry';
 export const onKeyDownTable: KeyboardHandler = (editor, { type }) => (e) => {
   if (e.key === 'Tab') {
     e.preventDefault();
+    e.stopPropagation();
     const res = getTableCellEntry(editor, {});
     if (!res) return;
     const { tableRow, tableCell } = res;
