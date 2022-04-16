@@ -53,20 +53,20 @@ export const createAvatarHolderStyles = (props: StyledProps) =>
     },
     {
       root: css`
-    font-weight: normal;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    text-align: left;
-    color: black;
-    font-family: "Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif
-    font-size: 14px;
-    direction: ltr;
-    cursor: default;
-    -webkit-user-select: text;
-    white-space: nowrap;
-    height: 38px;
-    margin-top: 2px;
-    max-width: 36px;
-    width: 36px;
+        font-weight: normal;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        text-align: left;
+        color: black;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        direction: ltr;
+        cursor: default;
+        -webkit-user-select: text;
+        white-space: nowrap;
+        height: 38px;
+        margin-top: 2px;
+        max-width: 36px;
+        width: 36px;
       `,
     }
   );
@@ -114,8 +114,7 @@ export const createAuthorTimestampStyles = (props: StyledProps) =>
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         text-align: left;
         color: black;
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         font-size: 14px;
         cursor: pointer;
         direction: ltr;
@@ -154,8 +153,7 @@ export const createCommenterNameStyles = (props: StyledProps) =>
         height: 18px;
         align-self: stretch;
         color: #3c4043;
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         font-weight: 500;
         font-size: 14px;
         letter-spacing: 0.25px;
@@ -176,8 +174,7 @@ export const createCommentInputStyles = (props: StyledProps) =>
         font-weight: normal;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: black;
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         white-space: normal;
         font-size: 14px;
         cursor: default;
@@ -242,8 +239,7 @@ export const createButtonsStyles = (props: StyledProps) =>
         font-weight: normal;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: black;
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         white-space: normal;
         font-size: 14px;
         cursor: pointer;
@@ -280,8 +276,7 @@ export const createCommentButtonStyles = (props: StyledProps) =>
         border-radius: 4px;
         box-shadow: none;
         box-sizing: border-box;
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         font-weight: 500;
         font-size: 14px;
         letter-spacing: 0.25px;
@@ -317,8 +312,7 @@ export const createCancelButtonStyles = (props: StyledProps) =>
     },
     {
       root: css`
-        font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial,
-          sans-serif;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         direction: ltr;
         position: relative;
