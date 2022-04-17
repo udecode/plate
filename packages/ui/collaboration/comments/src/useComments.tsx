@@ -101,17 +101,14 @@ export function useComments(): any {
   );
 
   useEffect(
-    function handleCommentIdInURL() {
+    function handleThreadIdInURL() {
       const url = new URL(window.location.href);
-      const commentIdQueryParam = url.searchParams.get('comment');
-      if (commentIdQueryParam) {
-        const commentId = parseInt(commentIdQueryParam, 10);
+      const threadIdQueryParam = url.searchParams.get('thread');
+      if (threadIdQueryParam) {
+        const threadId = parseInt(threadIdQueryParam, 10);
         const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
         const threadNodeEntry = threadNodeEntries.find(
-          (threadNodeEntry2: any) =>
-            threadNodeEntry2[0].thread.comments.some(
-              (comment: Comment) => comment.id === commentId
-            )
+          (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === threadId
         );
         if (threadNodeEntry) {
           ReactEditor.focus(editor);

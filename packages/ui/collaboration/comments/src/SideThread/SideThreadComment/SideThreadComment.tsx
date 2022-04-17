@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Check } from '@styled-icons/material/Check';
-import { Comment, generateCommentLink } from '@udecode/plate-comments';
+import { Comment, generateThreadLink, Thread } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
-import { CommentLinkDialog } from '../../CommentLinkDialog';
+import { ThreadLinkDialog } from '../../ThreadLinkDialog';
 import {
   createAuthorTimestampStyles,
   createAvatarHolderStyles,
@@ -22,14 +22,18 @@ import { SideThreadCommentEditing } from './SideThreadCommentEditing';
 export function SideThreadComment(
   props: {
     comment: Comment;
+    thread: Thread;
     showResolveThreadButton: boolean;
+    showLinkToThisComment: boolean;
     onResolveThread: () => void;
     onDelete: (comment: Comment) => void;
   } & StyledProps
 ) {
   const {
     comment,
+    thread,
     showResolveThreadButton,
+    showLinkToThisComment,
     onResolveThread,
     onDelete: onDeleteCallback,
   } = props;
@@ -45,7 +49,7 @@ export function SideThreadComment(
   const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
   const { root: threadCommentText } = createSideThreadCommentTextStyles(props);
 
-  const [commentLink, setCommentLink] = useState<string | null>(null);
+  const [threadLink, setThreadLink] = useState<string | null>(null);
 
   const onEdit = useCallback(function onEdit() {
     setIsEdited(true);
@@ -60,14 +64,14 @@ export function SideThreadComment(
 
   const onLinkToThisComment = useCallback(
     function onLinkToThisComment() {
-      setCommentLink(generateCommentLink(comment));
+      setThreadLink(generateThreadLink(thread));
     },
-    [comment]
+    [thread]
   );
 
   const onCloseCommentLinkDialog = useCallback(
     function onCloseCommentLinkDialog() {
-      setCommentLink(null);
+      setThreadLink(null);
     },
     []
   );
@@ -114,6 +118,7 @@ export function SideThreadComment(
           </button>
         ) : null}
         <MenuButton
+          showLinkToThisComment={showLinkToThisComment}
           onEdit={onEdit}
           onDelete={onDelete}
           onLinkToThisComment={onLinkToThisComment}
@@ -133,9 +138,9 @@ export function SideThreadComment(
           {comment.text}
         </div>
       )}
-      {commentLink ? (
-        <CommentLinkDialog
-          commentLink={commentLink}
+      {threadLink ? (
+        <ThreadLinkDialog
+          threadLink={threadLink}
           onClose={onCloseCommentLinkDialog}
         />
       ) : null}

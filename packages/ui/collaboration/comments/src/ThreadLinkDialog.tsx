@@ -10,11 +10,11 @@ import { MDCRipple } from '@material/ripple';
 import { MDCSnackbar } from '@material/snackbar';
 
 interface CommentLinkDialogProps {
-  commentLink: string;
+  threadLink: string;
   onClose: () => void;
 }
 
-export class CommentLinkDialog extends React.Component<CommentLinkDialogProps> {
+export class ThreadLinkDialog extends React.Component<CommentLinkDialogProps> {
   ref: React.RefObject<HTMLDivElement>;
   inputRef: React.RefObject<HTMLInputElement>;
   snackbarRef: React.RefObject<HTMLElement>;
@@ -42,14 +42,14 @@ export class CommentLinkDialog extends React.Component<CommentLinkDialogProps> {
   }
 
   async onCopyLink() {
-    const { commentLink } = this.props;
-    await navigator.clipboard.writeText(commentLink);
+    const { threadLink } = this.props;
+    await navigator.clipboard.writeText(threadLink);
     this.snackbar!.open();
     this.inputRef.current!.select();
   }
 
   render() {
-    const { commentLink, onClose } = this.props;
+    const { threadLink, onClose } = this.props;
 
     return ReactDOM.createPortal(
       <div
@@ -81,7 +81,7 @@ export class CommentLinkDialog extends React.Component<CommentLinkDialogProps> {
                   className="mdc-text-field__input"
                   type="text"
                   aria-label="Comment link"
-                  defaultValue={commentLink}
+                  defaultValue={threadLink}
                   readOnly
                 />
               </label>

@@ -10,6 +10,7 @@ import { StyledProps } from '@udecode/plate-styled-components';
 import { createMoreButtonStyles } from './MenuButton.styles';
 
 export interface MenuButtonProps extends StyledProps {
+  showLinkToThisComment: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onLinkToThisComment: () => void;
@@ -37,7 +38,12 @@ export class MenuButton extends React.Component<MenuButtonProps> {
   }
 
   render() {
-    const { onEdit, onDelete, onLinkToThisComment } = this.props;
+    const {
+      showLinkToThisComment,
+      onEdit,
+      onDelete,
+      onLinkToThisComment,
+    } = this.props;
 
     return (
       <div className="mdc-menu-surface--anchor">
@@ -70,9 +76,10 @@ export class MenuButton extends React.Component<MenuButtonProps> {
               className="mdc-list-item"
               role="menuitem"
               onClick={onLinkToThisComment}
+              style={{ display: showLinkToThisComment ? 'block' : 'none' }}
             >
               <span className="mdc-list-item__ripple" />
-              <span className="mdc-list-item__text">Link to this comment…</span>
+              <span className="mdc-list-item__text">Link to this thread</span>
             </li>
           </ul>
         </div>

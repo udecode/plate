@@ -121,7 +121,9 @@ export function SideThread({
         <SideThreadComment
           key={comment.id}
           comment={comment}
+          thread={thread}
           showResolveThreadButton={index === 0}
+          showLinkToThisComment={index === 0}
           onResolveThread={onResolveThread}
           onDelete={onDelete}
         />
