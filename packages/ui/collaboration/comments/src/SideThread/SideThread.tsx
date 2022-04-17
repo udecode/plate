@@ -159,7 +159,7 @@ export function SideThread({
               className={commentButton.className}
               onClick={onSubmitComment}
             >
-              Comment
+              {thread.comments.length === 0 ? 'Comment' : 'Reply'}
             </button>
             <button
               type="button"
