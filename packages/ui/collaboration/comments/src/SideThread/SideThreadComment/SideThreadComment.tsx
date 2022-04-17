@@ -82,7 +82,7 @@ export function SideThreadComment(
         </div>
         <div css={authorTimestamp.css} className={authorTimestamp.className}>
           <div css={commenterName.css} className={commenterName.className}>
-            Jonas Aschenbrenner
+            Jon Doe
           </div>
         </div>
         {showResolveThreadButton ? (
