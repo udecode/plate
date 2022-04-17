@@ -6,8 +6,10 @@ import React from 'react';
 import { MDCMenu } from '@material/menu';
 // eslint-disable-next-line no-restricted-imports
 import { MoreVert } from '@styled-icons/material/MoreVert';
+import { StyledProps } from '@udecode/plate-styled-components';
+import { createMoreButtonStyles } from './MenuButton.styles';
 
-export interface MenuButtonProps {
+export interface MenuButtonProps extends StyledProps {
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -15,11 +17,14 @@ export interface MenuButtonProps {
 export class MenuButton extends React.Component<MenuButtonProps> {
   ref: React.RefObject<HTMLDivElement>;
   menu?: MDCMenu;
+  button: any;
 
   constructor(props: MenuButtonProps) {
     super(props);
     this.ref = React.createRef();
     this.onClick = this.onClick.bind(this);
+    const { root: button } = createMoreButtonStyles(props);
+    this.button = button;
   }
 
   componentDidMount() {
@@ -37,7 +42,8 @@ export class MenuButton extends React.Component<MenuButtonProps> {
       <div className="mdc-menu-surface--anchor">
         <button
           type="button"
-          className="mdc-icon-button"
+          css={this.button.css}
+          className={`${this.button.className} mdc-icon-button`}
           onClick={this.onClick}
         >
           <div className="mdc-icon-button__ripple" />

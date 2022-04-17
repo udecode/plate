@@ -12,6 +12,7 @@ import {
 } from '../SideThread.styles';
 import { MenuButton } from './MenuButton';
 import {
+  createResolveThreadButtonStyles,
   createSideThreadCommentStyled,
   createSideThreadCommentTextStyles,
 } from './SideThreadComment.styles';
@@ -40,6 +41,7 @@ export function SideThreadComment(
   const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
+  const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
   const { root: threadCommentText } = createSideThreadCommentTextStyles(props);
 
   const onEdit = useCallback(function onEdit() {
@@ -86,7 +88,8 @@ export function SideThreadComment(
         {showResolveThreadButton ? (
           <button
             type="button"
-            className="mdc-icon-button"
+            css={resolveThreadButton.css}
+            className={`${resolveThreadButton.className} mdc-icon-button`}
             onClick={onResolveThread}
           >
             <div className="mdc-icon-button__ripple" />

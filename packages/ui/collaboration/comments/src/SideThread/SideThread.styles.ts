@@ -41,6 +41,7 @@ export const createCommentHeaderStyles = (props: StyledProps) =>
         display: flex;
         margin: 0;
         padding: 12px;
+        align-items: center;
       `,
     }
   );
@@ -159,6 +160,7 @@ export const createCommenterNameStyles = (props: StyledProps) =>
         letter-spacing: 0.25px;
         line-height: 20px;
         margin-top: 0;
+        margin-right: 0.25rem;
       `,
     }
   );
