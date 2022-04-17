@@ -23,6 +23,7 @@ export function createSideThreadCommentTextStyles(props: StyledProps) {
       root: css`
         padding-left: 12px;
         padding-right: 12px;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
       `,
     }
   );
