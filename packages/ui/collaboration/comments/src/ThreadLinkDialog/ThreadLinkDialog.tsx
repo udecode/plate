@@ -3,13 +3,18 @@ import '@material/dialog/dist/mdc.dialog.css';
 import '@material/notched-outline/dist/mdc.notched-outline.css';
 import '@material/textfield/dist/mdc.textfield.css';
 import '@material/snackbar/dist/mdc.snackbar.css';
+import '@material/icon-button/dist/mdc.icon-button.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { MDCDialog } from '@material/dialog';
 import { MDCRipple } from '@material/ripple';
 import { MDCSnackbar } from '@material/snackbar';
+// eslint-disable-next-line no-restricted-imports
+import { Close } from '@styled-icons/material/Close';
+import { StyledProps } from '@udecode/plate-styled-components';
+import { createCloseButtonStyles } from './ThreadLinkDialog.styles';
 
-interface CommentLinkDialogProps {
+interface CommentLinkDialogProps extends StyledProps {
   threadLink: string;
   onClose: () => void;
 }
@@ -22,6 +27,7 @@ export class ThreadLinkDialog extends React.Component<CommentLinkDialogProps> {
   copyLinkButtonRef: React.RefObject<HTMLButtonElement>;
   dialog?: MDCDialog;
   snackbar?: MDCSnackbar;
+  closeButton: any;
 
   constructor(props: CommentLinkDialogProps) {
     super(props);
@@ -31,6 +37,8 @@ export class ThreadLinkDialog extends React.Component<CommentLinkDialogProps> {
     this.doneButtonRef = React.createRef();
     this.copyLinkButtonRef = React.createRef();
     this.onCopyLink = this.onCopyLink.bind(this);
+    const { root: closeButton } = createCloseButtonStyles(props);
+    this.closeButton = closeButton;
   }
 
   componentDidMount() {
@@ -64,6 +72,21 @@ export class ThreadLinkDialog extends React.Component<CommentLinkDialogProps> {
             aria-labelledby="comment-link-dialog-title"
             aria-describedby="comment-link-dialog-content"
           >
+            <div className="mdc-dialog__header">
+              <h2 className="mdc-dialog__title" id="comment-link-dialog-title">
+                Link to thread
+              </h2>
+              <button
+                css={this.closeButton.css}
+                type="button"
+                className={`${this.closeButton.className} mdc-icon-button mdc-dialog__close`}
+                data-mdc-dialog-action="close"
+                onClick={onClose}
+              >
+                <div className="mdc-icon-button__ripple" />
+                <Close />
+              </button>
+            </div>
             <div
               className="mdc-dialog__content"
               id="comment-link-dialog-content"
