@@ -13,6 +13,7 @@ import { BorderClear } from '@styled-icons/material/BorderClear';
 import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import { BorderRight } from '@styled-icons/material/BorderRight';
 import { BorderTop } from '@styled-icons/material/BorderTop';
+import { Comment } from '@styled-icons/material/Comment';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
@@ -71,8 +72,8 @@ import {
   MarkToolbarButton,
   outdent,
   TableToolbarButton,
+  ToggleShowThreadsButton,
   ToolbarButton,
-  upsertThread,
   usePlateEditorRef,
 } from '@udecode/plate';
 
@@ -237,6 +238,7 @@ export const TableToolbarButtons = () => (
 export const CollaborationToolbarButtons = ({ onAddThread }) => (
   <>
     <AddThreadToolbarButton icon={<CommentAdd />} onAddThread={onAddThread} />
+    <ToggleShowThreadsButton icon={<Comment />} />
   </>
 );
 

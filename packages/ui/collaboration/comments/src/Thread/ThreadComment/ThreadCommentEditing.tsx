@@ -6,9 +6,9 @@ import {
   createCommentButtonStyles,
   createCommentInputStyles,
   createTextAreaStyles,
-} from '../SideThread.styles';
+} from '../Thread.styles';
 
-export function SideThreadCommentEditing({
+export function ThreadCommentEditing({
   defaultText,
   onSave: onSaveCallback,
   onCancel,

@@ -4,7 +4,7 @@ import { css } from 'styled-components';
 export function createMoreButtonStyles(props: StyledProps) {
   return createStyles(
     {
-      prefixClassNames: 'SideThreadMoreButton',
+      prefixClassNames: 'ThreadMoreButton',
       ...props,
     },
     {

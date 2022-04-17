@@ -1,10 +1,10 @@
 import { createStyles, StyledProps } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 
-export function createSideThreadCommentStyled(props: StyledProps) {
+export function createThreadCommentStyled(props: StyledProps) {
   return createStyles(
     {
-      prefixClassNames: 'SideThreadComment',
+      prefixClassNames: 'ThreadComment',
       ...props,
     },
     {
@@ -16,7 +16,7 @@ export function createSideThreadCommentStyled(props: StyledProps) {
 export function createResolveThreadButtonStyles(props: StyledProps) {
   return createStyles(
     {
-      prefixClassNames: 'SideThreadResolveThreadButton',
+      prefixClassNames: 'ThreadResolveThreadButton',
       ...props,
     },
     {
@@ -39,10 +39,36 @@ export function createResolveThreadButtonStyles(props: StyledProps) {
   );
 }
 
-export function createSideThreadCommentTextStyles(props: StyledProps) {
+export function createReOpenThreadButtonStyles(props: StyledProps) {
   return createStyles(
     {
-      prefixClassNames: 'SideThreadCommentText',
+      prefixClassNames: 'ThreadResolveThreadButton',
+      ...props,
+    },
+    {
+      root: css`
+        padding: 3px;
+        width: 30px;
+        height: 30px;
+
+        & .mdc-icon-button__ripple::before,
+        & .mdc-icon-button__ripple::after {
+          border-radius: initial;
+        }
+
+        svg {
+          position: relative;
+          top: -3px;
+        }
+      `,
+    }
+  );
+}
+
+export function createThreadCommentTextStyles(props: StyledProps) {
+  return createStyles(
+    {
+      prefixClassNames: 'ThreadCommentText',
       ...props,
     },
     {

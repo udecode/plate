@@ -14,21 +14,7 @@ import {
 } from '@udecode/plate-core';
 import { NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
-
-export function determineAbsolutePosition(element: HTMLElement) {
-  let left = 0;
-  let top = 0;
-  let currentElement: HTMLElement | null = element;
-  do {
-    left += currentElement.offsetLeft || 0;
-    top += currentElement.offsetTop || 0;
-    currentElement = currentElement.offsetParent as HTMLElement;
-  } while (currentElement);
-  return {
-    left,
-    top,
-  };
-}
+import { determineAbsolutePosition } from './determineAbsolutePosition';
 
 export interface UseCommentsResult {
   thread: Thread | null;

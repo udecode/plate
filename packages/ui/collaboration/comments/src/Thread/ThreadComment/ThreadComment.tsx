@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Check } from '@styled-icons/material/Check';
+import { Unarchive } from '@styled-icons/material/Unarchive';
 import { Comment, generateThreadLink, Thread } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { ThreadLinkDialog } from '../../ThreadLinkDialog';
@@ -10,22 +11,26 @@ import {
   createCommenterNameStyles,
   createCommentHeaderStyles,
   createCommentProfileImageStyles,
-} from '../SideThread.styles';
+} from '../Thread.styles';
 import { MenuButton } from './MenuButton';
 import {
+  createReOpenThreadButtonStyles,
   createResolveThreadButtonStyles,
-  createSideThreadCommentStyled,
-  createSideThreadCommentTextStyles,
-} from './SideThreadComment.styles';
-import { SideThreadCommentEditing } from './SideThreadCommentEditing';
+  createThreadCommentStyled,
+  createThreadCommentTextStyles,
+} from './ThreadComment.styles';
+import { ThreadCommentEditing } from './ThreadCommentEditing';
 
-export function SideThreadComment(
+export function ThreadComment(
   props: {
     comment: Comment;
     thread: Thread;
     showResolveThreadButton: boolean;
+    showReOpenThreadButton: boolean;
+    showMoreButton: boolean;
     showLinkToThisComment: boolean;
     onResolveThread: () => void;
+    onReOpenThread: () => void;
     onDelete: (comment: Comment) => void;
   } & StyledProps
 ) {
@@ -33,21 +38,25 @@ export function SideThreadComment(
     comment,
     thread,
     showResolveThreadButton,
+    showReOpenThreadButton,
+    showMoreButton,
     showLinkToThisComment,
     onResolveThread,
+    onReOpenThread,
     onDelete: onDeleteCallback,
   } = props;
 
   const [isEdited, setIsEdited] = useState(false);
 
-  const { root } = createSideThreadCommentStyled(props);
+  const { root } = createThreadCommentStyled(props);
   const { root: commentHeader } = createCommentHeaderStyles(props);
   const { root: avatarHolder } = createAvatarHolderStyles(props);
   const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
   const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
-  const { root: threadCommentText } = createSideThreadCommentTextStyles(props);
+  const { root: reOpenThreadButton } = createReOpenThreadButtonStyles(props);
+  const { root: threadCommentText } = createThreadCommentTextStyles(props);
 
   const [threadLink, setThreadLink] = useState<string | null>(null);
 
@@ -117,15 +126,28 @@ export function SideThreadComment(
             <Check style={{ color: '#2196f3' }} />
           </button>
         ) : null}
-        <MenuButton
-          showLinkToThisComment={showLinkToThisComment}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onLinkToThisComment={onLinkToThisComment}
-        />
+        {showReOpenThreadButton ? (
+          <button
+            type="button"
+            css={reOpenThreadButton.css}
+            className={`${reOpenThreadButton.className} mdc-icon-button`}
+            onClick={onReOpenThread}
+          >
+            <div className="mdc-icon-button__ripple" />
+            <Unarchive />
+          </button>
+        ) : null}
+        {showMoreButton ? (
+          <MenuButton
+            showLinkToThisComment={showLinkToThisComment}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onLinkToThisComment={onLinkToThisComment}
+          />
+        ) : null}
       </div>
       {isEdited ? (
-        <SideThreadCommentEditing
+        <ThreadCommentEditing
           defaultText={comment.text}
           onSave={onSave}
           onCancel={onCancel}

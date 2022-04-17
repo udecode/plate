@@ -1,5 +1,4 @@
-import { createStyles } from '@udecode/plate-styled-components';
-import { StyledProps } from '@udecode/plate-styled-components/src';
+import { createStyles, StyledProps } from '@udecode/plate-styled-components';
 import { css } from 'styled-components';
 
 export const createCloseButtonStyles = (props: StyledProps) =>
