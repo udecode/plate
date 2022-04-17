@@ -3,6 +3,7 @@ import {
   Comment,
   deleteThread,
   ELEMENT_THREAD,
+  findThreadNodeEntries,
   Thread,
   upsertThread,
 } from '@udecode/plate-comments';
@@ -11,7 +12,7 @@ import {
   getPluginType,
   usePlateEditorState,
 } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 
 export function determineAbsolutePosition(element: HTMLElement) {
@@ -97,6 +98,37 @@ export function useComments(): any {
       }
     },
     [editor, newThreadThreadNodeEntry]
+  );
+
+  useEffect(
+    function handleCommentIdInURL() {
+      const url = new URL(window.location.href);
+      const commentIdQueryParam = url.searchParams.get('comment');
+      if (commentIdQueryParam) {
+        const commentId = parseInt(commentIdQueryParam, 10);
+        const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
+        const threadNodeEntry = threadNodeEntries.find(
+          (threadNodeEntry2: any) =>
+            threadNodeEntry2[0].thread.comments.some(
+              (comment: Comment) => comment.id === commentId
+            )
+        );
+        if (threadNodeEntry) {
+          ReactEditor.focus(editor);
+          Transforms.select(editor, threadNodeEntry[1]);
+          Transforms.collapse(editor, { edge: 'start' });
+          showThread(threadNodeEntry);
+
+          const domNode = ReactEditor.toDOMNode(editor, threadNodeEntry[0]);
+          domNode.scrollIntoView();
+
+          window.addEventListener('load', () => {
+            updateThreadPosition(threadNodeEntry);
+          });
+        }
+      }
+    },
+    [editor, showThread, updateThreadPosition]
   );
 
   useEffect(

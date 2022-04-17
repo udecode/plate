@@ -12,9 +12,9 @@ export const createThreadPlugin = createPluginFactory<ThreadPlugin>({
   handlers: {
     onChange(editor) {
       return () => {
-        const threadNodes = findThreadNodeEntries(editor);
-        for (const threadNode of threadNodes) {
-          threadNode[0].selected = false;
+        const threadNodeEntries = findThreadNodeEntries(editor);
+        for (const threadNodeEntry of threadNodeEntries) {
+          threadNodeEntry[0].selected = false;
         }
 
         const threadNodeEntry = findSelectedThreadNodeEntry(editor);

@@ -896,6 +896,23 @@ const iframe: any = (
   </fragment>
 );
 
+const comments: any = (
+  <fragment>
+    <hh2>Comments</hh2>
+    <hp>
+      <hthread
+        thread={{
+          id: 1,
+          comments: [{ id: 1, text: 'A comment' }],
+          isResolved: false,
+        }}
+      >
+        Commented text
+      </hthread>
+    </hp>
+  </fragment>
+);
+
 const HEADINGS = 100;
 const PARAGRAPHS = 7;
 
@@ -956,6 +973,7 @@ const playground: any = getNodesWithRandomId([
   ...pasteMd,
   ...pasteCsv,
   ...pasteAst,
+  ...comments,
 ]);
 
 export const VALUES: Record<string, any> = {

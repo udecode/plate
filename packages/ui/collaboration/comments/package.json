@@ -33,8 +33,13 @@
     "test": "jest"
   },
   "dependencies": {
-    "@material/menu": "^13.0.0",
+    "@material/button": "^13.0.0",
+    "@material/dialog": "^13.0.0",
     "@material/icon-button": "^13.0.0",
+    "@material/menu": "^13.0.0",
+    "@material/ripple": "^13.0.0",
+    "@material/snackbar": "^13.0.0",
+    "@material/textfield": "^13.0.0",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "10.5.3",
     "@udecode/plate-comments": "1.0.0",

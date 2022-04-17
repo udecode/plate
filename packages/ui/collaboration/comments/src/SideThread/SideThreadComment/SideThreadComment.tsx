@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Check } from '@styled-icons/material/Check';
-import { Comment } from '@udecode/plate-comments';
+import { Comment, generateCommentLink } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
+import { CommentLinkDialog } from '../../CommentLinkDialog';
 import {
   createAuthorTimestampStyles,
   createAvatarHolderStyles,
@@ -44,6 +45,8 @@ export function SideThreadComment(
   const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
   const { root: threadCommentText } = createSideThreadCommentTextStyles(props);
 
+  const [commentLink, setCommentLink] = useState<string | null>(null);
+
   const onEdit = useCallback(function onEdit() {
     setIsEdited(true);
   }, []);
@@ -53,6 +56,20 @@ export function SideThreadComment(
       onDeleteCallback(comment);
     },
     [comment, onDeleteCallback]
+  );
+
+  const onLinkToThisComment = useCallback(
+    function onLinkToThisComment() {
+      setCommentLink(generateCommentLink(comment));
+    },
+    [comment]
+  );
+
+  const onCloseCommentLinkDialog = useCallback(
+    function onCloseCommentLinkDialog() {
+      setCommentLink(null);
+    },
+    []
   );
 
   const onSave = useCallback(
@@ -96,7 +113,11 @@ export function SideThreadComment(
             <Check style={{ color: '#2196f3' }} />
           </button>
         ) : null}
-        <MenuButton onEdit={onEdit} onDelete={onDelete} />
+        <MenuButton
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onLinkToThisComment={onLinkToThisComment}
+        />
       </div>
       {isEdited ? (
         <SideThreadCommentEditing
@@ -112,6 +133,12 @@ export function SideThreadComment(
           {comment.text}
         </div>
       )}
+      {commentLink ? (
+        <CommentLinkDialog
+          commentLink={commentLink}
+          onClose={onCloseCommentLinkDialog}
+        />
+      ) : null}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export const createSideThreadStyles = (props: StyledProps) =>
         position: absolute;
         border-radius: 8px;
         box-shadow: 0 2px 6px 2px rgb(60 64 67 / 15%);
-        z-index: 9999;
+        z-index: 6;
         background-color: white;
       `,
     }

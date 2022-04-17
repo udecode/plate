@@ -60,6 +60,7 @@ const ELEMENT_TH = 'th';
 const ELEMENT_TODO_LI = 'action_item';
 const ELEMENT_TR = 'tr';
 const ELEMENT_UL = 'ul';
+const ELEMENT_THREAD = 'thread';
 
 const elements: HyperscriptShorthands = {
   ha: { type: ELEMENT_LINK },
@@ -88,6 +89,7 @@ const elements: HyperscriptShorthands = {
   htodoli: { type: ELEMENT_TODO_LI },
   htr: { type: ELEMENT_TR },
   hul: { type: ELEMENT_UL },
+  hthread: { type: ELEMENT_THREAD }
 };
 
 export const jsx = createHyperscript({

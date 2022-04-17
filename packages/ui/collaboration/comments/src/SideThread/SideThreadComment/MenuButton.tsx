@@ -12,6 +12,7 @@ import { createMoreButtonStyles } from './MenuButton.styles';
 export interface MenuButtonProps extends StyledProps {
   onEdit: () => void;
   onDelete: () => void;
+  onLinkToThisComment: () => void;
 }
 
 export class MenuButton extends React.Component<MenuButtonProps> {
@@ -36,7 +37,7 @@ export class MenuButton extends React.Component<MenuButtonProps> {
   }
 
   render() {
-    const { onEdit, onDelete } = this.props;
+    const { onEdit, onDelete, onLinkToThisComment } = this.props;
 
     return (
       <div className="mdc-menu-surface--anchor">
@@ -65,7 +66,11 @@ export class MenuButton extends React.Component<MenuButtonProps> {
               <span className="mdc-list-item__ripple" />
               <span className="mdc-list-item__text">Delete</span>
             </li>
-            <li className="mdc-list-item" role="menuitem">
+            <li
+              className="mdc-list-item"
+              role="menuitem"
+              onClick={onLinkToThisComment}
+            >
               <span className="mdc-list-item__ripple" />
               <span className="mdc-list-item__text">Link to this comment…</span>
             </li>

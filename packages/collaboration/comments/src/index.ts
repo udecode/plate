@@ -5,3 +5,4 @@ export * from './findThreadNodeEntries';
 export * from './findSelectedThreadNodeEntry';
 export * from './Thread';
 export * from './Comment';
+export * from './generateCommentLink';
