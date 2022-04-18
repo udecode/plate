@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, {
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   Comment,
+  Contact,
   deleteThreadAtSelection,
+  doesContactMatchString,
   findThreadNodeEntries,
   isFirstComment,
   Thread as ThreadModel,
@@ -11,6 +19,8 @@ import {
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Transforms } from 'slate';
+import { FetchContacts } from '../FetchContacts';
+import { Contacts } from './Contacts';
 import {
   createAuthorTimestampStyles,
   createAvatarHolderStyles,
@@ -33,6 +43,7 @@ export interface ThreadProps extends StyledProps {
   showMoreButton: boolean;
   onSubmitComment: (comment: Comment) => void;
   onCancelCreateThread: () => void;
+  fetchContacts: FetchContacts;
 }
 
 export function Thread({
@@ -42,10 +53,99 @@ export function Thread({
   showMoreButton,
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
+  fetchContacts,
   ...props
 }: ThreadProps) {
   const editor = usePlateEditorRef();
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [areContactsShown, setAreContactsShown] = useState<boolean>(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [filteredContacts, setFilteredContacts2] = useState<Contact[]>([]);
+  const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState<boolean>(
+    false
+  );
+  const [selectedContactIndex, setSelectedContactIndex] = useState<number>(0);
+
+  const retrieveMentionStringAtCaretPosition = useCallback(
+    function retrieveMentionStringAtCaretPosition() {
+      const textArea = textAreaRef.current!;
+
+      function isMentionStringNextToCaret(
+        indexOfLastCharacterOfMentionString: number
+      ): boolean {
+        return (
+          indexOfLastCharacterOfMentionString > textArea.selectionStart ||
+          textArea.selectionStart - indexOfLastCharacterOfMentionString === 1
+        );
+      }
+
+      const { value } = textArea;
+      const mentionStringStartIndex = value
+        .substr(0, textArea.selectionStart)
+        .indexOf('@');
+      if (mentionStringStartIndex !== -1) {
+        const mentionRegExp = /@(?:\w+ ?\w* ?)?/;
+        const match = mentionRegExp.exec(value);
+        if (match) {
+          const indexOfLastCharacterOfMentionString =
+            mentionRegExp.lastIndex + match[0].length - 1;
+          if (isMentionStringNextToCaret(indexOfLastCharacterOfMentionString)) {
+            const mentionString = match[0].trim();
+            const mentionStringEndIndex =
+              mentionStringStartIndex + mentionString.length;
+            return {
+              string: mentionString,
+              startIndex: mentionStringStartIndex,
+              endIndex: mentionStringEndIndex,
+            };
+          }
+        }
+      }
+      return null;
+    },
+    [textAreaRef]
+  );
+
+  const retrieveMentionStringAfterAtCharacter = useCallback(
+    function retrieveMentionStringAfterAtCharacter(): string | null {
+      const mentionString = retrieveMentionStringAtCaretPosition();
+      return mentionString ? mentionString.string.substr(1) : null;
+    },
+    [retrieveMentionStringAtCaretPosition]
+  );
+
+  const filterContacts = useCallback(
+    function filterContacts(contacts2: Contact[]) {
+      const mentionStringAfterAtCharacter = retrieveMentionStringAfterAtCharacter();
+      let newFilteredContacts;
+      if (mentionStringAfterAtCharacter) {
+        newFilteredContacts = contacts2.filter(
+          doesContactMatchString.bind(null, mentionStringAfterAtCharacter)
+        );
+      } else {
+        newFilteredContacts = contacts2;
+      }
+      return newFilteredContacts;
+    },
+    [retrieveMentionStringAfterAtCharacter]
+  );
+
+  const setFilteredContacts = useCallback(
+    function setFilteredContacts(filteredContacts2) {
+      setFilteredContacts2(filteredContacts2);
+      setSelectedContactIndex(
+        Math.min(selectedContactIndex, filteredContacts2.length - 1)
+      );
+    },
+    [selectedContactIndex]
+  );
+
+  const updateFilteredContacts = useCallback(
+    function updateFilteredContacts() {
+      setFilteredContacts(filterContacts(contacts));
+    },
+    [contacts, filterContacts, setFilteredContacts]
+  );
 
   const onSubmitComment = useCallback(
     function onSubmitComment() {
@@ -113,6 +213,111 @@ export function Thread({
     [deleteComment, deleteThread, thread]
   );
 
+  const showContacts = useCallback(
+    function showContacts() {
+      if (!haveContactsBeenClosed) {
+        setAreContactsShown(true);
+      }
+    },
+    [haveContactsBeenClosed]
+  );
+
+  const hideContacts = useCallback(function hideContacts() {
+    setAreContactsShown(false);
+    setSelectedContactIndex(0);
+  }, []);
+
+  const insertMention = useCallback(
+    function insertMention(mentionedContact) {
+      const mentionString = retrieveMentionStringAtCaretPosition();
+      if (mentionString) {
+        const textArea = textAreaRef.current!;
+        const { value } = textArea;
+        const mentionInsertString = `@${mentionedContact.email} `;
+        textArea.value = `${value.substr(
+          0,
+          mentionString.startIndex
+        )}${mentionInsertString}${value.substr(mentionString.endIndex + 1)}`;
+        const selectionIndex =
+          mentionString.startIndex + mentionInsertString.length;
+        textArea.focus();
+        textArea.setSelectionRange(selectionIndex, selectionIndex);
+      }
+    },
+    [retrieveMentionStringAtCaretPosition]
+  );
+
+  const onContactSelected = useCallback(
+    function onContactSelected(selectedContact: Contact) {
+      hideContacts();
+      insertMention(selectedContact);
+    },
+    [insertMention, hideContacts]
+  );
+
+  const onKeyDown = useCallback(
+    function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+      if (event.key === '@' && !areContactsShown) {
+        showContacts();
+      }
+
+      if (event.code === 'ArrowUp') {
+        event.preventDefault();
+        setSelectedContactIndex(Math.max(0, selectedContactIndex - 1));
+      } else if (event.code === 'ArrowDown') {
+        setSelectedContactIndex(
+          Math.min(selectedContactIndex + 1, filteredContacts.length - 1)
+        );
+      } else if (event.code === 'Enter') {
+        const selectedContact = filteredContacts[selectedContactIndex];
+        onContactSelected(selectedContact);
+        event.preventDefault();
+      }
+    },
+    [
+      areContactsShown,
+      showContacts,
+      selectedContactIndex,
+      filteredContacts,
+      onContactSelected,
+    ]
+  );
+
+  const onKeyUp = useCallback(
+    function onKeyUp() {
+      setHaveContactsBeenClosed(false);
+
+      updateFilteredContacts();
+
+      const mentionStringAfterAtCharacter = retrieveMentionStringAfterAtCharacter();
+      if (
+        mentionStringAfterAtCharacter !== null &&
+        (mentionStringAfterAtCharacter === '' ||
+          contacts.some(
+            doesContactMatchString.bind(null, mentionStringAfterAtCharacter)
+          ))
+      ) {
+        if (!areContactsShown) {
+          showContacts();
+        }
+      } else {
+        hideContacts();
+      }
+    },
+    [
+      updateFilteredContacts,
+      retrieveMentionStringAfterAtCharacter,
+      contacts,
+      areContactsShown,
+      showContacts,
+      hideContacts,
+    ]
+  );
+
+  const onContactsClosed = useCallback(function onContactsClosed() {
+    setHaveContactsBeenClosed(true);
+  }, []);
+
   useEffect(
     function onShow() {
       const textArea = textAreaRef.current!;
@@ -122,6 +327,19 @@ export function Thread({
       }
     },
     [textAreaRef, thread]
+  );
+
+  useEffect(
+    function loadContacts() {
+      async function loadContacts2() {
+        const contacts2 = await fetchContacts();
+        setContacts(contacts2);
+        setFilteredContacts(filterContacts(contacts2));
+      }
+
+      loadContacts2();
+    },
+    [fetchContacts, filterContacts, setFilteredContacts]
   );
 
   const { root } = createThreadStyles(props);
@@ -172,12 +390,24 @@ export function Thread({
           </div>
         </div>
         <div css={commentInput.css} className={commentInput.className}>
-          <textarea
-            ref={textAreaRef}
-            rows={1}
-            css={textArea.css}
-            className={textArea.className}
-          />
+          <div className="mdc-menu-surface--anchor">
+            <textarea
+              ref={textAreaRef}
+              rows={1}
+              css={textArea.css}
+              className={textArea.className}
+              onKeyDown={onKeyDown}
+              onKeyUp={onKeyUp}
+            />
+            {areContactsShown && (
+              <Contacts
+                contacts={filteredContacts}
+                onSelected={onContactSelected}
+                onClosed={onContactsClosed}
+                selectedIndex={selectedContactIndex}
+              />
+            )}
+          </div>
           <div css={buttons.css} className={buttons.className}>
             <button
               type="button"

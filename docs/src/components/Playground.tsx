@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   Check,
   FontDownload,
@@ -42,6 +42,29 @@ export function Playground() {
     onCancelCreateThread,
   } = useComments();
 
+  const fetchContacts = useCallback(function fetchContacts() {
+    return [
+      {
+        name: 'Jon Doe',
+        email: 'jon.doe@example.com',
+        avatarUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg',
+      },
+      {
+        name: 'Jon Doe2',
+        email: 'jon.doe2@example.com',
+        avatarUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg',
+      },
+      {
+        name: 'Jon Doe3',
+        email: 'jon.doe3@example.com',
+        avatarUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg',
+      },
+    ];
+  }, []);
+
   return (
     <>
       <HeadingToolbar>
@@ -67,7 +90,10 @@ export function Playground() {
         <ImageToolbarButton icon={<Image />} />
         <MediaEmbedToolbarButton icon={<OndemandVideo />} />
         <TableToolbarButtons />
-        <CollaborationToolbarButtons onAddThread={onAddThread} />
+        <CollaborationToolbarButtons
+          onAddThread={onAddThread}
+          fetchContacts={fetchContacts}
+        />
       </HeadingToolbar>
 
       <BallonToolbarMarks />
@@ -80,6 +106,7 @@ export function Playground() {
           position={threadPosition}
           onSubmitComment={onSubmitComment}
           onCancelCreateThread={onCancelCreateThread}
+          fetchContacts={fetchContacts}
         />
       ) : null}
     </>

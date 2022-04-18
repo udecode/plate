@@ -10,6 +10,7 @@ import { findThreadNodeEntries } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { determineAbsolutePosition } from '../determineAbsolutePosition';
+import { FetchContacts } from '../FetchContacts';
 import { Thread } from '../Thread';
 import {
   createBodyStyles,
@@ -26,10 +27,14 @@ function wasClickOnTargetInsideThreads(event: MouseEvent): boolean {
 }
 
 export function Threads(
-  props: { parent: RefObject<HTMLElement>; onClose: () => void } & StyledProps
+  props: {
+    parent: RefObject<HTMLElement>;
+    onClose: () => void;
+    fetchContacts: FetchContacts;
+  } & StyledProps
 ) {
   const editor = usePlateEditorRef();
-  const { parent, onClose } = props;
+  const { parent, onClose, fetchContacts } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{
     left: number;
@@ -108,6 +113,7 @@ export function Threads(
               showResolveThreadButton={false}
               showReOpenThreadButton
               showMoreButton={false}
+              fetchContacts={fetchContacts}
             />
           );
         })}

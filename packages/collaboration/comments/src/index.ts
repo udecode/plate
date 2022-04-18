@@ -6,3 +6,4 @@ export * from './findSelectedThreadNodeEntry';
 export * from './Thread';
 export * from './Comment';
 export * from './generateThreadLink';
+export * from './Contact';

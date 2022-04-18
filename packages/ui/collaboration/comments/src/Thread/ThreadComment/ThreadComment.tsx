@@ -1,6 +1,8 @@
+import '@material/menu-surface/dist/mdc.menu-surface.css';
 import React, { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Check } from '@styled-icons/material/Check';
+// eslint-disable-next-line no-restricted-imports
 import { Unarchive } from '@styled-icons/material/Unarchive';
 import { Comment, generateThreadLink, Thread } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';

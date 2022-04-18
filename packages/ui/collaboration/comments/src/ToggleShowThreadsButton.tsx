@@ -8,7 +8,7 @@ import { ToolbarButton, ToolbarButtonProps } from '@udecode/plate-ui-toolbar';
 import { Threads } from './Threads/Threads';
 
 export const ToggleShowThreadsButton = withPlateEventProvider(
-  ({ id, onAddThread, ...props }: ToolbarButtonProps) => {
+  ({ id, onAddThread, fetchContacts, ...props }: ToolbarButtonProps) => {
     id = useEventPlateId(id);
     const editor = usePlateEditorState(id)!;
 
@@ -42,7 +42,11 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
           {...props}
         />
         {areThreadsShown ? (
-          <Threads parent={ref} onClose={onCloseThreads} />
+          <Threads
+            parent={ref}
+            onClose={onCloseThreads}
+            fetchContacts={fetchContacts}
+          />
         ) : null}
       </div>
     );

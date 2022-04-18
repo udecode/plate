@@ -1,8 +1,15 @@
 import React from 'react';
-import { Thread, ThreadProps } from '../Thread';
+import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
+import { StyledProps } from '@udecode/plate-styled-components';
+import { FetchContacts } from '../FetchContacts';
+import { Thread } from '../Thread';
 import { createSideThreadStyles } from './SideThread.styles';
 
-interface SideThreadProps extends ThreadProps {
+interface SideThreadProps extends StyledProps {
+  thread: ThreadModel;
+  onSubmitComment: (comment: Comment) => void;
+  onCancelCreateThread: () => void;
+  fetchContacts: FetchContacts;
   position: { left: number; top: number };
 }
 
