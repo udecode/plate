@@ -1,17 +1,35 @@
-import React, { RefObject, useEffect, useRef, useState } from 'react';
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import ReactDOM from 'react-dom';
 import { findThreadNodeEntries } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { determineAbsolutePosition } from '../determineAbsolutePosition';
 import { Thread } from '../Thread';
-import { createThreadsStyles } from './Threads.styles';
+import {
+  createBodyStyles,
+  createHeaderStyles,
+  createThreadsStyles,
+} from './Threads.styles';
+
+function wasClickOnTargetInsideThreads(event: MouseEvent): boolean {
+  const closestThreadsParent =
+    event.target &&
+    (event.target as any).closest &&
+    (event.target as any).closest('.threads');
+  return Boolean(closestThreadsParent);
+}
 
 export function Threads(
-  props: { parent: RefObject<HTMLElement> } & StyledProps
+  props: { parent: RefObject<HTMLElement>; onClose: () => void } & StyledProps
 ) {
   const editor = usePlateEditorRef();
-  const { parent } = props;
+  const { parent, onClose } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{
     left: number;
@@ -33,6 +51,8 @@ export function Threads(
   );
 
   const { root } = createThreadsStyles(props);
+  const { root: header } = createHeaderStyles(props);
+  const { root: body } = createBodyStyles(props);
 
   const threadNodeEntries = Array.from(findThreadNodeEntries(editor));
   const threads = threadNodeEntries.map(
@@ -40,26 +60,58 @@ export function Threads(
   );
   const resolvedThreads = threads.filter((thread) => thread.isResolved);
 
+  const onClick = useCallback(
+    function onClick(event: MouseEvent) {
+      if (!wasClickOnTargetInsideThreads(event)) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(
+    function registerOnClick() {
+      let isMounted = true;
+
+      setTimeout(() => {
+        if (isMounted) {
+          document.body.addEventListener('click', onClick);
+        }
+      }, 400);
+
+      return () => {
+        document.body.removeEventListener('click', onClick);
+        isMounted = false;
+      };
+    },
+    [onClick]
+  );
+
   return ReactDOM.createPortal(
     <div
       ref={ref}
       css={root.css}
-      className={root.className}
+      className={`${root.className} threads`}
       style={{ ...position }}
     >
-      {resolvedThreads.map((thread) => {
-        return (
-          <Thread
-            key={thread.id}
-            thread={thread}
-            onSubmitComment={() => {}}
-            onCancelCreateThread={() => {}}
-            showResolveThreadButton={false}
-            showReOpenThreadButton
-            showMoreButton={false}
-          />
-        );
-      })}
+      <div css={header.css} className={header.className}>
+        <h2>Resolved threads</h2>
+      </div>
+      <div css={body.css} className={body.className}>
+        {resolvedThreads.map((thread) => {
+          return (
+            <Thread
+              key={thread.id}
+              thread={thread}
+              onSubmitComment={() => {}}
+              onCancelCreateThread={() => {}}
+              showResolveThreadButton={false}
+              showReOpenThreadButton
+              showMoreButton={false}
+            />
+          );
+        })}
+      </div>
     </div>,
     document.body
   );

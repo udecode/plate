@@ -23,6 +23,10 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
       [areThreadsShown]
     );
 
+    const onCloseThreads = useCallback(function onCloseThreads() {
+      setAreThreadsShown(false);
+    }, []);
+
     return (
       <div ref={ref}>
         <ToolbarButton
@@ -37,7 +41,9 @@ export const ToggleShowThreadsButton = withPlateEventProvider(
           }}
           {...props}
         />
-        {areThreadsShown ? <Threads parent={ref} /> : null}
+        {areThreadsShown ? (
+          <Threads parent={ref} onClose={onCloseThreads} />
+        ) : null}
       </div>
     );
   }

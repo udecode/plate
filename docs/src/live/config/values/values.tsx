@@ -921,6 +921,17 @@ const comments: any = (
         Text with a resolved thread
       </hthread>
     </hp>
+    <hp>
+      <hthread
+        thread={{
+          id: 3,
+          comments: [{ id: 3, text: 'A comment' }],
+          isResolved: true,
+        }}
+      >
+        Text with another resolved thread
+      </hthread>
+    </hp>
   </fragment>
 );
 
