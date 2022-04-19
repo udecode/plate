@@ -348,11 +348,22 @@ export function Thread({
   const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
-  const { root: commentInput } = createCommentInputStyles(props);
+  const { root: commentInput, commentInputReply } = createCommentInputStyles(
+    props
+  );
   const { root: textArea } = createTextAreaStyles(props);
   const { root: buttons } = createButtonsStyles(props);
   const { root: commentButton } = createCommentButtonStyles(props);
   const { root: cancelButton } = createCancelButtonStyles(props);
+
+  const hasComments = thread.comments.length >= 1;
+
+  let commentInputCss = [...commentInput.css];
+  let commentInputClassName = commentInput.className;
+  if (hasComments) {
+    commentInputCss = commentInputCss.concat(commentInputReply!.css);
+    commentInputClassName += ` ${commentInputReply!.className}`;
+  }
 
   return (
     <div css={root.css} className={root.className}>
@@ -372,24 +383,29 @@ export function Thread({
       ))}
 
       <div>
-        <div css={commentHeader.css} className={commentHeader.className}>
-          <div css={avatarHolder.css} className={avatarHolder.className}>
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg"
-              alt="Profile"
-              width={32}
-              height={32}
-              css={commentProfileImage.css}
-              className={commentProfileImage.className}
-            />
-          </div>
-          <div css={authorTimestamp.css} className={authorTimestamp.className}>
-            <div css={commenterName.css} className={commenterName.className}>
-              Jon Doe
+        {!hasComments && (
+          <div css={commentHeader.css} className={commentHeader.className}>
+            <div css={avatarHolder.css} className={avatarHolder.className}>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/59/User-avatar.svg"
+                alt="Profile"
+                width={32}
+                height={32}
+                css={commentProfileImage.css}
+                className={commentProfileImage.className}
+              />
+            </div>
+            <div
+              css={authorTimestamp.css}
+              className={authorTimestamp.className}
+            >
+              <div css={commenterName.css} className={commenterName.className}>
+                Jon Doe
+              </div>
             </div>
           </div>
-        </div>
-        <div css={commentInput.css} className={commentInput.className}>
+        )}
+        <div css={commentInputCss} className={commentInputClassName}>
           <div className="mdc-menu-surface--anchor">
             <textarea
               ref={textAreaRef}
@@ -398,6 +414,9 @@ export function Thread({
               className={textArea.className}
               onKeyDown={onKeyDown}
               onKeyUp={onKeyUp}
+              placeholder={`${
+                hasComments ? 'Reply' : 'Comment'
+              } or add others with @`}
             />
             {areContactsShown && (
               <Contacts

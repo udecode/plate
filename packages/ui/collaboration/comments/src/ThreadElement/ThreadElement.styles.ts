@@ -1,8 +1,8 @@
 import {
   createStyles,
   StyledElementProps,
+  StyledProps,
 } from '@udecode/plate-styled-components';
-import { StyledProps } from '@udecode/plate-styled-components/src';
 import { css, CSSProp } from 'styled-components';
 
 export const createThreadElementStyles = (props: StyledElementProps) =>

@@ -1,5 +1,5 @@
 import { createStyles, StyledProps } from '@udecode/plate-styled-components';
-import { css } from 'styled-components';
+import { css, CSSProp } from 'styled-components';
 
 export const createThreadStyles = (props: StyledProps) =>
   createStyles(
@@ -163,11 +163,11 @@ export const createCommenterNameStyles = (props: StyledProps) =>
   );
 
 export const createCommentInputStyles = (props: StyledProps) =>
-  createStyles(
+  createStyles<StyledProps<{ commentInputReply: CSSProp }>>(
     {
       prefixClassNames: 'ThreadCommentInput',
       ...props,
-    },
+    } as any,
     {
       root: css`
         font-weight: normal;
@@ -189,6 +189,11 @@ export const createCommentInputStyles = (props: StyledProps) =>
         display: block !important;
         padding-top: 0;
         text-align: left;
+      `,
+      commentInputReply: css`
+        border-top: 1px solid rgb(218, 220, 224);
+        padding-top: 12px;
+        margin-top: 12px;
       `,
     }
   );
