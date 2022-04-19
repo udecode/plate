@@ -158,6 +158,31 @@ export function Thread({
     [onSubmitCommentCallback]
   );
 
+  const hasComments = useCallback(
+    function hasComments() {
+      return thread.comments.length >= 1;
+    },
+    [thread]
+  );
+
+  const clearTextArea = useCallback(
+    function clearTextArea() {
+      textAreaRef.current!.value = '';
+    },
+    [textAreaRef]
+  );
+
+  const onCancel = useCallback(
+    function onCancel() {
+      if (hasComments()) {
+        clearTextArea();
+      }
+
+      onCancelCreateThread();
+    },
+    [hasComments, onCancelCreateThread, clearTextArea]
+  );
+
   const onResolveThread = useCallback(
     function onResolveThread() {
       thread.isResolved = true;
@@ -356,11 +381,9 @@ export function Thread({
   const { root: commentButton } = createCommentButtonStyles(props);
   const { root: cancelButton } = createCancelButtonStyles(props);
 
-  const hasComments = thread.comments.length >= 1;
-
   let commentInputCss = [...commentInput.css];
   let commentInputClassName = commentInput.className;
-  if (hasComments) {
+  if (hasComments()) {
     commentInputCss = commentInputCss.concat(commentInputReply!.css);
     commentInputClassName += ` ${commentInputReply!.className}`;
   }
@@ -415,7 +438,7 @@ export function Thread({
               onKeyDown={onKeyDown}
               onKeyUp={onKeyUp}
               placeholder={`${
-                hasComments ? 'Reply' : 'Comment'
+                hasComments() ? 'Reply' : 'Comment'
               } or add others with @`}
             />
             {areContactsShown && (
@@ -440,7 +463,7 @@ export function Thread({
               type="button"
               css={cancelButton.css}
               className={cancelButton.className}
-              onClick={onCancelCreateThread}
+              onClick={onCancel}
             >
               Cancel
             </button>
