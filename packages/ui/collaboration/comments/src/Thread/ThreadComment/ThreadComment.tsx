@@ -13,6 +13,7 @@ import {
   createCommenterNameStyles,
   createCommentHeaderStyles,
   createCommentProfileImageStyles,
+  createTimestampStyles,
 } from '../Thread.styles';
 import { MenuButton } from './MenuButton';
 import {
@@ -56,6 +57,7 @@ export function ThreadComment(
   const { root: commentProfileImage } = createCommentProfileImageStyles(props);
   const { root: authorTimestamp } = createAuthorTimestampStyles(props);
   const { root: commenterName } = createCommenterNameStyles(props);
+  const { root: timestamp } = createTimestampStyles(props);
   const { root: resolveThreadButton } = createResolveThreadButtonStyles(props);
   const { root: reOpenThreadButton } = createReOpenThreadButtonStyles(props);
   const { root: threadCommentText } = createThreadCommentTextStyles(props);
@@ -115,6 +117,9 @@ export function ThreadComment(
         <div css={authorTimestamp.css} className={authorTimestamp.className}>
           <div css={commenterName.css} className={commenterName.className}>
             Jon Doe
+          </div>
+          <div css={timestamp.css} className={timestamp.className}>
+            {comment.createdAt.toLocaleString()}
           </div>
         </div>
         {showResolveThreadButton ? (

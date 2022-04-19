@@ -152,6 +152,7 @@ export function Thread({
       const newComment = {
         id: Math.floor(Math.random() * 1000), // FIXME
         text: textAreaRef.current!.value,
+        createdAt: new Date(),
       };
       onSubmitCommentCallback(newComment);
     },

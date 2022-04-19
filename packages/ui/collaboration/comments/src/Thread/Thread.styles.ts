@@ -162,6 +162,23 @@ export const createCommenterNameStyles = (props: StyledProps) =>
     }
   );
 
+export const createTimestampStyles = (props: StyledProps) =>
+  createStyles(
+    {
+      prefixClassNames: 'ThreadTimestamp',
+      ...props,
+    },
+    {
+      root: css`
+        color: #3c4043;
+        font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        line-height: 16px;
+        letter-spacing: 0.3px;
+      `,
+    }
+  );
+
 export const createCommentInputStyles = (props: StyledProps) =>
   createStyles<StyledProps<{ commentInputReply: CSSProp }>>(
     {
