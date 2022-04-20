@@ -1,11 +1,13 @@
-import { Descendant, Editor, Element, Text } from 'slate';
+import { Editor, Text } from 'slate';
 import { PlateEditor } from '../../types/PlateEditor';
+import { TDescendant } from '../../types/slate/TDescendant';
 import { isElement, TElement } from '../../types/slate/TElement';
 import { getPluginType } from '../../utils/getPluginType';
 import { ELEMENT_DEFAULT } from '../types/index';
 
-const isInlineNode = (editor: Pick<Editor, 'isInline'>) => (node: Descendant) =>
-  Text.isText(node) || editor.isInline(node);
+const isInlineNode = (editor: Pick<Editor, 'isInline'>) => (
+  node: TDescendant
+) => Text.isText(node) || editor.isInline(node);
 
 const makeBlockLazy = (type: string) => (): TElement => ({
   type,
@@ -13,8 +15,8 @@ const makeBlockLazy = (type: string) => (): TElement => ({
 });
 
 const hasDifferentChildNodes = (
-  descendants: Descendant[],
-  isInline: (node: Descendant) => boolean
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean
 ): boolean => {
   return descendants.some((descendant, index, arr) => {
     const prevDescendant = arr[index - 1];
@@ -29,10 +31,10 @@ const hasDifferentChildNodes = (
  * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline and text nodes."
  */
 const normalizeDifferentNodeTypes = (
-  descendants: Descendant[],
-  isInline: (node: Descendant) => boolean,
-  makeDefaultBlock: () => Element
-): Descendant[] => {
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean,
+  makeDefaultBlock: () => TElement
+): TDescendant[] => {
   const hasDifferentNodes = hasDifferentChildNodes(descendants, isInline);
 
   const { fragment } = descendants.reduce(
@@ -53,8 +55,8 @@ const normalizeDifferentNodeTypes = (
       return memo;
     },
     {
-      fragment: [] as Descendant[],
-      precedingBlock: null as Element | null,
+      fragment: [] as TDescendant[],
+      precedingBlock: null as TElement | null,
     }
   );
 
@@ -64,7 +66,7 @@ const normalizeDifferentNodeTypes = (
 /**
  * Handles 1st constraint: "All Element nodes must contain at least one Text descendant."
  */
-const normalizeEmptyChildren = (descendants: Descendant[]): Descendant[] => {
+const normalizeEmptyChildren = (descendants: TDescendant[]): TDescendant[] => {
   if (!descendants.length) {
     return [{ text: '' }];
   }
@@ -72,10 +74,10 @@ const normalizeEmptyChildren = (descendants: Descendant[]): Descendant[] => {
 };
 
 const normalize = (
-  descendants: Descendant[],
-  isInline: (node: Descendant) => boolean,
-  makeDefaultBlock: () => Element
-) => {
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean,
+  makeDefaultBlock: () => TElement
+): TDescendant[] => {
   descendants = normalizeEmptyChildren(descendants);
   descendants = normalizeDifferentNodeTypes(
     descendants,
@@ -101,8 +103,8 @@ const normalize = (
  */
 export const normalizeDescendantsToDocumentFragment = <T = {}>(
   editor: PlateEditor<T>,
-  { descendants }: { descendants: Descendant[] }
-) => {
+  { descendants }: { descendants: TDescendant[] }
+): TDescendant[] => {
   const isInline = isInlineNode(editor);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
   const makeDefaultBlock = makeBlockLazy(defaultType);

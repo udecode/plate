@@ -3,6 +3,7 @@ import { createEditor } from 'slate';
 import { ELEMENT_DEFAULT } from '../../common/types/node.types';
 import { withPlate } from '../../plugins/withPlate';
 import { PlateChangeKey, PlateStoreState } from '../../types/PlateStore';
+import { TEditor } from '../../types/slate/TEditor';
 
 export const createPlateStore = (state: Partial<PlateStoreState> = {}) =>
   createStore(`plate-${state.id}`)({
@@ -26,7 +27,7 @@ export const createPlateStore = (state: Partial<PlateStoreState> = {}) =>
      */
     resetEditor: () => {
       _set.editor(
-        withPlate(createEditor(), {
+        withPlate(createEditor() as TEditor, {
           id: state.id,
           plugins: _get.editor()?.plugins,
         })

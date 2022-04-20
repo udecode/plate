@@ -5,7 +5,7 @@ import { TEditor } from '../../types/slate/TEditor';
 import { TNode } from '../../types/slate/TNode';
 
 const getLastChild = (node: TNode, level: number): TDescendant => {
-  if (!(level + 1) || !isAncestor(node)) return node;
+  if (!(level + 1) || !isAncestor(node)) return node as TDescendant;
 
   const { children } = node;
 

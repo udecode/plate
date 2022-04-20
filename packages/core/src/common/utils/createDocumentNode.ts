@@ -13,5 +13,5 @@ export const createDocumentNode = (
       },
       ...remaining,
     ],
-  },
+  } as any,
 ];

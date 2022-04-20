@@ -6,7 +6,6 @@ import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
 import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { plateIdAtom } from '../stores/plateIdAtom';
 import { PlateStoreState } from '../types/PlateStore';
-import { SlateProps } from '../types/slate/SlateProps';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
@@ -66,7 +65,7 @@ export const PlateContent = <T extends {} = {}>({
   const editable = <Editable {...editableProps} />;
 
   return (
-    <Slate {...(slateProps as SlateProps)}>
+    <Slate {...(slateProps as any)}>
       {children}
       <EditorStateEffect id={options.id} />
       <EditorRefEffect id={options.id} />

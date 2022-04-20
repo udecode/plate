@@ -6,7 +6,7 @@ import {
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { SlateProps } from '../../types/slate/SlateProps';
-import { TNode } from '../../types/slate/TNode';
+import { TDescendant } from '../../types/slate/TDescendant';
 import { pipeOnChange } from '../../utils/pipeOnChange';
 
 /**
@@ -22,7 +22,7 @@ export const useSlateProps = ({ id }: Pick<PlateProps, 'id'> = {}): Omit<
   const onChangeProp = usePlateSelectors(id).onChange();
 
   const onChange = useCallback(
-    (newValue: TNode[]) => {
+    (newValue: TDescendant[]) => {
       if (!editor || !keyPlugins) return;
 
       const eventIsHandled = pipeOnChange(editor)(newValue);

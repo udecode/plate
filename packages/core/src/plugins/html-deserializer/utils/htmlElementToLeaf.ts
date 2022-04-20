@@ -36,7 +36,7 @@ export const htmlElementToLeaf = <T = {}>(
         const attributes = { ...node };
 
         // attributes should not override child attributes
-        if (child.text) {
+        if (Text.isText(child) && child.text) {
           Object.keys(attributes).forEach((key) => {
             if (attributes[key] && child[key]) {
               attributes[key] = child[key];

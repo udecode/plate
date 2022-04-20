@@ -13,6 +13,10 @@ export const htmlBodyToFragment = <T = {}>(
   element: HTMLElement
 ): TDescendant[] | undefined => {
   if (element.nodeName === 'BODY') {
-    return jsx('fragment', {}, deserializeHtmlNodeChildren(editor, element));
+    return jsx(
+      'fragment',
+      {},
+      deserializeHtmlNodeChildren(editor, element)
+    ) as TDescendant[];
   }
 };

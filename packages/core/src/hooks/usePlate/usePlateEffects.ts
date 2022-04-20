@@ -9,6 +9,7 @@ import {
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
+import { TEditor } from '../../types/slate/TEditor';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
 import { usePlateStoreEffects } from './usePlateStoreEffects';
 
@@ -64,7 +65,7 @@ export const usePlateEffects = <T = {}>({
     if (!editor && enabled) {
       plateActions.editor(
         (editorProp as PlateEditor) ??
-          withPlate(createEditor(), {
+          withPlate(createEditor() as TEditor, {
             id,
             plugins: pluginsProp,
             disableCorePlugins,
