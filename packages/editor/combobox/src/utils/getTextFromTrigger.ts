@@ -1,4 +1,4 @@
-import { escapeRegExp, getText } from '@udecode/plate-core';
+import { escapeRegExp, getText, TEditor } from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
 /**
@@ -6,7 +6,7 @@ import { Editor, Point } from 'slate';
  * Starts with trigger and ends with non-whitespace character.
  */
 export const getTextFromTrigger = (
-  editor: Editor,
+  editor: TEditor,
   {
     at,
     trigger,
