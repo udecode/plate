@@ -1,12 +1,12 @@
 import { Element } from 'slate';
 import { AnyObject } from '../utility/AnyObject';
-import { TDescendant } from './TDescendant';
+import { TText } from './TText';
 
 export type TElement<TExtension = AnyObject> = Element &
   TExtension &
   AnyObject & {
     type: string;
-    children: TDescendant[];
+    children: (TElement<TExtension> | TText<TExtension>)[];
   };
 
 export const isElement: <TExtension = AnyObject>(
