@@ -314,20 +314,20 @@ type PlatePluginInsertData = {
 ```tsx
 const plugin = {
   handlers: {
-    onKeyDown: (event, editor, next) => {
+    onKeyDown: (editor, event, next) => {
       // Implement custom event logic...
       
       // When no value is returned, the next handlers will be executed when
       // isPropagationStopped was not set on the event
     },
-    onDrop: (event, editor, next) => {
+    onDrop: (editor, event, next) => {
       // Implement custom event logic...
       
       // No matter the state of the event, treat it as being handled by returning
       // true here, the next handlers will be skipped
       return true;
     },
-    onDragStart: (event, editor, next) => {
+    onDragStart: (editor, event, next) => {
       // Implement custom event logic...
       
       // No matter the status of the event, treat event as *not* being handled by
