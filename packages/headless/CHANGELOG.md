@@ -1,5 +1,7 @@
 # @udecode/plate-headless
 
+## 10.6.3
+
 ## 10.6.1
 
 ## 10.6.0
