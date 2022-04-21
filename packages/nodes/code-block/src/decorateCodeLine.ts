@@ -1,17 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
-import {
-  Decorate,
-  getParent,
-  getPlugin,
-  TDescendant,
-} from '@udecode/plate-core';
-import { Node, NodeEntry, Range } from 'slate';
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_CODE_SYNTAX,
-} from './constants';
-import { CodeBlockPlugin } from './types';
+import { Decorate, getParent, getPlugin, TElement } from '@udecode/plate-core';
 
 // noinspection ES6UnusedImports
 import Prism, { languages, Token, tokenize } from 'prismjs';
@@ -62,6 +50,13 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-yaml';
+import { Node, NodeEntry, Range } from 'slate';
+import {
+  ELEMENT_CODE_BLOCK,
+  ELEMENT_CODE_LINE,
+  ELEMENT_CODE_SYNTAX,
+} from './constants';
+import { CodeBlockPlugin } from './types';
 
 export interface CodeSyntaxRange extends Range {
   tokenType: string;
@@ -72,10 +67,13 @@ export const decorateCodeLine: Decorate = (editor) => {
   const code_block = getPlugin<CodeBlockPlugin>(editor, ELEMENT_CODE_BLOCK);
   const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 
-  return ([node, path]: NodeEntry<TDescendant>): CodeSyntaxRange[] => {
+  return ([node, path]: NodeEntry): CodeSyntaxRange[] => {
     const ranges: CodeSyntaxRange[] = [];
 
-    if (!code_block.options.syntax || node.type !== code_line.type) {
+    if (
+      !code_block.options.syntax ||
+      (node as TElement).type !== code_line.type
+    ) {
       return ranges;
     }
 

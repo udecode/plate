@@ -6,7 +6,7 @@ export type TElement<TExtension = AnyObject> = Element &
   TExtension &
   AnyObject & {
     type: string;
-    children: (TElement<TExtension> | TText<TExtension>)[];
+    children: (TElement | TText)[];
   };
 
 export const isElement: <TExtension = AnyObject>(

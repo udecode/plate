@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { setNodes } from '@udecode/plate-core';
+import { setNodes, TText } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
 import { Node, Transforms } from 'slate';
@@ -146,7 +146,7 @@ export const ImageElement = (props: ImageElementProps) => {
               <TextareaAutosize
                 css={styles.caption?.css}
                 className={styles.caption?.className}
-                value={nodeCaption[0].text}
+                value={(nodeCaption[0] as TText).text}
                 placeholder={placeholder}
                 onChange={onChangeCaption}
               />

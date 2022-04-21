@@ -1,5 +1,11 @@
 import { comboboxActions } from '@udecode/plate-combobox';
-import { getPlugin, insertNodes, WithOverride } from '@udecode/plate-core';
+import {
+  getPlugin,
+  insertNodes,
+  TElement,
+  TNode,
+  WithOverride,
+} from '@udecode/plate-core';
 import { Editor, Node, Range, Transforms } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
@@ -112,13 +118,13 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       }
     } else if (
       operation.type === 'insert_node' &&
-      isNodeMentionInput(editor, operation.node)
+      isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if (operation.node.trigger !== trigger) {
+      if ((operation.node as TElement).trigger !== trigger) {
         return;
       }
 
-      const text = operation.node.children[0]?.text ?? '';
+      const text = (operation.node as TElement).children[0]?.text ?? '';
 
       if (
         inputCreation === undefined ||
@@ -140,9 +146,9 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
       }
     } else if (
       operation.type === 'remove_node' &&
-      isNodeMentionInput(editor, operation.node)
+      isNodeMentionInput(editor, operation.node as TNode)
     ) {
-      if (operation.node.trigger !== trigger) {
+      if ((operation.node as TElement).trigger !== trigger) {
         return;
       }
 

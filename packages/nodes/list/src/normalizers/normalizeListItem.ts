@@ -6,6 +6,7 @@ import {
   match,
   PlateEditor,
   setNodes,
+  TAncestor,
   TDescendant,
   TElement,
 } from '@udecode/plate-core';
@@ -34,7 +35,7 @@ export const getDeepInlineChildren = (
     if (Editor.isBlock(editor, child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(child),
+          children: getChildren(child as NodeEntry<TAncestor>),
         })
       );
     } else {
@@ -102,7 +103,10 @@ export const normalizeListItem = (
       const sublist = firstLiChild;
       const children = getChildren(firstLiChild).reverse();
       children.forEach((c) => {
-        moveListItemUp(editor, { list: sublist, listItem: c });
+        moveListItemUp(editor, {
+          list: sublist,
+          listItem: c as NodeEntry<TElement>,
+        });
       });
 
       Transforms.removeNodes(editor, { at: [...parent![1], 0] });
@@ -144,7 +148,7 @@ export const normalizeListItem = (
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(licChild),
+          children: getChildren(licChild as NodeEntry<TElement>),
         })
       );
     }

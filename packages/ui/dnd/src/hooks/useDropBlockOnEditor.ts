@@ -1,5 +1,5 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { findNode, isExpanded } from '@udecode/plate-core';
+import { findNode, isExpanded, TReactEditor } from '@udecode/plate-core';
 import { Path, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { DragItemBlock } from '../types';
@@ -7,7 +7,7 @@ import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
 
 export const useDropBlockOnEditor = (
-  editor: ReactEditor,
+  editor: TReactEditor,
   {
     blockRef,
     id,
