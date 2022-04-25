@@ -39,11 +39,12 @@ export const addColumn = (
       const replacePathPos = newCellPath.length - 2;
       const currentRowIdx = nextCellPath[replacePathPos];
 
-      currentTableItem[0].children.forEach((row: TElement, rowIdx) => {
+      currentTableItem[0].children.forEach((row, rowIdx) => {
         newCellPath[replacePathPos] = rowIdx;
         const isHeaderRow =
           header === undefined
-            ? row.children[0].type === getPluginType(editor, ELEMENT_TH)
+            ? (row as TElement).children[0].type ===
+              getPluginType(editor, ELEMENT_TH)
             : header;
 
         insertNodes<TElement>(

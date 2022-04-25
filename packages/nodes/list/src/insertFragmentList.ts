@@ -27,7 +27,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
       ancestor = Path.parent(ancestor);
     }
 
-    return [Node.get(root, ancestor), ancestor];
+    return [Node.get(root, ancestor) as TDescendant, ancestor];
   };
 
   const findListItemsWithContent = <T extends TDescendant>(first: T): T[] => {
@@ -58,7 +58,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
     const _texts = Node.texts(listRoot);
     const textEntries = Array.from(_texts);
 
-    const commonAncestorEntry = textEntries.reduce<NodeEntry<TDescendant>>(
+    const commonAncestorEntry = textEntries.reduce<NodeEntry>(
       (commonAncestor, textEntry) =>
         Path.isAncestor(commonAncestor[1], textEntry[1])
           ? commonAncestor
@@ -67,8 +67,11 @@ export const insertFragmentList = (editor: PlateEditor) => {
       getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin)
     );
 
-    const [first, ...rest] = isListRoot(editor, commonAncestorEntry[0])
-      ? commonAncestorEntry[0].children
+    const [first, ...rest] = isListRoot(
+      editor,
+      commonAncestorEntry[0] as TDescendant
+    )
+      ? (commonAncestorEntry[0] as any).children
       : [commonAncestorEntry[0]];
     return [...findListItemsWithContent(first), ...rest];
   };
@@ -158,7 +161,9 @@ export const insertFragmentList = (editor: PlateEditor) => {
     return { textNode, listItemNodes };
   };
 
-  return (fragment: TDescendant[]) => {
+  return (_fragment: Node[]) => {
+    const fragment = _fragment as TDescendant[];
+
     let liEntry = findNode(editor, {
       match: { type: listItemType },
       mode: 'lowest',

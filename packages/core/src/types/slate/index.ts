@@ -9,6 +9,7 @@ export * from './TDescendant';
 export * from './TEditor';
 export * from './TElement';
 export * from './TNode';
+export * from './TReactEditor';
 export * from './TRenderElementProps';
 export * from './TRenderLeafProps';
 export * from './TText';

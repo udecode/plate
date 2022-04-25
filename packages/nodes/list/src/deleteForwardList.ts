@@ -76,12 +76,12 @@ const selectionIsInAListHandler = (
     const _nodes = Editor.nodes(editor, {
       at: listItem[1],
       mode: 'lowest',
-      match: (node: TDescendant, path) => {
+      match: (node, path) => {
         if (path.length === 0) {
           return false;
         }
 
-        const isNodeLi = node.type === liType;
+        const isNodeLi = (node as TElement).type === liType;
         const isSiblingOfNodeLi =
           (getNode(editor, Path.next(path)) as TDescendant)?.type === liType;
 
@@ -120,15 +120,15 @@ const selectionIsInAListHandler = (
       return false;
     }
 
-    const siblingListItem: NodeEntry<TDescendant> = pathToEntry(
+    const siblingListItem = pathToEntry(
       editor,
       Path.next(liWithSiblings)
-    );
+    ) as NodeEntry<TElement>;
 
-    const siblingList: NodeEntry<TDescendant> = Editor.parent(
+    const siblingList = Editor.parent(
       editor,
       siblingListItem[1]
-    );
+    ) as NodeEntry<TElement>;
 
     if (
       removeListItem(editor, {
@@ -146,11 +146,13 @@ const selectionIsInAListHandler = (
   }
 
   // if it has children
-  const nestedList = pathToEntry<TDescendant>(
+  const nestedList = pathToEntry<TElement>(
     editor,
     Path.next([...listItem[1], 0])
   );
-  const nestedListItem = getChildren<TDescendant>(nestedList)[0];
+  const nestedListItem = getChildren<TElement>(
+    nestedList
+  )[0] as NodeEntry<TElement>;
 
   if (
     removeFirstListItem(editor, {

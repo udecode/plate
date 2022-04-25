@@ -1,3 +1,4 @@
+import { PlateEditor } from '@udecode/plate-core';
 import { Range, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { getBlocksWithId } from './getBlocksWithId';
@@ -10,7 +11,7 @@ import { selectBlockById } from './selectBlockById';
  * Else, select the blocks above the selection.
  */
 export const selectBlocksBySelectionOrId = (
-  editor: ReactEditor,
+  editor: PlateEditor,
   id: string
 ) => {
   if (!editor.selection) return;

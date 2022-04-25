@@ -23,7 +23,7 @@ export const insertFragmentCodeBlock = (editor: PlateEditor) => {
     return node.children;
   }
 
-  return (fragment: TDescendant[]) => {
+  return (fragment: Node[]) => {
     const inCodeLine = findNode(editor, { match: { type: codeLineType } });
     if (!inCodeLine) {
       return insertFragment(fragment);
@@ -31,11 +31,13 @@ export const insertFragmentCodeBlock = (editor: PlateEditor) => {
 
     return Transforms.insertFragment(
       editor,
-      fragment.flatMap((node) =>
-        node.type === codeBlockType
-          ? extractCodeLinesFromCodeBlock(node)
-          : convertNodeToCodeLine(node)
-      )
+      fragment.flatMap((node) => {
+        const element = node as TDescendant;
+
+        return element.type === codeBlockType
+          ? extractCodeLinesFromCodeBlock(element)
+          : convertNodeToCodeLine(element);
+      })
     );
   };
 };
