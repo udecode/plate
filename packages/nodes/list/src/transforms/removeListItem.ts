@@ -1,5 +1,5 @@
 import {
-  deleteFragment,
+  deleteMerge,
   getPluginType,
   getPreviousPath,
   insertNodes,
@@ -79,7 +79,7 @@ export const removeListItem = (
       });
 
       // 3
-      deleteFragment(editor, {
+      deleteMerge(editor, {
         reverse,
       });
 

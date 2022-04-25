@@ -1,5 +1,5 @@
 import {
-  getAbove,
+  getAboveNode,
   getNode,
   getPluginType,
   insertNodes,
@@ -29,7 +29,7 @@ export const moveListItemUp = (
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = getAbove<TElement>(editor, {
+    const liParent = getAboveNode<TElement>(editor, {
       at: listPath,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });

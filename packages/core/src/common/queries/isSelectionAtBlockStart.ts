@@ -1,9 +1,9 @@
 import { TAncestor } from '../../types/slate/TAncestor';
 import { TEditor } from '../../types/slate/TEditor';
 import { AnyObject } from '../../types/utility/AnyObject';
-import { EditorAboveOptions } from '../types/Editor.types';
+import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
+import { isStart } from './slate/isStart';
 import { getBlockAbove } from './getBlockAbove';
-import { isStart } from './isStart';
 
 /**
  * Is the selection focus at the start of its parent block.
@@ -12,7 +12,7 @@ import { isStart } from './isStart';
  */
 export const isSelectionAtBlockStart = (
   editor: TEditor,
-  options?: EditorAboveOptions<TAncestor<AnyObject>>
+  options?: GetAboveNodeOptions<TAncestor<AnyObject>>
 ) => {
   const path = getBlockAbove(editor, options)?.[1];
 

@@ -1,6 +1,6 @@
 import {
   ELEMENT_DEFAULT,
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
   setNodes,
@@ -33,6 +33,8 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
         },
         split: true,
       });
-    } while (getAbove(editor, { match: { type: getListTypes(editor), at } }));
+    } while (
+      getAboveNode(editor, { match: { type: getListTypes(editor), at } })
+    );
   });
 };

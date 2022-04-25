@@ -1,4 +1,8 @@
-import { getAbove, HotkeyPlugin, KeyboardHandler } from '@udecode/plate-core';
+import {
+  getAboveNode,
+  HotkeyPlugin,
+  KeyboardHandler,
+} from '@udecode/plate-core';
 import isHotkey from 'is-hotkey';
 import { castArray } from 'lodash';
 import { moveListItems, toggleList } from './transforms';
@@ -8,7 +12,7 @@ export const onKeyDownList: KeyboardHandler<{}, HotkeyPlugin> = (
   { type, options: { hotkey } }
 ) => (e) => {
   if (e.key === 'Tab' && editor.selection) {
-    const listSelected = getAbove(editor, {
+    const listSelected = getAboveNode(editor, {
       at: editor.selection,
       match: { type },
     });

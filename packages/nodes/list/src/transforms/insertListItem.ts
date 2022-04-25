@@ -1,6 +1,6 @@
 import {
-  getAbove,
-  getParent,
+  getAboveNode,
+  getParentNode,
   getPluginType,
   insertNodes,
   isBlockTextEmptyAfterSelection,
@@ -23,11 +23,11 @@ export const insertListItem = (editor: PlateEditor): boolean => {
     return false;
   }
 
-  const licEntry = getAbove(editor, { match: { type: licType } });
+  const licEntry = getAboveNode(editor, { match: { type: licType } });
   if (!licEntry) return false;
   const [, paragraphPath] = licEntry;
 
-  const listItemEntry = getParent(editor, paragraphPath);
+  const listItemEntry = getParentNode(editor, paragraphPath);
   if (!listItemEntry) return false;
   const [listItemNode, listItemPath] = listItemEntry;
 

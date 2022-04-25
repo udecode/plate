@@ -1,7 +1,7 @@
 import {
   EditorNodesOptions,
   getNodes,
-  getParent,
+  getParentNode,
   getPluginType,
   PlateEditor,
 } from '@udecode/plate-core';
@@ -63,9 +63,9 @@ export const moveListItems = (
       const licPath = licPathRef.unref();
       if (!licPath) return;
 
-      const listItem = getParent(editor, licPath);
+      const listItem = getParentNode(editor, licPath);
       if (!listItem) return;
-      const listEntry = getParent(editor, listItem[1]);
+      const listEntry = getParentNode(editor, listItem[1]);
 
       if (increase) {
         moveListItemDown(editor, {

@@ -1,6 +1,6 @@
 import {
-  getAbove,
-  getParent,
+  getAboveNode,
+  getParentNode,
   isElement,
   PlateEditor,
   someNode,
@@ -22,15 +22,15 @@ export const getCodeLineEntry = (
       match: { type: getCodeLineType(editor) },
     })
   ) {
-    const selectionParent = getParent(editor, at);
+    const selectionParent = getParentNode(editor, at);
     if (!selectionParent) return;
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAbove(editor, {
+      getAboveNode(editor, {
         at,
         match: { type: getCodeLineType(editor) },
-      }) || getParent(editor, parentPath);
+      }) || getParentNode(editor, parentPath);
 
     if (!codeLine) return;
     const [codeLineNode, codeLinePath] = codeLine;
@@ -41,7 +41,7 @@ export const getCodeLineEntry = (
     )
       return;
 
-    const codeBlock = getParent(editor, codeLinePath);
+    const codeBlock = getParentNode(editor, codeLinePath);
     if (!codeBlock) return;
 
     return {

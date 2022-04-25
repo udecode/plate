@@ -1,5 +1,5 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   isCollapsed,
   PlateEditor,
@@ -16,7 +16,7 @@ export const getAndUpsertLink = async <T = {}>(
   const type = getPluginType(editor, ELEMENT_LINK);
   let prevUrl = '';
 
-  const linkNode = getAbove(editor, {
+  const linkNode = getAboveNode(editor, {
     match: { type },
   });
   if (linkNode) {

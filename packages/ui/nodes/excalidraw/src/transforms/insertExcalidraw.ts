@@ -1,5 +1,5 @@
 import {
-  getParent,
+  getParentNode,
   insertNodes,
   PlateEditor,
   PlatePluginKey,
@@ -14,7 +14,7 @@ export const insertExcalidraw = (
 ): void => {
   if (!editor.selection) return;
 
-  const selectionParentEntry = getParent(editor, editor.selection);
+  const selectionParentEntry = getParentNode(editor, editor.selection);
   if (!selectionParentEntry) return;
 
   const [, path] = selectionParentEntry;

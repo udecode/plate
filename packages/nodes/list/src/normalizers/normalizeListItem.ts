@@ -1,6 +1,6 @@
 import {
   getChildren,
-  getParent,
+  getParentNode,
   getPluginType,
   insertEmptyElement,
   match,
@@ -98,7 +98,7 @@ export const normalizeListItem = (
       })
     ) {
       // the listItem has no lic so we move the children up a level
-      const parent = getParent(editor, listItem[1]);
+      const parent = getParentNode(editor, listItem[1]);
       const sublist = firstLiChild;
       const children = getChildren(firstLiChild).reverse();
       children.forEach((c) => {

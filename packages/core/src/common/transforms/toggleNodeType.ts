@@ -3,9 +3,9 @@ import { TEditor } from '../../types/slate/TEditor';
 import { TElement } from '../../types/slate/TElement';
 import { getPluginType } from '../../utils/getPluginType';
 import { someNode } from '../queries/someNode';
+import { setNodes } from '../slate/transforms/setNodes';
 import { EditorNodesOptions } from '../types/Editor.types';
 import { ELEMENT_DEFAULT } from '../types/node.types';
-import { setNodes } from './setNodes';
 
 export interface ToggleNodeTypeOptions {
   /**

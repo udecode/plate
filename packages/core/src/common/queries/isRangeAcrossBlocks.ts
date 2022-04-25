@@ -1,6 +1,6 @@
 import { Path, Range } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
-import { EditorAboveOptions } from '../types/Editor.types';
+import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
 import { getBlockAbove } from './getBlockAbove';
 
 /**
@@ -11,7 +11,7 @@ export const isRangeAcrossBlocks = (
   {
     at,
     ...options
-  }: Omit<EditorAboveOptions, 'at' | 'match'> & { at?: Range | null } = {}
+  }: Omit<GetAboveNodeOptions, 'at' | 'match'> & { at?: Range | null } = {}
 ) => {
   if (!at) at = editor.selection;
   if (!at) return false;

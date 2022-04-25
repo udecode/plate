@@ -1,5 +1,5 @@
 import { TEditor } from '../../types/slate/TEditor';
-import { isExpanded } from './isExpanded';
+import { isExpanded } from '../slate/range/isExpanded';
 
 /**
  * Is the selection expanded.

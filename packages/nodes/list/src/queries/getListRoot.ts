@@ -1,4 +1,4 @@
-import { getAbove, getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getAboveNode, getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 
@@ -11,7 +11,7 @@ export const getListRoot = (
 ): NodeEntry<Ancestor> | undefined => {
   if (!at) return;
 
-  const parentList = getAbove(editor, {
+  const parentList = getAboveNode(editor, {
     at,
     match: {
       type: [

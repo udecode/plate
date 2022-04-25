@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
 import {
   Decorate,
-  getParent,
+  getParentNode,
   getPlugin,
   TDescendant,
 } from '@udecode/plate-core';
@@ -79,7 +79,7 @@ export const decorateCodeLine: Decorate = (editor) => {
       return ranges;
     }
 
-    const codeBlock = getParent(editor, path);
+    const codeBlock = getParentNode(editor, path);
     if (!codeBlock) {
       return ranges;
     }

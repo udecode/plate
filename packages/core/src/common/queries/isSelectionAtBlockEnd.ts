@@ -1,6 +1,6 @@
 import { TEditor } from '../../types/slate/TEditor';
+import { isEndPoint } from '../slate/editor/isEndPoint';
 import { getBlockAbove } from './getBlockAbove';
-import { isEnd } from './isEnd';
 
 /**
  * Is the selection focus at the end of its parent block.
@@ -8,5 +8,5 @@ import { isEnd } from './isEnd';
 export const isSelectionAtBlockEnd = (editor: TEditor): boolean => {
   const path = getBlockAbove(editor)?.[1];
 
-  return !!path && isEnd(editor, editor.selection?.focus, path);
+  return !!path && isEndPoint(editor, editor.selection?.focus, path);
 };

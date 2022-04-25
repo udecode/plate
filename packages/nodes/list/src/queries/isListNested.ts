@@ -1,5 +1,5 @@
 import {
-  getParent,
+  getParentNode,
   getPluginType,
   PlateEditor,
   TElement,
@@ -11,7 +11,7 @@ import { ELEMENT_LI } from '../createListPlugin';
  * Is the list nested, i.e. its parent is a list item.
  */
 export const isListNested = (editor: PlateEditor, listPath: Path) => {
-  const listParentNode = getParent<TElement>(editor, listPath)?.[0];
+  const listParentNode = getParentNode<TElement>(editor, listPath)?.[0];
 
   return listParentNode?.type === getPluginType(editor, ELEMENT_LI);
 };

@@ -1,7 +1,7 @@
 import { Editor, Point } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
+import { getEditorString } from '../slate/editor/getEditorString';
 import { escapeRegExp } from '../utils/escapeRegexp';
-import { getText } from './getText';
 
 /**
  * Is the word at the point after a trigger (punctuation character)
@@ -21,7 +21,7 @@ export const isWordAfterTrigger = (
   const beforeRange = before && Editor.range(editor, before, at);
 
   // Before text
-  const beforeText = getText(editor, beforeRange);
+  const beforeText = getEditorString(editor, beforeRange);
 
   // Starts with char and ends with word characters
   const escapedTrigger = escapeRegExp(trigger);

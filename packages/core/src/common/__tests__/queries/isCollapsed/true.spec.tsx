@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { PlateEditor } from '../../../../types/PlateEditor';
-import { isCollapsed } from '../../../queries/isCollapsed';
+import { isCollapsed } from '../../../slate/range/isCollapsed';
 
 jsx;
 

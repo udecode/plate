@@ -2,7 +2,7 @@ import {
   ELEMENT_DEFAULT,
   getChildren,
   getNode,
-  getParent,
+  getParentNode,
   getPluginType,
   getPreviousPath,
   isElement,
@@ -104,7 +104,7 @@ export const normalizeList = (
 
     // LIC should have LI parent. If not, set LIC to DEFAULT type.
     if (node.type === licType && licType !== defaultType) {
-      if (getParent(editor, path)?.[0].type !== liType) {
+      if (getParentNode(editor, path)?.[0].type !== liType) {
         setNodes(editor, { type: defaultType }, { at: path });
         return;
       }

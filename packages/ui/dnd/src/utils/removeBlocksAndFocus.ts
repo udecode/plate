@@ -11,7 +11,7 @@ export const removeBlocksAndFocus = (
   editor: ReactEditor,
   options: EditorNodesOptions
 ) => {
-  unhangRange(editor, options);
+  unhangRange(editor, options?.at, options);
 
   const nodeEntries = getBlocksWithId(editor, options);
 

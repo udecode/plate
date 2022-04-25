@@ -1,7 +1,7 @@
 import {
-  deleteFragment,
-  getAbove,
-  getParent,
+  deleteMerge,
+  getAboveNode,
+  getParentNode,
   getPluginType,
   PlateEditor,
 } from '@udecode/plate-core';
@@ -20,10 +20,10 @@ export const deleteFragmentList = (editor: PlateEditor) => {
 
     /**
      * Check if the end li can be deleted (if it has no sublist).
-     * Store the path ref to delete it after deleteFragment.
+     * Store the path ref to delete it after deleteMerge.
      */
     const end = Editor.end(editor, editor.selection as Range);
-    const liEnd = getAbove(editor, {
+    const liEnd = getAboveNode(editor, {
       at: end,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });
@@ -35,10 +35,10 @@ export const deleteFragmentList = (editor: PlateEditor) => {
     /**
      * Delete fragment and move end block children to start block
      */
-    deleteFragment(editor);
+    deleteMerge(editor);
 
     const start = Editor.start(editor, editor.selection as Range);
-    const liStart = getAbove(editor, {
+    const liStart = getAboveNode(editor, {
       at: start,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });
@@ -46,7 +46,7 @@ export const deleteFragmentList = (editor: PlateEditor) => {
     if (liEndPathRef) {
       const liEndPath = liEndPathRef.unref()!;
 
-      const listStart = liStart && getParent(editor, liStart[1]);
+      const listStart = liStart && getParentNode(editor, liStart[1]);
 
       const deletePath = getHighestEmptyList(editor, {
         liPath: liEndPath,

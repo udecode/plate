@@ -1,7 +1,7 @@
 import {
   findDescendant,
   getLastChildPath,
-  getParent,
+  getParentNode,
   insertNodes,
   moveChildren,
   PlateEditor,
@@ -64,7 +64,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     let to: Path;
 
     if (!toListItemSublist) {
-      const fromList = getParent(editor, fromListItemPath);
+      const fromList = getParentNode(editor, fromListItemPath);
       if (!fromList) return 0;
       const [fromListNode] = fromList;
 

@@ -1,4 +1,4 @@
-import { getAbove, getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getAboveNode, getPluginType, PlateEditor } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_LI } from '../createListPlugin';
 import { getListTypes } from './getListTypes';
@@ -21,7 +21,7 @@ export const getHighestEmptyList = (
     diffListPath?: Path;
   }
 ): Path | undefined => {
-  const list = getAbove(editor, {
+  const list = getAboveNode(editor, {
     at: liPath,
     match: { type: getListTypes(editor) },
   });
@@ -30,7 +30,7 @@ export const getHighestEmptyList = (
 
   if (!diffListPath || !Path.equals(listPath, diffListPath)) {
     if (listNode.children.length < 2) {
-      const liParent = getAbove(editor, {
+      const liParent = getAboveNode(editor, {
         at: listPath,
         match: { type: getPluginType(editor, ELEMENT_LI) },
       });

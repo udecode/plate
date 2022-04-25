@@ -1,5 +1,5 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   PlateEditor,
   someNode,
@@ -13,10 +13,10 @@ export const deleteRow = (editor: PlateEditor) => {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentTableItem = getAbove(editor, {
+    const currentTableItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
-    const currentRowItem = getAbove(editor, {
+    const currentRowItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
     if (

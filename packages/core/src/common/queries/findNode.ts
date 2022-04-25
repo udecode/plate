@@ -1,8 +1,8 @@
 import { NodeEntry } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
 import { TNode } from '../../types/slate/TNode';
+import { getNodes } from '../slate/editor/getNodes';
 import { EditorNodesOptions } from '../types/index';
-import { getNodes } from './getNodes';
 import { getQueryOptions } from './match';
 
 export type FindNodeOptions<T extends TNode = TNode> = EditorNodesOptions<T>;

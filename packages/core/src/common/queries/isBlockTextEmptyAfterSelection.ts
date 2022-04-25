@@ -1,9 +1,9 @@
 import { Editor } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
 import { isText } from '../../types/slate/TText';
+import { getParentNodeNode } from '../slate/editor/getParentNodeNode';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
-import { getParent } from './getParent';
 
 /**
  * Is there empty text after the selection.
@@ -18,7 +18,7 @@ export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
 
   const cursor = editor.selection.focus;
 
-  const selectionParentEntry = getParent(editor, editor.selection);
+  const selectionParentEntry = getParentNodeNode(editor, editor.selection);
   if (!selectionParentEntry) return false;
   const [, selectionParentPath] = selectionParentEntry;
 

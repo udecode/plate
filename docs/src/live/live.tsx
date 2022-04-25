@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
 import 'prismjs/themes/prism.css';
+import React, { useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
@@ -133,7 +133,7 @@ import {
   ELEMENT_TODO_LI,
   ELEMENT_TR,
   ELEMENT_UL,
-  getParent,
+  getParentNode,
   getPlateActions,
   getPlugin,
   getPluginType,
@@ -359,7 +359,7 @@ const ReactLiveScope = {
   FormatQuote,
   FormatStrikethrough,
   FormatUnderlined,
-  getParent,
+  getParentNode,
   getPlugin,
   getPluginType,
   pipeRenderLeaf,

@@ -1,5 +1,5 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   insertNodes,
   PlateEditor,
@@ -20,7 +20,7 @@ export const addColumn = (
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const currentCellItem = getAbove(editor, {
+    const currentCellItem = getAboveNode(editor, {
       match: {
         type: [
           getPluginType(editor, ELEMENT_TH),
@@ -29,7 +29,7 @@ export const addColumn = (
       },
     });
 
-    const currentTableItem = getAbove(editor, {
+    const currentTableItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
 

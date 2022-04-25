@@ -1,4 +1,9 @@
-import { getParent, match, PlateEditor, TElement } from '@udecode/plate-core';
+import {
+  getParentNode,
+  match,
+  PlateEditor,
+  TElement,
+} from '@udecode/plate-core';
 import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries';
 
@@ -11,7 +16,7 @@ export const normalizeNestedList = (
 ) => {
   const [, path] = nestedListItem;
 
-  const parentNode = getParent(editor, path);
+  const parentNode = getParentNode(editor, path);
   const hasParentList =
     parentNode && match(parentNode[0], { type: getListTypes(editor) });
   if (!hasParentList) {

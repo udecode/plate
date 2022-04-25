@@ -1,7 +1,7 @@
 import {
-  getAbove,
+  getAboveNode,
   getNode,
-  getParent,
+  getParentNode,
   getPluginType,
   isCollapsed,
   PlateEditor,
@@ -32,13 +32,13 @@ export const getListItemEntry = (
   if (_at) {
     const node = getNode(editor, _at) as TElement;
     if (node) {
-      const listItem = getAbove(editor, {
+      const listItem = getAboveNode(editor, {
         at: _at,
         match: { type: liType },
       }) as NodeEntry<TElement>;
 
       if (listItem) {
-        const list = getParent(editor, listItem[1]) as NodeEntry<TElement>;
+        const list = getParentNode(editor, listItem[1]) as NodeEntry<TElement>;
 
         return { list, listItem };
       }

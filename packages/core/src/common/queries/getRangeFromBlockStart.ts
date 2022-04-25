@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 import { TEditor } from '../../types/slate/TEditor';
-import { EditorAboveOptions } from '../types/Editor.types';
+import { GetAboveNodeOptions } from '../slate/editor/getAboveNode';
 import { getBlockAbove } from './getBlockAbove';
 import { getPointFromLocation } from './getPointFromLocation';
 
@@ -9,7 +9,7 @@ import { getPointFromLocation } from './getPointFromLocation';
  */
 export const getRangeFromBlockStart = (
   editor: TEditor,
-  options: Omit<EditorAboveOptions, 'match'> = {}
+  options: Omit<GetAboveNodeOptions, 'match'> = {}
 ) => {
   const path = getBlockAbove(editor, options)?.[1];
   if (!path) return;

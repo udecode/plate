@@ -1,4 +1,4 @@
-import { getNodes, getParent, KeyboardHandler } from '@udecode/plate-core';
+import { getNodes, getParentNode, KeyboardHandler } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { getCodeLineType } from './options/getCodeLineType';
 import { getCodeLineEntry } from './queries/getCodeLineEntry';
@@ -24,7 +24,7 @@ export const onKeyDownCodeBlock: KeyboardHandler<{}, CodeBlockPlugin> = (
     if (codeLines.length) {
       e.preventDefault();
       const [, firstLinePath] = codeLines[0];
-      const codeBlock = getParent(editor, firstLinePath);
+      const codeBlock = getParentNode(editor, firstLinePath);
       if (!codeBlock) return;
 
       Editor.withoutNormalizing(editor, () => {

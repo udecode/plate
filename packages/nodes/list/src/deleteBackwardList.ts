@@ -1,5 +1,5 @@
 import {
-  deleteFragment,
+  deleteMerge,
   ELEMENT_DEFAULT,
   getPluginType,
   isFirstChild,
@@ -64,7 +64,7 @@ export const deleteBackwardList = (
           return;
         }
 
-        deleteFragment(editor, {
+        deleteMerge(editor, {
           unit,
           reverse: true,
         });

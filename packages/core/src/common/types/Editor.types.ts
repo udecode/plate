@@ -1,26 +1,27 @@
-import { Location, Path, Point, Range } from 'slate';
-import { TAncestor } from '../../types/slate/TAncestor';
-import { TNode } from '../../types/slate/TNode';
+import { Location } from 'slate';
+import { AncestorOf } from '../../types/slate/TAncestor';
+import { TEditor, Value } from '../../types/slate/TEditor';
+import { NodeOf, TNode } from '../../types/slate/TNode';
 import { Predicate } from '../queries/match';
 
-export type NodeMatch<T = TNode> = Predicate<T>;
+export type ENodeMatch<N extends TNode> = Predicate<N>;
 
-export interface MatchOptions<T = TNode> {
-  match?: NodeMatch<T>;
+export interface ENodeMatchOptions<V extends Value> {
+  match?: ENodeMatch<NodeOf<TEditor<V>>>;
   block?: boolean;
 }
 
-export interface EditorNodesOptions<T = TNode> extends MatchOptions<T> {
+export interface EAncestorMatchOptions<V extends Value> {
+  match?: ENodeMatch<AncestorOf<TEditor<V>>>;
+  block?: boolean;
+}
+
+export interface EditorNodesOptions<V extends Value>
+  extends ENodeMatchOptions<V> {
   at?: Location;
   mode?: 'highest' | 'lowest' | 'all';
   universal?: boolean;
   reverse?: boolean;
-  voids?: boolean;
-}
-
-export interface EditorAboveOptions<T = TAncestor> extends MatchOptions<T> {
-  at?: Range | Path | Point;
-  mode?: 'highest' | 'lowest';
   voids?: boolean;
 }
 

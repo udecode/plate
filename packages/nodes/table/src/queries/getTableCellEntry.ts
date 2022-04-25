@@ -1,6 +1,6 @@
 import {
-  getAbove,
-  getParent,
+  getAboveNode,
+  getParentNode,
   getPluginType,
   PlateEditor,
   someNode,
@@ -28,12 +28,12 @@ export const getTableCellEntry = <T = {}>(
       },
     })
   ) {
-    const selectionParent = getParent(editor, at);
+    const selectionParent = getParentNode(editor, at);
     if (!selectionParent) return;
     const [, paragraphPath] = selectionParent;
 
     const tableCell =
-      getAbove(editor, {
+      getAboveNode(editor, {
         at,
         match: {
           type: [
@@ -41,7 +41,7 @@ export const getTableCellEntry = <T = {}>(
             getPluginType(editor, ELEMENT_TH),
           ],
         },
-      }) || getParent(editor, paragraphPath);
+      }) || getParentNode(editor, paragraphPath);
 
     if (!tableCell) return;
     const [tableCellNode, tableCellPath] = tableCell;
@@ -52,13 +52,13 @@ export const getTableCellEntry = <T = {}>(
     )
       return;
 
-    const tableRow = getParent(editor, tableCellPath);
+    const tableRow = getParentNode(editor, tableCellPath);
     if (!tableRow) return;
     const [tableRowNode, tableRowPath] = tableRow;
 
     if (tableRowNode.type !== getPluginType(editor, ELEMENT_TR)) return;
 
-    const tableElement = getParent(editor, tableRowPath);
+    const tableElement = getParentNode(editor, tableRowPath);
     if (!tableElement) return;
 
     return {

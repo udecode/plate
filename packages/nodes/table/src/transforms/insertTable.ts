@@ -1,5 +1,5 @@
 import {
-  getAbove,
+  getAboveNode,
   getPluginType,
   insertNodes,
   PlateEditor,
@@ -23,7 +23,7 @@ export const insertTable = (
   ) {
     insertNodes<TElement>(editor, getEmptyTableNode(editor, { header }));
     if (editor.selection) {
-      const tableEntry = getAbove(editor, {
+      const tableEntry = getAboveNode(editor, {
         match: { type: getPluginType(editor, ELEMENT_TABLE) },
       });
       if (!tableEntry) {
