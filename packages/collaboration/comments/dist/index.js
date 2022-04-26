@@ -62,6 +62,7 @@ const wrapThread = (editor, {
   plateCore.wrapNodes(editor, {
     type: plateCore.getPluginType(editor, ELEMENT_THREAD),
     thread,
+    selected: false,
     children: []
   }, {
     at,

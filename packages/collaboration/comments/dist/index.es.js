@@ -58,6 +58,7 @@ const wrapThread = (editor, {
   wrapNodes(editor, {
     type: getPluginType(editor, ELEMENT_THREAD),
     thread,
+    selected: false,
     children: []
   }, {
     at,
