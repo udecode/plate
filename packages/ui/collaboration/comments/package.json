@@ -43,7 +43,7 @@
     "@material/textfield": "^13.0.0",
     "@styled-icons/material": "^10.34.0",
     "@udecode/plate-core": "10.5.3",
-    "@udecode/plate-comments": "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?comments",
+    "@udecode/plate-comments": "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?672fae423726baa61427290f3a52fb3ec184535f",
     "@udecode/plate-styled-components": "10.5.3",
     "@udecode/plate-ui-toolbar": "10.5.3"
   },
