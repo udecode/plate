@@ -407,7 +407,7 @@ export function Thread({
       ))}
 
       <div>
-        {!hasComments && (
+        {!hasComments() && (
           <div css={commentHeader.css} className={commentHeader.className}>
             <div css={avatarHolder.css} className={avatarHolder.className}>
               <img
