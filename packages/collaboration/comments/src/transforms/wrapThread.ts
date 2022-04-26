@@ -12,6 +12,7 @@ export const wrapThread = <T = {}>(
     {
       type: getPluginType(editor, ELEMENT_THREAD),
       thread,
+      selected: false,
       children: [],
     },
     { at, split: true }
