@@ -1,5 +1,11 @@
 # @udecode/plate-break
 
+## 10.6.1
+
+### Patch Changes
+
+- [#1488](https://github.com/udecode/plate/pull/1488) by [@suchanlee](https://github.com/suchanlee) – prevent double new lines when pressing enter with soft/exit break plugins
+
 ## 10.5.3
 
 ## 10.5.2

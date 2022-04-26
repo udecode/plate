@@ -14,6 +14,7 @@ export const onKeyDownExitBreak: KeyboardHandler<{}, ExitBreakPlugin> = (
     if (isHotkey(hotkey, event as any) && queryNode(entry, rule.query)) {
       if (exitBreak(editor, rule)) {
         event.preventDefault();
+        event.stopPropagation();
       }
     }
   });

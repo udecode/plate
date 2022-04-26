@@ -12,6 +12,7 @@ export const onKeyDownSoftBreak: KeyboardHandler<{}, SoftBreakPlugin> = (
   rules.forEach(({ hotkey, query }) => {
     if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
       event.preventDefault();
+      event.stopPropagation();
 
       editor.insertText('\n');
     }
