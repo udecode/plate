@@ -35,7 +35,11 @@ const createThreadPlugin = plateCore.createPluginFactory({
         const threadNodeEntries = findThreadNodeEntries(editor);
 
         for (const threadNodeEntry of threadNodeEntries) {
-          threadNodeEntry[0].selected = false;
+          slate.Transforms.setNodes(editor, {
+            selected: false
+          }, {
+            at: threadNodeEntry[1]
+          });
         }
 
         const threadNodeEntry = findSelectedThreadNodeEntry(editor);
@@ -46,7 +50,11 @@ const createThreadPlugin = plateCore.createPluginFactory({
           } = threadNodeEntry[0];
 
           if (thread) {
-            threadNodeEntry[0].selected = true;
+            slate.Transforms.setNodes(editor, {
+              selected: true
+            }, {
+              at: threadNodeEntry[1]
+            });
           }
         }
       };

@@ -1305,7 +1305,7 @@ function Thread({
     onResolveThread: onResolveThread,
     onReOpenThread: onReOpenThread,
     onDelete: onDelete
-  })), /*#__PURE__*/React__default['default'].createElement("div", null, !hasComments && /*#__PURE__*/React__default['default'].createElement(_StyledDiv2$1, {
+  })), /*#__PURE__*/React__default['default'].createElement("div", null, !hasComments() && /*#__PURE__*/React__default['default'].createElement(_StyledDiv2$1, {
     className: commentHeader.className,
     $_css2: commentHeader.css
   }, /*#__PURE__*/React__default['default'].createElement(_StyledDiv3$1, {

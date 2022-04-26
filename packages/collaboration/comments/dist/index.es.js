@@ -1,5 +1,5 @@
 import { getPluginType, getAbove, getNodes, createPluginFactory, wrapNodes, isCollapsed, unwrapNodes } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import { Transforms, Editor } from 'slate';
 
 function findSelectedThreadNodeEntry(editor) {
   const type = getPluginType(editor, ELEMENT_THREAD);
@@ -31,7 +31,11 @@ const createThreadPlugin = createPluginFactory({
         const threadNodeEntries = findThreadNodeEntries(editor);
 
         for (const threadNodeEntry of threadNodeEntries) {
-          threadNodeEntry[0].selected = false;
+          Transforms.setNodes(editor, {
+            selected: false
+          }, {
+            at: threadNodeEntry[1]
+          });
         }
 
         const threadNodeEntry = findSelectedThreadNodeEntry(editor);
@@ -42,7 +46,11 @@ const createThreadPlugin = createPluginFactory({
           } = threadNodeEntry[0];
 
           if (thread) {
-            threadNodeEntry[0].selected = true;
+            Transforms.setNodes(editor, {
+              selected: true
+            }, {
+              at: threadNodeEntry[1]
+            });
           }
         }
       };

@@ -1,1 +1,1 @@
-{"version":3,"file":"createThreadPlugin.d.ts","sourceRoot":"","sources":["../src/createThreadPlugin.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,YAAY,EAAE,MAAM,YAAY,CAAC;AAE1C,eAAO,MAAM,cAAc,WAAW,CAAC;AAEvC,eAAO,MAAM,kBAAkB,gPAsB7B,CAAC"}
+{"version":3,"file":"createThreadPlugin.d.ts","sourceRoot":"","sources":["../src/createThreadPlugin.ts"],"names":[],"mappings":"AAIA,OAAO,EAAc,YAAY,EAAE,MAAM,YAAY,CAAC;AAEtD,eAAO,MAAM,cAAc,WAAW,CAAC;AAEvC,eAAO,MAAM,kBAAkB,gPAsC7B,CAAC"}
