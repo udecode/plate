@@ -5307,6 +5307,30 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
+"@udecode/plate-comments@https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?comments":
+  version "1.0.0"
+  resolved "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?comments#4a882ed9ba93add242320176401cd9125d30a357"
+  dependencies:
+    "@udecode/plate-core" "10.5.3"
+
+"@udecode/plate-ui-comments@https://gitpkg.now.sh/xolvio/plate/packages/ui/collaboration/comments?comments":
+  version "1.0.0"
+  resolved "https://gitpkg.now.sh/xolvio/plate/packages/ui/collaboration/comments?comments#5164eb3cb3dac1d8ea53d7a4fc191a8e26bed907"
+  dependencies:
+    "@material/button" "^13.0.0"
+    "@material/dialog" "^13.0.0"
+    "@material/icon-button" "^13.0.0"
+    "@material/menu" "^13.0.0"
+    "@material/menu-surface" "^13.0.0"
+    "@material/ripple" "^13.0.0"
+    "@material/snackbar" "^13.0.0"
+    "@material/textfield" "^13.0.0"
+    "@styled-icons/material" "^10.34.0"
+    "@udecode/plate-comments" "1.0.0"
+    "@udecode/plate-core" "10.5.3"
+    "@udecode/plate-styled-components" "10.5.3"
+    "@udecode/plate-ui-toolbar" "10.5.3"
+
 "@udecode/zustood@0.4.4":
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/@udecode/zustood/-/zustood-0.4.4.tgz#0f3467f1ec3656623c16bb803d64e6dc55ea7b42"
