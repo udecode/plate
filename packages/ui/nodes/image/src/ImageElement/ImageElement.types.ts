@@ -40,10 +40,20 @@ export interface ImageElementProps
      * Caption placeholder.
      */
     placeholder?: string;
+
+    /**
+     * Whether caption is read-only.
+     */
+    readOnly?: boolean;
   };
 
   /**
    * Whether the image is draggable.
    */
   draggable?: boolean;
+
+  /**
+   * Ignore editable readOnly mode
+   */
+  ignoreReadOnly?: boolean;
 }
