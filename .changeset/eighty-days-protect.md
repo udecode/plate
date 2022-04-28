@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': minor
+'@udecode/plate-image': minor
 '@udecode/plate-ui-image': minor
 ---
 
