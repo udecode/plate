@@ -4,6 +4,7 @@ import { CSSProp } from 'styled-components';
 
 export interface TableCellElementStyleProps extends TableCellElementProps {
   hovered: boolean;
+  readOnly: boolean;
 }
 
 export interface TableCellElementStyles {
@@ -17,4 +18,9 @@ export interface TableCellElementProps
   extends StyledElementProps<{}, TableCellElementStyles> {
   resizableProps?: ResizableProps;
   hideBorder?: boolean;
+
+  /**
+   * Ignores editable readOnly mode
+   */
+  ignoreReadOnly?: boolean;
 }
