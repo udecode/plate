@@ -8,4 +8,4 @@ export * from './QueryEditorOptions';
 export * from './QueryNodeOptions';
 export * from './node.types';
 export * from './plugins/index';
-export * from './types';
+export * from './utility/index';

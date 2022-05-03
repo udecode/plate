@@ -1,5 +1,5 @@
+import { Value } from '../../slate/types/TEditor';
 import { PlateEditor } from '../PlateEditor';
-import { TNode } from '../slate/TNode';
 import { HandlerReturnType } from './DOMHandlers';
 import { WithPlatePlugin } from './PlatePlugin';
 
@@ -8,7 +8,7 @@ import { WithPlatePlugin } from './PlatePlugin';
  * Return `false` to prevent calling the next plugin handler.
  * @see {@link SlatePropsOnChange}
  */
-export type OnChange<T = {}, P = {}> = (
-  editor: PlateEditor<T>,
-  plugin: WithPlatePlugin<T, P>
-) => (value: TNode[]) => HandlerReturnType;
+export type OnChange<V extends Value, T = {}, P = {}> = (
+  editor: PlateEditor<V, T>,
+  plugin: WithPlatePlugin<V, T, P>
+) => (value: V) => HandlerReturnType;

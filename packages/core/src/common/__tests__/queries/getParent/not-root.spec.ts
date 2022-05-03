@@ -1,6 +1,6 @@
 import { createEditor } from 'slate';
-import { getParentNodeNode } from '../../../slate/editor/getParentNodeNode';
+import { getParentNode } from '../../../../slate/editor/getParentNode';
 
 it('should be', () => {
-  expect(getParentNodeNode(createEditor(), [0])?.[1]).toEqual([]);
+  expect(getParentNode(createEditor(), [0])?.[1]).toEqual([]);
 });

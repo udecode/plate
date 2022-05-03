@@ -6,14 +6,15 @@ import {
   someNode,
 } from '@udecode/plate-core';
 import { Location } from 'slate';
+import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_TD, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 
 /**
  * If at (default = selection) is in table>tr>td or table>tr>th,
  * return table, tr, and td or th node entries.
  */
-export const getTableCellEntry = <T = {}>(
-  editor: PlateEditor<T>,
+export const getTableCellEntry = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

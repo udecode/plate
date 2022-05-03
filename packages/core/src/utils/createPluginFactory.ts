@@ -1,6 +1,7 @@
+import { NoInfer } from '../common/types/utility/NoInfer';
+import { Value } from '../slate/types/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
-import { NoInfer } from '../types/utility/NoInfer';
 import { overridePluginsByKey } from './overridePluginsByKey';
 
 /**
@@ -12,12 +13,15 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  *   - second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
  */
 export const createPluginFactory = <P = {}>(
-  defaultPlugin: PlatePlugin<{}, NoInfer<P>>
-) => <T = {}>(
-  override?: Partial<PlatePlugin<T, NoInfer<P>>>,
-  overrideByKey: OverrideByKey<T> = {}
-): PlatePlugin<T, NoInfer<P>> => {
+  defaultPlugin: PlatePlugin<Value, {}, NoInfer<P>>
+) => <V extends Value, T = {}>(
+  override?: Partial<PlatePlugin<V, T, NoInfer<P>>>,
+  overrideByKey: OverrideByKey<V, T> = {}
+): PlatePlugin<V, T, NoInfer<P>> => {
   overrideByKey[defaultPlugin.key] = override as any;
 
-  return overridePluginsByKey<T, P>({ ...defaultPlugin } as any, overrideByKey);
+  return overridePluginsByKey<V, T, P>(
+    { ...defaultPlugin } as any,
+    overrideByKey
+  );
 };

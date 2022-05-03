@@ -21,57 +21,139 @@ import {
   createDeserializeHtmlPlugin,
   KEY_DESERIALIZE_HTML,
 } from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import { isText } from '../slate/text/isText';
+import { Value } from '../slate/types/TEditor';
+import { TReactEditor } from '../slate/types/TReactEditor';
+import { MarksOf } from '../slate/types/TText';
 import { getPlateActions } from '../stores/plate/platesStore';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
+import { createTEditor } from './createTEditor';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
 import { overridePluginsByKey } from './overridePluginsByKey';
+
+type FormattedText = {
+  bold?: boolean;
+  italic?: boolean;
+  code?: boolean;
+  underline?: boolean;
+  text: string;
+};
+
+type BulletedList = {
+  type: 'bulleted-list';
+  children: ListItem[];
+};
+
+type HeadingThree = {
+  type: 'heading-three';
+  children: FormattedText[];
+};
+
+type Image = {
+  type: 'image';
+  url: string;
+  children: [FormattedText];
+};
+
+type Link = {
+  type: 'link';
+  url: string;
+  children: FormattedText[];
+};
+
+type ListItem = {
+  type: 'list-item';
+  children: (Link | FormattedText)[];
+};
+
+type NumberedList = {
+  type: 'numbered-list';
+  children: ListItem[];
+};
+
+type Paragraph = {
+  type: 'paragraph';
+  children: (Link | FormattedText)[];
+};
+
+type Quote = {
+  type: 'quote';
+  children: (Link | FormattedText)[];
+};
+
+export type MyElements =
+  | Paragraph
+  | Quote
+  | Image
+  | HeadingThree
+  | BulletedList
+  | NumberedList;
+
+export type MyValue = MyElements[];
+
+type MyEditor = TReactEditor<MyValue>;
+
+export type MyMarks = MarksOf<MyEditor>;
+
+const myeditor = createTEditor<MyValue>();
+
+const element = myeditor.children[0];
+const text = element.children[0];
+if (isText(text)) {
+  // text.
+}
 
 /**
  * Flatten deep plugins then set editor.plugins and editor.pluginsByKey
  */
-export const setPlatePlugins = <T = {}>(
-  editor: PlateEditor<T>,
+export const setPlatePlugins = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   {
     disableCorePlugins,
     plugins: _plugins = [],
-  }: Pick<PlateProps<T>, 'plugins' | 'disableCorePlugins'>
+  }: Pick<PlateProps<V, T>, 'plugins' | 'disableCorePlugins'>
 ) => {
-  let plugins: PlatePlugin<T>[] = [];
+  let plugins: PlatePlugin<V, T>[] = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
 
     if (typeof dcp !== 'object' || !dcp.react) {
-      plugins.push(editor.pluginsByKey?.react ?? createReactPlugin());
+      plugins.push((editor.pluginsByKey?.react as any) ?? createReactPlugin());
     }
     if (typeof dcp !== 'object' || !dcp.history) {
-      plugins.push(editor.pluginsByKey?.history ?? createHistoryPlugin());
+      plugins.push(
+        (editor.pluginsByKey?.history as any) ?? createHistoryPlugin()
+      );
     }
     if (typeof dcp !== 'object' || !dcp.eventEditor) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_EVENT_EDITOR] ?? createEventEditorPlugin()
+        (editor.pluginsByKey?.[KEY_EVENT_EDITOR] as any) ??
+          createEventEditorPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.inlineVoid) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_INLINE_VOID] ?? createInlineVoidPlugin()
+        (editor.pluginsByKey?.[KEY_INLINE_VOID] as any) ??
+          createInlineVoidPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.insertData) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_INSERT_DATA] ?? createInsertDataPlugin()
+        (editor.pluginsByKey?.[KEY_INSERT_DATA] as any) ??
+          createInsertDataPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.deserializeHtml) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_DESERIALIZE_HTML] ??
+        (editor.pluginsByKey?.[KEY_DESERIALIZE_HTML] as any) ??
           createDeserializeHtmlPlugin()
       );
     }
     if (typeof dcp !== 'object' || !dcp.deserializeAst) {
       plugins.push(
-        editor.pluginsByKey?.[KEY_DESERIALIZE_AST] ??
+        (editor.pluginsByKey?.[KEY_DESERIALIZE_AST] as any) ??
           createDeserializeAstPlugin()
       );
     }
@@ -88,14 +170,17 @@ export const setPlatePlugins = <T = {}>(
   editor.plugins.forEach((plugin) => {
     if (plugin.overrideByKey) {
       const newPlugins = editor.plugins.map((p) => {
-        return overridePluginsByKey<T, {}>(p, plugin.overrideByKey as any);
+        return overridePluginsByKey<V, T, {}>(
+          p as any,
+          plugin.overrideByKey as any
+        );
       });
 
       editor.plugins = [];
       editor.pluginsByKey = {};
 
       // flatten again the overrides
-      flattenDeepPlugins(editor, newPlugins);
+      flattenDeepPlugins<V, T>(editor, newPlugins);
     }
   });
 

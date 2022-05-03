@@ -1,5 +1,4 @@
-import { TEditor } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { TEditor, TNodeEntry } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 import { indentList } from './indentList';
@@ -9,7 +8,7 @@ import { indentList } from './indentList';
  */
 export const toggleIndentListSet = (
   editor: TEditor,
-  [node]: NodeEntry,
+  [node]: TNodeEntry,
   {
     listStyleType = ListStyleType.Disc,
   }: {

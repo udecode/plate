@@ -1,8 +1,9 @@
-import { Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
+import { isElement } from '../../../slate/element/isElement';
+import { isText } from '../../../slate/text/isText';
+import { TDescendant } from '../../../slate/types/TDescendant';
+import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
-import { TDescendant } from '../../../types/slate/TDescendant';
-import { isElement } from '../../../types/slate/TElement';
 import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
@@ -11,8 +12,8 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * Deserialize HTML to TDescendant[] with marks on Text.
  * Build the leaf from the leaf deserializers of each plugin.
  */
-export const htmlElementToLeaf = <T = {}>(
-  editor: PlateEditor<T>,
+export const htmlElementToLeaf = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   element: HTMLElement
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);
@@ -27,7 +28,7 @@ export const htmlElementToLeaf = <T = {}>(
             node: child,
             source: node,
             query: {
-              filter: ([n]) => Text.isText(n),
+              filter: ([n]) => isText(n),
             },
           });
         }
@@ -36,7 +37,7 @@ export const htmlElementToLeaf = <T = {}>(
         const attributes = { ...node };
 
         // attributes should not override child attributes
-        if (Text.isText(child) && child.text) {
+        if (isText(child) && child.text) {
           Object.keys(attributes).forEach((key) => {
             if (attributes[key] && child[key]) {
               attributes[key] = child[key];
@@ -44,7 +45,7 @@ export const htmlElementToLeaf = <T = {}>(
           });
         }
 
-        arr.push(jsx('text', attributes, child));
+        arr.push(jsx('text', attributes, child) as any);
       }
 
       return arr;

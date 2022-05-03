@@ -1,9 +1,9 @@
-import { TEditor } from '../../types/slate/TEditor';
-import { getEditorString } from '../slate/editor/getEditorString';
+import { getEditorString } from '../../slate/editor/getEditorString';
+import { TEditor, Value } from '../../slate/types/TEditor';
 
 /**
  * Get the selected text.
  * Return empty string if no selection.
  */
-export const getSelectionText = (editor: TEditor) =>
+export const getSelectionText = <V extends Value>(editor: TEditor<V>) =>
   getEditorString(editor, editor.selection);

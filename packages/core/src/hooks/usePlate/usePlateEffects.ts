@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { createEditor, Editor } from 'slate';
 import { PlateProps } from '../../components/Plate';
 import { withPlate } from '../../plugins/withPlate';
+import { normalizeEditor } from '../../slate/editor/normalizeEditor';
+import { Value } from '../../slate/types/TEditor';
 import {
   getPlateActions,
   usePlateSelectors,
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
-import { PlateEditor } from '../../types/PlateEditor';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
-import { TEditor } from '../../types/slate/TEditor';
+import { createTEditor } from '../../utils/createTEditor';
 import { setPlatePlugins } from '../../utils/setPlatePlugins';
 import { usePlateStoreEffects } from './usePlateStoreEffects';
 
@@ -17,7 +17,7 @@ import { usePlateStoreEffects } from './usePlateStoreEffects';
  * Effects to update the plate store from the options.
  * Dynamically updating the options will update the store state.
  */
-export const usePlateEffects = <T = {}>({
+export const usePlateEffects = <V extends Value, T = {}>({
   id = 'main',
   editor: editorProp,
   initialValue,
@@ -28,15 +28,15 @@ export const usePlateEffects = <T = {}>({
   onChange,
   value,
   enabled: enabledProp,
-}: PlateProps<T>) => {
-  const editor = usePlateEditorRef<T>(id);
+}: PlateProps<V, T>) => {
+  const editor = usePlateEditorRef<V, T>(id);
   const enabled = usePlateSelectors(id).enabled();
-  const plugins = usePlateSelectors(id).plugins() as PlatePlugin<T>[];
+  const plugins = usePlateSelectors(id).plugins() as PlatePlugin<V, T>[];
 
   const prevEditor = useRef(editor);
   const prevPlugins = useRef(plugins);
 
-  const plateActions = getPlateActions(id);
+  const plateActions = getPlateActions<V, T>(id);
 
   // Set initialValue once
   useEffect(() => {
@@ -64,8 +64,8 @@ export const usePlateEffects = <T = {}>({
   useEffect(() => {
     if (!editor && enabled) {
       plateActions.editor(
-        (editorProp as PlateEditor) ??
-          withPlate(createEditor() as TEditor, {
+        editorProp ??
+          withPlate(createTEditor(), {
             id,
             plugins: pluginsProp,
             disableCorePlugins,
@@ -98,7 +98,7 @@ export const usePlateEffects = <T = {}>({
   // Force editor normalization
   useEffect(() => {
     if (editor && normalizeInitialValue) {
-      Editor.normalize(editor, { force: true });
+      normalizeEditor(editor, { force: true });
     }
   }, [editor, normalizeInitialValue]);
 

@@ -1,4 +1,4 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { setIndent, SetIndentOptions } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
@@ -10,8 +10,8 @@ export interface IndentListOptions extends SetIndentOptions {
 /**
  * Increase the indentation of the selected blocks.
  */
-export const indentList = (
-  editor: PlateEditor,
+export const indentList = <V extends Value>(
+  editor: PlateEditor<V>,
   { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions = {}
 ) => {
   setIndent(editor, {

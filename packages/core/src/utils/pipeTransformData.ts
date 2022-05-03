@@ -1,11 +1,12 @@
+import { Value } from '../slate/types/TEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
 import { InjectedPlugin } from './getInjectedPlugins';
 
 /**
  * Pipe editor.insertData.transformData
  */
-export const pipeTransformData = <T = {}>(
-  plugins: InjectedPlugin<T>[],
+export const pipeTransformData = <V extends Value, T = {}>(
+  plugins: InjectedPlugin<V, T>[],
   { data, dataTransfer }: PlatePluginInsertDataOptions
 ) => {
   plugins.forEach((p) => {

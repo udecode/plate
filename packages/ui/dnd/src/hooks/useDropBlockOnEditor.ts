@@ -1,7 +1,7 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
 import { findNode, isExpanded, TReactEditor } from '@udecode/plate-core';
+import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { Path, Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { DragItemBlock } from '../types';
 import { getHoverDirection } from '../utils/getHoverDirection';
 import { getNewDirection } from '../utils/getNewDirection';
@@ -33,7 +33,7 @@ export const useDropBlockOnEditor = (
       if (!dragEntry) return;
       const [, dragPath] = dragEntry;
 
-      ReactEditor.focus(editor);
+      focusEditor(editor);
 
       let dropPath: Path | undefined;
       if (direction === 'bottom') {
@@ -78,7 +78,7 @@ export const useDropBlockOnEditor = (
       if (dropLineDir) setDropLine(dropLineDir);
 
       if (direction && isExpanded(editor.selection)) {
-        ReactEditor.focus(editor);
+        focusEditor(editor);
         Transforms.collapse(editor);
       }
     },

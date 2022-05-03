@@ -27,7 +27,7 @@ import unified from 'unified';
  * Deserialize content from Markdown format to Slate format.
  * `editor` needs
  */
-export const deserializeMd = (editor: PlateEditor, data: string) => {
+export const deserializeMd = (editor: PlateEditor<V>, data: string) => {
   const tree: any = unified()
     .use(markdown)
     .use(slate, {

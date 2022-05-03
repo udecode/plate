@@ -8,8 +8,10 @@ import {
   PlateEditor,
   TDescendant,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry, Path, Transforms } from 'slate';
+import { Editor, Node, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
 import {
@@ -19,12 +21,14 @@ import {
   removeListItem,
 } from './transforms';
 
-const pathToEntry = <T extends Node>(
-  editor: PlateEditor,
+const pathToEntry = <V extends Value, T extends Node>(
+  editor: PlateEditor<V>,
   path: Path
-): NodeEntry<T> => Editor.node(editor, path) as NodeEntry<T>;
+): TNodeEntry<T> => Editor.node(editor, path) as TNodeEntry<T>;
 
-const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
+const selectionIsNotInAListHandler = <V extends Value>(
+  editor: PlateEditor<V>
+): boolean => {
   const pointAfterSelection = Editor.after(
     editor,
     editor.selection!.focus.path
@@ -64,9 +68,9 @@ const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
   return false;
 };
 
-const selectionIsInAListHandler = (
-  editor: PlateEditor,
-  res: { list: NodeEntry<TElement>; listItem: NodeEntry<TElement> }
+const selectionIsInAListHandler = <V extends Value>(
+  editor: PlateEditor<V>,
+  res: { list: TNodeEntry<TElement>; listItem: TNodeEntry<TElement> }
 ): boolean => {
   const { listItem } = res;
 
@@ -105,7 +109,7 @@ const selectionIsInAListHandler = (
           const listRoot = getListRoot(
             editor,
             listItem[1]
-          ) as NodeEntry<TElement>;
+          ) as TNodeEntry<TElement>;
 
           moveListItemsToList(editor, {
             fromList: nextSiblingListRes.list,
@@ -123,12 +127,12 @@ const selectionIsInAListHandler = (
     const siblingListItem = pathToEntry(
       editor,
       Path.next(liWithSiblings)
-    ) as NodeEntry<TElement>;
+    ) as TNodeEntry<TElement>;
 
     const siblingList = Editor.parent(
       editor,
       siblingListItem[1]
-    ) as NodeEntry<TElement>;
+    ) as TNodeEntry<TElement>;
 
     if (
       removeListItem(editor, {
@@ -152,7 +156,7 @@ const selectionIsInAListHandler = (
   );
   const nestedListItem = getChildren<TElement>(
     nestedList
-  )[0] as NodeEntry<TElement>;
+  )[0] as TNodeEntry<TElement>;
 
   if (
     removeFirstListItem(editor, {
@@ -175,7 +179,7 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const deleteForwardList = (editor: PlateEditor) => {
+export const deleteForwardList = <V extends Value>(editor: PlateEditor<V>) => {
   let skipDefaultDelete = false;
 
   if (!editor?.selection) {

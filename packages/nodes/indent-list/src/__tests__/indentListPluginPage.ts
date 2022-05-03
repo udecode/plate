@@ -1,9 +1,11 @@
-import { getNode, PlatePlugin, TElement } from '@udecode/plate-core';
+import { getNode, PlatePlugin, TElement, Value } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { getPreviousPath } from '../../../../core/src/common/queries/getPreviousPath';
 import { IndentListPlugin } from '../createIndentListPlugin';
 
-export const indentListPluginPage: Partial<PlatePlugin<IndentListPlugin>> = {
+export const indentListPluginPage: Partial<
+  PlatePlugin<Value, IndentListPlugin>
+> = {
   then: (e) => ({
     options: {
       getSiblingIndentListOptions: {

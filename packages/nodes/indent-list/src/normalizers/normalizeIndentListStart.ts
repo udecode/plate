@@ -2,9 +2,9 @@ import {
   getNode,
   setNodes,
   TEditor,
+  TNodeEntry,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
@@ -13,8 +13,8 @@ import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
 export const normalizeNextIndentListStart = (
   editor: TEditor,
-  entry: NodeEntry,
-  prevEntry?: NodeEntry
+  entry: TNodeEntry,
+  prevEntry?: TNodeEntry
 ) => {
   const [node, path] = entry;
   const [prevNode] = prevEntry ?? [null];
@@ -34,7 +34,7 @@ export const normalizeNextIndentListStart = (
 
 export const normalizeIndentListStart = (
   editor: TEditor,
-  entry: NodeEntry,
+  entry: TNodeEntry,
   options?: Partial<GetSiblingIndentListOptions>
 ) => {
   return withoutNormalizing(editor, () => {
@@ -56,7 +56,7 @@ export const normalizeIndentListStart = (
 
     let normalizeNext = true;
 
-    let currEntry: NodeEntry | undefined = entry;
+    let currEntry: TNodeEntry | undefined = entry;
 
     // normalize next until current is not normalized
     while (normalizeNext) {

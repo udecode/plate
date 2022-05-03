@@ -1,6 +1,8 @@
-import { Editor, Point } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { getEditorString } from '../slate/editor/getEditorString';
+import { Point } from 'slate';
+import { getEditorString } from '../../slate/editor/getEditorString';
+import { getPointAfter } from '../../slate/editor/getPointAfter';
+import { getRange } from '../../slate/editor/getRange';
+import { TEditor, Value } from '../../slate/types/TEditor';
 
 // Starts with whitespace char or nothing
 const AFTER_MATCH_REGEX = /^(\s|$)/;
@@ -8,12 +10,15 @@ const AFTER_MATCH_REGEX = /^(\s|$)/;
 /**
  * Is a point at the end of a word
  */
-export const isPointAtWordEnd = (editor: TEditor, { at }: { at: Point }) => {
+export const isPointAtWordEnd = <V extends Value>(
+  editor: TEditor<V>,
+  { at }: { at: Point }
+) => {
   // Point after at
-  const after = Editor.after(editor, at);
+  const after = getPointAfter(editor, at);
 
   // From at to after
-  const afterRange = Editor.range(editor, at, after);
+  const afterRange = getRange(editor, at, after);
   const afterText = getEditorString(editor, afterRange);
 
   // Match regex on after text

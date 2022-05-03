@@ -3,6 +3,7 @@ import {
   KEY_DESERIALIZE_HTML,
   PlatePlugin,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { onKeyDownList } from './onKeyDownList';
 import { ListPlugin } from './types';
@@ -33,7 +34,7 @@ export const createListPlugin = createPluginFactory({
           },
         ],
       },
-    } as PlatePlugin<{}, ListPlugin>,
+    } as PlatePlugin<Value, {}, ListPlugin>,
     {
       key: ELEMENT_OL,
       isElement: true,
@@ -41,7 +42,7 @@ export const createListPlugin = createPluginFactory({
         onKeyDown: onKeyDownList,
       },
       deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
-    } as PlatePlugin<{}, ListPlugin>,
+    } as PlatePlugin<Value, {}, ListPlugin>,
     {
       key: ELEMENT_LI,
       isElement: true,

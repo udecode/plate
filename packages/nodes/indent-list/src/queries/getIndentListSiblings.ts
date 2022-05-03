@@ -1,5 +1,4 @@
-import { TEditor } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { TEditor, TNodeEntry } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
@@ -14,7 +13,7 @@ export interface GetIndentListSiblingsOptions
 
 export const getIndentListSiblings = (
   editor: TEditor,
-  entry: NodeEntry,
+  entry: TNodeEntry,
   {
     previous = true,
     current = true,
@@ -22,7 +21,7 @@ export const getIndentListSiblings = (
     ...options
   }: GetIndentListSiblingsOptions = {}
 ) => {
-  const siblings: NodeEntry[] = [];
+  const siblings: TNodeEntry[] = [];
 
   const [node] = entry;
 

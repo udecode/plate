@@ -1,6 +1,5 @@
-import { TEditor, withoutNormalizing } from '@udecode/plate-core';
+import { TEditor, TNodeEntry, withoutNormalizing } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { NodeEntry } from 'slate';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 import { setIndentListNode } from './setIndentListNode';
@@ -11,7 +10,7 @@ import { setIndentListNode } from './setIndentListNode';
  */
 export const setIndentListNodes = (
   editor: TEditor,
-  entries: NodeEntry[],
+  entries: TNodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
   }: {

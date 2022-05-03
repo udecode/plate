@@ -1,5 +1,9 @@
-import { isDefined, TEditor, unsetNodes } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import {
+  isDefined,
+  TEditor,
+  TNodeEntry,
+  unsetNodes,
+} from '@udecode/plate-core';
 import { KEY_LIST_START } from '../createIndentListPlugin';
 
 /**
@@ -7,7 +11,7 @@ import { KEY_LIST_START } from '../createIndentListPlugin';
  */
 export const normalizeFirstIndentListStart = (
   editor: TEditor,
-  [node, path]: NodeEntry
+  [node, path]: TNodeEntry
 ) => {
   if (isDefined(node[KEY_LIST_START])) {
     unsetNodes(editor, KEY_LIST_START, { at: path });

@@ -5,7 +5,7 @@ import {
   comboboxSelectors,
   ComboboxState,
 } from '@udecode/plate-combobox';
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { Range, Transforms } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
@@ -20,16 +20,16 @@ describe('withMention', () => {
 
   type CreateEditorOptions = { multipleMentionPlugins?: boolean };
 
-  const createEditor = (
+  const createEditor = <V extends Value>(
     state: JSX.Element,
     options: CreateEditorOptions = {}
-  ): PlateEditor =>
+  ): PlateEditor<V> =>
     createEditorWithMentions(state, {
       ...options,
       pluginOptions: { ...options, key, trigger },
     });
 
-  const createEditorWithMentionInput = (
+  const createEditorWithMentionInput = <V extends Value>(
     at: JSX.Element = (
       <hp>
         <htext />
@@ -37,7 +37,7 @@ describe('withMention', () => {
       </hp>
     ),
     options?: CreateEditorOptions
-  ): PlateEditor => {
+  ): PlateEditor<V> => {
     const editor = createEditor(at, options);
 
     editor.insertText(trigger);

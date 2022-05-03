@@ -6,14 +6,15 @@ import {
   selectEditor,
   someNode,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export const insertTable = (
-  editor: PlateEditor,
+export const insertTable = <V extends Value>(
+  editor: PlateEditor<V>,
   { header }: TablePluginOptions
 ) => {
   if (

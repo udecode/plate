@@ -1,15 +1,15 @@
-import { TEditor } from '@udecode/plate-core';
-import { Ancestor, Editor, NodeEntry, Path } from 'slate';
+import { TEditor, TNodeEntry } from '@udecode/plate-core';
+import { Ancestor, Editor, Path } from 'slate';
 
 export function getCellInNextTableRow(
   editor: TEditor,
   currentRowPath: Path
-): NodeEntry | undefined {
+): TNodeEntry | undefined {
   try {
     const nextRow = Editor.node(
       editor,
       Path.next(currentRowPath)
-    ) as NodeEntry<Ancestor>;
+    ) as TNodeEntry<Ancestor>;
     // TODO: Many tables in rich text editors (Google Docs, Word),
     // add a new row if we're in the last cell. Should we do the same?
     const [nextRowNode, nextRowPath] = nextRow;

@@ -9,8 +9,10 @@ import {
   TAncestor,
   TDescendant,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, PathRef, Transforms } from 'slate';
+import { Editor, Path, PathRef, Transforms } from 'slate';
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 import { moveListItemUp } from '../transforms';
@@ -21,21 +23,21 @@ import { ListPlugin } from '../types';
  * - block children
  * - inline children except those at excludeDepth
  */
-export const getDeepInlineChildren = (
-  editor: PlateEditor,
+export const getDeepInlineChildren = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     children,
   }: {
-    children: NodeEntry<TDescendant>[];
+    children: TNodeEntry<TDescendant>[];
   }
 ) => {
-  const inlineChildren: NodeEntry<TDescendant>[] = [];
+  const inlineChildren: TNodeEntry<TDescendant>[] = [];
 
   for (const child of children) {
     if (Editor.isBlock(editor, child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(child as NodeEntry<TAncestor>),
+          children: getChildren(child as TNodeEntry<TAncestor>),
         })
       );
     } else {
@@ -50,12 +52,12 @@ export const getDeepInlineChildren = (
  * If the list item has no child: insert an empty list item container.
  * Else: move the children that are not valid to the list item container.
  */
-export const normalizeListItem = (
-  editor: PlateEditor,
+export const normalizeListItem = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: NodeEntry<TElement> } & ListPlugin
+  }: { listItem: TNodeEntry<TElement> } & ListPlugin
 ) => {
   let changed = false;
 
@@ -74,9 +76,9 @@ export const normalizeListItem = (
     .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
     .map(([, childPath]) => Editor.pathRef(editor, childPath));
 
-  const firstLiChild: NodeEntry<any> | undefined = liChildren[0];
+  const firstLiChild: TNodeEntry<any> | undefined = liChildren[0];
   const [firstLiChildNode, firstLiChildPath] =
-    (firstLiChild as NodeEntry<TElement>) ?? [];
+    (firstLiChild as TNodeEntry<TElement>) ?? [];
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
@@ -105,7 +107,7 @@ export const normalizeListItem = (
       children.forEach((c) => {
         moveListItemUp(editor, {
           list: sublist,
-          listItem: c as NodeEntry<TElement>,
+          listItem: c as TNodeEntry<TElement>,
         });
       });
 
@@ -136,7 +138,7 @@ export const normalizeListItem = (
 
   if (licChildren.length) {
     const blockPathRefs: PathRef[] = [];
-    const inlineChildren: NodeEntry[] = [];
+    const inlineChildren: TNodeEntry[] = [];
 
     // Check that lic has no block children
     for (const licChild of licChildren) {
@@ -148,7 +150,7 @@ export const normalizeListItem = (
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(licChild as NodeEntry<TElement>),
+          children: getChildren(licChild as TNodeEntry<TElement>),
         })
       );
     }

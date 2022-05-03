@@ -3,8 +3,8 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 import { createLinkPlugin } from '../../../../../../nodes/link/src/createLinkPlugin';
+import { TDescendant } from '../../../../slate/types/TDescendant';
 import { PlateEditor } from '../../../../types/PlateEditor';
-import { TDescendant } from '../../../../types/slate/TDescendant';
 import { createPlateEditor } from '../../../../utils/createPlateEditor';
 import { getBlockAbove } from '../../../queries/getBlockAbove';
 import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';

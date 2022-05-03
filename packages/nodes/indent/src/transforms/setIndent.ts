@@ -6,6 +6,7 @@ import {
   PlateEditor,
   setNodes,
   UnhangRangeOptions,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
@@ -39,8 +40,8 @@ export interface SetIndentOptions {
 /**
  * Add offset to the indentation of the selected blocks.
  */
-export const setIndent = (
-  editor: PlateEditor,
+export const setIndent = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     offset = 1,
     getNodesOptions,

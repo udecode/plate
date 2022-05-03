@@ -6,13 +6,14 @@ import {
   SetNodesOptions,
   TNodeMatch,
   unsetNodes,
+  Value,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_ALIGN } from '../createAlignPlugin';
 import { Alignment } from '../types';
 
-export const setAlign = (
-  editor: PlateEditor,
+export const setAlign = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     key = KEY_ALIGN,
     value,

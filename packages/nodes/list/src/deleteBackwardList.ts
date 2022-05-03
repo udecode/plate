@@ -6,6 +6,7 @@ import {
   isSelectionAtBlockStart,
   mockPlugin,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
@@ -20,8 +21,8 @@ import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './createListPlugin';
 
-export const deleteBackwardList = (
-  editor: PlateEditor,
+export const deleteBackwardList = <V extends Value>(
+  editor: PlateEditor<V>,
   unit: 'character' | 'word' | 'line' | 'block'
 ) => {
   const res = getListItemEntry(editor, {});

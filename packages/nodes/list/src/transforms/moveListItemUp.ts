@@ -6,23 +6,25 @@ import {
   isLastChild,
   PlateEditor,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Editor, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: NodeEntry<TElement>;
-  listItem: NodeEntry<TElement>;
+  list: TNodeEntry<TElement>;
+  listItem: TNodeEntry<TElement>;
 }
 
 /**
  * Move a list item up.
  */
-export const moveListItemUp = (
-  editor: PlateEditor,
+export const moveListItemUp = <V extends Value>(
+  editor: PlateEditor<V>,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {

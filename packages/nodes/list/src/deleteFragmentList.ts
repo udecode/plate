@@ -4,6 +4,7 @@ import {
   getParentNode,
   getPluginType,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Editor, Range, Transforms } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
@@ -11,7 +12,7 @@ import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 import { ELEMENT_LI } from './createListPlugin';
 
-export const deleteFragmentList = (editor: PlateEditor) => {
+export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   let deleted = false;
 
   Editor.withoutNormalizing(editor, () => {

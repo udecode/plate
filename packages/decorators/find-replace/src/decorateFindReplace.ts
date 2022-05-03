@@ -1,11 +1,11 @@
-import { Decorate } from '@udecode/plate-core';
-import { NodeEntry, Range, Text } from 'slate';
+import { Decorate, TNodeEntry, Value } from '@udecode/plate-core';
+import { Range, Text } from 'slate';
 import { FindReplacePlugin } from './types';
 
-export const decorateFindReplace: Decorate<{}, FindReplacePlugin> = (
+export const decorateFindReplace: Decorate<Value, {}, FindReplacePlugin> = (
   editor,
   { key, type }
-) => ([node, path]: NodeEntry) => {
+) => ([node, path]: TNodeEntry) => {
   const ranges: SearchRange[] = [];
 
   const { search } = editor.pluginsByKey[key].options as FindReplacePlugin;

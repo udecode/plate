@@ -1,10 +1,10 @@
-import { TEditor } from '@udecode/plate-core';
-import { Ancestor, Node, NodeEntry } from 'slate';
+import { TEditor, TNodeEntry } from '@udecode/plate-core';
+import { Ancestor, Node } from 'slate';
 import { deleteStartSpace } from './deleteStartSpace';
 
 export interface OutdentCodeLineOptions {
-  codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor | Node>;
+  codeBlock: TNodeEntry<Ancestor>;
+  codeLine: TNodeEntry<Ancestor | Node>;
 }
 
 /**

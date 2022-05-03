@@ -1,20 +1,25 @@
-import { NodeEntry, Path } from 'slate';
-import { TDescendant } from '../../types/slate/TDescendant';
-import { TNode } from '../../types/slate/TNode';
+import { Path } from 'slate';
+import { isAncestor } from '../../slate/node/isAncestor';
+import { TNode } from '../../slate/types/TNode';
+import { TNodeChildEntry, TNodeEntry } from '../../slate/types/TNodeEntry';
 
 /**
  * Get children node entries of a node entry.
  * TODO: try Node.children
  */
-export const getChildren = <T extends TNode = TNode>(
-  nodeEntry: NodeEntry<T>
-) => {
+export const getChildren = <N extends TNode>(
+  nodeEntry: TNodeEntry<N>
+): TNodeChildEntry<N>[] => {
   const [node, path] = nodeEntry;
 
-  const children: TNode[] = node.children || [];
+  if (isAncestor(node)) {
+    const { children } = node;
 
-  return children.map((child, index) => {
-    const childPath: Path = path.concat([index]);
-    return [child, childPath] as NodeEntry<TDescendant>;
-  });
+    return children.map((child, index) => {
+      const childPath: Path = path.concat([index]);
+      return [child, childPath] as TNodeChildEntry<N>;
+    });
+  }
+
+  return [];
 };

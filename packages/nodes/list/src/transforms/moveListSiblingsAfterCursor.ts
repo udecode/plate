@@ -1,9 +1,15 @@
-import { match, moveChildren, PlateEditor } from '@udecode/plate-core';
-import { Node, NodeEntry, Path } from 'slate';
+import {
+  match,
+  moveChildren,
+  PlateEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-core';
+import { Node, Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
-export const moveListSiblingsAfterCursor = (
-  editor: PlateEditor,
+export const moveListSiblingsAfterCursor = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     at,
     to,
@@ -15,7 +21,7 @@ export const moveListSiblingsAfterCursor = (
   const offset = at[at.length - 1];
   at = Path.parent(at);
   const listNode = Node.get(editor, at);
-  const listEntry: NodeEntry = [listNode, at];
+  const listEntry: TNodeEntry = [listNode, at];
 
   if (
     !match(listNode, { type: getListTypes(editor) }) ||

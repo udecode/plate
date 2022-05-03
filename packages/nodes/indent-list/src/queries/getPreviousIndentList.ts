@@ -1,5 +1,9 @@
-import { getNode, getPreviousPath, TEditor } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import {
+  getNode,
+  getPreviousPath,
+  TEditor,
+  TNodeEntry,
+} from '@udecode/plate-core';
 import {
   getSiblingIndentList,
   GetSiblingIndentListOptions,
@@ -10,9 +14,9 @@ import {
  */
 export const getPreviousIndentList = (
   editor: TEditor,
-  entry: NodeEntry,
+  entry: TNodeEntry,
   options?: Partial<GetSiblingIndentListOptions>
-): NodeEntry | undefined => {
+): TNodeEntry | undefined => {
   return getSiblingIndentList(editor, entry, {
     getPreviousEntry: ([, currPath]) => {
       const prevPath = getPreviousPath(currPath);

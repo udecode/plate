@@ -1,9 +1,9 @@
-import { isExpanded, TEditor } from '@udecode/plate-core';
-import { Ancestor, Editor, Node, NodeEntry, Transforms } from 'slate';
+import { isExpanded, TEditor, TNodeEntry } from '@udecode/plate-core';
+import { Ancestor, Editor, Node, Transforms } from 'slate';
 
 export interface IndentCodeLineOptions {
-  codeBlock: NodeEntry<Ancestor>;
-  codeLine: NodeEntry<Ancestor | Node>;
+  codeBlock: TNodeEntry<Ancestor>;
+  codeLine: TNodeEntry<Ancestor | Node>;
 }
 
 /**

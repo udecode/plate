@@ -1,9 +1,10 @@
+import { NoInfer } from '../common/types/utility/NoInfer';
+import { Value } from '../slate/types/TEditor';
 import { PlatePlugin, WithPlatePlugin } from '../types/plugins/PlatePlugin';
-import { NoInfer } from '../types/utility/NoInfer';
 
-export const mockPlugin = <P = {}>(
-  plugin?: Partial<PlatePlugin<{}, NoInfer<P>>>
-): WithPlatePlugin<{}, NoInfer<P>> => ({
+export const mockPlugin = <V extends Value, P = {}>(
+  plugin?: Partial<PlatePlugin<V, {}, NoInfer<P>>>
+): WithPlatePlugin<V, {}, NoInfer<P>> => ({
   key: '',
   type: '',
   editor: {},

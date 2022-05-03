@@ -1,3 +1,4 @@
+import { toDOMRange } from '@udecode/plate-core/dist/common/slate/react-editor/toDOMRange';
 import { Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 
@@ -10,8 +11,8 @@ export const getRangeBoundingClientRect = (
 ) => {
   if (!at) return;
 
-  try {
-    const domRange = ReactEditor.toDOMRange(editor, at);
-    return domRange.getBoundingClientRect();
-  } catch (err) {}
+  const domRange = toDOMRange(editor, at);
+  if (!domRange) return;
+
+  return domRange.getBoundingClientRect();
 };

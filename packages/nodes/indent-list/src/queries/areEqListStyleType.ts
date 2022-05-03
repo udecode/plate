@@ -1,11 +1,10 @@
-import { TEditor } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { TEditor, TNodeEntry } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
   editor: TEditor,
-  entries: NodeEntry[],
+  entries: TNodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
   }: {

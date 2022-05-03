@@ -1,4 +1,4 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import {
   ELEMENT_LI,
   ELEMENT_LIC,
@@ -6,22 +6,26 @@ import {
   ELEMENT_UL,
 } from '../createListPlugin';
 
-export const getUnorderedListType = (editor: PlateEditor) => {
+export const getUnorderedListType = <V extends Value>(
+  editor: PlateEditor<V>
+) => {
   return getPluginType(editor, ELEMENT_UL);
 };
 
-export const getOrderedListType = (editor: PlateEditor) => {
+export const getOrderedListType = <V extends Value>(editor: PlateEditor<V>) => {
   return getPluginType(editor, ELEMENT_OL);
 };
 
-export const getListTypes = (editor: PlateEditor) => {
+export const getListTypes = <V extends Value>(editor: PlateEditor<V>) => {
   return [getOrderedListType(editor), getUnorderedListType(editor)];
 };
 
-export const getListItemType = (editor: PlateEditor) => {
+export const getListItemType = <V extends Value>(editor: PlateEditor<V>) => {
   return getPluginType(editor, ELEMENT_LI);
 };
 
-export const getListItemContentType = (editor: PlateEditor) => {
+export const getListItemContentType = <V extends Value>(
+  editor: PlateEditor<V>
+) => {
   return getPluginType(editor, ELEMENT_LIC);
 };

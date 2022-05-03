@@ -7,6 +7,7 @@ import {
   unwrapNodes,
 } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
+import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { wrapLink } from './wrapLink';
 
@@ -15,8 +16,8 @@ import { wrapLink } from './wrapLink';
  * Then, the focus of the location is set to selection focus.
  * Then, wrap the link at the location.
  */
-export const upsertLinkAtSelection = <T = {}>(
-  editor: PlateEditor<T>,
+export const upsertLinkAtSelection = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   {
     url,
     wrap,

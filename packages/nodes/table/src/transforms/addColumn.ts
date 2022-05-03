@@ -5,14 +5,15 @@ import {
   PlateEditor,
   someNode,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 
-export const addColumn = (
-  editor: PlateEditor,
+export const addColumn = <V extends Value>(
+  editor: PlateEditor<V>,
   { header }: TablePluginOptions
 ) => {
   if (

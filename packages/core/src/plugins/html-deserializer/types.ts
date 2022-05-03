@@ -1,5 +1,5 @@
-import { TDescendant } from '../../types/slate/TDescendant';
-import { TElement } from '../../types/slate/TElement';
+import { TDescendant } from '../../slate/types/TDescendant';
+import { TElement } from '../../slate/types/TElement';
 
 export type DeserializeHtmlChildren = ChildNode | TDescendant | string | null;
 

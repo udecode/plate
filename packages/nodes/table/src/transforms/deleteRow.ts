@@ -3,11 +3,12 @@ import {
   getPluginType,
   PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 
-export const deleteRow = (editor: PlateEditor) => {
+export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

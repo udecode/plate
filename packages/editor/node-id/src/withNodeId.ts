@@ -3,10 +3,10 @@ import {
   queryNode,
   someNode,
   TNode,
+  TNodeEntry,
   WithOverride,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
-import { NodeEntry } from 'slate';
 import { NodeIdPlugin } from './createNodeIdPlugin';
 
 /**
@@ -30,7 +30,7 @@ export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
 
   const idPropsCreator = () => ({ [idKey]: idCreator!() });
 
-  const filterNode = (nodeEntry: NodeEntry<TNode>) => {
+  const filterNode = (nodeEntry: TNodeEntry) => {
     return (
       filter!(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
     );

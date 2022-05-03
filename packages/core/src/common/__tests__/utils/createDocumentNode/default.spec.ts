@@ -1,5 +1,5 @@
 import { ELEMENT_PARAGRAPH } from '../../../../../../nodes/paragraph/src/createParagraphPlugin';
-import { TDescendant } from '../../../../types/slate/TDescendant';
+import { TDescendant } from '../../../../slate/types/TDescendant';
 import { createDocumentNode } from '../../../utils/index';
 
 const output: TDescendant[] = [

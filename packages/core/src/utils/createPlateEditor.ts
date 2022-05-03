@@ -1,17 +1,19 @@
-import { createEditor, Editor } from 'slate';
 import { withPlate, WithPlateOptions } from '../plugins/withPlate';
+import { normalizeEditor } from '../slate/editor/normalizeEditor';
+import { Value } from '../slate/types/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
 import { createPlugins } from './createPlugins';
+import { createTEditor } from './createTEditor';
 
-export interface CreatePlateEditorOptions<T = {}>
-  extends Omit<WithPlateOptions, 'plugins'> {
+export interface CreatePlateEditorOptions<V extends Value, T = {}>
+  extends Omit<WithPlateOptions<V, T>, 'plugins'> {
   editor?: any;
-  plugins?: PlatePlugin<T>[];
+  plugins?: PlatePlugin<V, T>[];
   components?: Record<string, PlatePluginComponent>;
-  overrideByKey?: OverrideByKey<T>;
+  overrideByKey?: OverrideByKey<V, T>;
   normalizeInitialValue?: boolean;
 }
 
@@ -21,14 +23,14 @@ export interface CreatePlateEditorOptions<T = {}>
  * - `withPlate`
  * - custom `components`
  */
-export const createPlateEditor = <T = {}>({
-  editor = createEditor(),
+export const createPlateEditor = <V extends Value, T = {}>({
+  editor = createTEditor(),
   plugins = [],
   components,
   overrideByKey,
   normalizeInitialValue,
   ...withPlateOptions
-}: CreatePlateEditorOptions<T> = {}): PlateEditor<T> => {
+}: CreatePlateEditorOptions<V, T> = {}): PlateEditor<V, T> => {
   plugins = createPlugins(plugins, {
     components,
     overrideByKey,
@@ -40,7 +42,7 @@ export const createPlateEditor = <T = {}>({
   });
 
   if (normalizeInitialValue) {
-    Editor.normalize(editor, { force: true });
+    normalizeEditor(editor, { force: true });
   }
 
   return editor;

@@ -1,16 +1,19 @@
 import {
   findNode,
   getPlugin,
+  isElement,
   PlateEditor,
   PlatePlugin,
   TDescendant,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Element, Node, NodeEntry, Path, Transforms } from 'slate';
+import { Element, Node, Path, Transforms } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemContentType, getListItemType, isListRoot } from './queries';
 
-export const insertFragmentList = (editor: PlateEditor) => {
+export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const { insertFragment } = editor;
 
   const listItemPlugin = getPlugin(editor, ELEMENT_LI);
@@ -19,9 +22,9 @@ export const insertFragmentList = (editor: PlateEditor) => {
 
   const getFirstAncestorOfType = (
     root: TDescendant,
-    entry: NodeEntry,
+    entry: TNodeEntry,
     { type }: PlatePlugin
-  ): NodeEntry<TDescendant> => {
+  ): TNodeEntry<TDescendant> => {
     let ancestor: Path = Path.parent(entry[1]);
     while ((Node.get(root, ancestor) as TDescendant).type !== type) {
       ancestor = Path.parent(ancestor);
@@ -58,11 +61,11 @@ export const insertFragmentList = (editor: PlateEditor) => {
     const _texts = Node.texts(listRoot);
     const textEntries = Array.from(_texts);
 
-    const commonAncestorEntry = textEntries.reduce<NodeEntry>(
+    const commonAncestorEntry = textEntries.reduce<TNodeEntry>(
       (commonAncestor, textEntry) =>
         Path.isAncestor(commonAncestor[1], textEntry[1])
           ? commonAncestor
-          : Node.common(listRoot, textEntry[1], commonAncestor[1]),
+          : (Node.common(listRoot, textEntry[1], commonAncestor[1]) as any),
       // any list item would do, we grab the first one
       getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin)
     );
@@ -95,17 +98,15 @@ export const insertFragmentList = (editor: PlateEditor) => {
     return (
       isFragmentOnlyListRoot &&
       [...Node.nodes({ children: fragment })]
-        .filter((entry): entry is NodeEntry<TElement> =>
-          Element.isElement(entry[0])
-        )
+        .filter((entry): entry is TNodeEntry<TElement> => isElement(entry[0]))
         .filter(([node]) => node.type === listItemContentType).length === 1
     );
   };
 
   const getTextAndListItemNodes = (
     fragment: TDescendant[],
-    liEntry: NodeEntry,
-    licEntry: NodeEntry
+    liEntry: TNodeEntry,
+    licEntry: TNodeEntry
   ) => {
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;

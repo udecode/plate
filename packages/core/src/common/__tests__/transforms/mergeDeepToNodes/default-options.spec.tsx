@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { TEditor } from '../../../../types/slate/TEditor';
+import { TEditor } from '../../../../slate/types/TEditor';
 import { mergeDeepToNodes } from '../../../../utils/mergeDeepToNodes';
 
 jsx;

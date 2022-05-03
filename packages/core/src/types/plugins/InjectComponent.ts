@@ -1,7 +1,8 @@
+import { AnyObject } from '../../common/types/utility/AnyObject';
+import { RenderFunction } from '../../common/types/utility/RenderFunction';
+import { Value } from '../../slate/types/TEditor';
 import { PlateRenderElementProps } from '../PlateRenderElementProps';
-import { AnyObject } from '../utility/AnyObject';
-import { RenderFunction } from '../utility/RenderFunction';
 
-export type InjectComponent = <T = AnyObject>(
-  props: PlateRenderElementProps & { key: string } & T
-) => RenderFunction<PlateRenderElementProps> | undefined;
+export type InjectComponent = <V extends Value, T = AnyObject>(
+  props: PlateRenderElementProps<V> & { key: string } & T
+) => RenderFunction<PlateRenderElementProps<V>> | undefined;

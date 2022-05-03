@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@udecode/plate-test-utils';
-import { getLastNode } from '../../../queries/index';
+import { getLastNodeByLevel } from '../../../queries/index';
 
 jsx;
 
@@ -19,5 +19,5 @@ const input = (
 const output = <hp>test2</hp>;
 
 it('should be', () => {
-  expect(getLastNode(input, 1)).toEqual([output, [1, 0]]);
+  expect(getLastNodeByLevel(input, 1)).toEqual([output, [1, 0]]);
 });

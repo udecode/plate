@@ -1,3 +1,4 @@
+import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
@@ -10,9 +11,9 @@ import { isHtmlElement } from './isHtmlElement';
 /**
  * Deserialize HTML element or child node.
  */
-export const deserializeHtmlNode = <T = {}>(editor: PlateEditor<T>) => (
-  node: HTMLElement | ChildNode
-): DeserializeHtmlNodeReturnType => {
+export const deserializeHtmlNode = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>
+) => (node: HTMLElement | ChildNode): DeserializeHtmlNodeReturnType => {
   const textNode = htmlTextNodeToString(node);
   if (textNode) return textNode;
 

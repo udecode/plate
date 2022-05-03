@@ -1,14 +1,15 @@
 import { normalizeDescendantsToDocumentFragment } from '../../../common/utils/normalizeDescendantsToDocumentFragment';
+import { TDescendant } from '../../../slate/types/TDescendant';
+import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
-import { TDescendant } from '../../../types/slate/TDescendant';
 import { htmlStringToDOMNode } from '../../html-serializer/utils/htmlStringToDOMNode';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 /**
  * Deserialize HTML element to a valid document fragment.
  */
-export const deserializeHtml = <T = {}>(
-  editor: PlateEditor<T>,
+export const deserializeHtml = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   {
     element,
     stripWhitespace = true,

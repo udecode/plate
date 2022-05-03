@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { findNodePath } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import {
   ELEMENT_TABLE,
@@ -8,7 +9,6 @@ import {
 import clsx from 'clsx';
 import { useAtom } from 'jotai';
 import { Resizable, ResizableProps } from 're-resizable';
-import { ReactEditor } from 'slate-react';
 import { hoveredColIndexAtom, resizingColAtom } from '../table.atoms';
 import { getTableCellElementStyles } from './TableCellElement.styles';
 import { TableCellElementProps } from './TableCellElement.types';
@@ -58,7 +58,7 @@ export const TableCellElement = (props: TableCellElementProps) => {
     setTableColSize(
       editor,
       { colIndex, width: ref.offsetWidth },
-      { at: ReactEditor.findPath(editor, element) }
+      { at: findNodePath(editor, element)! }
     );
 
     setResizingCol(null);

@@ -3,13 +3,14 @@ import {
   getPluginType,
   insertNodes,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Editor, Path } from 'slate';
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 import { ExitBreakRule } from '../types';
 
-export const exitBreak = (
-  editor: PlateEditor,
+export const exitBreak = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     level = 0,
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),

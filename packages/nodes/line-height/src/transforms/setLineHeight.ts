@@ -5,12 +5,13 @@ import {
   SetNodesOptions,
   TNodeMatch,
   unsetNodes,
+  Value,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
 import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
 
-export const setLineHeight = (
-  editor: PlateEditor,
+export const setLineHeight = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     value,
     setNodesOptions,

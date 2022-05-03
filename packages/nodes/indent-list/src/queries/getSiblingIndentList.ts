@@ -1,11 +1,10 @@
-import { TEditor, TNode } from '@udecode/plate-core';
+import { TEditor, TNode, TNodeEntry } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { NodeEntry } from 'slate';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 
 export interface GetSiblingIndentListOptions {
-  getPreviousEntry?: (entry: NodeEntry) => NodeEntry | undefined;
-  getNextEntry?: (entry: NodeEntry) => NodeEntry | undefined;
+  getPreviousEntry?: (entry: TNodeEntry) => TNodeEntry | undefined;
+  getNextEntry?: (entry: TNodeEntry) => TNodeEntry | undefined;
   /**
    * Query to validate lookup. If false, check the next sibling.
    */
@@ -25,7 +24,7 @@ export interface GetSiblingIndentListOptions {
  */
 export const getSiblingIndentList = (
   editor: TEditor,
-  [node, path]: NodeEntry,
+  [node, path]: TNodeEntry,
   {
     getPreviousEntry,
     getNextEntry,
@@ -35,7 +34,7 @@ export const getSiblingIndentList = (
     breakOnLowerIndent = true,
     breakOnEqIndentNeqListStyleType = true,
   }: GetSiblingIndentListOptions
-): NodeEntry | undefined => {
+): TNodeEntry | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;

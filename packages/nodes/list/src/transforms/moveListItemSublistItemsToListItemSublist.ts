@@ -6,20 +6,22 @@ import {
   moveChildren,
   PlateEditor,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Editor, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /**
    * The list item to merge.
    */
-  fromListItem: NodeEntry<TElement>;
+  fromListItem: TNodeEntry<TElement>;
 
   /**
    * The list item where to merge.
    */
-  toListItem: NodeEntry<TElement>;
+  toListItem: TNodeEntry<TElement>;
 
   /**
    * Move to the start of the list instead of the end.
@@ -31,8 +33,8 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * Move fromListItem sublist list items to the end of `toListItem` sublist.
  * If there is no `toListItem` sublist, insert one.
  */
-export const moveListItemSublistItemsToListItemSublist = (
-  editor: PlateEditor,
+export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     fromListItem,
     toListItem,

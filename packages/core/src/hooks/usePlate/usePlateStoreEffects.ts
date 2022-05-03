@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useDeepCompareEffect } from 'use-deep-compare';
 import { isUndefined } from '../../common/utils/types.utils';
 import { PlateProps } from '../../components/Plate';
+import { Value } from '../../slate/types/TEditor';
 import { getPlateActions } from '../../stores/plate/platesStore';
 import { PlatePlugin } from '../../types/plugins/PlatePlugin';
 
-export type UsePlateStoreEffects<T = {}> = Pick<
-  PlateProps<T>,
+export type UsePlateStoreEffects<V extends Value, T = {}> = Pick<
+  PlateProps<V, T>,
   | 'id'
   | 'value'
   | 'enabled'
@@ -18,7 +19,7 @@ export type UsePlateStoreEffects<T = {}> = Pick<
   | 'renderLeaf'
 >;
 
-export const usePlateStoreEffects = <T = {}>({
+export const usePlateStoreEffects = <V extends Value, T = {}>({
   id,
   value: valueProp,
   enabled: enabledProp = true,
@@ -28,8 +29,8 @@ export const usePlateStoreEffects = <T = {}>({
   decorate,
   renderElement,
   renderLeaf,
-}: UsePlateStoreEffects<T>) => {
-  const plateActions = getPlateActions(id);
+}: UsePlateStoreEffects<V, T>) => {
+  const plateActions = getPlateActions<V>(id);
 
   // Store Slate.value
   useEffect(() => {
@@ -83,7 +84,7 @@ export const usePlateStoreEffects = <T = {}>({
   // Store plugins
   useEffect(() => {
     if (!isUndefined(plugins)) {
-      plateActions.plugins(plugins as PlatePlugin[]);
+      plateActions.plugins(plugins as PlatePlugin<V>[]);
     }
   }, [plugins, plateActions]);
 };

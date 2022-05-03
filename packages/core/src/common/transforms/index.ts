@@ -12,5 +12,3 @@ export * from './setMarks';
 export * from './toggleMark';
 export * from './toggleNodeType';
 export * from './toggleWrapNodes';
-export * from '../slate/editor/unhangRange';
-export * from '../slate/transforms/index';

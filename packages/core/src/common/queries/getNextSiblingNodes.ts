@@ -1,6 +1,7 @@
-import { NodeEntry, Path } from 'slate';
-import { TAncestor } from '../../types/slate/TAncestor';
-import { TDescendant } from '../../types/slate/TDescendant';
+import { Path } from 'slate';
+import { TAncestor } from '../../slate/types/TAncestor';
+import { TDescendant } from '../../slate/types/TDescendant';
+import { TNodeEntry } from '../../slate/types/TNodeEntry';
 
 /**
  * Get the next sibling nodes after a path.
@@ -8,7 +9,7 @@ import { TDescendant } from '../../types/slate/TDescendant';
  * @param path Path of the reference node
  */
 export const getNextSiblingNodes = (
-  ancestorEntry: NodeEntry<TAncestor>,
+  ancestorEntry: TNodeEntry<TAncestor>,
   path: Path
 ) => {
   const [ancestor, ancestorPath] = ancestorEntry;

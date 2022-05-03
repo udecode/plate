@@ -14,6 +14,7 @@ import {
   ELEMENT_TR,
 } from '@udecode/plate-table';
 import { parse } from 'papaparse';
+import { Value } from '../../../../../core/src/slate/types/TEditor';
 import { KEY_DESERIALIZE_CSV } from '../createDeserializeCsvPlugin';
 import { DeserializeCsvPlugin } from '../types';
 
@@ -32,8 +33,8 @@ const isValidCsv = (
   );
 };
 
-export const deserializeCsv = <T = {}>(
-  editor: PlateEditor<T>,
+export const deserializeCsv = <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   {
     data,
     header = false,
@@ -44,7 +45,7 @@ export const deserializeCsv = <T = {}>(
 ): TDescendant[] | undefined => {
   const {
     options: { errorTolerance },
-  } = getPlugin<DeserializeCsvPlugin, T>(editor, KEY_DESERIALIZE_CSV);
+  } = getPlugin<V, DeserializeCsvPlugin, T>(editor, KEY_DESERIALIZE_CSV);
 
   // Verify it's a csv string
   const testCsv = parse(data, { preview: 2 });

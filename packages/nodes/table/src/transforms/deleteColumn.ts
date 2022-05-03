@@ -3,6 +3,7 @@ import {
   getPluginType,
   PlateEditor,
   someNode,
+  Value,
 } from '@udecode/plate-core';
 import { Transforms } from 'slate';
 import {
@@ -12,7 +13,7 @@ import {
   ELEMENT_TR,
 } from '../createTablePlugin';
 
-export const deleteColumn = (editor: PlateEditor) => {
+export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

@@ -8,14 +8,20 @@ import {
   PlateEditor,
   setNodes,
   TElement,
+  TNodeEntry,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Editor, Node, NodeEntry, Range } from 'slate';
+import { getCommonNode } from '@udecode/plate-core/dist/common/slate/node/getCommonNode';
+import { Editor, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
+export const toggleList = <V extends Value>(
+  editor: PlateEditor<V>,
+  { type }: { type: string }
+) =>
   Editor.withoutNormalizing(editor, () => {
     if (!editor.selection) {
       return;
@@ -65,10 +71,10 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
       // selection is a range
 
       const [startPoint, endPoint] = Range.edges(editor.selection!);
-      const commonEntry = Node.common(editor, startPoint.path, endPoint.path);
+      const commonEntry = getCommonNode(editor, startPoint.path, endPoint.path);
 
       if (
-        getListTypes(editor).includes((commonEntry[0] as TElement).type) ||
+        getListTypes(editor).includes(commonEntry[0].type) ||
         (commonEntry[0] as TElement).type === getPluginType(editor, ELEMENT_LI)
       ) {
         if ((commonEntry[0] as TElement).type !== type) {
@@ -105,7 +111,7 @@ export const toggleList = (editor: PlateEditor, { type }: { type: string }) =>
         const _nodes = getNodes(editor, {
           mode: 'all',
         });
-        const nodes = (Array.from(_nodes) as NodeEntry<TElement>[])
+        const nodes = (Array.from(_nodes) as TNodeEntry<TElement>[])
           .filter(([, path]) => path.length === rootPathLength + 1)
           .reverse();
 

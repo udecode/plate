@@ -3,8 +3,8 @@ import {
   TReactEditor,
   unhangRange,
 } from '@udecode/plate-core';
+import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { Transforms } from 'slate';
-import { ReactEditor } from 'slate-react';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 
@@ -20,5 +20,5 @@ export const removeBlocksAndFocus = (
   const nodeEntries = getBlocksWithId(editor, options);
 
   Transforms.removeNodes(editor, { at: getNodesRange(editor, nodeEntries) });
-  ReactEditor.focus(editor);
+  focusEditor(editor);
 };

@@ -8,6 +8,7 @@ import {
   PlateEditor,
   someNode,
   unwrapNodes,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
@@ -17,8 +18,8 @@ import { wrapLink } from './transforms/wrapLink';
 import { ELEMENT_LINK } from './createLinkPlugin';
 import { LinkPlugin } from './types';
 
-const upsertLink = (
-  editor: PlateEditor,
+const upsertLink = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     url,
     at,
@@ -43,7 +44,10 @@ const upsertLink = (
   });
 };
 
-const upsertLinkIfValid = (editor: PlateEditor, { isUrl }: { isUrl: any }) => {
+const upsertLinkIfValid = <V extends Value>(
+  editor: PlateEditor<V>,
+  { isUrl }: { isUrl: any }
+) => {
   const rangeFromBlockStart = getRangeFromBlockStart(editor);
   const textFromBlockStart = getText(editor, rangeFromBlockStart);
 

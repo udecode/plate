@@ -6,6 +6,7 @@ import {
   isBlockTextEmptyAfterSelection,
   PlateEditor,
   TElement,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
 import { Editor, Path, Range, Transforms } from 'slate';
@@ -15,7 +16,9 @@ import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
  * Insert list item if selection in li>p.
  * TODO: test
  */
-export const insertListItem = (editor: PlateEditor): boolean => {
+export const insertListItem = <V extends Value>(
+  editor: PlateEditor<V>
+): boolean => {
   const liType = getPluginType(editor, ELEMENT_LI);
   const licType = getPluginType(editor, ELEMENT_LIC);
 

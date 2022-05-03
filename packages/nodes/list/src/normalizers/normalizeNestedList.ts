@@ -3,16 +3,18 @@ import {
   match,
   PlateEditor,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Ancestor, Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Ancestor, Editor, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries';
 
 // When pasting from e.g. Google Docs, the structure of nested lists like "ul -> ul"
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
-export const normalizeNestedList = (
-  editor: PlateEditor,
-  { nestedListItem }: { nestedListItem: NodeEntry<TElement> }
+export const normalizeNestedList = <V extends Value>(
+  editor: PlateEditor<V>,
+  { nestedListItem }: { nestedListItem: TNodeEntry<TElement> }
 ) => {
   const [, path] = nestedListItem;
 
@@ -34,7 +36,7 @@ export const normalizeNestedList = (
   const previousSiblingItem = Editor.node(
     editor,
     previousListItemPath
-  ) as NodeEntry<Ancestor>;
+  ) as TNodeEntry<Ancestor>;
 
   if (previousSiblingItem) {
     const [, previousPath] = previousSiblingItem;

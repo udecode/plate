@@ -1,4 +1,5 @@
 import { cloneDeep } from 'lodash';
+import { Value } from '../slate/types/TEditor';
 import { OverrideByKey } from '../types/OverrideByKey';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { PlatePluginComponent } from '../types/plugins/PlatePluginComponent';
@@ -9,8 +10,8 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  * Components can be overridden by key using `components` in the second param.
  * Any other properties can be overridden by key using `overrideByKey` in the second param.
  */
-export const createPlugins = <T extends {} = {}>(
-  plugins: PlatePlugin<T>[],
+export const createPlugins = <V extends Value, T extends {} = {}>(
+  plugins: PlatePlugin<V, T>[],
   {
     components,
     overrideByKey,
@@ -23,10 +24,10 @@ export const createPlugins = <T extends {} = {}>(
     /**
      * Override plugin by key.
      */
-    overrideByKey?: OverrideByKey<T>;
+    overrideByKey?: OverrideByKey<V, T>;
   } = {}
-): PlatePlugin<T>[] => {
-  let allOverrideByKey: OverrideByKey<T> = {};
+): PlatePlugin<V, T>[] => {
+  let allOverrideByKey: OverrideByKey<V, T> = {};
 
   if (overrideByKey) {
     allOverrideByKey = cloneDeep(overrideByKey);
@@ -42,7 +43,7 @@ export const createPlugins = <T extends {} = {}>(
 
   if (Object.keys(allOverrideByKey).length) {
     return plugins.map((plugin) => {
-      return overridePluginsByKey<T, {}>(plugin, allOverrideByKey);
+      return overridePluginsByKey<V, T, {}>(plugin, allOverrideByKey);
     });
   }
 

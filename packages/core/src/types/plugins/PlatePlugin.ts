@@ -1,6 +1,7 @@
+import { Nullable } from '../../common/types/utility/Nullable';
+import { WithRequired } from '../../common/types/utility/types';
+import { Value } from '../../slate/types/TEditor';
 import { PlateEditor } from '../PlateEditor';
-import { Nullable } from '../utility/Nullable';
-import { WithRequired } from '../utility/types';
 import { Decorate } from './Decorate';
 import { DeserializeHtml } from './DeserializeHtml';
 import { DOMHandlers } from './DOMHandlers';
@@ -17,7 +18,11 @@ import { WithOverride } from './WithOverride';
 /**
  * The `PlatePlugin` interface is a base interface for all plugins.
  */
-export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
+export type PlatePlugin<
+  V extends Value,
+  T = {},
+  P = {}
+> = Required<PlatePluginKey> & {
   editor?: Nullable<{
     /**
      * Properties used by the `insertData` core plugin to deserialize inserted data to a slate fragment.
@@ -32,11 +37,11 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
    * If it returns `true`, the next handlers will not be called.
    */
   handlers?: Nullable<
-    DOMHandlers<T, P> & {
+    DOMHandlers<V, T, P> & {
       /**
        * @see {@link OnChange}
        */
-      onChange?: OnChange<T, P>;
+      onChange?: OnChange<V, T, P>;
     }
   >;
 
@@ -61,7 +66,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
      * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
      * Differs from `overrideByKey` as this is not overriding any plugin.
      */
-    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
+    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<V, T>>>;
   }>;
 
   /**
@@ -95,7 +100,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
    * @default key
    */
   type?: string;
-} & InjectProps &
+} & InjectProps<V> &
   Nullable<{
     /**
      * React component rendering a slate element or leaf.
@@ -106,7 +111,7 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
     /**
      * @see {@link Decorate}
      */
-    decorate?: Decorate<T, P>;
+    decorate?: Decorate<V, T, P>;
 
     /**
      * Properties used by the HTML deserializer core plugin for each HTML element.
@@ -116,25 +121,25 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
     /**
      * Property used by Plate to deeply override plugins by key.
      */
-    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
+    overrideByKey?: Record<PluginKey, Partial<PlatePlugin<V, T>>>;
 
     /**
      * Recursive plugin support to allow having multiple plugins in a single plugin.
      * Plate eventually flattens all the plugins into the editor.
      */
-    plugins?: PlatePlugin<T>[];
+    plugins?: PlatePlugin<V, T>[];
 
     /**
      * Property used by Plate to override node `component` props.
      * If function, its returning value will be shallow merged to the old props, with the old props as parameter.
      * If object, its value will be shallow merged to the old props.
      */
-    props?: PlatePluginProps;
+    props?: PlatePluginProps<V>;
 
     /**
      * Property used by `serializeHtml` util to replace `renderElement` and `renderLeaf` when serializing a node of this `type`.
      */
-    serializeHtml?: SerializeHtml;
+    serializeHtml?: SerializeHtml<V>;
 
     /**
      * Recursive plugin merging.
@@ -142,22 +147,25 @@ export type PlatePlugin<T = {}, P = {}> = Required<PlatePluginKey> & {
      * The returned value will be deeply merged to the plugin.
      */
     then?: (
-      editor: PlateEditor<T>,
-      plugin: WithPlatePlugin<T, P>
-    ) => Partial<PlatePlugin<T, P>> | void;
+      editor: PlateEditor<V, T>,
+      plugin: WithPlatePlugin<V, T, P>
+    ) => Partial<PlatePlugin<V, T, P>> | void;
 
     /**
      * Hook called when the editor is initialized.
      */
-    useHooks?: (editor: PlateEditor<T>, plugin: WithPlatePlugin<T, P>) => void;
+    useHooks?: (
+      editor: PlateEditor<V, T>,
+      plugin: WithPlatePlugin<V, T, P>
+    ) => void;
 
     /**
      * Editor method overriders.
      */
-    withOverrides?: WithOverride<T, P>;
+    withOverrides?: WithOverride<V, T, P>;
   }>;
 
-export type WithPlatePlugin<T = {}, P = {}> = WithRequired<
-  PlatePlugin<T, P>,
+export type WithPlatePlugin<V extends Value, T = {}, P = {}> = WithRequired<
+  PlatePlugin<V, T, P>,
   'type' | 'options' | 'inject' | 'editor'
 >;

@@ -3,11 +3,14 @@ import {
   getPluginType,
   PlateEditor,
   TDescendant,
+  Value,
 } from '@udecode/plate-core';
 import { Node, Transforms } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
-export const insertFragmentCodeBlock = (editor: PlateEditor) => {
+export const insertFragmentCodeBlock = <V extends Value>(
+  editor: PlateEditor<V>
+) => {
   const { insertFragment } = editor;
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
   const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);

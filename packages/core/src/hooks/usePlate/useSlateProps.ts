@@ -1,28 +1,27 @@
 import { useCallback, useMemo } from 'react';
 import { PlateProps } from '../../components/Plate';
+import { SlateProps } from '../../slate/types/SlateProps';
+import { Value } from '../../slate/types/TEditor';
 import {
   getPlateActions,
   usePlateSelectors,
 } from '../../stores/plate/platesStore';
 import { usePlateEditorRef } from '../../stores/plate/selectors/usePlateEditorRef';
-import { SlateProps } from '../../types/slate/SlateProps';
-import { TDescendant } from '../../types/slate/TDescendant';
 import { pipeOnChange } from '../../utils/pipeOnChange';
 
 /**
  * Get Slate props stored in a global store.
  */
-export const useSlateProps = ({ id }: Pick<PlateProps, 'id'> = {}): Omit<
-  SlateProps,
-  'children'
-> => {
+export const useSlateProps = <V extends Value>({
+  id,
+}: Pick<PlateProps<V>, 'id'> = {}): Omit<SlateProps, 'children'> => {
   const editor = usePlateEditorRef(id);
   const keyPlugins = usePlateSelectors(id).keyPlugins();
   const value = usePlateSelectors(id).value();
   const onChangeProp = usePlateSelectors(id).onChange();
 
   const onChange = useCallback(
-    (newValue: TDescendant[]) => {
+    (newValue: V) => {
       if (!editor || !keyPlugins) return;
 
       const eventIsHandled = pipeOnChange(editor)(newValue);

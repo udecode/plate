@@ -11,9 +11,11 @@ import {
   setNodes,
   TDescendant,
   TElement,
+  TNodeEntry,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Descendant, NodeEntry, Path, Transforms } from 'slate';
+import { Descendant, Path, Transforms } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries';
 import { moveListItemsToList } from '../transforms';
@@ -24,8 +26,8 @@ import { normalizeNestedList } from './normalizeNestedList';
 /**
  * Normalize list node to force the ul>li>p+ul structure.
  */
-export const normalizeList = (
-  editor: PlateEditor,
+export const normalizeList = <V extends Value>(
+  editor: PlateEditor<V>,
   { validLiChildrenTypes }: ListPlugin
 ) => {
   const { normalizeNode } = editor;
@@ -33,7 +35,7 @@ export const normalizeList = (
   const licType = getPluginType(editor, ELEMENT_LIC);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-  return ([node, path]: NodeEntry) => {
+  return ([node, path]: TNodeEntry) => {
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }

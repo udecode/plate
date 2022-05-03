@@ -4,6 +4,7 @@ import {
   getParentNode,
   getPluginType,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../createListPlugin';
@@ -16,8 +17,8 @@ export type MoveListItemsOptions = {
   at?: EditorNodesOptions['at'];
 };
 
-export const moveListItems = (
-  editor: PlateEditor,
+export const moveListItems = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     increase = true,
     at = editor.selection ?? undefined,

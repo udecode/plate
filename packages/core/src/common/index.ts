@@ -7,5 +7,3 @@ export * from './queries/index';
 export * from './transforms/index';
 export * from './types/index';
 export * from './utils/index';
-export { getNodes } from './slate/editor/getNodes';
-export { deleteFragment } from './slate/editor/deleteFragment';

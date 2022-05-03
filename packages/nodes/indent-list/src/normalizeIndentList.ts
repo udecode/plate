@@ -1,5 +1,4 @@
-import { TEditor, withoutNormalizing } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { TEditor, TNodeEntry, withoutNormalizing } from '@udecode/plate-core';
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { IndentListPlugin } from './createIndentListPlugin';
@@ -10,7 +9,7 @@ export const normalizeIndentList = (
 ) => {
   const { normalizeNode } = editor;
 
-  return ([node, path]: NodeEntry) => {
+  return ([node, path]: TNodeEntry) => {
     const normalized = withoutNormalizing(editor, () => {
       if (normalizeIndentListNotIndented(editor, [node, path])) return true;
       if (

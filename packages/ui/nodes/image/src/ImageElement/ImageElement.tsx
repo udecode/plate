@@ -6,11 +6,11 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { setNodes, TText } from '@udecode/plate-core';
+import { findNodePath, setNodes, TText } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
 import { Node, Transforms } from 'slate';
-import { ReactEditor, useFocused, useSelected } from 'slate-react';
+import { useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
 import { ImageHandle } from './ImageHandle';
@@ -53,7 +53,8 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const setNodeWidth = useCallback(
     (w: number) => {
-      const path = ReactEditor.findPath(editor, element);
+      const path = findNodePath(editor, element);
+      if (!path) return;
 
       if (w === nodeWidth) {
         // Focus the node if not resized
@@ -67,8 +68,9 @@ export const ImageElement = (props: ImageElementProps) => {
 
   const onChangeCaption: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
     (e) => {
-      const path = ReactEditor.findPath(editor as ReactEditor, element);
-      setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
+      const path = findNodePath(editor, element);
+      path &&
+        setNodes(editor, { caption: [{ text: e.target.value }] }, { at: path });
     },
     [editor, element]
   );

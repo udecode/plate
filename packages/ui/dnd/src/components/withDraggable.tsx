@@ -1,11 +1,13 @@
 import React, { forwardRef, useMemo } from 'react';
 import {
   createNodesWithHOC,
+  findNodePath,
   PlateRenderElementProps,
   TEditor,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
-import { ReactEditor, useReadOnly } from 'slate-react';
+import { useReadOnly } from 'slate-react';
 import { Draggable } from './Draggable';
 import { DraggableProps } from './Draggable.types';
 
@@ -16,7 +18,7 @@ export interface WithDraggableOptions
   allowReadOnly?: boolean;
 }
 
-export const withDraggable = (
+export const withDraggable = <V extends Value>(
   Component: any,
   {
     styles,
@@ -26,18 +28,19 @@ export const withDraggable = (
     onRenderDragHandle,
   }: WithDraggableOptions = {}
 ) => {
-  return forwardRef((props: PlateRenderElementProps, ref) => {
+  return forwardRef((props: PlateRenderElementProps<V>, ref) => {
     const { attributes, element, editor } = props;
     const readOnly = useReadOnly();
-    const path = useMemo(() => ReactEditor.findPath(editor, element), [
+    const path = useMemo(() => findNodePath(editor, element), [
       editor,
       element,
     ]);
 
     const filteredOut = useMemo(
       () =>
-        (Number.isInteger(level) && level !== path.length - 1) ||
-        (filter && filter(editor, path)),
+        path &&
+        ((Number.isInteger(level) && level !== path.length - 1) ||
+          (filter && filter(editor, path))),
       [path, editor]
     );
 

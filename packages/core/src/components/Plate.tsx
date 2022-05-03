@@ -3,15 +3,16 @@ import { Provider } from 'jotai';
 import { Editable, Slate } from 'slate-react';
 import { usePlate } from '../hooks/usePlate/usePlate';
 import { usePlatesStoreEffect } from '../hooks/usePlatesStoreEffect';
+import { Value } from '../slate/types/TEditor';
 import { platesActions, usePlatesSelectors } from '../stores/plate/platesStore';
 import { plateIdAtom } from '../stores/plateIdAtom';
 import { PlateStoreState } from '../types/PlateStore';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
 
-export interface PlateProps<T = {}>
+export interface PlateProps<V extends Value, T = {}>
   extends Partial<
-    Omit<PlateStoreState<T>, 'keyEditor' | 'keyPlugins' | 'keySelection'>
+    Omit<PlateStoreState<V, T>, 'keyEditor' | 'keyPlugins' | 'keySelection'>
   > {
   /**
    * The children rendered inside `Slate` before the `Editable` component.
@@ -38,7 +39,7 @@ export interface PlateProps<T = {}>
    * Initial value of the editor.
    * @default [{ children: [{ text: '' }]}]
    */
-  initialValue?: PlateStoreState['value'];
+  initialValue?: PlateStoreState<V>['value'];
 
   /**
    * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
@@ -53,16 +54,16 @@ export interface PlateProps<T = {}>
   renderEditable?: (editable: React.ReactNode) => React.ReactNode;
 }
 
-export const PlateContent = <T extends {} = {}>({
+export const PlateContent = <V extends Value, T extends {} = {}>({
   children,
   renderEditable,
   ...options
-}: PlateProps<T>) => {
+}: PlateProps<V, T>) => {
   const { slateProps, editableProps } = usePlate(options);
 
   if (!slateProps.editor) return null;
 
-  const editable = <Editable {...editableProps} />;
+  const editable = <Editable {...(editableProps as any)} />;
 
   return (
     <Slate {...(slateProps as any)}>
@@ -74,7 +75,9 @@ export const PlateContent = <T extends {} = {}>({
   );
 };
 
-export const Plate = <T extends {} = {}>(props: PlateProps<T>) => {
+export const Plate = <V extends Value, T extends {} = {}>(
+  props: PlateProps<V, T>
+) => {
   const { id = 'main', ...state } = props;
   const hasId = usePlatesSelectors.has(id);
 

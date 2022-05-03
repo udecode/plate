@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { PlateEditor } from '../../../../../types/PlateEditor';
-import { getPointBefore } from '../../../../queries/getPointBefore';
+import { getPointBeforeLocation } from '../../../../queries/getPointBeforeLocation';
 
 jsx;
 
@@ -19,7 +19,7 @@ const output = undefined;
 
 it('should be', () => {
   expect(
-    getPointBefore(input, input.selection as any, {
+    getPointBeforeLocation(input, input.selection as any, {
       matchString: '3',
       skipInvalid: false,
     })

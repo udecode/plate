@@ -4,12 +4,13 @@ import {
   PlateEditor,
   PlatePluginKey,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';
 import { MediaEmbedNodeData } from '../types';
 
-export const insertMediaEmbed = (
-  editor: PlateEditor,
+export const insertMediaEmbed = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     url = '',
     key = ELEMENT_MEDIA_EMBED,

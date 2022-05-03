@@ -1,22 +1,22 @@
-import { TEditor } from '../../types/slate/TEditor';
-import { TElement } from '../../types/slate/TElement';
-import { getQueryOptions } from '../queries/match';
 import {
   insertNodes,
   InsertNodesOptions,
-} from '../slate/transforms/insertNodes';
+} from '../../slate/transforms/insertNodes';
+import { TEditor, Value } from '../../slate/types/TEditor';
+import { EElement } from '../../slate/types/TElement';
+import { getQueryOptions } from '../queries/match';
 
-export const insertEmptyElement = (
-  editor: TEditor,
+export const insertEmptyElement = <V extends Value>(
+  editor: TEditor<V>,
   type: string,
-  options?: InsertNodesOptions
+  options?: InsertNodesOptions<V>
 ) => {
-  insertNodes<TElement>(
+  insertNodes(
     editor,
     {
       type,
       children: [{ text: '' }],
-    },
+    } as EElement<V>,
     getQueryOptions(editor, options)
   );
 };

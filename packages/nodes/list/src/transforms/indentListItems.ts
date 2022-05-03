@@ -1,6 +1,6 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { moveListItems } from './moveListItems';
 
-export const indentListItems = (editor: PlateEditor) => {
+export const indentListItems = <V extends Value>(editor: PlateEditor<V>) => {
   moveListItems(editor, { increase: true });
 };

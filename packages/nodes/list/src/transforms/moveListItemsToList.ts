@@ -5,25 +5,27 @@ import {
   MoveChildrenOptions,
   PlateEditor,
   TElement,
+  TNodeEntry,
+  Value,
 } from '@udecode/plate-core';
-import { Editor, NodeEntry, Path, Transforms } from 'slate';
+import { Editor, Path, Transforms } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions {
   /**
    * List items of the sublist of this node will be moved.
    */
-  fromListItem?: NodeEntry<TElement>;
+  fromListItem?: TNodeEntry<TElement>;
 
   /**
    * List items of the list will be moved.
    */
-  fromList?: NodeEntry<TElement>;
+  fromList?: TNodeEntry<TElement>;
 
   /**
    * List items will be moved in this list.
    */
-  toList?: NodeEntry<TElement>;
+  toList?: TNodeEntry<TElement>;
 
   fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
 
@@ -45,8 +47,8 @@ export interface MergeListItemIntoListOptions {
  * Move the list items of the sublist of `fromListItem` to `toList` (if `fromListItem` is defined).
  * Move the list items of `fromList` to `toList` (if `fromList` is defined).
  */
-export const moveListItemsToList = (
-  editor: PlateEditor,
+export const moveListItemsToList = <V extends Value>(
+  editor: PlateEditor<V>,
   {
     fromList,
     fromListItem,

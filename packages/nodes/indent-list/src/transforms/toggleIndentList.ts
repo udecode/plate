@@ -8,6 +8,7 @@ import {
   setNodes,
   TElement,
   unsetNodes,
+  Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
@@ -25,8 +26,8 @@ import { toggleIndentListUnset } from './toggleIndentListUnset';
 /**
  * Increase the indentation of the selected blocks.
  */
-export const toggleIndentList = (
-  editor: PlateEditor,
+export const toggleIndentList = <V extends Value>(
+  editor: PlateEditor<V>,
   options: IndentListOptions
 ) => {
   const { listStyleType } = options;

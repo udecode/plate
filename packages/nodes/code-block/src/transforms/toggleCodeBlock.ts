@@ -5,13 +5,14 @@ import {
   setNodes,
   someNode,
   TElement,
+  Value,
   wrapNodes,
 } from '@udecode/plate-core';
 import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (editor: PlateEditor) => {
+export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
   if (!editor.selection) return;
 
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);

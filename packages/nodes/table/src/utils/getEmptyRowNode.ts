@@ -1,10 +1,10 @@
-import { getPluginType, PlateEditor } from '@udecode/plate-core';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-core';
 import { ELEMENT_TR } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyCellNode } from './getEmptyCellNode';
 
-export const getEmptyRowNode = (
-  editor: PlateEditor,
+export const getEmptyRowNode = <V extends Value>(
+  editor: PlateEditor<V>,
   { header, colCount }: TablePluginOptions & { colCount: number }
 ) => {
   return {

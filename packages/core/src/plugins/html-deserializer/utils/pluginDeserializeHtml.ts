@@ -1,17 +1,18 @@
 import castArray from 'lodash/castArray';
+import { AnyObject } from '../../../common/types/utility/AnyObject';
+import { Nullable } from '../../../common/types/utility/Nullable';
+import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtml } from '../../../types/plugins/DeserializeHtml';
 import { WithPlatePlugin } from '../../../types/plugins/PlatePlugin';
-import { AnyObject } from '../../../types/utility/AnyObject';
-import { Nullable } from '../../../types/utility/Nullable';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /**
  * Get a deserializer by type, node names, class names and styles.
  */
-export const pluginDeserializeHtml = <T = {}, P = {}>(
-  editor: PlateEditor<T>,
-  plugin: WithPlatePlugin<T, P>,
+export const pluginDeserializeHtml = <V extends Value, T = {}, P = {}>(
+  editor: PlateEditor<V, T>,
+  plugin: WithPlatePlugin<V, T, P>,
   {
     element: el,
     deserializeLeaf,

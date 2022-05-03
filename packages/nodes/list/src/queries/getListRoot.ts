@@ -1,14 +1,20 @@
-import { getAboveNode, getPluginType, PlateEditor } from '@udecode/plate-core';
-import { Ancestor, NodeEntry, Path, Point, Range } from 'slate';
+import {
+  getAboveNode,
+  getPluginType,
+  PlateEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-core';
+import { Ancestor, Path, Point, Range } from 'slate';
 import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 
 /**
  * Searches upward for the root list element
  */
-export const getListRoot = (
-  editor: PlateEditor,
+export const getListRoot = <V extends Value>(
+  editor: PlateEditor<V>,
   at: Path | Range | Point | null = editor.selection
-): NodeEntry<Ancestor> | undefined => {
+): TNodeEntry<Ancestor> | undefined => {
   if (!at) return;
 
   const parentList = getAboveNode(editor, {

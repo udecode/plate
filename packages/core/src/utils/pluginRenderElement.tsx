@@ -1,5 +1,6 @@
 import React from 'react';
 import { DefaultElement } from 'slate-react';
+import { Value } from '../slate/types/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugins/PlatePlugin';
 import { RenderElement } from '../types/RenderElement';
@@ -10,9 +11,9 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * If the type is equals to the slate element type, render `options.component`.
  * Else, return `undefined` so the pipeline can check the next plugin.
  */
-export const pluginRenderElement = (
-  editor: PlateEditor,
-  { key, type, component: _component, props }: PlatePlugin
+export const pluginRenderElement = <V extends Value>(
+  editor: PlateEditor<V>,
+  { key, type, component: _component, props }: PlatePlugin<V>
 ): RenderElement => (nodeProps) => {
   const { element, children: _children } = nodeProps;
 
@@ -27,11 +28,11 @@ export const pluginRenderElement = (
     );
 
     nodeProps = getRenderNodeProps({
-      attributes: element.attributes,
-      nodeProps,
+      attributes: element.attributes as any,
+      nodeProps: nodeProps as any,
       props,
-      type,
-    });
+      type: type!,
+    }) as any;
 
     let children = _children;
 

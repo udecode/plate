@@ -1,12 +1,13 @@
+import { TDescendant } from '../slate/types/TDescendant';
+import { Value } from '../slate/types/TEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
-import { TDescendant } from '../types/slate/TDescendant';
 import { InjectedPlugin } from './getInjectedPlugins';
 
 /**
  * Pipe editor.insertData.transformFragment
  */
-export const pipeTransformFragment = <T = {}>(
-  plugins: InjectedPlugin<T>[],
+export const pipeTransformFragment = <V extends Value, T = {}>(
+  plugins: InjectedPlugin<V, T>[],
   {
     fragment,
     ...options

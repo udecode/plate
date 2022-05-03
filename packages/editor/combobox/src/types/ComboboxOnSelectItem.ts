@@ -1,4 +1,5 @@
 import { PlateEditor } from '@udecode/plate-core';
+import { Value } from '../../../../core/src/slate/types/TEditor';
 
 export interface TComboboxItemBase {
   /**
@@ -34,7 +35,7 @@ export type TComboboxItem<TData = NoData> = TData extends NoData
   ? TComboboxItemBase
   : TComboboxItemWithData<TData>;
 
-export type ComboboxOnSelectItem<TData> = (
-  editor: PlateEditor,
+export type ComboboxOnSelectItem<V extends Value, TData> = (
+  editor: PlateEditor<V>,
   item: TComboboxItem<TData>
 ) => any;

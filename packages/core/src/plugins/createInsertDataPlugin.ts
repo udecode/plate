@@ -1,3 +1,4 @@
+import { Value } from '../slate/types/TEditor';
 import { WithOverride } from '../types/plugins/WithOverride';
 import { createPluginFactory } from '../utils/createPluginFactory';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
@@ -6,7 +7,7 @@ import { pipeInsertFragment } from '../utils/pipeInsertFragment';
 import { pipeTransformData } from '../utils/pipeTransformData';
 import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 
-export const withInsertData: WithOverride = (editor) => {
+export const withInsertData: WithOverride<Value> = (editor) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {

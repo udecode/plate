@@ -1,24 +1,26 @@
-import { Editor, Point } from 'slate';
-import { TEditor } from '../../types/slate/TEditor';
-import { getEditorString } from '../slate/editor/getEditorString';
+import { Point } from 'slate';
+import { getEditorString } from '../../slate/editor/getEditorString';
+import { getPointBefore } from '../../slate/editor/getPointBefore';
+import { getRange } from '../../slate/editor/getRange';
+import { TEditor, Value } from '../../slate/types/TEditor';
 import { escapeRegExp } from '../utils/escapeRegexp';
 
 /**
  * Is the word at the point after a trigger (punctuation character)
  * https://github.com/ianstormtaylor/slate/blob/main/packages/slate/src/utils/string.ts#L6
  */
-export const isWordAfterTrigger = (
-  editor: TEditor,
+export const isWordAfterTrigger = <V extends Value>(
+  editor: TEditor<V>,
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   // Point at the start of previous word (excluding punctuation)
-  const wordBefore = Editor.before(editor, at, { unit: 'word' });
+  const wordBefore = getPointBefore(editor, at, { unit: 'word' });
 
   // Point before wordBefore
-  const before = wordBefore && Editor.before(editor, wordBefore);
+  const before = wordBefore && getPointBefore(editor, wordBefore);
 
   // Range from before to start
-  const beforeRange = before && Editor.range(editor, before, at);
+  const beforeRange = before && getRange(editor, before, at);
 
   // Before text
   const beforeText = getEditorString(editor, beforeRange);

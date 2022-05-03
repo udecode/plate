@@ -1,18 +1,18 @@
 import { Location } from 'slate';
-import { AncestorOf } from '../../types/slate/TAncestor';
-import { TEditor, Value } from '../../types/slate/TEditor';
-import { NodeOf, TNode } from '../../types/slate/TNode';
+import { EAncestor } from '../../slate/types/TAncestor';
+import { Value } from '../../slate/types/TEditor';
+import { ENode, TNode } from '../../slate/types/TNode';
 import { Predicate } from '../queries/match';
 
 export type ENodeMatch<N extends TNode> = Predicate<N>;
 
 export interface ENodeMatchOptions<V extends Value> {
-  match?: ENodeMatch<NodeOf<TEditor<V>>>;
+  match?: ENodeMatch<ENode<V>>;
   block?: boolean;
 }
 
 export interface EAncestorMatchOptions<V extends Value> {
-  match?: ENodeMatch<AncestorOf<TEditor<V>>>;
+  match?: ENodeMatch<EAncestor<V>>;
   block?: boolean;
 }
 

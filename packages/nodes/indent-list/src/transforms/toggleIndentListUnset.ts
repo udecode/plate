@@ -1,5 +1,4 @@
-import { TEditor, unsetNodes } from '@udecode/plate-core';
-import { NodeEntry } from 'slate';
+import { TEditor, TNodeEntry, unsetNodes } from '@udecode/plate-core';
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 import { ListStyleType } from '../types';
 import { outdentList } from './outdentList';
@@ -9,7 +8,7 @@ import { outdentList } from './outdentList';
  */
 export const toggleIndentListUnset = (
   editor: TEditor,
-  [node, path]: NodeEntry,
+  [node, path]: TNodeEntry,
   {
     listStyleType = ListStyleType.Disc,
   }: {

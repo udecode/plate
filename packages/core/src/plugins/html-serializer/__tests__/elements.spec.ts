@@ -158,7 +158,8 @@ it('serialize image to html', () => {
         nodes: [
           {
             type: 'img',
-            url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
+            url:
+              'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
             children: [],
           },
         ],

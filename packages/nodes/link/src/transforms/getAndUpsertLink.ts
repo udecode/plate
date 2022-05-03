@@ -5,12 +5,13 @@ import {
   PlateEditor,
   unwrapNodes,
 } from '@udecode/plate-core';
+import { Value } from '../../../../core/src/slate/types/TEditor';
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { LinkPlugin } from '../types';
 import { upsertLinkAtSelection } from './upsertLinkAtSelection';
 
-export const getAndUpsertLink = async <T = {}>(
-  editor: PlateEditor<T>,
+export const getAndUpsertLink = async <V extends Value, T = {}>(
+  editor: PlateEditor<V, T>,
   getLinkUrl?: LinkPlugin['getLinkUrl']
 ) => {
   const type = getPluginType(editor, ELEMENT_LINK);

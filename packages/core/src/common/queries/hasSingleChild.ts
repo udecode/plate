@@ -1,7 +1,8 @@
-import { Node, Text } from 'slate';
+import { isText } from '../../slate/text/isText';
+import { TNode } from '../../slate/types/TNode';
 
-export const hasSingleChild = (node: Node): boolean => {
-  if (Text.isText(node)) {
+export const hasSingleChild = <N extends TNode>(node: N): boolean => {
+  if (isText(node)) {
     return true;
   }
   return node.children.length === 1 && hasSingleChild(node.children[0]);

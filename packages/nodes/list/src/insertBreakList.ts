@@ -4,6 +4,7 @@ import {
   isBlockAboveEmpty,
   mockPlugin,
   PlateEditor,
+  Value,
 } from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
@@ -16,7 +17,7 @@ import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
 import { ELEMENT_LI } from './createListPlugin';
 
-export const insertBreakList = (editor: PlateEditor) => {
+export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
   if (!editor.selection) return;
 
   const res = getListItemEntry(editor, {});

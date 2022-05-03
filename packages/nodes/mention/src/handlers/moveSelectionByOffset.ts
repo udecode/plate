@@ -1,14 +1,14 @@
-import { PlateEditor } from '@udecode/plate-core';
+import { PlateEditor, Value } from '@udecode/plate-core';
 import { Range, Transforms } from 'slate';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 
-export interface MoveSelectionByOffsetOptions {
-  query?: (editor: PlateEditor) => boolean;
+export interface MoveSelectionByOffsetOptions<V extends Value> {
+  query?: (editor: PlateEditor<V>) => boolean;
 }
 
 // TODO: move to core
-export const moveSelectionByOffset: (
-  editor: PlateEditor,
+export const moveSelectionByOffset: <V extends Value>(
+  editor: PlateEditor<V>,
   options?: MoveSelectionByOffsetOptions
 ) => KeyboardEventHandler = (editor, { query = () => true } = {}) => (
   event

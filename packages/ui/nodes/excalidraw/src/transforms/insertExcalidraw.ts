@@ -4,12 +4,13 @@ import {
   PlateEditor,
   PlatePluginKey,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
 import { ExcalidrawNodeData } from '../types';
 
-export const insertExcalidraw = (
-  editor: PlateEditor,
+export const insertExcalidraw = <V extends Value>(
+  editor: PlateEditor<V>,
   { key = ELEMENT_EXCALIDRAW }: Partial<ExcalidrawNodeData> & PlatePluginKey
 ): void => {
   if (!editor.selection) return;

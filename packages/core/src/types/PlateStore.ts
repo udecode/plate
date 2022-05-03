@@ -1,10 +1,8 @@
-import { EditableProps } from 'slate-react/dist/components/editable';
+import { Nullable } from '../common/types/utility/Nullable';
+import { TEditableProps } from '../slate/types/TEditableProps';
+import { Value } from '../slate/types/TEditor';
 import { createPlateStore } from '../stores/plate/createPlateStore';
-import { platesStore } from '../stores/plate/platesStore';
 import { PlatePlugin } from './plugins/PlatePlugin';
-import { TDescendant } from './slate/TDescendant';
-import { TNode } from './slate/TNode';
-import { Nullable } from './utility/Nullable';
 import { PlateEditor } from './PlateEditor';
 
 /**
@@ -17,7 +15,7 @@ export type EditorId = string | null | undefined;
 
 export type PlateChangeKey = 'keyEditor' | 'keyPlugins' | 'keySelection';
 
-export type PlateStoreState<T = {}> = {
+export type PlateStoreState<V extends Value, T = {}> = {
   /**
    * A unique id used to store the editor state by id.
    * Required if rendering multiple `Plate`. Optional otherwise.
@@ -25,21 +23,21 @@ export type PlateStoreState<T = {}> = {
    */
   id: string;
 
-  plugins: PlatePlugin<T>[];
+  plugins: PlatePlugin<V, T>[];
 } & Required<
-  Nullable<Pick<EditableProps, 'decorate' | 'renderElement' | 'renderLeaf'>>
+  Nullable<Pick<TEditableProps<V>, 'decorate' | 'renderElement' | 'renderLeaf'>>
 > &
   Nullable<{
     /**
      * The props for the `Editable` component.
      */
-    editableProps: EditableProps;
+    editableProps: TEditableProps<V>;
 
     /**
      * Slate editor reference.
-     * @default pipe(createEditor(), withPlate({ id, plugins, options, components }))
+     * @default pipe(createTEditor(), withPlate({ id, plugins, options, components }))
      */
-    editor: PlateEditor<T>;
+    editor: PlateEditor<V, T>;
 
     /**
      * If true, plate will create the editor with `withPlate`.
@@ -66,16 +64,22 @@ export type PlateStoreState<T = {}> = {
     /**
      * Controlled callback called when the editor state changes.
      */
-    onChange: (value: TNode[]) => void;
+    onChange: (value: V) => void;
 
     /**
      * Value of the editor.
      * @default [{ type: 'p', children: [{ text: '' }]}]
      */
-    value: TDescendant[];
+    value: V;
   }>;
 
-export type PlateStoreApi = ReturnType<typeof createPlateStore>;
-export type PlatesStoreApi = typeof platesStore;
+class Helper<V extends Value, T = {}> {
+  Return = createPlateStore<V, T>();
+}
 
-export type PlatesStoreState = Record<string, PlateStoreApi>;
+export type PlateStoreApi<V extends Value, T = {}> = Helper<V, T>['Return'];
+
+export type PlatesStoreState<V extends Value> = Record<
+  string,
+  PlateStoreApi<V>
+>;

@@ -7,13 +7,13 @@ import {
   usePlateEditorState,
   withPlateEventProvider,
 } from '@udecode/plate-core';
+import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { KEY_LINE_HEIGHT, setLineHeight } from '@udecode/plate-line-height';
 import {
   ToolbarButton,
   ToolbarButtonProps,
   ToolbarDropdown,
 } from '@udecode/plate-ui-toolbar';
-import { ReactEditor } from 'slate-react';
 
 export const LineHeightToolbarDropdown = withPlateEventProvider(
   (props: ToolbarButtonProps) => {
@@ -32,7 +32,7 @@ export const LineHeightToolbarDropdown = withPlateEventProvider(
     const selectHandler = useCallback(
       (lineHeight) => {
         if (editor) {
-          ReactEditor.focus(editor);
+          focusEditor(editor);
 
           setLineHeight(editor, {
             value: lineHeight,

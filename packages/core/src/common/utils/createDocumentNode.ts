@@ -1,4 +1,4 @@
-import { TDescendant } from '../../types/slate/TDescendant';
+import { TDescendant } from '../../slate/types/TDescendant';
 
 export const createDocumentNode = (
   type = 'p',

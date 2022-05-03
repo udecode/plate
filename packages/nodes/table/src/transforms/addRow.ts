@@ -5,13 +5,17 @@ import {
   PlateEditor,
   someNode,
   TElement,
+  Value,
 } from '@udecode/plate-core';
 import { Path } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyRowNode } from '../utils/getEmptyRowNode';
 
-export const addRow = (editor: PlateEditor, { header }: TablePluginOptions) => {
+export const addRow = <V extends Value>(
+  editor: PlateEditor<V>,
+  { header }: TablePluginOptions
+) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
