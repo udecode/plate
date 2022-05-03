@@ -14,8 +14,8 @@ import {
   isFirstComment,
   Thread as ThreadModel,
   ThreadNode,
-  upsertThread,
-} from '@udecode/plate-comments';
+  upsertThreadAtSelection,
+} from "@udecode/plate-comments";
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Transforms } from 'slate';
@@ -187,7 +187,7 @@ export function Thread({
   const onResolveThread = useCallback(
     function onResolveThread() {
       thread.isResolved = true;
-      upsertThread(editor, thread);
+      upsertThreadAtSelection(editor, thread);
     },
     [editor, thread]
   );
@@ -223,7 +223,7 @@ export function Thread({
       thread.comments = thread.comments.filter(
         (comment2) => comment2 !== comment
       );
-      upsertThread(editor, thread);
+      upsertThreadAtSelection(editor, thread);
     },
     [editor, thread]
   );

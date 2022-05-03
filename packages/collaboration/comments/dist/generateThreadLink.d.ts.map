@@ -1,1 +1,1 @@
-{"version":3,"file":"generateThreadLink.d.ts","sourceRoot":"","sources":["../src/generateThreadLink.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,aAAa,CAAC;AAErC,wBAAgB,kBAAkB,CAAC,MAAM,EAAE,MAAM,UAIhD"}
+{"version":3,"file":"generateThreadLink.d.ts","sourceRoot":"","sources":["../src/generateThreadLink.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,UAAU,CAAC;AAElC,wBAAgB,kBAAkB,CAAC,MAAM,EAAE,MAAM,UAIhD"}

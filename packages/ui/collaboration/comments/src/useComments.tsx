@@ -5,7 +5,7 @@ import {
   ELEMENT_THREAD,
   findThreadNodeEntries,
   Thread,
-  upsertThread,
+  upsertThreadAtSelection,
 } from '@udecode/plate-comments';
 import {
   getAbove,
@@ -115,7 +115,7 @@ export function useComments(): any {
   );
 
   useEffect(
-    function onEditorChange() {
+    function onSelectionChange() {
       const type = getPluginType(editor, ELEMENT_THREAD);
       // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
       const threadNodeEntry = getAbove(editor, {
@@ -135,10 +135,10 @@ export function useComments(): any {
       }
     },
     [
-      editor.selection,
       showThread,
       hideThread,
       editor,
+      editor.selection,
       newThreadThreadNodeEntry,
       onCancelCreateThread,
     ]
@@ -152,7 +152,10 @@ export function useComments(): any {
           comments: [],
           isResolved: false,
         };
-        const newThreadThreadNodeEntry2 = upsertThread(editor, newThread);
+        const newThreadThreadNodeEntry2 = upsertThreadAtSelection(
+          editor,
+          newThread
+        );
         setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
       }
     },
@@ -162,7 +165,7 @@ export function useComments(): any {
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
       thread!.comments.push(comment);
-      upsertThread(editor, thread!);
+      upsertThreadAtSelection(editor, thread!);
       setNewThreadThreadNodeEntry(null);
       setThread(null);
     },

@@ -5307,10 +5307,8 @@
     "@typescript-eslint/types" "4.22.1"
     eslint-visitor-keys "^2.0.0"
 
-"@udecode/plate-comments@https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?295a5d1b56571b24f0dd2da6294a3b045463000c":
+"@udecode/plate-comments@file:packages/collaboration/comments":
   version "1.0.0"
-  resolved "https://gitpkg.now.sh/xolvio/plate/packages/collaboration/comments?295a5d1b56571b24f0dd2da6294a3b045463000c"
-  integrity sha512-KnHkwYhpA2pdOHETd0iUGOqD+IiuIJfoxfE8Wio5O9Nn1+rej+BGxDBCclckGqXUEQOytUexL0cdstVGmlNhLg==
   dependencies:
     "@udecode/plate-core" "10.5.3"
 

@@ -4,7 +4,7 @@ import { withPlateEventProvider, useEventPlateId, usePlateEditorState, usePlateE
 import { ToolbarButton } from '@udecode/plate-ui-toolbar';
 import _styled, { css } from 'styled-components';
 import ReactDOM from 'react-dom';
-import { generateThreadLink, doesContactMatchString, upsertThread, findThreadNodeEntries, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
+import { generateThreadLink, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
 import { Transforms } from 'slate';
 import { MDCMenu, DefaultFocusState, Corner } from '@material/menu';
 import { createStyles, getRootProps } from '@udecode/plate-styled-components';
@@ -1113,7 +1113,7 @@ function Thread({
   }, [hasComments, onCancelCreateThread, clearTextArea]);
   const onResolveThread = useCallback(function onResolveThread() {
     thread.isResolved = true;
-    upsertThread(editor, thread);
+    upsertThreadAtSelection(editor, thread);
   }, [editor, thread]);
   const onReOpenThread = useCallback(function onReOpenThread() {
     thread.isResolved = false;
@@ -1133,7 +1133,7 @@ function Thread({
   }, [editor]);
   const deleteComment = useCallback(function deleteComment(comment) {
     thread.comments = thread.comments.filter(comment2 => comment2 !== comment);
-    upsertThread(editor, thread);
+    upsertThreadAtSelection(editor, thread);
   }, [editor, thread]);
   const onDelete = useCallback(function onDelete(comment) {
     if (isFirstComment(thread, comment)) {
@@ -1677,7 +1677,7 @@ function useComments() {
       }
     }
   }, [editor, showThread, updateThreadPosition]);
-  useEffect(function onEditorChange() {
+  useEffect(function onSelectionChange() {
     const type = getPluginType(editor, ELEMENT_THREAD); // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
 
     const threadNodeEntry = getAbove(editor, {
@@ -1696,7 +1696,7 @@ function useComments() {
     } else {
       hideThread();
     }
-  }, [editor.selection, showThread, hideThread, editor, newThreadThreadNodeEntry, onCancelCreateThread]);
+  }, [showThread, hideThread, editor, editor.selection, newThreadThreadNodeEntry, onCancelCreateThread]);
   const onAddThread = useCallback(function onAddThread() {
     if (editor.selection) {
       const newThread = {
@@ -1705,13 +1705,13 @@ function useComments() {
         comments: [],
         isResolved: false
       };
-      const newThreadThreadNodeEntry2 = upsertThread(editor, newThread);
+      const newThreadThreadNodeEntry2 = upsertThreadAtSelection(editor, newThread);
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
   }, [editor]);
   const onSubmitComment = useCallback(function onSubmitComment(comment) {
     thread.comments.push(comment);
-    upsertThread(editor, thread);
+    upsertThreadAtSelection(editor, thread);
     setNewThreadThreadNodeEntry(null);
     setThread(null);
   }, [editor, thread]);

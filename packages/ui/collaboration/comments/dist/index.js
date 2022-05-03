@@ -1143,7 +1143,7 @@ function Thread({
   }, [hasComments, onCancelCreateThread, clearTextArea]);
   const onResolveThread = React.useCallback(function onResolveThread() {
     thread.isResolved = true;
-    plateComments.upsertThread(editor, thread);
+    plateComments.upsertThreadAtSelection(editor, thread);
   }, [editor, thread]);
   const onReOpenThread = React.useCallback(function onReOpenThread() {
     thread.isResolved = false;
@@ -1163,7 +1163,7 @@ function Thread({
   }, [editor]);
   const deleteComment = React.useCallback(function deleteComment(comment) {
     thread.comments = thread.comments.filter(comment2 => comment2 !== comment);
-    plateComments.upsertThread(editor, thread);
+    plateComments.upsertThreadAtSelection(editor, thread);
   }, [editor, thread]);
   const onDelete = React.useCallback(function onDelete(comment) {
     if (plateComments.isFirstComment(thread, comment)) {
@@ -1707,7 +1707,7 @@ function useComments() {
       }
     }
   }, [editor, showThread, updateThreadPosition]);
-  React.useEffect(function onEditorChange() {
+  React.useEffect(function onSelectionChange() {
     const type = plateCore.getPluginType(editor, plateComments.ELEMENT_THREAD); // FIXME: Show thread when putting caret before the first character of the text with which the thread is connected.
 
     const threadNodeEntry = plateCore.getAbove(editor, {
@@ -1726,7 +1726,7 @@ function useComments() {
     } else {
       hideThread();
     }
-  }, [editor.selection, showThread, hideThread, editor, newThreadThreadNodeEntry, onCancelCreateThread]);
+  }, [showThread, hideThread, editor, editor.selection, newThreadThreadNodeEntry, onCancelCreateThread]);
   const onAddThread = React.useCallback(function onAddThread() {
     if (editor.selection) {
       const newThread = {
@@ -1735,13 +1735,13 @@ function useComments() {
         comments: [],
         isResolved: false
       };
-      const newThreadThreadNodeEntry2 = plateComments.upsertThread(editor, newThread);
+      const newThreadThreadNodeEntry2 = plateComments.upsertThreadAtSelection(editor, newThread);
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
   }, [editor]);
   const onSubmitComment = React.useCallback(function onSubmitComment(comment) {
     thread.comments.push(comment);
-    plateComments.upsertThread(editor, thread);
+    plateComments.upsertThreadAtSelection(editor, thread);
     setNewThreadThreadNodeEntry(null);
     setThread(null);
   }, [editor, thread]);

@@ -1,8 +1,9 @@
-import { createPluginFactory } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { createPluginFactory, PlateEditor } from '@udecode/plate-core';
+import { deselectThread } from './transforms/deselectThread';
+import { selectThread } from './transforms/selectThread';
 import { findSelectedThreadNodeEntry } from './findSelectedThreadNodeEntry';
 import { findThreadNodeEntries } from './findThreadNodeEntries';
-import { ThreadNode, ThreadPlugin } from './types.js';
+import { ThreadPlugin } from './types';
 
 export const ELEMENT_THREAD = 'thread';
 
@@ -11,36 +12,20 @@ export const createThreadPlugin = createPluginFactory<ThreadPlugin>({
   isElement: true,
   isInline: true,
   handlers: {
-    onChange(editor) {
+    onChange(editor: PlateEditor<{}>) {
       return () => {
-        const threadNodeEntries = findThreadNodeEntries(editor);
-        for (const threadNodeEntry of threadNodeEntries) {
-          Transforms.setNodes<ThreadNode>(
-            editor,
-            {
-              selected: false,
-            },
-            {
-              at: threadNodeEntry[1],
-            }
-          );
-        }
-
-        const threadNodeEntry = findSelectedThreadNodeEntry(editor);
-        if (threadNodeEntry) {
-          const { thread } = threadNodeEntry[0];
-          if (thread) {
-            Transforms.setNodes<ThreadNode>(
-              editor,
-              {
-                selected: true,
-              },
-              {
-                at: threadNodeEntry[1],
-              }
-            );
-          }
-        }
+        // const threadNodeEntries = findThreadNodeEntries(editor);
+        // for (const threadNodeEntry of threadNodeEntries) {
+        //   deselectThread(editor, threadNodeEntry);
+        // }
+        //
+        // const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+        // if (threadNodeEntry) {
+        //   const { thread } = threadNodeEntry[0];
+        //   if (thread) {
+        //     selectThread(editor, threadNodeEntry);
+        //   }
+        // }
       };
     },
   },

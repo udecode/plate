@@ -5,25 +5,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var plateCore = require('@udecode/plate-core');
 var slate = require('slate');
 
-function findSelectedThreadNodeEntry(editor) {
-  const type = plateCore.getPluginType(editor, ELEMENT_THREAD);
-  return plateCore.getAbove(editor, {
-    match: {
-      type
-    }
-  });
-}
-
-function* findThreadNodeEntries(editor) {
-  const type = plateCore.getPluginType(editor, ELEMENT_THREAD);
-  yield* plateCore.getNodes(editor, {
-    at: [],
-    match: {
-      type
-    }
-  });
-}
-
 const ELEMENT_THREAD = 'thread';
 const createThreadPlugin = plateCore.createPluginFactory({
   key: ELEMENT_THREAD,
@@ -31,94 +12,23 @@ const createThreadPlugin = plateCore.createPluginFactory({
   isInline: true,
   handlers: {
     onChange(editor) {
-      return () => {
-        const threadNodeEntries = findThreadNodeEntries(editor);
-
-        for (const threadNodeEntry of threadNodeEntries) {
-          slate.Transforms.setNodes(editor, {
-            selected: false
-          }, {
-            at: threadNodeEntry[1]
-          });
-        }
-
-        const threadNodeEntry = findSelectedThreadNodeEntry(editor);
-
-        if (threadNodeEntry) {
-          const {
-            thread
-          } = threadNodeEntry[0];
-
-          if (thread) {
-            slate.Transforms.setNodes(editor, {
-              selected: true
-            }, {
-              at: threadNodeEntry[1]
-            });
-          }
-        }
+      return () => {// const threadNodeEntries = findThreadNodeEntries(editor);
+        // for (const threadNodeEntry of threadNodeEntries) {
+        //   deselectThread(editor, threadNodeEntry);
+        // }
+        //
+        // const threadNodeEntry = findSelectedThreadNodeEntry(editor);
+        // if (threadNodeEntry) {
+        //   const { thread } = threadNodeEntry[0];
+        //   if (thread) {
+        //     selectThread(editor, threadNodeEntry);
+        //   }
+        // }
       };
     }
 
   }
 });
-
-const wrapThread = (editor, {
-  at,
-  thread
-}) => {
-  plateCore.wrapNodes(editor, {
-    type: plateCore.getPluginType(editor, ELEMENT_THREAD),
-    thread,
-    selected: false,
-    children: []
-  }, {
-    at,
-    split: true
-  });
-};
-
-/**
- * Unwrap link at a location (default: selection).
- * Then, the focus of the location is set to selection focus.
- * Then, wrap the link at the location.
- */
-
-const upsertThreadAtSelection = (editor, thread) => {
-  if (editor.selection) {
-    const type = plateCore.getPluginType(editor, ELEMENT_THREAD);
-
-    if (plateCore.isCollapsed(editor.selection)) {
-      const threadLeaf = slate.Editor.leaf(editor, editor.selection);
-      const [, inlinePath] = threadLeaf;
-      slate.Transforms.select(editor, inlinePath);
-    }
-
-    const selectionLength = editor.selection.focus.offset - editor.selection.anchor.offset;
-    plateCore.unwrapNodes(editor, {
-      at: editor.selection,
-      match: {
-        type
-      }
-    });
-    wrapThread(editor, {
-      at: editor.selection,
-      thread
-    });
-    slate.Transforms.select(editor, {
-      anchor: editor.selection.anchor,
-      focus: {
-        offset: selectionLength,
-        path: editor.selection.anchor.path
-      }
-    });
-    return findSelectedThreadNodeEntry(editor);
-  }
-};
-
-function upsertThread(editor, thread) {
-  return upsertThreadAtSelection(editor, thread);
-}
 
 function deleteThread(editor, thread) {
   plateCore.unwrapNodes(editor, {
@@ -134,6 +44,128 @@ function deleteThreadAtSelection(editor) {
     at: editor.selection,
     match: {
       type: plateCore.getPluginType(editor, ELEMENT_THREAD)
+    }
+  });
+}
+
+function findSelectedThreadNodeEntry(editor) {
+  return plateCore.getAbove(editor, {
+    match: {
+      type: plateCore.getPluginType(editor, ELEMENT_THREAD)
+    }
+  });
+}
+
+function isThread(editor, node) {
+  return node.type === plateCore.getPluginType(editor, ELEMENT_THREAD);
+}
+
+const wrapWithThread = (editor, {
+  at,
+  thread,
+  elementProps
+}) => {
+  plateCore.wrapNodes(editor, {
+    type: plateCore.getPluginType(editor, ELEMENT_THREAD),
+    thread,
+    selected: false,
+    children: [],
+    ...elementProps
+  }, {
+    at,
+    split: true
+  });
+};
+
+function upsertThread(editor, {
+  at,
+  thread,
+  elementProps
+}) {
+  const type = plateCore.getPluginType(editor, ELEMENT_THREAD);
+  const isRange = slate.Range.isRange(at);
+
+  if (isRange && plateCore.isCollapsed(at)) {
+    const threadLeaf = slate.Editor.leaf(editor, at);
+    const [, inlinePath] = threadLeaf;
+    slate.Transforms.select(editor, inlinePath);
+  }
+
+  wrapWithThread(editor, {
+    at,
+    thread,
+    elementProps
+  });
+  plateCore.unwrapNodes(editor, {
+    at,
+    match: {
+      type
+    }
+  });
+
+  if (isRange) {
+    const threadNodeEntry = plateCore.findNode(editor, {
+      at: [],
+
+      match(node) {
+        return isThread(editor, node) && node.thread.id === thread.id;
+      }
+
+    });
+    const [, threadPath] = threadNodeEntry;
+    slate.Transforms.select(editor, threadPath);
+  }
+
+  return findSelectedThreadNodeEntry(editor);
+}
+
+function deselectThread(editor, threadEntry) {
+  const [threadNode, threadPath] = threadEntry;
+
+  if (threadNode.selected) {
+    upsertThread(editor, {
+      thread: threadNode.thread,
+      at: threadPath,
+      elementProps: {
+        selected: false
+      }
+    });
+  }
+}
+
+function selectThread(editor, threadEntry) {
+  const [threadNode, threadPath] = threadEntry;
+
+  if (!threadNode.selected) {
+    upsertThread(editor, {
+      thread: threadNode.thread,
+      at: threadPath,
+      elementProps: {
+        selected: true
+      }
+    });
+  }
+}
+
+const upsertThreadAtSelection = (editor, thread) => {
+  const {
+    selection
+  } = editor;
+
+  if (selection) {
+    return upsertThread(editor, {
+      thread,
+      at: selection
+    });
+  }
+};
+
+function* findThreadNodeEntries(editor) {
+  const type = plateCore.getPluginType(editor, ELEMENT_THREAD);
+  yield* plateCore.getNodes(editor, {
+    at: [],
+    match: {
+      type
     }
   });
 }
@@ -156,12 +188,14 @@ exports.ELEMENT_THREAD = ELEMENT_THREAD;
 exports.createThreadPlugin = createThreadPlugin;
 exports.deleteThread = deleteThread;
 exports.deleteThreadAtSelection = deleteThreadAtSelection;
+exports.deselectThread = deselectThread;
 exports.doesContactMatchString = doesContactMatchString;
 exports.findSelectedThreadNodeEntry = findSelectedThreadNodeEntry;
 exports.findThreadNodeEntries = findThreadNodeEntries;
 exports.generateThreadLink = generateThreadLink;
 exports.isFirstComment = isFirstComment;
+exports.selectThread = selectThread;
 exports.upsertThread = upsertThread;
 exports.upsertThreadAtSelection = upsertThreadAtSelection;
-exports.wrapThread = wrapThread;
+exports.wrapWithThread = wrapWithThread;
 //# sourceMappingURL=index.js.map

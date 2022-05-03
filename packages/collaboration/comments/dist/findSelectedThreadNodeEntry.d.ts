@@ -1,3 +1,5 @@
 import { PlateEditor } from '@udecode/plate-core';
-export declare function findSelectedThreadNodeEntry<T = {}>(editor: PlateEditor<T>): import("slate").NodeEntry<import("@udecode/plate-core").TAncestor<import("@udecode/plate-core").AnyObject>> | undefined;
+import { NodeEntry } from 'slate';
+import { ThreadNode } from './types';
+export declare function findSelectedThreadNodeEntry<T = {}>(editor: PlateEditor<T>): NodeEntry<ThreadNode> | undefined;
 //# sourceMappingURL=findSelectedThreadNodeEntry.d.ts.map
