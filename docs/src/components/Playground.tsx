@@ -38,6 +38,7 @@ export function Playground() {
     thread,
     position: threadPosition,
     onAddThread,
+    onSaveComment,
     onSubmitComment,
     onCancelCreateThread,
   } = useComments();
@@ -104,6 +105,7 @@ export function Playground() {
         <SideThread
           thread={thread}
           position={threadPosition}
+          onSaveComment={onSaveComment}
           onSubmitComment={onSubmitComment}
           onCancelCreateThread={onCancelCreateThread}
           fetchContacts={fetchContacts}

@@ -7,9 +7,10 @@ export interface ThreadProps extends StyledProps {
     showResolveThreadButton: boolean;
     showReOpenThreadButton: boolean;
     showMoreButton: boolean;
+    onSaveComment: (comment: Comment) => void;
     onSubmitComment: (comment: Comment) => void;
     onCancelCreateThread: () => void;
     fetchContacts: FetchContacts;
 }
-export declare function Thread({ thread, showResolveThreadButton, showReOpenThreadButton, showMoreButton, onSubmitComment: onSubmitCommentCallback, onCancelCreateThread, fetchContacts, ...props }: ThreadProps): JSX.Element;
+export declare function Thread({ thread, showResolveThreadButton, showReOpenThreadButton, showMoreButton, onSaveComment, onSubmitComment: onSubmitCommentCallback, onCancelCreateThread, fetchContacts, ...props }: ThreadProps): JSX.Element;
 //# sourceMappingURL=Thread.d.ts.map

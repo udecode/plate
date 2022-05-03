@@ -27,6 +27,38 @@ export interface UseCommentsResult {
   onAddThread: () => void;
 }
 
+function replaceElement<T>(
+  elements: T[],
+  newElement: T,
+  doesMatch: (element: T, newElement: T) => boolean
+): T[] {
+  return elements.map((element) =>
+    doesMatch(element, newElement) ? newElement : element
+  );
+}
+
+interface SomethingWithAnId {
+  id: any;
+}
+
+function doBothElementsHaveTheSameId(
+  elementA: SomethingWithAnId,
+  elementB: SomethingWithAnId
+): boolean {
+  return elementA.id === elementB.id;
+}
+
+function replaceElementMatchingById<T extends { id: any }>(
+  elements: T[],
+  newElement: T
+): T[] {
+  return replaceElement(elements, newElement, doBothElementsHaveTheSameId);
+}
+
+function replaceComment(comments: Comment[], newComment: Comment): Comment[] {
+  return replaceElementMatchingById(comments, newComment);
+}
+
 export function useComments(): any {
   const editor = usePlateEditorState();
   const [thread, setThread] = useState<Thread | null>(null);
@@ -162,23 +194,42 @@ export function useComments(): any {
     [editor]
   );
 
+  const updateThread = useCallback(
+    function updateThread(newThread: Thread): void {
+      upsertThreadAtSelection(editor, newThread);
+      setNewThreadThreadNodeEntry(null);
+      setThread(null);
+    },
+    [editor]
+  );
+
+  const onSaveComment = useCallback(
+    function onSaveComment(comment: Comment) {
+      const newThread = {
+        ...thread!,
+        comments: replaceComment(thread!.comments, comment),
+      };
+      updateThread(newThread);
+    },
+    [thread, updateThread]
+  );
+
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
       const newThread = {
         ...thread!,
         comments: [...thread!.comments, comment],
       };
-      upsertThreadAtSelection(editor, newThread);
-      setNewThreadThreadNodeEntry(null);
-      setThread(null);
+      updateThread(newThread);
     },
-    [editor, thread]
+    [thread, updateThread]
   );
 
   return {
     thread,
     position: threadPosition,
     onAddThread,
+    onSaveComment,
     onSubmitComment,
     onCancelCreateThread,
   };

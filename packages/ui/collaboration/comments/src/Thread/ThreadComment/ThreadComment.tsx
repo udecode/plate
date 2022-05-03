@@ -32,6 +32,7 @@ export function ThreadComment(
     showReOpenThreadButton: boolean;
     showMoreButton: boolean;
     showLinkToThisComment: boolean;
+    onSaveComment: (comment: Comment) => void;
     onResolveThread: () => void;
     onReOpenThread: () => void;
     onDelete: (comment: Comment) => void;
@@ -44,6 +45,7 @@ export function ThreadComment(
     showReOpenThreadButton,
     showMoreButton,
     showLinkToThisComment,
+    onSaveComment,
     onResolveThread,
     onReOpenThread,
     onDelete: onDeleteCallback,
@@ -91,10 +93,13 @@ export function ThreadComment(
 
   const onSave = useCallback(
     function onSave(text: string) {
-      comment.text = text; // FIXME
       setIsEdited(false);
+      onSaveComment({
+        ...comment,
+        text,
+      });
     },
-    [comment]
+    [comment, onSaveComment]
   );
 
   const onCancel = useCallback(function onCancel() {

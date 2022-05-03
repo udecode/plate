@@ -41,6 +41,7 @@ export interface ThreadProps extends StyledProps {
   showResolveThreadButton: boolean;
   showReOpenThreadButton: boolean;
   showMoreButton: boolean;
+  onSaveComment: (comment: Comment) => void;
   onSubmitComment: (comment: Comment) => void;
   onCancelCreateThread: () => void;
   fetchContacts: FetchContacts;
@@ -51,6 +52,7 @@ export function Thread({
   showResolveThreadButton,
   showReOpenThreadButton,
   showMoreButton,
+  onSaveComment,
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
   fetchContacts,
@@ -400,6 +402,7 @@ export function Thread({
           showReOpenThreadButton={showReOpenThreadButton}
           showMoreButton={showMoreButton}
           showLinkToThisComment={index === 0}
+          onSaveComment={onSaveComment}
           onResolveThread={onResolveThread}
           onReOpenThread={onReOpenThread}
           onDelete={onDelete}

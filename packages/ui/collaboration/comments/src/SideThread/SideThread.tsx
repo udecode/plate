@@ -8,6 +8,7 @@ import { createSideThreadStyles } from './SideThread.styles';
 
 interface SideThreadProps extends StyledProps {
   thread: ThreadModel;
+  onSaveComment: (comment: Comment) => void;
   onSubmitComment: (comment: Comment) => void;
   onCancelCreateThread: () => void;
   fetchContacts: FetchContacts;

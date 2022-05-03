@@ -849,6 +849,7 @@ function ThreadComment(props) {
     showReOpenThreadButton,
     showMoreButton,
     showLinkToThisComment,
+    onSaveComment,
     onResolveThread,
     onReOpenThread,
     onDelete: onDeleteCallback
@@ -898,10 +899,11 @@ function ThreadComment(props) {
     setThreadLink(null);
   }, []);
   const onSave = useCallback(function onSave(text) {
-    comment.text = text; // FIXME
-
     setIsEdited(false);
-  }, [comment]);
+    onSaveComment({ ...comment,
+      text
+    });
+  }, [comment, onSaveComment]);
   const onCancel = useCallback(function onCancel() {
     setIsEdited(false);
   }, []);
@@ -1021,6 +1023,7 @@ function Thread({
   showResolveThreadButton,
   showReOpenThreadButton,
   showMoreButton,
+  onSaveComment,
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
   fetchContacts,
@@ -1272,6 +1275,7 @@ function Thread({
     showReOpenThreadButton: showReOpenThreadButton,
     showMoreButton: showMoreButton,
     showLinkToThisComment: index === 0,
+    onSaveComment: onSaveComment,
     onResolveThread: onResolveThread,
     onReOpenThread: onReOpenThread,
     onDelete: onDelete
@@ -1468,6 +1472,7 @@ function Threads(props) {
     return /*#__PURE__*/React__default.createElement(Thread, {
       key: thread.id,
       thread: thread,
+      onSaveComment: () => {},
       onSubmitComment: () => {},
       onCancelCreateThread: () => {},
       showResolveThreadButton: false,
@@ -1613,6 +1618,22 @@ var _StyledDiv = _styled("div").withConfig({
   componentId: "sc-di7ox7-0"
 })(["", ""], p => p.$_css);
 
+function replaceElement(elements, newElement, doesMatch) {
+  return elements.map(element => doesMatch(element, newElement) ? newElement : element);
+}
+
+function doBothElementsHaveTheSameId(elementA, elementB) {
+  return elementA.id === elementB.id;
+}
+
+function replaceElementMatchingById(elements, newElement) {
+  return replaceElement(elements, newElement, doBothElementsHaveTheSameId);
+}
+
+function replaceComment(comments, newComment) {
+  return replaceElementMatchingById(comments, newComment);
+}
+
 function useComments() {
   const editor = usePlateEditorState();
   const [thread, setThread] = useState(null);
@@ -1709,18 +1730,28 @@ function useComments() {
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
   }, [editor]);
+  const updateThread = useCallback(function updateThread(newThread) {
+    upsertThreadAtSelection(editor, newThread);
+    setNewThreadThreadNodeEntry(null);
+    setThread(null);
+  }, [editor]);
+  const onSaveComment = useCallback(function onSaveComment(comment) {
+    const newThread = { ...thread,
+      comments: replaceComment(thread.comments, comment)
+    };
+    updateThread(newThread);
+  }, [thread, updateThread]);
   const onSubmitComment = useCallback(function onSubmitComment(comment) {
     const newThread = { ...thread,
       comments: [...thread.comments, comment]
     };
-    upsertThreadAtSelection(editor, newThread);
-    setNewThreadThreadNodeEntry(null);
-    setThread(null);
-  }, [editor, thread]);
+    updateThread(newThread);
+  }, [thread, updateThread]);
   return {
     thread,
     position: threadPosition,
     onAddThread,
+    onSaveComment,
     onSubmitComment,
     onCancelCreateThread
   };

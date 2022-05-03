@@ -108,6 +108,7 @@ export function Threads(
             <Thread
               key={thread.id}
               thread={thread}
+              onSaveComment={() => {}}
               onSubmitComment={() => {}}
               onCancelCreateThread={() => {}}
               showResolveThreadButton={false}

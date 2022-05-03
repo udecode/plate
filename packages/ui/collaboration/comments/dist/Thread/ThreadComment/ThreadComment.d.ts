@@ -9,6 +9,7 @@ export declare function ThreadComment(props: {
     showReOpenThreadButton: boolean;
     showMoreButton: boolean;
     showLinkToThisComment: boolean;
+    onSaveComment: (comment: Comment) => void;
     onResolveThread: () => void;
     onReOpenThread: () => void;
     onDelete: (comment: Comment) => void;

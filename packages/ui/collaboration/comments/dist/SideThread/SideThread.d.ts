@@ -4,6 +4,7 @@ import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
 interface SideThreadProps extends StyledProps {
     thread: ThreadModel;
+    onSaveComment: (comment: Comment) => void;
     onSubmitComment: (comment: Comment) => void;
     onCancelCreateThread: () => void;
     fetchContacts: FetchContacts;
