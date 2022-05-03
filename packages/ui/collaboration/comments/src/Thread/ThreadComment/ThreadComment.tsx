@@ -119,7 +119,7 @@ export function ThreadComment(
             Jon Doe
           </div>
           <div css={timestamp.css} className={timestamp.className}>
-            {comment.createdAt.toLocaleString()}
+            {new Date(comment.createdAt).toLocaleString()}
           </div>
         </div>
         {showResolveThreadButton ? (

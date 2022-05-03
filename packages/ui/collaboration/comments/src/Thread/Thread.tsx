@@ -15,7 +15,7 @@ import {
   Thread as ThreadModel,
   ThreadNode,
   upsertThreadAtSelection,
-} from "@udecode/plate-comments";
+} from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { Transforms } from 'slate';
@@ -152,7 +152,7 @@ export function Thread({
       const newComment = {
         id: Math.floor(Math.random() * 1000), // FIXME
         text: textAreaRef.current!.value,
-        createdAt: new Date(),
+        createdAt: Date.now(),
       };
       onSubmitCommentCallback(newComment);
     },

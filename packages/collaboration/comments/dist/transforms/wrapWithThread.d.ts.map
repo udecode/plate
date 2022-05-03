@@ -1,0 +1,1 @@
+{"version":3,"file":"wrapWithThread.d.ts","sourceRoot":"","sources":["../../src/transforms/wrapWithThread.ts"],"names":[],"mappings":"AAAA,OAAO,EAAiB,WAAW,EAAa,MAAM,qBAAqB,CAAC;AAC5E,OAAO,EAAE,QAAQ,EAAE,MAAM,OAAO,CAAC;AAEjC,OAAO,EAAE,MAAM,EAAE,MAAM,WAAW,CAAC;AACnC,OAAO,EAAE,cAAc,EAAE,MAAM,UAAU,CAAC;AAE1C,eAAO,MAAM,cAAc;YAMZ,MAAM;;;UAapB,CAAC"}

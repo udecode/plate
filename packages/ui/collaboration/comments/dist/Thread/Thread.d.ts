@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { Comment, Thread as ThreadModel } from "@udecode/plate-comments";
+import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
 export interface ThreadProps extends StyledProps {

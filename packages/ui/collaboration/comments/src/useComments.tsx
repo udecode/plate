@@ -164,8 +164,11 @@ export function useComments(): any {
 
   const onSubmitComment = useCallback(
     function onSubmitComment(comment: Comment) {
-      thread!.comments.push(comment);
-      upsertThreadAtSelection(editor, thread!);
+      const newThread = {
+        ...thread!,
+        comments: [...thread!.comments, comment],
+      };
+      upsertThreadAtSelection(editor, newThread);
       setNewThreadThreadNodeEntry(null);
       setThread(null);
     },

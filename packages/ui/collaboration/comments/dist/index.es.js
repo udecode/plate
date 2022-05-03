@@ -930,7 +930,7 @@ function ThreadComment(props) {
   }, "Jon Doe"), /*#__PURE__*/React__default.createElement(_StyledDiv6$1, {
     className: timestamp.className,
     $_css7: timestamp.css
-  }, comment.createdAt.toLocaleString())), showResolveThreadButton ? /*#__PURE__*/React__default.createElement(_StyledButton$1, {
+  }, new Date(comment.createdAt).toLocaleString())), showResolveThreadButton ? /*#__PURE__*/React__default.createElement(_StyledButton$1, {
     type: "button",
     className: `${resolveThreadButton.className} mdc-icon-button`,
     onClick: onResolveThread,
@@ -1094,7 +1094,7 @@ function Thread({
       id: Math.floor(Math.random() * 1000),
       // FIXME
       text: textAreaRef.current.value,
-      createdAt: new Date()
+      createdAt: Date.now()
     };
     onSubmitCommentCallback(newComment);
   }, [onSubmitCommentCallback]);
@@ -1594,7 +1594,7 @@ function SideThread({
   const {
     root
   } = createSideThreadStyles(props);
-  return /*#__PURE__*/React__default.createElement(_StyledDiv, {
+  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React__default.createElement(_StyledDiv, {
     className: root.className,
     style: {
       left: position.left,
@@ -1605,7 +1605,7 @@ function SideThread({
     showResolveThreadButton: true,
     showReOpenThreadButton: false,
     showMoreButton: true
-  })));
+  }))), document.body);
 }
 
 var _StyledDiv = _styled("div").withConfig({
@@ -1710,8 +1710,10 @@ function useComments() {
     }
   }, [editor]);
   const onSubmitComment = useCallback(function onSubmitComment(comment) {
-    thread.comments.push(comment);
-    upsertThreadAtSelection(editor, thread);
+    const newThread = { ...thread,
+      comments: [...thread.comments, comment]
+    };
+    upsertThreadAtSelection(editor, newThread);
     setNewThreadThreadNodeEntry(null);
     setThread(null);
   }, [editor, thread]);

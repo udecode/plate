@@ -1,4 +1,4 @@
-/// <reference types="react" />
+import React from 'react';
 import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
@@ -12,6 +12,6 @@ interface SideThreadProps extends StyledProps {
         top: number;
     };
 }
-export declare function SideThread({ position, ...props }: SideThreadProps): JSX.Element;
+export declare function SideThread({ position, ...props }: SideThreadProps): React.ReactPortal;
 export {};
 //# sourceMappingURL=SideThread.d.ts.map

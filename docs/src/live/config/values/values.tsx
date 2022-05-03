@@ -903,7 +903,7 @@ const comments: any = (
       <hthread
         thread={{
           id: 1,
-          comments: [{ id: 1, text: 'A comment', createdAt: new Date() }],
+          comments: [{ id: 1, text: 'A comment', createdAt: Date.now() }],
           isResolved: false,
         }}
       >
@@ -914,7 +914,7 @@ const comments: any = (
       <hthread
         thread={{
           id: 2,
-          comments: [{ id: 2, text: 'A comment', createdAt: new Date() }],
+          comments: [{ id: 2, text: 'A comment', createdAt: Date.now() }],
           isResolved: true,
         }}
       >
@@ -925,7 +925,7 @@ const comments: any = (
       <hthread
         thread={{
           id: 3,
-          comments: [{ id: 3, text: 'A comment', createdAt: new Date() }],
+          comments: [{ id: 3, text: 'A comment', createdAt: Date.now() }],
           isResolved: true,
         }}
       >

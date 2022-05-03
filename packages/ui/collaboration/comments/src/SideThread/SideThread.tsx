@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
@@ -16,7 +17,7 @@ interface SideThreadProps extends StyledProps {
 export function SideThread({ position, ...props }: SideThreadProps) {
   const { root } = createSideThreadStyles(props);
 
-  return (
+  return ReactDOM.createPortal(
     <div
       css={root.css}
       className={root.className}
@@ -31,6 +32,7 @@ export function SideThread({ position, ...props }: SideThreadProps) {
         showReOpenThreadButton={false}
         showMoreButton
       />
-    </div>
+    </div>,
+    document.body
   );
 }

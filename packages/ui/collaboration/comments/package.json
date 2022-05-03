@@ -20,6 +20,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
+  "style": "dist/index.css",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
