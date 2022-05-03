@@ -2155,7 +2155,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-headless@10.6.3":
+"@udecode/plate-headless@10.7.0":
   version "0.0.0"
   uid ""
 
@@ -2179,7 +2179,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-image@10.5.3":
+"@udecode/plate-image@10.7.0":
   version "0.0.0"
   uid ""
 
@@ -2307,7 +2307,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-serializer-docx@10.6.3":
+"@udecode/plate-serializer-docx@10.7.0":
   version "0.0.0"
   uid ""
 
@@ -2419,7 +2419,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui-image@10.5.3":
+"@udecode/plate-ui-image@10.7.0":
   version "0.0.0"
   uid ""
 
@@ -2507,7 +2507,7 @@
   version "0.0.0"
   uid ""
 
-"@udecode/plate-ui@10.6.3":
+"@udecode/plate-ui@10.7.0":
   version "0.0.0"
   uid ""
 
