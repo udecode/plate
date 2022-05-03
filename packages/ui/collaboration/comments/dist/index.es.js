@@ -1115,8 +1115,10 @@ function Thread({
     onCancelCreateThread();
   }, [hasComments, onCancelCreateThread, clearTextArea]);
   const onResolveThread = useCallback(function onResolveThread() {
-    thread.isResolved = true;
-    upsertThreadAtSelection(editor, thread);
+    const newThread = { ...thread,
+      isResolved: true
+    };
+    upsertThreadAtSelection(editor, newThread);
   }, [editor, thread]);
   const onReOpenThread = useCallback(function onReOpenThread() {
     thread.isResolved = false;

@@ -1145,8 +1145,10 @@ function Thread({
     onCancelCreateThread();
   }, [hasComments, onCancelCreateThread, clearTextArea]);
   const onResolveThread = React.useCallback(function onResolveThread() {
-    thread.isResolved = true;
-    plateComments.upsertThreadAtSelection(editor, thread);
+    const newThread = { ...thread,
+      isResolved: true
+    };
+    plateComments.upsertThreadAtSelection(editor, newThread);
   }, [editor, thread]);
   const onReOpenThread = React.useCallback(function onReOpenThread() {
     thread.isResolved = false;
