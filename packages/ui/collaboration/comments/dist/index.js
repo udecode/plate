@@ -8,12 +8,12 @@ var plateUiToolbar = require('@udecode/plate-ui-toolbar');
 var _styled = require('styled-components');
 var ReactDOM = require('react-dom');
 var plateComments = require('@udecode/plate-comments');
-var slate = require('slate');
 var menu = require('@material/menu');
 var plateStyledComponents = require('@udecode/plate-styled-components');
 var dialog = require('@material/dialog');
 var ripple = require('@material/ripple');
 var snackbar = require('@material/snackbar');
+var slate = require('slate');
 var slateReact = require('slate-react');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
@@ -1151,15 +1151,15 @@ function Thread({
     plateComments.upsertThreadAtSelection(editor, newThread);
   }, [editor, thread]);
   const onReOpenThread = React.useCallback(function onReOpenThread() {
-    thread.isResolved = false;
-    const threadNodeEntry = Array.from(plateComments.findThreadNodeEntries(editor)).find(threadNodeEntry2 => threadNodeEntry2[0].thread === thread);
+    const threadNodeEntry = Array.from(plateComments.findThreadNodeEntries(editor)).find(threadNodeEntry2 => threadNodeEntry2[0].thread.id === thread.id);
 
     if (threadNodeEntry) {
-      slate.Transforms.setNodes(editor, {
-        thread: { ...thread
-        }
-      }, {
-        at: threadNodeEntry[1]
+      const newThread = { ...thread,
+        isResolved: false
+      };
+      plateComments.upsertThread(editor, {
+        at: threadNodeEntry[1],
+        thread: newThread
       });
     }
   }, [editor, thread]);

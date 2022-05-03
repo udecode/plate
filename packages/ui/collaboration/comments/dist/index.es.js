@@ -4,13 +4,13 @@ import { withPlateEventProvider, useEventPlateId, usePlateEditorState, usePlateE
 import { ToolbarButton } from '@udecode/plate-ui-toolbar';
 import _styled, { css } from 'styled-components';
 import ReactDOM from 'react-dom';
-import { generateThreadLink, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
-import { Transforms } from 'slate';
+import { generateThreadLink, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, upsertThread, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
 import { MDCMenu, DefaultFocusState, Corner } from '@material/menu';
 import { createStyles, getRootProps } from '@udecode/plate-styled-components';
 import { MDCDialog } from '@material/dialog';
 import { MDCRipple } from '@material/ripple';
 import { MDCSnackbar } from '@material/snackbar';
+import { Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 
 function _extends$2() {
@@ -1121,15 +1121,15 @@ function Thread({
     upsertThreadAtSelection(editor, newThread);
   }, [editor, thread]);
   const onReOpenThread = useCallback(function onReOpenThread() {
-    thread.isResolved = false;
-    const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(threadNodeEntry2 => threadNodeEntry2[0].thread === thread);
+    const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(threadNodeEntry2 => threadNodeEntry2[0].thread.id === thread.id);
 
     if (threadNodeEntry) {
-      Transforms.setNodes(editor, {
-        thread: { ...thread
-        }
-      }, {
-        at: threadNodeEntry[1]
+      const newThread = { ...thread,
+        isResolved: false
+      };
+      upsertThread(editor, {
+        at: threadNodeEntry[1],
+        thread: newThread
       });
     }
   }, [editor, thread]);

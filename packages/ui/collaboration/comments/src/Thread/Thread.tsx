@@ -13,12 +13,11 @@ import {
   findThreadNodeEntries,
   isFirstComment,
   Thread as ThreadModel,
-  ThreadNode,
+  upsertThread,
   upsertThreadAtSelection,
 } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
-import { Transforms } from 'slate';
 import { FetchContacts } from '../FetchContacts';
 import { Contacts } from './Contacts';
 import {
@@ -199,18 +198,18 @@ export function Thread({
 
   const onReOpenThread = useCallback(
     function onReOpenThread() {
-      thread.isResolved = false;
       const threadNodeEntry = Array.from(findThreadNodeEntries(editor)).find(
-        (threadNodeEntry2: any) => threadNodeEntry2[0].thread === thread
+        (threadNodeEntry2: any) => threadNodeEntry2[0].thread.id === thread.id
       );
       if (threadNodeEntry) {
-        Transforms.setNodes<ThreadNode>(
-          editor,
-          {
-            thread: { ...thread },
-          },
-          { at: threadNodeEntry[1] }
-        );
+        const newThread = {
+          ...thread,
+          isResolved: false,
+        };
+        upsertThread(editor, {
+          at: threadNodeEntry[1],
+          thread: newThread,
+        });
       }
     },
     [editor, thread]
