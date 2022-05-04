@@ -1,5 +1,11 @@
 # @udecode/plate-table-ui
 
+## 10.8.0
+
+### Minor Changes
+
+- [#1513](https://github.com/udecode/plate/pull/1513) by [@jolsen314](https://github.com/jolsen314) – Added restriction to table resize when in readOnly mode (with override prop)
+
 ## 10.6.3
 
 ## 10.6.2

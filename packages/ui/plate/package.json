@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "10.7.0",
+  "version": "10.8.0",
   "description": "Plate UI",
   "keywords": [
     "wysiwyg",
@@ -54,7 +54,7 @@
     "@udecode/plate-ui-mention": "10.6.0",
     "@udecode/plate-ui-placeholder": "10.5.3",
     "@udecode/plate-ui-popper": "10.5.3",
-    "@udecode/plate-ui-table": "10.6.3",
+    "@udecode/plate-ui-table": "10.8.0",
     "@udecode/plate-ui-toolbar": "10.5.3",
     "@udecode/plate-ui-button": "10.5.3",
     "@udecode/plate-ui-popover": "10.6.2"
