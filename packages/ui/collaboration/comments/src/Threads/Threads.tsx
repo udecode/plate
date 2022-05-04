@@ -6,12 +6,13 @@ import React, {
   useState,
 } from 'react';
 import ReactDOM from 'react-dom';
-import { findThreadNodeEntries } from '@udecode/plate-comments';
+import { createNullUser, findThreadNodeEntries } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { determineAbsolutePosition } from '../determineAbsolutePosition';
 import { FetchContacts } from '../FetchContacts';
 import { Thread } from '../Thread';
+import { ThreadPosition } from '../useComments';
 import {
   createBodyStyles,
   createHeaderStyles,
@@ -36,10 +37,7 @@ export function Threads(
   const editor = usePlateEditorRef();
   const { parent, onClose, fetchContacts } = props;
   const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{
-    left: number;
-    top: number;
-  } | null>(null);
+  const [position, setPosition] = useState<ThreadPosition | null>(null);
 
   useEffect(
     function () {
@@ -108,13 +106,14 @@ export function Threads(
             <Thread
               key={thread.id}
               thread={thread}
-              onSaveComment={() => {}}
-              onSubmitComment={() => {}}
-              onCancelCreateThread={() => {}}
+              onSaveComment={() => undefined}
+              onSubmitComment={() => Promise.resolve()}
+              onCancelCreateThread={() => undefined}
               showResolveThreadButton={false}
               showReOpenThreadButton
               showMoreButton={false}
               fetchContacts={fetchContacts}
+              retrieveUser={() => createNullUser()}
             />
           );
         })}

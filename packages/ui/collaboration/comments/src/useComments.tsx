@@ -6,6 +6,7 @@ import {
   findThreadNodeEntries,
   Thread,
   upsertThreadAtSelection,
+  User,
 } from '@udecode/plate-comments';
 import {
   getAbove,
@@ -16,14 +17,13 @@ import { NodeEntry, Transforms } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { determineAbsolutePosition } from './determineAbsolutePosition';
 
+export type OnSubmitComment = (commentText: string) => Promise<void>;
+
 export interface UseCommentsResult {
   thread: Thread | null;
   show: boolean;
-  position: {
-    left: number;
-    top: number;
-  };
-  onSubmitComment: (comment: Comment) => void;
+  position: ThreadPosition;
+  onSubmitComment: OnSubmitComment;
   onAddThread: () => void;
 }
 
@@ -59,7 +59,26 @@ function replaceComment(comments: Comment[], newComment: Comment): Comment[] {
   return replaceElementMatchingById(comments, newComment);
 }
 
-export function useComments(): any {
+export interface ThreadPosition {
+  left: number;
+  top: number;
+}
+
+export type RetrieveUser = () => User | Promise<User>;
+export type OnSaveComment = (comment: Comment) => void;
+
+export function useComments({
+  retrieveUser,
+}: {
+  retrieveUser: RetrieveUser;
+}): {
+  thread: Thread | null;
+  position: ThreadPosition;
+  onAddThread: () => void;
+  onSaveComment: OnSaveComment;
+  onSubmitComment: OnSubmitComment;
+  onCancelCreateThread: () => void;
+} {
   const editor = usePlateEditorState();
   const [thread, setThread] = useState<Thread | null>(null);
   const [threadPosition, setThreadPosition] = useState({ left: 0, top: 0 });
@@ -177,12 +196,13 @@ export function useComments(): any {
   );
 
   const onAddThread = useCallback(
-    function onAddThread() {
+    async function onAddThread() {
       if (editor.selection) {
         const newThread: Thread = {
           id: Math.floor(Math.random() * 1000), // FIXME
           comments: [],
           isResolved: false,
+          createdBy: await retrieveUser(),
         };
         const newThreadThreadNodeEntry2 = upsertThreadAtSelection(
           editor,
@@ -191,7 +211,7 @@ export function useComments(): any {
         setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
       }
     },
-    [editor]
+    [editor, retrieveUser]
   );
 
   const updateThread = useCallback(
@@ -203,7 +223,7 @@ export function useComments(): any {
     [editor]
   );
 
-  const onSaveComment = useCallback(
+  const onSaveComment = useCallback<OnSaveComment>(
     function onSaveComment(comment: Comment) {
       const newThread = {
         ...thread!,
@@ -214,15 +234,21 @@ export function useComments(): any {
     [thread, updateThread]
   );
 
-  const onSubmitComment = useCallback(
-    function onSubmitComment(comment: Comment) {
+  const onSubmitComment = useCallback<OnSubmitComment>(
+    async function onSubmitComment(commentText: string) {
+      const comment = {
+        id: Math.floor(Math.random() * 1000), // FIXME
+        text: commentText,
+        createdAt: Date.now(),
+        createdBy: await retrieveUser(),
+      };
       const newThread = {
         ...thread!,
         comments: [...thread!.comments, comment],
       };
       updateThread(newThread);
     },
-    [thread, updateThread]
+    [retrieveUser, thread, updateThread]
   );
 
   return {

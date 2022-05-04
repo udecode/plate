@@ -1,9 +1,11 @@
 import { Comment } from './Comment';
+import { User } from './User';
 
 export interface Thread {
   id: any;
   comments: Comment[];
   isResolved: boolean;
+  createdBy: User;
 }
 
 export function isFirstComment(thread: Thread, comment: Comment): boolean {

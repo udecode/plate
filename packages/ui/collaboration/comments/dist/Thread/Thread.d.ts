@@ -1,16 +1,20 @@
 /// <reference types="react" />
-import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
+import { Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
-export interface ThreadProps extends StyledProps {
+import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
+export interface CommonThreadAndSideThreadProps {
     thread: ThreadModel;
+    onSaveComment: OnSaveComment;
+    onSubmitComment: OnSubmitComment;
+    onCancelCreateThread: () => void;
+    fetchContacts: FetchContacts;
+    retrieveUser: RetrieveUser;
+}
+export declare type ThreadProps = {
     showResolveThreadButton: boolean;
     showReOpenThreadButton: boolean;
     showMoreButton: boolean;
-    onSaveComment: (comment: Comment) => void;
-    onSubmitComment: (comment: Comment) => void;
-    onCancelCreateThread: () => void;
-    fetchContacts: FetchContacts;
-}
-export declare function Thread({ thread, showResolveThreadButton, showReOpenThreadButton, showMoreButton, onSaveComment, onSubmitComment: onSubmitCommentCallback, onCancelCreateThread, fetchContacts, ...props }: ThreadProps): JSX.Element;
+} & StyledProps & CommonThreadAndSideThreadProps;
+export declare function Thread({ thread, showResolveThreadButton, showReOpenThreadButton, showMoreButton, onSaveComment, onSubmitComment: onSubmitCommentCallback, onCancelCreateThread, fetchContacts, retrieveUser, ...props }: ThreadProps): JSX.Element;
 //# sourceMappingURL=Thread.d.ts.map

@@ -4,7 +4,7 @@ import { withPlateEventProvider, useEventPlateId, usePlateEditorState, usePlateE
 import { ToolbarButton } from '@udecode/plate-ui-toolbar';
 import _styled, { css } from 'styled-components';
 import ReactDOM from 'react-dom';
-import { generateThreadLink, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, upsertThread, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
+import { generateThreadLink, createNullUser, doesContactMatchString, upsertThreadAtSelection, findThreadNodeEntries, upsertThread, deleteThreadAtSelection, isFirstComment, deleteThread, ELEMENT_THREAD } from '@udecode/plate-comments';
 import { MDCMenu, DefaultFocusState, Corner } from '@material/menu';
 import { createStyles, getRootProps } from '@udecode/plate-styled-components';
 import { MDCDialog } from '@material/dialog';
@@ -39,13 +39,13 @@ const AddThreadToolbarButton = withPlateEventProvider(({
   id = useEventPlateId(id);
   const editor = usePlateEditorState(id);
   return /*#__PURE__*/React__default.createElement(ToolbarButton, _extends$2({
-    onMouseDown: event => {
+    onMouseDown: async event => {
       if (!editor) {
         return;
       }
 
       event.preventDefault();
-      onAddThread();
+      await onAddThread();
     }
   }, props));
 });
@@ -785,8 +785,8 @@ function ThreadCommentEditing({
   const {
     root: cancelButton
   } = createCancelButtonStyles(props);
-  const onSave = useCallback(function onSave() {
-    onSaveCallback(textAreaRef.current.value);
+  const onSave = useCallback(async function onSave() {
+    await onSaveCallback(textAreaRef.current.value);
   }, [onSaveCallback, textAreaRef]);
   useEffect(function focus() {
     textAreaRef.current.focus();
@@ -898,9 +898,9 @@ function ThreadComment(props) {
   const onCloseCommentLinkDialog = useCallback(function onCloseCommentLinkDialog() {
     setThreadLink(null);
   }, []);
-  const onSave = useCallback(function onSave(text) {
+  const onSave = useCallback(async function onSave(text) {
     setIsEdited(false);
-    onSaveComment({ ...comment,
+    await onSaveComment({ ...comment,
       text
     });
   }, [comment, onSaveComment]);
@@ -929,7 +929,7 @@ function ThreadComment(props) {
   }, /*#__PURE__*/React__default.createElement(_StyledDiv5$1, {
     className: commenterName.className,
     $_css6: commenterName.css
-  }, "Jon Doe"), /*#__PURE__*/React__default.createElement(_StyledDiv6$1, {
+  }, comment.createdBy.name), /*#__PURE__*/React__default.createElement(_StyledDiv6$1, {
     className: timestamp.className,
     $_css7: timestamp.css
   }, new Date(comment.createdAt).toLocaleString())), showResolveThreadButton ? /*#__PURE__*/React__default.createElement(_StyledButton$1, {
@@ -1027,6 +1027,7 @@ function Thread({
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
   fetchContacts,
+  retrieveUser,
   ...props
 }) {
   const editor = usePlateEditorRef();
@@ -1036,6 +1037,12 @@ function Thread({
   const [filteredContacts, setFilteredContacts2] = useState([]);
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = useState(false);
   const [selectedContactIndex, setSelectedContactIndex] = useState(0);
+  const [user, setUser] = useState(createNullUser());
+  useEffect(() => {
+    (async () => {
+      setUser(await retrieveUser());
+    })();
+  }, [retrieveUser]);
   const retrieveMentionStringAtCaretPosition = useCallback(function retrieveMentionStringAtCaretPosition() {
     const textArea = textAreaRef.current;
 
@@ -1093,13 +1100,7 @@ function Thread({
     setFilteredContacts(filterContacts(contacts));
   }, [contacts, filterContacts, setFilteredContacts]);
   const onSubmitComment = useCallback(function onSubmitComment() {
-    const newComment = {
-      id: Math.floor(Math.random() * 1000),
-      // FIXME
-      text: textAreaRef.current.value,
-      createdAt: Date.now()
-    };
-    onSubmitCommentCallback(newComment);
+    onSubmitCommentCallback(textAreaRef.current.value);
   }, [onSubmitCommentCallback]);
   const hasComments = useCallback(function hasComments() {
     return thread.comments.length >= 1;
@@ -1300,7 +1301,7 @@ function Thread({
   }, /*#__PURE__*/React__default.createElement(_StyledDiv5, {
     className: commenterName.className,
     $_css6: commenterName.css
-  }, "Jon Doe"))), /*#__PURE__*/React__default.createElement(_StyledDiv6, {
+  }, user.name))), /*#__PURE__*/React__default.createElement(_StyledDiv6, {
     className: commentInputClassName,
     $_css7: commentInputCss
   }, /*#__PURE__*/React__default.createElement("div", {
@@ -1474,13 +1475,14 @@ function Threads(props) {
     return /*#__PURE__*/React__default.createElement(Thread, {
       key: thread.id,
       thread: thread,
-      onSaveComment: () => {},
-      onSubmitComment: () => {},
-      onCancelCreateThread: () => {},
+      onSaveComment: () => undefined,
+      onSubmitComment: () => Promise.resolve(),
+      onCancelCreateThread: () => undefined,
       showResolveThreadButton: false,
       showReOpenThreadButton: true,
       showMoreButton: false,
-      fetchContacts: fetchContacts
+      fetchContacts: fetchContacts,
+      retrieveUser: () => createNullUser()
     });
   }))), document.body);
 }
@@ -1636,7 +1638,9 @@ function replaceComment(comments, newComment) {
   return replaceElementMatchingById(comments, newComment);
 }
 
-function useComments() {
+function useComments({
+  retrieveUser
+}) {
   const editor = usePlateEditorState();
   const [thread, setThread] = useState(null);
   const [threadPosition, setThreadPosition] = useState({
@@ -1720,18 +1724,19 @@ function useComments() {
       hideThread();
     }
   }, [showThread, hideThread, editor, editor.selection, newThreadThreadNodeEntry, onCancelCreateThread]);
-  const onAddThread = useCallback(function onAddThread() {
+  const onAddThread = useCallback(async function onAddThread() {
     if (editor.selection) {
       const newThread = {
         id: Math.floor(Math.random() * 1000),
         // FIXME
         comments: [],
-        isResolved: false
+        isResolved: false,
+        createdBy: await retrieveUser()
       };
       const newThreadThreadNodeEntry2 = upsertThreadAtSelection(editor, newThread);
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
-  }, [editor]);
+  }, [editor, retrieveUser]);
   const updateThread = useCallback(function updateThread(newThread) {
     upsertThreadAtSelection(editor, newThread);
     setNewThreadThreadNodeEntry(null);
@@ -1743,12 +1748,19 @@ function useComments() {
     };
     updateThread(newThread);
   }, [thread, updateThread]);
-  const onSubmitComment = useCallback(function onSubmitComment(comment) {
+  const onSubmitComment = useCallback(async function onSubmitComment(commentText) {
+    const comment = {
+      id: Math.floor(Math.random() * 1000),
+      // FIXME
+      text: commentText,
+      createdAt: Date.now(),
+      createdBy: await retrieveUser()
+    };
     const newThread = { ...thread,
       comments: [...thread.comments, comment]
     };
     updateThread(newThread);
-  }, [thread, updateThread]);
+  }, [retrieveUser, thread, updateThread]);
   return {
     thread,
     position: threadPosition,

@@ -1,6 +1,13 @@
 import { createPluginFactory, unwrapNodes, getPluginType, getAbove, wrapNodes, isCollapsed, findNode, getNodes } from '@udecode/plate-core';
 import { Range, Editor, Transforms } from 'slate';
 
+function createNullUser() {
+  return {
+    id: '',
+    name: ''
+  };
+}
+
 const ELEMENT_THREAD = 'thread';
 const createThreadPlugin = createPluginFactory({
   key: ELEMENT_THREAD,
@@ -180,5 +187,5 @@ function doesContactMatchString(matchString, contact) {
   return contact.name.startsWith(matchString) || contact.email.startsWith(matchString);
 }
 
-export { ELEMENT_THREAD, createThreadPlugin, deleteThread, deleteThreadAtSelection, deselectThread, doesContactMatchString, findSelectedThreadNodeEntry, findThreadNodeEntries, generateThreadLink, isFirstComment, selectThread, upsertThread, upsertThreadAtSelection, wrapWithThread };
+export { ELEMENT_THREAD, createNullUser, createThreadPlugin, deleteThread, deleteThreadAtSelection, deselectThread, doesContactMatchString, findSelectedThreadNodeEntry, findThreadNodeEntries, generateThreadLink, isFirstComment, selectThread, upsertThread, upsertThreadAtSelection, wrapWithThread };
 //# sourceMappingURL=index.es.js.map

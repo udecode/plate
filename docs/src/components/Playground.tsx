@@ -34,6 +34,13 @@ import {
 import { CONFIG } from '../live/config/config';
 
 export function Playground() {
+  const retrieveUser = useCallback(function retrieveUser() {
+    return {
+      id: '1',
+      name: 'Jon Doe',
+    };
+  }, []);
+
   const {
     thread,
     position: threadPosition,
@@ -41,7 +48,7 @@ export function Playground() {
     onSaveComment,
     onSubmitComment,
     onCancelCreateThread,
-  } = useComments();
+  } = useComments({ retrieveUser });
 
   const fetchContacts = useCallback(function fetchContacts() {
     return [
@@ -109,6 +116,7 @@ export function Playground() {
           onSubmitComment={onSubmitComment}
           onCancelCreateThread={onCancelCreateThread}
           fetchContacts={fetchContacts}
+          retrieveUser={retrieveUser}
         />
       ) : null}
     </>

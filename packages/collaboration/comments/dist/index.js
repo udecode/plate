@@ -5,6 +5,13 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var plateCore = require('@udecode/plate-core');
 var slate = require('slate');
 
+function createNullUser() {
+  return {
+    id: '',
+    name: ''
+  };
+}
+
 const ELEMENT_THREAD = 'thread';
 const createThreadPlugin = plateCore.createPluginFactory({
   key: ELEMENT_THREAD,
@@ -185,6 +192,7 @@ function doesContactMatchString(matchString, contact) {
 }
 
 exports.ELEMENT_THREAD = ELEMENT_THREAD;
+exports.createNullUser = createNullUser;
 exports.createThreadPlugin = createThreadPlugin;
 exports.deleteThread = deleteThread;
 exports.deleteThreadAtSelection = deleteThreadAtSelection;

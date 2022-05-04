@@ -27,8 +27,8 @@ export function ThreadCommentEditing({
   const { root: cancelButton } = createCancelButtonStyles(props);
 
   const onSave = useCallback(
-    function onSave() {
-      onSaveCallback(textAreaRef.current!.value);
+    async function onSave() {
+      await onSaveCallback(textAreaRef.current!.value);
     },
     [onSaveCallback, textAreaRef]
   );

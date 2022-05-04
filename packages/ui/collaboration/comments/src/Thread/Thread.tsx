@@ -8,6 +8,7 @@ import React, {
 import {
   Comment,
   Contact,
+  createNullUser,
   deleteThreadAtSelection,
   doesContactMatchString,
   findThreadNodeEntries,
@@ -15,10 +16,12 @@ import {
   Thread as ThreadModel,
   upsertThread,
   upsertThreadAtSelection,
+  User,
 } from '@udecode/plate-comments';
 import { usePlateEditorRef } from '@udecode/plate-core';
 import { StyledProps } from '@udecode/plate-styled-components';
 import { FetchContacts } from '../FetchContacts';
+import { OnSaveComment, OnSubmitComment, RetrieveUser } from '../useComments';
 import { Contacts } from './Contacts';
 import {
   createAuthorTimestampStyles,
@@ -35,16 +38,21 @@ import {
 } from './Thread.styles';
 import { ThreadComment } from './ThreadComment';
 
-export interface ThreadProps extends StyledProps {
+export interface CommonThreadAndSideThreadProps {
   thread: ThreadModel;
+  onSaveComment: OnSaveComment;
+  onSubmitComment: OnSubmitComment;
+  onCancelCreateThread: () => void;
+  fetchContacts: FetchContacts;
+  retrieveUser: RetrieveUser;
+}
+
+export type ThreadProps = {
   showResolveThreadButton: boolean;
   showReOpenThreadButton: boolean;
   showMoreButton: boolean;
-  onSaveComment: (comment: Comment) => void;
-  onSubmitComment: (comment: Comment) => void;
-  onCancelCreateThread: () => void;
-  fetchContacts: FetchContacts;
-}
+} & StyledProps &
+  CommonThreadAndSideThreadProps;
 
 export function Thread({
   thread,
@@ -55,6 +63,7 @@ export function Thread({
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
   fetchContacts,
+  retrieveUser,
   ...props
 }: ThreadProps) {
   const editor = usePlateEditorRef();
@@ -66,6 +75,14 @@ export function Thread({
     false
   );
   const [selectedContactIndex, setSelectedContactIndex] = useState<number>(0);
+
+  const [user, setUser] = useState<User>(createNullUser());
+
+  useEffect(() => {
+    (async () => {
+      setUser(await retrieveUser());
+    })();
+  }, [retrieveUser]);
 
   const retrieveMentionStringAtCaretPosition = useCallback(
     function retrieveMentionStringAtCaretPosition() {
@@ -150,12 +167,7 @@ export function Thread({
 
   const onSubmitComment = useCallback(
     function onSubmitComment() {
-      const newComment = {
-        id: Math.floor(Math.random() * 1000), // FIXME
-        text: textAreaRef.current!.value,
-        createdAt: Date.now(),
-      };
-      onSubmitCommentCallback(newComment);
+      onSubmitCommentCallback(textAreaRef.current!.value);
     },
     [onSubmitCommentCallback]
   );
@@ -429,7 +441,7 @@ export function Thread({
               className={authorTimestamp.className}
             >
               <div css={commenterName.css} className={commenterName.className}>
-                Jon Doe
+                {user.name}
               </div>
             </div>
           </div>

@@ -1,19 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Comment, Thread as ThreadModel } from '@udecode/plate-comments';
 import { StyledProps } from '@udecode/plate-styled-components';
-import { FetchContacts } from '../FetchContacts';
-import { Thread } from '../Thread';
+import { CommonThreadAndSideThreadProps, Thread } from '../Thread';
+import { ThreadPosition } from '../useComments';
 import { createSideThreadStyles } from './SideThread.styles';
 
-interface SideThreadProps extends StyledProps {
-  thread: ThreadModel;
-  onSaveComment: (comment: Comment) => void;
-  onSubmitComment: (comment: Comment) => void;
-  onCancelCreateThread: () => void;
-  fetchContacts: FetchContacts;
-  position: { left: number; top: number };
-}
+type SideThreadProps = {
+  position: ThreadPosition;
+} & StyledProps &
+  CommonThreadAndSideThreadProps;
 
 export function SideThread({ position, ...props }: SideThreadProps) {
   const { root } = createSideThreadStyles(props);

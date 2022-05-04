@@ -92,9 +92,9 @@ export function ThreadComment(
   );
 
   const onSave = useCallback(
-    function onSave(text: string) {
+    async function onSave(text: string) {
       setIsEdited(false);
-      onSaveComment({
+      await onSaveComment({
         ...comment,
         text,
       });
@@ -121,7 +121,7 @@ export function ThreadComment(
         </div>
         <div css={authorTimestamp.css} className={authorTimestamp.className}>
           <div css={commenterName.css} className={commenterName.className}>
-            Jon Doe
+            {comment.createdBy.name}
           </div>
           <div css={timestamp.css} className={timestamp.className}>
             {new Date(comment.createdAt).toLocaleString()}

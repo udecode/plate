@@ -69,13 +69,13 @@ const AddThreadToolbarButton = plateCore.withPlateEventProvider(({
   id = plateCore.useEventPlateId(id);
   const editor = plateCore.usePlateEditorState(id);
   return /*#__PURE__*/React__default['default'].createElement(plateUiToolbar.ToolbarButton, _extends$2({
-    onMouseDown: event => {
+    onMouseDown: async event => {
       if (!editor) {
         return;
       }
 
       event.preventDefault();
-      onAddThread();
+      await onAddThread();
     }
   }, props));
 });
@@ -815,8 +815,8 @@ function ThreadCommentEditing({
   const {
     root: cancelButton
   } = createCancelButtonStyles(props);
-  const onSave = React.useCallback(function onSave() {
-    onSaveCallback(textAreaRef.current.value);
+  const onSave = React.useCallback(async function onSave() {
+    await onSaveCallback(textAreaRef.current.value);
   }, [onSaveCallback, textAreaRef]);
   React.useEffect(function focus() {
     textAreaRef.current.focus();
@@ -928,9 +928,9 @@ function ThreadComment(props) {
   const onCloseCommentLinkDialog = React.useCallback(function onCloseCommentLinkDialog() {
     setThreadLink(null);
   }, []);
-  const onSave = React.useCallback(function onSave(text) {
+  const onSave = React.useCallback(async function onSave(text) {
     setIsEdited(false);
-    onSaveComment({ ...comment,
+    await onSaveComment({ ...comment,
       text
     });
   }, [comment, onSaveComment]);
@@ -959,7 +959,7 @@ function ThreadComment(props) {
   }, /*#__PURE__*/React__default['default'].createElement(_StyledDiv5$1, {
     className: commenterName.className,
     $_css6: commenterName.css
-  }, "Jon Doe"), /*#__PURE__*/React__default['default'].createElement(_StyledDiv6$1, {
+  }, comment.createdBy.name), /*#__PURE__*/React__default['default'].createElement(_StyledDiv6$1, {
     className: timestamp.className,
     $_css7: timestamp.css
   }, new Date(comment.createdAt).toLocaleString())), showResolveThreadButton ? /*#__PURE__*/React__default['default'].createElement(_StyledButton$1, {
@@ -1057,6 +1057,7 @@ function Thread({
   onSubmitComment: onSubmitCommentCallback,
   onCancelCreateThread,
   fetchContacts,
+  retrieveUser,
   ...props
 }) {
   const editor = plateCore.usePlateEditorRef();
@@ -1066,6 +1067,12 @@ function Thread({
   const [filteredContacts, setFilteredContacts2] = React.useState([]);
   const [haveContactsBeenClosed, setHaveContactsBeenClosed] = React.useState(false);
   const [selectedContactIndex, setSelectedContactIndex] = React.useState(0);
+  const [user, setUser] = React.useState(plateComments.createNullUser());
+  React.useEffect(() => {
+    (async () => {
+      setUser(await retrieveUser());
+    })();
+  }, [retrieveUser]);
   const retrieveMentionStringAtCaretPosition = React.useCallback(function retrieveMentionStringAtCaretPosition() {
     const textArea = textAreaRef.current;
 
@@ -1123,13 +1130,7 @@ function Thread({
     setFilteredContacts(filterContacts(contacts));
   }, [contacts, filterContacts, setFilteredContacts]);
   const onSubmitComment = React.useCallback(function onSubmitComment() {
-    const newComment = {
-      id: Math.floor(Math.random() * 1000),
-      // FIXME
-      text: textAreaRef.current.value,
-      createdAt: Date.now()
-    };
-    onSubmitCommentCallback(newComment);
+    onSubmitCommentCallback(textAreaRef.current.value);
   }, [onSubmitCommentCallback]);
   const hasComments = React.useCallback(function hasComments() {
     return thread.comments.length >= 1;
@@ -1330,7 +1331,7 @@ function Thread({
   }, /*#__PURE__*/React__default['default'].createElement(_StyledDiv5, {
     className: commenterName.className,
     $_css6: commenterName.css
-  }, "Jon Doe"))), /*#__PURE__*/React__default['default'].createElement(_StyledDiv6, {
+  }, user.name))), /*#__PURE__*/React__default['default'].createElement(_StyledDiv6, {
     className: commentInputClassName,
     $_css7: commentInputCss
   }, /*#__PURE__*/React__default['default'].createElement("div", {
@@ -1504,13 +1505,14 @@ function Threads(props) {
     return /*#__PURE__*/React__default['default'].createElement(Thread, {
       key: thread.id,
       thread: thread,
-      onSaveComment: () => {},
-      onSubmitComment: () => {},
-      onCancelCreateThread: () => {},
+      onSaveComment: () => undefined,
+      onSubmitComment: () => Promise.resolve(),
+      onCancelCreateThread: () => undefined,
       showResolveThreadButton: false,
       showReOpenThreadButton: true,
       showMoreButton: false,
-      fetchContacts: fetchContacts
+      fetchContacts: fetchContacts,
+      retrieveUser: () => plateComments.createNullUser()
     });
   }))), document.body);
 }
@@ -1666,7 +1668,9 @@ function replaceComment(comments, newComment) {
   return replaceElementMatchingById(comments, newComment);
 }
 
-function useComments() {
+function useComments({
+  retrieveUser
+}) {
   const editor = plateCore.usePlateEditorState();
   const [thread, setThread] = React.useState(null);
   const [threadPosition, setThreadPosition] = React.useState({
@@ -1750,18 +1754,19 @@ function useComments() {
       hideThread();
     }
   }, [showThread, hideThread, editor, editor.selection, newThreadThreadNodeEntry, onCancelCreateThread]);
-  const onAddThread = React.useCallback(function onAddThread() {
+  const onAddThread = React.useCallback(async function onAddThread() {
     if (editor.selection) {
       const newThread = {
         id: Math.floor(Math.random() * 1000),
         // FIXME
         comments: [],
-        isResolved: false
+        isResolved: false,
+        createdBy: await retrieveUser()
       };
       const newThreadThreadNodeEntry2 = plateComments.upsertThreadAtSelection(editor, newThread);
       setNewThreadThreadNodeEntry(newThreadThreadNodeEntry2);
     }
-  }, [editor]);
+  }, [editor, retrieveUser]);
   const updateThread = React.useCallback(function updateThread(newThread) {
     plateComments.upsertThreadAtSelection(editor, newThread);
     setNewThreadThreadNodeEntry(null);
@@ -1773,12 +1778,19 @@ function useComments() {
     };
     updateThread(newThread);
   }, [thread, updateThread]);
-  const onSubmitComment = React.useCallback(function onSubmitComment(comment) {
+  const onSubmitComment = React.useCallback(async function onSubmitComment(commentText) {
+    const comment = {
+      id: Math.floor(Math.random() * 1000),
+      // FIXME
+      text: commentText,
+      createdAt: Date.now(),
+      createdBy: await retrieveUser()
+    };
     const newThread = { ...thread,
       comments: [...thread.comments, comment]
     };
     updateThread(newThread);
-  }, [thread, updateThread]);
+  }, [retrieveUser, thread, updateThread]);
   return {
     thread,
     position: threadPosition,
