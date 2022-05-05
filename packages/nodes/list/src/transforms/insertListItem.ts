@@ -2,10 +2,12 @@ import {
   collapseSelection,
   deleteText,
   getAboveNode,
+  getMarks,
   getParentNode,
   getPluginType,
   insertNodes,
   isBlockTextEmptyAfterSelection,
+  isStartPoint,
   moveNodes,
   PlateEditor,
   select,
@@ -49,7 +51,7 @@ export const insertListItem = <V extends Value>(
       deleteText(editor);
     }
 
-    const isStart = Editor.isStart(
+    const isStart = isStartPoint(
       editor,
       editor.selection!.focus,
       paragraphPath
@@ -104,7 +106,7 @@ export const insertListItem = <V extends Value>(
       /**
        * If end, insert a list item after and select it
        */
-      const marks = Editor.marks(editor) || {};
+      const marks = getMarks(editor) || {};
       insertNodes<TElement>(
         editor,
         {

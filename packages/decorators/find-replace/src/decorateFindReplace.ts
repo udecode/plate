@@ -1,5 +1,5 @@
-import { Decorate, TNodeEntry, Value } from '@udecode/plate-core';
-import { Range, Text } from 'slate';
+import { Decorate, isText, TNodeEntry, Value } from '@udecode/plate-core';
+import { Range } from 'slate';
 import { FindReplacePlugin } from './types';
 
 export const decorateFindReplace: Decorate<Value, {}, FindReplacePlugin> = (
@@ -9,7 +9,7 @@ export const decorateFindReplace: Decorate<Value, {}, FindReplacePlugin> = (
   const ranges: SearchRange[] = [];
 
   const { search } = editor.pluginsByKey[key].options as FindReplacePlugin;
-  if (!search || !Text.isText(node)) {
+  if (!search || !isText(node)) {
     return ranges;
   }
 

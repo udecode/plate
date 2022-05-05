@@ -1,6 +1,11 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  getEditorString,
+  getNodeString,
   getPlugin,
+  getPointAfter,
+  getPointBefore,
+  getRange,
   insertNodes,
   setSelection,
   TElement,
@@ -27,7 +32,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
-    if (currentMentionInput && Node.string(currentMentionInput[0]) === '') {
+    if (currentMentionInput && getNodeString(currentMentionInput[0]) === '') {
       return removeMentionInput(editor, currentMentionInput[1]);
     }
 
@@ -52,21 +57,21 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     }
 
     // Make sure a mention input is created at the beginning of line or after a whitespace
-    const previousChar = Editor.string(
+    const previousChar = getEditorString(
       editor,
-      Editor.range(
+      getRange(
         editor,
         editor.selection,
-        Editor.before(editor, editor.selection)
+        getPointBefore(editor, editor.selection)
       )
     );
 
-    const nextChar = Editor.string(
+    const nextChar = getEditorString(
       editor,
-      Editor.range(
+      getRange(
         editor,
         editor.selection,
-        Editor.after(editor, editor.selection)
+        getPointAfter(editor, editor.selection)
       )
     );
 
@@ -99,7 +104,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
       if (currentMentionInput) {
-        comboboxActions.text(Node.string(currentMentionInput[0]));
+        comboboxActions.text(getNodeString(currentMentionInput[0]));
       }
     } else if (operation.type === 'set_selection') {
       const previousMentionInputPath = Range.isRange(operation.properties)

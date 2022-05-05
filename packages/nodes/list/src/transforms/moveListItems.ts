@@ -1,4 +1,5 @@
 import {
+  createPathRef,
   EditorNodesOptions,
   getNodes,
   getParentNode,
@@ -52,7 +53,7 @@ export const moveListItems = <V extends Value>(
     });
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(Editor.pathRef(editor, licPath));
+      highestLicPathRefs.push(createPathRef(editor, licPath));
     }
   });
 

@@ -1,4 +1,10 @@
-import { escapeRegExp, getText, TEditor } from '@udecode/plate-core';
+import {
+  escapeRegExp,
+  getPointBefore,
+  getRange,
+  getText,
+  TEditor,
+} from '@udecode/plate-core';
 import { Editor, Point } from 'slate';
 
 /**
@@ -24,8 +30,8 @@ export const getTextFromTrigger = (
 
     if (!start) break;
 
-    start = Editor.before(editor, start);
-    const charRange = start && Editor.range(editor, start, end);
+    start = getPointBefore(editor, start);
+    const charRange = start && getRange(editor, start, end);
     const charText = getText(editor, charRange);
 
     if (!charText.match(searchPattern)) {
@@ -35,7 +41,7 @@ export const getTextFromTrigger = (
   }
 
   // Range from start to cursor
-  const range = start && Editor.range(editor, start, at);
+  const range = start && getRange(editor, start, at);
   const text = getText(editor, range);
 
   if (!range || !text.match(triggerRegex)) return;
@@ -51,10 +57,10 @@ export const getTextFromTrigger = (
 //   { at, trigger, pattern }: { at: Point; trigger: string; pattern: string }
 // ) => {
 //   // Point at the start of line
-//   const lineStart = Editor.before(editor, at, { unit: 'line' });
+//   const lineStart = getPointBefore(editor, at, { unit: 'line' });
 //
 //   // Range from before to start
-//   const beforeRange = lineStart && Editor.range(editor, lineStart, at);
+//   const beforeRange = lineStart && getRange(editor, lineStart, at);
 //
 //   // Before text
 //   const beforeText = getText(editor, beforeRange);
@@ -69,14 +75,14 @@ export const getTextFromTrigger = (
 //
 //   // Point at the start of mention
 //   const mentionStart = match
-//     ? Editor.before(editor, at, {
+//     ? getPointBefore(editor, at, {
 //         unit: 'character',
 //         distance: match[1].length + trigger.length,
 //       })
 //     : null;
 //
 //   // Range from mention to start
-//   const mentionRange = mentionStart && Editor.range(editor, mentionStart, at);
+//   const mentionRange = mentionStart && getRange(editor, mentionStart, at);
 //
 //   return {
 //     range: mentionRange,

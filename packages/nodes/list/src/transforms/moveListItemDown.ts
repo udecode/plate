@@ -1,4 +1,5 @@
 import {
+  getNode,
   match,
   moveNodes,
   PlateEditor,
@@ -8,7 +9,7 @@ import {
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Ancestor, Editor, Element, Path } from 'slate';
+import { Ancestor, Editor, Path } from 'slate';
 import { getListTypes } from '../queries';
 
 export interface MoveListItemDownOptions {
@@ -32,7 +33,7 @@ export const moveListItemDown = <V extends Value>(
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = Editor.node(
+  const previousSiblingItem = getNode(
     editor,
     previousListItemPath
   ) as TNodeEntry<Ancestor>;
@@ -42,7 +43,7 @@ export const moveListItemDown = <V extends Value>(
 
     const sublist = previousNode.children.find((n) =>
       match(n, { type: getListTypes(editor) })
-    ) as Element | undefined;
+    );
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );

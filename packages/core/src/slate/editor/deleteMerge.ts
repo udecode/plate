@@ -4,9 +4,12 @@ import { removeNodes } from '../transforms/removeNodes';
 import { select } from '../transforms/select';
 import { TEditor, Value } from '../types/TEditor';
 import { TNodeEntry } from '../types/TNodeEntry';
+import { createPathRef } from './createPathRef';
 import { createPointRef } from './createPointRef';
 import { getAboveNode } from './getAboveNode';
 import { getEndPoint } from './getEndPoint';
+import { getLeafNode } from './getLeafNode';
+import { getNodes } from './getNodes';
 import { getPointAfter } from './getPointAfter';
 import { getPointBefore } from './getPointBefore';
 import { getStartPoint } from './getStartPoint';
@@ -118,7 +121,7 @@ export const deleteMerge = <V extends Value>(
     const matches: TNodeEntry[] = [];
     let lastPath: Path | undefined;
 
-    const _nodes = Editor.nodes(editor as any, { at, voids });
+    const _nodes = getNodes(editor as any, { at, voids });
     for (const entry of _nodes) {
       const [node, path] = entry;
 
@@ -136,14 +139,14 @@ export const deleteMerge = <V extends Value>(
     }
 
     const pathRefs = Array.from(matches, ([, p]) =>
-      Editor.pathRef(editor as any, p)
+      createPathRef(editor as any, p)
     );
     const startRef = createPointRef(editor as any, start);
     const endRef = createPointRef(editor as any, end);
 
     if (!isSingleText && !startVoid) {
       const point = startRef.current!;
-      const [node] = Editor.leaf(editor as any, point);
+      const [node] = getLeafNode(editor as any, point);
       const { path } = point;
       const { offset } = start;
       const text = node.text.slice(offset);
@@ -157,7 +160,7 @@ export const deleteMerge = <V extends Value>(
 
     if (!endVoid) {
       const point = endRef.current!;
-      const [node] = Editor.leaf(editor as any, point);
+      const [node] = getLeafNode(editor as any, point);
       const { path } = point;
       const offset = isSingleText ? start.offset : 0;
       const text = node.text.slice(offset, end.offset);

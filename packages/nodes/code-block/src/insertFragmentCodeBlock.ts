@@ -1,6 +1,7 @@
 import {
   EElement,
   findNode,
+  getNodeString,
   getPluginType,
   insertFragment,
   PlateEditor,
@@ -20,7 +21,7 @@ export const insertFragmentCodeBlock = <V extends Value>(
   function convertNodeToCodeLine(node: EElement<V>) {
     return {
       type: codeLineType,
-      children: [{ text: Node.string(node) }],
+      children: [{ text: getNodeString(node) }],
     };
   }
 

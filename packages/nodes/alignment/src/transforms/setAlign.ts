@@ -1,5 +1,6 @@
 import {
   getPluginInjectProps,
+  isBlock,
   PlateEditor,
   PlatePluginKey,
   setNodes,
@@ -26,7 +27,7 @@ export const setAlign = <V extends Value>(
   );
 
   const match: TNodeMatch = (n) =>
-    Editor.isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
+    isBlock(editor, n) && !!validTypes && validTypes.includes(n.type);
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {

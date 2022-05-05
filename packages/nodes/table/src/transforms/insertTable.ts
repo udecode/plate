@@ -1,6 +1,7 @@
 import {
   getAboveNode,
   getPluginType,
+  getStartPoint,
   insertNodes,
   PlateEditor,
   selectEditor,
@@ -8,7 +9,6 @@ import {
   TElement,
   Value,
 } from '@udecode/plate-core';
-import { Editor } from 'slate';
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { TablePluginOptions } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
@@ -30,7 +30,7 @@ export const insertTable = <V extends Value>(
       if (!tableEntry) {
         return;
       }
-      const point = Editor.start(editor, tableEntry[1]);
+      const point = getStartPoint(editor, tableEntry[1]);
       selectEditor(editor, { at: point });
     }
   }

@@ -1,4 +1,4 @@
-import { findNode, select, TReactEditor } from '@udecode/plate-core';
+import { findNode, getRange, select, TReactEditor } from '@udecode/plate-core';
 import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { Editor } from 'slate';
 
@@ -9,6 +9,6 @@ export const selectBlockById = (editor: TReactEditor, id: string) => {
   const path = findNode(editor, { at: [], match: { id } })?.[1];
   if (!path) return;
 
-  select(editor, Editor.range(editor, path));
+  select(editor, getRange(editor, path));
   focusEditor(editor);
 };

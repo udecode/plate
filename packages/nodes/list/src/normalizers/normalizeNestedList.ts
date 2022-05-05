@@ -1,4 +1,5 @@
 import {
+  getNode,
   getParentNode,
   match,
   moveNodes,
@@ -34,7 +35,7 @@ export const normalizeNestedList = <V extends Value>(
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = Editor.node(
+  const previousSiblingItem = getNode(
     editor,
     previousListItemPath
   ) as TNodeEntry<Ancestor>;

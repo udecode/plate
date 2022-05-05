@@ -4,7 +4,7 @@ import {
   UnionToIntersection,
 } from '../../common/types/utility/types';
 import { TEditor, Value } from './TEditor';
-import { EElement, TElement } from './TElement';
+import { TElement } from './TElement';
 import { TNode, TNodeProps } from './TNode';
 
 /**
@@ -24,7 +24,10 @@ export interface TText extends UnknownObject {
 /**
  * Text of a value.
  */
-export type EText<V extends Value> = TextOf<EElement<V>>;
+export type EText<V extends Value> = Extract<
+  V[number]['children'][number],
+  TText
+>;
 
 // const a: EText<MyValue> = {}
 

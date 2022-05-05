@@ -1,5 +1,6 @@
 import {
   ELEMENT_DEFAULT,
+  getPath,
   getPluginType,
   insertNodes,
   PlateEditor,
@@ -25,7 +26,7 @@ export const exitBreak = <V extends Value>(
 
   if (queryEdge && !isEdge) return;
 
-  const selectionPath = Editor.path(editor, editor.selection);
+  const selectionPath = getPath(editor, editor.selection);
 
   let insertPath;
   if (before) {

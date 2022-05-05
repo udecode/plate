@@ -6,7 +6,13 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { findNodePath, select, setNodes, TText } from '@udecode/plate-core';
+import {
+  findNodePath,
+  getNodeString,
+  select,
+  setNodes,
+  TText,
+} from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
 import { Node } from 'slate';
@@ -76,7 +82,7 @@ export const ImageElement = (props: ImageElementProps) => {
   );
 
   const captionString = useMemo(() => {
-    return Node.string(nodeCaption[0]) || '';
+    return getNodeString(nodeCaption[0]) || '';
   }, [nodeCaption]);
 
   return (

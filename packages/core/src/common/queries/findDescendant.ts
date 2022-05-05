@@ -55,7 +55,7 @@ export const findDescendant = <V extends Value>(
 
     for (const [node, path] of nodeEntries) {
       if (match(node, _match as any)) {
-        return [node, (at as Path).concat(path)];
+        return [node as any, (at as Path).concat(path)];
       }
     }
   } catch (error) {

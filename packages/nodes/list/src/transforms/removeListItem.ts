@@ -1,5 +1,7 @@
 import {
+  createPathRef,
   deleteMerge,
+  getNode,
   getPluginType,
   getPreviousPath,
   insertNodes,
@@ -52,7 +54,7 @@ export const removeListItem = <V extends Value>(
      * 5. remove tempLi
      */
     if (previousLiPath) {
-      const previousLi = Editor.node(
+      const previousLi = getNode(
         editor,
         previousLiPath
       ) as TNodeEntry<TElement>;
@@ -73,8 +75,8 @@ export const removeListItem = <V extends Value>(
         { at: tempLiPath }
       );
 
-      const tempLi = Editor.node(editor, tempLiPath) as TNodeEntry<TElement>;
-      const tempLiPathRef = Editor.pathRef(editor, tempLi[1]);
+      const tempLi = getNode(editor, tempLiPath) as TNodeEntry<TElement>;
+      const tempLiPathRef = createPathRef(editor, tempLi[1]);
 
       // 2
       moveListItemSublistItemsToListItemSublist(editor, {

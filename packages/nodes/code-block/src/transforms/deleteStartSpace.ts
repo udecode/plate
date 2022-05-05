@@ -1,5 +1,12 @@
-import { deleteText, getText, TEditor } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import {
+  deleteText,
+  getPointAfter,
+  getRange,
+  getStartPoint,
+  getText,
+  TEditor,
+} from '@udecode/plate-core';
+import { Editor } from 'slate';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
 /**
@@ -11,10 +18,10 @@ export const deleteStartSpace = (
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = Editor.start(editor, codeLinePath);
-  const codeLineEnd = codeLineStart && Editor.after(editor, codeLineStart);
+  const codeLineStart = getStartPoint(editor, codeLinePath);
+  const codeLineEnd = codeLineStart && getPointAfter(editor, codeLineStart);
   const spaceRange =
-    codeLineEnd && Editor.range(editor, codeLineStart, codeLineEnd);
+    codeLineEnd && getRange(editor, codeLineStart, codeLineEnd);
   const spaceText = getText(editor, spaceRange);
 
   if (/\s/.test(spaceText)) {

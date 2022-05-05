@@ -1,8 +1,10 @@
 import {
+  createPathRef,
   getChildren,
   getParentNode,
   getPluginType,
   insertEmptyElement,
+  isBlock,
   match,
   moveNodes,
   PlateEditor,
@@ -36,7 +38,7 @@ export const getDeepInlineChildren = <V extends Value>(
   const inlineChildren: TNodeEntry<TDescendant>[] = [];
 
   for (const child of children) {
-    if (Editor.isBlock(editor, child[0])) {
+    if (isBlock(editor, child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
           children: getChildren(child as TNodeEntry<TAncestor>),
@@ -76,14 +78,14 @@ export const normalizeListItem = <V extends Value>(
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
     .filter(([child]) => !allValidLiChildrenTypes.includes(child.type))
-    .map(([, childPath]) => Editor.pathRef(editor, childPath));
+    .map(([, childPath]) => createPathRef(editor, childPath));
 
   const firstLiChild: TNodeEntry<any> | undefined = liChildren[0];
   const [firstLiChildNode, firstLiChildPath] =
     (firstLiChild as TNodeEntry<TElement>) ?? [];
 
   // If li has no child or inline child, insert lic
-  if (!firstLiChild || !Editor.isBlock(editor, firstLiChildNode)) {
+  if (!firstLiChild || !isBlock(editor, firstLiChildNode)) {
     insertEmptyElement(editor, getPluginType(editor, ELEMENT_LIC), {
       at: liPath.concat([0]),
     });
@@ -92,7 +94,7 @@ export const normalizeListItem = <V extends Value>(
 
   // If first li child is a block but not lic, set it to lic
   if (
-    Editor.isBlock(editor, firstLiChildNode) &&
+    isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode as any, {
       type: getPluginType(editor, ELEMENT_LIC),
     })
@@ -144,11 +146,11 @@ export const normalizeListItem = <V extends Value>(
 
     // Check that lic has no block children
     for (const licChild of licChildren) {
-      if (!Editor.isBlock(editor, licChild[0])) {
+      if (!isBlock(editor, licChild[0])) {
         break;
       }
 
-      blockPathRefs.push(Editor.pathRef(editor, licChild[1]));
+      blockPathRefs.push(createPathRef(editor, licChild[1]));
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {

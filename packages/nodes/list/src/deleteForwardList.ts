@@ -2,7 +2,10 @@ import {
   getBlockAbove,
   getChildren,
   getNode,
+  getNodes,
+  getParentNode,
   getPluginType,
+  getPointAfter,
   getText,
   isSelectionAtBlockEnd,
   PlateEditor,
@@ -26,12 +29,12 @@ import {
 const pathToEntry = <V extends Value, T extends Node>(
   editor: PlateEditor<V>,
   path: Path
-): TNodeEntry<T> => Editor.node(editor, path) as TNodeEntry<T>;
+): TNodeEntry<T> => getNode(editor, path) as TNodeEntry<T>;
 
 const selectionIsNotInAListHandler = <V extends Value>(
   editor: PlateEditor<V>
 ): boolean => {
-  const pointAfterSelection = Editor.after(
+  const pointAfterSelection = getPointAfter(
     editor,
     editor.selection!.focus.path
   );
@@ -79,7 +82,7 @@ const selectionIsInAListHandler = <V extends Value>(
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = getPluginType(editor, ELEMENT_LI);
-    const _nodes = Editor.nodes(editor, {
+    const _nodes = getNodes(editor, {
       at: listItem[1],
       mode: 'lowest',
       match: (node, path) => {
@@ -98,7 +101,7 @@ const selectionIsInAListHandler = <V extends Value>(
 
     if (!liWithSiblings) {
       // there are no more list item in the list
-      const pointAfterListItem = Editor.after(editor, listItem[1]);
+      const pointAfterListItem = getPointAfter(editor, listItem[1]);
 
       if (pointAfterListItem) {
         // there is a block after it
@@ -131,7 +134,7 @@ const selectionIsInAListHandler = <V extends Value>(
       Path.next(liWithSiblings)
     ) as TNodeEntry<TElement>;
 
-    const siblingList = Editor.parent(
+    const siblingList = getParentNode(
       editor,
       siblingListItem[1]
     ) as TNodeEntry<TElement>;

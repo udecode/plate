@@ -1,5 +1,6 @@
 import {
   collapseSelection,
+  getLeafNode,
   getPluginType,
   insertNodes,
   isCollapsed,
@@ -45,7 +46,7 @@ export const upsertLinkAtSelection = <V extends Value, T = {}>(
 
   // if our cursor is inside an existing link, but don't have the text selected, select it now
   if (wrap && isCollapsed(editor.selection)) {
-    const linkLeaf = Editor.leaf(editor, editor.selection);
+    const linkLeaf = getLeafNode(editor, editor.selection);
     const [, inlinePath] = linkLeaf;
     select(editor, inlinePath);
   }

@@ -45,7 +45,6 @@ export const toggleCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
     };
 
     for (const [, path] of nodes) {
-      // Transforms.wrapNodes(editor, codeLine, {
       setNodes<TElement>(editor, codeLine, {
         at: path,
       });

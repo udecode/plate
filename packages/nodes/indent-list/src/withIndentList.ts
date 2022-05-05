@@ -1,4 +1,9 @@
-import { getNode, TEditor, WithOverride } from '@udecode/plate-core';
+import {
+  createPathRef,
+  getNode,
+  TEditor,
+  WithOverride,
+} from '@udecode/plate-core';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { Editor, Node, PathRef } from 'slate';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
@@ -82,10 +87,7 @@ export const withIndentList: WithOverride<{}, IndentListPlugin> = (
           getSiblingIndentListOptions
         );
         if (nextNodeEntryBefore) {
-          nextIndentListPathRef = Editor.pathRef(
-            editor,
-            nextNodeEntryBefore[1]
-          );
+          nextIndentListPathRef = createPathRef(editor, nextNodeEntryBefore[1]);
         }
       }
     }

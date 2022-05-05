@@ -1,12 +1,14 @@
 import { Editor, Element, Path, Range, Text, Transforms } from 'slate';
 import { hasSingleChild } from '../../common/queries/hasSingleChild';
 import { Modify } from '../../common/types/utility/types';
+import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';
 import { getNodes } from '../editor/getNodes';
 import { getParentNode } from '../editor/getParentNode';
 import { getPreviousNode } from '../editor/getPreviousNode';
 import { isBlock } from '../editor/isBlock';
+import { isElementEmpty } from '../editor/isElementEmpty';
 import { withoutNormalizing } from '../editor/withoutNormalizing';
 import { isElement } from '../element/isElement';
 import { isText } from '../text/isText';
@@ -116,7 +118,7 @@ export const mergeNodes = <V extends Value>(
     });
 
     const emptyRef =
-      emptyAncestor && Editor.pathRef(editor as any, emptyAncestor[1]);
+      emptyAncestor && createPathRef(editor as any, emptyAncestor[1]);
     let properties;
     let position;
 
@@ -169,7 +171,7 @@ export const mergeNodes = <V extends Value>(
       mergeNode(editor as any, { at: path, to: newPath });
       // DIFF: end
     } else if (
-      (isElement(prevNode) && Editor.isEmpty(editor as any, prevNode)) ||
+      (isElement(prevNode) && isElementEmpty(editor as any, prevNode)) ||
       (isText(prevNode) && prevNode.text === '')
     ) {
       removeNodes(editor, { at: prevPath, voids });

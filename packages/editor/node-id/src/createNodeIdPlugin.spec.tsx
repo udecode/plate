@@ -3,12 +3,12 @@
 import {
   createPlateEditor,
   insertNodes,
+  mergeNodes,
   PlateEditor,
   splitNodes,
   TElement,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Transforms } from 'slate';
 import {
   ELEMENT_LI,
   ELEMENT_UL,
@@ -680,7 +680,7 @@ describe('when merging nodes', () => {
         ],
       });
 
-      Transforms.mergeNodes(editor, { at: [0, 1] });
+      mergeNodes(editor, { at: [0, 1] });
       editor.undo();
 
       expect(input.children).toEqual(output.children);
@@ -714,7 +714,7 @@ describe('when merging nodes', () => {
         ],
       });
 
-      Transforms.mergeNodes(editor, { at: [1] });
+      mergeNodes(editor, { at: [1] });
       editor.undo();
       editor.redo();
       editor.undo();

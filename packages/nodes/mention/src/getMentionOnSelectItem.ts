@@ -12,6 +12,7 @@ import {
   getPlugin,
   insertNodes,
   insertText,
+  isEndPoint,
   moveSelection,
   PlatePluginKey,
   removeNodes,
@@ -42,7 +43,7 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
   const isBlockEnd =
     editor.selection &&
     pathAbove &&
-    Editor.isEnd(editor, editor.selection.anchor, pathAbove);
+    isEndPoint(editor, editor.selection.anchor, pathAbove);
 
   withoutNormalizing(editor, () => {
     // insert a space to fix the bug

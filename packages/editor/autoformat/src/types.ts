@@ -79,7 +79,7 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
 
   /**
    * Custom formatting function.
-   * @default setNodes(editor, { type }, { match: (n) => Editor.isBlock(editor, n) })
+   * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
    */
   format?: (editor: TEditor) => void;
 }

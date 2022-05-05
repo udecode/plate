@@ -4,6 +4,8 @@ import {
   getRangeBefore,
   getRangeFromBlockStart,
   getText,
+  isBlock,
+  isVoid,
   setNodes,
   someNode,
   TEditor,
@@ -49,7 +51,7 @@ export const autoformatBlock = (
       // Don't autoformat if there is void nodes.
       const hasVoidNode = someNode(editor, {
         at: matchRange,
-        match: (n) => Editor.isVoid(editor, n),
+        match: (n) => isVoid(editor, n),
       });
       if (hasVoidNode) continue;
 
@@ -74,11 +76,11 @@ export const autoformatBlock = (
     preFormat?.(editor);
 
     if (!format) {
-      setNodes<TElement>(
+      setNodes(
         editor,
         { type },
         {
-          match: (n) => Editor.isBlock(editor, n),
+          match: (n) => isBlock(editor, n),
         }
       );
     } else {

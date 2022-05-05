@@ -1,4 +1,6 @@
 import {
+  getNodes,
+  getPointBefore,
   isCollapsed,
   queryNode,
   select,
@@ -20,11 +22,11 @@ export const withSelectOnBackspace: WithOverride<
   editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {
     const { selection } = editor;
     if (unit === 'character' && isCollapsed(selection)) {
-      const prevNode = Editor.before(editor, selection as Slate.Location, {
+      const prevNode = getPointBefore(editor, selection as Slate.Location, {
         unit,
       });
       if (prevNode) {
-        const [prevCell] = Editor.nodes<TNode>(editor, {
+        const [prevCell] = getNodes(editor, {
           match: (node) => queryNode([node as TNode, prevNode.path], query),
           at: prevNode,
         });

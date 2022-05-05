@@ -3,6 +3,7 @@ import {
   createNodeHOC,
   createNodesHOC,
   isCollapsed,
+  isElementEmpty,
   useEditorState,
 } from '@udecode/plate-core';
 import { Editor } from 'slate';
@@ -23,7 +24,7 @@ export const Placeholder = (props: PlaceholderProps) => {
   const selected = useSelected();
   const editor = useEditorState();
 
-  const isEmptyBlock = Editor.isEmpty(editor, element);
+  const isEmptyBlock = isElementEmpty(editor, element);
 
   const enabled =
     isEmptyBlock &&

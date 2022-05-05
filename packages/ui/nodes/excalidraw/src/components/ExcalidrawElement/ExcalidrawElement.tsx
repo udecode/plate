@@ -40,7 +40,7 @@ export const ExcalidrawElement = (props: ExcalidrawElementProps) => {
     },
     autoFocus: false,
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
-    // const path = ReactEditor.findPath(editor, element);
+    // const path = findNodePath(editor, element);
 
     // FIXME: setNodes triggers render loop as onChange is triggered on rerender
     // in the meantime, the prop can be used to save the data outside slate

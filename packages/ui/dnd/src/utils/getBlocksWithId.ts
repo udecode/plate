@@ -1,4 +1,9 @@
-import { EditorNodesOptions, getNodes, TEditor } from '@udecode/plate-core';
+import {
+  EditorNodesOptions,
+  getNodes,
+  isBlock,
+  TEditor,
+} from '@udecode/plate-core';
 import { Editor } from 'slate';
 
 /**
@@ -9,7 +14,7 @@ export const getBlocksWithId = (
   options: EditorNodesOptions
 ) => {
   const _nodes = getNodes(editor, {
-    match: (n) => Editor.isBlock(editor, n) && !!n.id,
+    match: (n) => isBlock(editor, n) && !!n.id,
     ...options,
   });
   return Array.from(_nodes);

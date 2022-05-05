@@ -1,4 +1,7 @@
 import {
+  getEditorString,
+  getRange,
+  getStartPoint,
   insertText,
   isExpanded,
   TEditor,
@@ -22,11 +25,11 @@ export const indentCodeLine = (
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = Editor.start(editor, codeLinePath);
+  const codeLineStart = getStartPoint(editor, codeLinePath);
   if (!isExpanded(editor.selection)) {
     const cursor = editor.selection?.anchor;
-    const range = Editor.range(editor, codeLineStart, cursor);
-    const text = Editor.string(editor, range);
+    const range = getRange(editor, codeLineStart, cursor);
+    const text = getEditorString(editor, range);
 
     if (/\S/.test(text)) {
       insertText(editor, '  ', { at: editor.selection! });

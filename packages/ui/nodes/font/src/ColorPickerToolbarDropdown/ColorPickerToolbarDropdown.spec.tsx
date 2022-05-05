@@ -2,7 +2,9 @@ import React, { ReactElement, ReactNode } from 'react';
 import { render, RenderOptions, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import {
+  getEndPoint,
   getPlateEditorRef,
+  getStartPoint,
   Plate,
   PlateEditor,
   select,
@@ -15,7 +17,6 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
 } from '@udecode/plate-font';
-import { Editor } from 'slate';
 import { ColorPickerToolbarDropdown } from './ColorPickerToolbarDropdown';
 
 const DEFAULT_PLUGINS = [
@@ -87,8 +88,8 @@ describe('ColorPickerToolbarDropdown', () => {
 
         // select the entire text
         select(editor, {
-          anchor: Editor.start(editor, []),
-          focus: Editor.end(editor, []),
+          anchor: getStartPoint(editor, []),
+          focus: getEndPoint(editor, []),
         });
       });
 

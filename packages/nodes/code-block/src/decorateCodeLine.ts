@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars,simple-import-sort/imports */
 import {
   Decorate,
+  getNodeString,
   getParentNode,
   getPlugin,
   TDescendant,
@@ -95,7 +96,7 @@ export const decorateCodeLine: Decorate = (editor) => {
       return ranges;
     }
 
-    const text = Node.string(node);
+    const text = getNodeString(node);
     const tokens = tokenize(text, lang);
     let offset = 0;
 

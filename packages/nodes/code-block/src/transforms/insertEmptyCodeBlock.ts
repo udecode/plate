@@ -1,5 +1,6 @@
 import {
   ELEMENT_DEFAULT,
+  getPath,
   getPluginType,
   insertNodes,
   isBlockAboveEmpty,
@@ -27,7 +28,7 @@ export const insertEmptyCodeBlock = <V extends Value>(
   if (!editor.selection) return;
 
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
-    const selectionPath = Editor.path(editor, editor.selection);
+    const selectionPath = getPath(editor, editor.selection);
     const insertPath = Path.next(selectionPath.slice(0, level + 1));
     insertNodes<TElement>(
       editor,
