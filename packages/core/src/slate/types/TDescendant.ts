@@ -1,9 +1,9 @@
 import { isElement } from '../element/isElement';
 import { isText } from '../text/isText';
 import { TEditor, Value } from './TEditor';
-import { ElementOf, TElement, VElement } from './TElement';
+import { EElement, ElementOf, TElement } from './TElement';
 import { TNode } from './TNode';
-import { TextOf, TText, VText } from './TText';
+import { EText, TextOf, TText } from './TText';
 
 /**
  * The `Descendant` union type represents nodes that are descendants in the
@@ -15,12 +15,12 @@ export type TDescendant = TElement | TText;
 /**
  * Descendant of an editor.
  */
-export type EDescendant<V extends Value> = DescendantOf<TEditor<V>>;
+// export type EDescendant<V extends Value> = DescendantOf<TEditor<V>>;
 
 /**
  * Descendant of a value.
  */
-export type VDescendant<V extends Value> = VElement<V> | VText<V>;
+export type EDescendant<V extends Value> = EElement<V> | EText<V>;
 
 /**
  * A utility type to get all the descendant node types from a root node type.

@@ -7,7 +7,6 @@ import { getNode } from '../../slate/editor/getNode';
 import { getPath } from '../../slate/editor/getPath';
 import { isVoid } from '../../slate/editor/isVoid';
 import { getNodeDescendants } from '../../slate/node/getNodeDescendants';
-import { EDescendant } from '../../slate/types/TDescendant';
 import { TEditor, Value } from '../../slate/types/TEditor';
 import { EDescendantEntry, ENodeEntry } from '../../slate/types/TNodeEntry';
 import { FindNodeOptions } from './findNode';
@@ -55,8 +54,8 @@ export const findDescendant = <V extends Value>(
     });
 
     for (const [node, path] of nodeEntries) {
-      if (match(node as EDescendant<V>, _match as any)) {
-        return [node as EDescendant<V>, (at as Path).concat(path)];
+      if (match(node, _match as any)) {
+        return [node, (at as Path).concat(path)];
       }
     }
   } catch (error) {

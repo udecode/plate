@@ -1,5 +1,5 @@
 import { withoutNormalizing } from '../slate/editor/withoutNormalizing';
-import { VDescendant } from '../slate/types/TDescendant';
+import { EDescendant } from '../slate/types/TDescendant';
 import { Value } from '../slate/types/TEditor';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePluginInsertDataOptions } from '../types/plugins/PlatePluginInsertData';
@@ -14,7 +14,7 @@ export const pipeInsertFragment = <V extends Value, T = {}>(
   {
     fragment,
     ...options
-  }: PlatePluginInsertDataOptions & { fragment: VDescendant<V>[] }
+  }: PlatePluginInsertDataOptions & { fragment: EDescendant<V>[] }
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {

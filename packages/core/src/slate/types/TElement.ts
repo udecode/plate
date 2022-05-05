@@ -1,9 +1,7 @@
 import { UnknownObject } from '../../common/types/utility/AnyObject';
-import { MyValue } from '../../utils/setPlatePlugins';
-import { EDescendant } from './TDescendant';
+import { TDescendant } from './TDescendant';
 import { TEditor, Value } from './TEditor';
 import { TNode } from './TNode';
-import { TText } from './TText';
 
 /**
  * `Element` objects are a type of node in a Slate document that contain other
@@ -11,22 +9,21 @@ import { TText } from './TText';
  * depending on the Slate editor's configuration.
  */
 export interface TElement extends UnknownObject {
-  children: Array<TElement | TText>;
+  children: TDescendant[];
   type: string;
 }
 
 /**
  * Element of an editor.
  */
-export type EElement<V extends Value> = ElementOf<TEditor<V>>;
+// export type EElement<V extends Value> = ElementOf<TEditor<V>>;
 
 /**
  * Element of a value.
  */
-export type VElement<V extends Value> = V[number];
+export type EElement<V extends Value> = V[number];
 
 const a: TElement = { type: 'a', children: [] };
-const b: EDescendant<MyValue> = {};
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be

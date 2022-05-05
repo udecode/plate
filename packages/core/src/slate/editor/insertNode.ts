@@ -1,7 +1,6 @@
 import { Editor } from 'slate';
+import { EDescendant } from '../types/TDescendant';
 import { TEditor, Value } from '../types/TEditor';
-import { EElement } from '../types/TElement';
-import { EText } from '../types/TText';
 
 /**
  * Insert a node at the current selection.
@@ -10,5 +9,5 @@ import { EText } from '../types/TText';
  */
 export const insertNode = <V extends Value>(
   editor: TEditor<V>,
-  node: EElement<V> | EText<V> | Array<EElement<V> | EText<V>>
+  node: EDescendant<V> | EDescendant<V>[]
 ) => Editor.insertNode(editor as any, node as any);
