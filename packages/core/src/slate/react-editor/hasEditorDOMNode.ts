@@ -9,7 +9,7 @@ import { TReactEditor } from '../types/TReactEditor';
 export const hasEditorDOMNode = <V extends Value>(
   editor: TReactEditor<V>,
   target: DOMNode,
-  options: Parameters<typeof ReactEditor.hasDOMNode>[2]
+  options?: Parameters<typeof ReactEditor.hasDOMNode>[2]
 ) => {
   try {
     return ReactEditor.hasDOMNode(editor as any, target, options);

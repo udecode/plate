@@ -1,6 +1,10 @@
 import React from 'react';
-import { findNodePath, TElement, useEditorRef } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import {
+  findNodePath,
+  removeNodes,
+  TElement,
+  useEditorRef,
+} from '@udecode/plate-core';
 import { DeleteIcon } from '../Icon/DeleteIcon';
 import { Button } from './Button';
 import { ButtonProps } from './Button.types';
@@ -17,7 +21,7 @@ export const RemoveNodeButton = ({
       py={4}
       onClick={() => {
         const path = findNodePath(editor, element);
-        Transforms.removeNodes(editor, { at: path });
+        removeNodes(editor, { at: path });
       }}
       {...props}
     >

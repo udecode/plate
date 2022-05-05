@@ -7,13 +7,13 @@ import {
   mockPlugin,
   PlateEditor,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,
   SIMULATE_BACKSPACE,
 } from '@udecode/plate-reset-node';
-import { Editor } from 'slate';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
 import { removeFirstListItem } from './transforms/removeFirstListItem';
@@ -37,7 +37,7 @@ export const deleteBackwardList = <V extends Value>(
         match: (node) => node.type === ELEMENT_LI,
       })
     ) {
-      Editor.withoutNormalizing(editor, () => {
+      withoutNormalizing(editor, () => {
         moved = removeFirstListItem(editor, { list, listItem });
         if (moved) return true;
 

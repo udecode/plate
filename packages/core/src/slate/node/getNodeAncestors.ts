@@ -11,7 +11,7 @@ import { TAncestorEntry } from '../types/TNodeEntry';
 export const getNodeAncestors = <N extends TNode>(
   root: N,
   path: Path,
-  options: Parameters<typeof Node.ancestors>[2]
+  options?: Parameters<typeof Node.ancestors>[2]
 ) =>
   Node.ancestors(root, path, options) as Generator<
     TAncestorEntry<N>,

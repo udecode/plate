@@ -8,7 +8,7 @@ import { TDescendantEntry } from '../types/TNodeEntry';
  */
 export const getNodeDescendants = <N extends TNode>(
   root: N,
-  options: Modify<
+  options?: Modify<
     NonNullable<Parameters<typeof Node.descendants>[1]>,
     {
       pass?: (node: TDescendantEntry<N>) => boolean;

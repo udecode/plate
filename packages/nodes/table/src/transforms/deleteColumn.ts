@@ -2,10 +2,10 @@ import {
   getAboveNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   someNode,
   Value,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
@@ -48,7 +48,7 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
       currentTableItem[0].children.forEach((row, rowIdx) => {
         pathToDelete[replacePathPos] = rowIdx;
 
-        Transforms.removeNodes(editor, {
+        removeNodes(editor, {
           at: pathToDelete,
         });
       });

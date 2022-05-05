@@ -1,5 +1,5 @@
-import { PlateEditor, Value } from '@udecode/plate-core';
-import { Range, Transforms } from 'slate';
+import { moveSelection, PlateEditor, Value } from '@udecode/plate-core';
+import { Range } from 'slate';
 import { KeyboardEventHandler } from './KeyboardEventHandler';
 
 export interface MoveSelectionByOffsetOptions<V extends Value> {
@@ -21,13 +21,13 @@ export const moveSelectionByOffset: <V extends Value>(
 
   if (event.key === 'ArrowLeft') {
     event.preventDefault();
-    Transforms.move(editor, { unit: 'offset', reverse: true });
+    moveSelection(editor, { unit: 'offset', reverse: true });
     return true;
   }
 
   if (event.key === 'ArrowRight') {
     event.preventDefault();
-    Transforms.move(editor, { unit: 'offset' });
+    moveSelection(editor, { unit: 'offset' });
     return true;
   }
 };

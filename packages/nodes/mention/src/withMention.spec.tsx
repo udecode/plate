@@ -5,9 +5,9 @@ import {
   comboboxSelectors,
   ComboboxState,
 } from '@udecode/plate-combobox';
-import { PlateEditor, Value } from '@udecode/plate-core';
+import { moveSelection, PlateEditor, select, Value } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
 import { withMention } from './withMention';
@@ -190,7 +190,7 @@ describe('withMention', () => {
         </hp>
       );
 
-      Transforms.select(editor, {
+      select(editor, {
         path: [0, 2],
         offset: 0,
       });
@@ -210,7 +210,7 @@ describe('withMention', () => {
         </hp>
       );
 
-      Transforms.select(editor, {
+      select(editor, {
         path: [0, 2],
         offset: 0,
       });
@@ -230,7 +230,7 @@ describe('withMention', () => {
         </hp>
       );
 
-      Transforms.select(editor, {
+      select(editor, {
         path: [0, 2],
         offset: 0,
       });
@@ -450,7 +450,7 @@ describe('withMention', () => {
         </hp>
       );
 
-      Transforms.select(editor, {
+      select(editor, {
         path: [0, 2],
         offset: 0,
       });
@@ -473,7 +473,7 @@ describe('withMention', () => {
         text: 'ab',
       });
 
-      Transforms.move(editor, { distance: 1, reverse: true });
+      moveSelection(editor, { distance: 1, reverse: true });
       editor.deleteForward('character');
       expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
         text: 'a',

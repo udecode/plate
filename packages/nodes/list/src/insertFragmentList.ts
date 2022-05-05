@@ -1,9 +1,11 @@
 import {
   findNode,
   getPlugin,
+  insertNodes,
   isElement,
   PlateEditor,
   PlatePlugin,
+  removeNodes,
   TDescendant,
   TElement,
   TNodeEntry,
@@ -125,23 +127,23 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
         const li = Node.get(editor, liPath) as Element;
         const [, ...currentSublists] = li.children;
         const [newLic, ...newSublists] = first.children;
-        Transforms.insertNodes(editor, newLic, {
+        insertNodes(editor, newLic, {
           at: Path.next(licPath),
           select: true,
         });
-        Transforms.removeNodes(editor, {
+        removeNodes(editor, {
           at: licPath,
         });
         if (newSublists?.length) {
           if (currentSublists?.length) {
             // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
             const path = [...liPath, 1, 0];
-            Transforms.insertNodes(editor, newSublists[0].children, {
+            insertNodes(editor, newSublists[0].children, {
               at: path,
               select: true,
             });
           } else {
-            Transforms.insertNodes(editor, newSublists, {
+            insertNodes(editor, newSublists, {
               at: Path.next(licPath),
               select: true,
             });
@@ -205,7 +207,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
 
     const [, liPath] = liEntry!;
 
-    return Transforms.insertNodes(editor, listItemNodes, {
+    return insertNodes(editor, listItemNodes, {
       at: Path.next(liPath),
       select: true,
     });

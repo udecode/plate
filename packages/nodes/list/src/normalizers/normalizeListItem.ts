@@ -4,7 +4,9 @@ import {
   getPluginType,
   insertEmptyElement,
   match,
+  moveNodes,
   PlateEditor,
+  removeNodes,
   setNodes,
   TAncestor,
   TDescendant,
@@ -111,7 +113,7 @@ export const normalizeListItem = <V extends Value>(
         });
       });
 
-      Transforms.removeNodes(editor, { at: [...parent![1], 0] });
+      removeNodes(editor, { at: [...parent![1], 0] });
 
       return true;
     }
@@ -159,7 +161,7 @@ export const normalizeListItem = <V extends Value>(
 
     // Move lic nested inline children to its children
     inlineChildren.reverse().forEach(([, path]) => {
-      Transforms.moveNodes(editor, {
+      moveNodes(editor, {
         at: path,
         to,
       });
@@ -170,7 +172,7 @@ export const normalizeListItem = <V extends Value>(
       const path = pathRef.unref();
 
       path &&
-        Transforms.removeNodes(editor, {
+        removeNodes(editor, {
           at: path,
         });
     });
@@ -187,7 +189,7 @@ export const normalizeListItem = <V extends Value>(
     const path = ref.unref();
 
     path &&
-      Transforms.moveNodes(editor, {
+      moveNodes(editor, {
         at: path,
         to: firstLiChildPath.concat([0]),
       });

@@ -8,7 +8,7 @@ import { TNodeEntry, TTextEntry } from '../types/TNodeEntry';
  */
 export const getNodeTexts = <N extends TNode>(
   root: N,
-  options: Modify<
+  options?: Modify<
     NonNullable<Parameters<typeof Node.texts>[1]>,
     {
       pass?: (entry: TNodeEntry<NodeOf<N>>) => boolean;

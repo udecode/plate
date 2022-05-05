@@ -1,12 +1,14 @@
 import {
   match,
+  moveNodes,
   PlateEditor,
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Ancestor, Editor, Element, Path, Transforms } from 'slate';
+import { Ancestor, Editor, Element, Path } from 'slate';
 import { getListTypes } from '../queries';
 
 export interface MoveListItemDownOptions {
@@ -45,7 +47,7 @@ export const moveListItemDown = <V extends Value>(
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    Editor.withoutNormalizing(editor, () => {
+    withoutNormalizing(editor, () => {
       if (!sublist) {
         // Create new sublist
         wrapNodes(
@@ -56,7 +58,7 @@ export const moveListItemDown = <V extends Value>(
       }
 
       // Move the current item to the sublist
-      Transforms.moveNodes(editor, {
+      moveNodes(editor, {
         at: listItemPath,
         to: newPath,
       });

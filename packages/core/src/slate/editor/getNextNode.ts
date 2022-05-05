@@ -7,7 +7,7 @@ import { TNodeEntry } from '../types/TNodeEntry';
 export type GetNextNodeOptions<V extends Value, N extends TNode> = Modify<
   NonNullable<Parameters<typeof Editor.next>[1]>,
   {
-    match?: TNodeMatch<N & ENode<V>>;
+    match?: TNodeMatch<ENode<V>>;
   }
 >;
 

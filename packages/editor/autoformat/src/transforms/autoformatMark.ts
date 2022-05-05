@@ -1,4 +1,11 @@
-import { getText, removeMark, TEditor } from '@udecode/plate-core';
+import {
+  collapseSelection,
+  deleteText,
+  getText,
+  removeMark,
+  select,
+  TEditor,
+} from '@udecode/plate-core';
 import castArray from 'lodash/castArray';
 import { Point, Range, Transforms } from 'slate';
 import { AutoformatMarkRule } from '../types';
@@ -47,7 +54,7 @@ export const autoformatMark = (
 
     // delete end match
     if (end) {
-      Transforms.delete(editor, {
+      deleteText(editor, {
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -58,14 +65,14 @@ export const autoformatMark = (
     const marks = castArray(type);
 
     // add mark to the text between the matches
-    Transforms.select(editor, matchRange as Range);
+    select(editor, matchRange as Range);
     marks.forEach((mark) => {
       editor.addMark(mark, true);
     });
-    Transforms.collapse(editor, { edge: 'end' });
+    collapseSelection(editor, { edge: 'end' });
     removeMark(editor, { key: marks, shouldChange: false });
 
-    Transforms.delete(editor, {
+    deleteText(editor, {
       at: {
         anchor: beforeStartMatchPoint as Point,
         focus: afterStartMatchPoint as Point,

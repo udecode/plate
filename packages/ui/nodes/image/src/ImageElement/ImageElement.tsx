@@ -6,10 +6,10 @@ import React, {
   useState,
 } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { findNodePath, setNodes, TText } from '@udecode/plate-core';
+import { findNodePath, select, setNodes, TText } from '@udecode/plate-core';
 import { getRootProps } from '@udecode/plate-styled-components';
 import { Resizable } from 're-resizable';
-import { Node, Transforms } from 'slate';
+import { Node } from 'slate';
 import { useFocused, useSelected } from 'slate-react';
 import { getImageElementStyles } from './ImageElement.styles';
 import { ImageElementProps } from './ImageElement.types';
@@ -58,7 +58,7 @@ export const ImageElement = (props: ImageElementProps) => {
 
       if (w === nodeWidth) {
         // Focus the node if not resized
-        Transforms.select(editor, path);
+        select(editor, path);
       } else {
         setNodes(editor, { width: w }, { at: path });
       }

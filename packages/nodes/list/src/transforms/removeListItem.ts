@@ -5,11 +5,13 @@ import {
   insertNodes,
   isExpanded,
   PlateEditor,
+  removeNodes,
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path, Transforms } from 'slate';
+import { Editor, Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -39,7 +41,7 @@ export const removeListItem = <V extends Value>(
 
   let success = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     /**
      * If there is a previous li, we need to move sub-lis to the previous li.
      * As we need to delete first, we will:
@@ -94,7 +96,7 @@ export const removeListItem = <V extends Value>(
       });
 
       // 5
-      Transforms.removeNodes(editor, { at: tempLiPath });
+      removeNodes(editor, { at: tempLiPath });
 
       success = true;
       return;

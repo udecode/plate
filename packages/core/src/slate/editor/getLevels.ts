@@ -4,10 +4,10 @@ import { TEditor, Value } from '../types/TEditor';
 import { ENode, TNode, TNodeMatch } from '../types/TNode';
 import { TNodeEntry } from '../types/TNodeEntry';
 
-export type GetLevelsOptions<V extends Value, N extends TNode> = Modify<
+export type GetLevelsOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Editor.levels>[1]>,
   {
-    match?: TNodeMatch<N & ENode<V>>;
+    match?: TNodeMatch<ENode<V>>;
   }
 >;
 
@@ -16,6 +16,6 @@ export type GetLevelsOptions<V extends Value, N extends TNode> = Modify<
  */
 export const getLevels = <V extends Value, N extends TNode>(
   editor: TEditor<V>,
-  options?: GetLevelsOptions<V, N>
+  options?: GetLevelsOptions<V>
 ): Generator<TNodeEntry<N & ENode<V>>, void, undefined> =>
   Editor.levels(editor as any, options as any) as any;

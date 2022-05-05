@@ -72,7 +72,7 @@ type NumberedList = {
   children: ListItem[];
 };
 
-type Paragraph = {
+export type Paragraph = {
   type: 'paragraph';
   children: (Link | FormattedText)[];
 };
@@ -97,6 +97,13 @@ type MyEditor = TReactEditor<MyValue>;
 export type MyMarks = MarksOf<MyEditor>;
 
 const myeditor = createTEditor<MyValue>();
+
+myeditor.insertFragment([
+  {
+    text: 'a',
+    bold: true,
+  },
+]);
 
 const element = myeditor.children[0];
 const text = element.children[0];

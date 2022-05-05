@@ -14,7 +14,7 @@ export type UnsetNodesOptions<V extends Value> = Modify<
 export const unsetNodes = <V extends Value>(
   editor: TEditor<V>,
   props: string | string[],
-  options: UnsetNodesOptions<V> = {}
+  options?: UnsetNodesOptions<V>
 ) => {
   return Transforms.unsetNodes(editor as any, props as any, options as any);
 };

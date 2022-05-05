@@ -1,15 +1,18 @@
 import { TDescendant } from '../../slate/types/TDescendant';
-import { TElement } from '../../slate/types/TElement';
 
-export type DeserializeHtmlChildren = ChildNode | TDescendant | string | null;
+export type DeserializeHtmlChildren<N extends TDescendant> =
+  | ChildNode
+  | N
+  | string
+  | null;
 
 /**
  * De
  *
  */
-export type DeserializeHtmlNodeReturnType =
+export type DeserializeHtmlNodeReturnType<N extends TDescendant> =
   | string
   | null
-  | TDescendant[]
-  | TElement
-  | DeserializeHtmlChildren[];
+  | N[]
+  | N
+  | DeserializeHtmlChildren<N>[];

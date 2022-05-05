@@ -1,3 +1,4 @@
+import { EDescendant } from '../../../slate/types/TDescendant';
 import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { DeserializeHtmlNodeReturnType } from '../types';
@@ -9,6 +10,6 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
 export const deserializeHtmlElement = <V extends Value, T = {}>(
   editor: PlateEditor<V, T>,
   element: HTMLElement
-): DeserializeHtmlNodeReturnType => {
+): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
   return deserializeHtmlNode(editor)(element);
 };

@@ -1,7 +1,7 @@
 import { castArray } from 'lodash';
 import { isBlock } from '../../slate/editor/isBlock';
 import { TEditor, Value } from '../../slate/types/TEditor';
-import { TNode } from '../../slate/types/TNode';
+import { ENode, TNode } from '../../slate/types/TNode';
 import { AnyObject } from '../types/utility/AnyObject';
 
 export type PredicateObj<T extends TNode> = Partial<T> & AnyObject;
@@ -40,13 +40,13 @@ export const matchPredicate = <T extends TNode>(predicate?: Predicate<T>) => (
  * - `match` can be an object predicate where one of the values should include the node value.
  * Example: { type: ['1', '2'] } will match the nodes having one of these 2 types.
  */
-export const getQueryOptions = <V extends Value, T extends TNode>(
+export const getQueryOptions = <V extends Value>(
   editor: TEditor<V>,
   options: any
 ) => {
   return {
     ...options,
-    match: (n: T) =>
-      match<T>(n, options.match) && (!options?.block || isBlock(editor, n)),
+    match: (n: ENode<V>) =>
+      match(n, options.match) && (!options?.block || isBlock(editor, n)),
   };
 };

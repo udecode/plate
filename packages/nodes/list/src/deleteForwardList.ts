@@ -6,12 +6,14 @@ import {
   getText,
   isSelectionAtBlockEnd,
   PlateEditor,
+  removeNodes,
   TDescendant,
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Node, Path, Transforms } from 'slate';
+import { Editor, Node, Path } from 'slate';
 import { ELEMENT_LI } from './createListPlugin';
 import { getListItemEntry, getListRoot, hasListChild } from './queries';
 import {
@@ -49,7 +51,7 @@ const selectionIsNotInAListHandler = <V extends Value>(
 
       if (!getText(editor, parentBlockEntity![1])) {
         // the selected block is empty
-        Transforms.removeNodes(editor);
+        removeNodes(editor);
 
         return true;
       }
@@ -190,7 +192,7 @@ export const deleteForwardList = <V extends Value>(editor: PlateEditor<V>) => {
     return skipDefaultDelete;
   }
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     const res = getListItemEntry(editor, {});
 
     if (!res) {

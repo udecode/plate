@@ -1,5 +1,10 @@
-import { isExpanded, TEditor, TNodeEntry } from '@udecode/plate-core';
-import { Ancestor, Editor, Node, Transforms } from 'slate';
+import {
+  insertText,
+  isExpanded,
+  TEditor,
+  TNodeEntry,
+} from '@udecode/plate-core';
+import { Ancestor, Editor, Node } from 'slate';
 
 export interface IndentCodeLineOptions {
   codeBlock: TNodeEntry<Ancestor>;
@@ -24,10 +29,10 @@ export const indentCodeLine = (
     const text = Editor.string(editor, range);
 
     if (/\S/.test(text)) {
-      Transforms.insertText(editor, '  ', { at: editor.selection! });
+      insertText(editor, '  ', { at: editor.selection! });
       return;
     }
   }
 
-  Transforms.insertText(editor, '  ', { at: codeLineStart });
+  insertText(editor, '  ', { at: codeLineStart });
 };

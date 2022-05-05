@@ -4,6 +4,7 @@ import {
   createPlateEditor,
   insertNodes,
   PlateEditor,
+  splitNodes,
   TElement,
 } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -474,7 +475,7 @@ describe('when splitting nodes', () => {
         plugins: [createNodeIdPlugin()],
       });
 
-      Transforms.splitNodes(editor);
+      splitNodes(editor);
 
       expect(input.children[1].id).toBeDefined();
     });
@@ -510,7 +511,7 @@ describe('when splitting nodes', () => {
         ],
       });
 
-      Transforms.splitNodes(editor);
+      splitNodes(editor);
 
       editor.undo();
       editor.redo();
@@ -550,7 +551,7 @@ describe('when splitting nodes', () => {
         ],
       });
 
-      Transforms.splitNodes(editor);
+      splitNodes(editor);
 
       editor.undo();
       editor.redo();
@@ -591,7 +592,7 @@ describe('when splitting nodes', () => {
         ],
       });
 
-      Transforms.splitNodes(editor);
+      splitNodes(editor);
 
       editor.undo();
       editor.redo();
@@ -635,7 +636,7 @@ describe('when splitting nodes', () => {
         ],
       });
 
-      Transforms.splitNodes(editor);
+      splitNodes(editor);
 
       editor.undo();
       editor.redo();

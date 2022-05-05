@@ -2,11 +2,12 @@ import { comboboxActions } from '@udecode/plate-combobox';
 import {
   getPlugin,
   insertNodes,
+  setSelection,
   TElement,
   TNode,
   WithOverride,
 } from '@udecode/plate-core';
-import { Editor, Node, Range, Transforms } from 'slate';
+import { Editor, Node, Range } from 'slate';
 import { removeMentionInput } from './transforms/removeMentionInput';
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -133,7 +134,7 @@ export const withMention: WithOverride<{}, MentionPlugin> = (
         // Needed for undo - after an undo a mention insert we only receive
         // an insert_node with the mention input, i.e. nothing indicating that it
         // was an undo.
-        Transforms.setSelection(editor, {
+        setSelection(editor, {
           anchor: { path: operation.path.concat([0]), offset: text.length },
           focus: { path: operation.path.concat([0]), offset: text.length },
         });

@@ -1,5 +1,4 @@
-import { WithOverride } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import { removeNodes, WithOverride } from '@udecode/plate-core';
 
 export const withSingleLine: WithOverride = (editor) => {
   const { normalizeNode } = editor;
@@ -8,7 +7,7 @@ export const withSingleLine: WithOverride = (editor) => {
 
   editor.normalizeNode = (entry) => {
     if (editor.children.length > 1) {
-      Transforms.removeNodes(editor, {
+      removeNodes(editor, {
         at: [],
         mode: 'highest',
         match: (node, path) => path[0] > 0,

@@ -9,7 +9,7 @@ import { EText } from '../types/TText';
 export const insertFragment = <V extends Value>(
   editor: TEditor<V>,
   fragment: Array<EElement<V> | EText<V>>,
-  options: Parameters<typeof Transforms.insertFragment>[2]
+  options?: Parameters<typeof Transforms.insertFragment>[2]
 ) => {
   Transforms.insertFragment(editor as any, fragment, options);
 };

@@ -8,6 +8,7 @@ import {
   isElement,
   match,
   PlateEditor,
+  removeNodes,
   setNodes,
   TDescendant,
   TElement,
@@ -15,7 +16,7 @@ import {
   Value,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Descendant, Path, Transforms } from 'slate';
+import { Descendant, Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries';
 import { moveListItemsToList } from '../transforms';
@@ -62,7 +63,7 @@ export const normalizeList = <V extends Value>(
           (item: Descendant) => (item as TDescendant).type === liType
         )
       ) {
-        return Transforms.removeNodes(editor, { at: path });
+        return removeNodes(editor, { at: path });
       }
 
       const nextPath = Path.next(path);

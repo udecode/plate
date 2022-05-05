@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor, select } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { Transforms } from 'slate';
 import { createLinkPlugin, ELEMENT_LINK } from '../../createLinkPlugin';
 import { upsertLinkAtSelection } from '../../transforms/upsertLinkAtSelection';
 
@@ -46,7 +45,7 @@ it('should run default insertText', () => {
     anchor: { path: [0, 1, 0], offset: 1 },
     focus: { path: [0, 1, 0], offset: 1 },
   };
-  Transforms.select(editor, selection);
+  select(editor, selection);
 
   upsertLinkAtSelection(editor, { url: urlOutput, wrap: true });
   expect(input.children).toEqual(output.children);

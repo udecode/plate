@@ -1,5 +1,7 @@
-import { Editor, Location, Path, Point, Range, Transforms } from 'slate';
+import { Editor, Location, Path, Point, Range } from 'slate';
 import { mergeNodes } from '../transforms/mergeNodes';
+import { removeNodes } from '../transforms/removeNodes';
+import { select } from '../transforms/select';
 import { TEditor, Value } from '../types/TEditor';
 import { TNodeEntry } from '../types/TNodeEntry';
 import { createPointRef } from './createPointRef';
@@ -61,7 +63,7 @@ export const deleteMerge = <V extends Value>(
     }
 
     if (Path.isPath(at)) {
-      Transforms.removeNodes(editor as any, { at, voids });
+      removeNodes(editor, { at, voids });
       return;
     }
 
@@ -150,7 +152,7 @@ export const deleteMerge = <V extends Value>(
 
     for (const pathRef of pathRefs) {
       const path = pathRef.unref()!;
-      Transforms.removeNodes(editor as any, { at: path, voids });
+      removeNodes(editor, { at: path, voids });
     }
 
     if (!endVoid) {
@@ -174,7 +176,7 @@ export const deleteMerge = <V extends Value>(
     const point = endRef.unref() || startRef.unref();
 
     if (options.at == null && point) {
-      Transforms.select(editor as any, point);
+      select(editor as any, point);
     }
   });
 };

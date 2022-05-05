@@ -14,5 +14,5 @@ export type LiftNodesOptions<V extends Value> = Modify<
  */
 export const liftNodes = <V extends Value>(
   editor: TEditor<V>,
-  options: LiftNodesOptions<V> = {}
+  options?: LiftNodesOptions<V>
 ) => Transforms.liftNodes(editor as any, options as any);

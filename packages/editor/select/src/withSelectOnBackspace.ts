@@ -1,10 +1,11 @@
 import {
   isCollapsed,
   queryNode,
+  select,
   TNode,
   WithOverride,
 } from '@udecode/plate-core';
-import Slate, { Editor, Transforms } from 'slate';
+import Slate, { Editor } from 'slate';
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 
 /**
@@ -30,7 +31,7 @@ export const withSelectOnBackspace: WithOverride<
 
         if (!!prevCell && prevNode) {
           // don't delete image, set selection there
-          Transforms.select(editor, prevNode);
+          select(editor, prevNode);
         } else {
           deleteBackward(unit);
         }

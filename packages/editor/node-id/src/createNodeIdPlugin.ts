@@ -1,7 +1,11 @@
-import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-core';
+import {
+  createPluginFactory,
+  QueryNodeOptions,
+  TNode,
+} from '@udecode/plate-core';
 import { withNodeId } from './withNodeId';
 
-export interface NodeIdPlugin extends QueryNodeOptions {
+export interface NodeIdPlugin extends QueryNodeOptions<TNode> {
   /**
    * Node key to store the id.
    * @default 'id'

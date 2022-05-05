@@ -11,7 +11,7 @@ import { TNodeEntry } from '../types/TNodeEntry';
 export const getNodeLevels = <N extends TNode>(
   root: N,
   path: Path,
-  options: Parameters<typeof Node.levels>[2]
+  options?: Parameters<typeof Node.levels>[2]
 ) =>
   Node.levels(root, path, options) as Generator<
     TNodeEntry<NodeOf<N>>,

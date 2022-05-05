@@ -1,7 +1,7 @@
 import { jsx } from 'slate-hyperscript';
 import { isElement } from '../../../slate/element/isElement';
 import { isText } from '../../../slate/text/isText';
-import { TDescendant } from '../../../slate/types/TDescendant';
+import { EDescendant, TDescendant } from '../../../slate/types/TDescendant';
 import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { mergeDeepToNodes } from '../../../utils/mergeDeepToNodes';
@@ -51,5 +51,5 @@ export const htmlElementToLeaf = <V extends Value, T = {}>(
       return arr;
     },
     []
-  );
+  ) as EDescendant<V>[];
 };

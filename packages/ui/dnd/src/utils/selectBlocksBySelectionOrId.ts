@@ -1,6 +1,6 @@
-import { PlateEditor, Value } from '@udecode/plate-core';
+import { PlateEditor, select, Value } from '@udecode/plate-core';
 import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
-import { Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { getBlocksWithId } from './getBlocksWithId';
 import { getNodesRange } from './getNodesRange';
 import { selectBlockById } from './selectBlockById';
@@ -22,7 +22,7 @@ export const selectBlocksBySelectionOrId = <V extends Value>(
   );
 
   if (isBlockSelected) {
-    Transforms.select(editor, getNodesRange(editor, blockEntries) as Range);
+    select(editor, getNodesRange(editor, blockEntries) as Range);
     focusEditor(editor);
   } else {
     selectBlockById(editor, id);

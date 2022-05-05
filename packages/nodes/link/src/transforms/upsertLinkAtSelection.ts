@@ -1,8 +1,10 @@
 import {
+  collapseSelection,
   getPluginType,
   insertNodes,
   isCollapsed,
   PlateEditor,
+  select,
   TElement,
   unwrapNodes,
 } from '@udecode/plate-core';
@@ -45,12 +47,12 @@ export const upsertLinkAtSelection = <V extends Value, T = {}>(
   if (wrap && isCollapsed(editor.selection)) {
     const linkLeaf = Editor.leaf(editor, editor.selection);
     const [, inlinePath] = linkLeaf;
-    Transforms.select(editor, inlinePath);
+    select(editor, inlinePath);
   }
 
   unwrapNodes(editor, { at: editor.selection, match: { type } });
 
   wrapLink(editor, { at: editor.selection, url });
 
-  Transforms.collapse(editor, { edge: 'end' });
+  collapseSelection(editor, { edge: 'end' });
 };

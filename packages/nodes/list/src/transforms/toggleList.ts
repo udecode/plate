@@ -10,10 +10,11 @@ import {
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
 import { getCommonNode } from '@udecode/plate-core/dist/common/slate/node/getCommonNode';
-import { Editor, Range } from 'slate';
+import { Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries';
 import { unwrapList } from './unwrapList';
@@ -22,7 +23,7 @@ export const toggleList = <V extends Value>(
   editor: PlateEditor<V>,
   { type }: { type: string }
 ) =>
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     if (!editor.selection) {
       return;
     }

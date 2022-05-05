@@ -1,41 +1,43 @@
 import {
+  EElement,
   findNode,
   getPluginType,
+  insertFragment,
   PlateEditor,
   TDescendant,
   Value,
 } from '@udecode/plate-core';
-import { Node, Transforms } from 'slate';
+import { Node } from 'slate';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
 export const insertFragmentCodeBlock = <V extends Value>(
   editor: PlateEditor<V>
 ) => {
-  const { insertFragment } = editor;
+  const { insertFragment: _insertFragment } = editor;
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
   const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);
 
-  function convertNodeToCodeLine(node: TDescendant) {
+  function convertNodeToCodeLine(node: EElement<V>) {
     return {
       type: codeLineType,
       children: [{ text: Node.string(node) }],
     };
   }
 
-  function extractCodeLinesFromCodeBlock(node: TDescendant) {
+  function extractCodeLinesFromCodeBlock(node: EElement<V>) {
     return node.children;
   }
 
-  return (fragment: Node[]) => {
+  return (fragment: TDescendant[]) => {
     const inCodeLine = findNode(editor, { match: { type: codeLineType } });
     if (!inCodeLine) {
-      return insertFragment(fragment);
+      return _insertFragment(fragment);
     }
 
-    return Transforms.insertFragment(
+    return insertFragment(
       editor,
       fragment.flatMap((node) => {
-        const element = node as TDescendant;
+        const element = node;
 
         return element.type === codeBlockType
           ? extractCodeLinesFromCodeBlock(element)

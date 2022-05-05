@@ -1,4 +1,5 @@
 import {
+  deleteText,
   ELEMENT_DEFAULT,
   getRangeBefore,
   getRangeFromBlockStart,
@@ -68,7 +69,7 @@ export const autoformatBlock = (
       if (isBelowSameBlockType) continue;
     }
 
-    Transforms.delete(editor, { at: matchRange });
+    deleteText(editor, { at: matchRange });
 
     preFormat?.(editor);
 

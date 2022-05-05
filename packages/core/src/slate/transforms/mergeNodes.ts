@@ -12,6 +12,10 @@ import { isElement } from '../element/isElement';
 import { isText } from '../text/isText';
 import { NodeMatchOption } from '../types/NodeMatchOption';
 import { TEditor, Value } from '../types/TEditor';
+import { deleteText } from './deleteText';
+import { moveNodes } from './moveNodes';
+import { removeNodes } from './removeNodes';
+import { select } from './select';
 
 export type MergeNodesOptions<V extends Value> = Modify<
   NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
@@ -71,11 +75,11 @@ export const mergeNodes = <V extends Value>(
       } else {
         const [, end] = Range.edges(at);
         const pointRef = createPointRef(editor as any, end);
-        Transforms.delete(editor as any, { at });
+        deleteText(editor, { at });
         at = pointRef.unref()!;
 
         if (options.at == null) {
-          Transforms.select(editor as any, at);
+          select(editor as any, at);
         }
       }
     }
@@ -139,7 +143,7 @@ export const mergeNodes = <V extends Value>(
     if (!isPreviousSibling) {
       // DIFF
       if (!mergeNode) {
-        Transforms.moveNodes(editor as any, { at: path, to: newPath, voids });
+        moveNodes(editor, { at: path, to: newPath, voids });
       }
     }
 
@@ -148,7 +152,7 @@ export const mergeNodes = <V extends Value>(
     if (emptyRef) {
       // DIFF: start
       if (!removeEmptyAncestor) {
-        Transforms.removeNodes(editor as any, { at: emptyRef.current!, voids });
+        removeNodes(editor, { at: emptyRef.current!, voids });
       } else {
         const emptyPath = emptyRef.current;
         emptyPath && removeEmptyAncestor(editor as any, { at: emptyPath });
@@ -168,7 +172,7 @@ export const mergeNodes = <V extends Value>(
       (isElement(prevNode) && Editor.isEmpty(editor as any, prevNode)) ||
       (isText(prevNode) && prevNode.text === '')
     ) {
-      Transforms.removeNodes(editor as any, { at: prevPath, voids });
+      removeNodes(editor, { at: prevPath, voids });
     } else {
       editor.apply({
         type: 'merge_node',

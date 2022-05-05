@@ -1,6 +1,7 @@
 import {
   getParentNode,
   match,
+  moveNodes,
   PlateEditor,
   TElement,
   TNodeEntry,
@@ -43,7 +44,7 @@ export const normalizeNestedList = <V extends Value>(
     const newPath = previousPath.concat([1]);
 
     // Move the current item to the sublist
-    Transforms.moveNodes(editor, {
+    moveNodes(editor, {
       at: path,
       to: newPath,
     });

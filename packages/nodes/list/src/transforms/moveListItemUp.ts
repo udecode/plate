@@ -4,12 +4,14 @@ import {
   getPluginType,
   insertNodes,
   isLastChild,
+  moveNodes,
   PlateEditor,
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -121,7 +123,7 @@ export const moveListItemUp = <V extends Value>(
     const movedUpLiPath = Path.next(liParentPath);
 
     // Move li one level up: next to the li parent.
-    Transforms.moveNodes(editor, {
+    moveNodes(editor, {
       at: liPath,
       to: movedUpLiPath,
     });
@@ -131,7 +133,7 @@ export const moveListItemUp = <V extends Value>(
 
   let moved: boolean | undefined = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     moved = move();
   });
 

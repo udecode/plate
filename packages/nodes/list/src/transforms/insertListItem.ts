@@ -1,15 +1,21 @@
 import {
+  collapseSelection,
+  deleteText,
   getAboveNode,
   getParentNode,
   getPluginType,
   insertNodes,
   isBlockTextEmptyAfterSelection,
+  moveNodes,
   PlateEditor,
+  select,
+  splitNodes,
   TElement,
   Value,
+  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-core';
-import { Editor, Path, Range, Transforms } from 'slate';
+import { Editor, Path, Range } from 'slate';
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
 /**
@@ -38,9 +44,9 @@ export const insertListItem = <V extends Value>(
 
   let success = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     if (!Range.isCollapsed(editor.selection!)) {
-      Transforms.delete(editor);
+      deleteText(editor);
     }
 
     const isStart = Editor.isStart(
@@ -75,8 +81,8 @@ export const insertListItem = <V extends Value>(
      * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
      */
     if (!isEnd) {
-      Editor.withoutNormalizing(editor, () => {
-        Transforms.splitNodes(editor);
+      withoutNormalizing(editor, () => {
+        splitNodes(editor);
         wrapNodes(
           editor,
           {
@@ -85,12 +91,12 @@ export const insertListItem = <V extends Value>(
           },
           { at: nextParagraphPath }
         );
-        Transforms.moveNodes(editor, {
+        moveNodes(editor, {
           at: nextParagraphPath,
           to: nextListItemPath,
         });
-        Transforms.select(editor, nextListItemPath);
-        Transforms.collapse(editor, {
+        select(editor, nextListItemPath);
+        collapseSelection(editor, {
           edge: 'start',
         });
       });
@@ -107,14 +113,14 @@ export const insertListItem = <V extends Value>(
         },
         { at: nextListItemPath }
       );
-      Transforms.select(editor, nextListItemPath);
+      select(editor, nextListItemPath);
     }
 
     /**
      * If there is a list in the list item, move it to the next list item
      */
     if (listItemNode.children.length > 1) {
-      Transforms.moveNodes(editor, {
+      moveNodes(editor, {
         at: nextParagraphPath,
         to: nextListItemPath.concat(1),
       });

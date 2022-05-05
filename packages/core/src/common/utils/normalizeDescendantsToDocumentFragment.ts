@@ -8,7 +8,8 @@ import { ELEMENT_DEFAULT } from '../types/index';
 
 const isInlineNode = <V extends Value>(
   editor: Pick<TEditor<V>, 'isInline'>
-) => (node: EDescendant<V>) => isText(node) || editor.isInline(node);
+) => (node: EDescendant<V>) =>
+  isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({
   type,

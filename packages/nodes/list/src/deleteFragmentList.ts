@@ -4,9 +4,11 @@ import {
   getParentNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Range, Transforms } from 'slate';
+import { Editor, Range } from 'slate';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
@@ -15,7 +17,7 @@ import { ELEMENT_LI } from './createListPlugin';
 export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   let deleted = false;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     // Selection should be across list items
     if (!isAcrossListItems(editor)) return;
 
@@ -55,7 +57,7 @@ export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       });
 
       if (deletePath) {
-        Transforms.removeNodes(editor, { at: deletePath });
+        removeNodes(editor, { at: deletePath });
       }
 
       deleted = true;

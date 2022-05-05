@@ -1,4 +1,4 @@
-import { getText, TEditor } from '@udecode/plate-core';
+import { deleteText, getText, TEditor } from '@udecode/plate-core';
 import { Editor, Transforms } from 'slate';
 import { OutdentCodeLineOptions } from './outdentCodeLine';
 
@@ -18,7 +18,7 @@ export const deleteStartSpace = (
   const spaceText = getText(editor, spaceRange);
 
   if (/\s/.test(spaceText)) {
-    Transforms.delete(editor, { at: spaceRange });
+    deleteText(editor, { at: spaceRange });
     return true;
   }
 

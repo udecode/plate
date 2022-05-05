@@ -1,4 +1,5 @@
 import {
+  deleteText,
   findDescendant,
   getLastChildPath,
   getParentNode,
@@ -8,8 +9,9 @@ import {
   TElement,
   TNodeEntry,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path, Transforms } from 'slate';
+import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
@@ -45,7 +47,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
   const [, toListItemPath] = toListItem;
   let moved = 0;
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     const fromListItemSublist = findDescendant<TElement>(editor, {
       at: fromListItemPath,
       match: {
@@ -94,7 +96,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
     });
 
     // Remove the empty list
-    Transforms.delete(editor, { at: fromListItemSublistPath });
+    deleteText(editor, { at: fromListItemSublistPath });
   });
 
   return moved;

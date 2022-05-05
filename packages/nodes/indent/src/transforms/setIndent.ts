@@ -6,10 +6,10 @@ import {
   PlateEditor,
   setNodes,
   UnhangRangeOptions,
+  unsetNodes,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import { KEY_INDENT } from '../createIndentPlugin';
 
 export interface SetIndentOptions {
@@ -65,7 +65,7 @@ export const setIndent = <V extends Value>(
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        Transforms.unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
+        unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {

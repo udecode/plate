@@ -1,7 +1,6 @@
 import { jsx } from 'slate-hyperscript';
-import { TDescendant } from '../../../slate/types/TDescendant';
+import { EDescendant, TDescendant } from '../../../slate/types/TDescendant';
 import { Value } from '../../../slate/types/TEditor';
-import { TElement } from '../../../slate/types/TElement';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
@@ -12,7 +11,7 @@ import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 export const htmlElementToElement = <V extends Value, T = {}>(
   editor: PlateEditor<V, T>,
   element: HTMLElement
-): TElement | undefined => {
+) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
 
   if (deserialized) {
@@ -25,6 +24,6 @@ export const htmlElementToElement = <V extends Value, T = {}>(
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', node, descendants) as TElement;
+    return jsx('element', node, descendants) as EDescendant<V>;
   }
 };

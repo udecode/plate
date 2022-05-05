@@ -6,8 +6,9 @@ import {
   setNodes,
   unwrapNodes,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Path } from 'slate';
+import { Path } from 'slate';
 import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries';
 
@@ -15,7 +16,7 @@ export const unwrapList = <V extends Value>(
   editor: PlateEditor<V>,
   { at }: { at?: Path } = {}
 ) => {
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     do {
       setNodes(editor, {
         type: getPluginType(editor, ELEMENT_DEFAULT),

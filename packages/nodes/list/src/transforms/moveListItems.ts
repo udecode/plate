@@ -5,6 +5,7 @@ import {
   getPluginType,
   PlateEditor,
   Value,
+  withoutNormalizing,
 } from '@udecode/plate-core';
 import { Editor, Path, PathRef } from 'slate';
 import { ELEMENT_LIC } from '../createListPlugin';
@@ -59,7 +60,7 @@ export const moveListItems = <V extends Value>(
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     licPathRefsToMove.forEach((licPathRef) => {
       const licPath = licPathRef.unref();
       if (!licPath) return;

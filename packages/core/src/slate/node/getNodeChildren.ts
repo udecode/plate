@@ -8,7 +8,7 @@ import { TNodeChildEntry } from '../types/TNodeEntry';
 export const getNodeChildren = <N extends TNode>(
   root: N,
   path: Path,
-  options: Parameters<typeof Node.children>[2]
+  options?: Parameters<typeof Node.children>[2]
 ) =>
   Node.children(root, path, options) as Generator<
     TNodeChildEntry<N>,

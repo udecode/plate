@@ -5,6 +5,7 @@ import {
   getPlateEditorRef,
   Plate,
   PlateEditor,
+  select,
   TDescendant,
 } from '@udecode/plate-core';
 import {
@@ -14,7 +15,7 @@ import {
   MARK_BG_COLOR,
   MARK_COLOR,
 } from '@udecode/plate-font';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { ColorPickerToolbarDropdown } from './ColorPickerToolbarDropdown';
 
 const DEFAULT_PLUGINS = [
@@ -85,7 +86,7 @@ describe('ColorPickerToolbarDropdown', () => {
         editor = getPlateEditorRef()!;
 
         // select the entire text
-        Transforms.select(editor, {
+        select(editor, {
           anchor: Editor.start(editor, []),
           focus: Editor.end(editor, []),
         });

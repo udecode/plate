@@ -1,5 +1,5 @@
 import { jsx } from 'slate-hyperscript';
-import { TDescendant } from '../../../slate/types/TDescendant';
+import { EDescendant } from '../../../slate/types/TDescendant';
 import { Value } from '../../../slate/types/TEditor';
 import { PlateEditor } from '../../../types/PlateEditor';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -12,12 +12,12 @@ jsx;
 export const htmlBodyToFragment = <V extends Value, T = {}>(
   editor: PlateEditor<V, T>,
   element: HTMLElement
-): TDescendant[] | undefined => {
+): EDescendant<V>[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx(
       'fragment',
       {},
       deserializeHtmlNodeChildren(editor, element)
-    ) as TDescendant[];
+    ) as EDescendant<V>[];
   }
 };

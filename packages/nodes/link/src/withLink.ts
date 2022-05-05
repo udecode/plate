@@ -5,6 +5,7 @@ import {
   getText,
   isCollapsed,
   mockPlugin,
+  moveSelection,
   PlateEditor,
   someNode,
   unwrapNodes,
@@ -12,7 +13,7 @@ import {
   WithOverride,
 } from '@udecode/plate-core';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
-import { Range, Transforms } from 'slate';
+import { Range } from 'slate';
 import { upsertLinkAtSelection } from './transforms/upsertLinkAtSelection';
 import { wrapLink } from './transforms/wrapLink';
 import { ELEMENT_LINK } from './createLinkPlugin';
@@ -77,7 +78,7 @@ export const withLink: WithOverride<{}, LinkPlugin> = (
       const selection = editor.selection as Range;
 
       if (upsertLinkIfValid(editor, { isUrl })) {
-        Transforms.move(editor, { unit: 'offset' });
+        moveSelection(editor, { unit: 'offset' });
         return insertText(text);
       }
 
@@ -92,7 +93,7 @@ export const withLink: WithOverride<{}, LinkPlugin> = (
 
         if (isUrl!(beforeWordText)) {
           upsertLink(editor, { url: beforeWordText, at: beforeWordRange });
-          Transforms.move(editor, { unit: 'offset' });
+          moveSelection(editor, { unit: 'offset' });
         }
       }
     }

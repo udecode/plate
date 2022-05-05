@@ -6,7 +6,7 @@ import { TEditor, Value } from '../types/TEditor';
  */
 export const deleteText = <V extends Value>(
   editor: TEditor<V>,
-  options: Parameters<typeof Transforms.delete>[1]
+  options?: Parameters<typeof Transforms.delete>[1]
 ) => {
   Transforms.delete(editor as any, options);
 };

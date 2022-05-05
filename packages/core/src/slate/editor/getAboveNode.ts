@@ -15,6 +15,6 @@ export type GetAboveNodeOptions<V extends Value> = Modify<
  */
 export const getAboveNode = <V extends Value>(
   editor: TEditor<V>,
-  options: GetAboveNodeOptions<V> = {}
+  options?: GetAboveNodeOptions<V>
 ): EAncestorEntry<V> | undefined =>
   Editor.above(editor as any, getQueryOptions(editor, options)) as any;

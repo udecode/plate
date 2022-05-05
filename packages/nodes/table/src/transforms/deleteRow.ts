@@ -2,10 +2,10 @@ import {
   getAboveNode,
   getPluginType,
   PlateEditor,
+  removeNodes,
   someNode,
   Value,
 } from '@udecode/plate-core';
-import { Transforms } from 'slate';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
@@ -26,7 +26,7 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
       // Cannot delete the last row
       currentTableItem[0].children.length > 1
     ) {
-      Transforms.removeNodes(editor, {
+      removeNodes(editor, {
         at: currentRowItem[1],
       });
     }

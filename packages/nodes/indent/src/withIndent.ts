@@ -1,5 +1,9 @@
-import { setNodes, TElement, WithOverride } from '@udecode/plate-core';
-import { Transforms } from 'slate';
+import {
+  setNodes,
+  TElement,
+  unsetNodes,
+  WithOverride,
+} from '@udecode/plate-core';
 import { IndentPlugin } from './types';
 
 /**
@@ -23,7 +27,7 @@ export const withIndent: WithOverride<{}, IndentPlugin> = (
           return;
         }
       } else if (element.indent) {
-        Transforms.unsetNodes(editor, 'indent', { at: path });
+        unsetNodes(editor, 'indent', { at: path });
         return;
       }
     }

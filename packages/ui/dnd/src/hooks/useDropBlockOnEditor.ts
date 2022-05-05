@@ -1,5 +1,11 @@
 import { DropTargetMonitor, useDrop } from 'react-dnd';
-import { findNode, isExpanded, TReactEditor } from '@udecode/plate-core';
+import {
+  collapseSelection,
+  findNode,
+  isExpanded,
+  moveNodes,
+  TReactEditor,
+} from '@udecode/plate-core';
 import { focusEditor } from '@udecode/plate-core/dist/common/slate/react-editor/focusEditor';
 import { Path, Transforms } from 'slate';
 import { DragItemBlock } from '../types';
@@ -63,7 +69,7 @@ export const useDropBlockOnEditor = (
           Path.isSibling(dragPath, _dropPath);
         const to = before ? _dropPath : Path.next(_dropPath);
 
-        Transforms.moveNodes(editor, {
+        moveNodes(editor, {
           at: dragPath,
           to,
         });
@@ -79,7 +85,7 @@ export const useDropBlockOnEditor = (
 
       if (direction && isExpanded(editor.selection)) {
         focusEditor(editor);
-        Transforms.collapse(editor);
+        collapseSelection(editor);
       }
     },
   });

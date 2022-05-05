@@ -7,7 +7,7 @@ import { TEditor, Value } from '../types/TEditor';
 export const setPoint = <V extends Value>(
   editor: TEditor<V>,
   props: Partial<Point>,
-  options: Parameters<typeof Transforms.setPoint>[2]
+  options?: Parameters<typeof Transforms.setPoint>[2]
 ) => {
   Transforms.setPoint(editor as any, props, options);
 };

@@ -13,5 +13,5 @@ export type SplitNodesOptions<V extends Value> = Modify<
  */
 export const splitNodes = <V extends Value>(
   editor: TEditor<V>,
-  options: SplitNodesOptions<V>
+  options?: SplitNodesOptions<V>
 ) => Transforms.splitNodes(editor as any, options as any);

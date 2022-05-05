@@ -10,7 +10,7 @@ import { TDescendantEntry, TElementEntry } from '../types/TNodeEntry';
  */
 export const getNodeElements = <N extends TNode>(
   root: N,
-  options: Modify<
+  options?: Modify<
     NonNullable<Parameters<typeof Node.elements>[1]>,
     {
       pass?: (node: TElementEntry<N>) => boolean;

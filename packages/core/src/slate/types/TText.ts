@@ -4,7 +4,7 @@ import {
   UnionToIntersection,
 } from '../../common/types/utility/types';
 import { TEditor, Value } from './TEditor';
-import { TElement } from './TElement';
+import { TElement, VElement } from './TElement';
 import { TNode, TNodeProps } from './TNode';
 
 /**
@@ -20,6 +20,13 @@ export interface TText extends UnknownObject {
  * Text node of an editor.
  */
 export type EText<V extends Value> = TextOf<TEditor<V>>;
+
+/**
+ * Text of a value.
+ */
+export type VText<V extends Value> = TextOf<VElement<V>>;
+
+// const a: VText<MyValue> = {}
 
 /**
  * A utility type to get all the text node types from a root node type.

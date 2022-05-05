@@ -1,7 +1,9 @@
 import {
+  collapseSelection,
   getPluginType,
   isCollapsed,
   isElement,
+  removeNodes,
   TElement,
   WithOverride,
 } from '@udecode/plate-core';
@@ -76,10 +78,10 @@ export const withTable: WithOverride = (editor) => {
         for (const [, childPath] of Node.children(editor, path, {
           reverse: true,
         })) {
-          Transforms.removeNodes(editor, { at: childPath });
+          removeNodes(editor, { at: childPath });
         }
       }
-      Transforms.collapse(editor);
+      collapseSelection(editor);
       return;
     }
     deleteFragment();
@@ -102,7 +104,7 @@ export const withTable: WithOverride = (editor) => {
       const _cells = Editor.nodes(editor, { match: matchCells });
       const [cell] = Array.from(_cells);
       if (cell) {
-        Transforms.collapse(editor, { edge: 'end' });
+        collapseSelection(editor, { edge: 'end' });
         insertText(text);
         return;
       }

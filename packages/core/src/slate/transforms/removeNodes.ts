@@ -13,5 +13,5 @@ export type RemoveNodesOptions<V extends Value> = Modify<
  */
 export const removeNodes = <V extends Value>(
   editor: TEditor<V>,
-  options: RemoveNodesOptions<V> = {}
+  options?: RemoveNodesOptions<V>
 ) => Transforms.removeNodes(editor as any, options as any);

@@ -7,12 +7,18 @@ import {
   TComboboxItem,
 } from '@udecode/plate-combobox';
 import {
+  deleteText,
   getBlockAbove,
   getPlugin,
   insertNodes,
+  insertText,
+  moveSelection,
   PlatePluginKey,
+  removeNodes,
+  select,
+  withoutNormalizing,
 } from '@udecode/plate-core';
-import { Editor, Transforms } from 'slate';
+import { Editor } from 'slate';
 import { HistoryEditor } from 'slate-history';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import { MentionNode, MentionNodeData, MentionPlugin } from './types';
@@ -38,16 +44,16 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     pathAbove &&
     Editor.isEnd(editor, editor.selection.anchor, pathAbove);
 
-  Editor.withoutNormalizing(editor, () => {
+  withoutNormalizing(editor, () => {
     // insert a space to fix the bug
     if (isBlockEnd) {
-      Transforms.insertText(editor, ' ');
+      insertText(editor, ' ');
     }
 
-    Transforms.select(editor, targetRange);
+    select(editor, targetRange);
 
     HistoryEditor.withoutMerging(editor, () =>
-      Transforms.removeNodes(editor, {
+      removeNodes(editor, {
         // TODO: replace any
         match: (node: any) => node.type === ELEMENT_MENTION_INPUT,
       })
@@ -60,11 +66,11 @@ export const getMentionOnSelectItem = <TData extends Data = NoData>({
     });
 
     // move the selection after the element
-    Transforms.move(editor);
+    moveSelection(editor);
 
     // delete the inserted space
     if (isBlockEnd && !insertSpaceAfterMention) {
-      Transforms.delete(editor);
+      deleteText(editor);
     }
   });
   return comboboxActions.reset();

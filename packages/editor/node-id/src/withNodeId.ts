@@ -4,6 +4,7 @@ import {
   someNode,
   TNode,
   TNodeEntry,
+  Value,
   WithOverride,
 } from '@udecode/plate-core';
 import cloneDeep from 'lodash/cloneDeep';
@@ -12,7 +13,7 @@ import { NodeIdPlugin } from './createNodeIdPlugin';
 /**
  * Enables support for inserting nodes with an id key.
  */
-export const withNodeId: WithOverride<{}, NodeIdPlugin> = (
+export const withNodeId: WithOverride<Value, {}, NodeIdPlugin> = (
   editor,
   {
     options: {

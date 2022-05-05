@@ -7,7 +7,7 @@ import { TEditor, Value } from '../types/TEditor';
 export const insertText = <V extends Value>(
   editor: TEditor<V>,
   text: string,
-  options: Parameters<typeof Transforms.insertText>[2]
+  options?: Parameters<typeof Transforms.insertText>[2]
 ) => {
   Transforms.insertText(editor as any, text, options);
 };
