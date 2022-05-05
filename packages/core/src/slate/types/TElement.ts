@@ -1,6 +1,6 @@
 import { UnknownObject } from '../../common/types/utility/AnyObject';
-import { MyValue } from "../../utils/setPlatePlugins";
-import { EDescendant, VDescendant } from "./TDescendant";
+import { MyValue } from '../../utils/setPlatePlugins';
+import { EDescendant } from './TDescendant';
 import { TEditor, Value } from './TEditor';
 import { TNode } from './TNode';
 import { TText } from './TText';
@@ -25,8 +25,8 @@ export type EElement<V extends Value> = ElementOf<TEditor<V>>;
  */
 export type VElement<V extends Value> = V[number];
 
-let  a: TElement = {type : 'a', children: []}
-let b: EDescendant<MyValue> = {}
+const a: TElement = { type: 'a', children: [] };
+const b: EDescendant<MyValue> = {};
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
